@@ -1303,8 +1303,10 @@ def get_streams_backend(request, user_profile,
     if include_all_active and not is_super_user_api(request):
             return json_error("User not authorized for this query")
 
-    # Listing public streams are disabled for the mit.edu realm.
-    include_public = include_public and not user_profile.realm.domain == "mit.edu"
+    # Listing public streams are disabled for some users (e.g. a
+    # contractor for CUSTOMER5) and for the mit.edu realm.
+    include_public = include_public and not (user_profile.public_streams_disabled or
+                                             user_profile.realm.domain == "mit.edu")
 
     # Only get streams someone is currently subscribed to
     subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
@@ -1413,8 +1415,15 @@ def filter_stream_authorization(user_profile, streams):
 
     unauthorized_streams = []
     for stream in streams:
-        if stream.invite_only and not stream.id in streams_subscribed:
+        # The user is authorized for his own streams
+        if stream.id in streams_subscribed:
+            continue
+
+        # The user is not authorized for invite_only streams, and if
+        # the user has public streams disabled, nothing is authorized
+        if stream.invite_only or user_profile.public_streams_disabled:
             unauthorized_streams.append(stream)
+
     streams = [stream for stream in streams if
                stream.id not in set(stream.id for stream in unauthorized_streams)]
     return streams, unauthorized_streams

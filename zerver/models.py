@@ -158,6 +158,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 content_type__name="realm",
                 permission__codename="administer").count()
 
+    @property
+    def public_streams_disabled(self):
+        return self.email.lower() == "restricted-user@customer5.invalid"
+
     def __repr__(self):
         return (u"<UserProfile: %s %s>" % (self.email, self.realm)).encode("utf-8")
     def __str__(self):
