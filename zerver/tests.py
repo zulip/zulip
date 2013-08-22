@@ -2044,7 +2044,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         email = "othello@zulip.com"
         self.login(email)
         result = self.common_subscribe_to_streams(email, ["Saxony"])
-        self.assert_json_error(result, 'Unable to access invite-only stream (Saxony).')
+        self.assert_json_error(result, 'Unable to access stream (Saxony).')
 
         # authorization_errors_fatal=False works
         email = "othello@zulip.com"

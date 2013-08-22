@@ -1442,7 +1442,7 @@ def add_subscriptions_backend(request, user_profile,
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        return json_error("Unable to access invite-only stream (%s)." % unauthorized_streams[0].name)
+        return json_error("Unable to access stream (%s)." % unauthorized_streams[0].name)
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
