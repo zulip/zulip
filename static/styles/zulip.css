@@ -1521,19 +1521,29 @@ input.recipient_box {
     position: fixed;
     /* .message_list max-width */
     text-decoration: none;
-    top: 60px; /* should really be the same as the height of navbar-spacer + height of the tab bar*/
+    top: 70px; /* should really be the same as the height of navbar-spacer + height of the tab bar*/
     visibility: hidden; /* so that we pass clicks through to underneath us */
     /* If zhome has opacity on it, it suddenly starts getting drawn on top
        of top_statusbar -- unless we specify a z-index.  */
     z-index: 2;
+    left: 0px;
+    width: 100%;
+}
+
+.recipient-bar-content {
+    max-width: 1210px;
+    width: 100%;
+    margin: auto;
+}
+
+.recipient-bar-main {
+    margin-left: 220px;
     margin-right: 210px;
-    max-width: 795px;
 }
 
 table.floating_recipient {
     table-layout: fixed;
     border-collapse: separate;
-    margin-left: auto;
     width: 100%;
 }
 
@@ -2467,6 +2477,10 @@ div.edit_bot {
         margin-right: 10px;
     }
 
+    .recipient-bar-main {
+        margin-right: 20px;
+    }
+
 }
 
 @media (max-width: 775px) {
@@ -2514,6 +2528,11 @@ div.edit_bot {
     .compose-content {
         margin-right:15px;
         margin-left: 10px;
+    }
+
+    .recipient-bar-main {
+        margin-left: 20px;
+        margin-right: 25px;
     }
 
 }
