@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
 from zerver.lib.context_managers import lockfile
-from zerver.models import Realm, Stream, UserProfile, UserActivity, \
+from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
     DefaultStream, UserPresence, Referral, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
@@ -1496,3 +1496,9 @@ Referred: %s""" % (user_profile.full_name, user_profile.email, user_profile.real
     user_profile.save(update_fields=['invites_used'])
 
     send_referral_event(user_profile)
+
+def do_add_realm_emoji(realm, name, img_url):
+    RealmEmoji(realm=realm, name=name, img_url=img_url).save()
+
+def do_remove_realm_emoji(realm, name):
+    RealmEmoji.objects.get(realm=realm, name=name).delete()
