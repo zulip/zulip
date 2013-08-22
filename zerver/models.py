@@ -6,7 +6,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    update_user_presence_cache, generic_bulk_cached_fetch
+    update_user_presence_cache, generic_bulk_cached_fetch, cache_set
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
 from zerver.lib import bugdown
@@ -14,7 +14,7 @@ from zerver.lib.avatar import gravatar_hash, avatar_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 import zlib
 
 from bitfield import BitField
@@ -65,6 +65,10 @@ def completely_open(domain):
     # those realms, users from outside the domain must be invited.
     return domain and domain.lower() == "customer3.invalid"
 
+
+def get_realm_emoji_cache_key(realm):
+    return 'realm_emoji:%s' % (realm.id,)
+
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
     restricted_to_domain = models.BooleanField(default=True)
@@ -73,6 +77,10 @@ class Realm(models.Model):
         return (u"<Realm: %s %s>" % (self.domain, self.id)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
+
+    @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
+    def get_emoji(self):
+        return get_realm_emoji_uncached(self)
 
     class Meta:
         permissions = (
@@ -90,6 +98,32 @@ def email_to_username(email):
 
 def email_to_domain(email):
     return email.split("@")[-1].lower()
+
+class RealmEmoji(models.Model):
+    realm = models.ForeignKey(Realm)
+    name = models.TextField()
+    img_url = models.TextField()
+
+    class Meta:
+        unique_together = ("realm", "name")
+
+    def __str__(self):
+        return "<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
+
+def get_realm_emoji_uncached(realm):
+    d = {}
+    for row in RealmEmoji.objects.filter(realm=realm):
+        d[row.name] = row.img_url
+    return d
+
+def update_realm_emoji_cache(sender, **kwargs):
+    realm = kwargs['instance'].realm
+    cache_set(get_realm_emoji_cache_key(realm),
+              get_realm_emoji_uncached(realm),
+              timeout=3600*24*7)
+
+post_save.connect(update_realm_emoji_cache, sender=RealmEmoji)
+post_delete.connect(update_realm_emoji_cache, sender=RealmEmoji)
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Fields from models.AbstractUser minus last_name and first_name,
@@ -378,6 +412,9 @@ class Message(models.Model):
         return (u"<Message: %s / %s / %r>" % (display_recipient, self.subject, self.sender)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
+
+    def get_realm(self):
+        return self.sender.realm
 
     def render_markdown(self, content):
         """Return HTML for given markdown. Bugdown may add properties to the
