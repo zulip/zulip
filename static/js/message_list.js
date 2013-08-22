@@ -334,6 +334,18 @@ MessageList.prototype = {
 
     get_row: function (id) {
         return this.view.get_row(id);
+    },
+
+    change_display_recipient: function MessageList_change_display_recipient(old_recipient,
+                                                                            new_recipient) {
+        // This method only works for streams.
+        _.each(this._items, function (item) {
+            if (item.display_recipient === old_recipient) {
+                item.display_recipient = new_recipient;
+                item.stream = new_recipient;
+            }
+        });
+        this.view.rerender_the_whole_thing();
     }
 };
 
