@@ -9,7 +9,7 @@ body {
 }
 
 /* Common background color */
-body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp, .compose-content {
+body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp, #compose-container {
     background-color: #f4f5f4;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
@@ -18,7 +18,7 @@ body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp, .compose-co
    transition: background-color 200ms linear;
 }
 
-body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpadding, .narrowed_view .message_list, .narrowed_view .compose-content {
+body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpadding, .narrowed_view .message_list, .narrowed_view #compose-container {
     background-color: #f0f8ff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
@@ -27,7 +27,7 @@ body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpaddin
    transition: background-color 200ms linear;
 }
 
-.narrowed_view .message_comp.compose-content {
+.message_comp.compose-content {
     background-color: #ffffff;
 }
 
