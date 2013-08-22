@@ -153,6 +153,7 @@ MessageListView.prototype = {
             if (current_group.length > 0) {
                 var message_ids = _.pluck(current_group, 'id');
                 current_group[0].message_ids = message_ids;
+                current_group[0].collapsible = feature_flags.collapsible;
                 new_message_groups.push(message_ids);
             }
         }
@@ -170,7 +171,9 @@ MessageListView.prototype = {
 
             var summary_adjective;
 
-            if (!_.contains(message.flags, 'force_expand')) {
+            if (_.contains(message.flags, 'force_collapse')) {
+                summary_verb = 'collapsed';
+            } else if (!_.contains(message.flags, 'force_expand')) {
                 if (muting.is_topic_muted(message.stream, message.subject)) {
                     summary_adjective = 'muted';
                 } else if (list.is_summarized_message(message)) {

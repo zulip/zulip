@@ -188,6 +188,10 @@ exports.normalize_spaces = function (str) {
     return str.replace(/\s+/g, ' ');
 };
 
+exports.ltrim = function (str) {
+    return str.replace(/^\s+/g, '');
+};
+
 // Call get_rendered_messages and then check that the last few headings and
 // bodies match the specified arrays.
 exports.expected_messages = function (table, headings, bodies) {
@@ -197,8 +201,8 @@ exports.expected_messages = function (table, headings, bodies) {
     var msg = exports.get_rendered_messages(table);
 
     casper.test.assertEquals(
-        msg.headings.slice(-headings.length).map(exports.normalize_spaces),
-        headings,
+        msg.headings.slice(-headings.length).map(exports.normalize_spaces).map(exports.ltrim),
+        headings.map(exports.ltrim),
         'Got expected message headings');
 
     casper.test.assertEquals(

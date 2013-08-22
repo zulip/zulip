@@ -508,7 +508,7 @@ class UserMessage(models.Model):
     # on later
     archived = models.BooleanField()
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
-                 'summarize_in_home', 'summarize_in_stream', 'force_expand']
+                 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse']
     flags = BitField(flags=ALL_FLAGS, default=0)
 
     class Meta:
