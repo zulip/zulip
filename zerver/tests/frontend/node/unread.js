@@ -196,6 +196,19 @@ var zero_counts = {
     assert.equal(counts.private_message_count, 0);
 }());
 
+(function test_num_unread_for_person() {
+    var email = 'alice@zulip.com';
+    assert.equal(unread.num_unread_for_person(email), 0);
+
+    var message = {
+        id: 15,
+        reply_to: email,
+        type: 'private'
+    };
+    unread.process_loaded_messages([message]);
+    assert.equal(unread.num_unread_for_person(email), 1);
+}());
+
 
 (function test_mentions() {
     narrow.active = function () {

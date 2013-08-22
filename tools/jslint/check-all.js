@@ -56,7 +56,7 @@ var globals =
     + ' mark_message_as_read'
     + ' send_summarize_in_home'
     + ' send_summarize_in_stream'
-    + ' update_unread_counts'
+    + ' suppress_unread_counts'
     ;
 
 

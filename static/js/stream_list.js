@@ -223,6 +223,14 @@ function animate_mention_changes(new_mention_count) {
     last_mention_count = new_mention_count;
 }
 
+
+exports.set_presence_list_counts = function (count_dict) {
+    // count_dict maps people (emails, actually) to counts
+    count_dict.each(function (count, person) {
+        exports.set_count("private", person, count);
+    });
+};
+
 exports.update_dom_with_unread_counts = function (counts) {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
@@ -239,10 +247,7 @@ exports.update_dom_with_unread_counts = function (counts) {
         });
     });
 
-    // counts.pm_count maps people to counts
-    counts.pm_count.each(function (count, person) {
-        exports.set_count("private", person, count);
-    });
+    exports.set_presence_list_counts(counts.pm_count);
 
     // integer counts
     exports.set_count("global", "private", counts.private_message_count);

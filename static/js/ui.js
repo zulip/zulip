@@ -1483,10 +1483,18 @@ exports.set_presence_list = function (users, presence_info) {
     var user_info = [my_info].concat(_.map(user_emails, info_for));
 
     $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
-    // FIXME: This should probably be rendered in the template directly, but
-    // currently we have to update unread counts after rendering the template
-    // or they get blown away.
-    update_unread_counts();
+
+    // Update the counts in the presence list.
+    if (!suppress_unread_counts) {
+        // We do this after rendering the template, to avoid dealing with
+        // the suppress_unread_counts conditional in the template.
+        var count_dict = new Dict();
+        _.each(users, function (email) {
+            count_dict.set(email, unread.num_unread_for_person(email));
+        });
+        count_dict.set(page_params.email, unread.num_unread_for_person(page_params.email));
+        stream_list.set_presence_list_counts(count_dict);
+    }
 };
 
 // Save the compose content cursor position and restore when we

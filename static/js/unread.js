@@ -173,6 +173,13 @@ exports.num_unread_for_subject = function (stream, subject) {
     return num_unread;
 };
 
+exports.num_unread_for_person = function (email) {
+    if (!unread_counts['private'].has(email)) {
+        return 0;
+    }
+    return _.keys(unread_counts['private'].get(email)).length;
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
