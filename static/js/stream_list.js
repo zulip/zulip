@@ -224,11 +224,8 @@ function animate_mention_changes(new_mention_count) {
 }
 
 
-exports.set_presence_list_counts = function (count_dict) {
-    // count_dict maps people (emails, actually) to counts
-    count_dict.each(function (count, person) {
-        set_count("private", person, count);
-    });
+exports.set_presence_list_count = function (person, count) {
+    set_count("private", person, count);
 };
 
 exports.update_dom_with_unread_counts = function (counts) {
@@ -247,7 +244,10 @@ exports.update_dom_with_unread_counts = function (counts) {
         });
     });
 
-    exports.set_presence_list_counts(counts.pm_count);
+
+    counts.pm_count.each(function (count, person) {
+        exports.set_presence_list_count(person, count);
+    });
 
     // integer counts
     set_count("global", "private", counts.private_message_count);

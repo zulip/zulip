@@ -1488,12 +1488,13 @@ exports.set_presence_list = function (users, presence_info) {
     if (!suppress_unread_counts) {
         // We do this after rendering the template, to avoid dealing with
         // the suppress_unread_counts conditional in the template.
-        var count_dict = new Dict();
-        _.each(users, function (email) {
-            count_dict.set(email, unread.num_unread_for_person(email));
-        });
-        count_dict.set(page_params.email, unread.num_unread_for_person(page_params.email));
-        stream_list.set_presence_list_counts(count_dict);
+
+        var set_count = function (email) {
+            stream_list.set_presence_list_count(email, unread.num_unread_for_person(email));
+        };
+
+        _.each(user_emails, set_count);
+        set_count(page_params.email);
     }
 };
 
