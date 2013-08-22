@@ -10,7 +10,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
-    email_to_domain, email_to_username
+    email_to_domain, email_to_username, display_recipient_cache_key, \
+    get_stream_cache_key, to_dict_cache_key_id
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -30,8 +31,9 @@ from zerver.lib.queue import queue_json_publish
 from django.utils import timezone
 from zerver.lib.create_user import create_user
 from zerver.lib import bugdown
-from zerver.lib.cache import cache_with_key, \
-    user_profile_by_email_cache_key, status_dict_cache_key, cache_set_many
+from zerver.lib.cache import cache_with_key, cache_set, \
+    user_profile_by_email_cache_key, status_dict_cache_key, cache_set_many, \
+    cache_delete, cache_delete_many, message_cache_key
 from zerver.decorator import get_user_profile_by_email, json_to_list, JsonableError, \
      statsd_increment
 from zerver.lib.event_queue import request_event_queue, get_user_events
@@ -768,6 +770,54 @@ def do_change_full_name(user_profile, full_name, log=True):
                              person=dict(email=user_profile.email,
                                          full_name=user_profile.full_name)),
                   users=active_user_ids(user_profile.realm))
+    tornado_callbacks.send_notification(notice)
+
+def do_rename_stream(realm, old_name, new_name, log=True):
+    old_name = old_name.strip()
+    new_name = new_name.strip()
+
+    stream = get_stream(old_name, realm)
+
+    if not stream:
+        raise JsonableError('Unknown stream "%s"' % (old_name,))
+
+    # Will raise if there's an issue.
+    check_stream_name(new_name)
+
+    if get_stream(new_name, realm):
+        raise JsonableError('Stream name "%s" is already taken' % (new_name,))
+
+    old_name = stream.name
+    stream.name = new_name
+    stream.save(update_fields=["name"])
+
+    if log:
+        log_event({'type': 'stream_name_change',
+                   'domain': realm.domain,
+                   'new_name': new_name})
+
+    recipient = get_recipient(Recipient.STREAM, stream.id)
+    messages = Message.objects.filter(recipient=recipient).only("id")
+
+    # Update the display recipient and stream, which are easy single
+    # items to set.
+    cache_set(display_recipient_cache_key(recipient.id), stream.name)
+    cache_set(get_stream_cache_key(stream.name, realm), stream)
+    cache_delete(get_stream_cache_key(old_name, realm))
+
+    # Delete cache entries for everything else, which is cheaper and
+    # clearer than trying to set them. display_recipient is the out of
+    # date field in all cases.
+    cache_delete_many(message_cache_key(message.id) for message in messages)
+    cache_delete_many(
+        to_dict_cache_key_id(message.id, True) for message in messages)
+    cache_delete_many(
+        to_dict_cache_key_id(message.id, False) for message in messages)
+
+    notice = dict(event=dict(type="subscriptions", op="update", property="name",
+                             name=old_name, value=new_name),
+                  users=active_user_ids(realm))
+
     tornado_callbacks.send_notification(notice)
 
 def do_create_realm(domain, restricted_to_domain=True):
