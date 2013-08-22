@@ -6,7 +6,8 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    update_user_presence_cache, generic_bulk_cached_fetch, cache_set
+    update_user_presence_cache, generic_bulk_cached_fetch, cache_set, \
+    display_recipient_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
 from zerver.lib import bugdown
@@ -35,7 +36,7 @@ def get_display_recipient(recipient):
         recipient_cache[recipient.id] = get_display_recipient_memcached(recipient)
     return recipient_cache[recipient.id]
 
-@cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,),
+@cache_with_key(lambda self: display_recipient_cache_key(self.id),
                 timeout=3600*24*7)
 def get_display_recipient_memcached(recipient):
     """

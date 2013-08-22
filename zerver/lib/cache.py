@@ -221,6 +221,9 @@ def cache(func):
 def message_cache_key(message_id):
     return "message:%d" % (message_id,)
 
+def display_recipient_cache_key(recipient_id):
+    return "display_recipient_dict:%d" % (recipient_id,)
+
 def user_profile_by_email_cache_key(email):
     # See the comment in zerver/lib/avatar.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
