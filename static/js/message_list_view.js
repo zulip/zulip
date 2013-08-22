@@ -151,7 +151,9 @@ MessageListView.prototype = {
 
         function finish_group() {
             if (current_group.length > 0) {
-                new_message_groups.push(current_group);
+                var message_ids = _.pluck(current_group, 'id');
+                current_group[0].message_ids = message_ids;
+                new_message_groups.push(message_ids);
             }
         }
 
@@ -211,12 +213,12 @@ MessageListView.prototype = {
 
             if (util.same_recipient(prev, message) && self.collapse_messages &&
                prev.historical === message.historical && !message.show_date) {
-                current_group.push(message.id);
+                current_group.push(message);
                 // prev is no longer the last element in this block
                 prev.include_footer = false;
             } else {
                 finish_group();
-                current_group = [message.id];
+                current_group = [message];
 
                 // Add a space to the table, but not for the first element.
                 message.include_recipient = true;
