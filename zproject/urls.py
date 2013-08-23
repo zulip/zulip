@@ -23,6 +23,7 @@ urlpatterns = patterns('',
     url(r'^accounts/login/',  'zerver.views.login_page',         {'template_name': 'zerver/login.html'}),
     url(r'^accounts/login/',  'django.contrib.auth.views.login', {'template_name': 'zerver/login.html'}),
     url(r'^accounts/logout/', 'zerver.views.logout_then_login'),
+    url(r'^accounts/webathena_kerberos_login/', 'zerver.views.webathena_kerberos_login'),
 
     url(r'^accounts/password/reset/$', 'django.contrib.auth.views.password_reset',
         {'post_reset_redirect' : '/accounts/password/reset/done/',

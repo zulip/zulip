@@ -1394,6 +1394,45 @@ $(function () {
         popovers.hide_all();
     });
 
+    // Webathena integration code
+    $('#right-sidebar').on('click', '.webathena_login', function (e) {
+        $("#zephyr-mirror-error").hide();
+        var principal = ["zephyr", "zephyr"];
+        WinChan.open({
+            url: "https://webathena.mit.edu/#!request_ticket_v1",
+            relay_url: "https://webathena.mit.edu/relay.html",
+            params: {
+                realm: "ATHENA.MIT.EDU",
+                principal: principal
+            }
+        }, function (err, r) {
+            if (err) {
+                blueslip.warn(err);
+                return;
+            }
+            if (r.status !== "OK") {
+                blueslip.warn(r);
+                return;
+            }
+
+            $.ajax({
+                type:     'POST',
+                url:      "/accounts/webathena_kerberos_login/",
+                data:     {cred: JSON.stringify(r.session)},
+                dataType: 'json',
+                success: function (data, success) {
+                    $("#zephyr-mirror-error").hide();
+                },
+                error: function (data, success) {
+                    $("#zephyr-mirror-error").show();
+                }
+            });
+        });
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    // End Webathena code
+
     $(document).on('click', function (e) {
         // Dismiss popovers if the user has clicked outside them
         if ($('.popover-inner').has(e.target).length === 0) {

@@ -358,6 +358,7 @@ JS_SPECS = {
             'third/jquery-autosize/jquery.autosize.js',
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
+            'third/winchan/winchan.js',
             ('third/handlebars/handlebars.runtime.js'
                 if PIPELINE
                 else 'third/handlebars/handlebars.js'),

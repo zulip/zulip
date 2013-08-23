@@ -380,6 +380,38 @@ def accounts_accept_terms(request):
         { 'form': form, 'company_name': domain, 'email': email },
         context_instance=RequestContext(request))
 
+from zerver.lib.ccache import make_ccache
+
+@authenticated_json_view
+@has_request_variables
+def webathena_kerberos_login(request, user_profile,
+                             cred=REQ(default=None)):
+    if cred is None:
+        return json_error("Could not find Kerberos credential")
+    if not user_profile.realm.domain == "mit.edu":
+        return json_error("Webathena login only for mit.edu realm")
+
+    try:
+        parsed_cred = ujson.loads(cred)
+        user = parsed_cred["cname"]["nameString"][0]
+        assert(user == user_profile.email.split("@")[0])
+        ccache = make_ccache(parsed_cred)
+    except Exception:
+        return json_error("Invalid Kerberos cache")
+
+    # TODO: Send these data via (say) rabbitmq
+    try:
+        subprocess.check_call(["ssh", "humbug@zmirror2.zulip.net", "--",
+                               "/home/humbug/humbug/bots/process_ccache",
+                               user,
+                               user_profile.api_key,
+                               base64.b64encode(ccache)])
+    except Exception:
+        logging.exception("Error updating the user's ccache")
+        return json_error("We were unable to setup mirroring for you")
+
+    return json_success()
+
 def api_endpoint_docs(request):
     raw_calls = open('templates/zerver/api_content.json', 'r').read()
     calls = ujson.loads(raw_calls)

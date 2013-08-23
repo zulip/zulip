@@ -1,0 +1,35 @@
+#!/usr/bin/python
+import sys
+import os
+import subprocess
+import base64
+
+short_user = sys.argv[1]
+api_key = sys.argv[2]
+ccache_data_encoded = sys.argv[3]
+
+# Update the Kerberos ticket cache file
+program_name = "zmirror-%s" % (short_user,)
+with file("/home/humbug/ccache/%s" % (program_name,), "w") as f:
+    f.write(base64.b64decode(ccache_data_encoded))
+
+# Setup API key
+api_key_path = "/home/humbug/api-keys/%s" % (program_name,)
+file(api_key_path, "w").write(api_key + "\n")
+
+# Setup supervisord configuration
+supervisor_path = "/etc/supervisor/conf.d/%s.conf" % (program_name,)
+template = "/home/humbug/humbug/bots/zmirror_private.conf.template"
+template_data = file(template).read()
+session_path = "/home/humbug/zephyr_sessions/%s" % (program_name,)
+file(supervisor_path, "w").write(template_data.replace("USERNAME", short_user))
+
+# Delete your session
+subprocess.check_call(["rm", "-f", session_path])
+# Update your supervisor config, which may restart your mirror
+subprocess.check_call(["supervisorctl", "reread"])
+subprocess.check_call(["supervisorctl", "update"])
+# Restart your mirror, in case it wasn't restarted by the previous
+# (Otherwise if the mirror lost subs, this would do nothing)
+# TODO: check whether we JUST restarted it first
+subprocess.check_call(["supervisorctl", "restart", program_name])
