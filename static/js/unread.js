@@ -6,7 +6,7 @@ var unread_counts = {
     'stream': new Dict(),
     'private': new Dict()
 };
-var unread_mentioned = {};
+var unread_mentioned = new Dict();
 var unread_subjects = new Dict();
 
 function unread_hashkey(message) {
@@ -17,18 +17,12 @@ function unread_hashkey(message) {
         hashkey = message.reply_to;
     }
 
-    if (! unread_counts[message.type].has(hashkey)) {
-        unread_counts[message.type].set(hashkey, {});
-    }
+    unread_counts[message.type].setdefault(hashkey, new Dict());
 
     if (message.type === 'stream') {
         var canon_subject = stream_data.canonicalized_name(message.subject);
-        if (! unread_subjects.has(hashkey)) {
-            unread_subjects.set(hashkey, new Dict());
-        }
-        if (! unread_subjects.get(hashkey).has(canon_subject)) {
-            unread_subjects.get(hashkey).set(canon_subject, {});
-        }
+        unread_subjects.setdefault(hashkey, new Dict());
+        unread_subjects.get(hashkey).setdefault(canon_subject, new Dict());
     }
 
     return hashkey;
@@ -49,17 +43,15 @@ exports.update_unread_subjects = function (msg, event) {
     if (event.subject !== undefined &&
         unread_subjects.has(canon_stream) &&
         unread_subjects.get(canon_stream).has(canon_subject) &&
-        unread_subjects.get(canon_stream).get(canon_subject)[msg.id]) {
+        unread_subjects.get(canon_stream).get(canon_subject).get(msg.id)) {
         var new_canon_subject = stream_data.canonicalized_name(event.subject);
         // Move the unread subject count to the new subject
-        delete unread_subjects.get(canon_stream).get(canon_subject)[msg.id];
-        if (unread_subjects.get(canon_stream).get(canon_subject).length === 0) {
+        unread_subjects.get(canon_stream).get(canon_subject).del(msg.id);
+        if (unread_subjects.get(canon_stream).get(canon_subject).num_items() === 0) {
             unread_subjects.get(canon_stream).del(canon_subject);
         }
-        if (! unread_subjects.get(canon_stream).has(new_canon_subject)) {
-            unread_subjects.get(canon_stream).set(new_canon_subject, {});
-        }
-        unread_subjects.get(canon_stream).get(new_canon_subject)[msg.id] = true;
+        unread_subjects.get(canon_stream).setdefault(new_canon_subject, new Dict());
+        unread_subjects.get(canon_stream).get(new_canon_subject).set(msg.id, true);
     }
 };
 
@@ -71,28 +63,28 @@ exports.process_loaded_messages = function (messages) {
         }
 
         var hashkey = unread_hashkey(message);
-        unread_counts[message.type].get(hashkey)[message.id] = true;
+        unread_counts[message.type].get(hashkey).set(message.id, true);
 
         if (message.type === 'stream') {
             var canon_subject = stream_data.canonicalized_name(message.subject);
-            unread_subjects.get(hashkey).get(canon_subject)[message.id] = true;
+            unread_subjects.get(hashkey).get(canon_subject).set(message.id, true);
         }
 
         if (message.mentioned) {
-            unread_mentioned[message.id] = true;
+            unread_mentioned.set(message.id, true);
         }
     });
 };
 
 exports.process_read_message = function (message) {
     var hashkey = unread_hashkey(message);
-    delete unread_counts[message.type].get(hashkey)[message.id];
+    unread_counts[message.type].get(hashkey).del(message.id);
     if (message.type === 'stream') {
         var canon_stream = stream_data.canonicalized_name(message.stream);
         var canon_subject = stream_data.canonicalized_name(message.subject);
-        delete unread_subjects.get(canon_stream).get(canon_subject)[message.id];
+        unread_subjects.get(canon_stream).get(canon_subject).del(message.id);
     }
-    delete unread_mentioned[message.id];
+    unread_mentioned.del(message.id);
 };
 
 exports.declare_bankruptcy = function () {
@@ -119,7 +111,7 @@ exports.get_counts = function () {
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
     res.home_unread_messages = 0;
-    res.mentioned_message_count = Object.keys(unread_mentioned).length;
+    res.mentioned_message_count = unread_mentioned.num_items();
     res.stream_count = new Dict();  // hash by stream -> count
     res.subject_count = new Dict(); // hash of hashes (stream, then subject -> count)
     res.pm_count = new Dict(); // Hash by email -> count
@@ -129,17 +121,17 @@ exports.get_counts = function () {
             return true;
         }
 
-        var count = Object.keys(msgs).length;
+        var count = msgs.num_items();
         res.stream_count.set(stream, count);
 
         if (stream_data.in_home_view(stream)) {
-            res.home_unread_messages += Object.keys(msgs).length;
+            res.home_unread_messages += count;
         }
 
         if (unread_subjects.has(stream)) {
             res.subject_count.set(stream, new Dict());
             unread_subjects.get(stream).each(function (msgs, subject) {
-                res.subject_count.get(stream).set(subject, Object.keys(msgs).length);
+                res.subject_count.get(stream).set(subject, msgs.num_items());
             });
         }
 
@@ -147,7 +139,7 @@ exports.get_counts = function () {
 
     var pm_count = 0;
     unread_counts["private"].each(function (obj, index) {
-        var count = Object.keys(obj).length;
+        var count = obj.num_items();
         res.pm_count.set(index, count);
         pm_count += count;
     });
@@ -168,7 +160,7 @@ exports.num_unread_for_subject = function (stream, subject) {
     var num_unread = 0;
     if (unread_subjects.has(stream) &&
         unread_subjects.get(stream).has(subject)) {
-        num_unread = Object.keys(unread_subjects.get(stream).get(subject)).length;
+        num_unread = unread_subjects.get(stream).get(subject).num_items();
     }
     return num_unread;
 };
@@ -177,7 +169,7 @@ exports.num_unread_for_person = function (email) {
     if (!unread_counts['private'].has(email)) {
         return 0;
     }
-    return _.keys(unread_counts['private'].get(email)).length;
+    return unread_counts['private'].get(email).num_items();
 };
 
 return exports;
