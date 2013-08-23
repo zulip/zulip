@@ -40,6 +40,7 @@ var stream_data = require('js/stream_data.js');
     assert(!stream_data.is_subscribed('Rome'));
 
     assert(stream_data.get_invite_only('social'));
+    assert(!stream_data.get_invite_only('unknown'));
     assert.equal(stream_data.get_color('social'), 'red');
     assert.equal(stream_data.get_color('unknown'), global.stream_color.default_color);
 
