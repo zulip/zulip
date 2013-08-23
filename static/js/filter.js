@@ -76,9 +76,6 @@ Filter.parse = function (str) {
     }
     _.each(matches, function (token) {
         var parts, operator;
-        if (token.length === 0) {
-            return;
-        }
         parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
