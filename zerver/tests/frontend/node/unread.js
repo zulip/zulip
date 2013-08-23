@@ -82,7 +82,7 @@ var zero_counts = {
 
     unread.process_loaded_messages([message]);
 
-    count = unread.num_unread_for_subject('social', 'lunch');
+    count = unread.num_unread_for_subject('Social', 'lunch');
     assert.equal(count, 1);
 
     var event = {

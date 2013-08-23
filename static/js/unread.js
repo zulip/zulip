@@ -7,7 +7,7 @@ var unread_counts = {
     'private': new Dict()
 };
 var unread_mentioned = new Dict();
-var unread_subjects = new Dict();
+var unread_subjects = new Dict({fold_case: true});
 
 function unread_hashkey(message) {
     var hashkey;
