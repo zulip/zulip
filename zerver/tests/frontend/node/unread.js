@@ -269,3 +269,11 @@ var zero_counts = {
     assert.equal(count, 1);
 }());
 
+
+(function test_message_unread() {
+    // Test some code that might be overly defensive, for line coverage sake.
+    assert(!unread.message_unread(undefined));
+    assert(unread.message_unread({flags: []}));
+    assert(!unread.message_unread({flags: ['read']}));
+}());
+
