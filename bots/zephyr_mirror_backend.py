@@ -473,6 +473,21 @@ def zephyr_init_autoretry():
 
     quit_failed_initialization("Could not initialize Zephyr library, quitting!")
 
+def zephyr_load_session_autoretry(session_path):
+    backoff = RandomExponentialBackoff()
+    while backoff.keep_going():
+        try:
+            session = file(session_path, "r").read()
+            zephyr._z.initialize()
+            zephyr._z.load_session(session)
+            zephyr.__inited = True
+            return
+        except IOError:
+            logger.exception("Error loading saved Zephyr session (retrying).  Traceback:")
+            backoff.fail()
+
+    quit_failed_initialization("Could not load saved Zephyr session, quitting!")
+
 def zephyr_subscribe_autoretry(sub):
     backoff = RandomExponentialBackoff()
     while backoff.keep_going():
@@ -489,15 +504,21 @@ def zephyr_subscribe_autoretry(sub):
     quit_failed_initialization("Could not subscribe to personals, quitting!")
 
 def zephyr_to_zulip(options):
-    zephyr_init_autoretry()
-    if options.forward_class_messages:
-        update_subscriptions()
-    if options.forward_personals:
-        # Subscribe to personals; we really can't operate without
-        # those subscriptions, so just retry until it works.
-        zephyr_subscribe_autoretry(("message", "*", "%me%"))
-        if subscribed_to_mail_messages():
-            zephyr_subscribe_autoretry(("mail", "inbox", "%me%"))
+    if options.use_sessions and os.path.exists(options.session_path):
+        logger.info("Loading old session")
+        zephyr_load_session_autoretry(options.session_path)
+    else:
+        zephyr_init_autoretry()
+        if options.forward_class_messages:
+            update_subscriptions()
+        if options.forward_personals:
+            # Subscribe to personals; we really can't operate without
+            # those subscriptions, so just retry until it works.
+            zephyr_subscribe_autoretry(("message", "*", "%me%"))
+            if subscribed_to_mail_messages():
+                zephyr_subscribe_autoretry(("mail", "inbox", "%me%"))
+        if options.use_sessions:
+            file(options.session_path, "w").write(zephyr._z.dump_session())
 
     if options.resend_log_path is not None:
         with open(options.resend_log_path, 'r') as log:
@@ -932,6 +953,13 @@ def parse_args():
     parser.add_option('--root-path',
                       default="/afs/athena.mit.edu/user/t/a/tabbott/for_friends",
                       help=optparse.SUPPRESS_HELP)
+    parser.add_option('--session-path',
+                      default=None,
+                      help=optparse.SUPPRESS_HELP)
+    parser.add_option('--use-sessions',
+                      default=False,
+                      action='store_true',
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('--test-mode',
                       default=False,
                       help=optparse.SUPPRESS_HELP,
@@ -945,7 +973,7 @@ def die_gracefully(signal, frame):
         # this is a child process, so we want os._exit (no clean-up necessary)
         os._exit(1)
 
-    if CURRENT_STATE == States.ZephyrToZulip:
+    if CURRENT_STATE == States.ZephyrToZulip and not options.use_sessions:
         try:
             # zephyr=>zulip processes may have added subs, so run cancelSubs
             zephyr._z.cancelSubs()
@@ -1039,6 +1067,9 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
         # forwarding and zulip => zephyr forwarding
         options.forward_personals = False
         options.forward_from_zulip = False
+
+    if options.session_path is None:
+        options.session_path = "/var/tmp/%s" % (options.user,)
 
     if options.forward_from_zulip:
         child_pid = os.fork()
