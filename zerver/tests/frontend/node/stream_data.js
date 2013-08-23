@@ -46,6 +46,9 @@ var stream_data = require('js/stream_data.js');
 
     assert.equal(stream_data.get_name('denMARK'), 'Denmark');
     assert.equal(stream_data.get_name('unknown Stream'), 'unknown Stream');
+
+    assert(stream_data.in_home_view('social'));
+    assert(!stream_data.in_home_view('denmark'));
 }());
 
 (function test_get_and_set() {
