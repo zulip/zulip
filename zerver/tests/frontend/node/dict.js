@@ -70,6 +70,15 @@ var assert = require('assert');
     d3.del('foo');
     assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
     assert.deepEqual(d3.items(), [['baz', 'qux']]);
+
+    var caught;
+    try {
+        Dict.from('bogus');
+    } catch (e) {
+        caught = true;
+        assert.equal(e.toString(), 'TypeError: Cannot convert argument to Dict');
+    }
+    assert(caught);
 }());
 
 (function test_each() {
