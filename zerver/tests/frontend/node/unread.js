@@ -205,7 +205,11 @@ var zero_counts = {
         reply_to: email,
         type: 'private'
     };
-    unread.process_loaded_messages([message]);
+
+    var read_message = {
+        flags: ['read']
+    };
+    unread.process_loaded_messages([message, read_message]);
     assert.equal(unread.num_unread_for_person(email), 1);
 }());
 
