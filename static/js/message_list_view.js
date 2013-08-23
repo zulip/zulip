@@ -15,6 +15,13 @@ function MessageListView(list, table_name, collapse_messages) {
 
 (function () {
 
+function stringify_time(time) {
+    if (feature_flags.twenty_four_hour_time) {
+        return time.toString('HH:mm');
+    }
+    return time.toString('h:mmtt');
+}
+
 function add_display_time(message, prev) {
     var time = new XDate(message.timestamp * 1000);
     var include_date = false;
@@ -37,11 +44,8 @@ function add_display_time(message, prev) {
         message.show_date = undefined;
     }
 
-    if (message.timestr === undefined){
-        message.timestr = time.toString("h:mmtt");
-        if (feature_flags.twenty_four_hour_time) {
-            message.timestr = time.toString("HH:mm");
-        }
+    if (message.timestr === undefined) {
+        message.timestr = stringify_time(time);
     }
 }
 
@@ -239,7 +243,7 @@ MessageListView.prototype = {
                 var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
                 message.last_edit_timestr =
                     (timerender.render_date(last_edit_time))[0].outerHTML
-                    + " " + last_edit_time.toString("HH:mm");
+                    + " " + stringify_time(last_edit_time);
             }
 
             message.dom_id = table_name + message.id;
