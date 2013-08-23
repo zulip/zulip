@@ -36,6 +36,16 @@ var Filter = require('js/filter.js');
     assert(! filter.can_apply_locally());
 }());
 
+(function test_public_operators() {
+    var operators = [['stream', 'foo'], ['topic', 'bar']];
+    var filter = new Filter(operators);
+    assert.deepEqual(filter.public_operators(), operators);
+
+    operators = [['in', 'all']];
+    filter = new Filter(operators);
+    assert.deepEqual(filter.public_operators(), undefined);
+}());
+
 (function test_canonicalizations() {
     assert.equal(Filter.canonicalize_operator('Is'), 'is');
     assert.equal(Filter.canonicalize_operator('Stream'), 'stream');
