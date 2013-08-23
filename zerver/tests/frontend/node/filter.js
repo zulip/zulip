@@ -130,11 +130,11 @@ function get_predicate(operators) {
 
     // Try to get the MIT regex to explode for an empty stream.
     predicate = get_predicate([['stream', ''], ['topic', 'bar']]);
-    assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+    assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 
     // Try to get the MIT regex to explode for an empty topic.
     predicate = get_predicate([['stream', 'foo'], ['topic', '']]);
-    assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+    assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 }());
 
 (function test_predicate_edge_cases() {
@@ -159,7 +159,7 @@ function get_predicate(operators) {
     var filter = new Filter([['stream', 'Foo'], ['topic', 'bar']]);
     predicate = filter.predicate();
     predicate = filter.predicate(); // get cached version
-    assert(predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+    assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 
 }());
 
