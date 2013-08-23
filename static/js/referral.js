@@ -105,10 +105,15 @@ $(function () {
         }
     });
 
-    $("#share-the-love-expand-collapse").click(function () {
+    $("#referral-form").on("click", function (e) {
+        e.stopPropagation();
+    });
+
+    $("#share-the-love-expand-collapse").click(function (e) {
         $("#share-the-love-contents").toggle();
         $("#share-the-love-expand-collapse .toggle").toggleClass('icon-vector-caret-right icon-vector-caret-down');
         ui.resize_page_components();
+        e.stopPropagation();
     });
 
     exports.update_state(page_params.referrals.granted, page_params.referrals.used);

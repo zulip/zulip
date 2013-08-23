@@ -1394,6 +1394,26 @@ input.recipient_box {
     width: -moz-max-content;
 }
 
+#streamlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    text-align: center;
+    vertical-align: middle;
+    border-right: 1px solid #777;
+}
+
+#streamlist-toggle-button {
+    text-decoration: none;
+    color: #ffffff;
+    display: block;
+    background-color: rgba(255,255,255,0.2);
+    width: 40px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+}
+
 #userlist-toggle {
     display: none;
     position: absolute;
@@ -2581,6 +2601,22 @@ div.edit_bot {
         display: none;
     }
 
+    .column-left.expanded {
+        display: block;
+        position: absolute;
+        float: none;
+        left: 15px;
+        top: 0px;
+    }
+
+    .column-left.expanded .left-sidebar {
+        background: rgba(255,255,255,0.9);
+        box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.1);
+        border-right: 1px solid #dddddd;
+        margin-top: 40px;
+        padding-top: 10px;
+    }
+
     body, html,
     .app-main,
     .header-main {
@@ -2605,7 +2641,11 @@ div.edit_bot {
     }
 
     .navbar-search {
-        margin-left: 38px;
+        margin-left: 37px;
+    }
+
+    #streamlist-toggle {
+        display: block;
     }
 
     #floating_recipient_bar {

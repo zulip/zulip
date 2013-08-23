@@ -118,6 +118,18 @@ exports.hide_userlist_sidebar = function () {
     $(".app-main .column-right").removeClass("expanded");
 };
 
+exports.hide_streamlist_sidebar = function () {
+    $(".app-main .column-left").removeClass("expanded");
+};
+
+exports.show_userlist_sidebar = function () {
+    $(".app-main .column-right").addClass("expanded");
+};
+
+exports.show_streamlist_sidebar = function () {
+    $(".app-main .column-left").addClass("expanded");
+};
+
 var current_stream_sidebar_elem;
 var current_user_sidebar_elem;
 
@@ -164,6 +176,7 @@ exports.register_click_handlers = function () {
     $('#user_presences').on('click', 'span.arrow', function (e) {
         var last_sidebar_elem = current_user_sidebar_elem;
         popovers.hide_all();
+        popovers.show_userlist_sidebar();
 
         var target = $(e.target).closest('li');
         var email = target.find('a').attr('data-email');
@@ -224,11 +237,13 @@ exports.register_click_handlers = function () {
             && current_stream_sidebar_elem === elt) {
             // If the popover is already shown, clicking again should toggle it.
             popovers.hide_stream_sidebar_popover();
+            e.stopPropagation();
             return;
         }
 
         var last_sidebar_elem = current_stream_sidebar_elem;
         popovers.hide_all();
+        popovers.show_streamlist_sidebar();
 
         var stream = $(elt).parents('li').attr('data-name');
 
@@ -393,6 +408,7 @@ exports.hide_all = function () {
     popovers.hide_stream_sidebar_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
+    popovers.hide_streamlist_sidebar();
 };
 
 return exports;
