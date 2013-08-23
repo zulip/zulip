@@ -17,7 +17,7 @@ exports.mandatory_topics = _.contains([
     page_params.domain
 );
 
-exports.collapsible = page_params.staging;
+exports.collapsible = false;
 
 return exports;
 
