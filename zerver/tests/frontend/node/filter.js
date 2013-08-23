@@ -97,10 +97,6 @@ var Filter = require('js/filter.js');
     assert(!predicate({stream: 'unsub'}));
     assert(predicate({type: 'private'}));
 
-    // hack to get line coverage
-    predicate = get_predicate([['in', 'bogus']]);
-    predicate({});
-
     predicate = get_predicate([['near', 5]]);
     assert(predicate({}));
 
@@ -132,6 +128,19 @@ var Filter = require('js/filter.js');
 
     predicate = get_predicate();
     assert(predicate({}));
+
+    // Upstream code should prevent Filter.predicate from being called with
+    // invalid operator/operand combinations, but right now we just silently
+    // return a function that accepts all messages.
+    predicate = get_predicate([['in', 'bogus']]);
+    assert(predicate({}));
+
+    predicate = get_predicate([['bogus', 33]]);
+    assert(predicate({}));
+
+    predicate = get_predicate([['is', 'bogus']]);
+    assert(predicate({}));
+
 }());
 
 (function test_parse_and_unparse() {
