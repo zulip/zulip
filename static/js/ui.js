@@ -1015,12 +1015,10 @@ $(function () {
             exports.expand_summary_row($(e.target).closest('.summary_row'));
             e.stopImmediatePropagation();
         });
-        /*
-        $("#main_div").on("click", ".recipient_row", function (e) {
+        $("#main_div").on("click", ".recipient_row .icon-vector-collapse-alt", function (e) {
             exports.collapse_recipient_group($(e.target).closest('.recipient_row'));
             e.stopImmediatePropagation();
         });
-        */
     }
 
     function is_clickable_message_element(target) {
