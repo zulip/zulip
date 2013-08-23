@@ -732,6 +732,14 @@ td.pointer {
     background: #000;
 }
 
+/*
+We can't collapse the floating recipient bar yet, so this is
+just a temporary hack.
+*/
+.floating_recipient .icon-vector-collapse-alt {
+    display: none;
+}
+
 .floating_recipient .message_header {
     box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333 !important;
 }
