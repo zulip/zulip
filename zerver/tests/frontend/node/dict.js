@@ -104,3 +104,18 @@ var assert = require('assert');
     assert.equal(res, val);
     assert.equal(d.get('foo'), val);
 }());
+
+(function test_num_items() {
+    var d = new Dict();
+    assert.equal(d.num_items(), 0);
+    d.set('foo', 1);
+    assert.equal(d.num_items(), 1);
+    d.set('foo', 2);
+    assert.equal(d.num_items(), 1);
+    d.set('bar', 1);
+    assert.equal(d.num_items(), 2);
+    d.del('foo');
+    assert.equal(d.num_items(), 1);
+}());
+
+

@@ -94,6 +94,10 @@ Dict.prototype = _.object(_.map({
         });
     },
 
+    num_items: function Dict_num_items() {
+        return _.keys(this._items).length;
+    },
+
     // Iterates through the Dict calling f(value, key) for each (key, value) pair in the Dict
     each: function Dict_each(f) {
         return _.each(this._items, function (mapping) {
