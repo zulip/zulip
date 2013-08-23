@@ -101,6 +101,7 @@
 
     this.on('drop', drop).on('dragstart', opts.dragStart).on('dragenter', dragEnter).on('dragover', dragOver).on('dragleave', dragLeave);
     this.on('paste', paste);
+    this.on('imagedata-upload.zulip', uploadRawImageData);
 
     $(document).on('drop', docDrop).on('dragenter', docEnter).on('dragover', docOver).on('dragleave', docLeave);
 
@@ -146,6 +147,21 @@
       return false;
     }
 
+    function sendRawImageData(event, image) {
+      function finished_callback(serverResponse, timeDiff, xhr) {
+        return opts.uploadFinished(-1, undefined, serverResponse, timeDiff, xhr);
+      }
+
+      var url_params = "?mimetype=" + encodeURIComponent(image.type);
+      do_xhr("pasted_image", image.data, image.type, {}, url_params, finished_callback, function () {});
+    }
+
+    function uploadRawImageData(event, image) {
+      // Call the user callback to initialize the drop event
+      if( opts.drop.call(this, undefined) === false ) return false;
+      sendRawImageData(event, image);
+    }
+
     function paste(event) {
       if (event.originalEvent.clipboardData === undefined ||
           event.originalEvent.clipboardData.items === undefined) {
@@ -185,12 +201,7 @@
       var data = item.getAsFile();
       var reader = new FileReader();
       reader.onload = function(event) {
-          function finished_callback(serverResponse, timeDiff, xhr) {
-            return opts.uploadFinished(-1, undefined, serverResponse, timeDiff, xhr);
-          }
-
-          var url_params = "?mimetype=" + encodeURIComponent(data.type);
-          do_xhr("pasted_image", event.target.result, data.type, {}, url_params, finished_callback, function () {});
+        sendRawImageData(event, {type: data.type, data: event.target.result});
       };
       reader.readAsBinaryString(data);
     }
