@@ -54,7 +54,11 @@ var Filter = require('js/filter.js');
     assert.deepEqual(Filter.canonicalize_tuple(['Stream', 'Denmark']), ['stream', 'Denmark']);
 }());
 
-(function test_predicates() {
+function get_predicate(operators) {
+    return new Filter(operators).predicate();
+}
+
+(function test_predicate_basics() {
     // Predicates are functions that accept a message object with the message
     // attributes (not content), and return true if the message belongs in a
     // given narrow. If the narrow parameters include a search, the predicate
@@ -62,10 +66,6 @@ var Filter = require('js/filter.js');
     //
     // To keep these tests simple, we only pass objects with a few relevant attributes
     // rather than full-fledged message objects.
-    function get_predicate(operators) {
-        return new Filter(operators).predicate();
-    }
-
     var predicate = get_predicate([['stream', 'Foo'], ['topic', 'Bar']]);
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'whatever'}));
@@ -111,11 +111,13 @@ var Filter = require('js/filter.js');
     predicate = get_predicate([['pm-with', 'Joe@example.com']]);
     assert(predicate({type: 'private', reply_to: 'JOE@example.com'}));
     assert(!predicate({type: 'private', reply_to: 'steve@foo.com'}));
+}());
 
 
+(function test_mit_exceptions() {
     global.page_params.domain = 'mit.edu';
 
-    predicate = get_predicate([['stream', 'Foo'], ['topic', 'personal']]);
+    var predicate = get_predicate([['stream', 'Foo'], ['topic', 'personal']]);
     assert(predicate({type: 'stream', stream: 'foo', subject: 'personal'}));
     assert(predicate({type: 'stream', stream: 'foo.d', subject: 'personal'}));
     assert(predicate({type: 'stream', stream: 'foo.d', subject: ''}));
@@ -133,10 +135,12 @@ var Filter = require('js/filter.js');
     // Try to get the MIT regex to explode for an empty topic.
     predicate = get_predicate([['stream', 'foo'], ['topic', '']]);
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+}());
 
-    //
-
-    predicate = get_predicate();
+(function test_predicate_edge_cases() {
+    // The code supports undefined as an operator to Filter, which results
+    // in a predicate that accepts any message.
+    var predicate = get_predicate();
     assert(predicate({}));
 
     // Upstream code should prevent Filter.predicate from being called with
