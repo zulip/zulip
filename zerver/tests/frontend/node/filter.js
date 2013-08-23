@@ -141,6 +141,12 @@ var Filter = require('js/filter.js');
     predicate = get_predicate([['is', 'bogus']]);
     assert(predicate({}));
 
+    // Exercise caching feature.
+    var filter = new Filter([['stream', 'Foo'], ['topic', 'bar']]);
+    predicate = filter.predicate();
+    predicate = filter.predicate(); // get cached version
+    assert(predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+
 }());
 
 (function test_parse_and_unparse() {
