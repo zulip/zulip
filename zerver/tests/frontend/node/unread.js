@@ -166,9 +166,22 @@ var zero_counts = {
 
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 1);
+    assert.equal(counts.stream_count.get('social'), 1);
     unread.process_read_message(message);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
+
+    unread.process_loaded_messages([message]);
+    counts = unread.get_counts();
+    assert.equal(counts.home_unread_messages, 1);
+
+    // Now unsubscribe all our streams.
+    stream_data.is_subscribed = function () {
+        return false;
+    };
+    counts = unread.get_counts();
+    assert.equal(counts.home_unread_messages, 0);
+
 }());
 
 (function test_private_messages() {
