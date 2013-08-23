@@ -316,12 +316,14 @@ a:hover code {
     background-repeat: none;
     border-radius: 35px;
     border: 1px solid #CCC;
+    cursor: pointer;
 }
 
 #my_information {
     display: table-cell;
     vertical-align: middle;
     padding-left: 0.5em;
+    cursor: pointer;
 }
 
 #my_information .my_fullname {
