@@ -258,10 +258,7 @@ Filter.prototype = {
                         // (foo, foo.d, foo.d.d, etc)
                         // TODO: hoist the regex compiling out of the closure
                         m = /^(.*?)(?:\.d)*$/i.exec(operand);
-                        var base_topic = operand;
-                        if (m !== null && m[1] !== undefined) {
-                            base_topic = m[1];
-                        }
+                        var base_topic = m[1];
 
                         // Additionally, MIT users expect the empty instance and
                         // instance "personal" to be the same.

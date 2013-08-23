@@ -126,6 +126,16 @@ var Filter = require('js/filter.js');
     predicate = get_predicate([['stream', 'Foo'], ['topic', 'bar']]);
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
 
+    // Try to get the MIT regex to explode for an empty stream.
+    predicate = get_predicate([['stream', ''], ['topic', 'bar']]);
+    assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+
+    // Try to get the MIT regex to explode for an empty topic.
+    predicate = get_predicate([['stream', 'foo'], ['topic', '']]);
+    assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+
+    //
+
     predicate = get_predicate();
     assert(predicate({}));
 
