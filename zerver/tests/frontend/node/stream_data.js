@@ -3,7 +3,8 @@ var assert = require('assert');
 add_dependencies({
     _: 'third/underscore/underscore.js',
     util: 'js/util.js',
-    Dict: 'js/dict.js'
+    Dict: 'js/dict.js',
+    stream_color: 'js/stream_color.js'
 });
 
 var stream_data = require('js/stream_data.js');
@@ -40,6 +41,7 @@ var stream_data = require('js/stream_data.js');
 
     assert(stream_data.get_invite_only('social'));
     assert.equal(stream_data.get_color('social'), 'red');
+    assert.equal(stream_data.get_color('unknown'), global.stream_color.default_color);
 
     assert.equal(stream_data.get_name('denMARK'), 'Denmark');
     assert.equal(stream_data.get_name('unknown Stream'), 'unknown Stream');
