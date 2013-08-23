@@ -45,12 +45,83 @@ var Filter = require('js/filter.js');
 }());
 
 (function test_predicates() {
-    var operators = [['stream', 'Foo'], ['topic', 'Bar']];
-    var filter = new Filter(operators);
+    // Predicates are functions that accept a message object with the message
+    // attributes (not content), and return true if the message belongs in a
+    // given narrow. If the narrow parameters include a search, the predicate
+    // passes through all messages.
+    //
+    // To keep these tests simple, we only pass objects with a few relevant attributes
+    // rather than full-fledged message objects.
+    function get_predicate(operators) {
+        return new Filter(operators).predicate();
+    }
 
-    var predicate = filter.predicate();
+    var predicate = get_predicate([['stream', 'Foo'], ['topic', 'Bar']]);
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'whatever'}));
+    assert(!predicate({type: 'stream', stream: 'wrong'}));
+    assert(!predicate({type: 'private'}));
+
+    predicate = get_predicate([['search', 'emoji']]);
+    assert(predicate({}));
+
+    predicate = get_predicate([['topic', 'Bar']]);
+    assert(!predicate({type: 'private'}));
+
+    predicate = get_predicate([['is', 'private']]);
+    assert(predicate({type: 'private'}));
+    assert(!predicate({type: 'stream'}));
+
+    predicate = get_predicate([['is', 'starred']]);
+    assert(predicate({starred: true}));
+    assert(!predicate({starred: false}));
+
+    predicate = get_predicate([['is', 'mentioned']]);
+    assert(predicate({mentioned: true}));
+    assert(!predicate({mentioned: false}));
+
+    predicate = get_predicate([['in', 'all']]);
+    assert(predicate({}));
+
+    predicate = get_predicate([['in', 'home']]);
+    assert(!predicate({stream: 'unsub'}));
+    assert(predicate({type: 'private'}));
+
+    // hack to get line coverage
+    predicate = get_predicate([['in', 'bogus']]);
+    predicate({});
+
+    predicate = get_predicate([['near', 5]]);
+    assert(predicate({}));
+
+    predicate = get_predicate([['id', 5]]);
+    assert(predicate({id: 5}));
+    assert(!predicate({id: 6}));
+
+    predicate = get_predicate([['sender', 'Joe@example.com']]);
+    assert(predicate({sender_email: 'JOE@example.com'}));
+    assert(!predicate({sender_email: 'steve@foo.com'}));
+
+    predicate = get_predicate([['pm-with', 'Joe@example.com']]);
+    assert(predicate({type: 'private', reply_to: 'JOE@example.com'}));
+    assert(!predicate({type: 'private', reply_to: 'steve@foo.com'}));
+
+
+    global.page_params.domain = 'mit.edu';
+
+    predicate = get_predicate([['stream', 'Foo'], ['topic', 'personal']]);
+    assert(predicate({type: 'stream', stream: 'foo', subject: 'personal'}));
+    assert(predicate({type: 'stream', stream: 'foo.d', subject: 'personal'}));
+    assert(predicate({type: 'stream', stream: 'foo.d', subject: ''}));
+    assert(!predicate({type: 'stream', stream: 'wrong'}));
+    assert(!predicate({type: 'stream', stream: 'foo', subject: 'whatever'}));
+    assert(!predicate({type: 'private'}));
+
+    predicate = get_predicate([['stream', 'Foo'], ['topic', 'bar']]);
+    assert(predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+
+    predicate = get_predicate();
+    assert(predicate({}));
 }());
 
 (function test_parse_and_unparse() {
