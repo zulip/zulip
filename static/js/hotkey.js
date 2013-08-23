@@ -261,7 +261,7 @@ function process_hotkey(e) {
             return true;
     }
 
-    if (current_msg_list.summary_is_selected()) {
+    if (current_msg_list.on_expandable_row()) {
         switch (event_name) {
             case 'enter':
                 ui.expand_summary_row(current_msg_list.selected_row());

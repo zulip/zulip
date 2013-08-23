@@ -126,8 +126,8 @@ MessageList.prototype = {
         return this.get_row(this._selected_id);
     },
 
-    summary_is_selected: function () {
-        return this.is_summarized_message(this.selected_message());
+    on_expandable_row: function MessageList_on_expandable_row() {
+        return this.view.is_expandable_row(this.selected_row());
     },
 
     closest_id: function MessageList_closest_id(id) {

@@ -621,6 +621,10 @@ MessageListView.prototype = {
         return this.get_row(this.list.selected_id());
     },
 
+    is_expandable_row: function MessageListView_is_expandable_row(row) {
+        return row.hasClass('summary_row');
+    },
+
     get_message: function MessageListView_get_message(id) {
         return this.list.get(id);
     }
