@@ -5,6 +5,15 @@ var is_composing_message = false;
 var message_snapshot;
 var empty_subject_placeholder = "(no topic)";
 
+function client() {
+    if ((window.bridge !== undefined) &&
+        (window.bridge.desktopAppVersion !== undefined)) {
+        return "desktop app " + window.bridge.desktopAppVersion();
+    } else {
+        return "website";
+    }
+}
+
 // This function resets an input type="file".  Pass in the
 // jquery object.
 function clear_out_file_list(jq_file_list) {
@@ -243,7 +252,7 @@ function create_message_object() {
     if (subject === "") {
         subject = compose.empty_subject_placeholder();
     }
-    var message = {client: 'website',
+    var message = {client: client(),
                    type: compose.composing(),
                    subject: subject,
                    stream: compose.stream_name(),
