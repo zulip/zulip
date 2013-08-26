@@ -29,6 +29,11 @@ if run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip() != 'f':
 
 run(['env-wal-e', 'backup-push', '/var/lib/postgresql/9.1/main'])
 
+now = datetime.now(tz=pytz.utc)
+with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
+    f.write(now.isoformat())
+    f.write("\n")
+
 backups = {}
 lines = run(['env-wal-e', 'backup-list']).split("\n")
 for line in lines[1:]:
@@ -36,7 +41,7 @@ for line in lines[1:]:
         backup_name, date, _, _ = line.split()
         backups[dateutil.parser.parse(date)] = backup_name
 
-one_month_ago = datetime.now(tz=pytz.utc) - timedelta(days=30)
+one_month_ago = now - timedelta(days=30)
 for date in sorted(backups.keys(), reverse=True):
     if date < one_month_ago:
         run(['env-wal-e', 'delete', '--confirm', 'before', backups[date]])
