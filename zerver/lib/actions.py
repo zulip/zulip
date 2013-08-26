@@ -991,7 +991,7 @@ def do_update_message(user_profile, message_id, subject, content):
 
     if content is not None:
         if len(content.strip()) == 0:
-            content = "[deleted]"
+            content = "(deleted)"
         if len(content) > MAX_MESSAGE_LENGTH:
             raise JsonableError("Message too long")
         rendered_content = message.render_markdown(content)
