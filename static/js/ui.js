@@ -1011,7 +1011,7 @@ $(function () {
     hack_for_floating_recipient_bar();
 
     if (feature_flags.summarize_read_while_narrowed) {
-        $("#main_div").on("click", ".summary_row", function (e) {
+        $("#main_div").on("click", ".summary_row  .icon-vector-expand-alt", function (e) {
             exports.expand_summary_row($(e.target).closest('.summary_row'));
             e.stopImmediatePropagation();
         });
