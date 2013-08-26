@@ -1793,6 +1793,12 @@ table.floating_recipient {
     line-height: 25px;
 }
 
+.subscription-email-hint-image {
+    float: right;
+    width: 80px;
+    padding-right: 60px;
+}
+
 .subscription_header.active {
     border-color: rgba(82, 168, 236, 0.8);
     cursor: pointer;
@@ -1894,18 +1900,17 @@ table.floating_recipient {
 }
 
 .email-address {
+    width: 100%;
     display: inline-block;
-    width: 350px;
     vertical-align: top;
-}
 
-.email-address::-webkit-scrollbar {
-    -webkit-appearance: none;
-    height: 4px;
-}
-.email-address::-webkit-scrollbar-thumb {
-    border-radius: 2px;
-    background-color: rgba(0,0,0,.2);
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
 }
 
 .sub_setting_control[type="checkbox"] {

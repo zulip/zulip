@@ -46,7 +46,8 @@
       </div>
       {{#if_and show_email_token subscribed}}
       <div>
-          <p><b>Email address</b>: <span class="email-address">{{email_address}}</span></p>
+          <p><b>Email address</b>: <span class="email-address">{{email_address}}
+             <i class="icon-vector-question-sign" id="email-address-hint-{{id}}"></i></span></p>
       </div>
       {{/if_and}}
       {{#render_subscribers}}
