@@ -436,11 +436,23 @@ def check_message(sender, client, message_type_name, message_to,
             raise JsonableError("Stream does not exist")
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
-        if (stream.invite_only
-            and ((not sender.is_bot and not subscribed_to_stream(sender, stream))
-                 or (sender.is_bot and not (subscribed_to_stream(sender.bot_owner, stream)
-                                            or subscribed_to_stream(sender, stream))))):
+        if (not stream.invite_only) or subscribed_to_stream(sender, stream):
+            # This is a public stream, or it is private but you are subscribed
+            # to it. You are good to go.
+            pass
+        elif sender.is_bot and (subscribed_to_stream(sender, stream) or \
+                                    subscribed_to_stream(sender.bot_owner, stream)):
+            # Either the bot has to be subscribed or the owner of the bot has to
+            # be subscribed.
+            pass
+        elif stream.invite_only and subscribed_to_stream(sender, stream):
+            # This is an invite_only stream, so you have to be subscribed to
+            # send to it.
+            pass
+        else:
+            # All other cases are an error.
             raise JsonableError("Not authorized to send to stream '%s'" % (stream.name,))
+
     elif message_type_name == 'private':
         not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
         try:
