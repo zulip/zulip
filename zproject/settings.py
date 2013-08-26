@@ -356,6 +356,7 @@ JS_SPECS = {
             'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
+            'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
             ('third/handlebars/handlebars.runtime.js'
                 if PIPELINE
