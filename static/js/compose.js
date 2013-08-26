@@ -520,8 +520,21 @@ $(function () {
     if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
         $("#compose #attach_files").removeClass("notdisplayed");
     }
-    if (feature_flags.dropbox_integration && Dropbox.isBrowserSupported()) {
-        $("#compose #attach_dropbox_files").removeClass("notdisplayed");
+
+    // Lazy load the Dropbox script, since it can slow our page load
+    // otherwise, and isn't enabled for all users. Also, this Dropbox
+    // script isn't under an open source license, so we can't (for legal
+    // reasons) minify it with our own code.
+    if (feature_flags.dropbox_integration) {
+        LazyLoad.js('https://www.dropbox.com/static/api/1/dropins.js', function () {
+            // Successful load. We should now have window.Dropbox.
+            if (! _.has(window, 'Dropbox')) {
+                blueslip.error('Dropbox script reports loading but window.Dropbox undefined');
+            } else if (Dropbox.isBrowserSupported()) {
+                Dropbox.init({appKey: window.dropboxAppKey});
+                $("#compose #attach_dropbox_files").removeClass("notdisplayed");
+            }
+        });
     }
 
     // Click event binding for "Attach files" button
