@@ -680,6 +680,8 @@ returned the following warning:
         # just notify the user that they need to renew their tickets
         (code, stderr) = send_unauthed_zephyr(zwrite_args, wrapped_content)
         if code == 0:
+            if options.ignore_expired_tickets:
+                return
             return send_error_zulip("""%s
 
 Your last message was forwarded from Zulip to Zephyr unauthenticated, \
@@ -939,6 +941,9 @@ def parse_args():
                       help=optparse.SUPPRESS_HELP,
                       action='store_true')
     parser.add_option('--sync-subscriptions',
+                      default=False,
+                      action='store_true')
+    parser.add_option('--ignore-expired-tickets',
                       default=False,
                       action='store_true')
     parser.add_option('--site',
