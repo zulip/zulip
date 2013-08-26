@@ -1045,7 +1045,11 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
     if not options.test_mode:
         pgrep_query = "python.*zephyr_mirror"
         if options.shard is not None:
+            # sharded class mirror
             pgrep_query = "%s.*--shard=%s" % (pgrep_query, options.shard)
+        elif options.user is not None:
+            # Personals mirror on behalf of another user.
+            pgrep_query = "%s.*--user=%s" % (pgrep_query, options.user)
         proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", pgrep_query],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
