@@ -22,7 +22,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
-    email_to_domain, email_to_username, get_realm, completely_open
+    email_to_domain, email_to_username, get_realm, completely_open, is_super_user
 from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
@@ -1193,11 +1193,8 @@ def json_update_onboarding_steps(request, user_profile,
     do_update_onboarding_steps(user_profile, onboarding_steps)
     return json_success()
 
-# Currently tabbott/extra@mit.edu is our only superuser.  TODO: Make
-# this a real superuser security check.
 def is_super_user_api(request):
-    return request.user.is_authenticated() and \
-        (request.user.email in ["tabbott/extra@mit.edu", "emailgateway@zulip.com"])
+    return request.user.is_authenticated() and is_super_user(request.user)
 
 def mit_to_mit(user_profile, email):
     # Are the sender and recipient both @mit.edu addresses?

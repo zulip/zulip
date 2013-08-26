@@ -11,7 +11,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     email_to_domain, email_to_username, display_recipient_cache_key, \
-    get_stream_cache_key, to_dict_cache_key_id
+    get_stream_cache_key, to_dict_cache_key_id, is_super_user
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -436,9 +436,11 @@ def check_message(sender, client, message_type_name, message_to,
             raise JsonableError("Stream does not exist")
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
-        if (not stream.invite_only) or subscribed_to_stream(sender, stream):
+        if (not stream.invite_only) or subscribed_to_stream(sender, stream) or \
+                is_super_user(sender):
             # This is a public stream, or it is private but you are subscribed
-            # to it. You are good to go.
+            # to it, or heck you are the super user and can do whatever you
+            # want. You are good to go.
             pass
         elif sender.is_bot and (subscribed_to_stream(sender, stream) or \
                                     subscribed_to_stream(sender.bot_owner, stream)):
