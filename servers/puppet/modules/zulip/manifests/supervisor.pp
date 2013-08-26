@@ -21,6 +21,16 @@ class zulip::supervisor {
     restart => "supervisorctl reload"
   }
 
+  file { "/etc/supervisor/supervisord.conf":
+    require => Package[supervisor],
+    ensure => file,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/supervisord/supervisord.conf",
+    notify => Service["supervisor"],
+  }
+
   exec { "fix_supervisor_socket_permissions":
     command => "chown humbug:humbug /var/run/supervisor.sock",
     unless => "bash -c 'ls -ld /var/run/supervisor.sock | cut -f 3-4 -d\" \"  | grep -q \"^humbug humbug$\"'",
