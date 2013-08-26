@@ -366,6 +366,12 @@ def process_notice(notice, log):
 
     zephyr_class = notice.cls.lower()
 
+    if zephyr_class == options.nagios_class:
+        # Mark that we got the message and proceed
+        with file(options.nagios_path, "w") as f:
+            f.write("0\n")
+        return
+
     if notice.recipient != "":
         is_personal = True
     # Drop messages not to the listed subscriptions
@@ -517,6 +523,8 @@ def zephyr_to_zulip(options):
             zephyr_subscribe_autoretry(("message", "*", "%me%"))
             if subscribed_to_mail_messages():
                 zephyr_subscribe_autoretry(("mail", "inbox", "%me%"))
+        if options.nagios_class:
+            zephyr_subscribe_autoretry((options.nagios_class, "*", "*"))
         if options.use_sessions:
             file(options.session_path, "w").write(zephyr._z.dump_session())
 
@@ -961,6 +969,12 @@ def parse_args():
     parser.add_option('--session-path',
                       default=None,
                       help=optparse.SUPPRESS_HELP)
+    parser.add_option('--nagios-class',
+                      default=None,
+                      help=optparse.SUPPRESS_HELP)
+    parser.add_option('--nagios-path',
+                      default=None,
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('--use-sessions',
                       default=False,
                       action='store_true',
@@ -1028,6 +1042,10 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
         # Store the API key in the environment so that our children
         # don't need to read it in
         os.environ["HUMBUG_API_KEY"] = api_key
+
+    if options.nagios_path is None and options.nagios_class is not None:
+        logger.error("\n" + "nagios_path is required with nagios_class\n")
+        sys.exit(1)
 
     zulip_account_email = options.user + "@mit.edu"
     import zulip

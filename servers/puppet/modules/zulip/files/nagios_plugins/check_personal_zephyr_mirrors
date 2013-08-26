@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+"""
+Nagios plugin to check that Zephyr personals mirrors are forwarding.
+
+This script works by just monitoring the files under
+/home/humbug/mirror_status, which are updated by the Zephyr personals
+mirrors when they receive the messages sent every minute by
+/etc/cron.d/test_zephyr_personal_mirrors
+"""
+
+import os
+import time
+
+RESULTS_DIR = "/home/humbug/mirror_status"
+
+states = {
+    "OK": 0,
+    "WARNING": 1,
+    "CRITICAL": 2,
+    "UNKNOWN": 3
+    }
+
+def report(state, output):
+    print "%s\n%s" % (state, output)
+    exit(states[state])
+
+output = ""
+state = "OK"
+for results_file_name in os.listdir(RESULTS_DIR):
+    results_file = os.path.join(RESULTS_DIR, results_file_name)
+    data = file(results_file).read().strip()
+    last_check = os.stat(results_file).st_mtime
+    time_since_last_check = time.time() - last_check
+    if data.split("\n")[-1].strip() == "0" and time_since_last_check < 60:
+        this_state = "OK"
+    else:
+        this_state = "CRITICAL"
+        state = this_state
+    output += "%s: %s (%s)" % (results_file, this_state,
+                               time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)))
+
+report(state, output)

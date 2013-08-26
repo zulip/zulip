@@ -13,11 +13,20 @@ class zulip::zmirror_personals {
     group      => "root",
     source     => 'puppet:///modules/zulip/debathena.list',
   }
-  file { ['/home/humbug/api-keys', '/home/humbug/zephyr_sessions', '/home/humbug/ccache']:
+  file { ['/home/humbug/api-keys', '/home/humbug/zephyr_sessions', '/home/humbug/ccache',
+          '/home/humbug/mirror_status']:
     ensure     => directory,
     mode       => 644,
     owner      => "humbug",
     group      => "humbug",
+  }
+
+  file { "/etc/cron.d/test_zephyr_personal_mirrors":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/test_zephyr_personal_mirrors",
   }
 
   # TODO: Do the rest of our setup, which includes at least:
