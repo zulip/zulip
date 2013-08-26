@@ -42,7 +42,7 @@ class zulip::app_frontend {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/supervisord/conf.d/humbug.conf",
+    source => "puppet:///modules/zulip/supervisor/conf.d/humbug.conf",
     notify => Service["supervisor"],
   }
   file { "/home/humbug/tornado":

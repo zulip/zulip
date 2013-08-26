@@ -27,7 +27,7 @@ class zulip::supervisor {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/supervisord/supervisord.conf",
+    source => "puppet:///modules/zulip/supervisor/supervisord.conf",
     notify => Service["supervisor"],
   }
 }

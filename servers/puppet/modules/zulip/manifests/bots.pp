@@ -8,7 +8,7 @@ class zulip::bots {
     owner   => 'root',
     group   => 'root',
     mode    => 640,
-    source  => "puppet:///modules/zulip/supervisord/conf.d/feedback-bot.conf",
+    source  => "puppet:///modules/zulip/supervisor/conf.d/feedback-bot.conf",
     notify  => Service['supervisor'],
   }
 }

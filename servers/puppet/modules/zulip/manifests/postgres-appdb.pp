@@ -20,7 +20,7 @@ class zulip::postgres-appdb {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/supervisord/conf.d/zulip_db.conf",
+    source => "puppet:///modules/zulip/supervisor/conf.d/zulip_db.conf",
     notify => Service[supervisor],
   }
 

@@ -19,7 +19,7 @@ class zulip::zmirror {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/supervisord/conf.d/zmirror.conf",
+    source => "puppet:///modules/zulip/supervisor/conf.d/zmirror.conf",
     notify => Service["supervisor"],
   }
 
