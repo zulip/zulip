@@ -1547,7 +1547,9 @@ def add_subscriptions_backend(request, user_profile,
                     msg += "* %s%s\n" % (
                         stream,
                         " (**invite-only**)" if private_streams[stream] else "")
-            msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
+
+            if len([s for s in subscriptions if not private_streams[s]]) > 0:
+                msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
             notifications.append(internal_prep_message("notification-bot@zulip.com",
                                                        "private", email, "", msg))
         do_send_messages(notifications)

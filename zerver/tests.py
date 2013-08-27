@@ -1001,7 +1001,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def helper_check_subs_before_and_after_add(self, subscriptions, other_params,
                                                subscribed, already_subscribed,
-                                               email, new_subs):
+                                               email, new_subs, invite_only=False):
         """
         Check result of adding subscriptions.
 
@@ -1016,7 +1016,8 @@ class SubscriptionAPITest(AuthedTestCase):
          "already_subscribed": {"iago@zulip.com": ["Venice", "Verona"]},
          "subscribed": {"iago@zulip.com": ["Venice8"]}}
         """
-        result = self.common_subscribe_to_streams(self.test_email, subscriptions, other_params)
+        result = self.common_subscribe_to_streams(self.test_email, subscriptions,
+                                                  other_params, invite_only=invite_only)
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertItemsEqual(subscribed, json["subscribed"][email])
@@ -1067,7 +1068,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_error(result,
                                "Invalid stream name (%s)." % (invalid_stream_name,))
 
-    def assert_adding_subscriptions_for_principal(self, invitee, streams):
+    def assert_adding_subscriptions_for_principal(self, invitee, streams, invite_only=False):
         """
         Calling /json/subscriptions/add on behalf of another principal (for
         whom you have permission to add subscriptions) should successfully add
@@ -1083,16 +1084,21 @@ class SubscriptionAPITest(AuthedTestCase):
         streams_to_sub.extend(current_streams)
         self.helper_check_subs_before_and_after_add(streams_to_sub,
             {"principals": ujson.dumps([invitee])}, streams[:1], current_streams,
-            invitee, streams_to_sub)
+            invitee, streams_to_sub, invite_only=invite_only)
         # verify that the user was sent a message informing them about the subscription
         msg = Message.objects.latest('id')
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
                 get_user_profile_by_email("notification-bot@zulip.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
-                        "subscribed you to the stream '%s'\nYou can see historical "
-                        "content on a non-invite-only stream by narrowing to it."
-                        % (self.user_profile.full_name, streams[0]))
+                        "subscribed you to the %sstream '%s'"
+                        % (self.user_profile.full_name,
+                           '**invite-only** ' if invite_only else '',
+                           streams[0]))
+
+        if not Stream.objects.get(name=streams[0]).invite_only:
+            expected_msg += ("\nYou can see historical content on a "
+                             "non-invite-only stream by narrowing to it.")
         self.assertEqual(msg.content, expected_msg)
         recipients = get_display_recipient(msg.recipient)
         self.assertEqual(len(recipients), 1)
@@ -1107,6 +1113,17 @@ class SubscriptionAPITest(AuthedTestCase):
         current_streams = self.get_streams(invitee)
         invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
+
+    @slow(0.15, "common_subscribe_to_streams is slow")
+    def test_subscriptions_add_for_principal_invite_only(self):
+        """
+        You can subscribe other people to invite only streams.
+        """
+        invitee = "iago@zulip.com"
+        current_streams = self.get_streams(invitee)
+        invite_streams = self.make_random_stream_names(current_streams)
+        self.assert_adding_subscriptions_for_principal(invitee, invite_streams,
+                                                       invite_only=True)
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_non_ascii_subscription_for_principal(self):
