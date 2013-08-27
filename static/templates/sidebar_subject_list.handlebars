@@ -1,13 +1,13 @@
 <ul class='expanded_subjects' data-stream='{{stream}}'>
     {{#each subjects}}
-    <li class='expanded_subject' data-name='{{subject}}'>
+    <li class='{{#if is_zero}}zero-subject-unreads {{/if}}expanded_subject' data-name='{{subject}}'>
       <span class='subject_box'>
-        <a href='{{url}}'>
+        <a href='{{url}}' class="subject-name">
           {{subject}}
-          <span class="subject_count {{#if is_zero}}zero_count{{/if}}">
-              (<span class="value">{{unread}}</span>)
-          </span>
         </a>
+        <div class="subject_count {{#if is_zero}}zero_count{{/if}}">
+            <div class="value">{{unread}}</div>
+        </div>
       </span>
     </li>
     {{/each}}

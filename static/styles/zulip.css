@@ -530,6 +530,32 @@ ul.filters {
     display: none;
 }
 
+#stream_filters .count {
+    position: absolute;
+    right: 20px;
+    top: 4px;
+    padding: 2px 3px 1px 3px;
+    background: #80837f;
+    color: #ffffff;
+    border-radius: 1px;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.subject_count {
+    display: block;
+    position: absolute;
+    line-height: 1em;
+    right: 20px;
+    top: 2px;
+    padding: 2px 3px 0px 3px;
+    background: #a6ada4;
+    color: #ffffff;
+    border-radius: 1px;
+    font-size: 11px;
+    font-weight: normal;
+}
+
 ul.filters i {
     padding-right: 0.25em;
     /* Make filter icons the same width so labels line up. */
@@ -1784,10 +1810,25 @@ table.floating_recipient {
     padding-bottom: 4px;
     line-height: 12px;
     padding-top: 4px;
+    margin-right: 15px;
 }
 
-.selectable_sidebar_block {
+#stream_filters .subscription_block.stream-with-count {
+    margin-right: 38px;
+}
+
+.subscription_name {
     display: block;
+    line-height: 1em;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.subject-name {
+    display: block;
+    line-height: 1.3em;
     width: 100%;
     white-space: nowrap;
     overflow: hidden;
@@ -2024,13 +2065,20 @@ ul.expanded_subjects {
     margin-left: 0px;
 }
 
-li.expanded_subject .subject_box {
-    display: block;
-    width: 100%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+li.expanded_subject {
+    position: relative;
 }
+
+.expanded_subject .subject_box {
+    display: block;
+    margin-right: 38px;
+}
+
+.expanded_subject.zero-subject-unreads .subject_box {
+    display: block;
+    margin-right: 0px;
+}
+
 
 .twitter-tweet {
     border: 1px solid #ddd;
