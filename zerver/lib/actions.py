@@ -304,6 +304,8 @@ def do_send_messages(messages):
             if message['stream'].is_public():
                 data['realm_id'] = message['stream'].realm.id
                 data['stream_name'] = message['stream'].name
+            if message['stream'].invite_only:
+                data['invite_only'] = True
         tornado_callbacks.send_notification(data)
 
     # Note that this does not preserve the order of message ids

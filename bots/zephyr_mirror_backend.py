@@ -612,6 +612,10 @@ def zcrypt_encrypt_content(zephyr_class, instance, content):
     return encrypted
 
 def forward_to_zephyr(message):
+    support_heading = "Hi there! This is an automated message from Zulip."
+    support_closing = """If you have any questions, please be in touch through the \
+Feedback tab or at support@zulip.com."""
+
     wrapper = textwrap.TextWrapper(break_long_words=False, break_on_hyphens=False)
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].replace("@", "@@").split("\n"))
@@ -658,20 +662,28 @@ def forward_to_zephyr(message):
         logger.info("Forwarding message to %s" % (recipients,))
         zwrite_args.extend(recipients)
 
-    if message['type'] == "stream":
+    if message.get("invite_only_stream"):
         result = zcrypt_encrypt_content(zephyr_class, instance, wrapped_content)
-        if result is not None:
-            wrapped_content = result
-            zwrite_args.extend(["-O", "crypt"])
+        if result is None:
+            return send_error_zulip("""%s
+
+Your Zulip-Zephyr mirror bot was unable to forward that last message \
+from Zulip to Zephyr because you were sending to a zcrypted Zephyr \
+class and your mirroring bot does not have access to the relevant \
+key (perhaps because your AFS tokens expired). That means that while \
+Zulip users (like you) received it, Zephyr users did not.
+
+%s""" % (support_heading, support_closing))
+            return
+
+        # Proceed with sending a zcrypted message
+        wrapped_content = result
+        zwrite_args.extend(["-O", "crypt"])
 
     if options.test_mode:
         logger.debug("Would have forwarded: %s\n%s" %
                      (zwrite_args, wrapped_content.encode("utf-8")))
         return
-
-    heading = "Hi there! This is an automated message from Zulip."
-    support_closing = """If you have any questions, please be in touch through the \
-Feedback tab or at support@zulip.com."""
 
     (code, stderr) = send_authed_zephyr(zwrite_args, wrapped_content)
     if code == 0 and stderr == "":
@@ -684,7 +696,7 @@ returned the following warning:
 
 %s
 
-%s""" % (heading, stderr, support_closing))
+%s""" % (support_heading, stderr, support_closing))
     elif code != 0 and (stderr.startswith("zwrite: Ticket expired while sending notice to ") or
                         stderr.startswith("zwrite: No credentials cache found while sending notice to ")):
         # Retry sending the message unauthenticated; if that works,
@@ -701,7 +713,7 @@ but please renew your Kerberos tickets in the screen session where you \
 are running the Zulip-Zephyr mirroring bot, so we can send \
 authenticated Zephyr messages for you again.
 
-%s""" % (heading, support_closing))
+%s""" % (support_heading, support_closing))
 
     # zwrite failed and it wasn't because of expired tickets: This is
     # probably because the recipient isn't subscribed to personals,
@@ -714,7 +726,7 @@ received it, Zephyr users did not.  The error message from zwrite was:
 
 %s
 
-%s""" % (heading, stderr, support_closing))
+%s""" % (support_heading, stderr, support_closing))
 
 def maybe_forward_to_zephyr(message):
     if (message["sender_email"] == zulip_account_email):

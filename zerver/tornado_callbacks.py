@@ -296,16 +296,26 @@ def process_new_message(data):
         user_receive_message(user_profile_id, message)
 
         for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event_type('message'):
+                continue
+
             # The below prevents (Zephyr) mirroring loops.
-            if client.accepts_event_type('message') and not \
-                    ('mirror' in message.sending_client.name and
-                     message.sending_client == client.client_type):
-                if client.apply_markdown:
-                    message_dict = message_dict_markdown
-                else:
-                    message_dict = message_dict_no_markdown
-                event = dict(type='message', message=message_dict, flags=flags)
-                client.add_event(event)
+            if ('mirror' in message.sending_client.name and
+                message.sending_client == client.client_type):
+                continue
+
+            if client.apply_markdown:
+                message_dict = message_dict_markdown
+            else:
+                message_dict = message_dict_no_markdown
+
+            # Make sure Zephyr mirroring bots know whether stream is invite-only
+            if "mirror" in client.client_type.name and data.get("invite_only"):
+                message_dict = message_dict.copy()
+                message_dict["invite_only_stream"] = True
+
+            event = dict(type='message', message=message_dict, flags=flags)
+            client.add_event(event)
 
         # If the recipient was offline and the message was a single or group PM to him
         # or she was @-notified potentially notify more immediately
