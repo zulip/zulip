@@ -73,6 +73,64 @@ set_global('narrow', {});
     assert.deepEqual(suggestions.strings, expected);
 }());
 
+(function test_private_suggestions() {
+    global.stream_data.subscribed_streams = function () {
+        return [];
+    };
+
+    global.narrow.stream = function () {
+        return undefined;
+    };
+
+    global.page_params.people_list = [
+        {
+            email: 'ted@zulip.com',
+            full_name: 'Ted Smith'
+        },
+        {
+            email: 'alice@zulip.com',
+            full_name: 'Alice Ignore'
+        }
+    ];
+
+    var query = 'is:private';
+    var suggestions = search.get_suggestions(query);
+    var expected = [
+        "is:private",
+        "pm-with:alice@zulip.com",
+        "pm-with:ted@zulip.com"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'pm-with:ted@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:ted@zulip.com",
+        "is:private"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Users can enter bizarre queries, and if they do, we want to
+    // be conservative with suggestions.
+    query = 'is:private near:3';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "is:private near:3",
+        "is:private"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'pm-with:ted@zulip.com near:3';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:ted@zulip.com near:3",
+        "pm-with:ted@zulip.com"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    global.page_params.people_list = [];
+}());
+
 (function test_empty_query_suggestions() {
     var query = '';
 
