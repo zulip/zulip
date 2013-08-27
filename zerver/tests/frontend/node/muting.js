@@ -15,4 +15,8 @@ var muting = require('js/muting.js');
     assert(!muting.is_topic_muted('devel', 'java'));
     muting.mute_topic('devel', 'java');
     assert(muting.is_topic_muted('devel', 'java'));
+
+    // test idempotentcy
+    muting.mute_topic('devel', 'java');
+    assert(muting.is_topic_muted('devel', 'java'));
 }());
