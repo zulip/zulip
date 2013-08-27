@@ -320,15 +320,6 @@ $(function () {
     $(document).on('subscription_remove.zulip', function (e) {
         mark_unsubscribed(e.subscription.name);
     });
-
-    $(document).on('click', '.subs_set_all_users', function (e) {
-        $('#people_to_add :checkbox').attr('checked', true);
-        e.preventDefault();
-    });
-    $(document).on('click', '.subs_unset_all_users', function (e) {
-        $('#people_to_add :checkbox').attr('checked', false);
-        e.preventDefault();
-    });
 });
 
 exports.receives_notifications = function (stream_name) {
@@ -544,7 +535,7 @@ function ajaxUnsubscribe(stream) {
     });
 }
 
-function ajaxSubscribeForCreation(stream, principals, invite_only) {
+function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
     return $.ajax({
         type: "POST",
@@ -552,7 +543,8 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         data: {"subscriptions": JSON.stringify([{"name": stream}]),
                "principals": JSON.stringify(principals),
-               "invite_only": JSON.stringify(invite_only)
+               "invite_only": JSON.stringify(invite_only),
+               "announce": JSON.stringify(announce)
         },
         success: function (data) {
             $("#create_stream_name").val("");
@@ -578,6 +570,25 @@ function people_cmp(person1, person2) {
     return util.strcmp(person1.email, person2.email);
 }
 
+// Within the new stream modal...
+function update_announce_stream_state() {
+    // If the stream is invite only, or everyone's added, disable
+    // the "Announce stream" option. Otherwise enable it.
+    var announce_stream_checkbox = $('#announce-new-stream input');
+    var disable_it = false;
+    var is_invite_only = $('input:radio[name=privacy]:checked').val() === 'invite-only';
+
+    if (is_invite_only) {
+        disable_it = true;
+        announce_stream_checkbox.prop('checked', false);
+    } else {
+        disable_it = $('#user-checkboxes input').length
+                    === $('#user-checkboxes input:checked').length;
+    }
+
+    announce_stream_checkbox.prop('disabled', disable_it);
+}
+
 function show_new_stream_modal() {
     var people_minus_you_and_internal_users = [];
     _.each(page_params.people_list, function (person) {
@@ -594,6 +605,13 @@ function show_new_stream_modal() {
     $('#people_to_add').html(templates.render('new_stream_users', {
         users: people_minus_you_and_internal_users.sort(people_cmp)
     }));
+
+    // Make the options default to the same each time:
+    // public, "announce stream" on.
+    $('#make-invite-only input:radio[value=public]').prop('checked', true);
+    $('#announce-new-stream input').prop('disabled', false);
+    $('#announce-new-stream input').prop('checked', true);
+
     $('#stream-creation').modal("show");
 }
 
@@ -621,6 +639,36 @@ $(function () {
         }
     });
 
+    $('#stream_creation_form').on('change',
+                                  '#user-checkboxes input, #make-invite-only input',
+                                  update_announce_stream_state);
+
+    // 'Check all' and 'Uncheck all' links
+    $(document).on('click', '.subs_set_all_users', function (e) {
+        $('#people_to_add :checkbox').attr('checked', true);
+        e.preventDefault();
+        update_announce_stream_state();
+    });
+    $(document).on('click', '.subs_unset_all_users', function (e) {
+        $('#people_to_add :checkbox').attr('checked', false);
+        e.preventDefault();
+        update_announce_stream_state();
+    });
+
+    var announce_stream_docs = $("#announce-stream-docs");
+    announce_stream_docs.popover({"placement": "right",
+                                  "content": templates.render('announce_stream_docs'),
+                                  "trigger": "manual"});
+    $("body").on("mouseover", "#announce-stream-docs", function (e) {
+        announce_stream_docs.popover('show');
+        announce_stream_docs.data('popover').tip().css('z-index', 2000);
+        e.stopPropagation();
+    });
+    $("body").on("mouseout", "#announce-stream-docs", function (e) {
+        announce_stream_docs.popover('hide');
+        e.stopPropagation();
+    });
+
     $("#stream_creation_form").on("submit", function (e) {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
@@ -634,7 +682,8 @@ $(function () {
         principals.push(page_params.email);
         ajaxSubscribeForCreation(stream,
             principals,
-            $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only"
+            $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
+            $('#announce-new-stream input').prop('checked')
             );
     });
 

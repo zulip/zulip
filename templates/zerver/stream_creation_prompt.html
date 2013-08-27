@@ -9,15 +9,23 @@
           <div id="make-invite-only">
             <b>Stream accessibility</b><br />
             <label class="radio">
-              <input id="invite-only" type="radio" name="privacy" value="public" checked />
+              <input type="radio" name="privacy" value="public" checked />
               <span class="icon-vector-globe"></span>
               Anyone can join
             </label><br />
             <label class="radio">
-              <input id="invite-only" type="radio" name="privacy" value="invite-only" />
+              <input type="radio" name="privacy" value="invite-only" />
               <span class="icon-vector-lock"></span>
               People must be invited
             </label>
+          </div>
+          <div id="announce-new-stream">
+            <br />
+            <label class="checkbox">
+              <input type="checkbox" name="announce" value="announce" checked />
+              Announce stream
+            </label>
+            <span class="icon-vector-question-sign" id="announce-stream-docs"></span>
           </div>
           <br />
           <div class="control-group">
