@@ -528,8 +528,8 @@ def zephyr_to_zulip(options):
         if options.use_sessions:
             file(options.session_path, "w").write(zephyr._z.dump_session())
 
-    if options.resend_log_path is not None:
-        with open(options.resend_log_path, 'r') as log:
+    if options.logs_to_resend is not None:
+        with open(options.logs_to_resend, 'r') as log:
             for ln in log:
                 try:
                     zeph = simplejson.loads(ln)
@@ -555,8 +555,8 @@ def zephyr_to_zulip(options):
 
     logger.info("Successfully initialized; Starting receive loop.")
 
-    if options.log_path is not None:
-        with open(options.log_path, 'a') as log:
+    if options.resend_log_path is not None:
+        with open(options.resend_log_path, 'a') as log:
             process_loop(log)
     else:
         process_loop(None)
@@ -876,7 +876,9 @@ def parse_zephyr_subs(verbose=False):
     return zephyr_subscriptions
 
 def open_logger():
-    if options.forward_class_messages:
+    if options.log_path is not None:
+        log_file = options.log_path
+    elif options.forward_class_messages:
         if options.test_mode:
             log_file = "/home/humbug/test-mirror-log"
         else:
@@ -925,9 +927,12 @@ def parse_args():
                       help=optparse.SUPPRESS_HELP,
                       action='store_true')
     parser.add_option('--resend-log',
+                      dest='logs_to_resend',
+                      help=optparse.SUPPRESS_HELP)
+    parser.add_option('--enable-resend-log',
                       dest='resend_log_path',
                       help=optparse.SUPPRESS_HELP)
-    parser.add_option('--enable-log',
+    parser.add_option('--log-path',
                       dest='log_path',
                       help=optparse.SUPPRESS_HELP)
     parser.add_option('--stream-file-path',
