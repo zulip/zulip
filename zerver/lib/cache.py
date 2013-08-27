@@ -150,6 +150,11 @@ def cache_set_many(items, cache_name=None, timeout=None):
     memcached_stats_finish()
     return ret
 
+def cache_delete(key, cache_name=None):
+    memcached_stats_start()
+    get_cache_backend(cache_name).delete(KEY_PREFIX + key)
+    memcached_stats_finish()
+
 def cache_delete_many(items, cache_name=None):
     memcached_stats_start()
     get_cache_backend(cache_name).delete_many(
