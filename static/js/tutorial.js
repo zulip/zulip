@@ -192,7 +192,7 @@ function messages_in_viewport() {
 }
 
 function small_window() {
-    return $("#left-sidebar").width() < 175;
+    return !$("#left-sidebar").is(":visible");
 }
 
 function maybe_tweak_placement(placement) {
@@ -215,13 +215,15 @@ function maybe_tweak_placement(placement) {
 function create_and_show_popover(target_div, placement, title, content_template) {
     target_div.popover({
         placement: placement,
-        title: templates.render("tutorial_title", {title: title}),
-        content: templates.render(content_template),
+        title: templates.render("tutorial_title", {title: title,
+                                                   placement: placement}),
+        content: templates.render(content_template, {placement: placement}),
         trigger: "manual"
     });
     target_div.popover("show");
 
     $(".popover").css("z-index", 20001);
+    $(".popover-title").addClass("popover-" + placement);
 }
 
 exports.defer = function (callback) {

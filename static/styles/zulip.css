@@ -1714,6 +1714,10 @@ table.floating_recipient {
     margin-bottom: 5px;
 }
 
+.popover-left, .popover-right {
+    max-width: 175px;
+}
+
 .hotkeys_table {
     float: left;
     width: 245px;
@@ -2444,10 +2448,6 @@ div.edit_bot {
     top: 0;
     background: #000;
     z-index: 20000;
-}
-
-.tutorial-popover {
-    width: 200px;
 }
 
 #tutorial-stream {
