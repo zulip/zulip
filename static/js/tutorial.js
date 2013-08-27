@@ -332,9 +332,9 @@ function subject() {
 
     var my_popover = $("#tutorial-subject").closest(".popover");
     if (placement === "bottom") { // Wider screen, popover is on bottom.
-        my_popover.offset({left: bar.offset().left + 94 - my_popover.width() / 2});
+        my_popover.offset({left: bar.offset().left + 114 - my_popover.width() / 2});
     } else {
-        my_popover.offset({left: bar.offset().left + 156});
+        my_popover.offset({left: bar.offset().left + 166});
     }
 
     $("#tutorial-subject-next").click(function () {
@@ -350,9 +350,9 @@ function stream() {
 
     var my_popover = $("#tutorial-stream").closest(".popover");
     if (placement === "bottom") { // Wider screen, popover is on bottom.
-        my_popover.offset({left: bar.offset().left + 24 - my_popover.width() / 2});
+        my_popover.offset({left: bar.offset().left + 44 - my_popover.width() / 2});
     } else { // Smaller screen, popover is to the right of the stream label.
-        my_popover.offset({left: bar.offset().left + 67});
+        my_popover.offset({left: bar.offset().left + 78});
     }
 
     $("#tutorial-stream-next").click(function () {
