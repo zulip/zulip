@@ -1190,7 +1190,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
             if event['op'] == "add" or event['op'] == "update":
                 ret['realm_users'].append(event['person'])
         elif event['type'] == "subscriptions":
-            subscriptions_to_filter = set(sub.name.lower() for sub in event["subscriptions"])
+            if event['op'] in ["add", "remove"]:
+                subscriptions_to_filter = set(sub.name.lower() for sub in event["subscriptions"])
             # We add the new subscriptions to the list of streams the
             # user is subscribed to, and also remove/add them from the
             # list of streams the user is not subscribed to (which we
