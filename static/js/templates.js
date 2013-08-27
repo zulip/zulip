@@ -25,32 +25,35 @@ exports.render = function (name, arg) {
     return Handlebars.templates[name](arg);
 };
 
-$(function () {
-    // Regular Handlebars partials require pre-registering.  This allows us
-    // to treat any template as a partial.
-    Handlebars.registerHelper('partial', function (template_name, context) {
-        return new Handlebars.SafeString(exports.render(template_name, this));
-    });
+// We don't want to wait for DOM ready to register the Handlebars helpers
+// below. There's no need to, as they do not access the DOM.
+// Furthermore, waiting for DOM ready would introduce race conditions with
+// other DOM-ready callbacks that attempt to render templates.
 
-    Handlebars.registerHelper('plural', function (condition, one, other) {
-        return (condition === 1) ? one : other;
-    });
+// Regular Handlebars partials require pre-registering.  This allows us
+// to treat any template as a partial.
+Handlebars.registerHelper('partial', function (template_name, context) {
+    return new Handlebars.SafeString(exports.render(template_name, this));
+});
 
-    Handlebars.registerHelper('if_and', function () {
-        // Execute the conditional code if all conditions are true.
-        // Example usage:
-        //     {{#if_and cond1 cond2 cond3}}
-        //         <p>All true</p>
-        //     {{/if_and}}
-        var options = arguments[arguments.length - 1];
-        var i;
-        for (i = 0; i < arguments.length - 1; i++) {
-            if (!arguments[i]) {
-                return options.inverse(this);
-            }
+Handlebars.registerHelper('plural', function (condition, one, other) {
+    return (condition === 1) ? one : other;
+});
+
+Handlebars.registerHelper('if_and', function () {
+    // Execute the conditional code if all conditions are true.
+    // Example usage:
+    //     {{#if_and cond1 cond2 cond3}}
+    //         <p>All true</p>
+    //     {{/if_and}}
+    var options = arguments[arguments.length - 1];
+    var i;
+    for (i = 0; i < arguments.length - 1; i++) {
+        if (!arguments[i]) {
+            return options.inverse(this);
         }
-        return options.fn(this);
-    });
+    }
+    return options.fn(this);
 });
 
 return exports;
