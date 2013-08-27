@@ -1,3 +1,7 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+USER=root
+
 * * * * * root /home/humbug/humbug-deployments/current/bots/check-rabbitmq-consumers --queue=notify_tornado &> /var/lib/nagios_state/check-rabbitmq-consumers-tornado-tmp; mv /var/lib/nagios_state/check-rabbitmq-consumers-tornado-tmp /var/lib/nagios_state/check-rabbitmq-consumers-tornado
 * * * * * root /home/humbug/humbug-deployments/current/bots/check-rabbitmq-consumers --queue=user_activity &> /var/lib/nagios_state/check-rabbitmq-consumers-useractivity-tmp; mv /var/lib/nagios_state/check-rabbitmq-consumers-useractivity-tmp /var/lib/nagios_state/check-rabbitmq-consumers-useractivity
 * * * * * root /home/humbug/humbug-deployments/current/bots/check-rabbitmq-consumers --queue=invites &> /var/lib/nagios_state/check-rabbitmq-consumers-invites-tmp; mv /var/lib/nagios_state/check-rabbitmq-consumers-invites-tmp /var/lib/nagios_state/check-rabbitmq-consumers-invites
