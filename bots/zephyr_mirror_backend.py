@@ -614,7 +614,7 @@ def zcrypt_encrypt_content(zephyr_class, instance, content):
 def forward_to_zephyr(message):
     support_heading = "Hi there! This is an automated message from Zulip."
     support_closing = """If you have any questions, please be in touch through the \
-Feedback tab or at support@zulip.com."""
+Feedback button or at support@zulip.com."""
 
     wrapper = textwrap.TextWrapper(break_long_words=False, break_on_hyphens=False)
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
