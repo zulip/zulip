@@ -96,7 +96,9 @@ function add_narrow_filter(name, type) {
                 uri: narrow.by_stream_uri(name),
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: stream_data.get_sub(name).invite_only,
-                color: stream_data.get_color(name)};
+                color: stream_data.get_color(name)
+               };
+    args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
     $("#" + type + "_filters").append(list_item);
     return list_item;

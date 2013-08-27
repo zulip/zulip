@@ -1843,9 +1843,21 @@ table.floating_recipient {
     display: inline-block;
     vertical-align: middle;
     margin-top: 0px;
-    margin-left: 3px;
     position: absolute;
-    top: 2px;
+    top: 4px;
+    left: 4px;
+    font-size: 12px;
+}
+
+.subscription_header .subscription_name {
+    display: inline-block;
+    width: auto;
+}
+
+.subscription_header .subscription_lock {
+    font-size: 12px;
+    display: inline-block;
+    vertical-align: top;
 }
 
 .subscription_settings {

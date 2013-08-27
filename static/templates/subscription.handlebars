@@ -6,7 +6,7 @@
       <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
       <span class="subscription_block">
       <span class="subscription_name">{{name}}</span>
-      {{#if invite_only}}<i class="icon-vector-lock"></i>{{/if}}
+      {{#if invite_only}}<span class="subscription_lock">&nbsp;&nbsp;<i class="icon-vector-lock"></i></span>{{/if}}
       </span>
       <span class="sub_arrow"><i class="icon-vector-chevron-down"></i></span>
       <button class="btn sub_unsub_button {{^subscribed}}btn-primary{{/subscribed}}"
