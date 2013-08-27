@@ -253,7 +253,7 @@ function message_unhover() {
 
 function message_hover(message_row) {
     var message;
-    var edit_content_button = '<span class="edit_content">&nbsp;&nbsp;&nbsp;<i class="icon-vector-pencil edit_content"></i></span>';
+    var edit_content_button = '<span class="edit_content"><i class="icon-vector-pencil edit_content_button"></i></span>';
     if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
         return;
     }
@@ -1024,7 +1024,7 @@ $(function () {
     function is_clickable_message_element(target) {
         return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
-            target.is("i.edit_content");
+            target.is("i.edit_content_button");
     }
 
     $("#main_div").on("click", ".messagebox", function (e) {
@@ -1355,7 +1355,7 @@ $(function () {
         e.stopPropagation();
     });
 
-    $('body').on('click', '.edit_content', function (e) {
+    $('body').on('click', '.edit_content_button', function (e) {
         var row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
         message_edit.start(row);
         e.stopPropagation();

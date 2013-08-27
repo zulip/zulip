@@ -970,6 +970,21 @@ just a temporary hack.
 
 .edit_content {
     opacity: .5;
+    width: 0px;
+    height: 0px;
+    display: inline-block;
+    position: relative;
+}
+
+.edit_content i {
+    position: absolute;
+    display: block;
+    background: #ffffff;
+    top: -0.9em;
+    left: 0.4em;
+    border-radius: 1px;
+    padding: 1px 2px;
+    border: 1px solid #eee;
 }
 
 .edit_content:hover {
