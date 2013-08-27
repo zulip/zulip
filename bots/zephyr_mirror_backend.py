@@ -384,6 +384,10 @@ def process_notice(notice, log):
     if notice.format.startswith("Zephyr error: See") or notice.format.endswith("@(@color(blue))"):
         logger.debug("Skipping message we got from Zulip!")
         return
+    if (zephyr_class == "mail" and notice.instance.lower() == "inbox" and is_personal and
+        not options.forward_mail_zephyrs):
+        # Only forward mail zephyrs if forwarding them is enabled.
+        return
 
     if is_personal:
         if body.startswith("CC:"):
@@ -521,8 +525,7 @@ def zephyr_to_zulip(options):
             # Subscribe to personals; we really can't operate without
             # those subscriptions, so just retry until it works.
             zephyr_subscribe_autoretry(("message", "*", "%me%"))
-            if subscribed_to_mail_messages():
-                zephyr_subscribe_autoretry(("mail", "inbox", "%me%"))
+            zephyr_subscribe_autoretry(("mail", "inbox", "%me%"))
         if options.nagios_class:
             zephyr_subscribe_autoretry((options.nagios_class, "*", "*"))
         if options.use_sessions:
@@ -944,6 +947,11 @@ def parse_args():
                       help=optparse.SUPPRESS_HELP,
                       default=True,
                       action='store_false')
+    parser.add_option('--forward-mail-zephyrs',
+                      dest='forward_mail_zephyrs',
+                      help=optparse.SUPPRESS_HELP,
+                      default=False,
+                      action='store_true')
     parser.add_option('--no-forward-from-zulip',
                       default=True,
                       dest='forward_from_zulip',
@@ -1099,6 +1107,8 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
         # forwarding and zulip => zephyr forwarding
         options.forward_personals = False
         options.forward_from_zulip = False
+    if options.forward_mail_zephyrs is None:
+        options.forward_mail_zephyrs = subscribed_to_mail_messages()
 
     if options.session_path is None:
         options.session_path = "/var/tmp/%s" % (options.user,)
