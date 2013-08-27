@@ -55,7 +55,7 @@ common.then_log_out();
 // Othello
 common.then_log_in({username: 'othello@zulip.com', password: 'GX5MTQ+qYSzcmDoH'});
 
-var verona_sidebar_selector = "a[href='#narrow/stream/Verona'] .value";
+var verona_sidebar_selector = "div[data-name='Verona'] .value";
 var iago_sidebar_selector = "a[data-email='iago@zulip.com'] .value";
 
 var last_stream_count;
