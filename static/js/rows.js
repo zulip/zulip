@@ -52,6 +52,13 @@ exports.get_table = function (table_name) {
     return $('#' + table_name);
 };
 
+exports.get_closest_row = function (element) {
+    // This gets the closest message row to an element, whether it's
+    // a summary bar, recipient bar, or message.  With our current markup,
+    // this is the most reliable way to do it.
+    return $(element).closest("tr");
+};
+
 return exports;
 
 }());

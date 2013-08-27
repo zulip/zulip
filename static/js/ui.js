@@ -1120,7 +1120,8 @@ $(function () {
     });
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
-        var nearest = current_msg_list.get(rows.id($(this).closest(".recipient_row")));
+        var row = rows.get_closest_row(this);
+        var nearest = current_msg_list.get(rows.id(row));
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
             narrow.by_recipient(selected.id, {trigger: 'message header'});
@@ -1130,7 +1131,8 @@ $(function () {
     });
 
     $("#home").on("click", ".narrows_by_subject", function (e) {
-        var nearest = current_msg_list.get(rows.id($(this).closest(".recipient_row")));
+        var row = rows.get_closest_row(this);
+        var nearest = current_msg_list.get(rows.id(row));
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
             narrow.by_subject(selected.id, {trigger: 'message header'});
