@@ -22,7 +22,8 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
-    email_to_domain, email_to_username, get_realm, completely_open, is_super_user
+    email_to_domain, email_to_username, get_realm, completely_open, \
+    is_super_user, get_active_user_profiles_by_realm
 from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
@@ -1485,6 +1486,7 @@ def filter_stream_authorization(user_profile, streams):
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions", json_to_list),
                               invite_only = REQ(converter=json_to_bool, default=False),
+                              announce = REQ(converter=json_to_bool, default=False),
                               principals = REQ(converter=json_to_list, default=None),
                               authorization_errors_fatal = REQ(converter=json_to_bool, default=True)):
 
@@ -1525,9 +1527,10 @@ def add_subscriptions_backend(request, user_profile,
 
     private_streams = dict((stream.name, stream.invite_only) for stream in streams)
 
-    # Inform the user if someone else subscribed them to stuff
+    # Inform the user if someone else subscribed them to stuff,
+    # or if a new stream was created with the "announce" option.
+    notifications = []
     if principals and result["subscribed"]:
-        notifications = []
         for email, subscriptions in result["subscribed"].iteritems():
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
@@ -1552,6 +1555,21 @@ def add_subscriptions_backend(request, user_profile,
                 msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
             notifications.append(internal_prep_message("notification-bot@zulip.com",
                                                        "private", email, "", msg))
+
+    if announce and len(created_streams) > 0:
+        for realm_user in get_active_user_profiles_by_realm(user_profile.realm):
+            # Don't announce to yourself or to people you explicitly added
+            # (who will get the notification above instead).
+            if realm_user.email in principals or realm_user.email == user_profile.email:
+                continue
+            msg = ("Hi there!  %s just created a new stream '%s'. "
+                   "To join, click the gear in the left-side streams list."
+                   % (user_profile.full_name, created_streams[0].name))
+            notifications.append(internal_prep_message("notification-bot@zulip.com",
+                                                       "private",
+                                                       realm_user.email, "", msg))
+
+    if len(notifications) > 0:
         do_send_messages(notifications)
 
     result["subscribed"] = dict(result["subscribed"])
