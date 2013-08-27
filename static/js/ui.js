@@ -1645,11 +1645,16 @@ $(function () {
 });
 
 $(function () {
-    // Disable "spellchecking" in our desktop app. The "spellchecking"
-    // in our Mac app is actually autocorrect, and frustrates our
-    // users.
     if (window.bridge !== undefined) {
+        // Disable "spellchecking" in our desktop app. The "spellchecking"
+        // in our Mac app is actually autocorrect, and frustrates our
+        // users.
         $("#new_message_content").attr('spellcheck', 'false');
+        // Modify the zephyr mirroring error message in our desktop
+        // app, since it doesn't work from the desktop version.
+        $("#webathena_login_menu").hide();
+        $("#normal-zephyr-mirror-error-text").addClass("notdisplayed");
+        $("#desktop-zephyr-mirror-error-text").removeClass("notdisplayed");
     }
 });
 
