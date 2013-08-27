@@ -1,11 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"  xmlns:dc="http://purl.org/dc/elements/1.1/">
+<?xml version="1.0" ?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
    <channel>
       <title>Zulip Changelog</title>
       <link>https://zulip.com/dist/apps/win/sparkle.xml</link>
       <description>Latest updates to Zulip's Desktop App</description>
       <language>en</language>
       <item>
+         <title>Version 0.3.5</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.com/dist/apps/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Tue, 27 Aug 2013 11:57:04 </pubDate>
+         <enclosure sparkle:version="0.3.5" type="application/octet-stream" url="https://zulip.com/dist/apps/win/zulip-0.3.5.exe"/>
+      </item><item>
          <title>
              Version 0.3.4
          </title>
@@ -13,7 +19,7 @@
              https://zulip.com/dist/apps/win/sparkle-changelog.html
          </sparkle:releaseNotesLink>
          <pubDate>Mon, 15 Jul 2013 16:20:11 +0000</pubDate>
-         <enclosure url="https://zulip.com/dist/apps/win/zulip-0.3.4.exe" sparkle:version="0.3.4" type="application/octet-stream" />
+         <enclosure sparkle:version="0.3.4" type="application/octet-stream" url="https://zulip.com/dist/apps/win/zulip-0.3.4.exe"/>
       </item>
    </channel>
 </rss>
