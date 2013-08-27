@@ -51,6 +51,28 @@ set_global('narrow', {});
     assert.deepEqual(suggestions.strings, expected);
 }());
 
+(function test_subset_suggestions() {
+    var query = 'stream:Denmark topic:Hamlet shakespeare';
+
+    global.stream_data.subscribed_streams = function () {
+        return [];
+    };
+
+    global.narrow.stream = function () {
+        return undefined;
+    };
+
+    var suggestions = search.get_suggestions(query);
+
+    var expected = [
+        "stream:Denmark topic:Hamlet shakespeare",
+        "stream:Denmark topic:Hamlet",
+        "stream:Denmark"
+    ];
+
+    assert.deepEqual(suggestions.strings, expected);
+}());
+
 (function test_empty_query_suggestions() {
     var query = '';
 
