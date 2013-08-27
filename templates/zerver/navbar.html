@@ -78,6 +78,14 @@
                     </a>
                   </li>
                   <li class="divider"></li>
+                  {% if show_webathena %}
+                  <li title="Grant Zulip the Kerberos tickets needed to run your Zephyr
+                             mirror via Webathena">
+                    <a href="#webathena" class="webathena_login">
+                      <i class="icon-vector-bolt"></i>Link with Webathena
+                    </a>
+                  </li>
+                  {% endif %}
                   <li title="Log out">
                     <a href="#logout" class="logout_button">
                       <i class="icon-vector-off"></i> Log out

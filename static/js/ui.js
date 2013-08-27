@@ -1395,7 +1395,7 @@ $(function () {
     });
 
     // Webathena integration code
-    $('#right-sidebar').on('click', '.webathena_login', function (e) {
+    $('#right-sidebar, #top_navbar').on('click', '.webathena_login', function (e) {
         $("#zephyr-mirror-error").hide();
         var principal = ["zephyr", "zephyr"];
         WinChan.open({
@@ -1428,6 +1428,7 @@ $(function () {
                 }
             });
         });
+        $('#settings-dropdown').dropdown("toggle");
         e.preventDefault();
         e.stopPropagation();
     });
