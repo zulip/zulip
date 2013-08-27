@@ -6,7 +6,7 @@ from django.db import connection
 from zerver.lib.utils import statsd
 from zerver.lib.cache import get_memcached_time, get_memcached_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_recipient_cache
+from zerver.models import flush_per_process_display_recipient_cache
 from zerver.exceptions import RateLimited
 
 import logging
@@ -49,7 +49,7 @@ class LogRequests(object):
         # We flush the recipient cache after every request, so it is
         # not shared at all between requests. We do this so all users
         # have a consistent view of stream name changes.
-        flush_recipient_cache()
+        flush_per_process_display_recipient_cache()
 
         # For statsd timer name
         if request.path == '/':

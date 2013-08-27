@@ -27,18 +27,18 @@ MAX_MESSAGE_LENGTH = 10000
 
 # Doing 1000 memcached requests to get_display_recipient is quite slow,
 # so add a local cache as well as the memcached cache.
-recipient_cache = {}
+per_process_display_recipient_cache = {}
 def get_display_recipient(recipient):
     if settings.TEST_SUITE:
         # The test suite expects all caching to be turned off
         return get_display_recipient_memcached(recipient)
-    if recipient.id not in recipient_cache:
-        recipient_cache[recipient.id] = get_display_recipient_memcached(recipient)
-    return recipient_cache[recipient.id]
+    if recipient.id not in per_process_display_recipient_cache:
+        per_process_display_recipient_cache[recipient.id] = get_display_recipient_memcached(recipient)
+    return per_process_display_recipient_cache[recipient.id]
 
-def flush_recipient_cache():
-    global recipient_cache
-    recipient_cache = {}
+def flush_per_process_display_recipient_cache():
+    global per_process_display_recipient_cache
+    per_process_display_recipient_cache = {}
 
 @cache_with_key(lambda self: display_recipient_cache_key(self.id),
                 timeout=3600*24*7)
