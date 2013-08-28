@@ -601,6 +601,10 @@ def get_user_profile_by_id(uid):
 def get_user_profile_by_email(email):
     return UserProfile.objects.select_related().get(email__iexact=email)
 
+def get_active_user_profiles_by_realm(realm):
+    return UserProfile.objects.select_related().filter(realm=realm,
+                                                       is_active=True)
+
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest
     # invite.

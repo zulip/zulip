@@ -11,7 +11,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     email_to_domain, email_to_username, display_recipient_cache_key, \
-    get_stream_cache_key, to_dict_cache_key_id, is_super_user
+    get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
+    get_active_user_profiles_by_realm
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -73,9 +74,7 @@ def log_event(event):
             log.write(ujson.dumps(event) + '\n')
 
 def active_user_ids(realm):
-    return [up.id for up in
-            UserProfile.objects.select_related().filter(
-            realm=realm, is_active=True)]
+    return [up.id for up in get_active_user_profiles_by_realm(realm)]
 
 def notify_created_user(user_profile):
     notice = dict(event=dict(type="realm_user", op="add",
@@ -1211,9 +1210,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         ret['realm_users'] = [{'email'     : profile.email,
                                'is_bot'    : profile.is_bot,
                                'full_name' : profile.full_name}
-                              for profile in
-                              UserProfile.objects.select_related().filter(realm=user_profile.realm,
-                                                                          is_active=True)]
+                              for profile in get_active_user_profiles_by_realm(user_profile.realm)]
     if event_types is None or "onboarding_steps" in event_types:
         ret['onboarding_steps'] = [{'email' : profile.email,
                                     'steps' : profile.onboarding_steps}]
@@ -1569,9 +1566,7 @@ Referred: %s""" % (user_profile.full_name, user_profile.email, user_profile.real
 def notify_realm_emoji(realm):
     notice = dict(event=dict(type="realm_emoji", op="update",
                              realm_emoji=realm.get_emoji()),
-                  users=[up.id for up in
-                         UserProfile.objects.select_related().filter(realm=realm,
-                                                                     is_active=True)])
+                  users=[up.id for up in get_active_user_profiles_by_realm(realm)])
     tornado_callbacks.send_notification(notice)
 
 def do_add_realm_emoji(realm, name, img_url):
