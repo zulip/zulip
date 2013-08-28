@@ -34,7 +34,7 @@ Dict.from = function Dict_from(obj, opts) {
 };
 
 (function () {
-Dict.prototype = _.object(_.map({
+Dict.prototype = {
     _munge: function Dict__munge(k) {
         if (this._opts.fold_case) {
             k = k.toLowerCase();
@@ -104,9 +104,7 @@ Dict.prototype = _.object(_.map({
             f(mapping.v, mapping.k);
         });
     }
-}, function (value, key) {
-    return [key, util.enforce_arity(value)];
-}));
+};
 
 }());
 

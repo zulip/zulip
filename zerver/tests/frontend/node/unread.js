@@ -9,7 +9,6 @@
 
 add_dependencies({
     _: 'third/underscore/underscore.js',
-    util: 'js/util.js',
     Dict: 'js/dict.js'
 });
 
