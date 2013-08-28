@@ -32,7 +32,7 @@ class zulip::postgres-common {
   cron { "pg_backup_and_purge":
     command => "/usr/local/bin/pg_backup_and_purge.py",
     ensure => present,
-    environment => "PATH=/usr/bin:/usr/local/bin",
+    environment => "PATH=/bin:/usr/bin:/usr/local/bin",
     hour => 5,
     minute => 0,
     target => "postgres",
