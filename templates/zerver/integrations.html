@@ -293,15 +293,16 @@ following, to the stream <code>commits</code> with a subject that matches the re
    <div id="jira" class="integration">
       <h4>JIRA</h4>
 
+      <p><em>If you are running JIRA version 5.2 or greater, or if you are
+          using the hosted JIRA provided by Atlassian, you can use the built-in
+          web-hook support to connect to Zulip &mdash; read on. For older,
+          self-hosted JIRA installs, you can use our <a
+              href="#jira-plugin">JIRA Plugin</a>.</em></p>
+
       <p>First, create the stream you'd like to use for JIRA notifications, and
       subscribe all interested parties to this stream. We recommend the
       name <code>jira</code>.</p>
 
-      <h5>Webhook mechanism</h5>
-      If you are running JIRA version 5.2 or greater, or if you are using the hosted JIRA provided
-      by Atlassian, you can use the built in web-hook support to connect to Zulip. If you are not
-      using the Atlassian-hosted JIRA, you may also use the <a href="#jira-plugin">Jira Plugin</a>
-      mechanism that supports older versions of JIRA.
       <p>In your JIRA administration control panel, go to the Webhooks page. If you are using the OnDemand
         hosted JIRA, follow the instructions <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview#JIRAWebhooksOverview-WhereistheJIRAAdministrationUIforwebhooks?">
         on the Atlassian wiki</a> for locating the Webhook UI.
@@ -327,7 +328,12 @@ following, to the stream <code>commits</code> with a subject that matches the re
     </div>
 {#--------------------------------------------------------------------#}
    <div id="jira-plugin" class="integration">
-      <h4>JIRA</h4>
+      <h4>JIRA (Plugin)</h4>
+
+      <p><em>If you are running JIRA version 5.2 or greater, or using the
+          hosted JIRA provided by Atlassian, we recommend using the <a
+              href="#jira">web-hook method</a> above instead. This plugin
+          supports older versions of JIRA.</em></p>
 
       <p>First, create the stream you'd like to use for JIRA notifications, and
       subscribe all interested parties to this stream. We recommend the
