@@ -412,6 +412,10 @@ def webathena_kerberos_login(request, user_profile,
     try:
         parsed_cred = ujson.loads(cred)
         user = parsed_cred["cname"]["nameString"][0]
+        if user == "golem":
+            # Hack for an mit.edu user whose Kerberos username doesn't
+            # match what he zephyrs as
+            user = "ctl"
         assert(user == user_profile.email.split("@")[0])
         ccache = make_ccache(parsed_cred)
     except Exception:
