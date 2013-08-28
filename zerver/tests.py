@@ -12,7 +12,8 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Subscription,
     PreregistrationUser, UserMessage, \
     get_user_profile_by_email, email_to_domain
 from zerver.tornadoviews import json_get_updates, api_get_messages
-from zerver.decorator import RespondAsynchronously, RequestVariableConversionError, profiled
+from zerver.decorator import RespondAsynchronously, \
+    RequestVariableConversionError, profiled, JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname
@@ -2003,6 +2004,20 @@ class GetPublicStreamsTest(AuthedTestCase):
         self.assertEqual(result.status_code, 400)
 
 class InviteOnlyStreamTest(AuthedTestCase):
+    def test_must_be_subbed_to_send(self):
+        """
+        If you try to send a message to an invite-only stream to which
+        you aren't subscribed, you'll get a 400.
+        """
+        self.login("hamlet@zulip.com")
+        # Create Saxony as an invite-only stream.
+        self.assert_json_success(
+            self.common_subscribe_to_streams("hamlet@zulip.com", ["Saxony"],
+                                             invite_only=True))
+
+        email = "cordelia@zulip.com"
+        with self.assertRaises(JsonableError):
+            self.send_message(email, "Saxony", Recipient.STREAM)
 
     def test_list_respects_invite_only_bit(self):
         """
