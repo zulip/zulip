@@ -150,7 +150,7 @@ exports.hide_stream_sidebar_popover = function () {
 
 exports.hide_user_sidebar_popover = function () {
     if (user_sidebar_popped()) {
-        current_user_sidebar_elem.popover("destroy");
+        $(current_user_sidebar_elem).closest("li").popover("destroy");
         current_user_sidebar_elem = undefined;
     }
 };
@@ -172,13 +172,21 @@ exports.register_click_handlers = function () {
         show_message_info_popover(this, rows.id(row));
     });
 
-
     $('#user_presences').on('click', 'span.arrow', function (e) {
+        var elt = e.target;
+
+        if (user_sidebar_popped() && current_user_sidebar_elem === elt) {
+            // If the popover is already shown, clicking again should toggle it.
+            popovers.hide_user_sidebar_popover();
+            e.stopPropagation();
+            return;
+        }
+
         var last_sidebar_elem = current_user_sidebar_elem;
         popovers.hide_all();
         popovers.show_userlist_sidebar();
 
-        var target = $(e.target).closest('li');
+        var target = $(elt).closest('li');
         var email = target.find('a').attr('data-email');
         var name = target.find('a').attr('data-name');
 
@@ -190,7 +198,7 @@ exports.register_click_handlers = function () {
             fixed: true
         });
         target.popover("show");
-        current_user_sidebar_elem = target;
+        current_user_sidebar_elem = elt;
         e.stopPropagation();
     });
 
