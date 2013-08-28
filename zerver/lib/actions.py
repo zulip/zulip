@@ -801,9 +801,12 @@ def do_rename_stream(realm, old_name, new_name, log=True):
 
     # Update the display recipient and stream, which are easy single
     # items to set.
+    old_cache_key = get_stream_cache_key(old_name, realm)
+    new_cache_key = get_stream_cache_key(stream.name, realm)
+    if old_cache_key != new_cache_key:
+        cache_delete(old_cache_key)
+        cache_set(new_cache_key, stream)
     cache_set(display_recipient_cache_key(recipient.id), stream.name)
-    cache_set(get_stream_cache_key(stream.name, realm), stream)
-    cache_delete(get_stream_cache_key(old_name, realm))
 
     # Delete cache entries for everything else, which is cheaper and
     # clearer than trying to set them. display_recipient is the out of
