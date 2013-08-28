@@ -526,7 +526,34 @@ ul.filters {
 
 #stream_filters .count,
 #global_filters .count {
+    margin-left: 0.5em;
     display: none;
+}
+
+#stream_filters .count {
+    position: absolute;
+    right: 20px;
+    top: 4px;
+    padding: 2px 3px 1px 3px;
+    background: #80837f;
+    color: #ffffff;
+    border-radius: 1px;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.subject_count {
+    display: block;
+    position: absolute;
+    line-height: 1em;
+    right: 20px;
+    top: 2px;
+    padding: 2px 3px 0px 3px;
+    background: #a6ada4;
+    color: #ffffff;
+    border-radius: 1px;
+    font-size: 11px;
+    font-weight: normal;
 }
 
 ul.filters i {
@@ -544,9 +571,9 @@ li.actual-dropdown-menu i {
 
 ul.filters .arrow {
     position: absolute;
-    right: -1px;
-    top: 1px;
-    font-size: 0.7em;
+    right: 0px;
+    top: 2px;
+    font-size: 0.8em;
     display: none;
 }
 
@@ -1806,57 +1833,31 @@ table.floating_recipient {
 
 #stream_filters .subscription_block {
     padding-bottom: 4px;
-    line-height: 1em;
+    line-height: 12px;
     padding-top: 4px;
     margin-right: 15px;
-    height: 1em;
 }
 
-#stream_filters .subscription_block.stream-with-count a.subscription_name {
-    max-width: 120px;
+#stream_filters .subscription_block.stream-with-count {
+    margin-right: 38px;
 }
 
-a.subscription_name {
-    display: inline-block;
-    line-height: 1.1em;
-    max-width: 155px;
+.subscription_name {
+    display: block;
+    line-height: 1em;
+    width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    float: left;
-}
-
-.count-container {
-    display: inline-block;
-    position: relative;
-    width: 0px;
-    vertical-align: top;
-}
-
-.count-container .count {
-    position: absolute;
-    left: 2px;
-    color: #000000;
-}
-
-.subject_count {
-    position: absolute;
-    left: 2px;
-    color: #000000;
 }
 
 .subject-name {
-    display: inline-block;
+    display: block;
     line-height: 1.3em;
-    max-width: 133px;
+    width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    float: left;
-}
-
-.zero-subject-unreads.expanded_subject .subject-name {
-    max-width: 155px;
 }
 
 #stream_filters .subscription_block .icon-vector-lock {
@@ -2102,12 +2103,16 @@ ul.expanded_subjects {
 
 li.expanded_subject {
     position: relative;
-    line-height: 1.3em;
 }
 
 .expanded_subject .subject_box {
     display: block;
-    line-height: 1.3em;
+    margin-right: 38px;
+}
+
+.expanded_subject.zero-subject-unreads .subject_box {
+    display: block;
+    margin-right: 0px;
 }
 
 
