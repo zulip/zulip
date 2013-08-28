@@ -634,9 +634,10 @@ class Bugdown(markdown.Extension):
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
 
         if self.getConfig("realm") == "mit.edu/zephyr_mirror":
-            # Disable almost all patterns for mit.edu users' traffic that is mirrored
+            # Disable almost all inline patterns for mit.edu users' traffic that is mirrored
+            # Note that inline_interesting_links is a treeprocessor and thus is not removed
             for k in md.inlinePatterns.keys():
-                if k not in ["autolink", "inline_interesting_links"]:
+                if k not in ["autolink"]:
                     del md.inlinePatterns[k]
 
 
