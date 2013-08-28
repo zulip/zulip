@@ -24,24 +24,19 @@ function stringify_time(time) {
 
 function add_display_time(message, prev) {
     var time = new XDate(message.timestamp * 1000);
-    var include_date = false;
 
     if (prev !== undefined) {
         var prev_time = new XDate(prev.timestamp * 1000);
         if (time.toDateString() !== prev_time.toDateString()) {
-            include_date = true;
+            // NB: show_date is HTML, inserted into the document without escaping.
+            message.show_date = (timerender.render_date(time, prev_time))[0].outerHTML;
+        } else {
+            // This is run on re-render, and must remove the date if a message
+            // from the same day is added above this one when scrolling up.
+            message.show_date = undefined;
         }
     } else {
-        include_date = true;
-    }
-
-    if (include_date) {
-        // NB: show_date is HTML, inserted into the document without escaping.
         message.show_date = (timerender.render_date(time))[0].outerHTML;
-    } else {
-        // This is run on re-render, and must remove the date if a message
-        // from the same day is added above this one when scrolling up.
-        message.show_date = undefined;
     }
 
     if (message.timestr === undefined) {

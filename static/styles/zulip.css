@@ -2182,7 +2182,7 @@ li.expanded_subject {
     padding-bottom: 10px; /* same as .bookend */
 }
 
-.date_row span{
+.date_row span {
     display: block;
     background: inherit;
     padding: 4px;
@@ -2194,7 +2194,7 @@ li.expanded_subject {
 }
 
 .date_row span:before,
-.date_row span:after{
+.date_row span:after {
     display: inline-block;
     position: relative;
     content: " ";
@@ -2205,14 +2205,23 @@ li.expanded_subject {
     border-bottom: 1px solid #fff;
 }
 
-.date_row span:before{
+.date_row span:before {
     right: 0.5em;
     margin-left: -50%;
 }
 
-.date_row span:after{
+.date_row span:after {
     left: 0.5em;
     margin-right: -50%;
+}
+
+.date_row hr {
+    display: inline-block;
+    vertical-align: middle;
+    width: 33%;
+    border-top: 1px solid #ccc;
+    border-bottom:1px solid #fff;
+    margin: 0;
 }
 
 #restore-draft {
