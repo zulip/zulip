@@ -14,7 +14,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Subscription,
 from zerver.tornadoviews import json_get_updates, api_get_messages
 from zerver.decorator import RespondAsynchronously, RequestVariableConversionError, profiled
 from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import do_send_message, gather_subscriptions, \
+from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
@@ -158,18 +158,16 @@ class AuthedTestCase(TestCase):
                      content="test content", subject="test"):
         sender = get_user_profile_by_email(sender_name)
         if message_type == Recipient.PERSONAL:
-            recipient = get_user_profile_by_email(recipient_name)
+            message_type_name = "private"
         else:
-            recipient = Stream.objects.get(name=recipient_name, realm=sender.realm)
-        recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
-        pub_date = now()
+            message_type_name = "stream"
+        recipient_list = [recipient_name] # Doesn't work for group PMs.
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
-        # Subject field is unused by PMs.
-        message = Message(sender=sender, recipient=recipient, subject=subject,
-                          pub_date=pub_date, sending_client=sending_client,
-                          content=content)
-        do_send_message(message)
-        return message
+
+        return check_send_message(
+            sender, sending_client, message_type_name, recipient_list, subject,
+            content, forged=False, forged_timestamp=None,
+            forwarder_user_profile=sender, realm=sender.realm)
 
     def get_old_messages(self, anchor=1, num_before=100, num_after=100):
         post_params = {"anchor": anchor, "num_before": num_before,
@@ -672,7 +670,7 @@ class PointerTest(AuthedTestCase):
         """
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
-        msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM).id
+        msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
         result = self.client.post("/json/update_pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, msg_id)
@@ -684,7 +682,7 @@ class PointerTest(AuthedTestCase):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         self.assertEqual(get_user_profile_by_email(email).pointer, -1)
-        msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM).id
+        msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
         result = self.client.post("/api/v1/update_pointer", {"email": email,
                                                              "api-key": api_key,
                                                              "pointer": msg_id})
@@ -1932,8 +1930,8 @@ class GetProfileTest(AuthedTestCase):
         Ensure get_profile returns a proper pointer id after the pointer is updated
         """
 
-        id1 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM).id
-        id2 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM).id
+        id1 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
+        id2 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
 
         json = self.common_get_profile("hamlet@zulip.com")
 
@@ -2774,8 +2772,10 @@ class UserPresenceTests(AuthedTestCase):
 
 class UnreadCountTests(AuthedTestCase):
     def setUp(self):
-        self.unread_msgs = [self.send_message("iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello"),
-                            self.send_message("iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello2")]
+        self.unread_msg_ids = [self.send_message(
+                "iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello"),
+                               self.send_message(
+                "iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello2")]
 
     def test_new_message(self):
         # Sending a new message results in unread UserMessages being created
@@ -2793,7 +2793,7 @@ class UnreadCountTests(AuthedTestCase):
         self.login("hamlet@zulip.com")
 
         result = self.client.post("/json/update_message_flags",
-                                  {"messages": ujson.dumps([msg.id for msg in self.unread_msgs]),
+                                  {"messages": ujson.dumps(self.unread_msg_ids),
                                    "op": "add",
                                    "flag": "read"})
         self.assert_json_success(result)
@@ -2801,21 +2801,21 @@ class UnreadCountTests(AuthedTestCase):
         # Ensure we properly set the flags
         found = 0
         for msg in self.get_old_messages():
-            if msg['id'] in [message.id for message in self.unread_msgs]:
+            if msg['id'] in self.unread_msg_ids:
                 self.assertEqual(msg['flags'], ['read'])
                 found += 1
         self.assertEqual(found, 2)
 
-        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([self.unread_msgs[1].id]),
-                                                                 "op": "remove",
-                                                                 "flag": "read"})
+        result = self.client.post("/json/update_message_flags",
+                                  {"messages": ujson.dumps([self.unread_msg_ids[1]]),
+                                   "op": "remove", "flag": "read"})
         self.assert_json_success(result)
 
         # Ensure we properly remove just one flag
         for msg in self.get_old_messages():
-            if msg['id'] == self.unread_msgs[0].id:
+            if msg['id'] == self.unread_msg_ids[0]:
                 self.assertEqual(msg['flags'], ['read'])
-            elif msg['id'] == self.unread_msgs[1].id:
+            elif msg['id'] == self.unread_msg_ids[1]:
                 self.assertEqual(msg['flags'], [])
 
     def test_update_all_flags(self):
