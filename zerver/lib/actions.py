@@ -442,7 +442,7 @@ def check_message(sender, client, message_type_name, message_to,
         elif subscribed_to_stream(sender, stream):
             # Or it is private, but your are subscribed
             pass
-        elif is_super_user(sender):
+        elif is_super_user(sender) or is_super_user(forwarder_user_profile):
             # Or this request is being done on behalf of a super user
             pass
         elif sender.is_bot and subscribed_to_stream(sender.bot_owner, stream):
