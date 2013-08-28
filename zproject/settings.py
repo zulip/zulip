@@ -580,6 +580,9 @@ OPENID_RENDER_FAILURE = openid_failure_handler
 MAILCHIMP_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us4'
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
+# This should be synced with our camo installation
+CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
 # Client-side polling timeout for get_events, in milliseconds.
 # We configure this here so that the client test suite can override it.
 # We already kill the connection server-side with heartbeat events,

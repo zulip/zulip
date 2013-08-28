@@ -2610,12 +2610,17 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
 
         self.assertEqual(converted, '<p>Google logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>')
 
-        # If thre are two images, both should be previewed.
+        # If there are two images, both should be previewed.
         msg = 'Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boringGoogle logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring'
         converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Google logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div><div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>')
 
+        # http images should be converted to https via our Camo integration
+        msg = 'Google logo today: http://www.google.com/images/srpr/logo4w.png'
+        converted = bugdown_convert(msg)
+
+        self.assertEqual(converted, '<p>Google logo today: <a href="http://www.google.com/images/srpr/logo4w.png" target="_blank" title="http://www.google.com/images/srpr/logo4w.png">http://www.google.com/images/srpr/logo4w.png</a></p>\n<div class="message_inline_image"><a href="http://www.google.com/images/srpr/logo4w.png" target="_blank" title="http://www.google.com/images/srpr/logo4w.png"><img src="https://external-content.zulipcdn.net/4882a845c6edd9a945bfe5f33734ce0aed8170f3/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"></a></div>')
 
     def test_inline_youtube(self):
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'

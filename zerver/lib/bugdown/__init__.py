@@ -11,7 +11,8 @@ import time
 import HTMLParser
 import httplib2
 
-from hashlib import sha1
+import hashlib
+import hmac
 
 from django.core import mail
 from django.conf import settings
@@ -73,7 +74,7 @@ def add_a(root, url, link, height=None):
     img.set("src", url)
 
 def hash_embedly_url(link):
-    return 'embedly:' + sha1(link).hexdigest()
+    return 'embedly:' + hashlib.sha1(link).hexdigest()
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id):
@@ -145,6 +146,19 @@ def get_tweet_id(url):
         return False
     return tweet_id_match.group("tweetid")
 
+class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
+    def run(self, root):
+        # Get all URLs from the blob
+        found_imgs = walk_tree(root, lambda e: e if e.tag == "img" else None)
+        for img in found_imgs:
+            url = img.get("src")
+            # We rewrite all HTTP URLs as well as all HTTPs URLs for mit.edu
+            if not url.startswith("http://"):
+                # Don't rewrite images on our own site (e.g. emoji).
+                continue
+            digest = hmac.new(settings.CAMO_KEY, url, hashlib.sha1).hexdigest()
+            encoded_url = url.encode("hex")
+            img.set("src", "https://external-content.zulipcdn.net/%s/%s" % (digest, encoded_url))
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url):
@@ -651,6 +665,7 @@ class Bugdown(markdown.Extension):
                                  "_begin")
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
+        md.treeprocessors.add("rewrite_to_https", InlineHttpsProcessor(md), "_end")
 
         if self.getConfig("realm") == "mit.edu/zephyr_mirror":
             # Disable almost all inline patterns for mit.edu users' traffic that is mirrored
