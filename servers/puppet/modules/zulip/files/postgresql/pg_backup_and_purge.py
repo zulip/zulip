@@ -7,6 +7,7 @@ import dateutil.parser
 import pytz
 from datetime import datetime, timedelta
 
+logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 def run(args, dry_run=False):
