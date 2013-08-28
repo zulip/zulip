@@ -436,20 +436,17 @@ def check_message(sender, client, message_type_name, message_to,
             raise JsonableError("Stream does not exist")
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
-        if (not stream.invite_only) or subscribed_to_stream(sender, stream) or \
-                is_super_user(sender):
-            # This is a public stream, or it is private but you are subscribed
-            # to it, or heck you are the super user and can do whatever you
-            # want. You are good to go.
+        if not stream.invite_only:
+            # This is a public stream
             pass
-        elif sender.is_bot and (subscribed_to_stream(sender, stream) or \
-                                    subscribed_to_stream(sender.bot_owner, stream)):
-            # Either the bot has to be subscribed or the owner of the bot has to
-            # be subscribed.
+        elif subscribed_to_stream(sender, stream):
+            # Or it is private, but your are subscribed
             pass
-        elif stream.invite_only and subscribed_to_stream(sender, stream):
-            # This is an invite_only stream, so you have to be subscribed to
-            # send to it.
+        elif is_super_user(sender):
+            # Or this request is being done on behalf of a super user
+            pass
+        elif sender.is_bot and subscribed_to_stream(sender.bot_owner, stream):
+            # Or you're a bot and your owner is subscribed.
             pass
         else:
             # All other cases are an error.
