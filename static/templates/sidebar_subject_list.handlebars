@@ -5,9 +5,11 @@
         <a href='{{url}}' class="subject-name">
           {{subject}}
         </a>
+        <div class="count-container">
         <div class="subject_count {{#if is_zero}}zero_count{{/if}}">
-            <div class="value">{{unread}}</div>
+            (<span class="value">{{unread}}</span>)
         </div>
+      </div>
       </span>
     </li>
     {{/each}}
