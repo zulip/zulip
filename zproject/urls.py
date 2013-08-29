@@ -139,12 +139,12 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/fetch_api_key$',          'api_fetch_api_key'),
 
     # These are integration-specific web hook callbacks
-    url(r'^api/v1/external/beanstalk$' ,    'api_beanstalk_webhook'),
-    url(r'^api/v1/external/github$',        'api_github_landing'),
-    url(r'^api/v1/external/jira$',          'api_jira_webhook'),
-    url(r'^api/v1/external/pivotal$',       'api_pivotal_webhook'),
-    url(r'^api/v1/external/newrelic$',      'api_newrelic_webhook'),
-    url(r'^api/v1/external/bitbucket$',     'api_bitbucket_webhook'),
+    url(r'^api/v1/external/beanstalk$' ,    'webhooks.api_beanstalk_webhook'),
+    url(r'^api/v1/external/github$',        'webhooks.api_github_landing'),
+    url(r'^api/v1/external/jira$',          'webhooks.api_jira_webhook'),
+    url(r'^api/v1/external/pivotal$',       'webhooks.api_pivotal_webhook'),
+    url(r'^api/v1/external/newrelic$',      'webhooks.api_newrelic_webhook'),
+    url(r'^api/v1/external/bitbucket$',     'webhooks.api_bitbucket_webhook'),
 )
 
 v1_api_and_json_patterns = patterns('zerver.views',
