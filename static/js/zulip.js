@@ -368,6 +368,7 @@ function mark_messages_as_read(messages, options) {
         if (narrowed_msg_list) {
             narrowed_msg_list.show_message_as_read(message, options);
         }
+        notifications.close_notification(message);
         processed = true;
     });
 

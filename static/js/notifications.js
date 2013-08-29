@@ -23,13 +23,21 @@ function browser_desktop_notifications_on () {
         (window.bridge !== undefined);
 }
 
+function cancel_notification_object (notification_object) {
+        // We must remove the .onclose so that it does not trigger on .cancel
+        notification_object.onclose = function () {};
+        notification_object.onclick = function () {};
+        notification_object.cancel();
+}
+
 exports.initialize = function () {
     $(window).focus(function () {
         window_has_focus = true;
 
         _.each(notice_memory, function (notice_mem_entry) {
-           notice_mem_entry.obj.cancel();
+           cancel_notification_object(notice_mem_entry.obj);
         });
+        notice_memory = {};
 
         // Update many places on the DOM to reflect unread
         // counts.
@@ -218,10 +226,7 @@ function process_notification(notification) {
         msg_count = notice_memory[key].msg_count + 1;
         title = msg_count + " messages from " + title;
         notification_object = notice_memory[key].obj;
-        // We must remove the .onclose so that it does not trigger on .cancel
-        notification_object.onclose = function () {};
-        notification_object.onclick = function () {};
-        notification_object.cancel();
+        cancel_notification_object(notification_object);
     }
 
     if (message.type === "private" && message.display_recipient.length > 2) {
@@ -243,7 +248,8 @@ function process_notification(notification) {
         notice_memory[key] = {
             obj: window.webkitNotifications.createNotification(
                     icon_url, title, content),
-            msg_count: msg_count
+            msg_count: msg_count,
+            message_id: message.id
         };
         notification_object = notice_memory[key].obj;
         notification_object.onclick = function () {
@@ -272,6 +278,15 @@ function process_notification(notification) {
         window.bridge.desktopNotification(title, content);
     }
 }
+
+exports.close_notification = function (message) {
+    _.each(Object.keys(notice_memory), function (key) {
+       if (notice_memory[key].message_id === message.id) {
+           cancel_notification_object(notice_memory[key].obj);
+           delete notice_memory[key];
+       }
+    });
+};
 
 exports.speaking_at_me = function (message) {
     if (message === undefined) {
