@@ -105,6 +105,8 @@ def authenticated_api_view(view_func):
         return limited_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
+# A more REST-y authentication decorator, using, in particular, HTTP Basic
+# authentication.
 def authenticated_rest_api_view(view_func):
     @csrf_exempt
     @wraps(view_func)
