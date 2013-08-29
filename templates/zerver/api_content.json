@@ -24,7 +24,7 @@
             ],
             [
                 "subject",
-                "The subject for the message (Only required if type is \u201cstream\u201d). Maxiumum length of 60 characters."
+                "The topic for the message (Only required if type is \u201cstream\u201d). Maximum length of 60 characters."
             ]
         ],
         "example_request": {
