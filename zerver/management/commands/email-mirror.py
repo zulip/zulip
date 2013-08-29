@@ -61,9 +61,11 @@ if settings.DEPLOYED:
         site="https://staging.zulip.com", email=GATEWAY_EMAIL, api_key=api_key)
     prod_client = zulip.Client(
         site="https://api.zulip.com", email=GATEWAY_EMAIL, api_key=api_key)
+    inbox = "INBOX"
 else:
     staging_client = prod_client = zulip.Client(
         site="http://localhost:9991/api", email=GATEWAY_EMAIL, api_key=api_key)
+    inbox = "Test"
 
 def redact_stream(error_message):
     stream_match = re.search("(\S+?)\+(\S+?)@streams.zulip.com", error_message)
@@ -195,7 +197,7 @@ def examine_mailbox(result, proto, mailbox):
 
 def select_mailbox(result, proto):
     # Select which mailbox we care about.
-    mbox = filter(lambda x: "INBOX" in x[2], result)[0][2]
+    mbox = filter(lambda x: inbox in x[2], result)[0][2]
     return proto.select(mbox).addCallback(examine_mailbox, proto, result)
 
 def list_mailboxes(res, proto):
