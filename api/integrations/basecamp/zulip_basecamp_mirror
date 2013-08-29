@@ -110,7 +110,7 @@ def run_mirror():
     # in check_permissions, but it may still be empty or corrupted
     try:
         with open(config.RESUME_FILE) as f:
-            sinde = f.read()
+            since = f.read()
         since = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}-\d{2}:\d{2}", since)
         assert since, "resume file does not meet expected format"
         since = since.string
