@@ -410,7 +410,8 @@ JS_SPECS = {
             'js/tab_bar.js',
             'js/metrics.js',
             'js/emoji.js',
-            'js/referral.js'
+            'js/referral.js',
+            'js/alert_words.js'
         ],
         'output_filename': 'min/app.js'
     },

@@ -596,6 +596,7 @@ function add_message_metadata(message) {
         }
     });
 
+    alert_words.process_message(message);
     msg_metadata_cache[message.id] = message;
     return message;
 }

@@ -38,6 +38,9 @@ var globals =
     // templates.js
     + ' templates'
 
+    // alert_words.js
+    + ' alert_words'
+
     // zulip.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'
     + ' add_messages'

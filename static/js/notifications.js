@@ -302,7 +302,8 @@ function message_is_notifiable(message) {
             (message.type === "private" ||
              exports.speaking_at_me(message) ||
              (message.type === "stream" &&
-              subs.receives_notifications(message.stream))));
+              subs.receives_notifications(message.stream)) ||
+             alert_words.notifies(message)));
 }
 
 exports.received_messages = function (messages) {

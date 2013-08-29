@@ -2605,6 +2605,10 @@ div.edit_bot {
     background-color: #c9fcc1;
 }
 
+.alert-word {
+    background-color: #c9fcc1;
+}
+
 #settings {
     margin-top: 45px;
     margin-left: 15px;
