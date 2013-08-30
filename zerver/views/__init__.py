@@ -846,6 +846,8 @@ class NarrowBuilder(object):
             return Q(flags=UserMessage.flags.starred)
         elif operand == 'mentioned':
             return Q(flags=UserMessage.flags.mentioned)
+        elif operand == 'alerted':
+            return Q(flags=UserMessage.flags.mentioned)
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
     def by_stream(self, operand):

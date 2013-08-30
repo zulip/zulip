@@ -57,6 +57,8 @@ function describe(operators) {
                 return 'Narrow to starred messages';
             } else if (operand === 'mentioned') {
                 return 'Narrow to mentioned messages';
+            } else if (operand === 'alerted') {
+                return 'Narrow to alerted messages';
             }
             break;
 
@@ -366,6 +368,10 @@ function get_special_filter_suggestions(query, operators) {
         {
             search_string: 'is:mentioned',
             description: '@-mentions'
+        },
+        {
+            search_string: 'is:alerted',
+            description: 'Alerted messages'
         },
         {
             search_string: 'sender:' + page_params.email,

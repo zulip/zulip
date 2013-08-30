@@ -239,6 +239,10 @@ Filter.prototype = {
                         if (!message.mentioned) {
                             return false;
                         }
+                    } else if (operand === 'alerted') {
+                        if (!message.alerted) {
+                            return false;
+                        }
                     }
 
                     break;

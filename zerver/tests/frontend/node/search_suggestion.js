@@ -150,6 +150,7 @@ set_global('narrow', {});
         "is:private",
         "is:starred",
         "is:mentioned",
+        "is:alerted",
         "sender:bob@zulip.com",
         "stream:devel",
         "stream:office"
@@ -164,6 +165,7 @@ set_global('narrow', {});
     assert.equal(describe('is:private'), 'Private messages');
     assert.equal(describe('is:starred'), 'Starred messages');
     assert.equal(describe('is:mentioned'), '@-mentions');
+    assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
     assert.equal(describe('stream:devel'), 'Narrow to stream <strong>devel</strong>');
 }());
