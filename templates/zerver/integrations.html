@@ -23,6 +23,7 @@
 
     <h3 id="services">Services with integrations</h3>
     <ul>
+      <li><a href="#basecamp">Basecamp</a></li>
       <li><a href="#beanstalk">Beanstalk</a></li>
       <li><a href="#bitbucket">Bitbucket</a></li>
       <li><a href="#capistrano">Capistrano</a></li>
@@ -58,6 +59,50 @@
     to <a href="mailto:support@zulip.com?subject=Integration%20question">email
     us</a>.</p>
 
+    {#--------------------------------------------------------------------#}
+    <div id="basecamp" class="integration">
+      <h4>Basecamp</h4>
+      <p>First, create the stream you'd like to use for Basecamp notifications,
+      and subscribe all interested parties to this stream. We recommend the
+      name <code>basecamp</code>.</p>
+
+      <p>Next, download and install our <a href="/api">Python
+          bindings and example scripts</a> on the computer you'd like to run this mirroring script from.</p>
+
+      <p>You will need your Basecamp account ID. You can find it as a sequence of numbers in the URL when you log in:</p>
+      <img class="screenshot" src="/static/images/integrations/basecamp/001.png">
+      <p>Edit the Basecamp and Zulip credentials in <code>integrations/basecamp/zulip_basecamp_config.py</code> using
+      your favorite editor:
+
+
+      <div class="codehilite">
+      <pre><span class="n">BASECAMP_ACCOUNT_ID</span> <span class="o">=</span> <span class="s">"1234567"</span>
+<span class="n">BASECAMP_USERNAME</span> <span class="o">=</span> <span class="s">"foo@example.com"</span>
+<span class="n">BASECAMP_PASSWORD</span> <span class="o">=</span> <span class="s">"p455w0rd"</span>
+
+<span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"basecamp-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span></pre>
+      </div>
+
+      <p>Before your first run of the script, you may optionally choose to
+      configure it to mirror some number of hours of Basecamp activity:</p>
+
+      <div class="codehilite">
+        <pre><span class="n">BASECAMP_INITIAL_HISTORY_HOURS</span> <span class="o">=</span> <span class="s">10</span></pre>
+      </div>
+
+      <p>Now, simply run the <code>api/integrations/basecamp/zulip_basecamp_mirror</code> script.
+      If needed, this script may be restarted, and it will automatically resume from when
+      it was last running.</p>
+
+      <p><b>Congratulations! You're done!</b><br /> Whenever you create a new project,
+      calendar event, comment, message, or more, you'll get a notification in your selected stream
+      with the project or calendar as the topic.
+      <img class="screenshot" src="/static/images/integrations/basecamp/002.png">
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
     {#--------------------------------------------------------------------#}
     <div id="beanstalk" class="integration">
       <h4>Beanstalk</h4>
