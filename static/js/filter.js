@@ -13,6 +13,28 @@ function mit_edu_stream_name_match(message, operand) {
     return related_regexp.test(message.stream);
 }
 
+function mit_edu_topic_name_match(message, operand) {
+    // MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
+    // (foo, foo.d, foo.d.d, etc)
+    // TODO: hoist the regex compiling out of the closure
+    var m = /^(.*?)(?:\.d)*$/i.exec(operand);
+    var base_topic = m[1];
+    var related_regexp;
+
+    // Additionally, MIT users expect the empty instance and
+    // instance "personal" to be the same.
+    if (base_topic === ''
+        || base_topic.toLowerCase() === 'personal'
+        || base_topic.toLowerCase() === '(instance "")')
+    {
+        related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
+    } else {
+        related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
+    }
+
+    return related_regexp.test(message.subject);
+}
+
 function message_in_home(message) {
     if (message.type === "private") {
         return true;
@@ -200,7 +222,7 @@ Filter.prototype = {
         // build JavaScript code in a string and then eval() it.
 
         return function (message) {
-            var operand, i, index, m, related_regexp;
+            var operand, i, index;
             for (i = 0; i < operators.length; i++) {
                 operand = operators[i][1];
                 switch (operators[i][0]) {
@@ -258,24 +280,7 @@ Filter.prototype = {
 
                     operand = operand.toLowerCase();
                     if (page_params.domain === "mit.edu") {
-                        // MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
-                        // (foo, foo.d, foo.d.d, etc)
-                        // TODO: hoist the regex compiling out of the closure
-                        m = /^(.*?)(?:\.d)*$/i.exec(operand);
-                        var base_topic = m[1];
-
-                        // Additionally, MIT users expect the empty instance and
-                        // instance "personal" to be the same.
-                        if (base_topic === ''
-                            || base_topic.toLowerCase() === 'personal'
-                            || base_topic.toLowerCase() === '(instance "")')
-                        {
-                            related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
-                        } else {
-                            related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
-                        }
-
-                        if (! related_regexp.test(message.subject)) {
+                        if (!mit_edu_topic_name_match(message, operand)) {
                             return false;
                         }
                     } else if (message.subject.toLowerCase() !== operand) {
