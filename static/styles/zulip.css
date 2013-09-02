@@ -14,7 +14,6 @@ body,
 #tab_bar,
 #tab_bar_underpadding,
 .message_list,
-.message_comp,
 #compose-container {
     background-color: #f4f5f4;
    -webkit-transition: background-color 200ms linear;
@@ -35,10 +34,6 @@ body.narrowed_view,
    -o-transition: background-color 200ms linear;
    -ms-transition: background-color 200ms linear;
    transition: background-color 200ms linear;
-}
-
-.message_comp.compose-content {
-    background-color: #ffffff;
 }
 
 input,
@@ -609,11 +604,7 @@ ul.filters li.out_of_home_view {
 
 .message_comp {
     display: none;
-}
-
-.message_comp {
-    background-color: #ffffff;
-    padding: 8px 20px 8px 10px;
+    padding: 10px 10px 8px 5px;
 }
 
 #compose_buttons {
@@ -681,7 +672,7 @@ td.pointer {
 }
 
 .ztable_comp_col1 {
-    width: 40px;
+    width: 8px;
 }
 
 .ztable_comp_col2 {
@@ -775,6 +766,78 @@ just a temporary hack.
 .floating_recipient .message_header_colorblock {
     box-shadow: inset 0px 2px 1px -2px #333, inset 2px 0px 1px -2px #333 !important;
 }
+
+.compose_table .message_header_colorblock, .compose_table .message_header {
+    box-shadow: none;
+    background: none;
+}
+
+.compose_table .message_header_colorblock {
+    border-radius: 3px 0px 0px 3px;
+    border-bottom: 0px;
+}
+
+.compose_table .message_header_colorblock.message_header_private_message {
+    border-radius: 3px 0px 0px 3px;
+    border-bottom: 0px;
+}
+
+.compose_table .message_header_colorblock.message_header_private_message {
+    background: #444;
+}
+
+.compose_table .right_part {
+    padding: 0px;
+}
+
+.compose_table .right_part .icon-vector-narrow {
+    font-size: 0.6em;
+    position: relative;
+}
+
+.compose_table .compose_checkbox_label {
+    display: inline-block;
+}
+
+.compose_table .pm_recipient {
+    position: relative;
+    margin-right: 30px;
+}
+
+.compose_table .pm_recipient .you_text {
+    position: absolute;
+    left: 4px;
+    top: 2px;
+}
+
+.compose_table .pm_recipient #private_message_recipient {
+    padding-left: 4em;
+    border-left: none;
+    border-radius: 0px 3px 3px 0px;
+}
+
+.compose_table #private-message .right_part {
+    padding-right: 4em;
+}
+
+.messagebox-bottom {
+    height: 3px;
+    background-color: #fff;
+    border-radius: 0px 0px 3px 0px;
+    /* box-shadow: 0px 2px 2px -1px #ccc; */
+    border: 1px solid #c1dbd5;
+    border-top: none;
+    border-left: none;
+}
+
+.messagebox-bottom-colorblock {
+    border-radius: 0px 0px 0px 3px;
+    /* box-shadow: 0px 2px 2px -1px #ccc; */
+    border: 1px solid #c1dbd5;
+    border-top: none;
+    border-right: none;
+}
+
 
 .compose_table .message_header.message_header_private_message,
 .message_header_private_message {
@@ -1123,10 +1186,11 @@ blockquote p {
 
 #send_message_form .messagebox {
     /* normally 5px 14px; pull in the right and bottom a bit */
-    padding-right: 5px;
-    padding-bottom: 0px;
-    border-top-width: 1px;
     cursor: default;
+    padding: 0px;
+    background: none;
+    box-shadow: none;
+    border: none;
 }
 
 #enter-sends-label {
@@ -1144,10 +1208,8 @@ blockquote p {
 }
 
 #below-compose-content {
-    display: table-row;
-    font-size: 80%;
-    white-space: nowrap;
-    padding-top: 6px;
+    width: 100%;
+    margin-top: 6px;
 }
 
 .bookend {
@@ -1212,7 +1274,7 @@ blockquote p {
 
 .compose-content {
     border-top: 1px solid #bbbbbb;
-    padding: 8px 20px;
+    padding: 8px 15px 8px 10px;
     margin-left: 210px;
     margin-right: 200px;
     position: relative;
@@ -1221,7 +1283,7 @@ blockquote p {
 #compose_close {
     display: none;
     position: absolute;
-    right: 5px;
+    right: 8px;
     top: 7px;
 }
 
@@ -1274,21 +1336,25 @@ textarea.new_message_textarea {
     max-height: 11em;
     margin-bottom: 0px;
     resize: none;
+    margin-top: 6px;
 }
 
 input.recipient_box {
-    margin-bottom: 0px;
-    margin-top: 0px;
+    margin: 0px;
+    height: 1em;
+    border-radius: 3px;
 }
 
 #stream.recipient_box {
     width: 20%;
+    border-radius: 0px 3px 3px 0px;
+    border-left: 0px;
 }
 #subject.recipient_box {
     width: 15%;
 }
 #private_message_recipient.recipient_box {
-    width: 72%;
+    width: 100%;
 }
 
 #left-of-compose {
@@ -1297,19 +1363,45 @@ input.recipient_box {
 }
 
 #send_controls {
-    display: table-cell;
-    vertical-align: bottom;
-    padding-left: 15px;
-    /* jQuery's slideDown() animation seems to compute the target height by
-       drawing these elements in an (offscreen) context where they would reflow
-       onto multiple lines.  We need to prevent that in order to avoid an
-       animation glitch.  See: http://is.gd/EVJFZ8 */
-    white-space: nowrap;
-    /* This white-space nowrap is also critical for making sure that the
-       button doesn't get smushed as the textarea expands; clearly the
-       button is taking up more than the 1% width specified below. */
-    width: 1%;
+    float: right;
+    position: relative;
+    right: -7px;
+    font-size: 0.8em;
+    height: 2.2em;
 }
+
+#send_controls .compose_checkbox_label {
+    margin-right: 2px;
+}
+
+#send_controls .compose_checkbox_label input {
+    position: relative;
+    top: -3px;
+}
+
+#send_controls #compose-send-button {
+    font-weight: 600;
+    height: 2.2em;
+    background-image: -moz-linear-gradient(top, rgba(14,70,67,1) 0%, rgba(14,83,68,1) 100%); /* FF3.6+ */
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(14,70,67,1)), color-stop(100%,rgba(14,83,68,1))); /* Chrome,Safari4+ */
+    background-image: -webkit-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* Chrome10+,Safari5.1+ */
+    background-image: -o-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* Opera 11.10+ */
+    background-image: -ms-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* IE10+ */
+    background-image: linear-gradient(to bottom, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* W3C */
+}
+
+#send_controls #compose-send-button:hover {
+    font-weight: 600;
+    height: 2.2em;
+    background: #fff;
+    background-image: -moz-linear-gradient(top, rgba(14,70,67,0.6) 0%, rgba(14,83,68,0.6) 100%); /* FF3.6+ */
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(14,70,67,0.6)), color-stop(100%,rgba(14,83,68,1))); /* Chrome,Safari4+ */
+    background-image: -webkit-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* Chrome10+,Safari5.1+ */
+    background-image: -o-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* Opera 11.10+ */
+    background-image: -ms-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* IE10+ */
+    background-image: linear-gradient(to bottom, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* W3C */
+}
+
 
 #navbar-spacer {
     /* A spacer that is exactly a navbar size, so that all content
@@ -2228,6 +2320,11 @@ li.expanded_subject {
     float: left;
     display: none;
     margin-right: 1em;
+    padding-top: 2px;
+}
+
+#sending-indicator {
+    padding-top: 2px;
 }
 
 #restore-draft:hover {
@@ -2241,14 +2338,19 @@ li.expanded_subject {
     font-size: 14px;
     width: 14px;
     height: 14px;
-    margin-right: 5px;
-    border-radius: 2px;
+    margin-right: 8px;
+    padding-top: 5px;
     text-align: center;
-    float: right;
+    float: left;
 }
 
 #compose a.message-control-button:hover {
     color: #000;
+}
+
+#enter_sends {
+    margin-top: 0px;
+    margin-right: 5px;
 }
 
 #streams_header {

@@ -31,9 +31,9 @@
               <td class="ztable_comp_col2" />
             </tr>
             <tr id="stream-message">
-              <td class="message_header message_header_stream left_part">
+              <td class="message_header_colorblock message_header_stream left_part">
               </td>
-              <td class="message_header message_header_stream right_part">
+              <td class="right_part">
                   <span id="compose-lock-icon">
                     <i class="icon-vector-lock" title="This is an invite-only stream"></i>
                   </span>
@@ -47,39 +47,36 @@
               </td>
             </tr>
             <tr id="private-message">
-              <td class="message_header_private_message message_header left_part"></td>
-              <td class="message_header_private_message message_header right_part dark_background">
-                You and <input type="text" class="recipient_box" name="recipient" id="private_message_recipient"
+              <td class="message_header_colorblock message_header_private_message message_header left_part"></td>
+              <td class="right_part">
+                <div class="pm_recipient">
+                  <div class="you_text">You and</div>
+                <input type="text" class="recipient_box" name="recipient" id="private_message_recipient"
                                value="" placeholder="one or more people..." autocomplete="off" tabindex="130"/>
+                </div>
               </td>
             </tr>
             <tr>
-              <td id="left-of-compose">
-                <div>
-                  <input type="file" id="file_input" class="notvisible pull-left" multiple />
-                  {# TODO UPDATE ICON #}
-                  <a class="message-control-button icon-vector-dropbox notdisplayed"
-                     id="attach_dropbox_files" href="#" title="Attach files from Dropbox"></a><br />
-                  <a class="message-control-button icon-vector-paper-clip notdisplayed"
-                     id="attach_files" href="#" title="Attach files"></a><br />
-                  <a class="message-control-button icon-vector-font"
-                     href="#markdown-help" title="Formatting" data-toggle="modal"></a>
-                </div>
-              </td>
-              <td class="messagebox">
-                <div class="message_content">
+              <td class="messagebox" colspan="2">
                   <textarea class="new_message_textarea" name="content" id="new_message_content"
                             value="" placeholder="Compose your message here..." tabindex="140" maxlength="10000"></textarea>
+              <div id="below-compose-content">
+                  <input type="file" id="file_input" class="notvisible pull-left" multiple />
+                  <a class="message-control-button icon-vector-dropbox notdisplayed"
+                     id="attach_dropbox_files" href="#" title="Attach files from Dropbox"></a>
+                  <a class="message-control-button icon-vector-paper-clip notdisplayed"
+                     id="attach_files" href="#" title="Attach files"></a>
+                  <a class="message-control-button icon-vector-font"
+                     href="#markdown-help" title="Formatting" data-toggle="modal"></a>
+                  <a id="restore-draft" onclick="compose.restore_message();">Restore last draft?</a>
+                  <span id="sending-indicator">Sending...</span>
                   <div id="send_controls">
+                  <label id="enter-sends-label" class="compose_checkbox_label" for="enter_sends">Press Enter to send&nbsp;</label>
+                    <input type="checkbox" id="enter_sends" name="enter_sends" value="enter_sends" />
                     <input type="submit" value="Send" id="compose-send-button" class="btn btn-primary send_message" tabindex="150"/>
                   </div>
                 </div>
-                <div id="below-compose-content">
-                  <a id="restore-draft" onclick="compose.restore_message();">Restore last draft?</a>
-                  <span id="sending-indicator">Sending...</span>
-                  <input type="checkbox" class="pull-right" id="enter_sends" name="enter_sends" value="ender_sends" />
-                  <label id="enter-sends-label" class="pull-right" for="enter_sends">Press Enter to send&nbsp;</label>
-                </div>
+
               </td>
             </tr>
           </tbody>
