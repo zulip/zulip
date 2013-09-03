@@ -1108,6 +1108,20 @@ def get_default_subs(user_profile):
     return [default.stream for default in
             DefaultStream.objects.select_related("stream").filter(realm=user_profile.realm)]
 
+def do_update_user_activity_interval(user_profile, log_time):
+    effective_end = log_time + datetime.timedelta(minutes=15)
+    try:
+        last = UserActivityInterval.objects.filter(user_profile=user_profile).order_by("-end")[0]
+        if log_time < last.end:
+            last.end = effective_end
+            last.save(update_fields=["end"])
+            return
+    except IndexError:
+        pass
+
+    UserActivityInterval.objects.create(user_profile=user_profile, start=log_time,
+                                        end=effective_end)
+
 @statsd_increment('user_activity')
 @transaction.commit_on_success
 def do_update_user_activity(user_profile, client, query, log_time):
@@ -1125,13 +1139,6 @@ def do_update_user_activity(user_profile, client, query, log_time):
     activity.count += 1
     activity.last_visit = log_time
     activity.save(update_fields=["last_visit", "count"])
-
-def process_user_activity_event(event):
-    user_profile = get_user_profile_by_id(event["user_profile_id"])
-    client = get_client(event["client"])
-    log_time = timestamp_to_datetime(event["time"])
-    query = event["query"]
-    return do_update_user_activity(user_profile, client, query, log_time)
 
 def send_presence_changed(user_profile, presence):
     presence_dict = presence.to_dict()
@@ -1187,20 +1194,21 @@ def do_update_user_presence(user_profile, client, log_time, status):
         send_presence_changed(user_profile, presence)
 
 def update_user_activity_interval(user_profile, log_time):
-    event={'type': 'user_activity_interval',
-           'user_profile_id': user_profile.id,
+    event={'user_profile_id': user_profile.id,
            'time': datetime_to_timestamp(log_time)}
-    queue_json_publish("user_activity", event, process_user_activity_interval_event)
+    queue_json_publish("user_activity_interval", event,
+                       lambda e: do_update_user_activity_interval(user_profile, log_time))
 
 def update_user_presence(user_profile, client, log_time, status,
                          new_user_input):
-    event={'type': 'user_presence',
-           'user_profile_id': user_profile.id,
+    event={'user_profile_id': user_profile.id,
            'status': status,
            'time': datetime_to_timestamp(log_time),
            'client': client.name}
 
-    queue_json_publish("user_activity", event, process_user_presence_event)
+    queue_json_publish("user_presence", event,
+                       lambda e: do_update_user_presence(user_profile, client,
+                                                         log_time, status))
 
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)
@@ -1230,30 +1238,6 @@ def do_update_message_flags(user_profile, operation, flag, messages, all):
     tornado_callbacks.send_notification(notice)
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)
-
-def process_user_presence_event(event):
-    user_profile = get_user_profile_by_id(event["user_profile_id"])
-    client = get_client(event["client"])
-    log_time = timestamp_to_datetime(event["time"])
-    status = event["status"]
-    return do_update_user_presence(user_profile, client, log_time, status)
-
-def process_user_activity_interval_event(event):
-    user_profile = get_user_profile_by_id(event["user_profile_id"])
-    log_time = timestamp_to_datetime(event["time"])
-
-    effective_end = log_time + datetime.timedelta(minutes=15)
-    try:
-        last = UserActivityInterval.objects.filter(user_profile=user_profile).order_by("-end")[0]
-        if log_time < last.end:
-            last.end = effective_end
-            last.save(update_fields=["end"])
-            return
-    except IndexError:
-        pass
-
-    UserActivityInterval.objects.create(user_profile=user_profile, start=log_time,
-                                        end=effective_end)
 
 def subscribed_to_stream(user_profile, stream):
     try:

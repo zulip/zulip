@@ -2,10 +2,13 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from postmonkey import PostMonkey, MailChimpException
-from zerver.models import get_user_profile_by_email, get_prereg_user_by_email
+from zerver.models import UserActivityInterval, get_user_profile_by_email, \
+    get_user_profile_by_id, get_prereg_user_by_email, get_client
 from zerver.lib.queue import SimpleQueueClient
-from zerver.lib.actions import handle_missedmessage_emails, process_user_activity_event, \
-    process_user_presence_event, process_user_activity_interval_event, do_send_confirmation_email
+from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation_email, \
+    do_update_user_activity, do_update_user_activity_interval, do_update_user_presence
+from zerver.decorator import JsonableError
 import os
 import ujson
 import traceback
@@ -68,31 +71,29 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
-    ERROR_LOG_FILE = os.path.join(settings.ERROR_LOG_DIR, "process_user_activity")
     def consume(self, ch, method, properties, event):
-        print " [x] Received activity %r" % (event,)
-        try:
-            self.process_event(event)
-        except Exception:
-            if not os.path.exists(settings.ERROR_LOG_DIR):
-                os.mkdir(settings.ERROR_LOG_DIR)
-            # One can parse out just the JSON records from this log format using:
-            #
-            # grep "Error Processing" errors/process_user_activity  | cut -f 2- -d:
-            file(self.ERROR_LOG_FILE, "a").write(
-                "Error Processing event: " + ujson.dumps(event) + "\n" +
-                traceback.format_exc())
+        user_profile = get_user_profile_by_id(event["user_profile_id"])
+        client = get_client(event["client"])
+        log_time = timestamp_to_datetime(event["time"])
+        query = event["query"]
+        do_update_user_activity(user_profile, client, query, log_time)
 
-    def process_event(self, event):
-        msg_type = event['type']
-        if msg_type == 'user_activity':
-            process_user_activity_event(event)
-        elif msg_type == 'user_presence':
-            process_user_presence_event(event)
-        elif msg_type == 'user_activity_interval':
-            process_user_activity_interval_event(event)
-        else:
-            print("[*] Unknown message type: %s" % (msg_type,))
+@assign_queue('user_activity_interval')
+class UserActivityIntervalWorker(QueueProcessingWorker):
+    def consume(self, ch, method, properties, event):
+        user_profile = get_user_profile_by_id(event["user_profile_id"])
+        log_time = timestamp_to_datetime(event["time"])
+        do_update_user_activity_interval(user_profile, log_time)
+
+@assign_queue('user_presence')
+class UserPresenceWorker(QueueProcessingWorker):
+    def consume(self, ch, method, properties, event):
+        logging.info("Received event: %s" % (event),)
+        user_profile = get_user_profile_by_id(event["user_profile_id"])
+        client = get_client(event["client"])
+        log_time = timestamp_to_datetime(event["time"])
+        status = event["status"]
+        do_update_user_presence(user_profile, client, log_time, status)
 
 @assign_queue('missedmessage_emails')
 class MissedMessageWorker(QueueProcessingWorker):
