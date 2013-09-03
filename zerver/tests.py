@@ -1504,6 +1504,64 @@ class GetOldMessagesTest(AuthedTestCase):
         d = m.to_dict_uncached(True)
         self.assertEqual(d['content'], '<p>test content</p>')
 
+class EditMessageTest(AuthedTestCase):
+    def check_message(self, msg_id, subject=None, content=None):
+        msg = Message.objects.get(id=msg_id)
+        cached = msg.to_dict(False)
+        uncached = msg.to_dict_uncached(False)
+        self.assertEqual(cached, uncached)
+        if subject:
+            self.assertEqual(msg.subject, subject)
+        if content:
+            self.assertEqual(msg.content, content)
+        return msg
+
+    def test_save_message(self):
+        # This is also tested by a client test, but here we can verify
+        # the cache against the database
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+            subject="editing", content="before edit")
+        result = self.client.post("/json/update_message", {
+            'message_id': msg_id,
+            'content': 'after edit'
+        })
+        self.assert_json_success(result)
+        self.check_message(msg_id, content="after edit")
+
+        result = self.client.post("/json/update_message", {
+            'message_id': msg_id,
+            'subject': 'edited'
+        })
+        self.assert_json_success(result)
+        self.check_message(msg_id, subject="edited")
+
+    def test_propagate_topic(self):
+        self.login("hamlet@zulip.com")
+        id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic1")
+        id2 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic1")
+        id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
+            subject="topic1")
+        id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic2")
+        id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic1")
+
+        result = self.client.post("/json/update_message", {
+            'message_id': id1,
+            'subject': 'edited',
+            'propagate_subject': True
+        })
+        self.assert_json_success(result)
+
+        self.check_message(id1, subject="edited")
+        self.check_message(id2, subject="edited")
+        self.check_message(id3, subject="topic1")
+        self.check_message(id4, subject="topic2")
+        self.check_message(id5, subject="edited")
+
 class InviteUserTest(AuthedTestCase):
 
     def invite(self, users, streams):
