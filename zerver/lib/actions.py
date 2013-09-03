@@ -1026,7 +1026,7 @@ def do_update_onboarding_steps(user_profile, steps):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
-def do_update_message(user_profile, message_id, subject, content):
+def do_update_message(user_profile, message_id, subject, propagate_subject, content):
     try:
         message = Message.objects.select_related().get(id=message_id)
     except Message.DoesNotExist:
@@ -1036,6 +1036,7 @@ def do_update_message(user_profile, message_id, subject, content):
              'sender': user_profile.email,
              'message_id': message_id}
     edit_history_event = {}
+    changed_messages = [message]
 
     if message.sender != user_profile:
         if not (message.subject == "(no topic)" and content is None):
@@ -1078,17 +1079,36 @@ def do_update_message(user_profile, message_id, subject, content):
         event["rendered_content"] = rendered_content
 
     if subject is not None:
+        orig_subject = message.subject
         subject = subject.strip()
         if subject == "":
             raise JsonableError("Topic can't be empty")
 
         if len(subject) > MAX_SUBJECT_LENGTH:
             raise JsonableError("Topic too long")
-        event["orig_subject"] = message.subject
+        event["orig_subject"] = orig_subject
         message.subject = subject
         event["subject"] = subject
         event['subject_links'] = bugdown.subject_links(message.sender.realm.domain.lower(), subject)
-        edit_history_event["prev_subject"] = event['orig_subject']
+        edit_history_event["prev_subject"] = orig_subject
+
+        if propagate_subject:
+            messages = Message.objects.filter(
+                recipient = message.recipient,
+                subject = orig_subject,
+                id__gt = message.id
+            ).select_related()
+
+            # Evaluate the query before running the update
+            messages_list = list(messages)
+            messages.update(subject=subject)
+
+            for m in messages_list:
+                # The cached ORM object is not changed by messages.update()
+                # and the memcached update requires the new value
+                m.subject = subject
+
+            changed_messages += messages_list
 
     message.last_edit_time = timezone.now()
     event['edit_timestamp'] = datetime_to_timestamp(message.last_edit_time)
@@ -1107,12 +1127,15 @@ def do_update_message(user_profile, message_id, subject, content):
     # Update the message as stored in both the (deprecated) message
     # cache (for shunting the message over to Tornado in the old
     # get_messages API) and also the to_dict caches.
-    cache_save_message(message)
     items_for_memcached = {}
-    items_for_memcached[to_dict_cache_key(message, True)] = \
-        (stringify_message_dict(message.to_dict_uncached(apply_markdown=True)),)
-    items_for_memcached[to_dict_cache_key(message, False)] = \
-        (stringify_message_dict(message.to_dict_uncached(apply_markdown=False)),)
+    event['message_ids'] = []
+    for changed_message in changed_messages:
+        event['message_ids'].append(changed_message.id)
+        cache_save_message(changed_message)
+        items_for_memcached[to_dict_cache_key(changed_message, True)] = \
+            (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=True)),)
+        items_for_memcached[to_dict_cache_key(changed_message, False)] = \
+            (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=False)),)
     cache_set_many(items_for_memcached)
 
     recipients = [um.user_profile_id for um in UserMessage.objects.filter(message=message_id)]

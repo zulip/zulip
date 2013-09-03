@@ -1134,6 +1134,9 @@ table.focused_table {
 .message_edit_content {
     line-height: 18px;
 }
+.message_edit_topic_propagate{
+    display: inline-block;
+}
 
 .message_content.condensed {
     max-height: 8.5em;

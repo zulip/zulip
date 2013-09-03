@@ -734,23 +734,33 @@ function update_messages(events) {
         }
 
         if (event.subject !== undefined) {
-            // Remove the recent subjects entry for the old subject;
-            // must be called before we update msg.subject
-            process_message_for_recent_subjects(msg, true);
-            // Update the unread counts; again, this must be called
-            // before we update msg.subject
-            unread.update_unread_subjects(msg, event);
+            // A topic edit may affect multiple messages, listed in
+            // event.message_ids. event.message_id is still the first message
+            // where the user initiated the edit.
+            _.each(event.message_ids, function (id) {
+                var msg = all_msg_list.get(id);
+                if (msg === undefined) {
+                    return;
+                }
 
-            msg.subject = event.subject;
-            msg.subject_links = event.subject_links;
-            if (msg.subject === compose.empty_subject_placeholder()) {
-                msg.empty_subject = true;
-            } else {
-                msg.empty_subject = false;
-            }
-            // Add the recent subjects entry for the new subject; must
-            // be called after we update msg.subject
-            process_message_for_recent_subjects(msg);
+                // Remove the recent subjects entry for the old subject;
+                // must be called before we update msg.subject
+                process_message_for_recent_subjects(msg, true);
+                // Update the unread counts; again, this must be called
+                // before we update msg.subject
+                unread.update_unread_subjects(msg, event);
+
+                msg.subject = event.subject;
+                msg.subject_links = event.subject_links;
+                if (msg.subject === compose.empty_subject_placeholder()) {
+                    msg.empty_subject = true;
+                } else {
+                    msg.empty_subject = false;
+                }
+                // Add the recent subjects entry for the new subject; must
+                // be called after we update msg.subject
+                process_message_for_recent_subjects(msg);
+            });
         }
 
         var row = current_msg_list.get_row(event.message_id);

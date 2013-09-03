@@ -14,6 +14,10 @@ exports.save = function (row) {
         var new_topic = row.find(".message_edit_topic").val();
         if (new_topic !== message.subject && new_topic.trim() !== "") {
             request.subject = new_topic;
+
+            if (row.find(".message_edit_topic_propagate>input").is(":checked")) {
+                request.propagate_subject = true;
+            }
             changed = true;
         }
     }
