@@ -359,6 +359,20 @@ def api_beanstalk_webhook(request, user_profile,
     check_send_message(user_profile, get_client("API"), "stream", ["commits"], subject, content)
     return json_success()
 
+# Desk.com's integrations all make the user supply a template, where it fills
+# in stuff like {{customer.name}} and posts the result as a "data" parameter.
+# There's no raw JSON for us to work from. Thus, it makes sense to just write
+# a template Zulip message within Desk.com and have the webhook extract that
+# from the "data" param and post it, which this does.
+@csrf_exempt
+@authenticated_rest_api_view
+@has_request_variables
+def api_deskdotcom_webhook(request, user_profile, data=REQ(),
+                           topic=REQ(default="Desk.com notification"),
+                           stream=REQ(default="desk.com")):
+    check_send_message(user_profile, get_client("API"), "stream", [stream], topic, data)
+    return json_success()
+
 @csrf_exempt
 @has_request_variables
 def api_newrelic_webhook(request, alert=REQ(converter=json_to_dict, default=None),
