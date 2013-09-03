@@ -24,6 +24,10 @@ exports.collapsible = page_params.staging;
 exports.propagate_topic_edits = page_params.staging ||
   _.contains(['customer7.invalid'], page_params.domain);
 
+
+exports.alert_words = page_params.staging ||
+  _.contains(['reddit.com'], page_params.domain);
+
 return exports;
 
 }());

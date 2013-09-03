@@ -9,6 +9,10 @@ set_global('page_params', {
     email: 'tester@zulip.com'
 });
 
+set_global('feature_flags', {
+    alert_words: true
+});
+
 var alert_words = require('js/alert_words.js');
 
 var regular_message = { sender_email: 'another@zulip.com', content: '<p>a message</p>',
