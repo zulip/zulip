@@ -18,7 +18,6 @@ Run this management command out of a cron job.
 import email
 from os import path
 from email.header import decode_header
-from email.utils import getaddresses
 import logging
 import re
 import sys
@@ -159,11 +158,10 @@ def delete(result, proto):
 
 def find_emailgateway_recipient(message):
     # We can't use Delivered-To; that is emailgateway@zulip.com.
-    for header in ("To", "Cc", "Bcc"):
-        recipients = getaddresses(message.get_all(header, []))
-        for recipient_name, recipient_email in recipients:
-            if recipient_email.lower().endswith("@streams.zulip.com"):
-                return recipient_email
+    recipients = message.get_all("X-Gm-Original-To", [])
+    for recipient_email in recipients:
+        if recipient_email.lower().endswith("@streams.zulip.com"):
+            return recipient_email
 
     raise ZulipEmailForwardError("Missing recipient @streams.zulip.com")
 
