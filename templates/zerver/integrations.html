@@ -27,6 +27,7 @@
       <li><a href="#beanstalk">Beanstalk</a></li>
       <li><a href="#bitbucket">Bitbucket</a></li>
       <li><a href="#capistrano">Capistrano</a></li>
+      <li><a href="#desk">Desk.com</a></li>
       <li><a href="#email">Email</a></li>
       <li><a href="#git">Git</a></li>
       <li><a href="#github">GitHub</a></li>
@@ -202,6 +203,89 @@
         <a href="#services">^ Back to top</a>
       </p>
     </div>
+
+{#--------------------------------------------------------------------#}
+    <div id="desk" class="integration">
+      <h4>Desk.com</h4>
+
+      <p>First, create the stream you'd like to use for Desk.com notifications,
+      and subscribe all interested parties to this stream. We recommend the
+      stream name <code>desk.com</code>. Keep in mind you still need to
+      create the stream first even if you are using this recommendation.</p>
+
+      <p>Next, in Desk.com, open your Admin view via the top-left corner
+      dropdown. In the Admin view, click on Apps, then click Install under
+      "Custom Action":</p>
+      <img src="/static/images/integrations/desk/001.png">
+
+      <p>From there, click "Install Custom Action" and accept the terms. Fill
+      in the form like this:</p>
+      <ul>
+          <li><b>Name</b>: Zulip</li>
+          <li><b>Authentication Method</b>: Basic Auth</li>
+          <li><b>URL</b>: <code>https://zulip.com/api/v1/external/desk</code></li>
+          <li><b>User name</b>: <em>your bot's user name, e.g.</em> <code>desk-bot@yourdomain.com</code></li>
+          <li><b>Password</b>: <em>your bot's API key</em></li>
+      </ul>
+
+      <img src="/static/images/integrations/desk/002.png">
+
+      <p>From here, add a new action. You'll do this for every action you
+      want a notification on Zulip for:</p>
+      <img src="/static/images/integrations/desk/003.png">
+
+      <p>Let's say you want a notification each time a case is updated. Put
+      in a descriptive name like "Announce case update", and copy-paste
+      this to the "Appended URL path":</p>
+      {% verbatim %}
+      <p><code>?stream=desk&amp;topic={{case.id}}:+{{case.subject}}</code></p>
+      {% endverbatim %}
+      <p>The "appended URL path" will be the same for every notification —
+      it makes sure the notification goes to the appropriate stream and topic
+      within Zulip. Next, copy this template Zulip message into "Message to
+      POST":</p>
+      {% verbatim %}
+      <pre><code
+>Case [{{case.id}}, {{case.subject}}]({{case.direct_url}}), was updated.
+
+* Status: {{case.status.name}}
+* Priority: {{case.priority}}
+* Customer: {{customer.name}}
+* Company: {{customer.company}}
+* Description: {{case.description}}</code></pre>
+      <p>You don't need to edit that. All the funny-looking stuff inside
+      <code>{{</code> and <code>}}</code>
+      will be filled in by Desk.com for each event. The dialog should look
+      like this:</p>
+      {% endverbatim %}
+      <img src="/static/images/integrations/desk/004.png">
+
+      <p>Save it, and then click "On" next to the action to enable it. This
+      is important — actions are turned off by default!</p>
+
+      <p>Now you need to create a rule that triggers this action. Desk.com's
+      support center has a
+      <a href="https://support.desk.com/customer/portal/articles/1376">lengthy
+          article on rules</a>, but in short, click on "Cases" up at the top,
+      "Rules" on the left side, and then the specific event you want to notify
+      on — in our example, "Case Updated". Add a rule with a name like "Notify
+      Zulip of case update". Click on "Add Action", select "Trigger an App
+      Action", and select "Zulip: Announce case update". Set "Enabled" to
+      "Yes". The rule should look like this:</p>
+      <img src="/static/images/integrations/desk/005.png">
+
+      <p>Finally, click Update.</p>
+
+      <p><b>Congratulations! You're done!</b><br /> When a case is updated,
+      you'll see a notification like the following, to the stream
+      <code>desk</code>, with a topic that matches the case's subject name:</p>
+      <img class="screenshot" src="/static/images/integrations/desk/006.png">
+
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+
 
 {#--------------------------------------------------------------------#}
     <div id="email" class="integration">
