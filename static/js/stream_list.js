@@ -127,6 +127,21 @@ function set_count(type, name, count) {
     update_count_in_dom(count_span, value_span, count);
 }
 
+function set_count_toggle_button(elem, count) {
+    if (count === 0) {
+        if (elem.is(':animated')) {
+            return elem.stop(true, true).hide();
+        }
+        return elem.hide(500);
+    } else if ((count > 0) && (count < 1000)) {
+        elem.show(500);
+        return elem.text(count);
+    } else {
+        elem.show(500);
+        return elem.text("1k+");
+    }
+}
+
 exports.set_subject_count = function (stream, subject, count) {
     var subject_li = get_subject_filter_li(stream, subject);
     var count_span = subject_li.find('.subject_count');
@@ -257,6 +272,9 @@ exports.update_dom_with_unread_counts = function (counts) {
     set_count("global", "private", counts.private_message_count);
     set_count("global", "mentioned", counts.mentioned_message_count);
     set_count("global", "home", counts.home_unread_messages);
+
+    set_count_toggle_button($("#streamlist-toggle-unreadcount"), counts.home_unread_messages);
+    set_count_toggle_button($("#userlist-toggle-unreadcount"), counts.private_message_count);
 
     animate_private_message_changes(counts.private_message_count);
     animate_mention_changes(counts.mentioned_message_count);

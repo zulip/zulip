@@ -1562,10 +1562,30 @@ input.recipient_box {
     text-decoration: none;
     color: #ffffff;
     display: block;
+    position: relative;
     background-color: rgba(255,255,255,0.2);
     width: 40px;
     padding-top: 12px;
     padding-bottom: 9px;
+}
+
+#streamlist-toggle-unreadcount, #userlist-toggle-unreadcount {
+    position: absolute;
+    display: none;
+    height: 12px;
+    min-width: 12px;
+    line-height: 12px;
+    background: #670000;
+    top: 4px;
+    right: 4px;
+    border: 1px solid #eee;
+    box-shadow: 0px 0px 1px rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 1px 1px 1px 1px;
+    font-size: 9px;
+    z-index: 15;
+    font-weight: normal;
+    color: #ffffff;
 }
 
 #userlist-toggle {
