@@ -37,8 +37,7 @@ for results_file_name in os.listdir(RESULTS_DIR):
     else:
         this_state = "CRITICAL"
         state = this_state
-    output += "%s: %s (%s)\n" % (results_file, this_state,
-                                 time.strftime("%Y-%m-%d %H:%M %Z",
-                                               time.gmtime(last_check)))
+    last_check_ts = time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check))
+    output += "%s: %s (%s)\n" % (results_file, this_state, last_check_ts)
 
 report(state, output)
