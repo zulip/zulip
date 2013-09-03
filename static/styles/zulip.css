@@ -827,7 +827,7 @@ just a temporary hack.
 
 .compose_table #compose-lock-icon i {
     position: absolute;
-    left: -18px;
+    left: 5px;
     top: 3px;
 }
 
@@ -1354,18 +1354,24 @@ input.recipient_box {
     margin: 0px;
     height: 1em;
     border-radius: 3px;
-    padding-right: 18px;
-    min-width: 120px;
 }
 
 #stream.recipient_box {
     width: 20%;
     border-radius: 0px 3px 3px 0px;
     border-left: 0px;
+    min-width: 120px;
 }
+
 #subject.recipient_box {
-    width: 15%;
+    width: 25%;
+    min-width: 140px;
 }
+
+#stream.recipient_box.lock-padding {
+    padding-left: 18px;
+}
+
 #private_message_recipient.recipient_box {
     width: 100%;
 }

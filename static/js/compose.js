@@ -85,10 +85,13 @@ function hide_box() {
 
 function update_lock_icon_for_stream(stream_name) {
     var icon = $("#compose-lock-icon");
+    var streamfield = $("#stream");
     if (stream_data.get_invite_only(stream_name)) {
         icon.show();
+        streamfield.addClass("lock-padding");
     } else {
         icon.hide();
+        streamfield.removeClass("lock-padding");
     }
 }
 
