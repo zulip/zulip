@@ -66,9 +66,10 @@ function maybe_add_update_list_entry (needs_update, id, time, time_above) {
 function render_date_span(elem, time_str, time_above_str) {
     elem.text("");
     if (time_above_str !== undefined) {
-        elem.append("▲ " + time_above_str + " ▲").append($("<hr />"));
+        return elem.append("▲ " + time_above_str + " ▲").append($("<hr />")).append("▼ " + time_str + " ▼");
+    } else {
+        return elem.append(time_str);
     }
-    return elem.append("▼ " + time_str + " ▼");
 }
 
 // Given an XDate object 'time', return a DOM node that initially
