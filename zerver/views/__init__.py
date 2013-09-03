@@ -35,7 +35,8 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
-    user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname
+    user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
+    do_add_alert_words, do_remove_alert_words, do_set_alert_words
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, isnt_mit, not_mit_mailing_list
@@ -44,6 +45,7 @@ from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
 from zerver.lib import bugdown
+from zerver.lib.alert_words import user_alert_words
 
 from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
@@ -705,7 +707,8 @@ def home(request):
                                                          latest_read),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
-        staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED
+        staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
+        alert_words           = register_ret['alert_words']
     ))
 
     statsd.incr('views.home')
@@ -2074,4 +2077,32 @@ def json_refer_friend(request, user_profile, email=REQ):
 
     do_refer_friend(user_profile, email);
 
+    return json_success()
+
+def list_alert_words(request, user_profile):
+    return json_success({'alert_words': user_alert_words(user_profile)})
+
+@authenticated_json_post_view
+@has_request_variables
+def json_set_alert_words(request, user_profile,
+                         alert_words=REQ(converter=json_to_list, default=[])):
+    do_set_alert_words(user_profile, alert_words)
+    return json_success()
+
+@has_request_variables
+def set_alert_words(request, user_profile,
+                    alert_words=REQ(converter=json_to_list, default=[])):
+    do_set_alert_words(user_profile, alert_words)
+    return json_success()
+
+@has_request_variables
+def add_alert_words(request, user_profile,
+                    alert_words=REQ(converter=json_to_list, default=[])):
+    do_add_alert_words(user_profile, alert_words)
+    return json_success()
+
+@has_request_variables
+def remove_alert_words(request, user_profile,
+                       alert_words=REQ(converter=json_to_list, default=[])):
+    do_remove_alert_words(user_profile, alert_words)
     return json_success()

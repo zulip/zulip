@@ -40,6 +40,8 @@ from zerver.decorator import get_user_profile_by_email, json_to_list, JsonableEr
 from zerver.lib.event_queue import request_event_queue, get_user_events
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
+from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
+    remove_user_alert_words, set_user_alert_words
 
 import confirmation.settings
 
@@ -269,6 +271,7 @@ def do_send_messages(messages):
             # Message.render_markdown by code in the bugdown inline patterns
             wildcard = message['message'].mentions_wildcard
             mentioned_ids = message['message'].mentions_user_ids
+            ids_with_alert_words = message['message'].user_ids_with_alert_words
 
             for um in ums_to_create:
                 sent_by_human = (message['message'].sending_client.name.lower() in \
@@ -280,6 +283,8 @@ def do_send_messages(messages):
                     um.flags |= UserMessage.flags.wildcard_mentioned
                 if um.user_profile_id in mentioned_ids:
                     um.flags |= UserMessage.flags.mentioned
+                if um.user_profile_id in ids_with_alert_words:
+                    um.flags |= UserMessage.flags.has_alert_word
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
         UserMessage.objects.bulk_create(ums)
@@ -1253,6 +1258,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         pass
     if event_types is None or "realm_emoji" in event_types:
         ret['realm_emoji'] = user_profile.realm.get_emoji()
+    if event_types is None or "alert_words" in event_types:
+        ret['alert_words'] = user_alert_words(user_profile)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
@@ -1306,6 +1313,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
             pass
         elif event['type'] == "realm_emoji":
             ret['realm_emoji'] = event['realm_emoji']
+        elif event['type'] == "alert_words":
+            ret['alert_words'].extend(event['alert_words'])
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 
@@ -1600,3 +1609,22 @@ def do_add_realm_emoji(realm, name, img_url):
 def do_remove_realm_emoji(realm, name):
     RealmEmoji.objects.get(realm=realm, name=name).delete()
     notify_realm_emoji(realm)
+
+def notify_alert_words(user_profile):
+    words = user_alert_words(user_profile)
+
+    notice = dict(event=dict(type="alert_words", alert_words=words),
+                  users=[user_profile.id])
+    tornado_callbacks.send_notification(notice)
+
+def do_add_alert_words(user_profile, alert_words):
+    add_user_alert_words(user_profile, alert_words)
+    notify_alert_words(user_profile)
+
+def do_remove_alert_words(user_profile, alert_words):
+    remove_user_alert_words(user_profile, alert_words)
+    notify_alert_words(user_profile)
+
+def do_set_alert_words(user_profile, alert_words):
+    set_user_alert_words(user_profile, alert_words)
+    notify_alert_words(user_profile)

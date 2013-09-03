@@ -22,6 +22,8 @@ from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.rate_limiter import clear_user_history
+from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
+    add_user_alert_words, remove_user_alert_words
 from zerver.forms import not_mit_mailing_list
 
 import base64
@@ -3393,6 +3395,101 @@ class RateLimitTests(AuthedTestCase):
         result = self.send_api_message(email, api_key, "Good message")
 
         self.assert_json_success(result)
+
+class AlertWordTests(AuthedTestCase):
+    def test_default_no_words(self):
+        email = "cordelia@zulip.com"
+        user = get_user_profile_by_email(email)
+
+        words = user_alert_words(user)
+
+        self.assertEqual(words, [])
+
+    def test_add_word(self):
+        email = "cordelia@zulip.com"
+        user = get_user_profile_by_email(email)
+
+        add_user_alert_words(user, ['alert', 'word'])
+        words = user_alert_words(user)
+
+        self.assertEqual(words, ['alert', 'word'])
+
+    def test_remove_word(self):
+        email = "cordelia@zulip.com"
+        user = get_user_profile_by_email(email)
+
+        add_user_alert_words(user, ['alert', 'word'])
+        remove_user_alert_words(user, ['alert'])
+        words = user_alert_words(user)
+
+        self.assertEqual(words, ['word'])
+
+    def test_realm_words(self):
+        email = "cordelia@zulip.com"
+        user1 = get_user_profile_by_email(email)
+
+        add_user_alert_words(user1, ['alert', 'word'])
+
+        email = "othello@zulip.com"
+        user2 = get_user_profile_by_email(email)
+        add_user_alert_words(user2, ['another'])
+
+        realm_words = alert_words_in_realm(user2.realm)
+        self.assertEqual(len(realm_words), 2)
+        self.assertEqual(realm_words.keys(), [user1, user2])
+        self.assertEqual(realm_words[user1], ['alert', 'word'])
+        self.assertEqual(realm_words[user2], ['another'])
+
+    def test_json_list_default(self):
+        self.login("hamlet@zulip.com")
+
+        result = self.client.get('/json/users/me/alert_words')
+        self.assert_json_success(result)
+
+        data = ujson.loads(result.content)
+        self.assertEqual(data['alert_words'], [])
+
+    def test_json_list_add(self):
+        self.login("hamlet@zulip.com")
+
+        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        self.assert_json_success(result)
+
+
+        result = self.client.get('/json/users/me/alert_words')
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
+
+    def test_json_list_remove(self):
+        self.login("hamlet@zulip.com")
+
+        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        self.assert_json_success(result)
+
+        data = urllib.urlencode({'alert_words': ujson.dumps(['one'])})
+        result = self.client.delete('/json/users/me/alert_words', data)
+        self.assert_json_success(result)
+
+        result = self.client.get('/json/users/me/alert_words')
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['alert_words'], ['two', 'three'])
+
+    def test_json_list_set(self):
+        self.login("hamlet@zulip.com")
+
+        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        self.assert_json_success(result)
+
+        data = urllib.urlencode({'alert_words': ujson.dumps(['a', 'b', 'c'])})
+        result = self.client.put('/json/users/me/alert_words', data)
+        self.assert_json_success(result)
+
+        result = self.client.get('/json/users/me/alert_words')
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['alert_words'], ['a', 'b', 'c'])
 
 def full_test_name(test):
     test_class = test.__class__.__name__

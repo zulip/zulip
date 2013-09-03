@@ -190,6 +190,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     invites_granted = models.IntegerField(default=0)
     invites_used = models.IntegerField(default=0)
 
+    alert_words = models.TextField(default=ujson.dumps([])) # json-serialized list of strings
+
     objects = UserManager()
 
     @property
@@ -433,6 +435,7 @@ class Message(models.Model):
 
         self.mentions_wildcard = False
         self.mentions_user_ids = set()
+        self.user_ids_with_alert_words = set()
 
         domain = self.sender.realm.domain
         if self.sending_client.name == "zephyr_mirror" and domain == "mit.edu":
@@ -553,7 +556,8 @@ class UserMessage(models.Model):
     # on later
     archived = models.BooleanField()
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
-                 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse']
+                 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
+                 'has_alert_word']
     flags = BitField(flags=ALL_FLAGS, default=0)
 
     class Meta:

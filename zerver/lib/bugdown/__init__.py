@@ -21,6 +21,7 @@ from zerver.lib.bugdown import codehilite, fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
+import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 
 
@@ -558,6 +559,22 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             el.text = "@%s" % (name,)
             return el
 
+class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
+    def run(self, lines):
+        if current_message:
+            # We check for a user's custom notifications here, as we want
+            # to check for plaintext words that depend on the recipient.
+            realm_words = alert_words.alert_words_in_realm(current_message.sender.realm)
+            for user, words in realm_words.iteritems():
+                for word in words:
+                    escaped = re.escape(word)
+                    match_re = re.compile(r'\b%s\b' % (escaped,))
+                    content = '\n'.join(lines)
+                    if re.search(match_re, content):
+                        current_message.user_ids_with_alert_words.add(user.id)
+
+        return lines
+
 # This prevents realm_filters from running on the content of a
 # Markdown link, breaking up the link.  This is a monkey-patch, but it
 # might be worth sending a version of this change upstream.
@@ -577,6 +594,8 @@ class Bugdown(markdown.Extension):
                   'escape', 'strong_em', 'emphasis', 'emphasis2',
                   'strong'):
             del md.inlinePatterns[k]
+
+        md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
 
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
