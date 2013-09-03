@@ -820,6 +820,17 @@ just a temporary hack.
     padding-right: 4em;
 }
 
+.compose_table #compose-lock-icon {
+    position: relative;
+    width: 0px;
+}
+
+.compose_table #compose-lock-icon i {
+    position: absolute;
+    left: -18px;
+    top: 3px;
+}
+
 .messagebox-bottom {
     height: 3px;
     background-color: #fff;
@@ -1343,6 +1354,8 @@ input.recipient_box {
     margin: 0px;
     height: 1em;
     border-radius: 3px;
+    padding-right: 18px;
+    min-width: 120px;
 }
 
 #stream.recipient_box {
