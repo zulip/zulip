@@ -802,18 +802,28 @@ just a temporary hack.
 .compose_table .pm_recipient {
     position: relative;
     margin-right: 30px;
+    height: 25px;
 }
 
-.compose_table .pm_recipient .you_text {
+.compose_table #private-message .you_text {
     position: absolute;
-    left: 4px;
-    top: 3px;
+    height: 25px;
+    line-height: 25px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    width: 4em;
+    background: #444444;
+    color: #ffffff;
 }
 
 .compose_table .pm_recipient #private_message_recipient {
-    padding-left: 4em;
+    margin-left: 4em;
     border-left: none;
     border-radius: 0px 3px 3px 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    height: 23px;
+    line-height: 23px;
 }
 
 .compose_table #private-message .right_part {
