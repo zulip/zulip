@@ -435,7 +435,7 @@ class Message(models.Model):
     def get_realm(self):
         return self.sender.realm
 
-    def render_markdown(self, content):
+    def render_markdown(self, content, domain=None):
         """Return HTML for given markdown. Bugdown may add properties to the
         message object such as `mentions_user_ids` and `mentions_wildcard`.
         These are only on this Django object and are not saved in the
@@ -446,7 +446,8 @@ class Message(models.Model):
         self.mentions_user_ids = set()
         self.user_ids_with_alert_words = set()
 
-        domain = self.sender.realm.domain
+        if not domain:
+            domain = self.sender.realm.domain
         if self.sending_client.name == "zephyr_mirror" and domain == "mit.edu":
             # Use slightly customized Markdown processor for content
             # delivered via zephyr_mirror
@@ -467,10 +468,10 @@ class Message(models.Model):
         else:
             return False
 
-    def maybe_render_content(self, save = False):
+    def maybe_render_content(self, domain, save = False):
         """Render the markdown if there is no existing rendered_content"""
         if self.rendered_content_version < bugdown.version or self.rendered_content is None:
-            return self.set_rendered_content(self.render_markdown(self.content), save)
+            return self.set_rendered_content(self.render_markdown(self.content, domain), save)
         else:
             return True
 
@@ -525,7 +526,7 @@ class Message(models.Model):
             obj['edit_history'] = ujson.loads(self.edit_history)
 
         if apply_markdown:
-            self.maybe_render_content(save = True)
+            self.maybe_render_content(None, save = True)
             if self.rendered_content is not None:
                 obj['content'] = self.rendered_content
             else:

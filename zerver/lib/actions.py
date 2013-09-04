@@ -255,7 +255,7 @@ def do_send_messages(messages):
         else:
             raise ValueError('Bad recipient type')
 
-        message['message'].maybe_render_content()
+        message['message'].maybe_render_content(None)
 
     # Save the message receipts in the database
     user_message_flags = defaultdict(dict)
@@ -481,7 +481,7 @@ def check_message(sender, client, message_type_name, message_to,
         message.pub_date = timezone.now()
     message.sending_client = client
 
-    if not message.maybe_render_content():
+    if not message.maybe_render_content(realm.domain):
         raise JsonableError("Unable to render message")
 
     if client.name == "zephyr_mirror":
