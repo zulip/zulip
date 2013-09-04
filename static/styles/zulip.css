@@ -2723,6 +2723,53 @@ div.edit_bot {
     padding-right: 5px;
 }
 
+#home .alert-bar-container {
+    position: fixed;
+    width: 100%;
+    top: 41px;
+    left: 0px;
+    z-index: 5;
+}
+
+#home .alert-bar {
+    width: 100%;
+    max-width: 1210px;
+    margin: auto;
+    text-align: center;
+}
+
+#home .alert-bar-contents {
+    background: #9bff8b;
+    background: rgba(163,211,147,0.95);
+    border-bottom: 1px solid #ffffff;
+    border-right: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-radius: 2px;
+    font-weight: 400;
+    padding: 10px 35px 10px 10px;
+    display: inline-block;
+    box-shadow: 0px 0px 4px -1px rgba(0,0,0,0.7);
+    position: relative;
+}
+
+#home .alert-bar .alert-icon {
+    font-size: 20px;
+    margin-right: 10px;
+    line-height: 5px;
+}
+
+#home .alert-bar .close-alert-icon {
+    display: block;
+    height: 100%;
+    width: 28px;
+    line-height: 38px;
+    font-size: 15px;
+    opacity: 0.5;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+}
+
 #settings-change-box .gravatar-profile {
     width: 60px;
     height: 60px;
