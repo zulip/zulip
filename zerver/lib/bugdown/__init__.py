@@ -153,7 +153,10 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
         for img in found_imgs:
             url = img.get("src")
             # We rewrite all HTTP URLs as well as all HTTPs URLs for mit.edu
-            if not url.startswith("http://"):
+            if not (url.startswith("http://") or
+                    (url.startswith("https://") and
+                     current_message is not None and
+                     current_message.sender.realm.domain == "mit.edu")):
                 # Don't rewrite images on our own site (e.g. emoji).
                 continue
             digest = hmac.new(settings.CAMO_KEY, url, hashlib.sha1).hexdigest()
