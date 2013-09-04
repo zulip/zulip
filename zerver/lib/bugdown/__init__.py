@@ -171,7 +171,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         match = re.match(youtube_re, url)
         if match is None:
             return None
-        return "http://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
+        return "https://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
 
     def twitter_link(self, url):
         tweet_id = get_tweet_id(url)
