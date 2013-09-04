@@ -271,8 +271,9 @@ def do_send_messages(messages):
             mentioned_ids = message['message'].mentions_user_ids
 
             for um in ums_to_create:
-                sent_by_human = message['message'].sending_client.name.lower() in \
-                                    ['website', 'iphone', 'android']
+                sent_by_human = (message['message'].sending_client.name.lower() in \
+                                    ['website', 'iphone', 'android']) or \
+                                ('desktop app' in message['message'].sending_client.name.lower())
                 if um.user_profile.id == message['message'].sender.id and sent_by_human:
                     um.flags |= UserMessage.flags.read
                 if wildcard:
