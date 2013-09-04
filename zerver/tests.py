@@ -2329,6 +2329,49 @@ def foobar(self):
 </pre></div>"""
         self.common_bugdown_test(fenced_code, expected_convert)
 
+    def test_fenced_quote(self):
+        fenced_quote = \
+"""Hamlet said:
+~~~ quote
+To be or **not** to be.
+
+That is the question
+~~~"""
+
+        expected_convert = \
+"""<p>Hamlet said:</p>
+<blockquote>
+<p>To be or <strong>not</strong> to be.</p>
+<p>That is the question</p>
+</blockquote>"""
+        self.common_bugdown_test(fenced_quote, expected_convert)
+
+    def test_fenced_nested_quote(self):
+        fenced_quote = \
+"""Hamlet said:
+~~~ quote
+Polonius said:
+> This above all: to thine ownself be true,
+And it must follow, as the night the day,
+Thou canst not then be false to any man.
+
+What good advice!
+~~~"""
+
+        expected_convert = \
+"""<p>Hamlet said:</p>
+<blockquote>
+<p>Polonius said:</p>
+<blockquote>
+<p>This above all: to thine ownself be true,<br>
+And it must follow, as the night the day,<br>
+Thou canst not then be false to any man.</p>
+</blockquote>
+<p>What good advice!</p>
+</blockquote>"""
+
+        self.common_bugdown_test(fenced_quote, expected_convert)
+
     def test_dangerous_block(self):
         fenced_code = u'xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\
 "xxxx xxxx\\xxxxx\\xxxxxx"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x\'^xxxx$\'\

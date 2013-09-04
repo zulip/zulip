@@ -107,6 +107,15 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         if m.group('lang'):
             langclass = LANG_TAG % m.group('lang')
 
+            if m.group('lang') in ('quote', 'quoted'):
+                paragraphs = m.group('code').split("\n\n")
+                quoted_paragraphs = []
+                for paragraph in paragraphs:
+                    lines = paragraph.split("\n")
+                    quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
+                replacement = "\n\n".join(quoted_paragraphs)
+                return '%s\n%s\n%s'% (text[:m.start()], replacement, text[m.end():])
+
         # If config is not empty, then the codehighlite extension
         # is enabled, so we call it to highlite the code
         if self.codehilite_conf:
