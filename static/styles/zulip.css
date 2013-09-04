@@ -807,7 +807,7 @@ just a temporary hack.
 .compose_table .pm_recipient .you_text {
     position: absolute;
     left: 4px;
-    top: 2px;
+    top: 3px;
 }
 
 .compose_table .pm_recipient #private_message_recipient {
@@ -1352,7 +1352,7 @@ textarea.new_message_textarea {
 
 input.recipient_box {
     margin: 0px;
-    height: 1em;
+    height: 1.1em;
     border-radius: 3px;
 }
 
