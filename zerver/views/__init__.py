@@ -614,12 +614,9 @@ def accounts_home(request):
                               {'form': form, 'current_url': request.get_full_path},
                               context_instance=RequestContext(request))
 
-def approximate_unread_count(user_profile, latest_read_message):
-    # latest_read_message is a UserMessage object.
-    if not latest_read_message:
-        return 0
+def approximate_unread_count(user_profile):
     return UserMessage.objects.filter(user_profile=user_profile,
-                                      id__gt=latest_read_message.id).count()
+                                      message_id__gt=user_profile.pointer).count()
 
 def sent_time_in_epoch_seconds(user_message):
     # user_message is a UserMessage object.
@@ -703,8 +700,7 @@ def home(request):
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
         max_message_id        = register_ret['max_message_id'],
-        unread_count          = approximate_unread_count(user_profile,
-                                                         latest_read),
+        unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
         staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
