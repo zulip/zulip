@@ -15,7 +15,8 @@ exports.save = function (row) {
         if (new_topic !== message.subject && new_topic.trim() !== "") {
             request.subject = new_topic;
 
-            if (row.find(".message_edit_topic_propagate>input").is(":checked")) {
+            if (feature_flags.propagate_topic_edits &&
+                row.find(".message_edit_topic_propagate>input").is(":checked")) {
                 request.propagate_subject = true;
             }
             changed = true;
@@ -95,6 +96,10 @@ function edit_message (row, raw_content) {
     var scroll_by = edit_top - content_top + 5 /* border and padding */;
     edit_obj.scrolled_by = scroll_by;
     viewport.scrollTop(viewport.scrollTop() + scroll_by);
+
+    if (feature_flags.propagate_topic_edits) {
+        row.find('.message_edit_topic_propagate').show();
+    }
 }
 
 exports.start = function (row) {

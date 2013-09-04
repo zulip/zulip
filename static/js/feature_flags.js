@@ -21,6 +21,9 @@ exports.mandatory_topics = _.contains([
 
 exports.collapsible = page_params.staging;
 
+exports.propagate_topic_edits = page_params.staging ||
+  _.contains(['customer7.invalid'], page_params.domain);
+
 return exports;
 
 }());
