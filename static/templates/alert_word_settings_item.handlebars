@@ -1,0 +1,8 @@
+{{! Alert word in the settings page that can be removed }}
+<li class="alert-word-item" data-word='{{word}}'>
+	{{#if editing}}
+		<input class="edit-alert-word input-medium" type="text" placeholder="Alert Word"></input><button class="btn btn-mini add-alert-word" type="button">Add</button</i>
+	{{else}}
+		{{word}}<button class="btn btn-mini remove-alert-word" type="button">Remove</button</i>
+	{{/if}}
+</li>

@@ -853,6 +853,9 @@ function get_updates_success(data) {
         case 'realm_emoji':
             emoji.update_emojis(event.realm_emoji);
             break;
+        case 'alert_words':
+            alert_words.words = event.alert_words;
+            break;
         }
     });
 

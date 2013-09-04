@@ -55,6 +55,61 @@ $(function () {
 
     var create_avatar_widget = avatar.build_bot_create_widget();
 
+    var word_list = $('#word-alerts');
+    _.each(alert_words.words, function (word) {
+        var li = templates.render('alert_word_settings_item', {'word': word});
+        word_list.append(li);
+    });
+    var new_word = templates.render('alert_word_settings_item', {'word': '', editing: true});
+    word_list.append(new_word);
+
+    function update_word_alerts() {
+        var words = _.map($('.alert-word-item'), function (e) {
+            return $(e).data('word');
+        });
+        words = _.filter(words, function (word) {
+            return word !== "";
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: '/json/set_alert_words',
+            data: {alert_words: JSON.stringify(words)},
+            dataType: 'json'});
+    }
+
+    $('#word-alerts').on('click', '.add-alert-word', function (event) {
+        var word = $(event.target).siblings('input').val();
+        if (word === '') {
+            return;
+        }
+
+        var final_li = templates.render('alert_word_settings_item', {'word': word, editing: false});
+
+        var li = $(event.target).parent();
+        li.replaceWith(final_li);
+
+        var new_word = templates.render('alert_word_settings_item', {'word': '', editing: true});
+        word_list.append(new_word);
+
+        update_word_alerts();
+    });
+
+    $('#word-alerts').on('click', '.remove-alert-word', function (event) {
+        var li = $(event.target).parent();
+        li.remove();
+
+        update_word_alerts();
+    });
+
+    $('#word-alerts').on('keypress', '.edit-alert-word', function (event) {
+        var key = event.which;
+        // Disallow spaces (key code 32)
+        if (key === 32) {
+            event.preventDefault();
+        }
+    });
+
     $('#create_bot_form').validate({
         errorClass: 'text-error',
         success: function () {

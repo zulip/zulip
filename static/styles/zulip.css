@@ -2419,6 +2419,32 @@ li.expanded_subject {
     opacity: .5;
 }
 
+#word-alerts {
+    list-style-type: none;
+
+    width: 295px;
+    margin-left: 0px;
+}
+
+.alert-word-item {
+    margin-bottom: 5px;
+}
+
+.remove-alert-word,
+.add-alert-word {
+    float: right;
+}
+
+input.edit-alert-word {
+    height: 12px;
+    line-height: 12px;
+    font-size: 1em;
+}
+
+input.edit-alert-word::-webkit-input-placeholder {
+    padding-top: 4px;
+}
+
 #bots_list {
     display: none;
     list-style-type: none;
