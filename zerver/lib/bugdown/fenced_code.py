@@ -103,9 +103,9 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
 
     def process_fence(self, m, text):
-        lang = ''
+        langclass = ''
         if m.group('lang'):
-            lang = LANG_TAG % m.group('lang')
+            langclass = LANG_TAG % m.group('lang')
 
         # If config is not empty, then the codehighlite extension
         # is enabled, so we call it to highlite the code
@@ -120,7 +120,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
             code = highliter.hilite()
         else:
-            code = CODE_WRAP % (lang, self._escape(m.group('code')))
+            code = CODE_WRAP % (langclass, self._escape(m.group('code')))
 
         placeholder = self.markdown.htmlStash.store(code, safe=True)
         return '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
