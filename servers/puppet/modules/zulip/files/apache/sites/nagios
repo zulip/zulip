@@ -1,14 +1,31 @@
 <VirtualHost *:80>
     ServerName nagios.humbughq.com
-    Redirect permanent / https://nagios.humbughq.com/
+    Redirect permanent / https://nagios.zulip.net/
+</VirtualHost>
+<VirtualHost *:80>
+    ServerName nagios.zulip.net
+    Redirect permanent / https://nagios.zulip.net/
+</VirtualHost>
+<VirtualHost *:443>
+    ServerName nagios.humbughq.com
+    Redirect permanent / https://nagios.zulip.net/
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/nagios.humbughq.com.crt
+    SSLCertificateKeyFile /etc/ssl/private/nagios.key
+
+    SSLCertificateChainFile /etc/ssl/certs/sub.class1.server.ca.pem
+    SSLCACertificateFile /etc/ssl/certs/ca.pem
 </VirtualHost>
 
 <VirtualHost *:443>
-    ServerName nagios.humbughq.com
+    ServerName nagios.zulip.net
 
     SSLEngine on
-    SSLCertificateFile /etc/apache2/certs/humbug-self-signed.crt
-    SSLCertificateKeyFile /etc/apache2/certs/humbug-self-signed.key
+    SSLCertificateFile /etc/ssl/certs/nagios.zulip.net.crt
+    SSLCertificateKeyFile /etc/ssl/private/nagios.key
+
+    SSLCertificateChainFile /etc/ssl/certs/sub.class1.server.ca.pem
+    SSLCACertificateFile /etc/ssl/certs/ca.pem
 
     Header add Strict-Transport-Security "max-age=15768000"
     Header add X-Frame-Options DENY
@@ -22,7 +39,7 @@
     # Where the HTML pages live
     Alias /nagios3 /usr/share/nagios3/htdocs
 
-    RedirectMatch ^/?$ https://nagios.humbughq.com/cgi-bin/nagios3/status.cgi?host=all
+    RedirectMatch ^/?$ https://nagios.nagios.com/cgi-bin/nagios3/status.cgi?host=all
 
     <Location "/">
         AuthType Digest
