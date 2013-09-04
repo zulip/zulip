@@ -91,3 +91,15 @@ server {
         include /etc/nginx/humbug-include/loadbalancer;
     }
 }
+
+server {
+    listen external-content.zulipcdn.net:443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/external-content.zulipcdn.net.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/production-zulipcdn.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:9292/;
+    }
+}

@@ -34,4 +34,16 @@ class zulip::loadbalancer {
     target => '/etc/nginx/sites-available/loadbalancer',
   }
 
+  # Config for Camo
+  $camo_packages = [ "camo",]
+  package { $camo_packages: ensure => "installed" }
+
+  file { "/etc/default/camo":
+    require => Package[camo],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/camo_defaults",
+  }
 }
