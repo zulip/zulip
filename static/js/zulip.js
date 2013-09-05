@@ -1226,19 +1226,19 @@ function consider_bankruptcy() {
     }
 }
 
+_.each(page_params.people_list, function (person) {
+    people_dict.set(person.email, person);
+    person.pm_recipient_count = 0;
+});
+
+// The special account feedback@zulip.com is used for in-app
+// feedback and should always show up as an autocomplete option.
+if (! people_dict.has('feedback@zulip.com')){
+    add_person({"email": "feedback@zulip.com",
+                "full_name": "Zulip Feedback Bot"});
+}
+
 function main() {
-    _.each(page_params.people_list, function (person) {
-        people_dict.set(person.email, person);
-        person.pm_recipient_count = 0;
-    });
-
-    // The special account feedback@zulip.com is used for in-app
-    // feedback and should always show up as an autocomplete option.
-    if (! people_dict.has('feedback@zulip.com')){
-        add_person({"email": "feedback@zulip.com",
-                    "full_name": "Zulip Feedback Bot"});
-    }
-
     activity.set_user_statuses(page_params.initial_presences,
                                page_params.initial_servertime);
 
