@@ -1357,7 +1357,7 @@ textarea.new_message_textarea {
     display: table-cell;
     width: 99%;
     height: 1.5em;
-    max-height: 11em;
+    max-height: 22em;
     margin-bottom: 0px;
     resize: none;
     margin-top: 6px;
