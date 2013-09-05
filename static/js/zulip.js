@@ -5,7 +5,13 @@ var home_msg_list = new MessageList('zhome',
 );
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
+
+// The following two Dicts point to the same objects
+// All people we've seen
 var people_dict = new Dict();
+// People in this realm
+var realm_people_dict = new Dict();
+
 var recent_subjects = new Dict({fold_case: true});
 
 var queued_mark_as_read = [];
@@ -39,10 +45,15 @@ var events_stored_during_tutorial = [];
 
 var waiting_on_browser_scroll = true;
 
-function add_person(person) {
+function add_person(person, in_realm) {
     page_params.people_list.push(person);
     people_dict.set(person.email, person);
     person.pm_recipient_count = 0;
+}
+
+function add_person_in_realm(person) {
+    realm_people_dict.set(person.email, person);
+    add_person(person);
 }
 
 function remove_person(person) {
@@ -54,6 +65,7 @@ function remove_person(person) {
         }
     }
     people_dict.del(person.email);
+    realm_people_dict.del(person.email);
 }
 
 function update_person(person) {
@@ -68,6 +80,8 @@ function update_person(person) {
         return;
     }
     people_dict.get(person.email).full_name = person.full_name;
+    // This should be the same object, but...
+    realm_people_dict.get(person.email).full_name = person.full_name;
     for (i = 0; i < page_params.people_list.length; i++) {
         if (page_params.people_list[i].email === person.email) {
             page_params.people_list[i].full_name = person.full_name;
@@ -821,7 +835,7 @@ function get_updates_success(data) {
             break;
         case 'realm_user':
             if (event.op === 'add') {
-                add_person(event.person);
+                add_person_in_realm(event.person);
             } else if (event.op === 'remove') {
                 remove_person(event.person);
             } else if (event.op === 'update') {
@@ -1228,6 +1242,7 @@ function consider_bankruptcy() {
 
 _.each(page_params.people_list, function (person) {
     people_dict.set(person.email, person);
+    realm_people_dict.set(person.email, person);
     person.pm_recipient_count = 0;
 });
 

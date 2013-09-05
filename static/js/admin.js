@@ -9,7 +9,7 @@ function populate_users () {
         return a.full_name.toLowerCase().localeCompare(b.full_name.toLowerCase());
     });
 
-    $.each(page_params.people_list, function (index, person) {
+    realm_people_dict.each(function (person, key) {
         if (!person.is_bot) {
             tb.append(templates.render("admin_user_list", {person: person}));
         }

@@ -599,12 +599,8 @@ function update_announce_stream_state() {
 
 function show_new_stream_modal() {
     var people_minus_you_and_internal_users = [];
-    _.each(page_params.people_list, function (person) {
-        if (person.email !== page_params.email &&
-               (page_params.domain === "zulip.com" ||
-                   person.email.split('@')[1] !== "zulip.com"
-               )
-           ) {
+    realm_people_dict.each(function (person) {
+        if (person.email !== page_params.email) {
             people_minus_you_and_internal_users.push({"email": person.email,
                 "full_name": person.full_name});
         }
