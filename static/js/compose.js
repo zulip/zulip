@@ -25,6 +25,10 @@ function clear_out_file_list(jq_file_list) {
     //    $("#file_input").val("");
 }
 
+function autosize_textarea() {
+    $("#new_message_content").trigger("autosize.resize");
+}
+
 // Show the compose box.
 function show_box(tabname, focus_area) {
     if (tabname === "stream") {
@@ -40,7 +44,7 @@ function show_box(tabname, focus_area) {
     }
     $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
-    $("#new_message_content").trigger("autosize");
+    autosize_textarea();
     $(".new_message_textarea").css("min-height", "3em");
 
     if (focus_area !== undefined) {
@@ -68,7 +72,6 @@ function show_box(tabname, focus_area) {
 function clear_box() {
     exports.snapshot_message();
     $("#compose").find('input[type=text], textarea').val('');
-    $("#new_message_content").trigger('autosize');
     $("#send-status").hide(0);
 }
 
@@ -339,6 +342,7 @@ function send_message() {
         data: request,
         success: function (resp, statusText, xhr) {
             $("#new_message_content").val('').focus();
+            autosize_textarea();
             $("#send-status").hide(0);
             if (request.type === "private") {
                 onboarding.mark_checklist_step("sent_private_message");
@@ -643,7 +647,7 @@ $(function () {
                 // This is a dropped file, so make the filename a link to the image
                 textbox.val(textbox.val() + "[" + filename + "](" + response.uri + ")" + " ");
             }
-            $("#new_message_content").trigger("autosize");
+            autosize_textarea();
             $("#compose-send-button").removeAttr("disabled");
             $("#send-status").removeClass("alert-info")
                              .hide();
