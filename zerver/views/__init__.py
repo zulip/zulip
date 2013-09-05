@@ -1948,7 +1948,7 @@ def deactivate_user_backend(request, user_profile, email):
     except UserProfile.DoesNotExist:
         return json_error('No such user')
 
-    if target.bot_owner != user_profile and not user_profile.has_perm('administer', user_profile.realm):
+    if not user_profile.can_admin_user(target):
         return json_error('Insufficient permission')
 
     do_deactivate(target)
@@ -1964,7 +1964,7 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
     except:
         return json_error('No such user')
 
-    if bot.bot_owner != user_profile and not user_profile.has_perm('administer', user_profile.realm):
+    if not user_profile.can_admin_user(bot):
         return json_error('Insufficient permission')
 
     do_change_full_name(bot, full_name)
@@ -2005,7 +2005,7 @@ def regenerate_bot_api_key(request, user_profile, email):
     except:
         return json_error('No such user')
 
-    if bot.bot_owner != user_profile and not user_profile.has_perm('administer', user_profile.realm):
+    if not user_profile.can_admin_user(bot):
         return json_error('Insufficient permission')
 
     bot.api_key = random_api_key()

@@ -194,6 +194,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
+    def can_admin_user(self, target_user):
+        """Returns whether this user has permission to modify target_user"""
+        if target_user.bot_owner == self:
+            return True
+        elif self.has_perm('administer', target_user.realm):
+            return True
+        else:
+            return False
+
     @property
     def show_admin(self):
         # Logic to determine if the user should see the administration tools.
