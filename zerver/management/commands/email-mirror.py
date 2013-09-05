@@ -93,7 +93,7 @@ class ZulipEmailForwardError(Exception):
     pass
 
 def send_zulip(stream, topic, content):
-    if stream.realm.domain == "zulip.com":
+    if stream.realm.domain in ["zulip.com", "wdaher.com"]:
         api_client = staging_client
     else:
         api_client = prod_client
