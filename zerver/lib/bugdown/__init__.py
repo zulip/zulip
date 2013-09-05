@@ -743,7 +743,7 @@ def do_convert(md, realm_domain=None, message=None):
     try:
         # Spend at most 5 seconds rendering.
         # Sometimes Python-Markdown is really slow; see
-        # https://trac.humbughq.com/ticket/345
+        # https://trac.zulip.net/ticket/345
         return timeout(5, _md_engine.convert, md)
     except:
         from zerver.lib.actions import internal_send_message

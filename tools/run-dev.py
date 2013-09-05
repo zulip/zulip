@@ -10,7 +10,7 @@ from twisted.internet import reactor
 from twisted.web      import proxy, server, resource
 
 # Monkey-patch twisted.web.http to avoid request.finish exceptions
-# https://trac.humbughq.com/ticket/1728
+# https://trac.zulip.net/ticket/1728
 from twisted.web.http import Request
 orig_finish = Request.finish
 def patched_finish(self):
