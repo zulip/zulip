@@ -1,19 +1,14 @@
 WSGISocketPrefix /usr/lib/apache2/modules/
+Listen 444
 
-<VirtualHost *:80>
-    ServerName graphite.zulip.net
-    Redirect permanent / https://graphite.zulip.net/
-</VirtualHost>
-
-<VirtualHost *:443>
-    ServerName graphite.zulip.net
+<VirtualHost *:444>
+    ServerName stats1.zulip.net
 
     SSLEngine on
-    SSLCertificateFile /etc/apache2/certs/humbug-self-signed.crt
-    SSLCertificateKeyFile /etc/apache2/certs/humbug-self-signed.key
+    SSLCertificateFile /etc/ssl/certs/stats1.zulip.net.crt
+    SSLCertificateKeyFile /etc/ssl/certs/stats1.zulip.net.key
 
     Header add Strict-Transport-Security "max-age=15768000"
-    Header add X-Frame-Options DENY
 
     <Location "/">
         AuthType Digest

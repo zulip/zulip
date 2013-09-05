@@ -1,6 +1,6 @@
 ---
-graphiti_base_url: http://graphiti.humbughq.com
-graphite_base_url: https://graphite.humbughq.com
+graphiti_base_url: https://stats1.zulip.net/graphiti/
+graphite_base_url: https://graphiti:xxxxxxxxxxxxxxxxxx@stats1.zulip.net:444/
 graphite_userpw: "graphiti:xxxxxxxxxxxxxxxxxx"
 graphite_auth: :digest
 graphite_cert: "/home/humbug/graphiti/humbughq_cert_internal.pem"
