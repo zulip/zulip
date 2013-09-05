@@ -80,7 +80,7 @@ def api_github_landing(request, user_profile, event=REQ,
         issue = payload['issue']
         subject = "%s: issue %d %s" % (repository['name'], issue['number'], payload['action'])
         content = ("%s %s [issue %d](%s): %s\n\n> %s"
-                   % (issue['user']['login'],
+                   % (payload['sender']['login'],
                       payload['action'],
                       issue['number'],
                       issue['html_url'],
