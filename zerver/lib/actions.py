@@ -1314,7 +1314,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         elif event['type'] == "realm_emoji":
             ret['realm_emoji'] = event['realm_emoji']
         elif event['type'] == "alert_words":
-            ret['alert_words'].extend(event['alert_words'])
+            ret['alert_words'] = event['alert_words']
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 
