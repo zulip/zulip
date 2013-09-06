@@ -242,6 +242,11 @@ def update_user_profile_cache(sender, **kwargs):
     items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
     cache_set_many(items_for_memcached)
 
+    # Invalidate realm-wide alert words cache if any user in the realm has changed
+    # alert words
+    if kwargs['update_fields'] is None or "alert_words" in kwargs['update_fields']:
+        djcache.delete(KEY_PREFIX + realm_alert_words_cache_key(user_profile.realm))
+
 def status_dict_cache_key(user_profile):
     return "status_dict:%d" % (user_profile.realm_id,)
 
@@ -251,3 +256,6 @@ def update_user_presence_cache(sender, **kwargs):
         # If the status of the user changed, flush the user's realm's
         # entry in the UserPresence cache to avoid giving out stale state
         djcache.delete(KEY_PREFIX + status_dict_cache_key(user_profile))
+
+def realm_alert_words_cache_key(realm):
+    return "realm_alert_words:%s" % (realm.domain,)
