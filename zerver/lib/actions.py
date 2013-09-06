@@ -12,7 +12,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     email_to_domain, email_to_username, display_recipient_cache_key, \
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
-    get_active_user_profiles_by_realm
+    get_active_user_profiles_by_realm, UserActivityInterval
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -1077,7 +1077,14 @@ def do_update_user_presence(user_profile, client, log_time, status):
         # user without delay
         send_presence_changed(user_profile, presence)
 
-def update_user_presence(user_profile, client, log_time, status):
+def update_user_activity_interval(user_profile, log_time):
+    event={'type': 'user_activity_interval',
+           'user_profile_id': user_profile.id,
+           'time': datetime_to_timestamp(log_time)}
+    queue_json_publish("user_activity", event, process_user_activity_interval_event)
+
+def update_user_presence(user_profile, client, log_time, status,
+                         new_user_input):
     event={'type': 'user_presence',
            'user_profile_id': user_profile.id,
            'status': status,
@@ -1085,6 +1092,9 @@ def update_user_presence(user_profile, client, log_time, status):
            'client': client.name}
 
     queue_json_publish("user_activity", event, process_user_presence_event)
+
+    if ujson.loads(new_user_input):
+        update_user_activity_interval(user_profile, log_time)
 
 def do_update_message_flags(user_profile, operation, flag, messages, all):
     flagattr = getattr(UserMessage.flags, flag)
@@ -1118,6 +1128,23 @@ def process_user_presence_event(event):
     log_time = timestamp_to_datetime(event["time"])
     status = event["status"]
     return do_update_user_presence(user_profile, client, log_time, status)
+
+def process_user_activity_interval_event(event):
+    user_profile = get_user_profile_by_id(event["user_profile_id"])
+    log_time = timestamp_to_datetime(event["time"])
+
+    effective_end = log_time + datetime.timedelta(minutes=15)
+    try:
+        last = UserActivityInterval.objects.filter(user_profile=user_profile).order_by("-end")[0]
+        if log_time < last.end:
+            last.end = effective_end
+            last.save(update_fields=["end"])
+            return
+    except IndexError:
+        pass
+
+    UserActivityInterval.objects.create(user_profile=user_profile, start=log_time,
+                                        end=effective_end)
 
 def subscribed_to_stream(user_profile, stream):
     try:

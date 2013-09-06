@@ -89,6 +89,7 @@ $(function () {
         page_params.initial_pointer = pointer;
     }
 
+    activity.new_user_input = false;
     hashchange.changehash(vars.oldhash);
 });
 

@@ -36,7 +36,8 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
-    do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscribers
+    do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscribers, \
+    update_user_activity_interval
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, isnt_mit, not_mit_mailing_list
@@ -670,7 +671,6 @@ def home(request):
             # Don't completely fail if your saved pointer ID is invalid
             logging.warning("%s has invalid pointer %s" % (user_profile.email, user_profile.pointer))
             latest_read = None
-
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
@@ -1814,12 +1814,14 @@ def get_status_list(requesting_user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_update_active_status(request, user_profile, status=REQ):
+def json_update_active_status(request, user_profile, status=REQ,
+                              new_user_input=REQ(default=False)):
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError("Invalid presence status: %s" % (status,))
     else:
-        update_user_presence(user_profile, request.client, now(), status_val)
+        update_user_presence(user_profile, request.client, now(), status_val,
+                             new_user_input)
 
     ret = get_status_list(user_profile)
     if user_profile.realm.domain == "mit.edu":

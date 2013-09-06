@@ -681,6 +681,11 @@ class UserActivity(models.Model):
     class Meta:
         unique_together = ("user_profile", "client", "query")
 
+class UserActivityInterval(models.Model):
+    user_profile = models.ForeignKey(UserProfile)
+    start = models.DateTimeField('start time', db_index=True)
+    end = models.DateTimeField('end time', db_index=True)
+
 class UserPresence(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     client = models.ForeignKey(Client)

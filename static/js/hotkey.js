@@ -102,6 +102,7 @@ function process_hotkey(e) {
     var row, focused_message_edit_content, focused_message_edit_save, message_edit_form;
 
     var event_name = get_event_name(e);
+    activity.new_user_input = true;
 
     if (event_name === "tab") {
         // The alert word configuration is on the settings page,

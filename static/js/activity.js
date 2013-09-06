@@ -19,6 +19,16 @@ exports.IDLE = "idle";
 
 exports.has_focus = true;
 
+// We initialize this to true, to count new page loads, but set it to
+// false in the onload function in reload.js if this was a
+// server-initiated-reload to avoid counting a server-initiated reload
+// as user activity.
+exports.new_user_input = true;
+
+$("html").on("mousemove", function () {
+    exports.new_user_input = true;
+});
+
 var user_info = {};
 
 function sort_users(users, user_info) {
@@ -83,7 +93,8 @@ function status_from_timestamp(baseline_time, presence) {
 
 function focus_ping() {
     $.post('/json/update_active_status',
-            {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE}, function (data) {
+           {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
+            new_user_input: exports.new_user_input}, function (data) {
         if (data === undefined || data.presences === undefined) {
             // We sometimes receive no data even on successful
             // requests; we should figure out why but this will
@@ -99,6 +110,8 @@ function focus_ping() {
         } else {
             $('#zephyr-mirror-error').hide();
         }
+
+        exports.new_user_input = false;
 
         // Ping returns the active peer list
         _.each(data.presences, function (presence, this_email) {
