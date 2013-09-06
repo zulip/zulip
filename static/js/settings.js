@@ -81,9 +81,8 @@ $(function () {
             dataType: 'json'});
     }
 
-    $('#word-alerts').on('click', '.add-alert-word', function (event) {
-        var word = $(event.target).siblings('input').val();
-        if (word === '') {
+    function add_alert_word(word) {
+          if (word === '') {
             return;
         }
 
@@ -95,7 +94,16 @@ $(function () {
         var new_word = templates.render('alert_word_settings_item', {'word': '', editing: true});
         word_list.append(new_word);
 
+        if (word_list.find('input').length > 0) {
+            word_list.find('input').focus();
+        }
+
         update_word_alerts();
+    }
+
+    $('#word-alerts').on('click', '.add-alert-word', function (event) {
+        var word = $(event.target).siblings('input').val();
+        add_alert_word(word);
     });
 
     $('#word-alerts').on('click', '.remove-alert-word', function (event) {
@@ -108,8 +116,14 @@ $(function () {
     $('#word-alerts').on('keypress', '.edit-alert-word', function (event) {
         var key = event.which;
         // Disallow spaces (key code 32)
+        // Handle enter as "add"
         if (key === 32) {
             event.preventDefault();
+        } else if (key === 13) {
+            event.preventDefault();
+
+            var word = $(event.target).val();
+            add_alert_word(word);
         }
     });
 

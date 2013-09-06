@@ -101,13 +101,24 @@ function get_event_name(e) {
 function process_hotkey(e) {
     var row, focused_message_edit_content, focused_message_edit_save, message_edit_form;
 
+    var event_name = get_event_name(e);
+
+    if (event_name === "tab") {
+        // The alert word configuration is on the settings page,
+        // so handle this before we abort early
+        var alert_words_content = $(".edit-alert-word").filter(":focus");
+        if (alert_words_content.length > 0) {
+            var add_word_li = alert_words_content.closest(".alert-word-item");
+            add_word_li.find(".add-alert-word").focus();
+            return true;
+        }
+    }
+
     // Disable hotkeys on settings page etc., and when a modal pop-up
     // is visible.
     if (ui.home_tab_obscured()) {
         return false;
     }
-
-    var event_name = get_event_name(e);
 
     if (event_name === 'ignore') {
         return false;
