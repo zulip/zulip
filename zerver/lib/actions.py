@@ -558,6 +558,49 @@ def get_subscription(stream_name, user_profile):
     return Subscription.objects.get(user_profile=user_profile,
                                     recipient=recipient, active=True)
 
+def get_subscribers(stream, realm=None, requesting_user=None):
+    """ Get the subscribers list for a stream, raising a JsonableError if:
+        * No stream by that name exists in the realm.
+        * The realm is MIT and the stream is not invite only.
+        * The stream is invite only, requesting_user is passed, and that user
+          does not subscribe to the stream.
+
+    'stream' can either be a string representing a stream name, or a Stream
+    object. If it's a Stream object, 'realm' is optional.
+    """
+
+    try:
+        # If a Stream object was passed, get the realm from that.
+        realm = stream.realm
+    except AttributeError:
+        # Assume a stream name was passed. Get the corresponding Stream object.
+        stream_name = stream
+        stream = get_stream(stream_name, realm)
+        if stream is None:
+            raise JsonableError("Stream does not exist: %s" % stream_name)
+
+    # requesting_user, if passed, shouldn't be on a different realm.
+    if requesting_user is not None and requesting_user.realm != realm:
+        raise ValidationError("Requesting user not on given realm")
+
+    if realm.domain == "mit.edu" and not stream.invite_only:
+        raise JsonableError("You cannot get subscribers for public streams in this realm")
+
+    if (requesting_user is not None and stream.invite_only
+            and not subscribed_to_stream(requesting_user, stream)):
+        raise JsonableError("Unable to retrieve subscribers for invite-only stream")
+
+    # Note that non-active users may still have "active" subscriptions, because we
+    # want to be able to easily reactivate them with their old subscriptions.  This
+    # is why the query here has to look at the UserProfile.is_active flag.
+    subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
+                                                recipient__type_id=stream.id,
+                                                user_profile__is_active=True,
+                                                active=True).select_related()
+
+    return [subscription.user_profile for subscription in subscriptions]
+
+
 def set_stream_color(user_profile, stream_name, color=None):
     subscription = get_subscription(stream_name, user_profile)
     if not color:

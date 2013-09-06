@@ -36,7 +36,7 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
-    do_add_alert_words, do_remove_alert_words, do_set_alert_words
+    do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscribers
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, isnt_mit, not_mit_mailing_list
@@ -1612,26 +1612,10 @@ def json_upload_file(request, user_profile):
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
-    stream = get_stream(stream_name, user_profile.realm)
-    if stream is None:
-        return json_error("Stream does not exist: %s" % stream_name)
+    subscribers = get_subscribers(stream_name, user_profile.realm, user_profile)
 
-    if user_profile.realm.domain == "mit.edu" and not stream.invite_only:
-        return json_error("You cannot get subscribers for public streams in this realm")
-
-    if stream.invite_only and not subscribed_to_stream(user_profile, stream):
-        return json_error("Unable to retrieve subscribers for invite-only stream")
-
-    # Note that non-active users may still have "active" subscriptions, because we
-    # want to be able to easily reactivate them with their old subscriptions.  This
-    # is why the query here has to look at the UserProfile.is_active flag.
-    subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
-                                                recipient__type_id=stream.id,
-                                                user_profile__is_active=True,
-                                                active=True).select_related()
-
-    return json_success({'subscribers': [subscription.user_profile.email
-                                         for subscription in subscriptions]})
+    return json_success({'subscribers': [subscriber.email
+                                         for subscriber in subscribers]})
 
 @authenticated_json_post_view
 @has_request_variables
