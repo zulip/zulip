@@ -3,9 +3,8 @@
                 <div class="brand">
                   <div class="gravatar-profile"
                        style="background-image: url('{{ avatar_url }}&amp;s=70');"></div>
-                    <span id="my_information">
-                      <span class="my_fullname">{{ user_profile.full_name }}</span><br />
-                      <span class="my_email">{{ user_profile.email }}</span>
+                    <span id="my_information" title="{{ user_profile.full_name }}&#13;{{ user_profile.email }}">
+                      <span class="my_fullname">{{ user_profile.full_name }}</span>
                     </span>
                   </div>
               </div>

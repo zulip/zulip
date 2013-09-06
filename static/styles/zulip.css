@@ -323,10 +323,14 @@ a:hover code {
 
 #my_information .my_fullname {
     font-weight: bold;
-    white-space: nowrap;
+    display: block;
+    word-wrap: break-word;
+    width: 150px;
 }
-.my_email {
+
+.edit-profile {
     font-weight: 300;
+    font-size: 12px;
 }
 
 
