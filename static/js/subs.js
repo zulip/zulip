@@ -217,17 +217,11 @@ function add_sub_to_table(sub) {
 }
 
 function format_member_list_elem(name, email) {
-    return name + ' <' + email + '>';
+    return name + (email ? ' <' + email + '>' : '');
 }
 
 function add_to_member_list(ul, name, email) {
-    var member;
-    if (email === undefined) {
-        member = name;
-    } else {
-        member = format_member_list_elem(name, email);
-    }
-    $('<li>').prependTo(ul).text(member);
+    $('<li>').prependTo(ul).text(format_member_list_elem(name, email));
 }
 
 function mark_subscribed(stream_name, attrs) {
