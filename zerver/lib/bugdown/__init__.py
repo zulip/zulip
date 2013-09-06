@@ -612,7 +612,9 @@ class Bugdown(markdown.Extension):
                   'strong'):
             del md.inlinePatterns[k]
 
-        md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
+        # Temporarily disable alert words on staging to help track down postgres transation quirkiness
+        if not settings.STAGING_DEPLOYED:
+            md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
 
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
