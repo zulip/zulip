@@ -53,6 +53,15 @@ TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
 
 LOCALSERVER = os.path.exists('/etc/zulip-local')
 
+if TESTING_DEPLOYED:
+    EXTERNAL_HOST = platform.node()
+elif STAGING_DEPLOYED:
+    EXTERNAL_HOST = 'staging.zulip.com'
+elif DEPLOYED:
+    EXTERNAL_HOST = 'zulip.com'
+else:
+    EXTERNAL_HOST = 'localhost:9991'
+
 EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # For now, LOCALSERVER is only testing, so write to our test buckets

@@ -5,11 +5,12 @@ from django.conf import settings
 from postmonkey import PostMonkey, MailChimpException
 from zerver.models import UserActivityInterval, get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client
-from zerver.lib.queue import SimpleQueueClient
+from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, send_local_email_template_with_delay, clear_followup_emails_queue
+    internal_send_message, send_local_email_template_with_delay, clear_followup_emails_queue, \
+    check_send_message, extract_recipients
 from zerver.decorator import JsonableError
 from confirmation.models import Confirmation
 
@@ -176,3 +177,23 @@ class SlowQueryWorker(QueueProcessingWorker):
 
             # Aggregate all slow query messages in 1-minute chunks to avoid message spam
             time.sleep(1 * 60)
+
+@assign_queue("message_sender")
+class MessageSenderWorker(QueueProcessingWorker):
+    def consume(self, ch, method, properties, event):
+        req = event['request']
+        try:
+            sender = get_user_profile_by_id(req['sender_id'])
+            client = get_client(req['client_name'])
+
+            msg_id = check_send_message(sender, client, req['type'],
+                                        extract_recipients(req['to']),
+                                        req['subject'], req['content'])
+            resp = {"result": "success", "msg": "", "id": msg_id}
+        except JsonableError as e:
+            resp = {"result": "error", "msg": str(e)}
+
+        result = {'response': resp, 'client_meta': event['client_meta'],
+                  'server_meta': event['server_meta']}
+        queue_json_publish(event['server_meta']['return_queue'], result, lambda e: None)
+

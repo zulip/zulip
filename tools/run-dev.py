@@ -73,7 +73,8 @@ class Resource(resource.Resource):
 
         if (request.uri in ['/json/get_updates', '/api/v1/get_messages', '/json/get_events'] or
             request.uri.startswith('/api/v1/messages/latest') or
-            request.uri.startswith('/api/v1/events')):
+            request.uri.startswith('/api/v1/events') or
+            request.uri.startswith('/sockjs')):
             return proxy.ReverseProxyResource('localhost', tornado_port, '/'+name)
 
         return proxy.ReverseProxyResource('localhost', django_port, '/'+name)

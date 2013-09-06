@@ -345,6 +345,7 @@ JS_SPECS = {
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
             'third/winchan/winchan.js',
+            'third/sockjs/sockjs-0.3.4.js',
             ('third/handlebars/handlebars.runtime.js'
                 if PIPELINE
                 else 'third/handlebars/handlebars.js'),
@@ -408,6 +409,11 @@ JS_SPECS = {
             'third/sorttable/sorttable.js',
         ),
         'output_filename': 'min/activity.js'
+    },
+    # We also want to minify sockjs separately for the sockjs iframe transport
+    'sockjs': {
+        'source_filenames': ('third/sockjs/sockjs-0.3.4.js',),
+        'output_filename': 'min/sockjs-0.3.4.min.js'
     },
 }
 

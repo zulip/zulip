@@ -22,6 +22,7 @@ from zerver.lib.response import json_response
 from zerver import tornado_callbacks
 from zerver.lib.event_queue import setup_event_queue, add_client_gc_hook
 from zerver.lib.queue import setup_tornado_rabbitmq
+from zerver.lib.socket import get_sockjs_router, respond_send_message
 from zerver.middleware import async_request_stop
 
 if settings.USING_RABBITMQ:
@@ -83,6 +84,7 @@ class Command(BaseCommand):
                 def process_notification(chan, method, props, data):
                     tornado_callbacks.process_notification(data)
                 queue_client.register_json_consumer('notify_tornado', process_notification)
+                queue_client.register_json_consumer('tornado_return', respond_send_message)
 
             try:
                 urls = (r"/json/get_updates",
@@ -92,8 +94,10 @@ class Command(BaseCommand):
                         r"/json/get_events",
                         r"/api/v1/events",
                         )
+
                 # Application is an instance of Django's standard wsgi handler.
-                application = web.Application([(url, AsyncDjangoHandler) for url in urls],
+                application = web.Application([(url, AsyncDjangoHandler) for url in urls]
+                                              + get_sockjs_router().urls,
                                                 debug=django.conf.settings.DEBUG,
                                               # Disable Tornado's own request logging, since we have our own
                                               log_function=lambda x: None)
