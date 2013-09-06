@@ -529,7 +529,11 @@ ul.filters {
     display: none;
 }
 
-#stream_filters .count {
+#global_filters .global-filter {
+    position: relative;
+}
+
+#stream_filters .count, #global_filters .count {
     position: absolute;
     right: 20px;
     top: 4px;
@@ -539,6 +543,11 @@ ul.filters {
     border-radius: 1px;
     font-size: 11px;
     font-weight: normal;
+}
+
+#global_filters .count {
+    line-height: 11px;
+    top: 3px;
 }
 
 .subject_count {
