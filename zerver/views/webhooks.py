@@ -176,7 +176,7 @@ def api_jira_webhook(request):
         try:
             for key in keys:
                 payload = payload[key]
-        except (AttributeError, KeyError):
+        except (AttributeError, KeyError, TypeError):
             return default
         return payload
 
@@ -193,7 +193,7 @@ def api_jira_webhook(request):
         issue = issueId
     title = get_in(payload, ['issue', 'fields', 'summary'])
     priority = get_in(payload, ['issue', 'fields', 'priority', 'name'])
-    assignee = get_in(payload, ['assignee', 'displayName'], 'no one')
+    assignee = get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one')
     subject = "%s: %s" % (issueId, title)
 
     if event == 'jira:issue_created':

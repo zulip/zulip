@@ -3094,6 +3094,13 @@ class JiraHookTests(AuthedTestCase):
 
 > New bug with hook""")
 
+    def test_created_assignee(self):
+        msg = self.send_jira_message('created_assignee')
+        self.assertEqual(msg.subject, "TEST-4: Test Created Assignee")
+        self.assertEqual(msg.content, """Leonardo Franchi [Administrator] **created** [TEST-4](https://zulipp.atlassian.net/browse/TEST-4) priority Major, assigned to **Leonardo Franchi [Administrator]**:
+
+> Test Created Assignee""")
+
     def test_commented(self):
         msg = self.send_jira_message('commented')
         self.assertEqual(msg.subject, "BUG-15: New bug with hook")
