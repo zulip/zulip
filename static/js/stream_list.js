@@ -111,13 +111,24 @@ exports.get_count = function (type, name) {
 function update_count_in_dom(count_span, value_span, count) {
     if (count === 0) {
         count_span.hide();
-        count_span.parent(".subscription_block").removeClass("stream-with-count");
+        if (count_span.parent().hasClass("subscription_block")) {
+            count_span.parent(".subscription_block").removeClass("stream-with-count");
+        }
+        else if (count_span.parent().hasClass("user_sidebar_entry")) {
+            count_span.parent(".user_sidebar_entry").removeClass("user-with-count");
+        }
         value_span.text('');
         return;
     }
 
     count_span.show();
-    count_span.parent(".subscription_block").addClass("stream-with-count");
+
+    if (count_span.parent().hasClass("subscription_block")) {
+        count_span.parent(".subscription_block").addClass("stream-with-count");
+    }
+    else if (count_span.parent().hasClass("user_sidebar_entry")) {
+        count_span.parent(".user_sidebar_entry").addClass("user-with-count");
+    }
     value_span.text(count);
 }
 

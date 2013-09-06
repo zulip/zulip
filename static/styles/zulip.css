@@ -523,17 +523,25 @@ ul.filters {
     padding-right: 10px;
 }
 
-#stream_filters .count,
-#global_filters .count {
-    margin-left: 0.5em;
-    display: none;
-}
-
 #global_filters .global-filter {
     position: relative;
 }
 
-#stream_filters .count, #global_filters .count {
+.user_sidebar_entry .selectable_sidebar_block {
+    width: 170px;
+    overflow: hidden;
+    display: block;
+    white-space: nowrap;
+    text-overflow:ellipsis;
+}
+
+.user_sidebar_entry.user-with-count .selectable_sidebar_block {
+    width: 150px;
+}
+
+.user_sidebar_entry .count,
+#global_filters .count,
+#stream_filters .count {
     position: absolute;
     right: 20px;
     top: 4px;
@@ -545,7 +553,15 @@ ul.filters {
     font-weight: normal;
 }
 
+#stream_filters .count,
 #global_filters .count {
+    margin-left: 0.5em;
+    display: none;
+}
+
+.user_sidebar_entry .count,
+#global_filters .count
+{
     line-height: 11px;
     top: 3px;
 }
