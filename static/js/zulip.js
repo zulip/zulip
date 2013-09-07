@@ -841,6 +841,16 @@ function get_updates_success(data) {
                 });
             } else if (event.op === 'update') {
                 subs.update_subscription_properties(event.name, event.property, event.value);
+            } else if (event.op === 'peer_add' || event.op === 'peer_remove') {
+                var js_event_type = 'peer_subscribe.zulip';
+                if (event.op === 'peer_remove') {
+                    js_event_type = 'peer_unsubscribe.zulip';
+                }
+                _.each(event.subscriptions, function (sub) {
+                    $(document).trigger($.Event(js_event_type,
+                                                {subscription: sub,
+                                                 user_email: event.user_email}));
+                });
             }
             break;
         case 'presence':

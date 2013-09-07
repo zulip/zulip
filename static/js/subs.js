@@ -321,6 +321,12 @@ $(function () {
     $(document).on('subscription_remove.zulip', function (e) {
         mark_unsubscribed(e.subscription.name);
     });
+    $(document).on('peer_subscribe.zulip', function (e) {
+        stream_data.add_subscriber(e.subscription, e.user_email);
+    });
+    $(document).on('peer_unsubscribe.zulip', function (e) {
+        stream_data.remove_subscriber(e.subscription, e.user_email);
+    });
 });
 
 exports.receives_notifications = function (stream_name) {
