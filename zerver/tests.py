@@ -893,9 +893,6 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         old_subs, _ = gather_subscriptions(get_user_profile_by_email(test_email))
         sub = old_subs[0]
         stream_name = sub['name']
-        old_color = sub['color']
-        invite_only = sub['invite_only']
-        email_address = sub['email_address']
         new_color = "#ffffff" # TODO: ensure that this is different from old_color
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "color",
@@ -905,14 +902,21 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_success(result)
 
         new_subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
-        sub = {'name': stream_name, 'in_home_view': True, 'color': new_color,
-               'invite_only': invite_only, 'notifications': False,
-               'email_address': email_address}
-        self.assertIn(sub, new_subs)
+        found_sub = None
+        for sub in new_subs:
+            if sub['name'] == stream_name:
+                found_sub = sub
+                break
 
-        new_subs.remove(sub)
-        sub['color'] = old_color
-        old_subs.remove(sub)
+        self.assertIsNotNone(found_sub)
+        self.assertEqual(found_sub['color'], new_color)
+
+        new_subs.remove(found_sub)
+        for sub in old_subs:
+            if sub['name'] == stream_name:
+                found_sub = sub
+                break
+        old_subs.remove(found_sub)
         self.assertEqual(old_subs, new_subs)
 
     def test_set_color_missing_stream_name(self):
