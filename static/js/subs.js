@@ -167,6 +167,12 @@ function create_sub(stream_name, attrs) {
         notifications: false
     });
 
+    // Convert the subscribers list from an array (as passed in the JSON)
+    // to a set (Dict), as we use internally.
+    // Note that we can only track the subscriber list if we ourselves are
+    // subscribed, so if it's undefined we default to an empty list here.
+    sub.subscribers = Dict.from_array(sub.subscribers || []);
+
     if (!sub.color) {
         sub.color = get_color();
     }
@@ -232,10 +238,11 @@ function mark_subscribed(stream_name, attrs) {
         sub = create_sub(stream_name, attrs);
         add_sub_to_table(sub);
     } else if (! sub.subscribed) {
-        // Add yourself to an existing stream.
+        // Add yourself to a stream we already know about client-side.
         var color = get_color();
         exports.set_color(stream_name, color);
         sub.subscribed = true;
+        sub.subscribers = Dict.from_array(attrs.subscribers);
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
@@ -335,7 +342,7 @@ function populate_subscriptions(subs, subscribed) {
                                            invite_only: elem.invite_only,
                                            notifications: elem.notifications, subscribed: subscribed,
                                            email_address: elem.email_address,
-                                           subscribers: Dict.from_array(elem.subscribers)});
+                                           subscribers: elem.subscribers});
         sub_rows.push(sub);
     });
 

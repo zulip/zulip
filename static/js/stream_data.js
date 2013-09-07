@@ -94,17 +94,19 @@ exports.get_name = function (stream_name) {
 
 exports.add_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (!sub.hasOwnProperty('subscribers')) {
-        // FIXME: Temporary hack because this is not initialized.
-        sub.subscribers = new Dict();
+    if (!sub.subscribed) {
+        // If we're not subscribed, we don't track this, and shouldn't
+        // get these events.
+        return;
     }
     sub.subscribers.set(user_email, true);
 };
 
 exports.remove_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (!sub.hasOwnProperty('subscribers')) {
-        // FIXME: Temporary hack because this is not initialized.
+    if (!sub.subscribed) {
+        // If we're not subscribed, we don't track this, and shouldn't
+        // get these events.
         return;
     }
     sub.subscribers.del(user_email);
@@ -112,8 +114,10 @@ exports.remove_subscriber = function (stream_name, user_email) {
 
 exports.user_is_subscribed = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (!sub.hasOwnProperty('subscribers')) {
-        // FIXME: Hack because this is not fully implemented.
+    if (!sub.is_subscribed) {
+        // If we ourselves are not subscribed, we can't keep track of the
+        // subscriber list in general, so we return undefined (treated as
+        // falsy if not explicitly handled).
         return undefined;
     }
     return sub.subscribers.has(user_email);
