@@ -600,6 +600,15 @@ def get_subscribers(stream, realm=None, requesting_user=None):
 
     return [subscription.user_profile for subscription in subscriptions]
 
+def maybe_get_subscribers(stream):
+    """ Alternate version of get_subscribers that takes a Stream object only
+    (not a name), and simply returns an empty list if unable to get a real
+    subscriber list (because we're on the MIT realm). """
+    try:
+        subscribers = get_subscribers(stream)
+    except JsonableError:
+        subscribers = []
+    return subscribers
 
 def set_stream_color(user_profile, stream_name, color=None):
     subscription = get_subscription(stream_name, user_profile)
@@ -641,7 +650,8 @@ def notify_subscriptions_added(user_profile, sub_pairs, no_log=False):
                     in_home_view=subscription.in_home_view,
                     invite_only=stream.invite_only,
                     color=subscription.color,
-                    email_address=encode_email_address(stream))
+                    email_address=encode_email_address(stream),
+                    subscribers=[x.email for x in maybe_get_subscribers(stream)])
             for (subscription, stream) in sub_pairs]
     notice = dict(event=dict(type="subscriptions", op="add",
                              subscriptions=payload),
