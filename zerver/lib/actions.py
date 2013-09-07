@@ -1283,12 +1283,24 @@ def gather_subscriptions(user_profile):
 
     for sub in subs:
         stream = stream_hash[sub.recipient.type_id]
+        try:
+            subscribers = get_subscribers(stream)
+        except JsonableError:
+            subscribers = None
+
+        # Important: don't show the subscribers if the stream is invite only
+        # and this user isn't on it anymore.
+        if stream.invite_only and not sub.active:
+            subscribers = None
+
         stream = {'name': stream.name,
                   'in_home_view': sub.in_home_view,
                   'invite_only': stream.invite_only,
                   'color': sub.color,
                   'notifications': sub.notifications,
                   'email_address': encode_email_address(stream)}
+        if subscribers is not None:
+            stream['subscribers'] = [user.email for user in subscribers]
         if sub.active:
             subscribed.append(stream)
         else:
@@ -1402,6 +1414,16 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                 for sub in ret['subscriptions']:
                     if sub['name'].lower() == event['name'].lower():
                         sub[event['property']] = event['value']
+            elif event['op'] == 'peer_add':
+                for sub in ret['subscriptions']:
+                    if (sub['name'] in event['subscriptions'] and
+                            event['user_email'] not in sub['subscribers']):
+                        sub['subscribers'].append(event['user_email'])
+            elif event['op'] == 'peer_remove':
+                for sub in ret['subscriptions']:
+                    if (sub['name'] in event['subscriptions'] and
+                            event['user_email'] in sub['subscribers']):
+                        sub['subscribers'].remove(event['user_email'])
         elif event['type'] == "presence":
             ret['presences'][event['email']] = event['presence']
         elif event['type'] == "update_message":
