@@ -92,6 +92,13 @@ exports.get_name = function (stream_name) {
     return sub.name;
 };
 
+// NOTE: If you do anything with the `subscribers` attribute on the stream
+// properties object, first make sure `is_subscribed` is true (i.e., the local
+// user is subscribed). Otherwise we don't and can't update the subscribers
+// list.
+//
+// The accessor functions below know to check for that case.
+
 exports.add_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
     if (!sub.subscribed) {
