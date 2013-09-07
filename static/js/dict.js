@@ -33,6 +33,22 @@ Dict.from = function Dict_from(obj, opts) {
     return ret;
 };
 
+/* Like above, but constructs a Dict object from an array, setting the value of
+ * each element to `true`. Intended for use as a set. As above, `opts` is
+ * passed to the Dict constructor.
+ */
+Dict.from_array = function Dict_from_array(xs, opts) {
+    if (! (xs instanceof Array)) {
+        throw new TypeError("Argument is not an array");
+    }
+
+    var ret = new Dict(opts);
+    _.each(xs, function (x) {
+        ret.set(x, true);
+    });
+    return ret;
+};
+
 (function () {
 Dict.prototype = {
     _munge: function Dict__munge(k) {

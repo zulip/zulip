@@ -71,12 +71,24 @@ var assert = require('assert');
     assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
     assert.deepEqual(d3.items(), [['baz', 'qux']]);
 
+    var d4 = Dict.from_array(['foo', 'bar']);
+    assert.deepEqual(d4.items(), [['foo', true], ['bar', true]]);
+
     var caught;
     try {
         Dict.from('bogus');
     } catch (e) {
         caught = true;
         assert.equal(e.toString(), 'TypeError: Cannot convert argument to Dict');
+    }
+    assert(caught);
+
+    caught = undefined;
+    try {
+        Dict.from_array({'bogus': true});
+    } catch (e2) {
+        caught = true;
+        assert.equal(e2.toString(), 'TypeError: Argument is not an array');
     }
     assert(caught);
 }());
