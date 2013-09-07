@@ -1583,6 +1583,9 @@ exports.set_presence_list = function (users, presence_info) {
         _.each(user_emails, set_count);
         set_count(page_params.email);
     }
+
+    // Update user fading, if necessary.
+    compose_fade.update_faded_users();
 };
 
 // Save the compose content cursor position and restore when we

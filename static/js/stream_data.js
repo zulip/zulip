@@ -121,10 +121,10 @@ exports.remove_subscriber = function (stream_name, user_email) {
 
 exports.user_is_subscribed = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (!sub.is_subscribed) {
-        // If we ourselves are not subscribed, we can't keep track of the
-        // subscriber list in general, so we return undefined (treated as
-        // falsy if not explicitly handled).
+    if (typeof sub === 'undefined' || !sub.subscribed) {
+        // If we don't know about the stream, or we ourselves are not
+        // subscribed, we can't keep track of the subscriber list in general,
+        // so we return undefined (treated as falsy if not explicitly handled).
         return undefined;
     }
     return sub.subscribers.has(user_email);
