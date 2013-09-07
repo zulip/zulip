@@ -334,7 +334,8 @@ function populate_subscriptions(subs, subscribed) {
         var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
                                            invite_only: elem.invite_only,
                                            notifications: elem.notifications, subscribed: subscribed,
-                                           email_address: elem.email_address});
+                                           email_address: elem.email_address,
+                                           subscribers: Dict.from_array(elem.subscribers)});
         sub_rows.push(sub);
     });
 

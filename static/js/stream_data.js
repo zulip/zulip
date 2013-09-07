@@ -92,6 +92,33 @@ exports.get_name = function (stream_name) {
     return sub.name;
 };
 
+exports.add_subscriber = function (stream_name, user_email) {
+    var sub = exports.get_sub(stream_name);
+    if (!sub.hasOwnProperty('subscribers')) {
+        // FIXME: Temporary hack because this is not initialized.
+        sub.subscribers = new Dict();
+    }
+    sub.subscribers.set(user_email, true);
+};
+
+exports.remove_subscriber = function (stream_name, user_email) {
+    var sub = exports.get_sub(stream_name);
+    if (!sub.hasOwnProperty('subscribers')) {
+        // FIXME: Temporary hack because this is not initialized.
+        return;
+    }
+    sub.subscribers.del(user_email);
+};
+
+exports.user_is_subscribed = function (stream_name, user_email) {
+    var sub = exports.get_sub(stream_name);
+    if (!sub.hasOwnProperty('subscribers')) {
+        // FIXME: Hack because this is not fully implemented.
+        return undefined;
+    }
+    return sub.subscribers.has(user_email);
+};
+
 return exports;
 
 }());
