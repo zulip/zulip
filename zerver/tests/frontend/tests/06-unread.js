@@ -58,6 +58,8 @@ common.then_log_in({username: 'othello@zulip.com', password: 'GX5MTQ+qYSzcmDoH'}
 var verona_sidebar_selector = "div[data-name='Verona'] .value";
 var iago_sidebar_selector = "li[data-email='iago@zulip.com'] .value";
 
+var first_stream_count;
+var first_pm_count;
 var last_stream_count;
 var last_pm_count;
 
@@ -77,25 +79,26 @@ common.wait_for_load(function () {
     // Due to font size and height variance across platforms, we are restricted from checking specific
     // unread counts as they might not be consistent. However, we do know that after scrolling
     // down more messages should be marked as read
-    var first_stream_count = get_selector_num(verona_sidebar_selector);
-    var first_pm_count = get_selector_num(iago_sidebar_selector);
+    first_stream_count = get_selector_num(verona_sidebar_selector);
+    first_pm_count = get_selector_num(iago_sidebar_selector);
     for(i = 0; i < 1500; i += 100) {
         scroll_to(i);
     }
-
-    last_stream_count = get_selector_num(verona_sidebar_selector);
-    last_pm_count = get_selector_num(iago_sidebar_selector);
-    casper.test.assert(last_stream_count < first_stream_count,
-        "Unread count in stream sidebar decreases after scrolling");
-    casper.test.assert(last_pm_count < first_pm_count,
-        "Unread count in user sidebar decreases after scrolling");
-
 });
 
 // We need to be idle for a second to send a pointer update,
 // then wait a little bit more to let the pointer update finish.
 // Two seconds seems safe.
 casper.wait(2000);
+
+casper.then(function () {
+    last_stream_count = get_selector_num(verona_sidebar_selector);
+    last_pm_count = get_selector_num(iago_sidebar_selector);
+    casper.test.assert(last_stream_count < first_stream_count,
+        "Unread count in stream sidebar decreases after scrolling");
+    casper.test.assert(last_pm_count < first_pm_count,
+        "Unread count in user sidebar decreases after scrolling");
+});
 
 common.then_log_out();
 common.then_log_in({username: 'othello@zulip.com', password: 'GX5MTQ+qYSzcmDoH'});
