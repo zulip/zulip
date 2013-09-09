@@ -192,6 +192,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     alert_words = models.TextField(default=ujson.dumps([])) # json-serialized list of strings
 
+    # Contains serialized JSON of the form:
+    # [["social", "mit"], ["devel", "ios"]]
+    muted_topics = models.TextField(default=ujson.dumps([]))
+
     objects = UserManager()
 
     def can_admin_user(self, target_user):
