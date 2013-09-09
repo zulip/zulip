@@ -407,6 +407,7 @@ JS_SPECS = {
             'js/templates.js',
             'js/avatar.js',
             'js/settings.js',
+            'js/alert_words_ui.js',
             'js/tab_bar.js',
             'js/metrics.js',
             'js/emoji.js',
