@@ -3557,6 +3557,27 @@ class AlertWordTests(AuthedTestCase):
         data = ujson.loads(result.content)
         self.assertEqual(data['alert_words'], ['a', 'b', 'c'])
 
+class MutedTopicsTests(AuthedTestCase):
+    def test_json_set(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        url = '/json/set_muted_topics'
+        data = {'muted_topics': '[["stream", "topic"]]'}
+        result = self.client.post(url, data)
+        self.assert_json_success(result)
+
+        user = get_user_profile_by_email(email)
+        self.assertEqual(ujson.loads(user.muted_topics), [["stream", "topic"]])
+
+        url = '/json/set_muted_topics'
+        data = {'muted_topics': '[["stream2", "topic2"]]'}
+        result = self.client.post(url, data)
+        self.assert_json_success(result)
+
+        user = get_user_profile_by_email(email)
+        self.assertEqual(ujson.loads(user.muted_topics), [["stream2", "topic2"]])
+
 def full_test_name(test):
     test_class = test.__class__.__name__
     test_method = test._testMethodName

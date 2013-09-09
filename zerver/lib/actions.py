@@ -1786,3 +1786,10 @@ def do_remove_alert_words(user_profile, alert_words):
 def do_set_alert_words(user_profile, alert_words):
     set_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, alert_words)
+
+def do_set_muted_topics(user_profile, muted_topics):
+    user_profile.muted_topics = ujson.dumps(muted_topics)
+    user_profile.save(update_fields=['muted_topics'])
+    notice = dict(event=dict(type="muted_topics", muted_topics=muted_topics),
+                  users=[user_profile.id])
+    tornado_callbacks.send_notification(notice)
