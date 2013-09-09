@@ -60,11 +60,18 @@ exports.show_actions_popover = function (element, id) {
                 message.stream &&
                 message.subject &&
                 !muting.is_topic_muted(message.stream, message.subject);
+        var can_unmute_topic =
+                feature_flags.muting &&
+                message.stream &&
+                message.subject &&
+                muting.is_topic_muted(message.stream, message.subject);
+
 
         var args = {
             message:  message,
             can_edit_message: can_edit,
             can_mute_topic: can_mute_topic,
+            can_unmute_topic: can_unmute_topic,
             narrowed: narrow.active()
         };
 
@@ -378,6 +385,16 @@ exports.register_click_handlers = function () {
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
         muting.mute_topic(stream, topic);
+        current_msg_list.rerender();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.popover_unmute_topic', function (e) {
+        var stream = $(e.currentTarget).data('msg-stream');
+        var topic = $(e.currentTarget).data('msg-topic');
+        popovers.hide_actions_popover();
+        muting.unmute_topic(stream, topic);
         current_msg_list.rerender();
         e.stopPropagation();
         e.preventDefault();

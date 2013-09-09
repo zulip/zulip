@@ -66,4 +66,13 @@
   </li>
   {{/if}}
 
+  {{#if can_unmute_topic}}
+  <li>
+    <a href="#" class="popover_unmute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
+      <i class="icon-vector-eye-open"></i>
+      Unmute the topic <b>{{message.subject}}</b>
+    </a>
+  </li>
+  {{/if}}
+
 </ul>
