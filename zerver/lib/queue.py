@@ -43,14 +43,16 @@ class SimpleQueueClient(object):
     def _generate_ctag(self, queue_name):
         return "%s_%s" % (queue_name, str(random.getrandbits(16)))
 
+    def _reconnect_consumer_callback(self, queue, consumer):
+        self.log.info("Queue reconnecting saved consumer %s to queue %s" % (consumer, queue))
+        self.ensure_queue(queue, lambda: self.channel.basic_consume(consumer,
+                                                                    queue=queue,
+                                                                    consumer_tag=self._generate_ctag(queue)))
+
     def _reconnect_consumer_callbacks(self):
         for queue, consumers in self.consumers.items():
             for consumer in consumers:
-                self.log.info("Queue reconnecting saved consumer %s to queue %s" % (consumer, queue))
-                self.ensure_queue(queue, lambda: self.channel.basic_consume(
-                                                        consumer,
-                                                        queue=queue,
-                                                        consumer_tag=self._generate_ctag(queue)))
+                self._reconnect_consumer_callback(queue, consumer)
 
     def close(self):
         if self.connection:
