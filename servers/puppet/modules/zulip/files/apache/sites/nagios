@@ -39,7 +39,7 @@
     # Where the HTML pages live
     Alias /nagios3 /usr/share/nagios3/htdocs
 
-    RedirectMatch ^/?$ https://nagios.nagios.com/cgi-bin/nagios3/status.cgi?host=all
+    RedirectMatch ^/?$ https://nagios.zulip.net/cgi-bin/nagios3/status.cgi?host=all
 
     <Location "/">
         AuthType Digest
