@@ -56,7 +56,7 @@ common.then_log_out();
 common.then_log_in({username: 'othello@zulip.com', password: 'GX5MTQ+qYSzcmDoH'});
 
 var verona_sidebar_selector = "div[data-name='Verona'] .value";
-var iago_sidebar_selector = "a[data-email='iago@zulip.com'] .value";
+var iago_sidebar_selector = "li[data-email='iago@zulip.com'] .value";
 
 var last_stream_count;
 var last_pm_count;
