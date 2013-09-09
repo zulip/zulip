@@ -57,4 +57,13 @@
     </a>
   </li>
 
+  {{#if can_mute_topic}}
+  <li>
+    <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
+      <i class="icon-vector-eye-close"></i>
+      Mute the topic <b>{{message.subject}}</b>
+    </a>
+  </li>
+  {{/if}}
+
 </ul>
