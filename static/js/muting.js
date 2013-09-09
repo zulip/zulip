@@ -13,6 +13,13 @@ exports.mute_topic = function (stream, topic) {
     sub_dict.set(topic, true);
 };
 
+exports.unmute_topic = function (stream, topic) {
+    var sub_dict = muted_topics.get(stream);
+    if (sub_dict) {
+        sub_dict.del(topic);
+    }
+};
+
 exports.is_topic_muted = function (stream, topic) {
     var sub_dict = muted_topics.get(stream);
     return sub_dict && sub_dict.get(topic);
