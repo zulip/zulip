@@ -10,8 +10,6 @@ exports.twenty_four_hour_time = _.contains([],
 exports.dropbox_integration = page_params.staging || _.contains(['dropbox.com'], page_params.domain);
 exports.email_forwarding = page_params.staging ||
                            _.contains(['customer6.invalid'], page_params.domain);
-exports.edit_appears_on_hover = true;
-
 
 exports.mandatory_topics = _.contains([
     'customer7.invalid'

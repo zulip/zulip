@@ -244,7 +244,7 @@ function message_unhover() {
         return;
     }
     message = current_msg_list.get(rows.id(current_message_hover));
-    if (feature_flags.edit_appears_on_hover && message && message.sent_by_me) {
+    if (message && message.sent_by_me) {
         current_message_hover.find('.message_content').find('span.edit_content').remove();
     }
     current_message_hover.removeClass('message_hovered');
@@ -260,7 +260,7 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
-    if (feature_flags.edit_appears_on_hover && message && message.sent_by_me) {
+    if (message && message.sent_by_me) {
         message_row.find('.message_content').find('p:last').append(edit_content_button);
     }
     current_message_hover = message_row;
