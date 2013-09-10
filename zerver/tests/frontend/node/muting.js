@@ -32,12 +32,21 @@ var muting = require('js/muting.js');
     assert(!muting.is_topic_muted('unknown', 'java'));
 }());
 
-(function test_get_muted_topics() {
+(function test_get_and_set_muted_topics() {
     assert.deepEqual(muting.get_muted_topics(), []);
     muting.mute_topic('office', 'gossip');
     muting.mute_topic('devel', 'java');
     assert.deepEqual(muting.get_muted_topics().sort(), [
         ['devel', 'java'],
         ['office', 'gossip']
+    ]);
+
+    muting.set_muted_topics([
+        ['social', 'breakfast'],
+        ['design', 'typography']
+    ]);
+    assert.deepEqual(muting.get_muted_topics().sort(), [
+        ['design', 'typography'],
+        ['social', 'breakfast']
     ]);
 }());

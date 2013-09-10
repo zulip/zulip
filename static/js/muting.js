@@ -35,6 +35,17 @@ exports.get_muted_topics = function () {
     return topics;
 };
 
+exports.set_muted_topics = function (tuples) {
+    muted_topics = new Dict();
+
+    _.each(tuples, function (tuple) {
+        var stream = tuple[0];
+        var topic = tuple[1];
+
+        exports.mute_topic(stream, topic);
+    });
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
