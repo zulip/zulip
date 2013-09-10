@@ -25,6 +25,16 @@ exports.is_topic_muted = function (stream, topic) {
     return sub_dict && sub_dict.get(topic);
 };
 
+exports.get_muted_topics = function () {
+    var topics = [];
+    muted_topics.each(function (sub_dict, stream) {
+        _.each(sub_dict.keys(), function (topic) {
+            topics.push([stream, topic]);
+        });
+    });
+    return topics;
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {

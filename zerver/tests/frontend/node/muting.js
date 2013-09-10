@@ -30,5 +30,14 @@ var muting = require('js/muting.js');
     // test unknown stream is harmless too
     muting.unmute_topic('unknown', 'java');
     assert(!muting.is_topic_muted('unknown', 'java'));
+}());
 
+(function test_get_muted_topics() {
+    assert.deepEqual(muting.get_muted_topics(), []);
+    muting.mute_topic('office', 'gossip');
+    muting.mute_topic('devel', 'java');
+    assert.deepEqual(muting.get_muted_topics().sort(), [
+        ['devel', 'java'],
+        ['office', 'gossip']
+    ]);
 }());
