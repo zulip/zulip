@@ -39,6 +39,26 @@ var assert = require('assert');
     assert.equal(val, res);
 }());
 
+(function test_fold_case() {
+    var d = new Dict({fold_case: true});
+
+    assert.deepEqual(d.keys(), []);
+
+    assert(!d.has('foo'));
+    d.set('fOO', 'Hello World');
+    assert.equal(d.get('foo'), 'Hello World');
+    assert(d.has('foo'));
+    assert(d.has('FOO'));
+    assert(!d.has('not_a_key'));
+
+    assert.deepEqual(d.keys(), ['fOO']);
+
+    d.del('Foo');
+    assert.equal(d.has('foo'), false);
+
+    assert.deepEqual(d.keys(), []);
+}());
+
 (function test_undefined_keys() {
     var d = new Dict();
 
