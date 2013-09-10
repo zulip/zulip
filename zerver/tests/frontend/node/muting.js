@@ -50,3 +50,14 @@ var muting = require('js/muting.js');
         ['social', 'breakfast']
     ]);
 }());
+
+(function test_case_insensitivity() {
+    muting.set_muted_topics([]);
+    assert(!muting.is_topic_muted('SOCial', 'breakfast'));
+    muting.set_muted_topics([
+        ['SOCial', 'breakfast']
+    ]);
+    assert(muting.is_topic_muted('SOCial', 'breakfast'));
+    assert(muting.is_topic_muted('social', 'breakfast'));
+    assert(muting.is_topic_muted('social', 'breakFAST'));
+}());

@@ -2,12 +2,12 @@ var muting = (function () {
 
 var exports = {};
 
-var muted_topics = new Dict();
+var muted_topics = new Dict({fold_case: true});
 
 exports.mute_topic = function (stream, topic) {
     var sub_dict = muted_topics.get(stream);
     if (!sub_dict) {
-        sub_dict = new Dict();
+        sub_dict = new Dict({fold_case: true});
         muted_topics.set(stream, sub_dict);
     }
     sub_dict.set(topic, true);
@@ -36,7 +36,7 @@ exports.get_muted_topics = function () {
 };
 
 exports.set_muted_topics = function (tuples) {
-    muted_topics = new Dict();
+    muted_topics = new Dict({fold_case: true});
 
     _.each(tuples, function (tuple) {
         var stream = tuple[0];
