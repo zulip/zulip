@@ -58,7 +58,7 @@ urlpatterns = patterns('',
 
     # "About Zulip" information
     url(r'^what-is-humbug/$', TemplateView.as_view(template_name='zerver/what-is-humbug.html')),
-    url(r'^new-user/$', TemplateView.as_view(template_name='zerver/new-user.html')),
+    url(r'^new-user/$', RedirectView.as_view(url='/hello')),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 
     # Landing page, signup form, and nice register URL
