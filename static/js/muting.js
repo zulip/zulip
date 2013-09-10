@@ -21,6 +21,9 @@ exports.unmute_topic = function (stream, topic) {
 };
 
 exports.is_topic_muted = function (stream, topic) {
+    if (stream === undefined) {
+        return false;
+    }
     var sub_dict = muted_topics.get(stream);
     return sub_dict && sub_dict.get(topic);
 };

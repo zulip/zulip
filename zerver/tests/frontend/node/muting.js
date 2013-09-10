@@ -11,6 +11,14 @@ set_global('page_params', {
 
 var muting = require('js/muting.js');
 
+(function test_edge_cases() {
+    // private messages
+    assert(!muting.is_topic_muted(undefined, undefined));
+
+    // defensive
+    assert(!muting.is_topic_muted('nonexistent', undefined));
+}());
+
 (function test_basics() {
     assert(!muting.is_topic_muted('devel', 'java'));
     muting.mute_topic('devel', 'java');
