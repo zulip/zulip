@@ -19,6 +19,11 @@ exports.persist_and_rerender = function () {
     });
 };
 
+exports.handle_updates = function (muted_topics) {
+    muting.set_muted_topics(muted_topics);
+    current_msg_list.rerender();
+};
+
 return exports;
 }());
 

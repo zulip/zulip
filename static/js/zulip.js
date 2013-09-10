@@ -881,6 +881,9 @@ function get_updates_success(data) {
         case 'alert_words':
             alert_words.words = event.alert_words;
             break;
+        case 'muted_topics':
+            muting_ui.handle_updates(event.muted_topics);
+            break;
         }
     });
 
