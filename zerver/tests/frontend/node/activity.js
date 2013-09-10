@@ -6,6 +6,14 @@ add_dependencies({
     Dict: 'js/dict.js'
 });
 
+set_global('$', function () {
+    return {
+        on: function () {
+            return;
+        }
+    };
+});
+
 var activity = require('js/activity.js');
 
 (function test_sort_users() {
