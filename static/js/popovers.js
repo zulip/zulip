@@ -385,7 +385,7 @@ exports.register_click_handlers = function () {
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
         muting.mute_topic(stream, topic);
-        current_msg_list.rerender();
+        muting_ui.persist_and_rerender();
         e.stopPropagation();
         e.preventDefault();
     });
@@ -395,7 +395,7 @@ exports.register_click_handlers = function () {
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
         muting.unmute_topic(stream, topic);
-        current_msg_list.rerender();
+        muting_ui.persist_and_rerender();
         e.stopPropagation();
         e.preventDefault();
     });

@@ -368,6 +368,7 @@ JS_SPECS = {
             'js/util.js',
             'js/dict.js',
             'js/muting.js',
+            'js/muting_ui.js',
             'js/setup.js',
             'js/viewport.js',
             'js/rows.js',
