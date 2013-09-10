@@ -39,6 +39,13 @@ var assert = require('assert');
     assert.equal(val, res);
 }());
 
+(function test_undefined_keys() {
+    var d = new Dict();
+
+    assert.equal(d.has(undefined), false);
+    assert.strictEqual(d.get(undefined), undefined);
+}());
+
 (function test_restricted_keys() {
     var d = new Dict();
 
