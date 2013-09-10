@@ -101,9 +101,10 @@ exports.get_name = function (stream_name) {
 
 exports.add_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (!sub.subscribed) {
+    if (typeof sub === 'undefined' || !sub.subscribed) {
         // If we're not subscribed, we don't track this, and shouldn't
-        // get these events.
+        // get these events. Likewise, if we don't know about the stream,
+        // we don't want to track this.
         return;
     }
     sub.subscribers.set(user_email, true);
@@ -111,9 +112,10 @@ exports.add_subscriber = function (stream_name, user_email) {
 
 exports.remove_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (!sub.subscribed) {
+    if (typeof sub === 'undefined' || !sub.subscribed) {
         // If we're not subscribed, we don't track this, and shouldn't
-        // get these events.
+        // get these events. Likewise, if we don't know about the stream,
+        // we don't want to track this.
         return;
     }
     sub.subscribers.del(user_email);
