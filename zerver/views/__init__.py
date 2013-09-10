@@ -616,8 +616,16 @@ def accounts_home(request):
                               context_instance=RequestContext(request))
 
 def approximate_unread_count(user_profile):
-    return UserMessage.objects.filter(user_profile=user_profile,
-                                      message_id__gt=user_profile.pointer).count()
+    not_in_home_view_recipients = [sub.recipient.id for sub in \
+                                       Subscription.objects.filter(
+            user_profile=user_profile, in_home_view=False)]
+
+    # Don't include messages that aren't in your home view, as they might never
+    # be read.
+    return UserMessage.objects.filter(
+        user_profile=user_profile, message_id__gt=user_profile.pointer).exclude(
+        message__recipient__type=Recipient.STREAM,
+        message__recipient__id__in=not_in_home_view_recipients).count()
 
 def sent_time_in_epoch_seconds(user_message):
     # user_message is a UserMessage object.
