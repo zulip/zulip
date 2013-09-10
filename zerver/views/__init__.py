@@ -37,7 +37,7 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscribers, \
-    update_user_activity_interval, do_set_muted_topics
+    update_user_activity_interval, do_set_muted_topics, do_rename_stream
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, isnt_mit, not_mit_mailing_list
@@ -712,7 +712,8 @@ def home(request):
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
         staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
-        alert_words           = register_ret['alert_words']
+        alert_words           = register_ret['alert_words'],
+        show_admin            = user_profile.show_admin
     ))
 
     statsd.incr('views.home')
@@ -1403,6 +1404,14 @@ def get_streams_backend(request, user_profile,
 def get_public_streams_backend(request, user_profile):
     return get_streams_backend(request, user_profile, include_public=True,
                                include_subscribed=False, include_all_active=False)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_rename_stream(request, user_profile, old_name=REQ, new_name=REQ):
+    if not user_profile.has_perm('administer', user_profile.realm):
+        return json_error("Insufficient permission to rename stream")
+
+    return json_success(do_rename_stream(user_profile.realm, old_name, new_name))
 
 @authenticated_api_view
 def api_list_subscriptions(request, user_profile):

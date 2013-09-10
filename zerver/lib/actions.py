@@ -961,6 +961,10 @@ def do_rename_stream(realm, old_name, new_name, log=True):
 
     tornado_callbacks.send_notification(notice)
 
+    # Even though the token doesn't change, the web client needs to update the
+    # email forwarding address to display the correctly-escaped new name.
+    return {"email_address": encode_email_address(stream)}
+
 def do_create_realm(domain, restricted_to_domain=True):
     realm = get_realm(domain)
     created = not realm
