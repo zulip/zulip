@@ -6,6 +6,8 @@ var _ = global._;
 var Dict = require('js/dict.js');
 var assert = require('assert');
 
+set_global('blueslip', {});
+
 (function test_basic() {
     var d = new Dict();
 
@@ -60,6 +62,10 @@ var assert = require('assert');
 }());
 
 (function test_undefined_keys() {
+    global.blueslip.error = function (msg) {
+        assert.equal(msg, "Tried to call a Dict method with an undefined key.");
+    };
+
     var d = new Dict();
 
     assert.equal(d.has(undefined), false);

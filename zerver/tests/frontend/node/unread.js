@@ -196,7 +196,8 @@ var zero_counts = {
 
     var message = {
         id: 15,
-        type: 'private'
+        type: 'private',
+        reply_to: 'alice@zulip.com'
     };
 
     unread.process_loaded_messages([message]);
@@ -209,7 +210,10 @@ var zero_counts = {
 }());
 
 (function test_num_unread_for_person() {
-    var email = 'alice@zulip.com';
+    var email = 'unknown@zulip.com';
+    assert.equal(unread.num_unread_for_person(email), 0);
+
+    email = 'alice@zulip.com';
     assert.equal(unread.num_unread_for_person(email), 0);
 
     var message = {

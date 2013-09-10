@@ -53,6 +53,7 @@ Dict.from_array = function Dict_from_array(xs, opts) {
 Dict.prototype = {
     _munge: function Dict__munge(k) {
         if (k === undefined) {
+            blueslip.error("Tried to call a Dict method with an undefined key.");
             return undefined;
         }
         if (this._opts.fold_case) {
