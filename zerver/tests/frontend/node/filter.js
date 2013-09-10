@@ -86,6 +86,11 @@ function get_predicate(operators) {
     assert(predicate({starred: true}));
     assert(!predicate({starred: false}));
 
+    predicate = get_predicate([['is', 'alerted']]);
+    assert(predicate({alerted: true}));
+    assert(!predicate({alerted: false}));
+    assert(!predicate({}));
+
     predicate = get_predicate([['is', 'mentioned']]);
     assert(predicate({mentioned: true}));
     assert(!predicate({mentioned: false}));
