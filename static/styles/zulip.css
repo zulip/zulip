@@ -2360,6 +2360,20 @@ li.expanded_subject {
     padding-bottom: 10px; /* same as .bookend */
 }
 
+.date_row .date-direction {
+    display: inline-block;
+    padding-right: 5px;
+}
+
+.date_row .date-line {
+    display: inline-block;
+    vertical-align: middle;
+    width: 33%;
+    border-top: 1px solid #ccc;
+    border-bottom:1px solid #fff;
+    margin: 0px 5px 0px 5px;
+}
+
 .date_row span {
     display: block;
     background: inherit;
@@ -2391,15 +2405,6 @@ li.expanded_subject {
 .date_row span:after {
     left: 0.5em;
     margin-right: -50%;
-}
-
-.date_row hr {
-    display: inline-block;
-    vertical-align: middle;
-    width: 33%;
-    border-top: 1px solid #ccc;
-    border-bottom:1px solid #fff;
-    margin: 0;
 }
 
 #restore-draft {

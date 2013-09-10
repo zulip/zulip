@@ -66,7 +66,9 @@ function maybe_add_update_list_entry (needs_update, id, time, time_above) {
 function render_date_span(elem, time_str, time_above_str) {
     elem.text("");
     if (time_above_str !== undefined) {
-        return elem.append("▲ " + time_above_str + " ▲").append($("<hr />")).append("▼ " + time_str + " ▼");
+        return elem.append('<i class="date-direction icon-vector-caret-up"></i>' +
+                           time_above_str).append($('<hr class="date-line">')).append('<i class="date-direction icon-vector-caret-down"></i>'
+                           + time_str);
     } else {
         return elem.append(time_str);
     }
