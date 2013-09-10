@@ -52,6 +52,9 @@ Dict.from_array = function Dict_from_array(xs, opts) {
 (function () {
 Dict.prototype = {
     _munge: function Dict__munge(k) {
+        if (k === undefined) {
+            return undefined;
+        }
         if (this._opts.fold_case) {
             k = k.toLowerCase();
         }

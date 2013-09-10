@@ -44,6 +44,11 @@ var assert = require('assert');
 
     assert.equal(d.has(undefined), false);
     assert.strictEqual(d.get(undefined), undefined);
+
+    d = new Dict({fold_case: true});
+
+    assert.equal(d.has(undefined), false);
+    assert.strictEqual(d.get(undefined), undefined);
 }());
 
 (function test_restricted_keys() {
