@@ -1093,7 +1093,7 @@ def update_user_presence(user_profile, client, log_time, status,
 
     queue_json_publish("user_activity", event, process_user_presence_event)
 
-    if ujson.loads(new_user_input):
+    if new_user_input:
         update_user_activity_interval(user_profile, log_time)
 
 def do_update_message_flags(user_profile, operation, flag, messages, all):
