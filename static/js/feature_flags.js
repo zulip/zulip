@@ -3,7 +3,11 @@ var feature_flags = (function () {
 var exports = {};
 
 exports.mark_read_at_bottom = page_params.staging ||
-                              _.contains(['mit.edu'], page_params.domain);
+                              _.contains(['mit.edu',
+                                          'customer4.invalid',
+                                          'users.customer4.invalid'
+                                          ],
+                                          page_params.domain);
 exports.summarize_read_while_narrowed = page_params.staging;
 exports.twenty_four_hour_time = _.contains([],
                                   page_params.email);
