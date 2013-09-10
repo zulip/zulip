@@ -50,6 +50,16 @@
              <i class="icon-vector-question-sign" id="email-address-hint-{{id}}"></i></span></p>
       </div>
       {{/if_and}}
+
+      {{#if allow_rename}}
+        <div class="rename-stream">
+          <form class="form-inline">
+            <input type="text" name="new-name" value="" class="input-block" />
+            <input type="submit" name="rename" value="Rename" class="btn btn-danger" />
+          </form>
+        </div>
+      {{/if}}
+
       {{#render_subscribers}}
       <div class="subscriber_list_settings">
         <span class="sub_settings_title">Members</span>

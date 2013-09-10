@@ -217,7 +217,8 @@ function add_email_hint(row) {
 function add_sub_to_table(sub) {
     $('#create_stream_row').after(templates.render(
         'subscription',
-        _.extend(sub, {'show_email_token': feature_flags.email_forwarding})));
+        _.extend(sub, {'show_email_token': feature_flags.email_forwarding,
+                       'allow_rename': page_params.show_admin})));
     settings_for_sub(sub).collapse('show');
     add_email_hint(sub);
 }
@@ -417,6 +418,7 @@ exports.setup_page = function () {
             if (!sub) {
                 sub = create_sub(stream, {subscribed: false});
             }
+            sub = _.extend(sub, {'allow_rename': page_params.show_admin});
             if (feature_flags.email_forwarding) {
                 sub = _.extend(sub, {'show_email_token': feature_flags.email_forwarding});
             }
@@ -777,6 +779,36 @@ $(function () {
             error: function (xhr) {
                 warning_elem.addClass("hide");
                 error_elem.removeClass("hide").text("Could not add user to this stream");
+            }
+        });
+    });
+
+    $("#subscriptions_table").on("submit", ".rename-stream form", function (e) {
+        e.preventDefault();
+
+        var sub_row = $(e.target).closest('.subscription_row');
+        var old_name_box = sub_row.find('.subscription_name');
+        var old_name = old_name_box.text();
+        var new_name_box = sub_row.find('input[name="new-name"]');
+        var new_name = $.trim(new_name_box.val());
+
+        $("#subscriptions-status").hide();
+
+        $.ajax({
+            type: "POST",
+            url: "/json/rename_stream",
+            dataType: 'json',
+            data: {"old_name": old_name, "new_name": new_name},
+            success: function (data) {
+                new_name_box.val('');
+                // Update all visible instances of the old name to the new name.
+                old_name_box.text(new_name);
+                sub_row.find(".email-address").text(data.email_address);
+
+                ui.report_success("The stream has been renamed!", $("#subscriptions-status"));
+            },
+            error: function (xhr) {
+                ui.report_error("Error renaming stream", xhr, $("#subscriptions-status"));
             }
         });
     });
