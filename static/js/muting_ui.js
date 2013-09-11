@@ -2,6 +2,12 @@ var muting_ui = (function () {
 
 var exports = {};
 
+function timestamp_ms() {
+    return (new Date()).getTime();
+}
+
+var last_topic_update = 0;
+
 exports.persist_and_rerender = function () {
     // Optimistically rerender our new muting preferences.  The back
     // end should eventually save it, and if it doesn't, it's a recoverable
@@ -11,6 +17,7 @@ exports.persist_and_rerender = function () {
     var data = {
         muted_topics: JSON.stringify(muting.get_muted_topics())
     };
+    last_topic_update = timestamp_ms();
     $.ajax({
         type: 'POST',
         url: '/json/set_muted_topics',
@@ -20,6 +27,13 @@ exports.persist_and_rerender = function () {
 };
 
 exports.handle_updates = function (muted_topics) {
+    if (timestamp_ms() < last_topic_update + 1000) {
+        // This topic update is either the one that we just rendered, or,
+        // much less likely, it's coming from another device and would probably
+        // be overwriting this device's preferences with stale data.
+        return;
+    }
+
     muting.set_muted_topics(muted_topics);
     current_msg_list.rerender();
 };
