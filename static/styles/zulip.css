@@ -780,6 +780,11 @@ td.pointer {
     background: #000;
 }
 
+.icon-vector-expand-alt,
+.icon-vector-collapse-alt {
+  cursor: pointer;
+}
+
 /*
 We can't collapse the floating recipient bar yet, so this is
 just a temporary hack.
