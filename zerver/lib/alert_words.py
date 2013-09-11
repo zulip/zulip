@@ -26,11 +26,15 @@ def add_user_alert_words(user_profile, alert_words):
 
     set_user_alert_words(user_profile, words)
 
+    return words
+
 def remove_user_alert_words(user_profile, alert_words):
     words = user_alert_words(user_profile)
     words = [w for w in words if not w in alert_words]
 
     set_user_alert_words(user_profile, words)
+
+    return words
 
 def set_user_alert_words(user_profile, alert_words):
     user_profile.alert_words = ujson.dumps(alert_words)

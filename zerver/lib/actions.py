@@ -1770,21 +1770,19 @@ def do_remove_realm_emoji(realm, name):
     RealmEmoji.objects.get(realm=realm, name=name).delete()
     notify_realm_emoji(realm)
 
-def notify_alert_words(user_profile):
-    words = user_alert_words(user_profile)
-
+def notify_alert_words(user_profile, words):
     notice = dict(event=dict(type="alert_words", alert_words=words),
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
 def do_add_alert_words(user_profile, alert_words):
-    add_user_alert_words(user_profile, alert_words)
-    notify_alert_words(user_profile)
+    words = add_user_alert_words(user_profile, alert_words)
+    notify_alert_words(user_profile, words)
 
 def do_remove_alert_words(user_profile, alert_words):
-    remove_user_alert_words(user_profile, alert_words)
-    notify_alert_words(user_profile)
+    words = remove_user_alert_words(user_profile, alert_words)
+    notify_alert_words(user_profile, words)
 
 def do_set_alert_words(user_profile, alert_words):
     set_user_alert_words(user_profile, alert_words)
-    notify_alert_words(user_profile)
+    notify_alert_words(user_profile, alert_words)
