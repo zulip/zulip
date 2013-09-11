@@ -315,34 +315,13 @@ function compose_error(error_text, bad_input) {
 
 var send_options;
 
-function send_message() {
-    var request = create_message_object();
-    exports.snapshot_message(request);
-
-    if (request.type === "private") {
-        request.to = JSON.stringify(request.to);
-    } else {
-        request.to = JSON.stringify([request.to]);
-    }
-
+function send_message_ajax(request, success) {
     $.ajax({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         url: '/json/send_message',
         type: 'POST',
         data: request,
-        success: function (resp, statusText, xhr) {
-            $("#new_message_content").val('').focus();
-            autosize_textarea();
-            $("#send-status").hide(0);
-            if (request.type === "private") {
-                onboarding.mark_checklist_step("sent_private_message");
-            } else {
-                onboarding.mark_checklist_step("sent_stream_message");
-            }
-            clear_message_snapshot();
-            $("#compose-send-button").removeAttr('disabled');
-            $("#sending-indicator").hide();
-        },
+        success: success,
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && reload.is_pending()) {
                 // The error might be due to the server changing
@@ -353,7 +332,48 @@ function send_message() {
             compose_error(response, $('#new_message_content'));
         }
     });
+}
 
+var socket = new Socket("/sockjs");
+function send_message_socket(request, success) {
+    socket.send(request, success, function (type, resp) {
+        var err_msg = "Error sending message";
+        if (type === 'response') {
+            err_msg += ": " + resp.msg;
+        }
+        compose_error(err_msg, $('#new_message_content'));
+    });
+}
+
+function send_message() {
+    var request = create_message_object();
+    exports.snapshot_message(request);
+
+    if (request.type === "private") {
+        request.to = JSON.stringify(request.to);
+    } else {
+        request.to = JSON.stringify([request.to]);
+    }
+
+    function success() {
+        $("#new_message_content").val('').focus();
+        autosize_textarea();
+        $("#send-status").hide(0);
+        if (request.type === "private") {
+            onboarding.mark_checklist_step("sent_private_message");
+        } else {
+            onboarding.mark_checklist_step("sent_stream_message");
+        }
+        clear_message_snapshot();
+        $("#compose-send-button").removeAttr('disabled');
+        $("#sending-indicator").hide();
+    }
+
+    if (feature_flags.use_socket) {
+        send_message_socket(request, success);
+    } else {
+        send_message_ajax(request, success);
+    }
 }
 
 exports.finish = function () {
