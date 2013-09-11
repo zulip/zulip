@@ -276,7 +276,7 @@ function process_hotkey(e) {
     if (current_msg_list.on_expandable_row()) {
         switch (event_name) {
             case 'enter':
-                ui.expand_summary_row(current_msg_list.selected_row());
+                ui.expand_summary_row(current_msg_list.selected_row().expectOne());
                 return true;
         }
         return false;
