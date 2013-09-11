@@ -780,8 +780,8 @@ td.pointer {
     background: #000;
 }
 
-.icon-vector-expand-alt,
-.icon-vector-collapse-alt {
+.messages-expand,
+.messages-collapse {
   cursor: pointer;
 }
 
@@ -789,7 +789,7 @@ td.pointer {
 We can't collapse the floating recipient bar yet, so this is
 just a temporary hack.
 */
-.floating_recipient .icon-vector-collapse-alt {
+.floating_recipient .messages-collapse {
     display: none;
 }
 
