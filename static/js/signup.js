@@ -49,6 +49,7 @@ $(function () {
     });
 
     $("#login_form").validate({
-        errorClass: "text-error"
+        errorClass: "text-error",
+        wrapper: "div"
     });
 });
