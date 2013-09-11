@@ -1012,11 +1012,11 @@ $(function () {
 
     if (feature_flags.summarize_read_while_narrowed) {
         $("#main_div").on("click", ".summary_row  .icon-vector-expand-alt", function (e) {
-            exports.expand_summary_row($(e.target).closest('.summary_row'));
+            exports.expand_summary_row($(e.target).closest('.summary_row').expectOne());
             e.stopImmediatePropagation();
         });
         $("#main_div").on("click", ".recipient_row .icon-vector-collapse-alt", function (e) {
-            exports.collapse_recipient_group($(e.target).closest('.recipient_row'));
+            exports.collapse_recipient_group($(e.target).closest('.recipient_row').expectOne());
             e.stopImmediatePropagation();
         });
     }
