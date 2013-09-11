@@ -1282,6 +1282,9 @@ $(function () {
                          ['topic', subject]],
                         {select_first_unread: true, trigger: 'sidebar'});
 
+        compose.start('stream', {stream: stream, subject: subject,
+                                 trigger: 'sidebar subject click'});
+
         e.preventDefault();
     });
 
