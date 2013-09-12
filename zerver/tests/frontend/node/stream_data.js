@@ -66,3 +66,39 @@ var stream_data = require('js/stream_data.js');
     stream_data.set_stream_info(info);
     assert.deepEqual(stream_data.subscribed_streams(), ['Denmark']);
 }());
+
+(function test_subscribers() {
+    stream_data.clear_subscriptions();
+    var sub = {name: 'Rome', subscribed: true};
+
+    sub.subscribers = new global.Dict(); // TODO: encapsulate this in stream_data.js
+
+    stream_data.add_sub('Rome', sub);
+    var email = 'brutus@zulip.com';
+    assert(!stream_data.user_is_subscribed('Rome', email));
+
+    // add
+    stream_data.add_subscriber('Rome', email);
+    assert(stream_data.user_is_subscribed('Rome', email));
+
+    // verify that adding an already-removed subscriber is a noop
+    stream_data.add_subscriber('Rome', email);
+    assert(stream_data.user_is_subscribed('Rome', email));
+
+    // remove
+    stream_data.remove_subscriber('Rome', email);
+    assert(!stream_data.user_is_subscribed('Rome', email));
+
+    // verify that removing an already-removed subscriber is a noop
+    stream_data.remove_subscriber('Rome', email);
+    assert(!stream_data.user_is_subscribed('Rome', email));
+
+
+    // Verify that we noop and don't crash when unsubsribed.
+    sub.subscribed = false;
+    stream_data.add_subscriber('Rome', email);
+    assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
+    stream_data.remove_subscriber('Rome', email);
+    assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
+
+}());
