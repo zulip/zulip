@@ -3,6 +3,7 @@ var ui = (function () {
 var exports = {};
 
 var actively_scrolling = false;
+var narrow_window = false;
 
 exports.actively_scrolling = function () {
     return actively_scrolling;
@@ -328,10 +329,7 @@ function get_new_heights() {
         - $(".upper_sidebar").outerHeight(true)
         - 40;
 
-    res.right_sidebar_height =
-        viewport_height - top_navbar_height
-        - $("#notifications-area").outerHeight(true)
-        - 14;  // margin for right sidebar
+    res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
 
     res.stream_filters_max_height =
         res.bottom_sidebar_height
@@ -348,8 +346,67 @@ function get_new_heights() {
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(40, res.stream_filters_max_height);
 
-    res.user_presences_max_height =
-        res.right_sidebar_height * 0.90 - invite_user_link_height;
+    res.user_presences_max_height = res.right_sidebar_height
+                                    - $("#feedback_section").outerHeight(true)
+                                    - parseInt($("#user_presences").css("marginTop"),10)
+                                    - parseInt($("#user_presences").css("marginBottom"), 10)
+                                    - invite_user_link_height;
+
+    return res;
+}
+
+function left_userlist_get_new_heights() {
+
+    var res = {};
+    var viewport_height = viewport.height();
+    var viewport_width = viewport.width();
+    var top_navbar_height = $(".header").outerHeight(true);
+    var invite_user_link_height = $("#invite-user-link").outerHeight(true) || 0;
+    var share_the_love_height = $("#share-the-love").is(":visible") ? $("#share-the-love").outerHeight(true) : 0;
+
+    var stream_filters_real_height = $("#stream_filters").prop("scrollHeight");
+    var user_list_real_height = $("#user_presences").prop("scrollHeight");
+
+    res.bottom_whitespace_height = viewport_height * 0.4;
+
+    res.main_div_min_height = viewport_height - top_navbar_height;
+
+    res.bottom_sidebar_height = viewport_height
+                                - parseInt($("#left-sidebar").css("marginTop"),10)
+                                - $(".upper_sidebar").outerHeight(true)
+                                - parseInt($(".bottom_sidebar").css("marginTop"),10);
+
+
+    res.total_leftlist_height = res.bottom_sidebar_height
+                                - $("#global_filters").outerHeight(true)
+                                - $("#streams_header").outerHeight(true)
+                                - $("#userlist-header").outerHeight(true)
+                                - parseInt($("#stream_filters").css("marginBottom"),10)
+                                - parseInt($("#user_presences").css("marginTop"), 10)
+                                - parseInt($("#user_presences").css("marginBottom"), 10)
+                                - invite_user_link_height
+                                - share_the_love_height
+                                - 15;
+
+    res.stream_filters_max_height = Math.max (40, res.total_leftlist_height / 2);
+
+    res.user_presences_max_height = Math.max(40, res.total_leftlist_height / 2);
+
+    if (res.stream_filters_max_height > stream_filters_real_height) {
+        res.stream_filters_max_height = stream_filters_real_height;
+        res.user_presences_max_height = Math.max(40, res.total_leftlist_height
+                                                     - stream_filters_real_height);
+    }
+
+    else if (res.user_presences_max_height > user_list_real_height) {
+        res.user_presences_max_height = user_list_real_height;
+        res.stream_filters_max_height = Math.max (40, res.total_leftlist_height
+                                                       - user_list_real_height);
+    }
+
+
+    res.viewport_height = viewport_height;
+    res.viewport_width = viewport_width;
 
     return res;
 }
@@ -368,13 +425,30 @@ exports.resize_page_components = function () {
     tab_bar.width(desired_width);
     tab_bar_under.width(desired_width);
 
-    var h = get_new_heights();
+    var h;
+
+    if (viewport.width() < 975 && feature_flags.left_side_userlist && !narrow_window) {
+        narrow_window = true;
+        popovers.set_userlist_placement("left");
+        $(".bottom_sidebar").append($("#user-list")).append($("#share-the-love"));
+        $("#user_presences").css("margin", "0px");
+        $("#userlist-toggle").css("display", "none");
+    }
+    else if (viewport.width() > 975 && feature_flags.left_side_userlist && narrow_window) {
+        narrow_window = false;
+        popovers.set_userlist_placement("right");
+        $("#right-sidebar").append($("#user-list"));
+        $("#user_presences").css("margin", '');
+        $("#userlist-toggle").css("display", '');
+    }
+
+    h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
-    $(".bottom_sidebar").height(h.bottom_sidebar_height);
-    $("#right-sidebar").height(h.right_sidebar_height);
     $("#stream_filters").css('max-height', h.stream_filters_max_height);
     $("#user_presences").css('max-height', h.user_presences_max_height);
+
+    popovers.hide_all();
 };
 
 function resizehandler(e) {
@@ -1664,6 +1738,7 @@ $(function () {
         $("#desktop-zephyr-mirror-error-text").removeClass("notdisplayed");
     }
 });
+
 
 return exports;
 }());

@@ -346,12 +346,12 @@ a:hover code {
     margin-top: 1em;
 }
 
-.streams_title {
-    font-size: 0.9em;
+.sidebar-title, .share-the-love-title {
+    font-size: 11px;
     font-weight: normal;
-
     display: inline;
 }
+
 
 #streams_list:hover #streams_inline_cog {
    visibility: visible;
@@ -376,7 +376,6 @@ a:hover code {
 }
 
 #stream_filters {
-    border-bottom: 1px solid #eee;
     overflow-x: visible;
     overflow-y: hidden;
     margin: 2px 0px 0px 0px;
@@ -2485,8 +2484,8 @@ li.expanded_subject {
     margin-right: 5px;
 }
 
-#streams_header {
-    border-top: 1px solid #eee;
+#streams_header, #userlist-header, #sharethelove-header {
+    border-top: 1px solid #ddd;
     margin-top: 5px;
     margin-right: 10px;
 }
@@ -2772,7 +2771,7 @@ div.edit_bot {
 
 #share-the-love {
     margin-left: 0px;
-    margin-right: 18px;
+    margin-right: 0px;
     margin-bottom: 5px;
     line-height: 18px;
     display: none;
@@ -2815,11 +2814,17 @@ div.edit_bot {
 
 #share-the-love .still-have-invites {
     clear: both;
+    margin-right: 10px;
 }
 
 #share-the-love .no-more-invites {
     clear: both;
     display: none;
+    margin-right: 10px;
+}
+
+#share-the-love .invite-count-area {
+    margin-right: 10px;
 }
 
 #share-the-love .alert {
@@ -2874,6 +2879,7 @@ div.edit_bot {
         border-left: 1px solid #dddddd;
         margin-top: 40px;
         padding-top: 10px;
+        height: 100%;
     }
 
     .header-main .column-right {
@@ -2960,7 +2966,7 @@ div.edit_bot {
         display: block;
         position: absolute;
         float: none;
-        left: 15px;
+        left: 0px;
         top: 0px;
     }
 
@@ -2970,6 +2976,8 @@ div.edit_bot {
         border-right: 1px solid #dddddd;
         margin-top: 40px;
         padding-top: 10px;
+        height: 100%;
+        padding-left: 10px;
     }
 
     body, html,

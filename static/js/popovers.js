@@ -5,6 +5,8 @@ var exports = {};
 var current_actions_popover_elem;
 var current_message_info_popover_elem;
 
+var userlist_placement = "right";
+
 function show_message_info_popover(element, id) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
@@ -148,6 +150,7 @@ var current_stream_sidebar_elem;
 var current_topic_sidebar_elem;
 var current_user_sidebar_elem;
 
+
 function user_sidebar_popped() {
     return current_user_sidebar_elem !== undefined;
 }
@@ -210,8 +213,9 @@ exports.register_click_handlers = function () {
 
         var last_sidebar_elem = current_user_sidebar_elem;
         popovers.hide_all();
-        popovers.show_userlist_sidebar();
-
+        if (userlist_placement === "right") {
+            popovers.show_userlist_sidebar();
+        }
         var target = $(elt).closest('li');
         var email = target.find('a').attr('data-email');
         var name = target.find('a').attr('data-name');
@@ -219,7 +223,7 @@ exports.register_click_handlers = function () {
         target.popover({
             content:   templates.render('user_sidebar_actions', {'email': email,
                                                                  'name': name}),
-            placement: "left",
+            placement: userlist_placement === "left" ? "right" : "left",
             trigger:   "manual",
             fixed: true
         });
@@ -540,6 +544,10 @@ exports.hide_all = function () {
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     popovers.hide_streamlist_sidebar();
+};
+
+exports.set_userlist_placement = function (placement) {
+    userlist_placement = placement || "right";
 };
 
 return exports;

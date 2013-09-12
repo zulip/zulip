@@ -32,6 +32,9 @@ exports.alert_words = page_params.staging ||
 
 exports.muting = page_params.staging;
 
+exports.left_side_userlist = page_params.staging ||
+  _.contains(['customer7.invalid'], page_params.domain);
+
 return exports;
 
 }());
