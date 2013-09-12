@@ -40,6 +40,15 @@ from StringIO import StringIO
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+from contextlib import contextmanager
+from zerver import tornado_callbacks
+
+@contextmanager
+def tornado_redirected_to_list(lst):
+    real_tornado_callbacks_process_event = tornado_callbacks.process_event
+    tornado_callbacks.process_event = lst.append
+    yield
+    tornado_callbacks.process_event = real_tornado_callbacks_process_event
 
 def bail(msg):
     print '\nERROR: %s\n' % (msg,)
@@ -1042,8 +1051,11 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
         add_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
-        self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
-            add_streams, self.streams, self.test_email, self.streams + add_streams)
+        events = []
+        with tornado_redirected_to_list(events):
+            self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
+                add_streams, self.streams, self.test_email, self.streams + add_streams)
+        self.assertEqual(len(events), 1)
 
     def test_non_ascii_stream_subscription(self):
         """
