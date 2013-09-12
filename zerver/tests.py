@@ -10,7 +10,7 @@ from django.db.models import Q
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, \
     PreregistrationUser, UserMessage, \
-    get_user_profile_by_email, email_to_domain, get_realm
+    get_user_profile_by_email, email_to_domain, get_realm, get_stream
 from zerver.tornadoviews import json_get_updates, api_get_messages
 from zerver.decorator import RespondAsynchronously, \
     RequestVariableConversionError, profiled, JsonableError
@@ -1122,6 +1122,84 @@ class SubscriptionAPITest(AuthedTestCase):
         recipients = get_display_recipient(msg.recipient)
         self.assertEqual(len(recipients), 1)
         self.assertEqual(recipients[0]['email'], invitee)
+
+    def test_multi_user_subscription(self):
+        email1 = 'cordelia@zulip.com'
+        email2 = 'iago@zulip.com'
+        streams_to_sub = ['multi_user_stream']
+        events = []
+        with tornado_redirected_to_list(events):
+            self.common_subscribe_to_streams(
+                    self.test_email,
+                    streams_to_sub,
+                    dict(principals=ujson.dumps([email1, email2])),
+            )
+
+        add_events = filter(lambda ev: ev['event']['op'] == 'add', events)
+        self.assertEqual(len(add_events), 2)
+        for ev in add_events:
+            self.assertEqual(
+                    set(ev['event']['subscriptions'][0]['subscribers']),
+                    set([email1, email2])
+            )
+
+        # TODO: It's broken that we're sending peer_add events here, since users
+        # are gonna get subscribers in the add events, plus the events are out of
+        # order sometimes, which breaks our JS client.  The test for now is just
+        # documenting the current behavior
+        peer_add_events = filter(lambda ev: ev['event']['op'] == 'peer_add', events)
+        self.assertEqual(len(peer_add_events), 2)
+
+        # Now add ourselves
+        events = []
+        with tornado_redirected_to_list(events):
+            self.common_subscribe_to_streams(
+                    self.test_email,
+                    streams_to_sub,
+                    dict(principals=ujson.dumps([self.test_email])),
+            )
+
+        add_event = events.pop(0)
+        add_peer_events = events
+        self.assertEqual(add_event['event']['type'], 'subscriptions')
+        self.assertEqual(add_event['event']['op'], 'add')
+        self.assertEqual(add_event['users'], [get_user_profile_by_email(self.test_email).id])
+        self.assertEqual(
+                set(add_event['event']['subscriptions'][0]['subscribers']),
+                set([email1, email2, self.test_email])
+        )
+
+        self.assertEqual(len(add_peer_events), 2)
+        for ev in add_peer_events:
+            self.assertEqual(ev['event']['type'], 'subscriptions')
+            self.assertEqual(ev['event']['op'], 'peer_add')
+            self.assertEqual(ev['event']['user_email'], self.test_email)
+
+
+        # Finally, add othello, exercising the do_add_subscription() code path.
+        events = []
+        email3 = 'othello@zulip.com'
+        user_profile = get_user_profile_by_email(email3)
+        realm = Realm.objects.get(domain="zulip.com")
+        stream = get_stream('multi_user_stream', realm)
+        with tornado_redirected_to_list(events):
+            do_add_subscription(user_profile, stream)
+
+        add_event = events.pop(0)
+        add_peer_events = events
+        self.assertEqual(add_event['event']['type'], 'subscriptions')
+        self.assertEqual(add_event['event']['op'], 'add')
+        self.assertEqual(add_event['users'], [get_user_profile_by_email(email3).id])
+        self.assertEqual(
+                set(add_event['event']['subscriptions'][0]['subscribers']),
+                set([email1, email2, email3, self.test_email])
+        )
+        self.assertEqual(len(add_peer_events), 3)
+        for ev in add_peer_events:
+            self.assertEqual(ev['event']['type'], 'subscriptions')
+            self.assertEqual(ev['event']['op'], 'peer_add')
+            self.assertEqual(ev['event']['user_email'], email3)
+
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
