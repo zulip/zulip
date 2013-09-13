@@ -648,6 +648,12 @@ def get_subscribers(stream, realm=None, requesting_user=None):
     subscriptions = get_subscribers_query(stream, realm, requesting_user).select_related()
     return [subscription.user_profile for subscription in subscriptions]
 
+def get_subscriber_emails(stream, realm=None, requesting_user=None):
+    subscriptions = get_subscribers_query(stream, realm, requesting_user)
+    subscriptions = subscriptions.values('user_profile__email')
+    return [subscription['user_profile__email'] for subscription in subscriptions]
+
+
 def maybe_get_subscribers(stream):
     """ Alternate version of get_subscribers that takes a Stream object only
     (not a name), and simply returns an empty list if unable to get a real

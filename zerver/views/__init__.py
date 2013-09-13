@@ -36,7 +36,7 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
-    do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscribers, \
+    do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     update_user_activity_interval, do_set_muted_topics, do_rename_stream
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
@@ -1629,10 +1629,9 @@ def json_upload_file(request, user_profile):
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
-    subscribers = get_subscribers(stream_name, user_profile.realm, user_profile)
+    subscribers = get_subscriber_emails(stream_name, user_profile.realm, user_profile)
 
-    return json_success({'subscribers': [subscriber.email
-                                         for subscriber in subscribers]})
+    return json_success({'subscribers': subscribers})
 
 @authenticated_json_post_view
 @has_request_variables
