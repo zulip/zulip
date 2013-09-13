@@ -1304,7 +1304,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     event['message_ids'] = []
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
-        cache_save_message(changed_message)
+        items_for_memcached[message_cache_key(changed_message.id)] = (changed_message,)
         items_for_memcached[to_dict_cache_key(changed_message, True)] = \
             (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=True)),)
         items_for_memcached[to_dict_cache_key(changed_message, False)] = \
