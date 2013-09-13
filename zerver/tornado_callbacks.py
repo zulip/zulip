@@ -337,7 +337,8 @@ def cache_load_message_data(message_id, users, sender_realm_id):
         cache_save_message(message)
     if user_presences is None and sender_realm_id is not None:
         if not settings.TEST_SUITE:
-            logging.warning("Tornado failed to load user presences from memcached when delivering message!")
+            logging.warning("Tornado failed to load user presences from memcached when delivering message to realm key %s: %s"
+                              % (realm_key, result.get(realm_key, None)))
 
         user_presences = get_status_dict_by_realm(sender_realm_id)
         cache_save_status_dict(sender_realm_id, user_presences)
