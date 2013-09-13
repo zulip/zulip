@@ -19,6 +19,7 @@ from django.db.models.signals import post_save, post_delete
 import zlib
 
 from bitfield import BitField
+from collections import defaultdict
 import pylibmc
 import ujson
 
@@ -701,11 +702,15 @@ class UserPresence(models.Model):
     timestamp = models.DateTimeField('presence changed')
     status = models.PositiveSmallIntegerField(default=ACTIVE)
 
+    @staticmethod
+    def status_to_string(status):
+        if status == UserPresence.ACTIVE:
+            return 'active'
+        elif status == UserPresence.IDLE:
+            return 'idle'
+
     def to_dict(self):
-        if self.status == UserPresence.ACTIVE:
-            presence_val = 'active'
-        elif self.status == UserPresence.IDLE:
-            presence_val = 'idle'
+        presence_val = UserPresence.status_to_string(self.status)
 
         return {'client'   : self.client.name,
                 'status'   : presence_val,
@@ -728,6 +733,16 @@ class UserPresence(models.Model):
 # Flush the cached user status_dict whenever a user's presence
 # changes
 post_save.connect(update_user_presence_cache, sender=UserPresence)
+
+def get_status_dict_by_realm(realm_id):
+    user_statuses = defaultdict(dict)
+
+    for presence in UserPresence.objects.filter(user_profile__realm_id=realm_id,
+                                                user_profile__is_active=True) \
+                                        .select_related('user_profile', 'client'):
+        user_statuses[presence.user_profile.email][presence.client.name] = presence.to_dict()
+
+    return user_statuses
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm)

@@ -1,15 +1,20 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.utils.timezone import now
+
 from zerver.models import Message, UserProfile, UserMessage, \
-    Recipient, Stream, get_stream, get_user_profile_by_id
+    Recipient, Stream, get_stream, get_user_profile_by_id, \
+    get_status_dict_by_realm, UserPresence
 
 from zerver.decorator import JsonableError
 from zerver.lib.cache import cache_get_many, message_cache_key, \
-    user_profile_by_id_cache_key, cache_save_user_profile
+    user_profile_by_id_cache_key, cache_save_user_profile, \
+    status_dict_cache_key_for_realm_id, cache_save_status_dict
 from zerver.lib.cache_helpers import cache_save_message
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.event_queue import get_client_descriptors_for_user
+from zerver.lib.timestamp import timestamp_to_datetime
 
 import os
 import sys
@@ -19,7 +24,12 @@ import requests
 import ujson
 import subprocess
 import collections
+import datetime
 from django.db import connection
+
+# Send email notifications to idle users
+# after they are idle for 1 hour
+NOTIFY_AFTER_IDLE_HOURS = 1
 
 class Callbacks(object):
     # A user received a message. The key is user_profile.id.
@@ -288,13 +298,17 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         event = build_offline_notification_event(user_profile_id, msg_id)
         queue_json_publish("missedmessage_emails", event, lambda event: None)
 
-def cache_load_message_data(message_id, users):
+def cache_load_message_data(message_id, users, sender_realm_id):
     # Get everything that we'll need out of memcached in one fetch, to save round-trip times:
     # * The message itself
     # * Every recipient's UserProfile
+    # * The cached status dict (all UserPresences in a realm)
     user_profile_keys = [user_profile_by_id_cache_key(user_data['id']) for user_data in users]
 
     cache_keys = [message_cache_key(message_id)]
+    if sender_realm_id is not None:
+        realm_key = status_dict_cache_key_for_realm_id(sender_realm_id)
+        cache_keys.append(realm_key)
 
     cache_keys.extend(user_profile_keys)
 
@@ -304,6 +318,10 @@ def cache_load_message_data(message_id, users):
     cache_extractor = lambda result: result[0] if result is not None else None
 
     message = cache_extractor(result.get(cache_keys[0], None))
+    if sender_realm_id is not None:
+        user_presences = cache_extractor(result.get(realm_key))
+    else:
+        user_presences = None
 
     user_profiles = dict((user_data['id'], cache_extractor(result.get(user_profile_by_id_cache_key(user_data['id']), None)))
                             for user_data in users)
@@ -317,6 +335,12 @@ def cache_load_message_data(message_id, users):
 
         message = Message.objects.select_related().get(id=message_id)
         cache_save_message(message)
+    if user_presences is None and sender_realm_id is not None:
+        if not settings.TEST_SUITE:
+            logging.warning("Tornado failed to load user presences from memcached when delivering message!")
+
+        user_presences = get_status_dict_by_realm(sender_realm_id)
+        cache_save_status_dict(sender_realm_id, user_presences)
     for user_profile_id, user_profile in user_profiles.iteritems():
         if user_profile:
             continue
@@ -327,20 +351,41 @@ def cache_load_message_data(message_id, users):
         user_profiles[user_profile_id] = user_profile
         cache_save_user_profile(user_profile)
 
-    return message, user_profiles
+    return message, user_profiles, user_presences
 
-def receiver_is_idle(user_profile):
+def receiver_is_idle(user_profile, realm_presences):
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
     all_client_descriptors = get_client_descriptors_for_user(user_profile.id)
     message_event_queues = [client for client in all_client_descriptors if client.accepts_event_type('message')]
     off_zulip = len(message_event_queues) == 0
 
-    return off_zulip
+    # It's possible a recipient is not in the realm of a sender. We don't have
+    # presence information in this case (and it's hard to get without an additional
+    # db query) so we simply don't try to guess if this cross-realm recipient
+    # has been idle for too long
+    if realm_presences is None or not user_profile.email in realm_presences:
+        return off_zulip
+
+    # If the most recent online status from a user is >1hr in the past, we notify
+    # them regardless of whether or not they have an open window
+    user_presence = realm_presences[user_profile.email]
+    idle_too_long = False
+    newest = None
+    for client, status in user_presence.iteritems():
+        if newest is None or status['timestamp'] > newest['timestamp']:
+            newest = status
+
+    update_time = timestamp_to_datetime(newest['timestamp'])
+    if now() - update_time > datetime.timedelta(hours=NOTIFY_AFTER_IDLE_HOURS):
+        idle_too_long = True
+
+    return off_zulip or idle_too_long
 
 def process_new_message(data):
-    message, user_profiles = cache_load_message_data(data['message'],
-                                                     data['users'])
+    message, user_profiles, realm_presences = cache_load_message_data(data['message'],
+                                                                      data['users'],
+                                                                      data.get('sender_realm', None))
 
     message_dict_markdown = message.to_dict(True)
     message_dict_no_markdown = message.to_dict(False)
@@ -380,7 +425,7 @@ def process_new_message(data):
                         user_profile_id != message.sender.id
         mentioned = 'mentioned' in flags
 
-        idle = receiver_is_idle(user_profile)
+        idle = receiver_is_idle(user_profile, realm_presences)
 
         if (received_pm or mentioned) and idle:
             if receives_offline_notifications(user_profile):

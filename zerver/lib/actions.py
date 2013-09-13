@@ -12,7 +12,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     email_to_domain, email_to_username, display_recipient_cache_key, \
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
-    get_active_user_profiles_by_realm, UserActivityInterval
+    get_active_user_profiles_by_realm, UserActivityInterval, \
+    get_status_dict_by_realm
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -298,9 +299,11 @@ def do_send_messages(messages):
         message['message'].to_dict(apply_markdown=False)
         user_flags = user_message_flags.get(message['message'].id, {})
         data = dict(
-            type     = 'new_message',
-            message  = message['message'].id,
-            users    = [{'id': user.id, 'flags': user_flags.get(user.id, [])} for user in message['recipients']])
+            type         = 'new_message',
+            message      = message['message'].id,
+            sender_realm = message['message'].sender.realm.id,
+            users        = [{'id': user.id, 'flags': user_flags.get(user.id, [])}
+                             for user in message['recipients']])
         if message['message'].recipient.type == Recipient.STREAM:
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
@@ -1345,20 +1348,13 @@ def gather_subscriptions(user_profile):
 
     return (sorted(subscribed), sorted(unsubscribed))
 
-@cache_with_key(status_dict_cache_key, timeout=60)
+@cache_with_key(status_dict_cache_key, timeout=3600*24*7)
 def get_status_dict(requesting_user_profile):
-    user_statuses = defaultdict(dict)
-
     # Return no status info for MIT
     if requesting_user_profile.realm.domain == 'mit.edu':
-        return user_statuses
+        return defaultdict(dict)
 
-    for presence in UserPresence.objects.filter(user_profile__realm=requesting_user_profile.realm,
-                                                user_profile__is_active=True) \
-                                        .select_related('user_profile', 'client'):
-        user_statuses[presence.user_profile.email][presence.client.name] = presence.to_dict()
-
-    return user_statuses
+    return get_status_dict_by_realm(requesting_user_profile.realm_id)
 
 
 def do_events_register(user_profile, user_client, apply_markdown=True,

@@ -250,8 +250,11 @@ def update_user_profile_cache(sender, **kwargs):
     if kwargs['update_fields'] is None or "alert_words" in kwargs['update_fields']:
         djcache.delete(KEY_PREFIX + realm_alert_words_cache_key(user_profile.realm))
 
+def status_dict_cache_key_for_realm_id(realm_id):
+    return "status_dict:%d" % (realm_id,)
+
 def status_dict_cache_key(user_profile):
-    return "status_dict:%d" % (user_profile.realm_id,)
+    return status_dict_cache_key_for_realm_id(user_profile.realm_id)
 
 def update_user_presence_cache(sender, **kwargs):
     user_profile = kwargs['instance'].user_profile
@@ -259,6 +262,9 @@ def update_user_presence_cache(sender, **kwargs):
         # If the status of the user changed, flush the user's realm's
         # entry in the UserPresence cache to avoid giving out stale state
         djcache.delete(KEY_PREFIX + status_dict_cache_key(user_profile))
+
+def cache_save_status_dict(realm_id, status_dict):
+    cache_set(status_dict_cache_key_for_realm_id(realm_id), status_dict, timeout=3600*24*7)
 
 def realm_alert_words_cache_key(realm):
     return "realm_alert_words:%s" % (realm.domain,)

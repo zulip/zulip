@@ -6,10 +6,11 @@ from __future__ import absolute_import
 from django.conf import settings
 from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
-    Huddle, huddle_hash_cache_key
+    Huddle, huddle_hash_cache_key, Realm, get_status_dict_by_realm
 from zerver.lib.cache import cache_with_key, cache_set, message_cache_key, \
     user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
-    get_memcached_time, get_memcached_requests, cache_set_many
+    get_memcached_time, get_memcached_requests, cache_set_many, \
+    status_dict_cache_key_for_realm_id
 from django.utils.importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
@@ -48,6 +49,12 @@ def huddle_cache_items(items_for_memcached, huddle):
 def recipient_cache_items(items_for_memcached, recipient):
     items_for_memcached[get_recipient_cache_key(recipient.type, recipient.type_id)] = (recipient,)
 
+def presence_fetch_objects():
+    return [(realm.id, get_status_dict_by_realm(realm.id)) for realm in Realm.objects.all()]
+
+def presence_cache_items(items_for_memcached, status_dict):
+    items_for_memcached[status_dict_cache_key_for_realm_id(status_dict[0])] = (status_dict[1],)
+
 session_engine = import_module(settings.SESSION_ENGINE)
 def session_cache_items(items_for_memcached, session):
     store = session_engine.SessionStore(session_key=session.session_key)
@@ -67,6 +74,7 @@ cache_fillers = {
     'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),
     'session': (lambda: Session.objects.all(), session_cache_items, 3600*24*7, 10000),
+    'presence': (presence_fetch_objects, presence_cache_items, 3600*24*7, 10000),
     }
 
 def fill_memcached_cache(cache):
