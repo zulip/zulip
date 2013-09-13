@@ -3,16 +3,10 @@
 {# API information page #}
 
 {% block portico_content %}
-<div class="row-fluid">
-  <div class="span8">
-    <h1>Do we have apps? App-solutely.</h1>
-    <p class="muted"><small>Ok, I take it back, I'm sorry, please don't go.</small></p>
-    <ul class="breadcrumb">
-      <li><a href="/">Home</a> <span class="divider">/</span></li>
-      <li class="active">Apps</li>
-    </ul>
+    <div class="apps-page-header">Do&nbsp;we&nbsp;have&nbsp;apps? App&#8209;solutely.</div>
+    <div class="apps-muted">Ok, I take it back, I'm sorry, please don't go.</div>
 
-    <h3>Installation instructions</h3>
+    <h3 class="apps-instructions-header">Installation instructions</h3>
     <ul class="nav nav-tabs" id="apps-tabs">
       <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
       <li><a href="#iphone" data-toggle="tab">iPhone</a></li>
@@ -57,7 +51,7 @@
         emacs, or Photoshop.</p>
 
         <p style="text-align: center">
-          <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
+          <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
         </p>
 
         <img class="full-width-screenshot" src="/static/images/app-screenshots/zulip-desktop-mac.png">
@@ -93,7 +87,7 @@ sudo apt-get install zulip-desktop
         Solitaire, obviously.)</p>
 
         <p style="text-align: center">
-          <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary"><i class="icon-vector-download"></i> Download Zulip for Windows</a>
+          <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Windows</a>
         </p>
 
         <img class="full-width-screenshot" src="/static/images/app-screenshots/zulip-desktop-windows.png">
@@ -115,10 +109,6 @@ sudo apt-get install zulip-desktop
 
 
     </div>
-  </div>
-</div>
-
-
 <script>
 $(function () {
     if (navigator.appVersion.indexOf("Win") !== -1) {

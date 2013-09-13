@@ -15,10 +15,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
 {% block portico_content %}
 
-<p>(Welcome! We think you'll like it here.)</p>
-
 <div class="pitch">
-    <hr/>
 
 {% ifequal company_name "customer3.invalid" %}
     <p>
@@ -26,7 +23,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
     </p>
 {% endifequal %}
 
-    <p>You're almost there. We just need you to do one last thing.</p>
+    <p style="margin-top:30px;">You're almost there. We just need you to do one last thing.</p>
     <h3>Tell us a bit about yourself.</h3>
 </div>
 

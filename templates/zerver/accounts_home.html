@@ -15,17 +15,20 @@ $(function () {
 });
 </script>
 
-        <div class="pitch">
+<div class="app register-page">
+  <div class="app-main register-page-container">
+
+        <div class="register-form">
             <p class="lead">
               <span id="customer3-pitch" style="display: none;">Participate in the real-time EVENT1 discussion using Zulip!</span>
-              Let's get started…
+              <div class="register-page-header">Let's get started…</div>
             </p>
             <form class="form-inline" id="send_confirm" name="email_form"
                   action="{{ current_url }}" method="post">
                 {% csrf_token %}
                 <input type="text" class="email required" placeholder="Enter your work email address"
-                       id="email" name="email"/>&nbsp;
-                <input type="submit" class="btn btn-primary btn-large" value="Sign up"/>
+                       id="email" name="email"/>
+                <input type="submit" class="btn btn-primary btn-large register-button" value="Sign up"/>
             </form>
             <div id="errors"></div>
             {% if form.email.errors %}
@@ -34,14 +37,17 @@ $(function () {
                 {% endfor %}
             {% endif %}
 
-
             <div class="alert alert-pitch" id="company-email">Please use your
             company email address to sign up. Otherwise, we won’t be able to
             connect you with your coworkers.</div>
-            <div class="pitch">
-                <a href="/accounts/login/openid/" class="zocial google">Sign up with Google</a>
+            <div class="register-google">
+                <a href="/accounts/login/openid/" class="zocial google register-google-button">Sign up with Google</a>
             </div>
         </div>
+
+</div>
+<div class="footer-padder"></div>
+</div>
 
         <script type="text/javascript">
         if (window.location.hash.substring(0, 1) === "#") {

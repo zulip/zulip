@@ -1,204 +1,176 @@
 {% extends "zerver/portico.html" %}
-
-{% block inner_content %}
-<div class="row-fluid landing-page shaded-background">
-  <div class="content">
-    <div class="span12">
-      <div class="main-headline">
-        <img src="/static/images/landing-page/zulip-header.png" style="height: 75px">
-        <h2>Finally, workplace chat that actually improves your productivity*</h2>
-        * It's also great for sharing cat pictures.
-      </div>
-    </div>
-
-    <center>
+{% block hello_page_container %} hello-main{% endblock %}
+{% block hello_page_footer %} hello-footer{% endblock %}
+{% block portico_content %}
+<div class="app main-headline">
+  <div class="app-main main-headline-container">
+    <img src="/static/images/logo/textlogo@2x.png" class="main-headline-logo">
+    <div class="main-headline-text">
+      <span class="tagline">
+        Finally, workplace chat that actually improves your productivity.*
+      </span>
+      <span class="footnote">* It's also great for sharing cat pictures.</span>
       <a href="{% url 'signup' %}" class="main-signup-button btn btn-large btn-info">Sign up now, for free!</a>
-
-      <div class="laptop-image">
-        <img class="laptop-screen" src="/static/images/landing-page/app-screenshot.png" />
-      </div>
-    </center>
-
+    </div>
+    <img src="/static/images/landing-page/laptop-screenshot.png" class="main-image">
   </div>
 </div>
 
-{##################################}
-<div class="content">
-  <div class="row-fluid landing-page">
-    <div class="offset2 span4">
-      <h3>Conversations, not messages</h3>
+<div class="app feature-line light">
+  <div class="app-main feature-line-container">
+   <div class="feature-text">
+    <span class="tagline">
+      Conversations, not&nbsp;messages.
+    </span>
+    <span class="description">
       <p>Every conversation in Zulip has a <em>topic</em>, so it&rsquo;s
-      easy to keep conversations straight.  Are your coworkers discussing
+      easy to keep conversations straight. Are your coworkers discussing
       a software bug and the content of your website at the same time?
       No problem.
-      </p>
-      <p>You wouldn&rsquo;t tolerate email without subject lines or
-      threading, so why do you for chat?</p>
-    </div>
-    <div class="span4">
-      <img class="spotlighted-feature" src="/static/images/landing-page/threads.png" />
-    </div>
+    </p>
+    <p>You wouldn’t tolerate email without subject lines or threading, so why do you for chat?</p>
+    </span>
   </div>
-
-  <div class="row-fluid">
-    <div class="offset2 span8">
-      <hr />
-    </div>
+  <div class="feature-illustration">
+    <img class="feature-image" src="/static/images/landing-page/threads.png">
   </div>
+  </div>
+</div>
 
-{##################################}
-
-  <div class="row-fluid landing-page">
-    <div class="offset2 span4">
-      <img class="spotlighted-feature" src="/static/images/landing-page/catching-up.png" />
-    </div>
-
-    <div class="span4">
-      <h3>Easily read just the important things</h3>
-
+<div class="app feature-line dark">
+  <div class="app-main feature-line-container">
+   <div class="feature-text">
+    <span class="tagline">
+      Easily&nbsp;read&nbsp;just the&nbsp;important&nbsp;things.
+    </span>
+    <span class="description">
       <p>Sometimes, important things get discussed when you&rsquo;re not
       around. Unfortunately, so do a lot of unimportant things.</p>
 
       <p><em>Narrowing</em> by stream or topic lets you focus on that important
       customer project without having to read about how Jim&rsquo;s guitar lessons
       are going.</p>
-    </div>
+    </span>
   </div>
-
-  <div class="row-fluid">
-    <div class="offset2 span8">
-      <hr />
-    </div>
+  <div class="feature-illustration">
+    <img class="feature-image shadow" src="/static/images/landing-page/important-things.png">
   </div>
+  </div>
+</div>
 
-{##################################}
-
-  <div class="row-fluid landing-page">
-    <div class="offset2 span4">
-      <h3>Search that&rsquo;s better than Gmail</h3>
-      <p>An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s
+<div class="app feature-line light">
+  <div class="app-main feature-line-container">
+   <div class="feature-text">
+    <span class="tagline">
+      Search&nbsp;that&rsquo;s&nbsp;better than&nbsp;Gmail&rsquo;s.
+    </span>
+    <span class="description">
+      An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s
       powerful and fast search will delight you with how quickly you can find
-      exactly what you&rsquo;re looking for.</p>
-    </div>
-    <div class="span4">
-      <img class="spotlighted-feature" src="/static/images/landing-page/search.png" />
-    </div>
+      exactly what you&rsquo;re looking for.
+    </span>
   </div>
-
-  <div class="row-fluid">
-    <div class="offset2 span8">
-      <hr />
-    </div>
+  <div class="feature-illustration">
+    <img class="feature-image shadow" src="/static/images/landing-page/better-search.png">
   </div>
+  </div>
+</div>
 
-{##################################}
-
-  <div class="row-fluid landing-page">
-    <div class="offset2 span4">
-      <img class="spotlighted-feature" src="/static/images/landing-page/api.png" />
-    </div>
-    <div class="span4">
-      <h3>Integrations that don&rsquo;t intrude</h3>
+<div class="app feature-line dark">
+  <div class="app-main feature-line-container">
+   <div class="feature-text">
+    <span class="tagline">
+      Integrations&nbsp;that don&rsquo;t&nbsp;intrude.
+    </span>
+    <span class="description">
       <p>Zulip has <a href="/integrations">many integrations</a> and
       a powerful <a href="/api">API</a> to match. But here&rsquo;s
-      where it gets interesting:</p>
-
-      <p>Thanks to how Zulip categorizes messages, automated messages never
-      overwhelm you.  As with any topic in Zulip, they&rsquo;re easy to
-      focus on, skim, defer to later, or ignore&mdash;as appropriate.</p>
-    </div>
+      where it gets interesting: thanks to how Zulip categorizes messages,
+      automated messages never overwhelm you. As with any topic in Zulip,
+      they&rsquo;re easy to focus on, skim, defer to later, or ignore&mdash;as appropriate.</p>
+    </span>
   </div>
-
-  <div class="row-fluid">
-    <div class="offset2 span8">
-      <hr />
-    </div>
+  <div class="feature-illustration">
+    <img class="feature-image shadow" src="/static/images/landing-page/integrations.png">
   </div>
+  </div>
+</div>
 
-{##################################}
-
-  <div class="row-fluid landing-page">
-    <div class="offset2 span4">
-      <h3>As technical as you want to be</h3>
+<div class="app feature-line light">
+  <div class="app-main feature-line-container">
+   <div class="feature-text">
+    <span class="tagline">
+      As&nbsp;technical&nbsp;as you&nbsp;want&nbsp;to&nbsp;be.
+    </span>
+    <span class="description">
       <p>Keyboard shortcuts? Check.<br />
         Syntax highlighting? Check.<br />
         Discuss code and technical topics with ease.</p>
-    </div>
-    <div class="span4">
-      <img class="spotlighted-feature" src="/static/images/landing-page/efficient.png" />
-    </div>
+    </span>
   </div>
-
-  <div class="row-fluid">
-    <div class="offset2 span8">
-      <hr />
-    </div>
+  <div class="feature-illustration">
+    <img class="feature-image shadow" src="/static/images/landing-page/technical.png">
   </div>
-
-{##################################}
-
-  <div class="row-fluid landing-page">
-    <div class="offset2 span4">
-      <img class="spotlighted-feature" src="/static/images/landing-page/more.png" />
-    </div>
-    <div class="span4">
-      <h3>...and all the obvious stuff, too</h3>
-      <p>Drag-and-drop file uploads, group private messages, audible
-        notifications, missed-message emails, desktop apps, and
-        <a href="/features">everything else you might
-        want</a>. Including emoji, naturally.</p>
-    </div>
-  </div>
-
-{##################################}
-</div> {# end of "content" div #}
-
-<div class="row-fluid landing-page main-headline darker-background">
-  <div class="content">
-    <div class="span12">
-      <h2>On the platform of your choice</h2>
-    </div>
   </div>
 </div>
-<div class="row-fluid main-headline darker-background landing-page-bottom">
-  <div class="content">
-    <div class="span2">
-      <img class="platform-icon" src="/static/images/landing-page/platforms/mac-icon.png" />
-      <h4>Mac</h4>
-    </div>
-    <div class="span2">
-      <img class="platform-icon" src="/static/images/landing-page/platforms/windows-icon.png" />
-      <h4>Windows</h4>
-    </div>
-    <div class="span2">
-      <img class="platform-icon" src="/static/images/landing-page/platforms/linux-icon.png" />
-      <h4>Linux</h4>
-    </div>
-    <div class="span2">
-      <img class="platform-icon" src="/static/images/landing-page/platforms/android-icon.png" />
-      <h4>Android</h4>
-    </div>
-    <div class="span2">
-      <img class="platform-icon" src="/static/images/landing-page/platforms/iOS-icon.png" />
-      <h4>iOS</h4>
-    </div>
-    <div class="span2">
-      <img class="platform-icon" src="/static/images/landing-page/platforms/browser-icon.png" />
-      <h4>Web</h4>
+
+<div class="app feature-line dark">
+  <div class="app-main feature-line-container">
+   <div class="feature-text">
+    <span class="tagline">
+      ..and&nbsp;all&nbsp;the obvious&nbsp;stuff,&nbsp;too.
+    </span>
+    <span class="description">
+      <p>Drag-and-drop file uploads, image pasting, group private messages,
+         audible notifications, missed-message emails, desktop apps, and
+        <a href="/features">everything else you might want</a>. Including emoji, naturally.</p>
+    </span>
+  </div>
+  <div class="feature-illustration">
+    <img class="feature-image shadow" src="/static/images/landing-page/features.png">
+  </div>
+  </div>
+</div>
+
+<div class="app feature-line light">
+  <div class="app-main feature-line-container">
+   <div class="platform-text">
+    <span class="tagline">
+      On&nbsp;the&nbsp;platform of&nbsp;your&nbsp;choice.
+    </span>
+   </div>
+   <div class="platform-icons">
+      <div class="platform">
+         <i class="icon-vector-apple platform-icon"></i>
+         <h4>Mac</h4>
+      </div>
+      <div class="platform">
+         <i class="icon-vector-windows platform-icon"></i>
+         <h4>Windows</h4>
+      </div>
+      <div class="platform">
+         <i class="icon-vector-linux platform-icon"></i>
+         <h4>Linux</h4>
+      </div>
+      <div class="platform">
+         <i class="icon-vector-android platform-icon"></i>
+         <h4>Android</h4>
+      </div>
+      <div class="platform">
+         <i class="icon-vector-mobile-phone platform-icon"></i>
+         <h4>iOS</h4>
+      </div>
+      <div class="platform">
+         <i class="icon-vector-desktop platform-icon"></i>
+         <h4>Web</h4>
+      </div>
     </div>
   </div>
 </div>
 
-{##################################}
-
-<div class="row-fluid landing-page shaded-background">
-  <div class="content">
-    <div class="span12">
-      <center>
-        <a href="{% url 'signup' %}" class="signup-button btn btn-large btn-info"><h2>Sign up now</h2></a>
-      </center>
-    </div>
+<div class="app feature-line dark">
+  <div class="app-main feature-line-container centered-content">
+        <a href="{% url 'signup' %}" class="bottom-signup-button btn btn-large btn-info">Sign up now</a>
   </div>
 </div>
-
 {% endblock %}

@@ -11,15 +11,8 @@
 
 
 {% block portico_content %}
+    <h1 class="api-page-header">API endpoints documentation</h1>
 
-<div class="row-fluid">
-  <div class="span8">
-    <h1>API endpoints documentation</h1>
-    <ul class="breadcrumb">
-      <li><a href="/">Home</a> <span class="divider">/</span></li>
-      <li><a href="/api">API</a> <span class="divider">/</span></li>
-      <li class="active">Endpoints</li>
-    </ul>
     <p>In addition to our <a href="/api">pre-built API bindings for Python</a>, we also have a <a href="http://en.wikipedia.org/wiki/Representational_state_transfer">REST-ful</a> web API.</p>
 
     <ul class="nav nav-tabs" id="api-example-tabs">
@@ -65,8 +58,4 @@
 </div>
 {% endfor %}
 {% endautoescape %}
-
-      </div>
-    </div>
-
 {% endblock %}
