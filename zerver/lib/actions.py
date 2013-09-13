@@ -599,8 +599,8 @@ def get_subscription(stream_name, user_profile):
     return Subscription.objects.get(user_profile=user_profile,
                                     recipient=recipient, active=True)
 
-def get_subscribers(stream, realm=None, requesting_user=None):
-    """ Get the subscribers list for a stream, raising a JsonableError if:
+def get_subscribers_query(stream, realm, requesting_user):
+    """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
         * No stream by that name exists in the realm.
         * The realm is MIT and the stream is not invite only.
         * The stream is invite only, requesting_user is passed, and that user
@@ -608,6 +608,9 @@ def get_subscribers(stream, realm=None, requesting_user=None):
 
     'stream' can either be a string representing a stream name, or a Stream
     object. If it's a Stream object, 'realm' is optional.
+
+    The caller can refine this query with select_related(), values(), etc. depending
+    on whether it wants objects or just certain fields
     """
 
     try:
@@ -637,8 +640,12 @@ def get_subscribers(stream, realm=None, requesting_user=None):
     subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
                                                 recipient__type_id=stream.id,
                                                 user_profile__is_active=True,
-                                                active=True).select_related()
+                                                active=True)
+    return subscriptions
 
+
+def get_subscribers(stream, realm=None, requesting_user=None):
+    subscriptions = get_subscribers_query(stream, realm, requesting_user).select_related()
     return [subscription.user_profile for subscription in subscriptions]
 
 def maybe_get_subscribers(stream):
