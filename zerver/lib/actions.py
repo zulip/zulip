@@ -653,13 +653,12 @@ def get_subscriber_emails(stream, realm=None, requesting_user=None):
     subscriptions = subscriptions.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
-
-def maybe_get_subscribers(stream):
-    """ Alternate version of get_subscribers that takes a Stream object only
+def maybe_get_subscriber_emails(stream):
+    """ Alternate version of get_subscriber_emails that takes a Stream object only
     (not a name), and simply returns an empty list if unable to get a real
     subscriber list (because we're on the MIT realm). """
     try:
-        subscribers = get_subscribers(stream)
+        subscribers = get_subscriber_emails(stream)
     except JsonableError:
         subscribers = []
     return subscribers
@@ -705,7 +704,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, no_log=False):
                     invite_only=stream.invite_only,
                     color=subscription.color,
                     email_address=encode_email_address(stream),
-                    subscribers=[x.email for x in maybe_get_subscribers(stream)])
+                    subscribers=maybe_get_subscriber_emails(stream))
             for (subscription, stream) in sub_pairs]
     notice = dict(event=dict(type="subscriptions", op="add",
                              subscriptions=payload),
