@@ -1152,8 +1152,9 @@ class SubscriptionAPITest(AuthedTestCase):
                     dict(principals=ujson.dumps([self.test_email])),
             )
 
-        add_event = events.pop(0)
-        add_peer_events = events
+
+        self.assertEqual(len(events), 2)
+        add_event, add_peer_event = events
         self.assertEqual(add_event['event']['type'], 'subscriptions')
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [get_user_profile_by_email(self.test_email).id])
@@ -1162,11 +1163,10 @@ class SubscriptionAPITest(AuthedTestCase):
                 set([email1, email2, self.test_email])
         )
 
-        self.assertEqual(len(add_peer_events), 2)
-        for ev in add_peer_events:
-            self.assertEqual(ev['event']['type'], 'subscriptions')
-            self.assertEqual(ev['event']['op'], 'peer_add')
-            self.assertEqual(ev['event']['user_email'], self.test_email)
+        self.assertEqual(len(add_peer_event['users']), 2)
+        self.assertEqual(add_peer_event['event']['type'], 'subscriptions')
+        self.assertEqual(add_peer_event['event']['op'], 'peer_add')
+        self.assertEqual(add_peer_event['event']['user_email'], self.test_email)
 
 
         # Finally, add othello, exercising the do_add_subscription() code path.

@@ -785,12 +785,12 @@ def bulk_add_subscriptions(streams, users):
         new_users = filter(is_new_user, users)
         new_user_ids = [user.id for user in new_users]
         other_user_ids = list(set(get_subscriber_ids(stream)) - set(new_user_ids))
-        for user_profile in new_users:
-            for other_user_id in other_user_ids:
+        if other_user_ids:
+            for user_profile in new_users:
                 notice = dict(event=dict(type="subscriptions", op="peer_add",
                                          subscriptions=[stream.name],
                                          user_email=user_profile.email),
-                              users=[other_user_id])
+                              users=other_user_ids)
                 tornado_callbacks.send_notification(notice)
 
     return ([(user_profile, stream_name) for (user_profile, recipient_id, stream_name) in new_subs] +
