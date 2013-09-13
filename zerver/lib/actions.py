@@ -1393,7 +1393,7 @@ def gather_subscriptions(user_profile):
     for sub in subs:
         stream = stream_hash[sub.recipient.type_id]
         try:
-            subscribers = get_subscribers(stream)
+            subscribers = get_subscriber_emails(stream)
         except JsonableError:
             subscribers = None
 
@@ -1409,7 +1409,7 @@ def gather_subscriptions(user_profile):
                   'notifications': sub.notifications,
                   'email_address': encode_email_address(stream)}
         if subscribers is not None:
-            stream['subscribers'] = [user.email for user in subscribers]
+            stream['subscribers'] = subscribers
         if sub.active:
             subscribed.append(stream)
         else:
