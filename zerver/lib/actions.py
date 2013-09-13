@@ -816,12 +816,11 @@ def do_add_subscription(user_profile, stream, no_log=False):
         notify_subscriptions_added(user_profile, [(subscription, stream)], no_log)
 
         user_ids = get_other_subscriber_ids(stream, user_profile.id)
-        for user_id in user_ids:
-            notice = dict(event=dict(type="subscriptions", op="peer_add",
-                                     subscriptions=[stream.name],
-                                     user_email=user_profile.email),
-                          users=[user_id])
-            tornado_callbacks.send_notification(notice)
+        notice = dict(event=dict(type="subscriptions", op="peer_add",
+                                 subscriptions=[stream.name],
+                                 user_email=user_profile.email),
+                      users=user_ids)
+        tornado_callbacks.send_notification(notice)
 
     return did_subscribe
 

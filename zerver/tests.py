@@ -1185,8 +1185,9 @@ class SubscriptionAPITest(AuthedTestCase):
         with tornado_redirected_to_list(events):
             do_add_subscription(user_profile, stream)
 
-        add_event = events.pop(0)
-        add_peer_events = events
+        self.assertEqual(len(events), 2)
+        add_event, add_peer_event = events
+
         self.assertEqual(add_event['event']['type'], 'subscriptions')
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [get_user_profile_by_email(email3).id])
@@ -1194,11 +1195,11 @@ class SubscriptionAPITest(AuthedTestCase):
                 set(add_event['event']['subscriptions'][0]['subscribers']),
                 set([email1, email2, email3, self.test_email])
         )
-        self.assertEqual(len(add_peer_events), 3)
-        for ev in add_peer_events:
-            self.assertEqual(ev['event']['type'], 'subscriptions')
-            self.assertEqual(ev['event']['op'], 'peer_add')
-            self.assertEqual(ev['event']['user_email'], email3)
+
+        self.assertEqual(len(add_peer_event['users']), 3)
+        self.assertEqual(add_peer_event['event']['type'], 'subscriptions')
+        self.assertEqual(add_peer_event['event']['op'], 'peer_add')
+        self.assertEqual(add_peer_event['event']['user_email'], email3)
 
 
     @slow(0.15, "common_subscribe_to_streams is slow")
