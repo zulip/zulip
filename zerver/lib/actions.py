@@ -20,7 +20,7 @@ from django.core.exceptions import ValidationError
 from django.utils.importlib import import_module
 from django.template import loader
 from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.utils.timezone import utc, is_naive
+from django.utils.timezone import utc, is_naive, now
 
 from confirmation.models import Confirmation
 
@@ -1191,7 +1191,7 @@ def do_update_onboarding_steps(user_profile, steps):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
-def do_update_message(user_profile, message_id, subject, propagate_subject, content):
+def do_update_message(user_profile, message_id, subject, propagate_mode, content):
     try:
         message = Message.objects.select_related().get(id=message_id)
     except Message.DoesNotExist:
@@ -1257,12 +1257,20 @@ def do_update_message(user_profile, message_id, subject, propagate_subject, cont
         event['subject_links'] = bugdown.subject_links(message.sender.realm.domain.lower(), subject)
         edit_history_event["prev_subject"] = orig_subject
 
-        if propagate_subject:
-            messages = Message.objects.filter(
-                recipient = message.recipient,
-                subject = orig_subject,
-                id__gt = message.id
-            ).select_related()
+
+        if propagate_mode in ["change_later", "change_all"]:
+            propagate_query = Q(recipient = message.recipient, subject = orig_subject)
+            # We only change messages up to 2 days in the past, to avoid hammering our
+            # DB by changing an unbounded amount of messages
+            if propagate_mode == 'change_all':
+                before_bound = now() - datetime.timedelta(days=2)
+
+                propagate_query = propagate_query & ~Q(id = message.id) & \
+                                                     Q(pub_date__range=(before_bound, now()))
+            if propagate_mode == 'change_later':
+                propagate_query = propagate_query & Q(id__gt = message.id)
+
+            messages = Message.objects.filter(propagate_query).select_related();
 
             # Evaluate the query before running the update
             messages_list = list(messages)

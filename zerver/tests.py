@@ -1542,7 +1542,7 @@ class EditMessageTest(AuthedTestCase):
         self.assert_json_success(result)
         self.check_message(msg_id, subject="edited")
 
-    def test_propagate_topic(self):
+    def test_propagate_topic_forward(self):
         self.login("hamlet@zulip.com")
         id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
             subject="topic1")
@@ -1558,7 +1558,7 @@ class EditMessageTest(AuthedTestCase):
         result = self.client.post("/json/update_message", {
             'message_id': id1,
             'subject': 'edited',
-            'propagate_subject': True
+            'propagate_mode': 'change_later'
         })
         self.assert_json_success(result)
 
@@ -1567,6 +1567,35 @@ class EditMessageTest(AuthedTestCase):
         self.check_message(id3, subject="topic1")
         self.check_message(id4, subject="topic2")
         self.check_message(id5, subject="edited")
+
+    def test_propagate_all_topics(self):
+        self.login("hamlet@zulip.com")
+        id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic1")
+        id2 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic1")
+        id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
+            subject="topic1")
+        id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic2")
+        id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic1")
+        id6 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+            subject="topic3")
+
+        result = self.client.post("/json/update_message", {
+            'message_id': id2,
+            'subject': 'edited',
+            'propagate_mode': 'change_all'
+        })
+        self.assert_json_success(result)
+
+        self.check_message(id1, subject="edited")
+        self.check_message(id2, subject="edited")
+        self.check_message(id3, subject="topic1")
+        self.check_message(id4, subject="topic2")
+        self.check_message(id5, subject="edited")
+        self.check_message(id6, subject="topic3")
 
 class InviteUserTest(AuthedTestCase):
 

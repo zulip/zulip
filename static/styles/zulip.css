@@ -1180,6 +1180,9 @@ table.focused_table {
 }
 .message_edit_topic_propagate{
     display: inline-block;
+
+    height: 20px;
+    width: 400px;
 }
 
 .message_content.condensed {

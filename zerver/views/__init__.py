@@ -1277,11 +1277,11 @@ def json_fetch_raw_message(request, user_profile,
 def update_message_backend(request, user_profile,
                            message_id=REQ(converter=to_non_negative_int),
                            subject=REQ(default=None),
-                           propagate_subject=REQ(default=False),
+                           propagate_mode=REQ(default="change-one"),
                            content=REQ(default=None)):
     if subject is None and content is None:
         return json_error("Nothing to change")
-    do_update_message(user_profile, message_id, subject, propagate_subject, content)
+    do_update_message(user_profile, message_id, subject, propagate_mode, content)
     return json_success()
 
 # We do not @require_login for send_message_backend, since it is used

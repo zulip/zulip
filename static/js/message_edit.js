@@ -15,9 +15,9 @@ exports.save = function (row) {
         if (new_topic !== message.subject && new_topic.trim() !== "") {
             request.subject = new_topic;
 
-            if (feature_flags.propagate_topic_edits &&
-                row.find(".message_edit_topic_propagate>input").is(":checked")) {
-                request.propagate_subject = true;
+            if (feature_flags.propagate_topic_edits) {
+                var selected_topic_propagation = row.find("select.message_edit_topic_propagate").val();
+                request.propagate_mode = selected_topic_propagation;
             }
             changed = true;
         }
@@ -78,6 +78,8 @@ function edit_message (row, raw_content) {
                                    content: raw_content}));
 
     var edit_obj = {form: form, raw_content: raw_content};
+    var original_topic = message.subject;
+
     current_msg_list.show_edit_message(row, edit_obj);
 
     form.keydown(handle_edit_keydown);
@@ -98,7 +100,11 @@ function edit_message (row, raw_content) {
     viewport.scrollTop(viewport.scrollTop() + scroll_by);
 
     if (feature_flags.propagate_topic_edits) {
-        row.find('.message_edit_topic_propagate').show();
+        var topic_input = edit_row.find(".message_edit_topic");
+        topic_input.keyup( function () {
+            var new_topic = topic_input.val();
+            row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic);
+        });
     }
 }
 
