@@ -711,6 +711,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, no_log=False):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
+def notify_peers(user_profile, sub_pairs):
     # For other users on each stream, if applicable, send a notification
     # with less info. To make this efficient in cases of bulk subscriptions,
     # we do a first pass computing which users get a notification regarding
@@ -780,7 +781,9 @@ def bulk_add_subscriptions(streams, users):
     for user_profile in users:
         if len(sub_tuples_by_user[user_profile.id]) == 0:
             continue
-        notify_subscriptions_added(user_profile, sub_tuples_by_user[user_profile.id])
+        sub_pairs = sub_tuples_by_user[user_profile.id]
+        notify_subscriptions_added(user_profile, sub_pairs)
+        notify_peers(user_profile, sub_pairs)
 
     return ([(user_profile, stream_name) for (user_profile, recipient_id, stream_name) in new_subs] +
             [(sub.user_profile, stream_name) for (sub, stream_name) in subs_to_activate],
@@ -800,6 +803,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
         subscription.save(update_fields=["active"])
     if did_subscribe:
         notify_subscriptions_added(user_profile, [(subscription, stream)], no_log)
+        notify_peers(user_profile, [(subscription, stream)])
     return did_subscribe
 
 def notify_subscriptions_removed(user_profile, streams, no_log=False):
