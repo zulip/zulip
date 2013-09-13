@@ -653,7 +653,7 @@ def get_subscriber_emails(stream, realm=None, requesting_user=None):
     subscriptions = subscriptions.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
-def get_other_subscriber_ids(stream, user_profile_id):
+def get_subscriber_ids(stream):
     try:
         subscriptions = get_subscribers_query(stream, None, None)
     except JsonableError:
@@ -661,6 +661,10 @@ def get_other_subscriber_ids(stream, user_profile_id):
 
     rows = subscriptions.values('user_profile_id')
     ids = [row['user_profile_id'] for row in rows]
+    return ids
+
+def get_other_subscriber_ids(stream, user_profile_id):
+    ids = get_subscriber_ids(stream)
     return filter(lambda id: id != user_profile_id, ids)
 
 def maybe_get_subscriber_emails(stream):
@@ -721,26 +725,6 @@ def notify_subscriptions_added(user_profile, sub_pairs, no_log=False):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
-def notify_peers(user_profile, sub_pairs):
-    # For other users on each stream, if applicable, send a notification
-    # with less info. To make this efficient in cases of bulk subscriptions,
-    # we do a first pass computing which users get a notification regarding
-    # which streams.
-    streams = [stream for (_, stream) in sub_pairs]
-    notifications_for = get_subscribers_to_streams(streams)
-
-    for event_recipient, notifications in notifications_for.iteritems():
-        # Don't send a peer subscription notice to yourself.
-        if event_recipient == user_profile:
-            continue
-
-        stream_names = [stream.name for stream in notifications]
-        notice = dict(event=dict(type="subscriptions", op="peer_add",
-                                 subscriptions=stream_names,
-                                 user_email=user_profile.email),
-                      users=[event_recipient.id])
-        tornado_callbacks.send_notification(notice)
-
 def bulk_add_subscriptions(streams, users):
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
     recipients = [recipient.id for recipient in recipients_map.values()]
@@ -785,15 +769,29 @@ def bulk_add_subscriptions(streams, users):
     Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in subs_to_activate]).update(active=True)
 
     sub_tuples_by_user = defaultdict(list)
+    new_streams = set()
     for (sub, stream) in subs_to_add + subs_to_activate:
         sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
+        new_streams.add((sub.user_profile.id, stream.name))
 
     for user_profile in users:
         if len(sub_tuples_by_user[user_profile.id]) == 0:
             continue
         sub_pairs = sub_tuples_by_user[user_profile.id]
         notify_subscriptions_added(user_profile, sub_pairs)
-        notify_peers(user_profile, sub_pairs)
+
+    for stream in streams:
+        is_new_user = lambda user: (user.id, stream.name) in new_streams
+        new_users = filter(is_new_user, users)
+        new_user_ids = [user.id for user in new_users]
+        other_user_ids = list(set(get_subscriber_ids(stream)) - set(new_user_ids))
+        for user_profile in new_users:
+            for other_user_id in other_user_ids:
+                notice = dict(event=dict(type="subscriptions", op="peer_add",
+                                         subscriptions=[stream.name],
+                                         user_email=user_profile.email),
+                              users=[other_user_id])
+                tornado_callbacks.send_notification(notice)
 
     return ([(user_profile, stream_name) for (user_profile, recipient_id, stream_name) in new_subs] +
             [(sub.user_profile, stream_name) for (sub, stream_name) in subs_to_activate],
@@ -839,7 +837,9 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
 
     # As with a subscription add, send a 'peer subscription' notice to other
     # subscribers so they know the user unsubscribed.
-    # FIXME: This code is mostly a copy-paste from notify_subscriptions_added.
+    # FIXME: This code was mostly a copy-paste from notify_subscriptions_added.
+    #        We have since streamlined how we do notifications for adds, and
+    #        we should do the same for removes.
     notifications_for = get_subscribers_to_streams(streams)
 
     for event_recipient, notifications in notifications_for.iteritems():

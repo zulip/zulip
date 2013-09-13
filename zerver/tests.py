@@ -1135,20 +1135,13 @@ class SubscriptionAPITest(AuthedTestCase):
                     dict(principals=ujson.dumps([email1, email2])),
             )
 
-        add_events = filter(lambda ev: ev['event']['op'] == 'add', events)
-        self.assertEqual(len(add_events), 2)
-        for ev in add_events:
+        self.assertEqual(len(events), 2)
+        for ev in events:
+            self.assertEqual(ev['event']['op'], 'add')
             self.assertEqual(
                     set(ev['event']['subscriptions'][0]['subscribers']),
                     set([email1, email2])
             )
-
-        # TODO: It's broken that we're sending peer_add events here, since users
-        # are gonna get subscribers in the add events, plus the events are out of
-        # order sometimes, which breaks our JS client.  The test for now is just
-        # documenting the current behavior
-        peer_add_events = filter(lambda ev: ev['event']['op'] == 'peer_add', events)
-        self.assertEqual(len(peer_add_events), 2)
 
         # Now add ourselves
         events = []
