@@ -653,6 +653,16 @@ def get_subscriber_emails(stream, realm=None, requesting_user=None):
     subscriptions = subscriptions.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
+def get_other_subscriber_ids(stream, user_profile_id):
+    try:
+        subscriptions = get_subscribers_query(stream, None, None)
+    except JsonableError:
+        return []
+
+    rows = subscriptions.values('user_profile_id')
+    ids = [row['user_profile_id'] for row in rows]
+    return filter(lambda id: id != user_profile_id, ids)
+
 def maybe_get_subscriber_emails(stream):
     """ Alternate version of get_subscriber_emails that takes a Stream object only
     (not a name), and simply returns an empty list if unable to get a real
@@ -801,9 +811,18 @@ def do_add_subscription(user_profile, stream, no_log=False):
         did_subscribe = True
         subscription.active = True
         subscription.save(update_fields=["active"])
+
     if did_subscribe:
         notify_subscriptions_added(user_profile, [(subscription, stream)], no_log)
-        notify_peers(user_profile, [(subscription, stream)])
+
+        user_ids = get_other_subscriber_ids(stream, user_profile.id)
+        for user_id in user_ids:
+            notice = dict(event=dict(type="subscriptions", op="peer_add",
+                                     subscriptions=[stream.name],
+                                     user_email=user_profile.email),
+                          users=[user_id])
+            tornado_callbacks.send_notification(notice)
+
     return did_subscribe
 
 def notify_subscriptions_removed(user_profile, streams, no_log=False):
