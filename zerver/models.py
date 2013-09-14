@@ -709,12 +709,46 @@ class UserPresence(models.Model):
         elif status == UserPresence.IDLE:
             return 'idle'
 
-    def to_dict(self):
-        presence_val = UserPresence.status_to_string(self.status)
+    @staticmethod
+    def get_status_dict_by_realm(realm_id):
+        user_statuses = defaultdict(dict)
 
-        return {'client'   : self.client.name,
-                'status'   : presence_val,
-                'timestamp': datetime_to_timestamp(self.timestamp)}
+        query = UserPresence.objects.filter(
+                user_profile__realm_id=realm_id,
+                user_profile__is_active=True
+        ).values(
+                'client__name',
+                'status',
+                'timestamp',
+                'user_profile__email'
+        )
+
+        for row in query:
+            email = row['user_profile__email']
+            client_name = row['client__name']
+            status = row['status']
+            timestamp = row['timestamp']
+            info = UserPresence.to_presense_dict(client_name, status, timestamp)
+            user_statuses[email][client_name] = info
+
+        return user_statuses
+
+    @staticmethod
+    def to_presense_dict(client_name, status, timestamp):
+        presence_val = UserPresence.status_to_string(status)
+        timestamp = datetime_to_timestamp(timestamp)
+        return dict(
+                client=client_name,
+                status=presence_val,
+                timestamp=timestamp
+        )
+
+    def to_dict(self):
+        return UserPresence.to_presense_dict(
+                self.client.name,
+                self.status,
+                self.timestamp
+        )
 
     @staticmethod
     def status_from_string(status):
@@ -733,16 +767,6 @@ class UserPresence(models.Model):
 # Flush the cached user status_dict whenever a user's presence
 # changes
 post_save.connect(update_user_presence_cache, sender=UserPresence)
-
-def get_status_dict_by_realm(realm_id):
-    user_statuses = defaultdict(dict)
-
-    for presence in UserPresence.objects.filter(user_profile__realm_id=realm_id,
-                                                user_profile__is_active=True) \
-                                        .select_related('user_profile', 'client'):
-        user_statuses[presence.user_profile.email][presence.client.name] = presence.to_dict()
-
-    return user_statuses
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm)

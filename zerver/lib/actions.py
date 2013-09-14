@@ -12,8 +12,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     email_to_domain, email_to_username, display_recipient_cache_key, \
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
-    get_active_user_profiles_by_realm, UserActivityInterval, \
-    get_status_dict_by_realm
+    get_active_user_profiles_by_realm, UserActivityInterval
+
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -1362,7 +1362,7 @@ def get_status_dict(requesting_user_profile):
     if requesting_user_profile.realm.domain == 'mit.edu':
         return defaultdict(dict)
 
-    return get_status_dict_by_realm(requesting_user_profile.realm_id)
+    return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
 
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
