@@ -1356,7 +1356,7 @@ def gather_subscriptions(user_profile):
 
     return (sorted(subscribed), sorted(unsubscribed))
 
-@cache_with_key(status_dict_cache_key, timeout=3600*24*7)
+@cache_with_key(status_dict_cache_key, timeout=60)
 def get_status_dict(requesting_user_profile):
     # Return no status info for MIT
     if requesting_user_profile.realm.domain == 'mit.edu':
