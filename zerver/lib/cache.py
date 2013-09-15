@@ -234,7 +234,7 @@ def user_profile_by_id_cache_key(user_profile_id):
     return "user_profile_by_id:%s" % (user_profile_id,)
 
 def cache_save_user_profile(user_profile):
-        cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
+    cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
 
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
