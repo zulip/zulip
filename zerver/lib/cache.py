@@ -263,8 +263,5 @@ def update_user_presence_cache(sender, **kwargs):
         # entry in the UserPresence cache to avoid giving out stale state
         djcache.delete(KEY_PREFIX + status_dict_cache_key(user_profile))
 
-def cache_save_status_dict(realm_id, status_dict):
-    cache_set(status_dict_cache_key_for_realm_id(realm_id), status_dict, timeout=3600*24*7)
-
 def realm_alert_words_cache_key(realm):
     return "realm_alert_words:%s" % (realm.domain,)

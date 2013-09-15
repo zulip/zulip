@@ -298,10 +298,18 @@ def do_send_messages(messages):
         message['message'].to_dict(apply_markdown=True)
         message['message'].to_dict(apply_markdown=False)
         user_flags = user_message_flags.get(message['message'].id, {})
+        sender = message['message'].sender
+        recipient_emails = [user.email for user in message['recipients']]
+        user_presences = get_status_dict(sender)
+        presences = {}
+        for email in recipient_emails:
+            if email in user_presences:
+                presences[email] = user_presences[email]
+
         data = dict(
             type         = 'new_message',
             message      = message['message'].id,
-            sender_realm = message['message'].sender.realm.id,
+            presences    = user_presences,
             users        = [{'id': user.id, 'flags': user_flags.get(user.id, [])}
                              for user in message['recipients']])
         if message['message'].recipient.type == Recipient.STREAM:
