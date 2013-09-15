@@ -411,9 +411,7 @@ def process_new_message(data):
                         user_profile_id != message.sender.id
         mentioned = 'mentioned' in flags
 
-        idle = receiver_is_idle(user_profile, realm_presences)
-
-        if (received_pm or mentioned) and idle:
+        if (received_pm or mentioned) and receiver_is_idle(user_profile, realm_presences):
             if receives_offline_notifications(user_profile):
                 event = build_offline_notification_event(user_profile_id, message.id)
 
