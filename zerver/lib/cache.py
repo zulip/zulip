@@ -260,9 +260,7 @@ def update_user_presence_cache(sender, **kwargs):
     # For any status update, flush the user's realm's entry in the
     # UserPresence cache to avoid giving out stale state.  Since we
     # get a lot of presence updates, we are likely to get cache misses
-    # when new messages come in, but the query is pretty quick, and we
-    # no longer have the issue of Tornado needing to go the cache or DB
-    # to get presence info.
+    # when new messages come in, but the query is pretty quick.
     user_profile = kwargs['instance'].user_profile
     djcache.delete(KEY_PREFIX + status_dict_cache_key(user_profile))
 

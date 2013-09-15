@@ -1085,7 +1085,14 @@ def do_update_user_presence(user_profile, client, log_time, status):
     if not user_profile.realm.domain == "mit.edu" and (created or became_online):
         # Push event to all users in the realm so they see the new user
         # appear in the presence list immediately, or the newly online
-        # user without delay
+        # user without delay.  Note that we won't send an update here for a
+        # timestamp update, because we rely on the browser to ping us every 50
+        # seconds for realm-wide status updates, and those updates should have
+        # recent timestamps, which means the browser won't think active users
+        # have gone idle.  If we were more aggressive in this function about
+        # sending timestamp updates, we could eliminate the ping responses, but
+        # that's not a high priority for now, considering that most of our non-MIT
+        # realms are pretty small.
         send_presence_changed(user_profile, presence)
 
 def update_user_activity_interval(user_profile, log_time):
