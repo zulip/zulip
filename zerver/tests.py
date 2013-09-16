@@ -3319,7 +3319,7 @@ class GithubHookTests(AuthedTestCase):
                                      data,
                                      stream_name="issues")
         self.assertEqual(msg.subject, "zulip-test: issue 5: The frobnicator doesn't work")
-        self.assertEqual(msg.content, "zbenjamin opened [issue 5](https://github.com/zbenjamin/zulip-test/issues/5): The frobnicator doesn't work\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
+        self.assertEqual(msg.content, "zbenjamin opened [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
 
     def test_issue_comment(self):
         email = "hamlet@zulip.com"
@@ -3345,7 +3345,7 @@ class GithubHookTests(AuthedTestCase):
                                      data,
                                      stream_name="issues")
         self.assertEqual(msg.subject, "zulip-test: issue 5: The frobnicator doesn't work")
-        self.assertEqual(msg.content, "zbenjamin closed [issue 5](https://github.com/zbenjamin/zulip-test/issues/5): The frobnicator doesn't work")
+        self.assertEqual(msg.content, "zbenjamin closed [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)")
 
 class PivotalHookTests(AuthedTestCase):
 

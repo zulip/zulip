@@ -82,12 +82,11 @@ def api_github_landing(request, user_profile, event=REQ,
         subject = "%s: issue %d: %s" % (repository['name'], issue['number'], issue['title'])
 
         if event == 'issues':
-            content = ("%s %s [issue %d](%s): %s"
+            content = ("%s %s [issue %d](%s)"
                        % (payload['sender']['login'],
                           payload['action'],
                           issue['number'],
-                          issue['html_url'],
-                          issue['title']))
+                          issue['html_url']))
             if payload['action'] in ('opened', 'reopened'):
                 content += "\n\n~~~ quote\n%s\n~~~" % (issue['body'],)
         elif event == 'issue_comment':
