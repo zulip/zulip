@@ -3308,6 +3308,45 @@ class GithubHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, "zulip-test")
         self.assert_push_content(msg)
 
+    def test_issues_opened(self):
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        data = ujson.loads(self.fixture_data('github', 'issues_opened'))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'payload': ujson.dumps(data['payload'])})
+        msg = self.send_json_payload(email, "/api/v1/external/github",
+                                     data,
+                                     stream_name="issues")
+        self.assertEqual(msg.subject, "zulip-test: issue 5: The frobnicator doesn't work")
+        self.assertEqual(msg.content, "zbenjamin opened [issue 5](https://github.com/zbenjamin/zulip-test/issues/5): The frobnicator doesn't work\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
+
+    def test_issue_comment(self):
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        data = ujson.loads(self.fixture_data('github', 'issue_comment'))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'payload': ujson.dumps(data['payload'])})
+        msg = self.send_json_payload(email, "/api/v1/external/github",
+                                     data,
+                                     stream_name="issues")
+        self.assertEqual(msg.subject, "zulip-test: issue 5: The frobnicator doesn't work")
+        self.assertEqual(msg.content, "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
+
+    def test_issues_closed(self):
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        data = ujson.loads(self.fixture_data('github', 'issues_closed'))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'payload': ujson.dumps(data['payload'])})
+        msg = self.send_json_payload(email, "/api/v1/external/github",
+                                     data,
+                                     stream_name="issues")
+        self.assertEqual(msg.subject, "zulip-test: issue 5: The frobnicator doesn't work")
+        self.assertEqual(msg.content, "zbenjamin closed [issue 5](https://github.com/zbenjamin/zulip-test/issues/5): The frobnicator doesn't work")
+
 class PivotalHookTests(AuthedTestCase):
 
     def send_pivotal_message(self, name):
