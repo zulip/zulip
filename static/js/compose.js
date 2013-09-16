@@ -69,8 +69,14 @@ function show_box(tabname, focus_area) {
     notifications_bar.maybe_disable();
 }
 
+function clear_invites() {
+    $("#compose_invite_users").hide();
+    $("#compose_invite_users").empty();
+}
+
 function clear_box() {
     exports.snapshot_message();
+    clear_invites();
     $("#compose").find('input[type=text], textarea').val('');
     $("#send-status").hide(0);
 }
@@ -367,6 +373,8 @@ function send_message() {
 }
 
 exports.finish = function () {
+    clear_invites();
+
     if (! compose.validate()) {
         return false;
     }
@@ -552,6 +560,67 @@ $(function () {
             }
         });
     }
+
+    // Show a warning if a user @-mentions someone who will not receive this message
+    $(document).on('usermention_completed.zulip', function (event, data) {
+        // Legacy strangeness: is_composing_message can be false, "stream", or "private"
+        if (is_composing_message !== "stream") {
+            return;
+        }
+
+        if (data !== undefined && data.mentioned !== undefined) {
+            var email = data.mentioned.email;
+            if (!compose_fade.would_receive_message(email)) {
+                var new_row = templates.render("compose-invite-users", {email: email,
+                                                                        name: data.mentioned.full_name});
+                var error_area = $("#compose_invite_users");
+
+                var existing_invites = _.map($(".compose_invite_user", error_area), function (user_row) {
+                    return $(user_row).data('useremail');
+                });
+
+                if (existing_invites.indexOf(email) === -1) {
+                    error_area.append(new_row);
+                }
+
+                error_area.show();
+            }
+        }
+    });
+
+    $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
+        event.preventDefault();
+
+        var invite_row = $(event.target).parents('.compose_invite_user');
+
+        var email = $(invite_row).data('useremail');
+        if (email !== undefined) {
+            subs.invite_user_to_stream(email, compose.stream_name(), function () {
+                var all_invites = $("#compose_invite_users");
+                invite_row.remove();
+
+                if (all_invites.children().length === 0) {
+                    all_invites.hide();
+                }
+            }, function () {
+                var error_msg = invite_row.find('.compose_invite_user_error');
+                error_msg.show();
+
+                $(event.target).attr('disabled', true);
+            });
+        }
+    });
+
+    $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {
+        var invite_row = $(event.target).parents('.compose_invite_user');
+        var all_invites = $("#compose_invite_users");
+
+        invite_row.remove();
+
+        if (all_invites.children().length === 0) {
+            all_invites.hide();
+        }
+    });
 
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field

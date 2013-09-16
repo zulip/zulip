@@ -1345,6 +1345,37 @@ blockquote p {
     top: 7px;
 }
 
+#compose_invite_users {
+    /* Don't overlap into the compose_close × */
+    margin-right: 10px;
+}
+
+.compose_invite_user {
+    padding: 4px 0px 4px 0px;
+}
+
+.compose_invite_close {
+    display: inline;
+    margin-top: 4px;
+
+    width: 10px;
+}
+
+.compose_invite_user_controls {
+    float: right;
+}
+
+.compose_invite_link {
+    height: 20px;
+    margin-bottom: 3px;
+}
+
+.compose_invite_user_error {
+    margin-right: 10px;
+
+    padding: 3px 8px 3px 8px;
+}
+
 /* Like .nav-tabs > li > a */
 #send-status {
     width: 90%;

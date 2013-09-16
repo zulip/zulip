@@ -22,6 +22,7 @@
         <span class="send-status-close">&times;</span>
         <span id="error-msg"></span>
       </div>
+      <div  id="compose_invite_users" class="alert"></div>
       <form id="send_message_form" action="/json/send_message" method="post">
         {% csrf_token %}
         <table class="compose_table">

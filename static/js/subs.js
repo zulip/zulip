@@ -324,12 +324,6 @@ $(function () {
     $(document).on('subscription_remove.zulip', function (e) {
         mark_unsubscribed(e.subscription.name);
     });
-    $(document).on('peer_subscribe.zulip', function (e) {
-        stream_data.add_subscriber(e.subscription, e.user_email);
-    });
-    $(document).on('peer_unsubscribe.zulip', function (e) {
-        stream_data.remove_subscriber(e.subscription, e.user_email);
-    });
 });
 
 exports.receives_notifications = function (stream_name) {
@@ -630,6 +624,18 @@ function show_new_stream_modal() {
     $('#stream-creation').modal("show");
 }
 
+exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
+    $.ajax({
+        type: "POST",
+        url: "/json/subscriptions/add",
+        dataType: 'json',
+        data: {"subscriptions": JSON.stringify([{"name": stream_name}]),
+               "principals": JSON.stringify([user_email])},
+        success: success,
+        error: failure
+    });
+};
+
 $(function () {
     var i;
     // Populate stream_info with data handed over to client-side template.
@@ -762,34 +768,30 @@ $(function () {
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
         var list = sub_row.find('.subscriber_list_container ul');
 
-        $.ajax({
-            type: "POST",
-            url: "/json/subscriptions/add",
-            dataType: 'json',
-            data: {"subscriptions": JSON.stringify([{"name": stream}]),
-                   "principals": JSON.stringify([principal])},
-            success: function (data) {
-                text_box.val('');
+        function invite_success(data) {
+            text_box.val('');
 
-                if (data.subscribed.hasOwnProperty(principal)) {
-                    error_elem.addClass("hide");
-                    warning_elem.addClass("hide");
-                    if (principal === page_params.email) {
-                        // mark_subscribed adds the user to the member list
-                        mark_subscribed(stream);
-                    } else {
-                        add_to_member_list(list, people_dict.get(principal).full_name, principal);
-                    }
-                } else {
-                    error_elem.addClass("hide");
-                    warning_elem.removeClass("hide").text("User already subscribed");
-                }
-            },
-            error: function (xhr) {
+            if (data.subscribed.hasOwnProperty(principal)) {
+                error_elem.addClass("hide");
                 warning_elem.addClass("hide");
-                error_elem.removeClass("hide").text("Could not add user to this stream");
+                if (principal === page_params.email) {
+                    // mark_subscribed adds the user to the member list
+                    mark_subscribed(stream);
+                } else {
+                    add_to_member_list(list, people_dict.get(principal).full_name, principal);
+                }
+            } else {
+                error_elem.addClass("hide");
+                warning_elem.removeClass("hide").text("User already subscribed");
             }
-        });
+        }
+
+        function invite_failure(xhr) {
+            warning_elem.addClass("hide");
+            error_elem.removeClass("hide").text("Could not add user to this stream");
+        }
+
+        exports.invite_user_to_stream(principal, stream, invite_success, invite_failure);
     });
 
     $("#subscriptions_table").on("submit", ".rename-stream form", function (e) {

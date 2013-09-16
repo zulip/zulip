@@ -67,7 +67,7 @@ function _fade_messages() {
     ui.update_floating_recipient_bar();
 }
 
-function _would_receive_msg(email) {
+exports.would_receive_message = function (email) {
     // Given the current focused_recipient, this function returns true if
     // the user in question would definitely receive this message, false if
     // they would definitely not receive this message, and undefined if we
@@ -90,7 +90,7 @@ function _would_receive_msg(email) {
     // PM, so check if the given email is in the recipients list.
     var recipients = focused_recipient.reply_to.split(',');
     return recipients.indexOf(email) !== -1;
-}
+};
 
 function _fade_users() {
     if (!feature_flags.fade_users_when_composing) {
@@ -98,7 +98,7 @@ function _fade_users() {
     }
     _.forEach($('.user_sidebar_entry'), function (elt) {
         elt = $(elt);
-        var would_receive = _would_receive_msg(elt.attr('data-email'));
+        var would_receive = exports.would_receive_message(elt.attr('data-email'));
         if (would_receive === true) {
             elt.addClass('unfaded').removeClass('faded');
         } else if (would_receive === false) {
@@ -200,6 +200,16 @@ exports.update_rendered_messages = function (messages, get_elements) {
         });
     });
 };
+
+$(function () {
+    $(document).on('peer_subscribe.zulip', function (e) {
+        exports.update_faded_users();
+    });
+    $(document).on('peer_unsubscribe.zulip', function (e) {
+        exports.update_faded_users();
+    });
+});
+
 
 return exports;
 

@@ -372,6 +372,8 @@ exports.initialize = function () {
             } else if (this.completing === 'mention') {
                 beginning = (beginning.substring(0, beginning.length - this.token.length-1)
                         + '@**' + item.full_name + '** ');
+
+                $(document).trigger('usermention_completed.zulip', {mentioned: item});
             }
 
             // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to overwrite the text
