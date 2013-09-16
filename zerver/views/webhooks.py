@@ -78,14 +78,15 @@ def api_github_landing(request, user_profile, event=REQ,
             return json_success()
 
         issue = payload['issue']
-        subject = "%s: issue %d %s" % (repository['name'], issue['number'], payload['action'])
-        content = ("%s %s [issue %d](%s): %s\n\n~~~ quote\n%s\n~~~"
+        subject = "%s: issue %d: %s" % (repository['name'], issue['number'], issue['title'])
+        content = ("%s %s [issue %d](%s): %s"
                    % (payload['sender']['login'],
                       payload['action'],
                       issue['number'],
                       issue['html_url'],
-                      issue['title'],
-                      issue['body']))
+                      issue['title']))
+        if payload['action'] in ('opened', 'reopened'):
+            content += "\n\n~~~ quote\n%s\n~~~" % (issue['body'],)
         stream = 'issues'
     else:
         # We don't handle other events even though we get notified
