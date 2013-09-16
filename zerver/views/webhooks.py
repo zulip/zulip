@@ -73,21 +73,33 @@ def api_github_landing(request, user_profile, event=REQ,
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
                                                      payload['pusher']['name'])
-    elif event == 'issues':
+    elif event in ('issues', 'issue_comment'):
         if user_profile.realm.domain not in ('zulip.com', 'customer5.invalid'):
             return json_success()
 
+        stream = 'issues'
         issue = payload['issue']
         subject = "%s: issue %d: %s" % (repository['name'], issue['number'], issue['title'])
-        content = ("%s %s [issue %d](%s): %s"
-                   % (payload['sender']['login'],
-                      payload['action'],
-                      issue['number'],
-                      issue['html_url'],
-                      issue['title']))
-        if payload['action'] in ('opened', 'reopened'):
-            content += "\n\n~~~ quote\n%s\n~~~" % (issue['body'],)
-        stream = 'issues'
+
+        if event == 'issues':
+            content = ("%s %s [issue %d](%s): %s"
+                       % (payload['sender']['login'],
+                          payload['action'],
+                          issue['number'],
+                          issue['html_url'],
+                          issue['title']))
+            if payload['action'] in ('opened', 'reopened'):
+                content += "\n\n~~~ quote\n%s\n~~~" % (issue['body'],)
+        elif event == 'issue_comment':
+            if payload['action'] != 'created':
+                return json_success()
+            comment = payload['comment']
+            content = ("%s [commented](%s) on [issue %d](%s)\n\n~~~ quote\n%s\n~~~"
+                       % (comment['user']['login'],
+                          comment['html_url'],
+                          issue['number'],
+                          issue['html_url'],
+                          comment['body']))
     else:
         # We don't handle other events even though we get notified
         # about them
