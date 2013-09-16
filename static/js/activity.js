@@ -17,7 +17,9 @@ var OFFLINE_THRESHOLD_SECS = 140;
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
 
-exports.has_focus = true;
+// When you start Zulip, has_focus should be true, but it might not be the
+// case after a server-initiated reload.
+exports.has_focus = document.hasFocus && document.hasFocus();
 
 // We initialize this to true, to count new page loads, but set it to
 // false in the onload function in reload.js if this was a

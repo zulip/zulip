@@ -3,7 +3,11 @@ var notifications = (function () {
 var exports = {};
 
 var notice_memory = {};
-var window_has_focus = true;
+
+// When you start Zulip, window_has_focus should be true, but it might not be the
+// case after a server-initiated reload.
+var window_has_focus = document.hasFocus && document.hasFocus();
+
 var asked_permission_already = false;
 var names;
 var supports_sound;

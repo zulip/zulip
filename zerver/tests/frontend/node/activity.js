@@ -14,6 +14,12 @@ set_global('$', function () {
     };
 });
 
+set_global('document', {
+    hasFocus: function () {
+        return true;
+    }
+});
+
 var activity = require('js/activity.js');
 
 (function test_sort_users() {
