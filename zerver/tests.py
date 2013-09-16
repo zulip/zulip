@@ -3228,24 +3228,24 @@ class BeanstalkHookTests(AuthedTestCase):
 
 class GithubHookTests(AuthedTestCase):
 
-    def assert_content(self, msg):
-        self.assertEqual(msg.content, """rtomayko [pushed](http://github.com/mojombo/grit/compare/4c8124f...a47fd41) to branch master
+    def assert_push_content(self, msg):
+        self.assertEqual(msg.content, """zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) to branch master
 
-* [06f63b4](http://github.com/mojombo/grit/commit/06f63b43050935962f84fe54473a7c5de7977325): stub git call for Grit#heads test f:15 Case#1
-* [5057e76](http://github.com/mojombo/grit/commit/5057e76a11abd02e83b7d3d3171c4b68d9c88480): clean up heads test f:2hrs
-* [a47fd41](http://github.com/mojombo/grit/commit/a47fd41f3aa4610ea527dcc1669dfdb9c15c5425): add more comments throughout
+* [48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e): Add baz
+* [06ebe5f](https://github.com/zbenjamin/zulip-test/commit/06ebe5f472a32f6f31fd2a665f0c7442b69cce72): Baz needs to be longer
+* [b954491](https://github.com/zbenjamin/zulip-test/commit/b95449196980507f08209bdfdc4f1d611689b7a8): Final edit to baz, I swear
 """)
 
     def test_spam_branch_is_ignored(self):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         stream = 'commits'
-        data = {'email': email,
-                'api-key': api_key,
-                'branches': 'dev,staging',
-                'stream': stream,
-                'event': 'push',
-                'payload': self.fixture_data('github', 'sample')}
+        data = ujson.loads(self.fixture_data('github', 'push'))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'branches': 'dev,staging',
+                     'stream': stream,
+                     'payload': ujson.dumps(data['payload'])})
         url = '/api/v1/external/github'
 
         # We subscribe to the stream in this test, even though
@@ -3266,17 +3266,17 @@ class GithubHookTests(AuthedTestCase):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         stream = 'my_commits'
-        data = {'email': email,
-                'api-key': api_key,
-                'stream': stream,
-                'branches': 'master,staging',
-                'event': 'push',
-                'payload': self.fixture_data('github', 'sample')}
+        data = ujson.loads(self.fixture_data('github', 'push'))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'stream': stream,
+                     'branches': 'master,staging',
+                     'payload': ujson.dumps(data['payload'])})
         msg = self.send_json_payload(email, "/api/v1/external/github",
                                      data,
                                      stream_name=stream)
-        self.assertEqual(msg.subject, "grit")
-        self.assert_content(msg)
+        self.assertEqual(msg.subject, "zulip-test")
+        self.assert_push_content(msg)
 
     def test_user_specified_stream(self):
         # Around May 2013 the github webhook started to specify the stream.
@@ -3284,29 +3284,29 @@ class GithubHookTests(AuthedTestCase):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         stream = 'my_commits'
-        data = {'email': email,
-                'api-key': api_key,
-                'stream': stream,
-                'event': 'push',
-                'payload': self.fixture_data('github', 'sample')}
+        data = ujson.loads(self.fixture_data('github', 'push'))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'stream': stream,
+                     'payload': ujson.dumps(data['payload'])})
         msg = self.send_json_payload(email, "/api/v1/external/github",
                                      data,
                                      stream_name=stream)
-        self.assertEqual(msg.subject, "grit")
-        self.assert_content(msg)
+        self.assertEqual(msg.subject, "zulip-test")
+        self.assert_push_content(msg)
 
     def test_legacy_hook(self):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
-        data = {'email': email,
-                'api-key': api_key,
-                'event': 'push',
-                'payload': self.fixture_data('github', 'sample')}
+        data = ujson.loads(self.fixture_data('github', 'push'))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'payload': ujson.dumps(data['payload'])})
         msg = self.send_json_payload(email, "/api/v1/external/github",
                                      data,
                                      stream_name="commits")
-        self.assertEqual(msg.subject, "grit")
-        self.assert_content(msg)
+        self.assertEqual(msg.subject, "zulip-test")
+        self.assert_push_content(msg)
 
 class PivotalHookTests(AuthedTestCase):
 
