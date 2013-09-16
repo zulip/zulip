@@ -93,7 +93,7 @@ exports.get_name = function (stream_name) {
 };
 
 exports.set_subscribers = function (sub, emails) {
-    sub.subscribers = Dict.from_array(emails || []);
+    sub.subscribers = Dict.from_array(emails || [], {fold_case: true});
 };
 
 // NOTE: If you do anything with the `subscribers` attribute on the stream

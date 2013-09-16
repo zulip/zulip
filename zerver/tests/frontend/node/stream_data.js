@@ -74,6 +74,7 @@ var stream_data = require('js/stream_data.js');
     stream_data.add_sub('Rome', sub);
 
     stream_data.set_subscribers(sub, ['fred@zulip.com', 'george@zulip.com']);
+    assert(stream_data.user_is_subscribed('Rome', 'FRED@zulip.com'));
     assert(stream_data.user_is_subscribed('Rome', 'fred@zulip.com'));
     assert(stream_data.user_is_subscribed('Rome', 'george@zulip.com'));
     assert(!stream_data.user_is_subscribed('Rome', 'not_fred@zulip.com'));
