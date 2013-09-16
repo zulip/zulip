@@ -26,6 +26,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import decode_email_address
+from zerver.lib.upload import upload_message_image
 from zerver.models import Stream, get_user_profile_by_email
 
 from twisted.internet import protocol, reactor, ssl
@@ -55,7 +56,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
-api_key = get_user_profile_by_email(GATEWAY_EMAIL).api_key
+email_gateway_user = get_user_profile_by_email(GATEWAY_EMAIL)
+api_key = email_gateway_user.api_key
 if settings.DEPLOYED:
     staging_client = zulip.Client(
         site="https://staging.zulip.com", email=GATEWAY_EMAIL, api_key=api_key)
@@ -134,9 +136,24 @@ def extract_body(message):
     body = None
     for part in message.walk():
         if part.get_content_type() == "text/plain":
-            return part.get_payload(decode=True)
+            return part.get_payload(decode=True).strip()
     if not body:
         raise ZulipEmailForwardError("Unable to find plaintext message body")
+
+def extract_and_upload_attachments(message):
+    attachment_links = []
+
+    for part in message.get_payload():
+        content_type = part.get_content_type()
+        filename = part.get_filename()
+        if filename:
+            s3_url = upload_message_image(filename, content_type,
+                                          part.get_payload(decode=True),
+                                          email_gateway_user)
+            formatted_link = "[%s](%s)" % (filename, s3_url)
+            attachment_links.append(formatted_link)
+
+    return "\n".join(attachment_links)
 
 def extract_and_validate(email):
     # Recipient is of the form
@@ -191,6 +208,11 @@ def fetch(result, proto, mailboxes):
             debug_info["to"] = to
             stream = extract_and_validate(to)
             debug_info["stream"] = stream
+            body += extract_and_upload_attachments(message)
+            if not body:
+                # You can't send empty Zulips, so to avoid confusion over the
+                # email forwarding failing, set a dummy message body.
+                body = "(No email body)"
             send_zulip(stream, subject, body)
         except ZulipEmailForwardError, e:
             # TODO: notify sender of error, retry if appropriate.
