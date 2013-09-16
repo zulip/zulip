@@ -64,9 +64,7 @@ def get_file_info(request, user_file):
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
     return uploaded_file_name, content_type
 
-
-def upload_message_image(request, user_file, user_profile):
-    uploaded_file_name, content_type = get_file_info(request, user_file)
+def upload_message_image(uploaded_file_name, content_type, user_file, user_profile):
     bucket_name = settings.S3_BUCKET
     s3_file_name = gen_s3_key(user_profile, uploaded_file_name)
     upload_image_to_s3(
@@ -77,6 +75,10 @@ def upload_message_image(request, user_file, user_profile):
             user_file,
     )
     return "https://%s.s3.amazonaws.com/%s" % (bucket_name, s3_file_name)
+
+def upload_message_image_through_web_client(request, user_file, user_profile):
+    uploaded_file_name, content_type = get_file_info(request, user_file)
+    return upload_message_image(uploaded_file_name, content_type, user_file, user_profile)
 
 def upload_avatar_image(user_file, user_profile, email):
     content_type = guess_type(user_file.name)[0]

@@ -56,7 +56,7 @@ from zerver.decorator import require_post, \
     authenticated_rest_api_view, process_as_post, REQ, rate_limit_user
 from zerver.lib.query import last_n
 from zerver.lib.avatar import avatar_url
-from zerver.lib.upload import upload_message_image, upload_avatar_image
+from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image
 from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zerver.lib.cache import cache_get_many, cache_set_many, \
     generic_bulk_cached_fetch
@@ -1624,7 +1624,7 @@ def json_upload_file(request, user_profile):
         return json_error("You may only upload one file at a time")
 
     user_file = request.FILES.values()[0]
-    uri = upload_message_image(request, user_file, user_profile)
+    uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
 
 @has_request_variables
