@@ -157,7 +157,13 @@ function create_sub(stream_name, attrs) {
         return sub;
     }
 
-    sub = _.defaults({}, attrs, {
+    // Our internal data structure for subscriptions is mostly plain dictionaries,
+    // so we just reuse the attrs that are passed in to us, but we encapsulate how
+    // we handle subscribers.
+    var subscriber_emails = attrs.subscribers;
+    var raw_attrs = _.omit(attrs, 'subscribers');
+
+    sub = _.defaults(raw_attrs, {
         name: stream_name,
         id: next_sub_id++,
         render_subscribers: page_params.domain !== 'mit.edu' || attrs.invite_only === true,
@@ -167,11 +173,7 @@ function create_sub(stream_name, attrs) {
         notifications: false
     });
 
-    // Convert the subscribers list from an array (as passed in the JSON)
-    // to a set (Dict), as we use internally.
-    // Note that we can only track the subscriber list if we ourselves are
-    // subscribed, so if it's undefined we default to an empty list here.
-    sub.subscribers = Dict.from_array(sub.subscribers || []);
+    stream_data.set_subscribers(sub, subscriber_emails);
 
     if (!sub.color) {
         sub.color = get_color();
