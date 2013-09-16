@@ -2,19 +2,27 @@ var stream_data = (function () {
 
 var exports = {};
 
-var stream_info = new Dict(); // Maps lowercase stream name to stream properties object
+
+// The stream_info variable maps stream names to stream properties objects
+// Call clear_subscriptions() to initialize it.
+var stream_info;
+
+exports.clear_subscriptions = function () {
+    stream_info = new Dict({fold_case: true});
+};
+exports.clear_subscriptions();
 
 
 exports.add_sub = function (stream_name, sub) {
-    stream_info.set(stream_name.toLowerCase(), sub);
+    stream_info.set(stream_name, sub);
 };
 
 exports.get_sub = function (stream_name) {
-    return stream_info.get(stream_name.toLowerCase());
+    return stream_info.get(stream_name);
 };
 
 exports.delete_sub = function (stream_name) {
-    stream_info.del(stream_name.toLowerCase());
+    stream_info.del(stream_name);
 };
 
 exports.set_stream_info = function (new_stream_info) {
@@ -43,10 +51,6 @@ exports.all_subscribed_streams_are_in_home_view = function () {
     return _.every(subscribed_streams(), function (sub) {
         return sub.in_home_view; }
     );
-};
-
-exports.clear_subscriptions = function () {
-    stream_info = new Dict();
 };
 
 exports.canonicalized_name = function (stream_name) {
