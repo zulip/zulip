@@ -74,18 +74,25 @@ def redact_stream(error_message):
         return error_message.replace(stream_name, "X" * len(stream_name))
     return error_message
 
-def report_to_zulip(email_message, error_message):
+def report_to_zulip(error_message):
     error_stream = Stream.objects.get(name="errors", realm__domain="zulip.com")
-    sender = email_message.get("From")
-    error_message = """~~~
-Sender: %s\nError message: %s
-~~~""" % (sender, error_message)
-    send_zulip(error_stream, "email mirror error", error_message)
+    send_zulip(error_stream, "email mirror error",
+               """~~~\n%s\n~~~""" % (error_message,))
 
-def log_and_report(email_message, error_message):
-    scrubbed_error = redact_stream(error_message)
+def log_and_report(email_message, error_message, debug_info):
+    scrubbed_error = "Sender: %s\n%s" % (email_message.get("From"),
+                                         redact_stream(error_message))
+
+    if "to" in debug_info:
+        scrubbed_error = "Stream: %s\n%s" % (redact_stream(debug_info["to"]),
+                                             scrubbed_error)
+
+    if "stream" in debug_info:
+        scrubbed_error = "Realm: %s\n%s" % (debug_info["stream"].realm.domain,
+                                            scrubbed_error)
+
     logger.error(scrubbed_error)
-    report_to_zulip(email_message, scrubbed_error)
+    report_to_zulip(scrubbed_error)
 
 ## Sending the Zulip ##
 
@@ -176,14 +183,18 @@ def fetch(result, proto, mailboxes):
         message = email.message_from_string(result[uid]["RFC822"])
         subject = decode_header(message.get("Subject", "(no subject)"))[0][0]
 
+        debug_info = {}
+
         try:
             body = extract_body(message)
             to = find_emailgateway_recipient(message)
+            debug_info["to"] = to
             stream = extract_and_validate(to)
+            debug_info["stream"] = stream
             send_zulip(stream, subject, body)
         except ZulipEmailForwardError, e:
             # TODO: notify sender of error, retry if appropriate.
-            log_and_report(message, e.message)
+            log_and_report(message, e.message, debug_info)
 
     # Delete the processed messages from the Inbox.
     message_set = ",".join([result[key]["UID"] for key in message_uids])
