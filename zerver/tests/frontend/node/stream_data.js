@@ -6,6 +6,8 @@ add_dependencies({
     stream_color: 'js/stream_color.js'
 });
 
+set_global('blueslip', {});
+
 var stream_data = require('js/stream_data.js');
 
 (function test_basics() {
@@ -102,6 +104,7 @@ var stream_data = require('js/stream_data.js');
 
     // Verify that we noop and don't crash when unsubsribed.
     sub.subscribed = false;
+    global.blueslip.warning = function () {};
     stream_data.add_subscriber('Rome', email);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
     stream_data.remove_subscriber('Rome', email);
