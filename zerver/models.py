@@ -715,7 +715,8 @@ class UserPresence(models.Model):
 
         query = UserPresence.objects.filter(
                 user_profile__realm_id=realm_id,
-                user_profile__is_active=True
+                user_profile__is_active=True,
+                user_profile__is_bot=False
         ).values(
                 'client__name',
                 'status',
