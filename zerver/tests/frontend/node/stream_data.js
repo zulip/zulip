@@ -71,9 +71,15 @@ var stream_data = require('js/stream_data.js');
     stream_data.clear_subscriptions();
     var sub = {name: 'Rome', subscribed: true};
 
-    sub.subscribers = new global.Dict(); // TODO: encapsulate this in stream_data.js
-
     stream_data.add_sub('Rome', sub);
+
+    stream_data.set_subscribers(sub, ['fred@zulip.com', 'george@zulip.com']);
+    assert(stream_data.user_is_subscribed('Rome', 'fred@zulip.com'));
+    assert(stream_data.user_is_subscribed('Rome', 'george@zulip.com'));
+    assert(!stream_data.user_is_subscribed('Rome', 'not_fred@zulip.com'));
+
+    stream_data.set_subscribers(sub, []);
+
     var email = 'brutus@zulip.com';
     assert(!stream_data.user_is_subscribed('Rome', email));
 
@@ -92,7 +98,6 @@ var stream_data = require('js/stream_data.js');
     // verify that removing an already-removed subscriber is a noop
     stream_data.remove_subscriber('Rome', email);
     assert(!stream_data.user_is_subscribed('Rome', email));
-
 
     // Verify that we noop and don't crash when unsubsribed.
     sub.subscribed = false;

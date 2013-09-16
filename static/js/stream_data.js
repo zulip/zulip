@@ -92,6 +92,10 @@ exports.get_name = function (stream_name) {
     return sub.name;
 };
 
+exports.set_subscribers = function (sub, emails) {
+    sub.subscribers = Dict.from_array(emails || []);
+};
+
 // NOTE: If you do anything with the `subscribers` attribute on the stream
 // properties object, first make sure `is_subscribed` is true (i.e., the local
 // user is subscribed). Otherwise we don't and can't update the subscribers
