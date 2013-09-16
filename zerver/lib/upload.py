@@ -39,7 +39,7 @@ def upload_image_to_s3(
         file_name,
         content_type,
         user_profile_id,
-        user_file,
+        contents,
     ):
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
@@ -52,7 +52,6 @@ def upload_image_to_s3(
     else:
         headers = None
 
-    contents = user_file.read()
     key.set_contents_from_string(contents, headers=headers)
 
 def get_file_info(request, user_file):
@@ -64,7 +63,7 @@ def get_file_info(request, user_file):
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
     return uploaded_file_name, content_type
 
-def upload_message_image(uploaded_file_name, content_type, user_file, user_profile):
+def upload_message_image(uploaded_file_name, content_type, file_data, user_profile):
     bucket_name = settings.S3_BUCKET
     s3_file_name = gen_s3_key(user_profile, uploaded_file_name)
     upload_image_to_s3(
@@ -72,13 +71,13 @@ def upload_message_image(uploaded_file_name, content_type, user_file, user_profi
             s3_file_name,
             content_type,
             user_profile.id,
-            user_file,
+            file_data
     )
     return "https://%s.s3.amazonaws.com/%s" % (bucket_name, s3_file_name)
 
 def upload_message_image_through_web_client(request, user_file, user_profile):
     uploaded_file_name, content_type = get_file_info(request, user_file)
-    return upload_message_image(uploaded_file_name, content_type, user_file, user_profile)
+    return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile)
 
 def upload_avatar_image(user_file, user_profile, email):
     content_type = guess_type(user_file.name)[0]
@@ -89,7 +88,7 @@ def upload_avatar_image(user_file, user_profile, email):
         s3_file_name,
         content_type,
         user_profile.id,
-        user_file,
+        user_file.read(),
     )
     # See avatar_url in avatar.py for URL.  (That code also handles the case
     # that users use gravatar.)
