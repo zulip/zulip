@@ -3111,7 +3111,9 @@ class JiraHookTests(AuthedTestCase):
         self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15):
 
 
-> Adding a comment. Oh, what a comment it is!""")
+~~~ quote
+Adding a comment. Oh, what a comment it is!
+~~~""")
 
     def test_deleted(self):
         msg = self.send_jira_message('deleted')
@@ -3133,7 +3135,9 @@ class JiraHookTests(AuthedTestCase):
 
 * Changed status from **Resolved** to **Reopened**
 
-> Re-opened yeah!""")
+~~~ quote
+Re-opened yeah!
+~~~""")
 
     def test_resolved(self):
         msg = self.send_jira_message('resolved')
@@ -3144,7 +3148,9 @@ class JiraHookTests(AuthedTestCase):
 * Changed status from **Open** to **Resolved**
 * Changed assignee from **None** to **Leo Franchi**
 
-> Fixed it, finally!""")
+~~~ quote
+Fixed it, finally!
+~~~""")
 
     def test_workflow_postfuncion(self):
         msg = self.send_jira_message('postfunction_hook')
@@ -3328,7 +3334,7 @@ class PivotalHookTests(AuthedTestCase):
         msg = self.send_pivotal_message('created')
         self.assertEqual(msg.subject, 'My new Feature story')
         self.assertEqual(msg.content, 'Leo Franchi added "My new Feature story" \
-(unscheduled feature):\n\n> This is my long description\n\n \
+(unscheduled feature):\n\n~~~ quote\nThis is my long description\n~~~\n\n \
 [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
 
     def test_delivered(self):
@@ -3365,7 +3371,7 @@ class PivotalHookTests(AuthedTestCase):
         msg = self.send_pivotal_message('created_estimate')
         self.assertEqual(msg.subject, 'Another new story')
         self.assertEqual(msg.content, 'Leo Franchi added "Another new story" \
-(unscheduled feature worth 2 story points):\n\n> Some loong description\n\n \
+(unscheduled feature worth 2 story points):\n\n~~~ quote\nSome loong description\n~~~\n\n \
 [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48278289)')
 
     def test_type_changed(self):

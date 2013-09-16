@@ -46,7 +46,7 @@ def api_github_landing(request, user_profile, event=REQ,
 
         subject = "%s: pull request %d" % (repository['name'],
                                            pull_req['number'])
-        content = ("Pull request from %s [%s](%s):\n\n %s\n\n> %s"
+        content = ("Pull request from %s [%s](%s):\n\n %s\n\n~~~ quote\n%s\n~~~"
                    % (pull_req['user']['login'],
                       payload['action'],
                       pull_req['html_url'],
@@ -79,7 +79,7 @@ def api_github_landing(request, user_profile, event=REQ,
 
         issue = payload['issue']
         subject = "%s: issue %d %s" % (repository['name'], issue['number'], payload['action'])
-        content = ("%s %s [issue %d](%s): %s\n\n> %s"
+        content = ("%s %s [issue %d](%s): %s\n\n~~~ quote\n%s\n~~~"
                    % (payload['sender']['login'],
                       payload['action'],
                       issue['number'],
@@ -219,7 +219,7 @@ def api_jira_webhook(request):
                     content += "* Changed %s from **%s** to **%s**\n" % (field, item.get('fromString'), item.get('toString'))
 
         if comment != '':
-            content += "\n> %s" % (comment,)
+            content += "\n~~~ quote\n%s\n~~~" % (comment,)
     elif 'transition' in payload:
         from_status = get_in(payload, ['transition', 'from_status'])
         to_status = get_in(payload, ['transition', 'to_status'])
@@ -295,7 +295,7 @@ def api_pivotal_webhook(request):
             if estimate != '':
                 estimate = " worth %s story points" % (estimate,)
             subject = name
-            content = "%s (%s %s%s):\n\n> %s\n\n%s" % (description,
+            content = "%s (%s %s%s):\n\n~~~ quote\n%s\n~~~\n\n%s" % (description,
                                                        issue_status,
                                                        issue_type,
                                                        estimate,
