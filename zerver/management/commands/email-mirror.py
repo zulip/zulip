@@ -143,7 +143,12 @@ def extract_body(message):
 def extract_and_upload_attachments(message):
     attachment_links = []
 
-    for part in message.get_payload():
+    payload = message.get_payload()
+    if not isinstance(payload, list):
+        # This is not a multipart message, so it can't contain attachments.
+        return ""
+
+    for part in payload:
         content_type = part.get_content_type()
         filename = part.get_filename()
         if filename:
