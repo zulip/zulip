@@ -162,10 +162,19 @@ function handle_keyup(e) {
 
 // http://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
 function select_on_focus(field_id) {
+    // A select event appears to trigger a focus event under certain
+    // conditions in Chrome so we need to protect against infinite
+    // recursion.
+    var in_handler = false;
     $("#" + field_id).focus(function (e) {
+        if (in_handler) {
+            return;
+        }
+        in_handler = true;
         $("#" + field_id).select().one('mouseup', function (e) {
             e.preventDefault();
         });
+        in_handler = false;
     });
 }
 
