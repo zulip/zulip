@@ -1,4 +1,5 @@
 class zulip::postgres-slave {
+  class { 'zulip::base': }
   class { 'zulip::postgres-appdb': }
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf

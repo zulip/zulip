@@ -1,4 +1,5 @@
 class zulip::staging_app_frontend {
+  class { 'zulip::base': }
   class { 'zulip::app_frontend': }
 
   $packages = [ "python-html2text" ]

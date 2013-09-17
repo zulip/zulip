@@ -1,5 +1,4 @@
 class zulip::postgres-appdb {
-  class { 'zulip::base': }
   class { 'zulip::postgres-common': }
   class { 'zulip::supervisor': }
 

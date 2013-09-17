@@ -1,5 +1,4 @@
 class zulip::app_frontend {
-  class { 'zulip::base': }
   class { 'zulip::rabbit': }
   class { 'zulip::nginx': }
   class { 'zulip::supervisor': }

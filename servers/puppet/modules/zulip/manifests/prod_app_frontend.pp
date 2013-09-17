@@ -1,4 +1,5 @@
 class zulip::prod_app_frontend {
+  class { 'zulip::base': }
   class { 'zulip::app_frontend': }
 
   file { "/etc/nginx/sites-available/zulip":

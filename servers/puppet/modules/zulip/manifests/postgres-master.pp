@@ -1,4 +1,5 @@
 class zulip::postgres-master {
+  class { 'zulip::base': }
   class { 'zulip::postgres-appdb': }
 
   $master_packages = [ "xfsprogs", "mdadm", ]
