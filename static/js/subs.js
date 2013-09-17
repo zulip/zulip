@@ -372,8 +372,15 @@ exports.reload_subscriptions = function (opts) {
     }
 
     if (opts.clear_first) {
-        stream_data.clear_subscriptions();
-        stream_list.remove_all_narrow_filters();
+        // Only clear the subscriptions just before we're ready to repopulate,
+        // otherwise the stream list will go blank in the UI while we wait for
+        // the network request to finish.
+        var existing_callback = on_success;
+        on_success = function (data) {
+            stream_data.clear_subscriptions();
+            stream_list.remove_all_narrow_filters();
+            existing_callback(data);
+        };
     }
 
     return $.ajax({
