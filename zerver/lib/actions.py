@@ -34,7 +34,7 @@ from django.utils import timezone
 from zerver.lib.create_user import create_user
 from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
-    user_profile_by_email_cache_key, status_dict_cache_key, cache_set_many, \
+    user_profile_by_email_cache_key, cache_set_many, \
     cache_delete, cache_delete_many, message_cache_key
 from zerver.decorator import get_user_profile_by_email, json_to_list, JsonableError, \
      statsd_increment
@@ -1367,7 +1367,6 @@ def gather_subscriptions(user_profile):
 
     return (sorted(subscribed), sorted(unsubscribed))
 
-@cache_with_key(status_dict_cache_key, timeout=60)
 def get_status_dict(requesting_user_profile):
     # Return no status info for MIT
     if requesting_user_profile.realm.domain == 'mit.edu':

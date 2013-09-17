@@ -9,8 +9,7 @@ from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Huddle, huddle_hash_cache_key
 from zerver.lib.cache import cache_with_key, cache_set, message_cache_key, \
     user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
-    get_memcached_time, get_memcached_requests, cache_set_many, \
-    status_dict_cache_key_for_realm_id
+    get_memcached_time, get_memcached_requests, cache_set_many
 from django.utils.importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
@@ -48,9 +47,6 @@ def huddle_cache_items(items_for_memcached, huddle):
 
 def recipient_cache_items(items_for_memcached, recipient):
     items_for_memcached[get_recipient_cache_key(recipient.type, recipient.type_id)] = (recipient,)
-
-def presence_cache_items(items_for_memcached, status_dict):
-    items_for_memcached[status_dict_cache_key_for_realm_id(status_dict[0])] = (status_dict[1],)
 
 session_engine = import_module(settings.SESSION_ENGINE)
 def session_cache_items(items_for_memcached, session):

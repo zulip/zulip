@@ -6,7 +6,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    update_user_presence_cache, generic_bulk_cached_fetch, cache_set, \
+    generic_bulk_cached_fetch, cache_set, \
     display_recipient_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
@@ -764,10 +764,6 @@ class UserPresence(models.Model):
 
     class Meta:
         unique_together = ("user_profile", "client")
-
-# Flush the cached user status_dict whenever a user's presence
-# changes
-post_save.connect(update_user_presence_cache, sender=UserPresence)
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm)

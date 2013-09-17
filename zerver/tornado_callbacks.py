@@ -8,8 +8,7 @@ from zerver.models import Message, UserProfile, UserMessage, \
 
 from zerver.decorator import JsonableError
 from zerver.lib.cache import cache_get_many, message_cache_key, \
-    user_profile_by_id_cache_key, cache_save_user_profile, \
-    status_dict_cache_key_for_realm_id
+    user_profile_by_id_cache_key, cache_save_user_profile
 from zerver.lib.cache_helpers import cache_save_message
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.event_queue import get_client_descriptors_for_user
