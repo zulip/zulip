@@ -22,6 +22,7 @@ from bitfield import BitField
 from collections import defaultdict
 import pylibmc
 import ujson
+import logging
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -163,6 +164,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
+    # Minutes to wait before warning a bot owner that her bot sent a message
+    # to a nonexistent stream
+    BOT_OWNER_STREAM_ALERT_WAITPERIOD = 1
 
     AVATAR_FROM_GRAVATAR = 'G'
     AVATAR_FROM_USER = 'U'
@@ -219,6 +223,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     @property
     def public_streams_disabled(self):
         return self.email.lower() == "restricted-user@customer5.invalid"
+
+    def last_reminder_tzaware(self):
+        if self.last_reminder is not None and timezone.is_naive(self.last_reminder):
+            logging.warning("Loaded a user_profile.last_reminder for user %s that's not tz-aware: %s"
+                              % (self.email, self.last_reminder))
+            return self.last_reminder.replace(tzinfo=timezone.utc)
+
+        return self.last_reminder
 
     def __repr__(self):
         return (u"<UserProfile: %s %s>" % (self.email, self.realm)).encode("utf-8")

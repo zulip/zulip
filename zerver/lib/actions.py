@@ -448,6 +448,36 @@ def check_message(sender, client, message_type_name, message_to,
         #     return json_error("Invalid subject name")
 
         stream = get_stream(stream_name, realm)
+
+        if sender.is_bot:
+            if stream:
+                num_subscribers = len(maybe_get_subscribers(stream))
+
+            if stream is None or num_subscribers == 0:
+                # Warn a bot's owner if they are sending a message to a stream
+                # that does not exist, or has no subscribers
+                # We warn the user once every 5 minutes to avoid a flood of
+                # PMs on a misconfigured integration, re-using the
+                # UserProfile.last_reminder field, which is not used for bots.
+                last_reminder = sender.last_reminder_tzaware()
+                waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
+                if not last_reminder or timezone.now() - last_reminder > waitperiod:
+                    if stream is None:
+                        error_msg = "that stream does not yet exist. To create it, "
+                    elif num_subscribers == 0:
+                        error_msg = "there are no subscribers to that stream. To join it, "
+
+                    content = ("Hi there! We thought you'd like to know that your bot **%s** just "
+                               "tried to send a message to stream `%s`, but %s"
+                               "click the gear in the left-side stream list." %
+                               (sender.full_name, stream_name, error_msg))
+                    message = internal_prep_message("notification-bot@zulip.com", "private",
+                                                    sender.bot_owner.email, "", content)
+                    do_send_messages([message])
+
+                    sender.last_reminder = timezone.now()
+                    sender.save(update_fields=['last_reminder'])
+
         if stream is None:
             raise JsonableError("Stream does not exist")
         recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -1661,11 +1691,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
 
-    last_reminder = user_profile.last_reminder
-    if last_reminder is not None and is_naive(last_reminder):
-        logging.warning("Loaded a user_profile.last_reminder for user %s that's not tz-aware: %s"
-                          % (user_profile.email, last_reminder))
-        last_reminder = last_reminder.replace(tzinfo=utc)
+    last_reminder = user_profile.last_reminder_tzaware()
 
     waitperiod = datetime.timedelta(hours=UserProfile.EMAIL_REMINDER_WAITPERIOD)
     if len(messages) == 0 or (last_reminder and \
