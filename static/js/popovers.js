@@ -283,9 +283,15 @@ exports.register_click_handlers = function () {
         var stream_name = $(elt).closest('.expanded_subjects').expectOne().attr('data-stream');
         var topic_name = $(elt).closest('li').expectOne().attr('data-name');
 
+        var is_muted = muting.is_topic_muted(stream_name, topic_name);
+        var can_mute_topic = feature_flags.muting && !is_muted;
+        var can_unmute_topic = feature_flags.muting && is_muted;
+
         var content = templates.render('topic_sidebar_actions', {
             'stream_name': stream_name,
-            'topic_name': topic_name
+            'topic_name': topic_name,
+            'can_mute_topic': can_mute_topic,
+            'can_unmute_topic': can_unmute_topic
         });
 
         $(elt).popover({
@@ -313,6 +319,27 @@ exports.register_click_handlers = function () {
 
         e.stopPropagation();
     });
+
+    $('body').on('click', '.sidebar-popover-mute-topic', function (e) {
+        var stream = $(e.currentTarget).data('stream-name');
+        var topic = $(e.currentTarget).data('topic-name');
+        popovers.hide_topic_sidebar_popover();
+        muting.mute_topic(stream, topic);
+        muting_ui.persist_and_rerender();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.sidebar-popover-unmute-topic', function (e) {
+        var stream = $(e.currentTarget).data('stream-name');
+        var topic = $(e.currentTarget).data('topic-name');
+        popovers.hide_topic_sidebar_popover();
+        muting.unmute_topic(stream, topic);
+        muting_ui.persist_and_rerender();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
 
     $('#stream_filters').on('click', '.stream-sidebar-arrow', function (e) {
         var elt = e.target;

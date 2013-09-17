@@ -5,4 +5,24 @@
       Narrow to topic <b>{{ topic_name }}</b>
     </a>
   </li>
+
+
+  {{#if can_mute_topic}}
+  <li>
+    <a href="#" class="sidebar-popover-mute-topic" data-stream-name="{{ stream_name }}" data-topic-name="{{ topic_name }}">
+      <i class="icon-vector-eye-close"></i>
+      Mute the topic <b>{{ topic_name }}</b>
+    </a>
+  </li>
+  {{/if}}
+
+  {{#if can_unmute_topic}}
+  <li>
+    <a href="#" class="sidebar-popover-unmute-topic" data-stream-name="{{ stream_name }}" data-topic-name="{{ topic_name }}">
+      <i class="icon-vector-eye-open"></i>
+      Unmute the topic <b>{{ topic_name }}</b>
+    </a>
+  </li>
+  {{/if}}
+
 </ul>
