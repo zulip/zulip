@@ -145,6 +145,7 @@ exports.show_streamlist_sidebar = function () {
 };
 
 var current_stream_sidebar_elem;
+var current_topic_sidebar_elem;
 var current_user_sidebar_elem;
 
 function user_sidebar_popped() {
@@ -155,10 +156,21 @@ function stream_sidebar_popped() {
     return current_stream_sidebar_elem !== undefined;
 }
 
+function topic_sidebar_popped() {
+    return current_topic_sidebar_elem !== undefined;
+}
+
 exports.hide_stream_sidebar_popover = function () {
     if (stream_sidebar_popped()) {
         $(current_stream_sidebar_elem).popover("destroy");
         current_stream_sidebar_elem = undefined;
+    }
+};
+
+exports.hide_topic_sidebar_popover = function () {
+    if (topic_sidebar_popped()) {
+        $(current_topic_sidebar_elem).popover("destroy");
+        current_topic_sidebar_elem = undefined;
     }
 };
 
@@ -251,6 +263,55 @@ exports.register_click_handlers = function () {
         popovers.hide_message_info_popover();
         e.stopPropagation();
         e.preventDefault();
+    });
+
+
+    $('#stream_filters').on('click', '.topic-sidebar-arrow', function (e) {
+        var elt = e.target;
+
+        if (topic_sidebar_popped()
+            && current_topic_sidebar_elem === elt) {
+            // If the popover is already shown, clicking again should toggle it.
+            popovers.hide_topic_sidebar_popover();
+            e.stopPropagation();
+            return;
+        }
+
+        popovers.hide_all();
+        popovers.show_streamlist_sidebar();
+
+        var stream_name = $(elt).closest('.expanded_subjects').expectOne().attr('data-stream');
+        var topic_name = $(elt).closest('li').expectOne().attr('data-name');
+
+        var content = templates.render('topic_sidebar_actions', {
+            'stream_name': stream_name,
+            'topic_name': topic_name
+        });
+
+        $(elt).popover({
+            content: content,
+            trigger: "manual",
+            fixed: true
+        });
+
+        $(elt).popover("show");
+
+        current_topic_sidebar_elem = elt;
+        e.stopPropagation();
+    });
+
+    $('body').on('click', '.narrow_to_topic', function (e) {
+        popovers.hide_topic_sidebar_popover();
+
+        var row = $(e.currentTarget).closest('.narrow_to_topic').expectOne();
+        var stream_name = row.attr('data-stream-name');
+        var topic_name = row.attr('data-topic-name');
+
+        var operators = [['stream', stream_name], ['topic', topic_name]];
+        var opts = {select_first_unread: true, trigger: 'sidebar'};
+        narrow.activate(operators, opts);
+
+        e.stopPropagation();
     });
 
     $('#stream_filters').on('click', '.stream-sidebar-arrow', function (e) {
@@ -441,13 +502,14 @@ exports.register_click_handlers = function () {
 
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
-    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() || message_info_popped();
+    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() || topic_sidebar_popped() || message_info_popped();
 };
 
 exports.hide_all = function () {
     popovers.hide_actions_popover();
     popovers.hide_message_info_popover();
     popovers.hide_stream_sidebar_popover();
+    popovers.hide_topic_sidebar_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     popovers.hide_streamlist_sidebar();

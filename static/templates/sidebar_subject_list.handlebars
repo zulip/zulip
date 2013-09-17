@@ -9,6 +9,11 @@
             <div class="value">{{unread}}</div>
         </div>
       </span>
+      {{#if ../topic_sidebar_arrow}}
+        <span class="arrow topic-sidebar-arrow">
+          <i class="icon-vector-chevron-down"></i>
+        </span>
+      {{/if}}
     </li>
     {{/each}}
 </ul>
