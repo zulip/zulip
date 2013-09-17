@@ -253,7 +253,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('#stream_filters').on('click', 'span.arrow', function (e) {
+    $('#stream_filters').on('click', '.stream-sidebar-arrow', function (e) {
         var elt = e.target;
         if (stream_sidebar_popped()
             && current_stream_sidebar_elem === elt) {
