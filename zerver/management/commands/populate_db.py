@@ -30,12 +30,12 @@ from optparse import make_option
 
 settings.TORNADO_SERVER = None
 
-def create_users(realms, name_list):
+def create_users(realms, name_list, bot=False):
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
-    bulk_create_users(realms, user_set)
+    bulk_create_users(realms, user_set, bot)
 
 def create_streams(realms, realm, stream_list):
     stream_set = set()
@@ -198,7 +198,7 @@ class Command(BaseCommand):
                 ("Zulip Tutorial Bot", "tutorial-bot@zulip.com"),
                 ("Zulip Email Gateway", "emailgateway@zulip.com"),
                 ]
-            create_users(realms, hardcoded_zulip_users_nosubs)
+            create_users(realms, hardcoded_zulip_users_nosubs, bot=True)
 
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test
@@ -236,7 +236,7 @@ class Command(BaseCommand):
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                     ("Zulip Feedback Bot", "feedback@zulip.com"),
                     ]
-                create_users(realms, internal_zulip_users_nosubs)
+                create_users(realms, internal_zulip_users_nosubs, bot=True)
 
             # Mark all messages as read
             with transaction.commit_on_success():
