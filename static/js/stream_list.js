@@ -174,10 +174,15 @@ exports.remove_all_narrow_filters = function () {
     $("#stream_filters").children().remove();
 };
 
+function remove_expanded_subjects() {
+    popovers.hide_topic_sidebar_popover();
+    $("ul.expanded_subjects").remove();
+}
+
 function rebuild_recent_subjects(stream, subject) {
     // TODO: Call rebuild_recent_subjects less, not on every new
     // message.
-    $('.expanded_subjects').remove();
+    remove_expanded_subjects();
     var max_subjects = 5;
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects.get(stream) || [];
@@ -295,7 +300,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 $(function () {
     $(document).on('narrow_activated.zulip', function (event) {
         $("ul.filters li").removeClass('active-filter active-subject-filter');
-        $('.expanded_subjects').remove();
+        remove_expanded_subjects();
 
         // TODO: handle confused filters like "in:all stream:foo"
         var op_in = event.filter.operands('in');
@@ -331,7 +336,7 @@ $(function () {
 
     $(document).on('narrow_deactivated.zulip', function (event) {
         $("ul.filters li").removeClass('active-filter active-subject-filter');
-        $("ul.expanded_subjects").remove();
+        remove_expanded_subjects();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });
 

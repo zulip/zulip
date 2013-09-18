@@ -1276,8 +1276,6 @@ $(function () {
             ui.change_tab_to('#home');
         }
 
-        popovers.hide_all();
-
         var stream = $(e.target).parents('ul').attr('data-stream');
         var subject = $(e.target).parents('li').attr('data-name');
 
