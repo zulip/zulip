@@ -11,24 +11,25 @@ var narrow = require('js/narrow.js');
 var Filter = global.Filter;
 var stream_data = global.stream_data;
 
-(function test_stream() {
-    var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
+function set_filter(operators) {
     narrow._set_current_filter(new Filter(operators));
+}
+
+(function test_stream() {
+    set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']]);
 
     assert.equal(narrow.stream(), 'Foo');
 }());
 
 (function test_operators() {
-    var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']];
+    set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
     var canonical_operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
-    narrow._set_current_filter(new Filter(operators));
 
     assert.deepEqual(narrow.operators(), canonical_operators);
 }());
 
 (function test_set_compose_defaults() {
-    var operators = [['stream', 'Foo'], ['topic', 'Bar']];
-    narrow._set_current_filter(new Filter(operators));
+    set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
 
     var opts = {};
     narrow.set_compose_defaults(opts);
@@ -36,8 +37,7 @@ var stream_data = global.stream_data;
     assert.equal(opts.subject, 'Bar');
 
     stream_data.add_sub('ROME', {name: 'ROME'});
-    operators = [['stream', 'rome']];
-    narrow._set_current_filter(new Filter(operators));
+    set_filter([['stream', 'rome']]);
 
     opts = {};
     narrow.set_compose_defaults(opts);
