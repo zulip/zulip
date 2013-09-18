@@ -1,6 +1,9 @@
 class zulip::staging_app_frontend {
   class { 'zulip::app_frontend': }
 
+  $packages = [ "python-html2text" ]
+  package { $packages: ensure => "installed" }
+
   file { "/etc/nginx/sites-available/humbug-staging":
     require => Package[nginx],
     ensure => file,
