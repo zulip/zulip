@@ -169,9 +169,7 @@ MessageListView.prototype = {
             if (_.contains(message.flags, 'force_collapse')) {
                 summary_adjective = 'collapsed';
             } else if (!_.contains(message.flags, 'force_expand')) {
-                if (muting.is_topic_muted(message.stream, message.subject)) {
-                    summary_adjective = 'muted';
-                } else if (list.is_summarized_message(message)) {
+                if (list.is_summarized_message(message)) {
                     summary_adjective = 'read';
                 }
             }

@@ -13,7 +13,10 @@ exports.persist_and_rerender = function () {
     // end should eventually save it, and if it doesn't, it's a recoverable
     // error--the user can just mute the topic again, and the topic might
     // die down before the next reload anyway, making the muting moot.
-    current_msg_list.rerender();
+    current_msg_list.rerender_after_muting_changes();
+    if (current_msg_list !== home_msg_list) {
+        home_msg_list.rerender_after_muting_changes();
+    }
     var data = {
         muted_topics: JSON.stringify(muting.get_muted_topics())
     };

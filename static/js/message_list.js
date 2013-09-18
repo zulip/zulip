@@ -7,6 +7,9 @@ function MessageList(table_name, filter, opts) {
     }, opts);
     this.view = new MessageListView(this, table_name, this.collapse_messages);
 
+    if (this.muting_enabled) {
+        this._all_items = [];
+    }
     this._items = [];
     this._hash = {};
     this.table_name = table_name;
@@ -304,8 +307,21 @@ MessageList.prototype = {
         this.min_id_exempted_from_summaries = this.nth_most_recent_id(num_exempt);
     },
 
+    unmuted_messages: function MessageList_unmuted_messages(messages) {
+        return _.reject(messages, function (message) {
+            return muting.is_topic_muted(message.stream, message.subject);
+        });
+    },
+
     append: function MessageList_append(messages, messages_are_new) {
-        this._items = this._items.concat(messages);
+        var viewable_messages;
+        if (this.muting_enabled) {
+            this._all_items = this._all_items.concat(messages);
+            viewable_messages = this.unmuted_messages(messages);
+        } else {
+            viewable_messages = messages;
+        }
+        this._items = this._items.concat(viewable_messages);
 
         if (this.num_appends === 0) {
             // We can't figure out which messages need to be exempt from
@@ -316,20 +332,39 @@ MessageList.prototype = {
 
         this._add_to_hash(messages);
 
-        this.view.append(messages, messages_are_new);
+        this.view.append(viewable_messages, messages_are_new);
     },
 
     prepend: function MessageList_prepend(messages) {
-        this._items = messages.concat(this._items);
+        var viewable_messages;
+        if (this.muting_enabled) {
+            this._all_items = messages.concat(this._all_items);
+            viewable_messages = this.unmuted_messages(messages);
+        } else {
+            viewable_messages = messages;
+        }
+        this._items = viewable_messages.concat(this._items);
         this._add_to_hash(messages);
-        this.view.prepend(messages);
+        this.view.prepend(viewable_messages);
     },
 
     add_and_rerender: function MessageList_add_and_rerender(messages) {
         // To add messages that might be in the interior of our
         // existing messages list, we just add the new messages and
         // then rerender the whole thing.
-        this._items = messages.concat(this._items);
+
+        var viewable_messages;
+        if (this.muting_enabled) {
+            this._all_items = messages.concat(this._all_items);
+            this._all_items.sort(function (a, b) {return a.id - b.id;});
+
+            viewable_messages = this.unmuted_messages(messages);
+            this._items = viewable_messages.concat(this._items);
+
+        } else {
+            this._items = messages.concat(this._items);
+        }
+
         this._items.sort(function (a, b) {return a.id - b.id;});
         this._add_to_hash(messages);
 
@@ -379,6 +414,16 @@ MessageList.prototype = {
         if (this._selected_id !== -1) {
             this.select_id(this._selected_id);
         }
+    },
+
+    rerender_after_muting_changes: function MessageList_rerender_after_muting_changes() {
+        if (!this.muting_enabled) {
+            return;
+        }
+
+        this._items = this.unmuted_messages(this._all_items);
+        this._selected_id = this.closest_id(this._selected_id);
+        this.rerender();
     },
 
     all: function MessageList_all() {
