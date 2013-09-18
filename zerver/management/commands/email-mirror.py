@@ -32,6 +32,8 @@ from zerver.models import Stream, get_user_profile_by_email
 from twisted.internet import protocol, reactor, ssl
 from twisted.mail import imap4
 
+import html2text
+
 sys.path.insert(0, path.join(path.dirname(__file__), "../../../api"))
 import zulip
 
@@ -129,20 +131,32 @@ def valid_stream(stream_name, token):
     except Stream.DoesNotExist:
         return False
 
-def extract_body(message):
-    # "Richly formatted" email are multi-part messages that include a
-    # plaintext version of the body. We only want to forward that
-    # plaintext version.
-    body = None
+def get_message_part_by_type(message, content_type):
+    charset = message.get_content_charset()
+
     for part in message.walk():
-        if part.get_content_type() == "text/plain":
+        if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
-            charset = message.get_content_charset()
             if charset:
                 content = content.decode(charset)
             return content
-    if not body:
-        raise ZulipEmailForwardError("Unable to find plaintext message body")
+
+def extract_body(message):
+    # If the message contains a plaintext version of the body, use
+    # that.
+    plaintext_content = get_message_part_by_type(message, "text/plain")
+    if plaintext_content:
+        return plaintext_content
+
+    # If we only have an HTML version, try to make that look nice.
+    html_content = get_message_part_by_type(message, "text/html")
+    if html_content:
+        converter = html2text.HTML2Text()
+        converter.ignore_links = True
+        converter.ignore_images = True
+        return converter.handle(html_content)
+
+    raise ZulipEmailForwardError("Unable to find plaintext or HTML message body")
 
 def extract_and_upload_attachments(message):
     attachment_links = []
