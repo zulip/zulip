@@ -144,6 +144,7 @@ exports.show_userlist_sidebar = function () {
 
 exports.show_streamlist_sidebar = function () {
     $(".app-main .column-left").addClass("expanded");
+    ui.resize_page_components();
 };
 
 var current_stream_sidebar_elem;

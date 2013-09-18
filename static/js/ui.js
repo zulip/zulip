@@ -388,9 +388,12 @@ function left_userlist_get_new_heights() {
                                 - share_the_love_height
                                 - 15;
 
-    res.stream_filters_max_height = Math.max (40, res.total_leftlist_height / 2);
+
+    res.stream_filters_max_height = Math.max(40, res.total_leftlist_height / 2);
+
 
     res.user_presences_max_height = Math.max(40, res.total_leftlist_height / 2);
+
 
     if (res.stream_filters_max_height > stream_filters_real_height) {
         res.stream_filters_max_height = stream_filters_real_height;
@@ -447,11 +450,10 @@ exports.resize_page_components = function () {
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
     $("#stream_filters").css('max-height', h.stream_filters_max_height);
     $("#user_presences").css('max-height', h.user_presences_max_height);
-
-    popovers.hide_all();
 };
 
 function resizehandler(e) {
+    popovers.hide_all();
     exports.resize_page_components();
 
     // This function might run onReady (if we're in a narrow window),
