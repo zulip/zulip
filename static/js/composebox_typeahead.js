@@ -373,7 +373,11 @@ exports.initialize = function () {
                 beginning = (beginning.substring(0, beginning.length - this.token.length-1)
                         + '@**' + item.full_name + '** ');
 
-                $(document).trigger('usermention_completed.zulip', {mentioned: item});
+                // We insert a special `all` item to the autocompleter above
+                // Don't consider it a user mention
+                if (item.email !== 'all') {
+                    $(document).trigger('usermention_completed.zulip', {mentioned: item});
+                }
             }
 
             // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to overwrite the text
