@@ -1718,23 +1718,14 @@ def do_send_missedmessage_email(user_profile, missed_messages):
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     message_ids = [event.get('message_id') for event in missed_email_events]
-    timestamp = timestamp_to_datetime(event.get('timestamp'))
 
     user_profile = get_user_profile_by_id(user_profile_id)
     messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
 
-    last_reminder = user_profile.last_reminder_tzaware()
-
-    waitperiod = datetime.timedelta(hours=UserProfile.EMAIL_REMINDER_WAITPERIOD)
-    if len(messages) == 0 or (last_reminder and \
-                              timestamp - last_reminder < waitperiod):
-        # Don't spam the user, if we've sent an email in the last day
-        return
-
-    do_send_missedmessage_email(user_profile, messages)
-
+    if messages:
+        do_send_missedmessage_email(user_profile, messages)
 
 def user_email_is_unique(value):
     try:
