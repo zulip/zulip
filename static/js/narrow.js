@@ -435,6 +435,14 @@ exports.narrowed_by_reply = function () {
              current_filter.operands("topic").length === 1));
 };
 
+exports.narrowed_to_topic = function () {
+    if (current_filter === undefined) {
+        return false;
+    }
+    return (current_filter.has_operator("stream") &&
+            current_filter.has_operator("topic"));
+};
+
 exports.narrowed_to_search = function () {
     return (current_filter !== undefined) && current_filter.is_search();
 };
