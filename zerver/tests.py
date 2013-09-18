@@ -2596,13 +2596,14 @@ int x = 3
          ('javascript://foo.com',                      "<p>javascript://foo.com</p>",        ''),
          ('foobarscript://foo.com',                    "<p>foobarscript://foo.com</p>",      ''),
          ('about:blank.com',                           "<p>about:%s</p>",               'blank.com'),
-         ('[foo](javascript:foo.com)',                 "<p>[foo](javascript:foo.com)</p>",   ''),
+         ('[foo](javascript:foo.com)',                 "<p>[foo](javascript:%s)</p>",   'foo.com'),
          ('[foo](javascript://foo.com)',               "<p>[foo](javascript://foo.com)</p>", ''),
 
          # Other weird URL schemes are also blocked
          ('aim:addbuddy?screenname=foo',               "<p>aim:addbuddy?screenname=foo</p>", ''),
          ('itms://itunes.com/apps/appname',            "<p>itms://itunes.com/apps/appname</p>", ''),
          ('[foo](itms://itunes.com/apps/appname)',     "<p>[foo](itms://itunes.com/apps/appname)</p>", ''),
+         ('1 [](foo://) 3 [](foo://) 5',               "<p>1 [](foo://) 3 [](foo://) 5</p>", ''),
 
          # Make sure we HTML-escape the invalid URL on output.
          # ' and " aren't escaped here, because we aren't in attribute context.

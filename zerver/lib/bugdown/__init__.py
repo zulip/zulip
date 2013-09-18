@@ -513,19 +513,15 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
     def handleMatch(self, m):
-        # Return the original link syntax as plain text,
-        # if the link fails checks.
-        orig_syntax = m.group(0)
-
         href = m.group(9)
         if not href:
-            return orig_syntax
+            return None
 
         if href[0] == "<":
             href = href[1:-1]
         href = sanitize_url(self.unescape(href.strip()))
         if href is None:
-            return orig_syntax
+            return None
 
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
@@ -598,6 +594,8 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 class AtomicLinkPattern(LinkPattern):
     def handleMatch(self, m):
         ret = LinkPattern.handleMatch(self, m)
+        if ret is None:
+            return None
         if not isinstance(ret, basestring):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
