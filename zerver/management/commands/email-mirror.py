@@ -136,7 +136,11 @@ def extract_body(message):
     body = None
     for part in message.walk():
         if part.get_content_type() == "text/plain":
-            return part.get_payload(decode=True).strip()
+            content = part.get_payload(decode=True)
+            charset = message.get_content_charset()
+            if charset:
+                content = content.decode(charset)
+            return content
     if not body:
         raise ZulipEmailForwardError("Unable to find plaintext message body")
 
