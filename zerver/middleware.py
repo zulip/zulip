@@ -56,7 +56,9 @@ class LogRequests(object):
             statsd_path = 'webreq'
         else:
             statsd_path = "webreq.%s" % (request.path[1:].replace('/', '.'),)
-
+        blacklisted_requests = ['do_confirm', 'accounts.login.openid', 'send_confirm',
+                                'eventslast_event_id', 'webreq.content']
+        suppress_statsd = any((blacklisted in statsd_path for blacklisted in blacklisted_requests))
 
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
@@ -89,8 +91,9 @@ class LogRequests(object):
                 memcached_output = " (mem: %s/%s)" % (format_timedelta(memcached_time_delta),
                                                       memcached_count_delta)
 
-            statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(memcached_time_delta))
-            statsd.incr("%s.memcached.querycount" % (statsd_path,), memcached_count_delta)
+            if not suppress_statsd:
+                statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(memcached_time_delta))
+                statsd.incr("%s.memcached.querycount" % (statsd_path,), memcached_count_delta)
 
         bugdown_output = ""
         if hasattr(request, '_bugdown_time_start'):
@@ -107,8 +110,9 @@ class LogRequests(object):
                 bugdown_output = " (md: %s/%s)" % (format_timedelta(bugdown_time_delta),
                                                    bugdown_count_delta)
 
-                statsd.timing("%s.markdown.time" % (statsd_path,), timedelta_ms(bugdown_time_delta))
-                statsd.incr("%s.markdown.count" % (statsd_path,), bugdown_count_delta)
+                if not suppress_statsd:
+                    statsd.timing("%s.markdown.time" % (statsd_path,), timedelta_ms(bugdown_time_delta))
+                    statsd.incr("%s.markdown.count" % (statsd_path,), bugdown_count_delta)
 
         # Get the amount of time spent doing database queries
         db_time_output = ""
@@ -117,10 +121,11 @@ class LogRequests(object):
             db_time_output = " (db: %s/%sq)" % (format_timedelta(query_time),
                                                 len(connection.queries))
 
-            # Log ms, db ms, and num queries to statsd
-            statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(query_time))
-            statsd.incr("%s.dbq" % (statsd_path, ), len(connection.queries))
-            statsd.timing("%s.total" % (statsd_path,), timedelta_ms(time_delta))
+            if not suppress_statsd:
+                # Log ms, db ms, and num queries to statsd
+                statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(query_time))
+                statsd.incr("%s.dbq" % (statsd_path, ), len(connection.queries))
+                statsd.timing("%s.total" % (statsd_path,), timedelta_ms(time_delta))
 
         # Get the requestor's email address and client, if available.
         try:
