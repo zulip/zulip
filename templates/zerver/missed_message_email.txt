@@ -4,7 +4,7 @@ Mail sent to user when she was not logged in and received a PM or @-mention
 
 Hello {{ name }},
 
-While you were away you received {{ messages|length }} new message{{ messages|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
+While you were away you received {{ message_count }} new message{{ messages|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
 
 
 {% for recipient_block in messages %}
