@@ -419,7 +419,7 @@ def check_if_a_bot_is_sending_a_message_to_an_empty_stream(sender, stream, strea
 
     if sender.is_bot and sender.bot_owner is not None:
         if stream:
-            num_subscribers = len(maybe_get_subscriber_emails(stream))
+            num_subscribers = stream.num_subscribers()
 
         if stream is None or num_subscribers == 0:
             # Warn a bot's owner if they are sending a message to a stream
