@@ -17,7 +17,7 @@ from zerver.decorator import RespondAsynchronously, \
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
-    do_add_realm_emoji, do_remove_realm_emoji
+    do_add_realm_emoji, do_remove_realm_emoji, check_message
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -3710,6 +3710,21 @@ class MutedTopicsTests(AuthedTestCase):
 
         user = get_user_profile_by_email(email)
         self.assertEqual(ujson.loads(user.muted_topics), [["stream2", "topic2"]])
+
+class CheckMessageTest(AuthedTestCase):
+    def test_basic_check_message_call(self):
+        sender = get_user_profile_by_email('othello@zulip.com')
+        client, _ = Client.objects.get_or_create(name="test suite")
+        stream_name = 'integration'
+        stream, _ = create_stream_if_needed(Realm.objects.get(domain="zulip.com"), stream_name)
+        message_type_name = 'stream'
+        message_to = None
+        message_to = [stream_name]
+        subject_name = 'issue'
+        message_content = 'whatever'
+        ret = check_message(sender, client, message_type_name, message_to,
+                      subject_name, message_content)
+        self.assertEqual(ret['message'].sender.email, 'othello@zulip.com')
 
 def full_test_name(test):
     test_class = test.__class__.__name__
