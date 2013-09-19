@@ -93,7 +93,7 @@ function set_up_checklist() {
         }
     });
 
-    $(document.body).one('click', "#get-the-app", function (e) {
+    $(document.body).one('click', 'a[href="/apps"]', function (e) {
         exports.mark_checklist_step("made_app_sticky");
     });
     $(document.body).one('click', "#set-up-integration", function (e) {
