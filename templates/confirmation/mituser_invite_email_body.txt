@@ -1,0 +1,12 @@
+Hi there,
+
+{{ referrer.full_name }} ({{ referrer.email }}) wants you to join them on Zulip, an awesome web-based Zephyr client with desktop apps for Mac, Linux, and Windows, as well as native mobile apps.
+
+To get started, visit the link below:
+    <{{ activate_url }}>
+
+Feel free to give us a shout at <support@zulip.com> if you have any questions.
+
+Cheers,
+
+The Zulip Team

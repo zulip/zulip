@@ -1584,10 +1584,17 @@ def do_send_confirmation_email(invitee, referrer):
     `invitee` is a PreregistrationUser.
     `referrer` is a UserProfile.
     """
+    subject_template_path = 'confirmation/invite_email_subject.txt'
+    body_template_path = 'confirmation/invite_email_body.txt'
+
+    if referrer.realm.domain == 'mit.edu':
+        subject_template_path = 'confirmation/mituser_invite_email_subject.txt'
+        body_template_path = 'confirmation/mituser_invite_email_body.txt'
+
     Confirmation.objects.send_confirmation(
         invitee, invitee.email, additional_context={'referrer': referrer},
-        subject_template_path='confirmation/invite_email_subject.txt',
-        body_template_path='confirmation/invite_email_body.txt')
+        subject_template_path=subject_template_path,
+        body_template_path=body_template_path)
 
 def build_message_list(user_profile, messages):
     """
