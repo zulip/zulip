@@ -3342,13 +3342,12 @@ class BeanstalkHookTests(AuthedTestCase):
 
 class GithubHookTests(AuthedTestCase):
 
-    def assert_push_content(self, msg):
-        self.assertEqual(msg.content, """zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) to branch master
+    push_content = """zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) to branch master
 
 * [48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e): Add baz
 * [06ebe5f](https://github.com/zbenjamin/zulip-test/commit/06ebe5f472a32f6f31fd2a665f0c7442b69cce72): Baz needs to be longer
 * [b954491](https://github.com/zbenjamin/zulip-test/commit/b95449196980507f08209bdfdc4f1d611689b7a8): Final edit to baz, I swear
-""")
+"""
 
     def test_spam_branch_is_ignored(self):
         email = "hamlet@zulip.com"
@@ -3376,90 +3375,51 @@ class GithubHookTests(AuthedTestCase):
         self.assertEqual(prior_count, after_count)
 
 
-    def test_user_specified_branches(self):
+    def basic_test(self, fixture_name, stream_name, expected_subject, expected_content, send_stream=False, branches=None):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
-        stream = 'my_commits'
-        data = ujson.loads(self.fixture_data('github', 'push'))
+        data = ujson.loads(self.fixture_data('github', fixture_name))
         data.update({'email': email,
                      'api-key': api_key,
-                     'stream': stream,
-                     'branches': 'master,staging',
                      'payload': ujson.dumps(data['payload'])})
+        if send_stream:
+            data['stream'] = stream_name
+        if branches is not None:
+            data['branches'] = branches
         msg = self.send_json_payload(email, "/api/v1/external/github",
                                      data,
-                                     stream_name=stream)
-        self.assertEqual(msg.subject, "zulip-test")
-        self.assert_push_content(msg)
+                                     stream_name=stream_name)
+        self.assertEqual(msg.subject, expected_subject)
+        self.assertEqual(msg.content, expected_content)
+
+    def test_user_specified_branches(self):
+        self.basic_test('push', 'my_commits', 'zulip-test', self.push_content,
+                        send_stream=True, branches="master,staging")
 
     def test_user_specified_stream(self):
         # Around May 2013 the github webhook started to specify the stream.
         # Before then, the stream was hard coded to "commits".
-        email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        stream = 'my_commits'
-        data = ujson.loads(self.fixture_data('github', 'push'))
-        data.update({'email': email,
-                     'api-key': api_key,
-                     'stream': stream,
-                     'payload': ujson.dumps(data['payload'])})
-        msg = self.send_json_payload(email, "/api/v1/external/github",
-                                     data,
-                                     stream_name=stream)
-        self.assertEqual(msg.subject, "zulip-test")
-        self.assert_push_content(msg)
+        self.basic_test('push', 'my_commits', 'zulip-test', self.push_content,
+                        send_stream=True)
 
     def test_legacy_hook(self):
-        email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        data = ujson.loads(self.fixture_data('github', 'push'))
-        data.update({'email': email,
-                     'api-key': api_key,
-                     'payload': ujson.dumps(data['payload'])})
-        msg = self.send_json_payload(email, "/api/v1/external/github",
-                                     data,
-                                     stream_name="commits")
-        self.assertEqual(msg.subject, "zulip-test")
-        self.assert_push_content(msg)
+        self.basic_test('push', 'commits', 'zulip-test', self.push_content)
 
     def test_issues_opened(self):
-        email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        data = ujson.loads(self.fixture_data('github', 'issues_opened'))
-        data.update({'email': email,
-                     'api-key': api_key,
-                     'payload': ujson.dumps(data['payload'])})
-        msg = self.send_json_payload(email, "/api/v1/external/github",
-                                     data,
-                                     stream_name="issues")
-        self.assertEqual(msg.subject, "zulip-test: issue 5: The frobnicator doesn't work")
-        self.assertEqual(msg.content, "zbenjamin opened [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
+        self.basic_test('issues_opened', 'issues',
+                        "zulip-test: issue 5: The frobnicator doesn't work",
+                        "zbenjamin opened [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
 
     def test_issue_comment(self):
-        email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        data = ujson.loads(self.fixture_data('github', 'issue_comment'))
-        data.update({'email': email,
-                     'api-key': api_key,
-                     'payload': ujson.dumps(data['payload'])})
-        msg = self.send_json_payload(email, "/api/v1/external/github",
-                                     data,
-                                     stream_name="issues")
-        self.assertEqual(msg.subject, "zulip-test: issue 5: The frobnicator doesn't work")
-        self.assertEqual(msg.content, "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
+        self.basic_test('issue_comment', 'issues',
+                        "zulip-test: issue 5: The frobnicator doesn't work",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
 
     def test_issues_closed(self):
-        email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        data = ujson.loads(self.fixture_data('github', 'issues_closed'))
-        data.update({'email': email,
-                     'api-key': api_key,
-                     'payload': ujson.dumps(data['payload'])})
-        msg = self.send_json_payload(email, "/api/v1/external/github",
-                                     data,
-                                     stream_name="issues")
-        self.assertEqual(msg.subject, "zulip-test: issue 5: The frobnicator doesn't work")
-        self.assertEqual(msg.content, "zbenjamin closed [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)")
+        self.basic_test('issues_closed', 'issues',
+                        "zulip-test: issue 5: The frobnicator doesn't work",
+                        "zbenjamin closed [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)")
+
 
 class PivotalHookTests(AuthedTestCase):
 
