@@ -91,16 +91,16 @@ function set_up_checklist() {
         if (register_action !== undefined) {
             register_action(step_info[step].status);
         }
-
-        $(document.body).one('click', "#get-the-app", function (e) {
-            exports.mark_checklist_step("made_app_sticky");
-        });
-        $(document.body).one('click', "#set-up-integration", function (e) {
-            exports.mark_checklist_step("set_up_integration");
-        });
-
-        $("#onboarding").show();
     });
+
+    $(document.body).one('click', "#get-the-app", function (e) {
+        exports.mark_checklist_step("made_app_sticky");
+    });
+    $(document.body).one('click', "#set-up-integration", function (e) {
+        exports.mark_checklist_step("set_up_integration");
+    });
+
+    $("#onboarding").show();
 }
 
 exports.initialize = function () {
