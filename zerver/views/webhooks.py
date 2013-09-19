@@ -19,6 +19,12 @@ import re
 import ujson
 from functools import wraps
 
+def github_pull_req_subject(repository, pull_req):
+    return "%s: pull request %d" % (repository['name'], pull_req['number'])
+
+def github_issue_subject(repository, issue):
+    return "%s: issue %d: %s" % (repository['name'], issue['number'], issue['title'])
+
 @authenticated_api_view
 @has_request_variables
 def api_github_landing(request, user_profile, event=REQ,
@@ -44,8 +50,7 @@ def api_github_landing(request, user_profile, event=REQ,
     if event == 'pull_request' and user_profile.realm.domain not in ['customer18.invalid', 'zulip.com']:
         pull_req = payload['pull_request']
 
-        subject = "%s: pull request %d" % (repository['name'],
-                                           pull_req['number'])
+        subject = github_pull_req_subject(repository, pull_req)
         content = ("Pull request from %s [%s](%s):\n\n %s\n\n~~~ quote\n%s\n~~~"
                    % (pull_req['user']['login'],
                       payload['action'],
@@ -79,7 +84,7 @@ def api_github_landing(request, user_profile, event=REQ,
 
         stream = 'issues'
         issue = payload['issue']
-        subject = "%s: issue %d: %s" % (repository['name'], issue['number'], issue['title'])
+        subject = github_issue_subject(repository, issue)
 
         if event == 'issues':
             content = ("%s %s [issue %d](%s)"
