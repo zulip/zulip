@@ -1126,6 +1126,7 @@ class SubscriptionAPITest(AuthedTestCase):
     def test_multi_user_subscription(self):
         email1 = 'cordelia@zulip.com'
         email2 = 'iago@zulip.com'
+        realm = Realm.objects.get(domain="zulip.com")
         streams_to_sub = ['multi_user_stream']
         events = []
         with tornado_redirected_to_list(events):
@@ -1142,6 +1143,9 @@ class SubscriptionAPITest(AuthedTestCase):
                     set(ev['event']['subscriptions'][0]['subscribers']),
                     set([email1, email2])
             )
+
+        stream = get_stream('multi_user_stream', realm)
+        self.assertEqual(stream.num_subscribers(), 2)
 
         # Now add ourselves
         events = []
@@ -1168,12 +1172,13 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_email'], self.test_email)
 
+        stream = get_stream('multi_user_stream', realm)
+        self.assertEqual(stream.num_subscribers(), 3)
 
         # Finally, add othello, exercising the do_add_subscription() code path.
         events = []
         email3 = 'othello@zulip.com'
         user_profile = get_user_profile_by_email(email3)
-        realm = Realm.objects.get(domain="zulip.com")
         stream = get_stream('multi_user_stream', realm)
         with tornado_redirected_to_list(events):
             do_add_subscription(user_profile, stream)

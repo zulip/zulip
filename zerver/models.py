@@ -295,6 +295,14 @@ class Stream(models.Model):
                                              type=Recipient.STREAM)
         return (stream, recipient)
 
+    def num_subscribers(self):
+        return Subscription.objects.filter(
+                recipient__type=Recipient.STREAM,
+                recipient__type_id=self.id,
+                user_profile__is_active=True,
+                active=True
+        ).count()
+
 def valid_stream_name(name):
     return name != ""
 
