@@ -127,6 +127,15 @@ var fake_messages = [
     }
 ];
 
+function hide_desktop_app_alert() {
+    $('#alert-bar-container').slideUp(100);
+}
+
+function show_desktop_app_alert() {
+    $('#alert-bar-container').show();
+    $('#alert-bar-container .close-alert-icon').expectOne().click(hide_desktop_app_alert);
+}
+
 function disable_event_handlers() {
     $('body').css({'overflow':'hidden'}); // prevents scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
@@ -256,6 +265,7 @@ function finale() {
         callback();
     });
     deferred_work = [];
+    show_desktop_app_alert();
 }
 
 function reply() {

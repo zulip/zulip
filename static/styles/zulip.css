@@ -2770,6 +2770,10 @@ div.edit_bot {
     right: 0px;
 }
 
+#home .alert-bar .close-alert-icon:hover{
+    opacity: 0.7;
+}
+
 #settings-change-box .gravatar-profile {
     width: 60px;
     height: 60px;
