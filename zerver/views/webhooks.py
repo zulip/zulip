@@ -58,27 +58,6 @@ def api_github_landing(request, user_profile, event=REQ,
                       pull_req['html_url']))
         if payload['action'] in ('opened', 'reopened'):
             content += "\n\n~~~ quote\n%s\n~~~" % (pull_req['body'],)
-    elif event == 'push':
-        short_ref = re.sub(r'^refs/heads/', '', payload['ref'])
-        # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
-        # get spammed when people commit to non-master all over the place.
-        # Long-term, this will be replaced by some GitHub configuration
-        # option of which branches to notify on.
-        if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'zulip.com']:
-            return json_success()
-
-        if branches:
-            # If we are given a whitelist of branches, then we silently ignore
-            # any push notification on a branch that is not in our whitelist.
-            if short_ref not in re.split('[\s,;|]+', branches):
-                return json_success()
-
-
-        subject, content = build_message_from_gitlog(user_profile, repository['name'],
-                                                     payload['ref'], payload['commits'],
-                                                     payload['before'], payload['after'],
-                                                     payload['compare'],
-                                                     payload['pusher']['name'])
     elif event == 'issues':
         if user_profile.realm.domain not in ('zulip.com', 'customer5.invalid'):
             return json_success()
@@ -119,6 +98,27 @@ def api_github_landing(request, user_profile, event=REQ,
                       issue['number'],
                       issue['html_url'],
                       comment['body']))
+    elif event == 'push':
+        short_ref = re.sub(r'^refs/heads/', '', payload['ref'])
+        # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
+        # get spammed when people commit to non-master all over the place.
+        # Long-term, this will be replaced by some GitHub configuration
+        # option of which branches to notify on.
+        if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'zulip.com']:
+            return json_success()
+
+        if branches:
+            # If we are given a whitelist of branches, then we silently ignore
+            # any push notification on a branch that is not in our whitelist.
+            if short_ref not in re.split('[\s,;|]+', branches):
+                return json_success()
+
+
+        subject, content = build_message_from_gitlog(user_profile, repository['name'],
+                                                     payload['ref'], payload['commits'],
+                                                     payload['before'], payload['after'],
+                                                     payload['compare'],
+                                                     payload['pusher']['name'])
     else:
         # We don't handle other events even though we get notified
         # about them
