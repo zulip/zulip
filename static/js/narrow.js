@@ -447,6 +447,10 @@ exports.narrowed_to_search = function () {
     return (current_filter !== undefined) && current_filter.is_search();
 };
 
+exports.muting_enabled = function () {
+    return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() && !exports.narrowed_to_pms());
+};
+
 return exports;
 
 }());

@@ -61,6 +61,24 @@ function set_filter(operators) {
     assert.deepEqual(narrow.operators(), canonical_operators);
 }());
 
+(function test_muting_enabled() {
+    set_filter([['stream', 'devel']]);
+    assert(narrow.muting_enabled());
+
+    narrow._set_current_filter(undefined); // not narrowed, basically
+    assert(narrow.muting_enabled());
+
+    set_filter([['stream', 'devel'], ['topic', 'mac']]);
+    assert(!narrow.muting_enabled());
+
+    set_filter([['search', 'whatever']]);
+    assert(!narrow.muting_enabled());
+
+    set_filter([['is', 'private']]);
+    assert(!narrow.muting_enabled());
+
+}());
+
 (function test_set_compose_defaults() {
     set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
 
