@@ -449,7 +449,7 @@ def check_message(sender, client, message_type_name, message_to,
 
         stream = get_stream(stream_name, realm)
 
-        if sender.is_bot:
+        if sender.is_bot and sender.bot_owner is not None:
             if stream:
                 num_subscribers = len(maybe_get_subscriber_emails(stream))
 
