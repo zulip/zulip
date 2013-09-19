@@ -19,11 +19,21 @@ import re
 import ujson
 from functools import wraps
 
-def github_pull_req_subject(repository, pull_req):
-    return "%s: pull request %d: %s" % (repository['name'], pull_req['number'], pull_req['title'])
+def github_generic_subject(noun, repository, blob):
+    # issue and pull_request objects have the same fields we're interested in
+    return "%s: %s %d: %s" % (repository['name'], noun, blob['number'], blob['title'])
 
-def github_issue_subject(repository, issue):
-    return "%s: issue %d: %s" % (repository['name'], issue['number'], issue['title'])
+def github_generic_content(noun, payload, blob):
+    # issue and pull_request objects have the same fields we're interested in
+    content = ("%s %s [%s %s](%s)"
+               % (blob['user']['login'],
+                  payload['action'],
+                  noun,
+                  blob['number'],
+                  blob['html_url']))
+    if payload['action'] in ('opened', 'reopened'):
+        content += "\n\n~~~ quote\n%s\n~~~" % (blob['body'],)
+    return content
 
 @authenticated_api_view
 @has_request_variables
@@ -49,30 +59,16 @@ def api_github_landing(request, user_profile, event=REQ,
     # CUSTOMER18 has requested not to get pull request notifications
     if event == 'pull_request' and user_profile.realm.domain not in ['customer18.invalid']:
         pull_req = payload['pull_request']
-
-        subject = github_pull_req_subject(repository, pull_req)
-        content = ("%s %s [pull request %s](%s)"
-                   % (pull_req['user']['login'],
-                      payload['action'],
-                      pull_req['number'],
-                      pull_req['html_url']))
-        if payload['action'] in ('opened', 'reopened'):
-            content += "\n\n~~~ quote\n%s\n~~~" % (pull_req['body'],)
+        subject = github_generic_subject('pull request', repository, pull_req)
+        content = github_generic_content('pull request', payload, pull_req)
     elif event == 'issues':
         if user_profile.realm.domain not in ('zulip.com', 'customer5.invalid'):
             return json_success()
 
         stream = 'issues'
         issue = payload['issue']
-        subject = github_issue_subject(repository, issue)
-
-        content = ("%s %s [issue %d](%s)"
-                   % (payload['sender']['login'],
-                      payload['action'],
-                      issue['number'],
-                      issue['html_url']))
-        if payload['action'] in ('opened', 'reopened'):
-            content += "\n\n~~~ quote\n%s\n~~~" % (issue['body'],)
+        subject = github_generic_subject('issue', repository, issue)
+        content = github_generic_content('issue', payload, issue)
     elif event == 'issue_comment':
         if payload['action'] != 'created':
             return json_success()
@@ -81,15 +77,14 @@ def api_github_landing(request, user_profile, event=REQ,
         issue = payload['issue']
         if issue['pull_request']['diff_url'] is None:
             # It's an issues comment
-            subject = github_issue_subject(repository, issue)
             stream = 'issues'
             noun = 'issue'
         else:
             # It's a pull request comment
-            subject = github_pull_req_subject(repository, issue)
             stream = 'commits'
             noun = 'pull request'
 
+        subject = github_generic_subject(noun, repository, issue)
         comment = payload['comment']
         content = ("%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~"
                    % (comment['user']['login'],
