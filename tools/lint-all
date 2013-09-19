@@ -173,15 +173,22 @@ try:
         logging.info("finish custom")
         os._exit(1 if failed else 0)
 
-    logging.info("start pyflakes")
-    check_pyflakes()
-    logging.info("finish pyflakes")
+    pyflakes_pid = os.fork()
+    if pyflakes_pid == 0:
+        logging.info("start pyflakes")
+        failed = check_pyflakes()
+        logging.info("finish pyflakes")
+        os._exit(1 if failed else 0)
 
     (_, status) = os.waitpid(custom_pid, 0)
     if status != 0:
         failed = True
 
     (_, status) = os.waitpid(jslint_pid, 0)
+    if status != 0:
+        failed = True
+
+    (_, status) = os.waitpid(pyflakes_pid, 0)
     if status != 0:
         failed = True
 
