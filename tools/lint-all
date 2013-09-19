@@ -192,6 +192,10 @@ try:
     if status != 0:
         failed = True
 
+    (_, status) = os.waitpid(puppet_pid, 0)
+    if status != 0:
+        failed = True
+
     sys.exit(1 if failed else 0)
 
 finally:
