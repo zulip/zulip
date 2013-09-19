@@ -40,7 +40,7 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     update_user_activity_interval, do_set_muted_topics, do_rename_stream
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
-    is_inactive, isnt_mit, not_mit_mailing_list
+    is_inactive, not_mit_mailing_list
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
@@ -460,12 +460,6 @@ def api_endpoint_docs(request):
 @authenticated_json_post_view
 @has_request_variables
 def json_invite_users(request, user_profile, invitee_emails=REQ):
-    # Validation
-    try:
-        isnt_mit(user_profile.email)
-    except ValidationError, e:
-        return json_error(e.message)
-
     if not invitee_emails:
         return json_error("You must specify at least one email address.")
 
@@ -717,12 +711,7 @@ def home(request):
     ))
 
     statsd.incr('views.home')
-
-    try:
-        isnt_mit(user_profile.email)
-        show_invites = True
-    except ValidationError:
-        show_invites = False
+    show_invites = True
 
     # For the CUSTOMER4 student realm, only let instructors (who have
     # @customer4.invalid addresses) invite new users.

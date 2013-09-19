@@ -1757,12 +1757,6 @@ def do_invite_users(user_profile, invitee_emails, streams):
             errors.append((email, "Outside your domain."))
             continue
 
-        # Redundant check in case earlier validation preventing MIT users from
-        # inviting people fails.
-        if "@mit.edu" in email:
-            errors.append((email, "Invitations are not enabled for MIT at this time."))
-            continue
-
         try:
             user_email_is_unique(email)
         except ValidationError:

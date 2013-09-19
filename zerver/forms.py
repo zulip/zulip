@@ -23,10 +23,6 @@ SIGNUP_STRING = '<a href="https://zulip.com/signup">Sign up</a> to find out when
 def has_valid_realm(value):
     return Realm.objects.filter(domain=value.split("@")[-1]).exists()
 
-def isnt_mit(value):
-    if "@mit.edu" in value:
-        raise ValidationError(mark_safe(u'Zulip for MIT is by invitation only. ' + SIGNUP_STRING))
-
 def not_mit_mailing_list(value):
     # I don't want ec-discuss signed up for Zulip
     if "@mit.edu" in value:
