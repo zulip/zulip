@@ -3430,6 +3430,10 @@ class GithubHookTests(AuthedTestCase):
                         "zulip-test: pull request 7: Counting is hard.",
                         "lfaraone closed [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)")
 
+    def test_pull_request_comment(self):
+        self.basic_test('pull_request_comment', 'commits',
+                        "zulip-test: pull request 9: Less cowbell.",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [pull request 9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
 
 class PivotalHookTests(AuthedTestCase):
 

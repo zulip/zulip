@@ -79,7 +79,7 @@ def api_github_landing(request, user_profile, event=REQ,
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
                                                      payload['pusher']['name'])
-    elif event in ('issues', 'issue_comment'):
+    elif event == 'issues':
         if user_profile.realm.domain not in ('zulip.com', 'customer5.invalid'):
             return json_success()
 
@@ -87,24 +87,38 @@ def api_github_landing(request, user_profile, event=REQ,
         issue = payload['issue']
         subject = github_issue_subject(repository, issue)
 
-        if event == 'issues':
-            content = ("%s %s [issue %d](%s)"
-                       % (payload['sender']['login'],
-                          payload['action'],
-                          issue['number'],
-                          issue['html_url']))
-            if payload['action'] in ('opened', 'reopened'):
-                content += "\n\n~~~ quote\n%s\n~~~" % (issue['body'],)
-        elif event == 'issue_comment':
-            if payload['action'] != 'created':
-                return json_success()
-            comment = payload['comment']
-            content = ("%s [commented](%s) on [issue %d](%s)\n\n~~~ quote\n%s\n~~~"
-                       % (comment['user']['login'],
-                          comment['html_url'],
-                          issue['number'],
-                          issue['html_url'],
-                          comment['body']))
+        content = ("%s %s [issue %d](%s)"
+                   % (payload['sender']['login'],
+                      payload['action'],
+                      issue['number'],
+                      issue['html_url']))
+        if payload['action'] in ('opened', 'reopened'):
+            content += "\n\n~~~ quote\n%s\n~~~" % (issue['body'],)
+    elif event == 'issue_comment':
+        if payload['action'] != 'created':
+            return json_success()
+
+        # Comments on both issues and pull requests come in as issue_comment events
+        issue = payload['issue']
+        if issue['pull_request']['diff_url'] is None:
+            # It's an issues comment
+            subject = github_issue_subject(repository, issue)
+            stream = 'issues'
+            noun = 'issue'
+        else:
+            # It's a pull request comment
+            subject = github_pull_req_subject(repository, issue)
+            stream = 'commits'
+            noun = 'pull request'
+
+        comment = payload['comment']
+        content = ("%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~"
+                   % (comment['user']['login'],
+                      comment['html_url'],
+                      noun,
+                      issue['number'],
+                      issue['html_url'],
+                      comment['body']))
     else:
         # We don't handle other events even though we get notified
         # about them
