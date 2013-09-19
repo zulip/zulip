@@ -451,7 +451,7 @@ def check_message(sender, client, message_type_name, message_to,
 
         if sender.is_bot:
             if stream:
-                num_subscribers = len(maybe_get_subscribers(stream))
+                num_subscribers = len(maybe_get_subscriber_emails(stream))
 
             if stream is None or num_subscribers == 0:
                 # Warn a bot's owner if they are sending a message to a stream
