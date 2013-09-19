@@ -414,6 +414,9 @@ def check_stream_name(stream_name):
         raise JsonableError("Invalid stream name")
 
 def check_if_a_bot_is_sending_a_message_to_an_empty_stream(sender, stream, stream_name):
+    if sender.realm.domain == 'mit.edu':
+        return
+
     if sender.is_bot and sender.bot_owner is not None:
         if stream:
             num_subscribers = len(maybe_get_subscriber_emails(stream))
