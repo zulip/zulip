@@ -20,7 +20,7 @@ import ujson
 from functools import wraps
 
 def github_pull_req_subject(repository, pull_req):
-    return "%s: pull request %d" % (repository['name'], pull_req['number'])
+    return "%s: pull request %d: %s" % (repository['name'], pull_req['number'], pull_req['title'])
 
 def github_issue_subject(repository, issue):
     return "%s: issue %d: %s" % (repository['name'], issue['number'], issue['title'])
@@ -51,12 +51,13 @@ def api_github_landing(request, user_profile, event=REQ,
         pull_req = payload['pull_request']
 
         subject = github_pull_req_subject(repository, pull_req)
-        content = ("Pull request from %s [%s](%s):\n\n %s\n\n~~~ quote\n%s\n~~~"
+        content = ("%s %s [pull request %s](%s)"
                    % (pull_req['user']['login'],
                       payload['action'],
-                      pull_req['html_url'],
-                      pull_req['title'],
-                      pull_req['body']))
+                      pull_req['number'],
+                      pull_req['html_url']))
+        if payload['action'] in ('opened', 'reopened'):
+            content += "\n\n~~~ quote\n%s\n~~~" % (pull_req['body'],)
     elif event == 'push':
         short_ref = re.sub(r'^refs/heads/', '', payload['ref'])
         # This is a bit hackish, but is basically so that CUSTOMER18 doesn't

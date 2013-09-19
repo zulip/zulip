@@ -3422,13 +3422,13 @@ class GithubHookTests(AuthedTestCase):
 
     def test_pull_request_opened(self):
         self.basic_test('pull_request_opened', 'commits',
-                        "zulip-test: pull request 7",
-                        "Pull request from lfaraone [opened](https://github.com/zbenjamin/zulip-test/pull/7):\n\n Counting is hard.\n\n~~~ quote\nOmitted something I think?\n~~~")
+                        "zulip-test: pull request 7: Counting is hard.",
+                        "lfaraone opened [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)\n\n~~~ quote\nOmitted something I think?\n~~~")
 
     def test_pull_request_closed(self):
         self.basic_test('pull_request_closed', 'commits',
-                        "zulip-test: pull request 7",
-                        "Pull request from lfaraone [closed](https://github.com/zbenjamin/zulip-test/pull/7):\n\n Counting is hard.\n\n~~~ quote\nOmitted something I think?\n~~~")
+                        "zulip-test: pull request 7: Counting is hard.",
+                        "lfaraone closed [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)")
 
 
 class PivotalHookTests(AuthedTestCase):
