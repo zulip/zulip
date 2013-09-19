@@ -17,7 +17,7 @@ from zerver.decorator import RespondAsynchronously, \
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
-    do_add_realm_emoji, do_remove_realm_emoji, check_message
+    do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -3725,6 +3725,38 @@ class CheckMessageTest(AuthedTestCase):
         ret = check_message(sender, client, message_type_name, message_to,
                       subject_name, message_content)
         self.assertEqual(ret['message'].sender.email, 'othello@zulip.com')
+
+    def test_bot_pm_feature(self):
+        # We send a PM to a bot's owner if their bot sends a message to
+        # an unsubscribed stream
+        parent = get_user_profile_by_email('othello@zulip.com')
+        bot = do_create_user(
+                email='othello-bot@zulip.com',
+                password='',
+                realm=parent.realm,
+                full_name='',
+                short_name='',
+                active=True,
+                bot=True,
+                bot_owner=parent
+        )
+        bot.last_reminder = None
+
+        sender = bot
+        client, _ = Client.objects.get_or_create(name="test suite")
+        stream_name = 'integration'
+        stream, _ = create_stream_if_needed(Realm.objects.get(domain="zulip.com"), stream_name)
+        message_type_name = 'stream'
+        message_to = None
+        message_to = [stream_name]
+        subject_name = 'issue'
+        message_content = 'whatever'
+        old_count = message_stream_count(parent)
+        ret = check_message(sender, client, message_type_name, message_to,
+                      subject_name, message_content)
+        new_count = message_stream_count(parent)
+        self.assertEqual(new_count, old_count + 1)
+        self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
 
 def full_test_name(test):
     test_class = test.__class__.__name__
