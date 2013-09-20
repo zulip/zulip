@@ -1121,7 +1121,7 @@ def get_old_messages_backend(request, user_profile,
                           ('match_content', user_message.match_content)])
 
     message_dicts = generic_bulk_cached_fetch(lambda message_id: to_dict_cache_key_id(message_id, apply_markdown),
-                                              lambda needed_ids: Message.objects.select_related().filter(id__in=needed_ids),
+                                              Message.extractor,
                                               message_ids,
                                               cache_transformer=lambda x: x.to_dict_uncached(apply_markdown),
                                               extractor=extract_message_dict,

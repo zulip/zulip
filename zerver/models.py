@@ -581,6 +581,12 @@ class Message(models.Model):
             content           = self.content,
             timestamp         = datetime_to_timestamp(self.pub_date))
 
+    @staticmethod
+    def extractor(needed_ids):
+        # This is a special purpose function optimized for
+        # callers like get_old_messages_backend().
+        return Message.objects.select_related().filter(id__in=needed_ids)
+
     @classmethod
     def remove_unreachable(cls):
         """Remove all Messages that are not referred to by any UserMessage."""
