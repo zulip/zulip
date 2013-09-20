@@ -28,6 +28,7 @@ from zerver.forms import not_mit_mailing_list
 
 import base64
 from django.conf import settings
+from django.db import connection
 import os
 import random
 import re
@@ -49,6 +50,19 @@ def tornado_redirected_to_list(lst):
     tornado_callbacks.process_event = lst.append
     yield
     tornado_callbacks.process_event = real_tornado_callbacks_process_event
+
+@contextmanager
+def queries_captured():
+    '''
+    Allow a user to capture just the queries executed during
+    the with statement.
+    '''
+    old_settings = settings.DEBUG
+    settings.DEBUG = True
+    connection.queries = []
+    yield connection.queries
+    settings.DEBUG = old_settings
+
 
 def bail(msg):
     print '\nERROR: %s\n' % (msg,)
