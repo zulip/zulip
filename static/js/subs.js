@@ -175,7 +175,7 @@ function create_sub(stream_name, attrs) {
         subscribed: true,
         in_home_view: true,
         invite_only: false,
-        notifications: false
+        notifications: page_params.notify_for_streams_by_default
     });
 
     stream_data.set_subscribers(sub, subscriber_emails);
