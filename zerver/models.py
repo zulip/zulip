@@ -82,6 +82,7 @@ def get_realm_emoji_cache_key(realm):
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
     restricted_to_domain = models.BooleanField(default=True)
+    date_created = models.DateTimeField(default=timezone.now)
 
     def __repr__(self):
         return (u"<Realm: %s %s>" % (self.domain, self.id)).encode("utf-8")
