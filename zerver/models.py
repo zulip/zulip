@@ -158,6 +158,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)
     short_name = models.CharField(max_length=MAX_NAME_LENGTH)
+    # pointer points to Message.id, NOT UserMessage.id.
     pointer = models.IntegerField()
     last_pointer_updater = models.CharField(max_length=64)
     realm = models.ForeignKey(Realm)
