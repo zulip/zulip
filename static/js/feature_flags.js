@@ -23,8 +23,8 @@ exports.propagate_topic_edits = page_params.staging ||
 
 exports.fade_users_when_composing = page_params.staging;
 
-exports.alert_words = page_params.staging ||
-  _.contains(['reddit.com'], page_params.domain);
+exports.alert_words =
+  _.contains(['reddit.com', 'mit.edu', 'zulip.com'], page_params.domain);
 
 exports.muting = page_params.staging;
 
