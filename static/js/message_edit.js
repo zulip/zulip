@@ -54,7 +54,9 @@ function handle_edit_keydown(e) {
     var row, code = e.keyCode || e.which;
 
     if (e.target.id === "message_edit_content" && code === 13 &&
-        (e.metaKey || e.ctrlKey)) {
+        (e.metaKey || e.ctrlKey || (page_params.enter_sends && !e.shiftKey))) {
+        e.preventDefault();
+
         row = $(".message_edit_content").filter(":focus").closest(".message_row");
         if (message_edit.save(row) === true) {
             message_edit.end(row);
