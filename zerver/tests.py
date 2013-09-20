@@ -652,6 +652,34 @@ class MessageExtractorTest(AuthedTestCase):
         self.assertTrue(len(queries) <= 5)
         self.assertEqual(len(rows), num_ids)
 
+    def test_applying_markdown(self):
+        sender = get_user_profile_by_email('othello@zulip.com')
+        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        sending_client, _ = Client.objects.get_or_create(name="test suite")
+        message = Message(
+            sender=sender,
+            recipient=recipient,
+            subject='whatever',
+            content='hello **world**',
+            pub_date=datetime.datetime.now(),
+            sending_client=sending_client,
+            last_edit_time=datetime.datetime.now(),
+            edit_history='[]'
+        )
+        message.save()
+
+        # An important part of this test is to get the message through Message.extractor,
+        # because we want to make sure the extractor gives us objects that can save the
+        # rendered state.  So don't just say "row = message".
+        row = Message.extractor([message.id])[0]
+        dct = row.to_dict_uncached(apply_markdown=True)
+        expected_content = '<p>hello <strong>world</strong></p>'
+        self.assertEqual(dct['content'], expected_content)
+        message = Message.objects.get(id=message.id)
+        self.assertEqual(message.rendered_content, expected_content)
+        self.assertEqual(message.rendered_content_version, bugdown.version)
+
 class UserChangesTest(AuthedTestCase):
     def test_update_api_key(self):
         email = "hamlet@zulip.com"
