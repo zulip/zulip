@@ -491,10 +491,13 @@ class Message(models.Model):
 
         if self.rendered_content is not None:
             if save:
-                self.save(update_fields=["rendered_content", "rendered_content_version"])
+                self.save_rendered_content()
             return True
         else:
             return False
+
+    def save_rendered_content(self):
+        self.save(update_fields=["rendered_content", "rendered_content_version"])
 
     def maybe_render_content(self, domain, save = False):
         """Render the markdown if there is no existing rendered_content"""
