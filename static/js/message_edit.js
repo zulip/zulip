@@ -106,6 +106,8 @@ function edit_message (row, raw_content) {
             row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic);
         });
     }
+
+    composebox_typeahead.initialize_compose_typeahead("#message_edit_content");
 }
 
 exports.start = function (row) {
