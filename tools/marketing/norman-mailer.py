@@ -38,9 +38,10 @@ def get_message(template, first_name):
 def get_subject(template):
 	return template.split("\n")[0].strip()
 
+send_count = 0
 for person in people_list:
 	fields = person.split('\t')
-	name,email,realm,last_send,send_count,last_pointer,pointer_count,last_updates = fields
+	name,email = fields[:2] #,realm,last_send,send_count,last_pointer,pointer_count,last_updates = fields
 	first_name = name.split()[0]
 	print first_name,name,email, '-', send_count
 
