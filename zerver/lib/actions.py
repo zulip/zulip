@@ -740,6 +740,12 @@ def notify_subscriptions_added(user_profile, sub_pairs, no_log=False):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
+def notify_for_streams_by_default(user_profile):
+    # For users in newer realms, generate notifications for stream
+    # messages by default.
+    return user_profile.realm.date_created > datetime.datetime(
+        2013, 9, 24, tzinfo=timezone.utc)
+
 def bulk_add_subscriptions(streams, users):
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
     recipients = [recipient.id for recipient in recipients_map.values()]
@@ -777,7 +783,8 @@ def bulk_add_subscriptions(streams, users):
     for (user_profile, recipient_id, stream) in new_subs:
         color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
         sub_to_add = Subscription(user_profile=user_profile, active=True,
-                                  color=color, recipient_id=recipient_id)
+                                  color=color, recipient_id=recipient_id,
+                                  notifications=notify_for_streams_by_default(user_profile))
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
     Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
@@ -818,7 +825,8 @@ def do_add_subscription(user_profile, stream, no_log=False):
     color = pick_color(user_profile)
     (subscription, created) = Subscription.objects.get_or_create(
         user_profile=user_profile, recipient=recipient,
-        defaults={'active': True, 'color': color})
+        defaults={'active': True, 'color': color,
+                  'notifications': notify_for_streams_by_default(user_profile)})
     did_subscribe = created
     if not subscription.active:
         did_subscribe = True

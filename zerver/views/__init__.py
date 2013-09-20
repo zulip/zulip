@@ -37,7 +37,8 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
-    update_user_activity_interval, do_set_muted_topics, do_rename_stream
+    update_user_activity_interval, do_set_muted_topics, do_rename_stream, \
+    notify_for_streams_by_default
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, not_mit_mailing_list
@@ -707,7 +708,8 @@ def home(request):
         onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
         staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
         alert_words           = register_ret['alert_words'],
-        show_admin            = user_profile.show_admin
+        show_admin            = user_profile.show_admin,
+        notify_for_streams_by_default = notify_for_streams_by_default(user_profile)
     ))
 
     statsd.incr('views.home')
