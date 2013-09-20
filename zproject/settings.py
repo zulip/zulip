@@ -400,6 +400,8 @@ JS_SPECS = {
             'js/message_list_view.js',
             'js/message_list.js',
             'js/onboarding.js',
+            'js/alert_words.js',
+            'js/alert_words_ui.js',
             'js/zulip.js',
             'js/activity.js',
             'js/colorspace.js',
@@ -408,12 +410,10 @@ JS_SPECS = {
             'js/templates.js',
             'js/avatar.js',
             'js/settings.js',
-            'js/alert_words_ui.js',
             'js/tab_bar.js',
             'js/metrics.js',
             'js/emoji.js',
-            'js/referral.js',
-            'js/alert_words.js'
+            'js/referral.js'
         ],
         'output_filename': 'min/app.js'
     },
