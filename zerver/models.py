@@ -34,9 +34,6 @@ def is_super_user(user):
 # so add a local cache as well as the memcached cache.
 per_process_display_recipient_cache = {}
 def get_display_recipient(recipient):
-    if settings.TEST_SUITE:
-        # The test suite expects all caching to be turned off
-        return get_display_recipient_memcached(recipient)
     if recipient.id not in per_process_display_recipient_cache:
         per_process_display_recipient_cache[recipient.id] = get_display_recipient_memcached(recipient)
     return per_process_display_recipient_cache[recipient.id]
