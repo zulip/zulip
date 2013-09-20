@@ -31,6 +31,7 @@ from zerver.forms import not_mit_mailing_list
 import base64
 from django.conf import settings
 from django.db import connection
+import datetime
 import os
 import random
 import re
@@ -607,6 +608,49 @@ class StreamMessagesTest(AuthedTestCase):
 
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
                                    content=u"hümbüǵ")
+
+class MessageExtractorTest(AuthedTestCase):
+    @slow(1.6, 'builds lots of messages')
+    def test_message_extractor_basics(self):
+        realm = Realm.objects.get(domain="zulip.com")
+        sender = get_user_profile_by_email('othello@zulip.com')
+        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        stream, _ = create_stream_if_needed(realm, 'devel')
+        stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        sending_client, _ = Client.objects.get_or_create(name="test suite")
+
+        for i in range(300):
+            for recipient in [pm_recipient, stream_recipient]:
+                message = Message(
+                    sender=sender,
+                    recipient=recipient,
+                    subject='whatever',
+                    content='whatever %d' % i,
+                    pub_date=datetime.datetime.now(),
+                    sending_client=sending_client,
+                    last_edit_time=datetime.datetime.now(),
+                    edit_history='[]'
+                )
+                message.save()
+
+        ids = [row['id'] for row in Message.objects.all().values('id')]
+        num_ids = len(ids)
+        self.assertTrue(num_ids >= 600)
+
+        t = time.time()
+        with queries_captured() as queries:
+            rows = list(Message.extractor(ids))
+
+            for row in rows:
+                dct = row.to_dict_uncached(False)
+                self.assertEqual(dct['id'], row.id)
+
+        delay = time.time() - t
+        # Make sure we don't take longer than 1ms per message to extract messages.
+        self.assertTrue(delay < 0.001 * num_ids)
+        self.assertTrue(len(queries) <= 5)
+        self.assertEqual(len(rows), num_ids)
 
 class UserChangesTest(AuthedTestCase):
     def test_update_api_key(self):
