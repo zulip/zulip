@@ -178,13 +178,13 @@ function select_on_focus(field_id) {
     });
 }
 
-exports.split_at_cursor = function (query) {
-    var cursor = $('#new_message_content').caret().start;
+exports.split_at_cursor = function (query, input) {
+    var cursor = input.caret().start;
     return [query.slice(0, cursor), query.slice(cursor)];
 };
 
 exports.compose_content_begins_typeahead = function (query) {
-    var q = exports.split_at_cursor(query)[0];
+    var q = exports.split_at_cursor(query, this.$element)[0];
 
     var strings = q.split(/[\s*(){}\[\]]/);
     if (strings.length < 1) {
@@ -248,7 +248,7 @@ exports.content_highlighter = function (item) {
 };
 
 exports.content_typeahead_selected = function (item) {
-    var pieces = exports.split_at_cursor(this.query);
+    var pieces = exports.split_at_cursor(this.query, this.$element);
     var beginning = pieces[0];
     var rest = pieces[1];
 
