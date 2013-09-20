@@ -413,7 +413,7 @@ def check_stream_name(stream_name):
     if not valid_stream_name(stream_name):
         raise JsonableError("Invalid stream name")
 
-def check_if_a_bot_is_sending_a_message_to_an_empty_stream(sender, stream, stream_name):
+def send_pm_if_empty_stream(sender, stream, stream_name):
     if sender.realm.domain == 'mit.edu':
         return
 
@@ -482,7 +482,7 @@ def check_message(sender, client, message_type_name, message_to,
 
         stream = get_stream(stream_name, realm)
 
-        check_if_a_bot_is_sending_a_message_to_an_empty_stream(sender, stream, stream_name)
+        send_pm_if_empty_stream(sender, stream, stream_name)
 
         if stream is None:
             raise JsonableError("Stream does not exist")
