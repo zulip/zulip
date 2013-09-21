@@ -33,31 +33,37 @@ def is_super_user(user):
 # Doing 1000 memcached requests to get_display_recipient is quite slow,
 # so add a local cache as well as the memcached cache.
 per_process_display_recipient_cache = {}
+def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id):
+    if recipient_id not in per_process_display_recipient_cache:
+        result = get_display_recipient_memcached(recipient_id, recipient_type, recipient_type_id)
+        per_process_display_recipient_cache[recipient_id] = result
+    return per_process_display_recipient_cache[recipient_id]
+
 def get_display_recipient(recipient):
-    if recipient.id not in per_process_display_recipient_cache:
-        per_process_display_recipient_cache[recipient.id] = get_display_recipient_memcached(recipient)
-    return per_process_display_recipient_cache[recipient.id]
+    return get_display_recipient_by_id(
+            recipient.id,
+            recipient.type,
+            recipient.type_id
+    )
 
 def flush_per_process_display_recipient_cache():
     global per_process_display_recipient_cache
     per_process_display_recipient_cache = {}
 
-@cache_with_key(lambda self: display_recipient_cache_key(self.id),
+@cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
-def get_display_recipient_memcached(recipient):
+def get_display_recipient_memcached(recipient_id, recipient_type, recipient_type_id):
     """
-    recipient: an instance of Recipient.
-
     returns: an appropriate object describing the recipient.  For a
     stream this will be the stream name as a string.  For a huddle or
     personal, it will be an array of dicts about each recipient.
     """
-    if recipient.type == Recipient.STREAM:
-        stream = Stream.objects.get(id=recipient.type_id)
+    if recipient_type == Recipient.STREAM:
+        stream = Stream.objects.get(id=recipient_type_id)
         return stream.name
 
     # We don't really care what the ordering is, just that it's deterministic.
-    user_profile_list = (UserProfile.objects.filter(subscription__recipient=recipient)
+    user_profile_list = (UserProfile.objects.filter(subscription__recipient_id=recipient_id)
                                             .select_related()
                                             .order_by('email'))
     return [{'email': user_profile.email,
