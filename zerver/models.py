@@ -517,10 +517,20 @@ class Message(models.Model):
         return stringify_message_dict(self.to_dict_uncached(apply_markdown))
 
     def to_dict_uncached(self, apply_markdown):
-        display_recipient = get_display_recipient(self.recipient)
-        if self.recipient.type == Recipient.STREAM:
+        recipient = self.recipient
+        recipient_id = recipient.id
+        recipient_type = recipient.type
+        recipient_type_id = recipient.type_id
+
+        display_recipient = get_display_recipient_by_id(
+                recipient_id,
+                recipient_type,
+                recipient_type_id
+        )
+
+        if recipient_type == Recipient.STREAM:
             display_type = "stream"
-        elif self.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
+        elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
             display_type = "private"
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
@@ -535,7 +545,7 @@ class Message(models.Model):
                 elif recip['email'] > display_recipient[0]['email']:
                     display_recipient = [display_recipient[0], recip]
         else:
-            display_type = self.recipient.type_name()
+            display_type = recipient.type_name()
 
         obj = dict(
             id                = self.id,
@@ -546,7 +556,7 @@ class Message(models.Model):
             sender_id         = self.sender.id,
             type              = display_type,
             display_recipient = display_recipient,
-            recipient_id      = self.recipient.id,
+            recipient_id      = recipient_id,
             subject           = self.subject,
             timestamp         = datetime_to_timestamp(self.pub_date),
             gravatar_hash     = gravatar_hash(self.sender.email), # Deprecated June 2013
