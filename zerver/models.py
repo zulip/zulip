@@ -544,8 +544,6 @@ class Message(models.Model):
                     display_recipient = [recip, display_recipient[0]]
                 elif recip['email'] > display_recipient[0]['email']:
                     display_recipient = [display_recipient[0], recip]
-        else:
-            display_type = recipient.type_name()
 
         obj = dict(
             id                = self.id,
