@@ -521,27 +521,52 @@ class Message(models.Model):
         return stringify_message_dict(self.to_dict_uncached(apply_markdown))
 
     def to_dict_uncached(self, apply_markdown):
-        message = self
-        message_id = self.id
-        last_edit_time = self.last_edit_time
-        edit_history = self.edit_history
-        content = self.content
-        subject = self.subject
-        pub_date = self.pub_date
-        rendered_content = self.rendered_content
-        rendered_content_version = self.rendered_content_version
-        sender_id = self.sender.id
-        sender_email = self.sender.email
-        sender_realm_domain = self.sender.realm.domain
-        sender_full_name = self.sender.full_name
-        sender_short_name = self.sender.short_name
-        sender_avatar_source = self.sender.avatar_source
-        sending_client_name = self.sending_client.name
-        sender_id = self.sender.id
-        recipient = self.recipient
-        recipient_id = recipient.id
-        recipient_type = recipient.type
-        recipient_type_id = recipient.type_id
+        return Message.build_message_dict(
+                apply_markdown = apply_markdown,
+                message = self,
+                message_id = self.id,
+                last_edit_time = self.last_edit_time,
+                edit_history = self.edit_history,
+                content = self.content,
+                subject = self.subject,
+                pub_date = self.pub_date,
+                rendered_content = self.rendered_content,
+                rendered_content_version = self.rendered_content_version,
+                sender_id = self.sender.id,
+                sender_email = self.sender.email,
+                sender_realm_domain = self.sender.realm.domain,
+                sender_full_name = self.sender.full_name,
+                sender_short_name = self.sender.short_name,
+                sender_avatar_source = self.sender.avatar_source,
+                sending_client_name = self.sending_client.name,
+                recipient_id = self.recipient.id,
+                recipient_type = self.recipient.type,
+                recipient_type_id = self.recipient.type_id,
+        )
+
+    @staticmethod
+    def build_message_dict(
+            apply_markdown,
+            message,
+            message_id,
+            last_edit_time,
+            edit_history,
+            content,
+            subject,
+            pub_date,
+            rendered_content,
+            rendered_content_version,
+            sender_id,
+            sender_email,
+            sender_realm_domain,
+            sender_full_name,
+            sender_short_name,
+            sender_avatar_source,
+            sending_client_name,
+            recipient_id,
+            recipient_type,
+            recipient_type_id,
+    ):
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
