@@ -517,6 +517,19 @@ class Message(models.Model):
         return stringify_message_dict(self.to_dict_uncached(apply_markdown))
 
     def to_dict_uncached(self, apply_markdown):
+        message_id = self.id
+        last_edit_time = self.last_edit_time
+        edit_history = self.edit_history
+        content = self.content
+        subject = self.subject
+        pub_date = self.pub_date
+        sender_id = self.sender.id
+        sender_email = self.sender.email
+        sender_realm_domain = self.sender.realm.domain
+        sender_full_name = self.sender.full_name
+        sender_short_name = self.sender.short_name
+        sending_client_name = self.sending_client.name
+        sender_id = self.sender.id
         recipient = self.recipient
         recipient_id = recipient.id
         recipient_type = recipient.type
@@ -535,37 +548,37 @@ class Message(models.Model):
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
                 # someone and his self, preserving ordering
-                recip = {'email': self.sender.email,
-                         'domain': self.sender.realm.domain,
-                         'full_name': self.sender.full_name,
-                         'short_name': self.sender.short_name,
-                         'id': self.sender.id};
+                recip = {'email': sender_email,
+                         'domain': sender_realm_domain,
+                         'full_name': sender_full_name,
+                         'short_name': sender_short_name,
+                         'id': sender_id};
                 if recip['email'] < display_recipient[0]['email']:
                     display_recipient = [recip, display_recipient[0]]
                 elif recip['email'] > display_recipient[0]['email']:
                     display_recipient = [display_recipient[0], recip]
 
         obj = dict(
-            id                = self.id,
-            sender_email      = self.sender.email,
-            sender_full_name  = self.sender.full_name,
-            sender_short_name = self.sender.short_name,
-            sender_domain     = self.sender.realm.domain,
-            sender_id         = self.sender.id,
+            id                = message_id,
+            sender_email      = sender_email,
+            sender_full_name  = sender_full_name,
+            sender_short_name = sender_short_name,
+            sender_domain     = sender_realm_domain,
+            sender_id         = sender_id,
             type              = display_type,
             display_recipient = display_recipient,
             recipient_id      = recipient_id,
-            subject           = self.subject,
-            timestamp         = datetime_to_timestamp(self.pub_date),
-            gravatar_hash     = gravatar_hash(self.sender.email), # Deprecated June 2013
+            subject           = subject,
+            timestamp         = datetime_to_timestamp(pub_date),
+            gravatar_hash     = gravatar_hash(sender_email), # Deprecated June 2013
             avatar_url        = avatar_url(self.sender),
-            client            = self.sending_client.name)
+            client            = sending_client_name)
 
-        obj['subject_links'] = bugdown.subject_links(self.sender.realm.domain.lower(), self.subject)
+        obj['subject_links'] = bugdown.subject_links(sender_realm_domain.lower(), subject)
 
-        if self.last_edit_time != None:
-            obj['last_edit_timestamp'] = datetime_to_timestamp(self.last_edit_time)
-            obj['edit_history'] = ujson.loads(self.edit_history)
+        if last_edit_time != None:
+            obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
+            obj['edit_history'] = ujson.loads(edit_history)
 
         if apply_markdown:
             self.maybe_render_content(None, save = True)
@@ -576,7 +589,7 @@ class Message(models.Model):
 
             obj['content_type'] = 'text/html'
         else:
-            obj['content'] = self.content
+            obj['content'] = content
             obj['content_type'] = 'text/x-markdown'
 
         return obj
