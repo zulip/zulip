@@ -521,12 +521,15 @@ class Message(models.Model):
         return stringify_message_dict(self.to_dict_uncached(apply_markdown))
 
     def to_dict_uncached(self, apply_markdown):
+        message = self
         message_id = self.id
         last_edit_time = self.last_edit_time
         edit_history = self.edit_history
         content = self.content
         subject = self.subject
         pub_date = self.pub_date
+        rendered_content = self.rendered_content
+        rendered_content_version = self.rendered_content_version
         sender_id = self.sender.id
         sender_email = self.sender.email
         sender_realm_domain = self.sender.realm.domain
@@ -588,9 +591,14 @@ class Message(models.Model):
             obj['edit_history'] = ujson.loads(edit_history)
 
         if apply_markdown:
-            self.maybe_render_content(None, save = True)
-            if self.rendered_content is not None:
-                obj['content'] = self.rendered_content
+            if Message.need_to_render_content(rendered_content, rendered_content_version):
+                # It's unfortunate that we need to have side effects on the message
+                # in some cases.
+                rendered_content = message.render_markdown(content, sender_realm_domain)
+                message.set_rendered_content(rendered_content, True)
+
+            if rendered_content is not None:
+                obj['content'] = rendered_content
             else:
                 obj['content'] = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
 
