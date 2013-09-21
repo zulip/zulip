@@ -504,10 +504,14 @@ class Message(models.Model):
 
     def maybe_render_content(self, domain, save = False):
         """Render the markdown if there is no existing rendered_content"""
-        if self.rendered_content_version < bugdown.version or self.rendered_content is None:
+        if Message.need_to_render_content(self.rendered_content, self.rendered_content_version):
             return self.set_rendered_content(self.render_markdown(self.content, domain), save)
         else:
             return True
+
+    @staticmethod
+    def need_to_render_content(rendered_content, rendered_content_version):
+        return rendered_content_version < bugdown.version or rendered_content is None
 
     def to_dict(self, apply_markdown):
         return extract_message_dict(self.to_dict_json(apply_markdown))
