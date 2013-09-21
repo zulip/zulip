@@ -545,6 +545,35 @@ class Message(models.Model):
         )
 
     @staticmethod
+    def build_dict_from_raw_db_row(row, apply_markdown):
+        '''
+        row is a row from a .values() call, and it needs to have
+        all the relevant fields populated
+        '''
+        return Message.build_message_dict(
+                apply_markdown = apply_markdown,
+                message = None,
+                message_id = row['id'],
+                last_edit_time = row['last_edit_time'],
+                edit_history = row['edit_history'],
+                content = row['content'],
+                subject = row['subject'],
+                pub_date = row['pub_date'],
+                rendered_content = row['rendered_content'],
+                rendered_content_version = row['rendered_content_version'],
+                sender_id = row['sender_id'],
+                sender_email = row['sender__email'],
+                sender_realm_domain = row['sender__realm__domain'],
+                sender_full_name = row['sender__full_name'],
+                sender_short_name = row['sender__short_name'],
+                sender_avatar_source = row['sender__avatar_source'],
+                sending_client_name = row['sending_client__name'],
+                recipient_id = row['recipient_id'],
+                recipient_type = row['recipient__type'],
+                recipient_type_id = row['recipient__type_id'],
+        )
+
+    @staticmethod
     def build_message_dict(
             apply_markdown,
             message,
@@ -617,6 +646,18 @@ class Message(models.Model):
 
         if apply_markdown:
             if Message.need_to_render_content(rendered_content, rendered_content_version):
+                if message is None:
+                    # We really shouldn't be rendering objects in this method, but there is
+                    # a scenario where we upgrade the version of bugdown and fail to run
+                    # management commands to re-render historical messages, and then we
+                    # need to have side effects.  This method is optimized to not need full
+                    # blown ORM objects, but the bugdown renderer is unfortunately highly
+                    # coupled to Message, and we also need to persist the new rendered content.
+                    # If we don't have a message object passed in, we get one here.  The cost
+                    # of going to the DB here should be overshadowed by the cost of rendering
+                    # and updating the row.
+                    message = Message.objects.select_related().get(id=message_id)
+
                 # It's unfortunate that we need to have side effects on the message
                 # in some cases.
                 rendered_content = message.render_markdown(content, sender_realm_domain)
@@ -649,10 +690,31 @@ class Message(models.Model):
             timestamp         = datetime_to_timestamp(self.pub_date))
 
     @staticmethod
-    def extractor(needed_ids):
+    def get_raw_db_rows(needed_ids):
         # This is a special purpose function optimized for
         # callers like get_old_messages_backend().
-        return Message.objects.select_related().filter(id__in=needed_ids)
+        fields = [
+            'id',
+            'subject',
+            'pub_date',
+            'last_edit_time',
+            'edit_history',
+            'content',
+            'rendered_content',
+            'rendered_content_version',
+            'recipient_id',
+            'recipient__type',
+            'recipient__type_id',
+            'sender_id',
+            'sending_client__name',
+            'sender__email',
+            'sender__full_name',
+            'sender__short_name',
+            'sender__realm__id',
+            'sender__realm__domain',
+            'sender__avatar_source'
+        ]
+        return Message.objects.filter(id__in=needed_ids).values(*fields)
 
     @classmethod
     def remove_unreachable(cls):

@@ -609,9 +609,9 @@ class StreamMessagesTest(AuthedTestCase):
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
                                    content=u"hümbüǵ")
 
-class MessageExtractorTest(AuthedTestCase):
+class MessageDictTest(AuthedTestCase):
     @slow(1.6, 'builds lots of messages')
-    def test_message_extractor_basics(self):
+    def test_bulk_message_fetching(self):
         realm = Realm.objects.get(domain="zulip.com")
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
@@ -640,11 +640,10 @@ class MessageExtractorTest(AuthedTestCase):
 
         t = time.time()
         with queries_captured() as queries:
-            rows = list(Message.extractor(ids))
+            rows = list(Message.get_raw_db_rows(ids))
 
             for row in rows:
-                dct = row.to_dict_uncached(False)
-                self.assertEqual(dct['id'], row.id)
+                Message.build_dict_from_raw_db_row(row, False)
 
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
@@ -669,11 +668,10 @@ class MessageExtractorTest(AuthedTestCase):
         )
         message.save()
 
-        # An important part of this test is to get the message through Message.extractor,
-        # because we want to make sure the extractor gives us objects that can save the
-        # rendered state.  So don't just say "row = message".
-        row = Message.extractor([message.id])[0]
-        dct = row.to_dict_uncached(apply_markdown=True)
+        # An important part of this test is to get the message through this exact code path,
+        # because there is an ugly hack we need to cover.  So don't just say "row = message".
+        row = Message.get_raw_db_rows([message.id])[0]
+        dct = Message.build_dict_from_raw_db_row(row, apply_markdown=True)
         expected_content = '<p>hello <strong>world</strong></p>'
         self.assertEqual(dct['content'], expected_content)
         message = Message.objects.get(id=message.id)
