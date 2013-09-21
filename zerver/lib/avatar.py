@@ -22,11 +22,17 @@ def user_avatar_hash(email):
     return make_safe_digest(user_key, hashlib.sha1)
 
 def avatar_url(user_profile):
-    if user_profile.avatar_source == 'U':
+    return get_avatar_url(
+            user_profile.avatar_source,
+            user_profile.email
+    )
+
+def get_avatar_url(avatar_source, email):
+    if avatar_source == 'U':
         bucket = settings.S3_AVATAR_BUCKET
-        hash_key = user_avatar_hash(user_profile.email)
+        hash_key = user_avatar_hash(email)
         # ?x=x allows templates to append additional parameters with &s
         return "https://%s.s3.amazonaws.com/%s?x=x" % (bucket, hash_key)
     else:
-        hash_key = gravatar_hash(user_profile.email)
+        hash_key = gravatar_hash(email)
         return "https://secure.gravatar.com/avatar/%s?d=identicon" % (hash_key,)

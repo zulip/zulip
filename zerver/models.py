@@ -11,7 +11,7 @@ from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
 from zerver.lib import bugdown
-from zerver.lib.avatar import gravatar_hash, avatar_url
+from zerver.lib.avatar import gravatar_hash, get_avatar_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -528,12 +528,15 @@ class Message(models.Model):
         sender_realm_domain = self.sender.realm.domain
         sender_full_name = self.sender.full_name
         sender_short_name = self.sender.short_name
+        sender_avatar_source = self.sender.avatar_source
         sending_client_name = self.sending_client.name
         sender_id = self.sender.id
         recipient = self.recipient
         recipient_id = recipient.id
         recipient_type = recipient.type
         recipient_type_id = recipient.type_id
+
+        avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
         display_recipient = get_display_recipient_by_id(
                 recipient_id,
@@ -571,7 +574,7 @@ class Message(models.Model):
             subject           = subject,
             timestamp         = datetime_to_timestamp(pub_date),
             gravatar_hash     = gravatar_hash(sender_email), # Deprecated June 2013
-            avatar_url        = avatar_url(self.sender),
+            avatar_url        = avatar_url,
             client            = sending_client_name)
 
         obj['subject_links'] = bugdown.subject_links(sender_realm_domain.lower(), subject)
