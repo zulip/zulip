@@ -139,7 +139,10 @@ exports.activate = function (operators, opts) {
         message_tour.start_tour(current_msg_list.selected_id());
     }
 
+    // For legacy reasons, we need to set current_filter before calling
+    // muting_enabled.
     current_filter = filter;
+    var muting_enabled = exports.muting_enabled();
 
     // Save how far from the pointer the top of the message list was.
     if (current_msg_list.selected_id() !== -1) {
@@ -150,6 +153,7 @@ exports.activate = function (operators, opts) {
         && !current_filter.is_search() && !exports.narrowed_by_reply();
     narrowed_msg_list = new MessageList('zfilt', current_filter, {
         collapse_messages: ! current_filter.is_search(),
+        muting_enabled: muting_enabled,
         summarize_read: can_summarize ? 'stream' : false
     });
 

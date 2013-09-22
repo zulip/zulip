@@ -2,6 +2,7 @@
 function MessageList(table_name, filter, opts) {
     _.extend(this, {
         collapse_messages: true,
+        muting_enabled: true,
         summarize_read: false
     }, opts);
     this.view = new MessageListView(this, table_name, this.collapse_messages);
