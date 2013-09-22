@@ -28,7 +28,59 @@ function MessageList(table_name, filter, opts) {
 (function () {
 
 MessageList.prototype = {
-    get: function MessageList_get(id) {
+    add_messages: function MessageList_add_messages(messages, messages_are_new) {
+        var self = this;
+        var predicate = self.filter.predicate();
+        var top_messages = [];
+        var bottom_messages = [];
+        var interior_messages = [];
+
+        // If we're initially populating the list, save the messages in
+        // bottom_messages regardless
+        if (self.selected_id() === -1 && self.empty()) {
+            bottom_messages = _.filter(messages, predicate);
+        } else {
+            _.each(messages, function (msg) {
+                // Filter out duplicates that are already in self, and all messages
+                // that fail our filter predicate
+                if (! (self.get(msg.id) === undefined && predicate(msg))) {
+                    return;
+                }
+
+                // Put messages in correct order on either side of the message list
+                if (self.empty() || msg.id > self.last().id) {
+                    bottom_messages.push(msg);
+                } else if (msg.id < self.first().id) {
+                    top_messages.push(msg);
+                } else {
+                    interior_messages.push(msg);
+                }
+            });
+        }
+
+        if (interior_messages.length > 0) {
+            self.add_and_rerender(top_messages.concat(interior_messages).concat(bottom_messages));
+            return true;
+        }
+        if (top_messages.length > 0) {
+            self.prepend(top_messages);
+        }
+        if (bottom_messages.length > 0) {
+            self.append(bottom_messages, messages_are_new);
+        }
+
+        if ((self === narrowed_msg_list) && !self.empty() &&
+            (self.selected_id() === -1)) {
+            // If adding some new messages to the message tables caused
+            // our current narrow to no longer be empty, hide the empty
+            // feed placeholder text.
+            narrow.hide_empty_narrow_message();
+            // And also select the newly arrived message.
+            self.select_id(self.selected_id(), {then_scroll: true, use_closest: true});
+        }
+    },
+
+   get: function MessageList_get(id) {
         id = parseInt(id, 10);
         if (isNaN(id)) {
             return undefined;

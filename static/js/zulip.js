@@ -616,46 +616,6 @@ function add_message_metadata(message) {
     return message;
 }
 
-function add_messages_helper(messages, msg_list, predicate, messages_are_new) {
-    var top_messages = [];
-    var bottom_messages = [];
-    var interior_messages = [];
-
-    // If we're initially populating the list, save the messages in
-    // bottom_messages regardless
-    if (msg_list.selected_id() === -1 && msg_list.empty()) {
-        bottom_messages = _.filter(messages, predicate);
-    } else {
-        _.each(messages, function (msg) {
-            // Filter out duplicates that are already in msg_list, and all messages
-            // that fail our filter predicate
-            if (! (msg_list.get(msg.id) === undefined && predicate(msg))) {
-                return;
-            }
-
-            // Put messages in correct order on either side of the message list
-            if (msg_list.empty() || msg.id > msg_list.last().id) {
-                bottom_messages.push(msg);
-            } else if (msg.id < msg_list.first().id) {
-                top_messages.push(msg);
-            } else {
-                interior_messages.push(msg);
-            }
-        });
-    }
-
-    if (interior_messages.length > 0) {
-        msg_list.add_and_rerender(top_messages.concat(interior_messages).concat(bottom_messages));
-        return true;
-    }
-    if (top_messages.length > 0) {
-        msg_list.prepend(top_messages);
-    }
-    if (bottom_messages.length > 0) {
-        msg_list.append(bottom_messages, messages_are_new);
-    }
-}
-
 function add_messages(messages, msg_list, messages_are_new) {
     if (!messages) {
         return;
@@ -664,21 +624,7 @@ function add_messages(messages, msg_list, messages_are_new) {
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
 
-    add_messages_helper(messages, msg_list, msg_list.filter.predicate(),
-                        messages_are_new);
-
-    if ((msg_list === narrowed_msg_list) && !msg_list.empty() &&
-        (msg_list.selected_id() === -1)) {
-        // If adding some new messages to the message tables caused
-        // our current narrow to no longer be empty, hide the empty
-        // feed placeholder text.
-        narrow.hide_empty_narrow_message();
-        // And also select the newly arrived message.
-        msg_list.select_id(msg_list.selected_id(), {then_scroll: true, use_closest: true});
-    }
-
-    // There are some other common tasks that happen when adding messages, but these
-    // happen higher up in the stack, notably logic related to unread counts.
+    msg_list.add_messages(messages, messages_are_new);
 }
 
 function deduplicate_messages(messages) {
