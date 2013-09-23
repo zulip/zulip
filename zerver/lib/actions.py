@@ -249,8 +249,17 @@ def do_send_messages(messages):
             assert((len(message['recipients']) == 1) or (len(message['recipients']) == 2))
         elif (message['message'].recipient.type == Recipient.STREAM or
               message['message'].recipient.type == Recipient.HUDDLE):
-            query = Subscription.objects.select_related("user_profile").only(
-                "id", "user_profile__id", "user_profile__is_active").filter(
+            # We use select_related()/only() here, while the PERSONAL case above uses
+            # get_user_profile_by_id() to get UserProfile objects from cache.  Streams will
+            # typically have more recipients than PMs, so get_user_profile_by_id() would be
+            # a bit more expensive here, given that we need to hit the DB anyway and only
+            # care about the email from the user profile.
+            fields = [
+                'user_profile__id',
+                'user_profile__email',
+                'user_profile__is_active'
+            ]
+            query = Subscription.objects.select_related("user_profile").only(*fields).filter(
                 recipient=message['message'].recipient, active=True)
             message['recipients'] = [s.user_profile for s in query]
         else:
