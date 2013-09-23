@@ -4,5 +4,7 @@ USER=root
 
 * * * * * root /home/humbug/humbug-deployments/current/tools/write-rabbitmq-consumers-state-file notify_tornado
 * * * * * root /home/humbug/humbug-deployments/current/tools/write-rabbitmq-consumers-state-file user_activity
+* * * * * root /home/humbug/humbug-deployments/current/tools/write-rabbitmq-consumers-state-file user_activity_interval
+* * * * * root /home/humbug/humbug-deployments/current/tools/write-rabbitmq-consumers-state-file user_presence
 * * * * * root /home/humbug/humbug-deployments/current/tools/write-rabbitmq-consumers-state-file invites
 * * * * * root /home/humbug/humbug-deployments/current/tools/write-rabbitmq-consumers-state-file signups
