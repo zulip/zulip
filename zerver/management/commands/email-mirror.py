@@ -132,13 +132,13 @@ def valid_stream(stream_name, token):
         return False
 
 def get_message_part_by_type(message, content_type):
-    charset = message.get_content_charset()
+    charsets = message.get_charsets()
 
-    for part in message.walk():
+    for idx, part in enumerate(message.walk()):
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
-            if charset:
-                content = content.decode(charset)
+            if charsets[idx]:
+                content = content.decode(charsets[idx])
             return content
 
 def extract_body(message):
