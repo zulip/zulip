@@ -23,14 +23,15 @@ TEST_SUITE = False
 
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
-if DEPLOYED and not TESTING_DEPLOYED:
+if TESTING_DEPLOYED or LOCALSERVER:
+    # XXX we should probably tighten this for LOCALSERVER
+    # Allow any hosts for our test instances, to reduce 500 spam
+    ALLOWED_HOSTS = ['*']
+elif DEPLOYED:
     # The IP addresses are for app.zulip.{com,net} and staging.zulip.{com,net}
     ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.213.44.54',
                      '54.213.41.54', '54.213.44.58', '54.213.44.73',
                      '54.245.120.64', '54.213.44.83', '.zulip.com', '.zulip.net']
-elif TESTING_DEPLOYED:
-    # Allow any hosts for our test instances, to reduce 500 spam
-    ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = ['localhost']
 
@@ -53,7 +54,7 @@ DATABASES = {"default": {
     },
 }
 
-if not DEPLOYED:
+if not DEPLOYED or LOCALSERVER:
     DATABASES["default"].update({
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost',
@@ -225,7 +226,7 @@ else:
     STATICFILES_FINDERS = (
         'zerver.finders.ZulipFinder',
     )
-    if DEPLOYED:
+    if DEPLOYED or LOCALSERVER:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
         STATIC_ROOT = 'prod-static/serve'

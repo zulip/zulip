@@ -290,7 +290,8 @@ class Stream(models.Model):
         # older than realm id 68 with some exceptions), we enable
         # historical messages for all streams that are not invite-only.
         return ((not settings.DEPLOYED or self.realm.domain in
-                 ["zulip.com"] or self.realm.id > 68)
+                 ["zulip.com"] or self.realm.id > 68
+                 or settings.LOCALSERVER)
                 and not self.invite_only)
 
     class Meta:
