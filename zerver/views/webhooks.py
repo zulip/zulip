@@ -328,6 +328,9 @@ def api_pivotal_webhook(request):
                                                        estimate,
                                                        issue_desc,
                                                        more_info)
+        else:
+            logging.warning("Received Pivotal event we did not understand: %s" % (event_type, ))
+            return json_success()
 
     except AttributeError:
         return json_error("Failed to extract data from Pivotal XML response")
