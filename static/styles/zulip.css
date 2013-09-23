@@ -611,6 +611,24 @@ ul.filters li .arrow:hover {
     color: #000;
 }
 
+ul.filters .topic-sidebar-arrow {
+    font-size: 0.7em;
+    top: 1px;
+    display: none !important;
+}
+
+ul.filters li.expanded_subject:hover .topic-sidebar-arrow {
+    display: inline !important;
+    cursor: pointer;
+    color: #888;
+}
+
+ul.filters li.expanded_subject .topic-sidebar-arrow:hover {
+    display: inline;
+    cursor: pointer;
+    color: #000;
+}
+
 ul.filters li.out_of_home_view {
     opacity: 0.25;
 }
@@ -2329,7 +2347,7 @@ li.expanded_subject {
 
 .expanded_subject.zero-subject-unreads .subject_box {
     display: block;
-    margin-right: 0px;
+    margin-right: 15px;
 }
 
 
