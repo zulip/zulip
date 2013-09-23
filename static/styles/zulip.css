@@ -2772,6 +2772,7 @@ div.edit_bot {
 
 #home .alert-bar .close-alert-icon:hover{
     opacity: 0.7;
+    cursor: pointer;
 }
 
 #settings-change-box .gravatar-profile {
