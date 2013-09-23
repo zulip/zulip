@@ -107,7 +107,7 @@ function edit_message (row, raw_content) {
         });
     }
 
-    composebox_typeahead.initialize_compose_typeahead("#message_edit_content");
+    composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
 }
 
 exports.start = function (row) {

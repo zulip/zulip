@@ -194,7 +194,7 @@ exports.compose_content_begins_typeahead = function (query) {
 
     // Only start the emoji autocompleter if : is directly after one
     // of the whitespace or punctuation chars we split on.
-    if (current_token[0] === ':') {
+    if (this.options.completions.emoji && current_token[0] === ':') {
         // We don't want to match non-emoji emoticons such
         // as :P or :-p
         // Also, if the user has only typed a colon and nothing after,
@@ -205,6 +205,10 @@ exports.compose_content_begins_typeahead = function (query) {
         this.completing = 'emoji';
         this.token = current_token.substring(1);
         return emoji.emojis;
+    }
+
+    if (!this.options.completions.mention) {
+        return false;
     }
 
     // Don't autocomplete more than this many characters.
@@ -278,7 +282,9 @@ exports.content_typeahead_selected = function (item) {
     return beginning + rest;
 };
 
-exports.initialize_compose_typeahead = function (selector) {
+exports.initialize_compose_typeahead = function (selector, completions) {
+    completions = $.extend({mention: false, emoji: false}, completions);
+
     $(selector).typeahead({
         items: 5,
         dropup: true,
@@ -300,7 +306,8 @@ exports.initialize_compose_typeahead = function (selector) {
             }
         },
         updater: exports.content_typeahead_selected,
-        stopAdvance: true // Do not advance to the next field on a tab or enter
+        stopAdvance: true, // Do not advance to the next field on a tab or enter
+        completions: completions
     });
 };
 
@@ -407,7 +414,7 @@ exports.initialize = function () {
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
 
-    exports.initialize_compose_typeahead("#new_message_content");
+    exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true});
 
     $( "#private_message_recipient" ).blur(function (event) {
         var val = $(this).val();
