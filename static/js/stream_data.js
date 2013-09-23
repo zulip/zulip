@@ -113,7 +113,7 @@ exports.add_subscriber = function (stream_name, user_email) {
         // If we're not subscribed, we don't track this, and shouldn't
         // get these events. Likewise, if we don't know about the stream,
         // we don't want to track this.
-        blueslip.warning("We got an add_subscriber call for a non-existent or unsubscribed stream.");
+        blueslip.warn("We got an add_subscriber call for a non-existent or unsubscribed stream.");
         return;
     }
     sub.subscribers.set(user_email, true);
@@ -125,7 +125,7 @@ exports.remove_subscriber = function (stream_name, user_email) {
         // If we're not subscribed, we don't track this, and shouldn't
         // get these events. Likewise, if we don't know about the stream,
         // we don't want to track this.
-        blueslip.warning("We got a remove_subscriber call for a non-existent or unsubscribed stream.");
+        blueslip.warn("We got a remove_subscriber call for a non-existent or unsubscribed stream.");
         return;
     }
     sub.subscribers.del(user_email);
@@ -137,7 +137,7 @@ exports.user_is_subscribed = function (stream_name, user_email) {
         // If we don't know about the stream, or we ourselves are not
         // subscribed, we can't keep track of the subscriber list in general,
         // so we return undefined (treated as falsy if not explicitly handled).
-        blueslip.warning("We got a user_is_subscribed call for a non-existent or unsubscribed stream.");
+        blueslip.warn("We got a user_is_subscribed call for a non-existent or unsubscribed stream.");
         return undefined;
     }
     return sub.subscribers.has(user_email);
