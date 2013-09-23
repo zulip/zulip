@@ -509,6 +509,30 @@ class StreamMessagesTest(AuthedTestCase):
         self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
 
+    def test_not_too_many_queries(self):
+        recipient_list  = ['hamlet@zulip.com', 'iago@zulip.com', 'cordelia@zulip.com', 'othello@zulip.com']
+        for email in recipient_list:
+            self.subscribe_to_stream(email, "Denmark")
+
+        sender_email = 'hamlet@zulip.com'
+        sender = get_user_profile_by_email(sender_email)
+        message_type_name = "stream"
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+        stream = 'Denmark'
+        subject = 'foo'
+        content = 'whatever'
+        realm = sender.realm
+
+        def send_message():
+            check_send_message(sender, sending_client, message_type_name, [stream],
+                               subject, content, forwarder_user_profile=sender, realm=realm)
+
+        send_message() # prime the caches
+        with queries_captured() as queries:
+            send_message()
+
+        self.assertTrue(len(queries) <= 8)
+
     def test_message_mentions(self):
         user_profile = get_user_profile_by_email("iago@zulip.com")
         self.subscribe_to_stream(user_profile.email, "Denmark")
