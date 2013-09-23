@@ -26,7 +26,12 @@ exports.fade_users_when_composing = page_params.staging;
 exports.alert_words =
   _.contains(['reddit.com', 'mit.edu', 'zulip.com'], page_params.domain);
 
-exports.muting = page_params.staging;
+
+var zulip_mit_emails = [];
+
+var is_zulip_mit_user = _.contains(zulip_mit_emails, page_params.email);
+
+exports.muting = page_params.staging || is_zulip_mit_user;
 
 exports.left_side_userlist = page_params.staging ||
   _.contains(['customer7.invalid'], page_params.domain);
