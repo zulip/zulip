@@ -1786,7 +1786,8 @@ class ActivityTable(object):
                 row = self.rows.setdefault(email,
                                            {'realm': domain,
                                             'full_name': full_name,
-                                            'email': email})
+                                            'email': email,
+                                            'type': 'user'})
                 row[count_field] = count
                 row[last_visit_field] = last_visit
 
@@ -1795,7 +1796,8 @@ class ActivityTable(object):
                 row = self.rows.setdefault(domain,
                                            {'realm': domain,
                                             'full_name': full_name,
-                                            'email': ''})
+                                            'email': '',
+                                            'type': 'realm'})
                 row.setdefault(count_field, 0)
                 row[count_field] += count
 

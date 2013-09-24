@@ -21,6 +21,10 @@
 {% endfor %}
 </ul>
 
+<a class="show-all">Show all</a>
+&nbsp;
+<a class="show-summary">Show summary</a>
+
 <div class="tab-content">
 
 {% for name, activity in data.iteritems %}
@@ -44,10 +48,14 @@
     </thead>
     <tbody>
     {% for email, row in activity.sorted_rows %}
-        <tr class="{{ row.class }}">
+        <tr class="{{ row.class }}" data-type="{{ row.type }}" data-realm="{{ row.realm }}">
         <td><strong>{{ row.full_name }}</strong></td>
         <td><strong>{{ row.email }}</strong></td>
-        <td><strong>{{ row.realm }}</strong></td>
+        <td>
+            <a class="realm" data-realm="{{ row.realm }}">
+                <strong>{{ row.realm }}</strong>
+            <a>
+        </td>
         <td sorttable_customkey="{{ row.send_message_last|date:'YmdHi' }}">{{ row.send_message_last|date:"M d, H:i" }}</td>
         <td class="number">{{ row.send_message_count }}</td>
         {% if activity.has_pointer %}

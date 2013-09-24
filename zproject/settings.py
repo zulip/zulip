@@ -420,6 +420,7 @@ JS_SPECS = {
     'activity': {
         'source_filenames': (
             'third/sorttable/sorttable.js',
+            'js/activity_page.js',
         ),
         'output_filename': 'min/activity.js'
     },
