@@ -82,26 +82,11 @@ def fetch_tweet_data(tweet_id):
         import testing_mocks
         res = testing_mocks.twitter(tweet_id)
     else:
-        if settings.STAGING_DEPLOYED or settings.TESTING_DEPLOYED:
-            # Application: "Humbug HQ"
-            api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
-                              consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                              access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                              access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        elif settings.DEPLOYED:
-            # This is the real set of API credentials used by our real server,
-            # and we probably shouldn't test with it just so we don't waste its requests
-            # Application: "Humbug HQ - Production"
-            api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxx',
-                              consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                              access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                              access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        else:
-            # Application: "Humbug HQ Test"
-            api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
-                              consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                              access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                              access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        api = twitter.Api(consumer_key = settings.TWITTER_CONSUMER_KEY,
+                          consumer_secret = settings.TWITTER_CONSUMER_SECRET,
+                          access_token_key = settings.TWITTER_ACCESS_TOKEN_KEY,
+                          access_token_secret = settings.TWITTER_ACCESS_TOKEN_SECRET)
+
         try:
             # Sometimes Twitter hangs on responses.  Timing out here
             # will cause the Tweet to go through as-is with no inline

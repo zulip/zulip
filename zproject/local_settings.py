@@ -59,3 +59,25 @@ else:
     S3_AVATAR_BUCKET="humbug-user-avatars-test"
 
     MIXPANEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Twitter API credentials
+if STAGING_DEPLOYED or TESTING_DEPLOYED:
+    # Application: "Humbug HQ"
+    TWITTER_CONSUMER_KEY = "xxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+elif DEPLOYED:
+    # This is the real set of API credentials used by our real server,
+    # and we probably shouldn't test with it just so we don't waste its requests
+    # Application: "Humbug HQ - Production"
+    TWITTER_CONSUMER_KEY = "xxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+else:
+    # Application: "Humbug HQ Test"
+    TWITTER_CONSUMER_KEY = "xxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
