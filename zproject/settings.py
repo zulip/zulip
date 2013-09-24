@@ -1,4 +1,7 @@
 # Django settings for humbug project.
+#
+# DO NOT PUT ANY SECRETS IN THIS FILE.
+# Those belong in local_settings.py.
 import os
 import platform
 import time
@@ -6,12 +9,11 @@ import re
 
 from zerver.openid import openid_failure_handler
 
-SERVER_GENERATION = int(time.time())
+# Import variables like secrets from the local_settings file
+from local_settings import *
 
-DEPLOYED = (('zulip.net' in platform.node())
-            or os.path.exists('/etc/humbug-server'))
-STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
-TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
+# DEPLOYED and similar variables are set by local_settings.py
+SERVER_GENERATION = int(time.time())
 
 # Uncomment end of next line to test JS/CSS minification.
 DEBUG = not DEPLOYED # and platform.node() != 'your-machine'
@@ -94,19 +96,6 @@ TEMPLATE_DIRS = ( os.path.join(DEPLOY_ROOT, 'templates'), )
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = ''
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-# A fixed salt used for hashing in certain places, e.g. email-based
-# username generation.
-HASH_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-# Use this salt to hash a user's email into a filename for their user-uploaded
-# avatar.  If this salt is discovered, attackers will only be able to determine
-# that the owner of an email account has uploaded an avatar to Zulip, which isn't
-# the end of the world.  Don't use the salt where there is more security exposure.
-AVATAR_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
 # Tell the browser to never send our cookies without encryption, e.g.
 # when executing the initial http -> https redirect.
 #
@@ -119,13 +108,6 @@ if DEPLOYED:
 # the token from the DOM, which means malicious code could too.  But hiding the
 # cookie will slow down some attackers.
 CSRF_COOKIE_PATH = '/;HttpOnly'
-
-# Used just for generating initial passwords (only used in testing environments).
-INITIAL_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-# A shared secret, used to authenticate different parts of the app to each other.
-# FIXME: store this password more securely
-SHARED_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.
@@ -442,9 +424,6 @@ PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 
 
 USING_RABBITMQ = DEPLOYED
-# This password also appears in servers/configure-rabbitmq
-RABBITMQ_PASSWORD = 'xxxxxxxxxxxxxxxx'
-
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
@@ -569,11 +548,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 ACCOUNT_ACTIVATION_DAYS=7
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'humbug@humbughq.com'
-EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
-EMAIL_PORT = 587
 
 DEFAULT_FROM_EMAIL = "Zulip <zulip@zulip.com>"
 
@@ -581,12 +555,6 @@ LOGIN_REDIRECT_URL='/'
 OPENID_SSO_SERVER_URL = 'https://www.google.com/accounts/o8/id'
 OPENID_CREATE_USERS = True
 OPENID_RENDER_FAILURE = openid_failure_handler
-
-MAILCHIMP_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us4'
-ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
-
-# This should be synced with our camo installation
-CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # Client-side polling timeout for get_events, in milliseconds.
 # We configure this here so that the client test suite can override it.
@@ -630,19 +598,3 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 # for running the tests, or you will need to ensure that embedly_client.is_supported()
 # gets called before the tests run.
 USING_EMBEDLY = False
-EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-if DEPLOYED:
-    S3_KEY="xxxxxxxxxxxxxxxxxxxx"
-    S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    S3_BUCKET="humbug-user-uploads"
-    S3_AVATAR_BUCKET="humbug-user-avatars"
-
-    MIXPANEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-else:
-    S3_KEY="xxxxxxxxxxxxxxxxxxxx"
-    S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    S3_BUCKET="humbug-user-uploads-test"
-    S3_AVATAR_BUCKET="humbug-user-avatars-test"
-
-    MIXPANEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
