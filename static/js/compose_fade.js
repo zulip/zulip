@@ -116,8 +116,23 @@ function _want_normal_display() {
     }
 
     // If the user really hasn't specified anything let, then we want a normal display
-    if ((focused_recipient.type === "stream" && focused_recipient.subject === "") ||
-        (focused_recipient.type === "private" && focused_recipient.reply_to === "")) {
+    if (focused_recipient.type === "stream") {
+        // If a stream doesn't exist, there is no real chance of a mix, so fading
+        // is just noise to the user.
+        if (!stream_data.get_sub(focused_recipient.stream)) {
+            return true;
+        }
+
+        // This is kind of debatable.  If the topic is empty, it could be that
+        // the user simply hasn't started typing it yet, but disabling fading here
+        // means the feature doesn't help realms where topics aren't mandatory
+        // (which is most realms as of this writing).
+        if (focused_recipient.subject === "") {
+            return true;
+        }
+    }
+
+    if (focused_recipient.type === "private" && focused_recipient.reply_to === "") {
         return true;
     }
 
