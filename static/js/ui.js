@@ -1338,6 +1338,11 @@ $(function () {
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
         }
+        // You are only narrowed to a stream, not a topic, so you are unlikely
+        // to immediately start composing, and if the compose box is open, you
+        // don't get to use hotkeys.
+        compose.cancel();
+
         var stream = $(e.target).parents('li').attr('data-name');
         narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar'});
 
