@@ -137,7 +137,7 @@ def get_message_part_by_type(message, content_type):
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
             if charsets[idx]:
-                content = content.decode(charsets[idx])
+                content = content.decode(charsets[idx], errors="ignore")
             return content
 
 def extract_body(message):
