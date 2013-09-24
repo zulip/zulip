@@ -1773,13 +1773,22 @@ class ActivityTable(object):
 
             records = records.select_related().only(*fields)
 
+            count_field = query_name + '_count'
+            last_visit_field = query_name + '_last'
+
             for record in records:
-                row = self.rows.setdefault(record.user_profile.email,
-                                           {'realm': record.user_profile.realm.domain,
-                                            'full_name': record.user_profile.full_name,
-                                            'email': record.user_profile.email})
-                row[query_name + '_count'] = record.count
-                row[query_name + '_last' ] = record.last_visit
+                domain = record.user_profile.realm.domain
+                email = record.user_profile.email
+                full_name = record.user_profile.full_name
+                count = record.count
+                last_visit = record.last_visit
+
+                row = self.rows.setdefault(email,
+                                           {'realm': domain,
+                                            'full_name': full_name,
+                                            'email': email})
+                row[count_field] = count
+                row[last_visit_field] = last_visit
 
         for query_name, urls in queries:
             if 'pointer' in query_name:
