@@ -1790,6 +1790,21 @@ class ActivityTable(object):
                 row[count_field] = count
                 row[last_visit_field] = last_visit
 
+                # Now update domain-level row
+                full_name = domain + ' (all users)'
+                row = self.rows.setdefault(domain,
+                                           {'realm': domain,
+                                            'full_name': full_name,
+                                            'email': ''})
+                row.setdefault(count_field, 0)
+                row[count_field] += count
+
+                if last_visit_field in row:
+                    row[last_visit_field] = max(last_visit, row[last_visit_field])
+                else:
+                    row[last_visit_field] = last_visit
+
+
         for query_name, urls in queries:
             if 'pointer' in query_name:
                 self.has_pointer = True
