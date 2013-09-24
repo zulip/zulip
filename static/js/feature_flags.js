@@ -20,7 +20,13 @@ exports.collapsible = page_params.staging;
 exports.propagate_topic_edits = page_params.staging ||
   _.contains(['customer7.invalid'], page_params.domain);
 
-exports.fade_users_when_composing = page_params.staging;
+var customer4_realms = [
+  'customer4.invalid',
+  'users.customer4.invalid'
+];
+var is_customer4 = _.contains(customer4_realms, page_params.domain);
+
+exports.fade_users_when_composing = page_params.staging || is_customer4;
 
 exports.alert_words =
   _.contains(['reddit.com', 'mit.edu', 'zulip.com'], page_params.domain);
