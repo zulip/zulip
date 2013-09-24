@@ -224,8 +224,7 @@ function add_email_hint(row) {
 function add_sub_to_table(sub) {
     $('#create_stream_row').after(templates.render(
         'subscription',
-        _.extend(sub, {'show_email_token': feature_flags.email_forwarding,
-                       'allow_rename': page_params.show_admin})));
+        _.extend(sub, {'allow_rename': page_params.show_admin})));
     settings_for_sub(sub).collapse('show');
     add_email_hint(sub);
 }
@@ -427,9 +426,6 @@ exports.setup_page = function () {
                 sub = create_sub(stream, {subscribed: false});
             }
             sub = _.extend(sub, {'allow_rename': page_params.show_admin});
-            if (feature_flags.email_forwarding) {
-                sub = _.extend(sub, {'show_email_token': feature_flags.email_forwarding});
-            }
             sub_rows.push(sub);
         });
 

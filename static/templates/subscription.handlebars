@@ -44,12 +44,12 @@
           </li>
         </ul>
       </div>
-      {{#if_and show_email_token subscribed}}
+      {{#if subscribed}}
       <div>
           <p><b>Email address</b>: <span class="email-address">{{email_address}}
              <i class="icon-vector-question-sign" id="email-address-hint-{{id}}"></i></span></p>
       </div>
-      {{/if_and}}
+      {{/if}}
 
       {{#if allow_rename}}
         <div class="rename-stream">
