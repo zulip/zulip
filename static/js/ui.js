@@ -791,7 +791,7 @@ exports.collapse = function (row) {
 exports.expand_summary_row = function (row) {
     var message_ids = row.attr('data-messages').split(' ');
     var messages = _.map(message_ids, function (id) {
-        return all_msg_list.get(id);
+        return current_msg_list.get(id);
     });
 
     _.each(messages, function (msg){
