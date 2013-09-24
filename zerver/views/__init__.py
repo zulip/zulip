@@ -1758,9 +1758,22 @@ class ActivityTable(object):
         self.rows = {}
 
         def do_url(query_name, url):
-            for record in UserActivity.objects.filter(
+            fields = [
+                'user_profile__realm__domain',
+                'user_profile__full_name',
+                'user_profile__email',
+                'count',
+                'last_visit'
+            ]
+
+            records = UserActivity.objects.filter(
                     query=url,
-                    client__name__startswith=client_name).select_related():
+                    client__name__startswith=client_name
+            )
+
+            records = records.select_related().only(*fields)
+
+            for record in records:
                 row = self.rows.setdefault(record.user_profile.email,
                                            {'realm': record.user_profile.realm.domain,
                                             'full_name': record.user_profile.full_name,
