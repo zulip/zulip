@@ -1822,7 +1822,8 @@ class ActivityTable(object):
             row['age'] = age
 
     def sorted_rows(self):
-        return sorted(self.rows.iteritems(), key=lambda (k,r): r['age'])
+        keyfunc = lambda (k,r): (r['realm'], -1 * r.get('send_message_count', 0))
+        return sorted(self.rows.iteritems(), key=keyfunc)
 
 def can_view_activity(request):
     return request.user.realm.domain == 'zulip.com'
