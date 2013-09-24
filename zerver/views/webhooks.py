@@ -81,7 +81,6 @@ def api_github_landing(request, user_profile, event=REQ,
             noun = 'issue'
         else:
             # It's a pull request comment
-            stream = 'commits'
             noun = 'pull request'
 
         subject = github_generic_subject(noun, repository, issue)
