@@ -10,11 +10,11 @@ class zulip::base {
 
 
   apt::key {"A529EF65":
-    source  =>  "http://apt.humbughq.com/ops.asc",
+    source  =>  "http://apt.zulip.com/ops.asc",
   }
   apt::sources_list {"humbug":
     ensure  => present,
-    content => 'deb http://apt.humbughq.com/ops wheezy main',
+    content => 'deb http://apt.zulip.com/ops wheezy main',
   }
 
   group { 'humbug':

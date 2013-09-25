@@ -50,7 +50,7 @@ sed -i 's/localhost$/localhost $hostname/' /etc/hosts
 
 # First, install any updates from the apt repo that may be needed
 cat >/etc/apt/sources.list.d/humbug.list <<EOF2
-deb http://apt.humbughq.com/ops wheezy main
+deb http://apt.zulip.com/ops wheezy main
 EOF2
 apt-get update
 apt-get -y upgrade
