@@ -59,6 +59,7 @@ else:
     S3_AVATAR_BUCKET="humbug-user-avatars-test"
 
     MIXPANEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    LOCAL_DATABASE_PASSWORD="xxxxxxxxxxxx"
 
 # Twitter API credentials
 if STAGING_DEPLOYED or TESTING_DEPLOYED:

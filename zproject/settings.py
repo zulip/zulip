@@ -55,7 +55,7 @@ DATABASES = {"default": {
 
 if not DEPLOYED:
     DATABASES["default"].update({
-            'PASSWORD': 'xxxxxxxxxxxx',
+            'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost',
             'OPTIONS': {}
             })
