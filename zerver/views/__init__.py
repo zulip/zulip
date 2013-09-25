@@ -313,8 +313,7 @@ def accounts_register(request):
                 streams = prereg_user.streams.all()
                 if len(streams) == 0:
                     streams = get_default_subs(user_profile)
-                for stream in streams:
-                    do_add_subscription(user_profile, stream)
+                bulk_add_subscriptions(streams, [user_profile])
 
                 # Give you the last 100 messages on your streams, so you have
                 # something to look at in your home view once you finish the
