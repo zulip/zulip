@@ -1847,13 +1847,13 @@ def get_activity(request):
     )
 
     return render_to_response('zerver/activity.html',
-        { 'data': {
-            'Website': ActivityTable('website',       web_queries, default_tab=True),
-            'Mirror':  ActivityTable('zephyr_mirror', api_queries),
-            'API':     ActivityTable('API',           api_queries),
-            'Android': ActivityTable('Android',       api_queries),
-            'iPhone':  ActivityTable('iPhone',        api_queries)
-        }}, context_instance=RequestContext(request))
+        { 'data': [
+            ('Website',    ActivityTable('website',       web_queries, default_tab=True)),
+            ('Mirror',     ActivityTable('zephyr_mirror', api_queries)),
+            ('API',        ActivityTable('API',           api_queries)),
+            ('Android',    ActivityTable('Android',       api_queries)),
+            ('iPhone',     ActivityTable('iPhone',        api_queries))
+        ]}, context_instance=RequestContext(request))
 
 def get_status_list(requesting_user_profile):
     return {'presences': get_status_dict(requesting_user_profile),

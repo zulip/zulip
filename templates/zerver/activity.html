@@ -14,7 +14,7 @@
 {% block content %}
 
 <ul class="nav nav-tabs">
-{% for name, activity in data.iteritems %}
+{% for name, activity in data %}
     <li {% if activity.default_tab %} class="active" {% endif %}>
         <a href="#{{ name }}" data-toggle="tab">{{ name }}</a>
     </li>
@@ -27,7 +27,7 @@
 
 <div class="tab-content">
 
-{% for name, activity in data.iteritems %}
+{% for name, activity in data %}
 
     <div class="tab-pane {% if activity.default_tab %} active {% endif %}" id="{{ name }}">
     <h2>{{ name }} usage</h2>
