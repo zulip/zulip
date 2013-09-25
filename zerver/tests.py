@@ -382,7 +382,9 @@ class LoginTest(AuthedTestCase):
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
     def test_register(self):
-        self.register("test", "test")
+        with queries_captured() as queries:
+            self.register("test", "test")
+        self.assertTrue(len(queries) <= 53)
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
