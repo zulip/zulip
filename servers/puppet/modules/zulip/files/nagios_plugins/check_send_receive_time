@@ -58,7 +58,7 @@ sendreceive.warning 3
 sendreceive.critical 5"""
         sys.exit(0)
 
-sys.path.append('/home/humbug/humbug-deployments/current/api')
+sys.path.append('/home/humbug/deployments/current/api')
 import zulip
 
 states = {

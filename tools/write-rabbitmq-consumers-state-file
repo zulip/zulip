@@ -7,7 +7,7 @@ if [ -z "$queue" ]; then
     exit 2
 fi
 
-ZULIP_DIR=/home/humbug/humbug-deployments/current
+ZULIP_DIR=/home/humbug/deployments/current
 STATE_DIR=/var/lib/nagios_state
 STATE_FILE=$STATE_DIR/check-rabbitmq-consumers-$queue
 
