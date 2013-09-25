@@ -4,7 +4,7 @@ class zulip::supervisor {
 
   service { "supervisor":
     ensure => running,
-    require => [File["/var/log/humbug"],
+    require => [File["/var/log/zulip"],
                 Package["supervisor"],
                 ],
 

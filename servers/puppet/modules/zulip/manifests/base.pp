@@ -100,7 +100,7 @@ class zulip::base {
     subscribe  => File['/etc/ssh/sshd_config'],
   }
 
-  file { '/var/log/humbug':
+  file { '/var/log/zulip':
     ensure => 'directory',
     owner  => 'humbug',
     group  => 'humbug',
