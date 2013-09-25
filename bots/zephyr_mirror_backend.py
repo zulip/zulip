@@ -903,9 +903,9 @@ def open_logger():
         log_file = options.log_path
     elif options.forward_class_messages:
         if options.test_mode:
-            log_file = "/home/humbug/test-mirror-log"
+            log_file = "/var/log/zulip/test-mirror-log"
         else:
-            log_file = "/home/humbug/mirror-log"
+            log_file = "/var/log/zulip/mirror-log"
     else:
         f = tempfile.NamedTemporaryFile(prefix="zulip-log.%s." % (options.user,),
                                         delete=False)
