@@ -447,7 +447,7 @@ CACHES = {
 }
 
 if DEPLOYED:
-    SERVER_LOG_PATH = "/home/humbug/logs/server.log"
+    SERVER_LOG_PATH = "/var/log/zulip/server.log"
     EVENT_LOG_DIR = '/home/humbug/logs/event_log'
     ERROR_LOG_DIR = '/home/humbug/logs/errors'
     STATS_DIR = '/home/humbug/stats'
