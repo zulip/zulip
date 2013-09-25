@@ -1752,7 +1752,8 @@ def json_fetch_api_key(request, user_profile, password=REQ):
     return json_success({"api_key": user_profile.api_key})
 
 class ActivityTable(object):
-    def __init__(self, client_name, queries, default_tab=False):
+    def __init__(self, realm, client_name, queries, default_tab=False):
+        self.realm = realm
         self.default_tab = default_tab
         self.has_pointer = False
         self.rows = {}
@@ -1771,6 +1772,9 @@ class ActivityTable(object):
                     client__name__startswith=client_name
             )
 
+            if realm:
+                records = records.filter(user_profile__realm__domain=realm)
+
             records = records.select_related().only(*fields)
 
             count_field = query_name + '_count'
@@ -1783,19 +1787,19 @@ class ActivityTable(object):
                 count = record.count
                 last_visit = record.last_visit
 
-                row = self.rows.setdefault(email,
-                                           {'realm': domain,
-                                            'full_name': full_name,
-                                            'email': email,
-                                            'type': 'user'})
-                row[count_field] = count
-                row[last_visit_field] = last_visit
+                if realm:
+                    row = self.rows.setdefault(email,
+                                               {'realm': domain,
+                                                'full_name': full_name,
+                                                'email': email,
+                                                'type': 'user'})
+                    row[count_field] = count
+                    row[last_visit_field] = last_visit
 
                 # Now update domain-level row
-                full_name = domain + ' (all users)'
                 row = self.rows.setdefault(domain,
                                            {'realm': domain,
-                                            'full_name': full_name,
+                                            'full_name': '(all users)',
                                             'email': '',
                                             'type': 'realm'})
                 row.setdefault(count_field, 0)
@@ -1831,7 +1835,8 @@ def can_view_activity(request):
     return request.user.realm.domain == 'zulip.com'
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
-def get_activity(request):
+@has_request_variables
+def get_activity(request, realm=REQ(default=None)):
     if not can_view_activity(request):
         return HttpResponseRedirect(reverse('zerver.views.login_page'))
 
@@ -1848,13 +1853,17 @@ def get_activity(request):
 
     return render_to_response('zerver/activity.html',
         { 'data': [
-            ('Website',    ActivityTable('website',       web_queries, default_tab=True)),
-            ('Mirror',     ActivityTable('zephyr_mirror', api_queries)),
-            ('Desktop',    ActivityTable('desktop',       api_queries)),
-            ('API',        ActivityTable('API',           api_queries)),
-            ('Android',    ActivityTable('Android',       api_queries)),
-            ('iPhone',     ActivityTable('iPhone',        api_queries))
-        ]}, context_instance=RequestContext(request))
+            ('Website',    ActivityTable(realm, 'website',       web_queries, default_tab=True)),
+            ('Mirror',     ActivityTable(realm, 'zephyr_mirror', api_queries)),
+            ('Desktop',    ActivityTable(realm, 'desktop',       api_queries)),
+            ('API',        ActivityTable(realm, 'API',           api_queries)),
+            ('Android',    ActivityTable(realm, 'Android',       api_queries)),
+            ('iPhone',     ActivityTable(realm, 'iPhone',        api_queries))
+          ],
+
+          'realm': realm,
+          'summary_mode': realm is None
+        }, context_instance=RequestContext(request))
 
 def get_status_list(requesting_user_profile):
     return {'presences': get_status_dict(requesting_user_profile),

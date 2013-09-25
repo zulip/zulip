@@ -13,6 +13,13 @@
 
 {% block content %}
 
+{% if realm %}
+<a class="show-all" href="?">Home</a>
+<h4>{{ realm}}</h4>
+<br />
+{% endif %}
+
+
 <ul class="nav nav-tabs">
 {% for name, activity in data %}
     <li {% if activity.default_tab %} class="active" {% endif %}>
@@ -21,10 +28,6 @@
 {% endfor %}
 </ul>
 
-<a class="show-all">Show all</a>
-&nbsp;
-<a class="show-summary">Show summary</a>
-
 <div class="tab-content">
 
 {% for name, activity in data %}
@@ -32,11 +35,19 @@
     <div class="tab-pane {% if activity.default_tab %} active {% endif %}" id="{{ name }}">
     <h2>{{ name }} usage</h2>
     <table class="table sortable table-striped table-bordered">
+
     <thead class="activity_head">
     <tr>
+
+    {% if realm %}
     <th>Name</th>
     <th>Email</th>
+    {% endif %}
+
+    {% if summary_mode %}
     <th>Realm</th>
+    {% endif %}
+
     <th>Last send_message</th>
     <th>Messages sent</th>
     {% if activity.has_pointer %}
@@ -46,16 +57,24 @@
     <th>Last get_updates</th>
     </tr>
     </thead>
+
     <tbody>
     {% for email, row in activity.sorted_rows %}
         <tr class="{{ row.class }}" data-type="{{ row.type }}" data-realm="{{ row.realm }}">
+
+        {% if realm %}
         <td><strong>{{ row.full_name }}</strong></td>
         <td><strong>{{ row.email }}</strong></td>
+        {% endif %}
+
+        {% if summary_mode %}
         <td>
-            <a class="realm" data-realm="{{ row.realm }}">
+            <a class="realm" href="?realm={{ row.realm }}">
                 <strong>{{ row.realm }}</strong>
             <a>
         </td>
+        {% endif %}
+
         <td sorttable_customkey="{{ row.send_message_last|date:'YmdHi' }}">{{ row.send_message_last|date:"M d, H:i" }}</td>
         <td class="number">{{ row.send_message_count }}</td>
         {% if activity.has_pointer %}
