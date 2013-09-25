@@ -6,6 +6,7 @@ from django.test.simple import DjangoTestSuiteRunner
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.db.backends.util import CursorDebugWrapper
 
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, \
@@ -57,11 +58,41 @@ def queries_captured():
     Allow a user to capture just the queries executed during
     the with statement.
     '''
+
+    queries = []
+
+    def wrapper_execute(self, action, sql, params=()):
+        self.set_dirty()
+        start = time.time()
+        try:
+            return action(sql, params)
+        finally:
+            stop = time.time()
+            duration = stop - start
+            queries.append({
+                    'sql': sql,
+                    'time': "%.3f" % duration,
+                    })
+
     old_settings = settings.DEBUG
     settings.DEBUG = True
-    connection.queries = []
-    yield connection.queries
+
+    old_execute = CursorDebugWrapper.execute
+    old_executemany = CursorDebugWrapper.executemany
+
+    def cursor_execute(self, sql, params=()):
+        return wrapper_execute(self, self.cursor.execute, sql, params)
+    CursorDebugWrapper.execute = cursor_execute
+
+    def cursor_executemany(self, sql, params=()):
+        return wrapper_execute(self, self.cursor.executemany, sql, params)
+    CursorDebugWrapper.executemany = cursor_executemany
+
+    yield queries
+
     settings.DEBUG = old_settings
+    CursorDebugWrapper.execute = old_execute
+    CursorDebugWrapper.executemany = old_executemany
 
 
 def bail(msg):
