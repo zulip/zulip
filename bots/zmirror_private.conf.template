@@ -7,5 +7,5 @@ stopsignal=TERM                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=humbug                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
-stdout_logfile=/var/log/humbug/%(program_name)s.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile=/var/log/zulip/%(program_name)s.log         ; stdout log path, NONE for none; default AUTO
 environment=HOME="/home/humbug",USER="humbug",KRB5CCNAME="/home/humbug/ccache/%(program_name)s"

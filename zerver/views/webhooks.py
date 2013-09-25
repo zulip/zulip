@@ -47,7 +47,7 @@ def api_github_landing(request, user_profile, event=REQ,
     # Special hook for capturing event data
     try:
         if repository['name'] == 'zulip-test' and settings.DEPLOYED:
-            with open('/var/log/humbug/github-payloads', 'a') as f:
+            with open('/var/log/zulip/github-payloads', 'a') as f:
                 f.write(ujson.dumps({'event': event, 'payload': payload}))
                 f.write("\n")
     except Exception:

@@ -22,7 +22,7 @@ class StreamLogger(object):
             self.logger.log(self.log_level, self.buffer.rstrip())
             self.buffer = ""
 
-logging.basicConfig(filename="/var/log/humbug/feedback-bot.log",
+logging.basicConfig(filename="/var/log/zulip/feedback-bot.log",
                     level=logging.DEBUG, format="%(asctime)s %(levelname)s\t%(message)s")
 
 # The API prints to stdout, so capture and format those messages as well.
