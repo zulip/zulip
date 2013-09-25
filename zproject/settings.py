@@ -452,12 +452,14 @@ if DEPLOYED:
     ERROR_LOG_DIR = '/home/humbug/logs/errors'
     STATS_DIR = '/home/humbug/stats'
     PERSISTENT_QUEUE_FILENAME = "/home/humbug/tornado/event_queues.pickle"
+    EMAIL_LOG_PATH = "/var/log/zulip/email-mirror.log"
 else:
     EVENT_LOG_DIR = 'event_log'
     SERVER_LOG_PATH = "server.log"
     ERROR_LOG_DIR = 'errors'
     STATS_DIR = 'stats'
     PERSISTENT_QUEUE_FILENAME = "event_queues.pickle"
+    EMAIL_LOG_PATH = "email-mirror.log"
 
 LOGGING = {
     'version': 1,

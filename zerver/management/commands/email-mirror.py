@@ -46,12 +46,11 @@ PORT = 993
 
 ## Setup ##
 
-log_file = "/var/log/humbug/email-mirror.log"
 log_format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=log_format)
 
 formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(log_file)
+file_handler = logging.FileHandler(settings.EMAIL_LOG_PATH)
 file_handler.setFormatter(formatter)
 
 logger = logging.getLogger(__name__)
