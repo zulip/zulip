@@ -318,7 +318,7 @@ def do_send_messages(messages):
         data = dict(
             type         = 'new_message',
             message      = message['message'].id,
-            presences    = user_presences,
+            presences    = presences,
             users        = [{'id': user.id, 'flags': user_flags.get(user.id, [])}
                              for user in message['recipients']])
         if message['message'].recipient.type == Recipient.STREAM:
