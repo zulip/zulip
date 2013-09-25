@@ -75,12 +75,12 @@ def report(state, time, msg=None):
         print "%s: send time was %s" % (state, time)
     exit(states[state])
 
-def send_humbug(sender, message):
+def send_zulip(sender, message):
     result = sender.send_message(message)
     if result["result"] != "success" and options.nagios:
         report("CRITICAL", "Error sending Zulip, args were: %s, %s" % (message, result))
 
-def get_humbug(recipient, max_message_id):
+def get_zulip(recipient, max_message_id):
     result = recipient.get_messages({'last': str(max_message_id)})
     if result['result'] != "success" and options.nagios:
         report("CRITICAL", "Error receiving Zulips, args were: %s, %s" % (max_message_id, result))
@@ -101,26 +101,26 @@ else:
     recipient_key = "24cf18de98d5c31da9c6c79f0cbec195"
     site = "https://api.zulip.com"
 
-humbug_sender = zulip.Client(
+zulip_sender = zulip.Client(
     email=sender,
     api_key=sender_key,
     verbose=True,
-    client="test: Humbug API",
+    client="test: Zulip API",
     site=site)
 
-humbug_recipient = zulip.Client(
+zulip_recipient = zulip.Client(
     email=recipient,
     api_key=recipient_key,
     verbose=True,
-    client="test: Humbug API",
+    client="test: Zulip API",
     site=site)
 
 
-max_message_id = humbug_recipient.get_profile().get('max_message_id')
+max_message_id = zulip_recipient.get_profile().get('max_message_id')
 msg_to_send = str(random.getrandbits(64))
 time_start = datetime.datetime.now()
 
-send_humbug(humbug_sender, {
+send_zulip(zulip_sender, {
     "type": 'private',
     "content": msg_to_send,
     "subject": "time to send",
@@ -130,7 +130,7 @@ send_humbug(humbug_sender, {
 msg_content = []
 
 while msg_to_send not in msg_content:
-    messages = get_humbug(humbug_recipient, max_message_id)
+    messages = get_zulip(zulip_recipient, max_message_id)
     time_diff = datetime.datetime.now() - time_start
 
     # Prevents checking the same messages everytime in the conditional
