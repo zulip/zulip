@@ -33,59 +33,7 @@
 {% for name, activity in data %}
 
     <div class="tab-pane {% if forloop.first %} active {% endif %}" id="{{ name }}">
-    <h2>{{ name }} usage</h2>
-    <table class="table sortable table-striped table-bordered">
-
-    <thead class="activity_head">
-    <tr>
-
-    {% if realm %}
-    <th>Name</th>
-    <th>Email</th>
-    {% endif %}
-
-    {% if summary_mode %}
-    <th>Realm</th>
-    {% endif %}
-
-    <th>Last send_message</th>
-    <th>Messages sent</th>
-    {% if activity.has_pointer %}
-    <th>Last update_pointer</th>
-    <th>Pointer updates</th>
-    {% endif %}
-    <th>Last get_updates</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    {% for email, row in activity.sorted_rows %}
-        <tr class="{{ row.class }}" data-type="{{ row.type }}" data-realm="{{ row.realm }}">
-
-        {% if realm %}
-        <td><strong>{{ row.full_name }}</strong></td>
-        <td><strong>{{ row.email }}</strong></td>
-        {% endif %}
-
-        {% if summary_mode %}
-        <td>
-            <a class="realm" href="?realm={{ row.realm }}">
-                <strong>{{ row.realm }}</strong>
-            <a>
-        </td>
-        {% endif %}
-
-        <td sorttable_customkey="{{ row.send_message_last|date:'YmdHi' }}">{{ row.send_message_last|date:"M d, H:i" }}</td>
-        <td class="number">{{ row.send_message_count }}</td>
-        {% if activity.has_pointer %}
-        <td sorttable_customkey="{{ row.update_pointer_last|date:'YmdHi' }}">{{ row.update_pointer_last|date:"M d, H:i" }}</td>
-        <td class="number">{{ row.update_pointer_count }}</td>
-        {% endif %}
-        <td sorttable_customkey="{{ row.get_updates_last|date:'YmdHi' }}">{{ row.get_updates_last|date:"M d, H:i" }}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-    </table>
+        {{ activity.content }}
     </div>
 
 {% endfor %}

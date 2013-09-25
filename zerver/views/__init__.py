@@ -1754,6 +1754,7 @@ def json_fetch_api_key(request, user_profile, password=REQ):
 class ActivityTable(object):
     def __init__(self, realm, client_name, queries):
         self.realm = realm
+        self.summary_mode = realm is None
         self.has_pointer = False
         self.rows = {}
 
@@ -1830,6 +1831,9 @@ class ActivityTable(object):
         keyfunc = lambda (k,r): (r['realm'], -1 * r.get('send_message_count', 0))
         return sorted(self.rows.iteritems(), key=keyfunc)
 
+    def content(self):
+        return loader.render_to_string('zerver/activity_table.html', dict(table=self))
+
 def can_view_activity(request):
     return request.user.realm.domain == 'zulip.com'
 
@@ -1861,7 +1865,6 @@ def get_activity(request, realm=REQ(default=None)):
           ],
 
           'realm': realm,
-          'summary_mode': realm is None
         }, context_instance=RequestContext(request))
 
 def get_status_list(requesting_user_profile):
