@@ -19,13 +19,13 @@ class zulip::app_frontend {
                     "python-diff-match-patch", "python-sourcemap",]
   package { $web_packages: ensure => "installed" }
 
-  file { "/etc/nginx/humbug-include/":
+  file { "/etc/nginx/zulip-include/":
     require => Package[nginx],
     recurse => true,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/nginx/humbug-include/",
+    source => "puppet:///modules/zulip/nginx/zulip-include/",
     notify => Service["nginx"],
   }
   file { "/etc/memcached.conf":

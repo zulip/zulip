@@ -20,7 +20,7 @@ server {
 
     location / {
         proxy_pass https://staging/;
-        include /etc/nginx/humbug-include/loadbalancer;
+        include /etc/nginx/zulip-include/loadbalancer;
     }
 }
 
@@ -34,7 +34,7 @@ server {
 
     location / {
         proxy_pass https://prod/;
-        include /etc/nginx/humbug-include/loadbalancer;
+        include /etc/nginx/zulip-include/loadbalancer;
     }
 }
 
@@ -47,7 +47,7 @@ server {
 
     location / {
         proxy_pass https://staging/;
-        include /etc/nginx/humbug-include/loadbalancer;
+        include /etc/nginx/zulip-include/loadbalancer;
     }
 }
 
@@ -61,7 +61,7 @@ server {
 
     location / {
         proxy_pass https://prod/;
-        include /etc/nginx/humbug-include/loadbalancer;
+        include /etc/nginx/zulip-include/loadbalancer;
     }
 }
 
@@ -74,7 +74,7 @@ server {
 
     location / {
         proxy_pass https://prod/;
-        include /etc/nginx/humbug-include/loadbalancer;
+        include /etc/nginx/zulip-include/loadbalancer;
     }
 }
 
@@ -88,7 +88,7 @@ server {
 
     location / {
         proxy_pass https://prod/;
-        include /etc/nginx/humbug-include/loadbalancer;
+        include /etc/nginx/zulip-include/loadbalancer;
     }
 }
 

@@ -27,7 +27,7 @@ server {
     # Avoid clickjacking attacks
     add_header X-Frame-Options DENY;
 
-    include /etc/nginx/humbug-include/app;
+    include /etc/nginx/zulip-include/app;
 }
 
 
@@ -52,7 +52,7 @@ server {
         alias /srv/www/dist/;
     }
 
-    include /etc/nginx/humbug-include/app;
+    include /etc/nginx/zulip-include/app;
 }
 
 server {
@@ -66,5 +66,5 @@ server {
 
     rewrite ^/(.*) /api/$1 break;
 
-    include /etc/nginx/humbug-include/app;
+    include /etc/nginx/zulip-include/app;
 }
