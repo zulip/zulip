@@ -27,6 +27,12 @@ location ~ /json/get_updates|/api/v1/get_messages|/api/v1/messages/latest|/json/
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 }
 
+# Send sockjs requests to Tornado
+location /sockjs {
+    proxy_pass http://localhost:9993;
+    include /etc/nginx/zulip-include/location-sockjs;
+}
+
 # Send everything else to Django via FastCGI
 location / {
     include fastcgi_params;

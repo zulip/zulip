@@ -22,6 +22,11 @@ server {
         proxy_pass https://staging/;
         include /etc/nginx/zulip-include/loadbalancer;
     }
+
+    location /sockjs {
+        proxy_pass https://staging;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
 }
 
 server {
@@ -36,6 +41,11 @@ server {
         proxy_pass https://prod/;
         include /etc/nginx/zulip-include/loadbalancer;
     }
+
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
 }
 
 server {
@@ -48,6 +58,11 @@ server {
     location / {
         proxy_pass https://staging/;
         include /etc/nginx/zulip-include/loadbalancer;
+    }
+
+    location /sockjs {
+        proxy_pass https://staging;
+        include /etc/nginx/zulip-include/location-sockjs;
     }
 }
 
@@ -62,6 +77,11 @@ server {
     location / {
         proxy_pass https://prod/;
         include /etc/nginx/zulip-include/loadbalancer;
+    }
+
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
     }
 }
 
@@ -89,6 +109,11 @@ server {
     location / {
         proxy_pass https://prod/;
         include /etc/nginx/zulip-include/loadbalancer;
+    }
+
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
     }
 }
 
