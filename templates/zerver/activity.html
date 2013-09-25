@@ -22,7 +22,7 @@
 
 <ul class="nav nav-tabs">
 {% for name, activity in data %}
-    <li {% if activity.default_tab %} class="active" {% endif %}>
+    <li {% if forloop.first %} class="active" {% endif %}>
         <a href="#{{ name }}" data-toggle="tab">{{ name }}</a>
     </li>
 {% endfor %}
@@ -32,7 +32,7 @@
 
 {% for name, activity in data %}
 
-    <div class="tab-pane {% if activity.default_tab %} active {% endif %}" id="{{ name }}">
+    <div class="tab-pane {% if forloop.first %} active {% endif %}" id="{{ name }}">
     <h2>{{ name }} usage</h2>
     <table class="table sortable table-striped table-bordered">
 

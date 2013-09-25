@@ -1752,9 +1752,8 @@ def json_fetch_api_key(request, user_profile, password=REQ):
     return json_success({"api_key": user_profile.api_key})
 
 class ActivityTable(object):
-    def __init__(self, realm, client_name, queries, default_tab=False):
+    def __init__(self, realm, client_name, queries):
         self.realm = realm
-        self.default_tab = default_tab
         self.has_pointer = False
         self.rows = {}
 
@@ -1853,7 +1852,7 @@ def get_activity(request, realm=REQ(default=None)):
 
     return render_to_response('zerver/activity.html',
         { 'data': [
-            ('Website',    ActivityTable(realm, 'website',       web_queries, default_tab=True)),
+            ('Website',    ActivityTable(realm, 'website',       web_queries)),
             ('Mirror',     ActivityTable(realm, 'zephyr_mirror', api_queries)),
             ('Desktop',    ActivityTable(realm, 'desktop',       api_queries)),
             ('API',        ActivityTable(realm, 'API',           api_queries)),
