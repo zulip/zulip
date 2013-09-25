@@ -720,7 +720,7 @@ def get_subscribers_to_streams(streams):
 
     return subscribes_to
 
-def notify_subscriptions_added(user_profile, sub_pairs, no_log=False):
+def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=False):
     if not no_log:
         log_event({'type': 'subscription_added',
                    'user': user_profile.email,
@@ -733,7 +733,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, no_log=False):
                     invite_only=stream.invite_only,
                     color=subscription.color,
                     email_address=encode_email_address(stream),
-                    subscribers=maybe_get_subscriber_emails(stream))
+                    subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
     notice = dict(event=dict(type="subscriptions", op="add",
                              subscriptions=payload),
@@ -790,23 +790,47 @@ def bulk_add_subscriptions(streams, users):
     Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
     Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in subs_to_activate]).update(active=True)
 
+    # Notify all existing users on streams that users have joined
+
+    # First, get all users subscribed to the streams that we care about
+    # We fetch all subscription information upfront, as it's used throughout
+    # the following code and we want to minize DB queries
+    all_subs = Subscription.objects.filter(recipient__type=Recipient.STREAM,
+                                           recipient__type_id__in=[stream.id for stream in streams],
+                                           user_profile__is_active=True,
+                                           active=True).select_related('recipient', 'user_profile')
+
+    all_subs_by_stream = defaultdict(list)
+    emails_by_stream = defaultdict(list)
+    for sub in all_subs:
+        all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
+        emails_by_stream[sub.recipient.type_id].append(sub.user_profile.email)
+
+    def fetch_stream_subscriber_emails(stream):
+        if stream.realm.domain == "mit.edu" and not stream.invite_only:
+            return []
+        return emails_by_stream[stream.id]
+
     sub_tuples_by_user = defaultdict(list)
     new_streams = set()
     for (sub, stream) in subs_to_add + subs_to_activate:
         sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
-        new_streams.add((sub.user_profile.id, stream.name))
+        new_streams.add((sub.user_profile.id, stream.id))
 
     for user_profile in users:
         if len(sub_tuples_by_user[user_profile.id]) == 0:
             continue
         sub_pairs = sub_tuples_by_user[user_profile.id]
-        notify_subscriptions_added(user_profile, sub_pairs)
+        notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_emails)
 
     for stream in streams:
-        is_new_user = lambda user: (user.id, stream.name) in new_streams
-        new_users = filter(is_new_user, users)
+        if stream.realm.domain == "mit.edu" and not stream.invite_only:
+            continue
+
+        new_users = [user for user in users if (user.id, stream.id) in new_streams]
         new_user_ids = [user.id for user in new_users]
-        other_user_ids = list(set(get_subscriber_ids(stream)) - set(new_user_ids))
+        all_subscribed_ids = [user.id for user in all_subs_by_stream[stream.id]]
+        other_user_ids = set(all_subscribed_ids) - set(new_user_ids)
         if other_user_ids:
             for user_profile in new_users:
                 notice = dict(event=dict(type="subscriptions", op="peer_add",
@@ -834,7 +858,9 @@ def do_add_subscription(user_profile, stream, no_log=False):
         subscription.save(update_fields=["active"])
 
     if did_subscribe:
-        notify_subscriptions_added(user_profile, [(subscription, stream)], no_log)
+
+        emails_by_stream = {stream.id: maybe_get_subscriber_emails(stream)}
+        notify_subscriptions_added(user_profile, [(subscription, stream)], lambda stream: emails_by_stream[stream.id], no_log)
 
         user_ids = get_other_subscriber_ids(stream, user_profile.id)
         notice = dict(event=dict(type="subscriptions", op="peer_add",
