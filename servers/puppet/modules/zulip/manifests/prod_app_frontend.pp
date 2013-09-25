@@ -1,17 +1,17 @@
 class zulip::prod_app_frontend {
   class { 'zulip::app_frontend': }
 
-  file { "/etc/nginx/sites-available/humbug":
+  file { "/etc/nginx/sites-available/zulip":
     require => Package[nginx],
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/nginx/sites-available/humbug",
+    source => "puppet:///modules/zulip/nginx/sites-available/zulip",
   }
-  file { '/etc/nginx/sites-enabled/humbug':
+  file { '/etc/nginx/sites-enabled/zulip':
     ensure => 'link',
-    target => '/etc/nginx/sites-available/humbug',
+    target => '/etc/nginx/sites-available/zulip',
   }
 
   file { [ "/srv/www/", "/srv/www/dist/", "/srv/www/dist/api",
