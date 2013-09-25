@@ -267,17 +267,20 @@ def process_loop(log):
     while True:
         select.select([zephyr._z.getFD()], [], [], 15)
         try:
-            notice = zephyr.receive(block=False)
+            # Fetch notices from the queue until its empty
+            while True:
+                notice = zephyr.receive(block=False)
+                if notice is None:
+                    break
+                try:
+                    process_notice(notice, log)
+                except Exception:
+                    logger.exception("Error relaying zephyr:")
+                    time.sleep(2)
         except Exception:
             logger.exception("Error checking for new zephyrs:")
             time.sleep(1)
             continue
-        if notice is not None:
-            try:
-                process_notice(notice, log)
-            except Exception:
-                logger.exception("Error relaying zephyr:")
-                time.sleep(2)
 
         if time.time() - last_check_time > 15:
             last_check_time = time.time()
