@@ -6,6 +6,7 @@ import os
 import platform
 import time
 import re
+import sys
 
 from zerver.openid import openid_failure_handler
 
@@ -448,6 +449,7 @@ CACHES = {
 
 if DEPLOYED:
     SERVER_LOG_PATH = "/var/log/zulip/server.log"
+    WORKER_LOG_PATH = "/var/log/zulip/workers.log"
     EVENT_LOG_DIR = '/home/humbug/logs/event_log'
     STATS_DIR = '/home/humbug/stats'
     PERSISTENT_QUEUE_FILENAME = "/home/humbug/tornado/event_queues.pickle"
@@ -455,9 +457,15 @@ if DEPLOYED:
 else:
     EVENT_LOG_DIR = 'event_log'
     SERVER_LOG_PATH = "server.log"
+    WORKER_LOG_PATH = "workers.log"
     STATS_DIR = 'stats'
     PERSISTENT_QUEUE_FILENAME = "event_queues.pickle"
     EMAIL_LOG_PATH = "email-mirror.log"
+
+if len(sys.argv) > 2 and sys.argv[0].endswith('manage.py') and sys.argv[1] == 'process_queue':
+    FILE_LOG_PATH = WORKER_LOG_PATH
+else:
+    FILE_LOG_PATH = SERVER_LOG_PATH
 
 LOGGING = {
     'version': 1,
@@ -501,7 +509,7 @@ LOGGING = {
             'level':       'DEBUG',
             'class':       'logging.handlers.TimedRotatingFileHandler',
             'formatter':   'default',
-            'filename':    SERVER_LOG_PATH,
+            'filename':    FILE_LOG_PATH,
             'when':        'D',
             'interval':    7,
             'backupCount': 100000000,
