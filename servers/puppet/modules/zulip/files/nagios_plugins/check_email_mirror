@@ -35,7 +35,7 @@ def check_for_old_messages(result):
     message_uids.sort()
 
     oldest_message = email.message_from_string(result[message_uids[0]]["RFC822"])
-    receipt_time = time.mktime(email.utils.parsedate(oldest_message.get("Date")))
+    receipt_time = time.mktime(email.utils.parsedate_tz(oldest_message.get("Date")))
     if time.time() - receipt_time > 60 * 5: # More than 5 minutes old.
         return 2, "CRITICAL: email mirror has unprocessed old messages."
     return 0, "OK: no unprocessed old messages."
