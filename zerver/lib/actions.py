@@ -1106,7 +1106,7 @@ def set_default_streams(realm, stream_names):
 
 def get_default_subs(user_profile):
     return [default.stream for default in
-            DefaultStream.objects.select_related("stream").filter(realm=user_profile.realm)]
+            DefaultStream.objects.select_related("stream", "stream__realm").filter(realm=user_profile.realm)]
 
 def do_update_user_activity_interval(user_profile, log_time):
     effective_end = log_time + datetime.timedelta(minutes=15)
