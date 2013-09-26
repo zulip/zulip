@@ -1834,6 +1834,67 @@ class ActivityTable(object):
     def content(self):
         return loader.render_to_string('zerver/activity_table.html', dict(table=self))
 
+
+def dictfetchall(cursor):
+    "Returns all rows from a cursor as a dict"
+    desc = cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+    ]
+
+def realm_summary_table():
+    query = '''
+        SELECT
+            realm.domain,
+            coalesce(user_counts.active_user_count, 0) active_user_count
+        FROM zerver_realm realm
+        LEFT OUTER JOIN
+            (
+                SELECT
+                    up.realm_id realm_id,
+                    count(distinct(ua.user_profile_id)) active_user_count
+                FROM zerver_useractivity ua
+                JOIN zerver_userprofile up
+                    ON up.id = ua.user_profile_id
+                WHERE
+                    query in (
+                        '/json/send_message',
+                        '/json/update_pointer'
+                    )
+                AND
+                    last_visit > now() - interval '1 day'
+                GROUP BY realm_id
+            ) user_counts
+            ON user_counts.realm_id = realm.id
+        WHERE EXISTS (
+                SELECT *
+                FROM zerver_useractivity ua
+                JOIN zerver_userprofile up
+                    ON up.id = ua.user_profile_id
+                WHERE
+                    query in (
+                        '/json/send_message',
+                        '/json/update_pointer'
+                    )
+                AND
+                    up.realm_id = realm.id
+                AND
+                    last_visit > now() - interval '2 week'
+        )
+        ORDER BY active_user_count DESC, domain ASC
+        '''
+
+    cursor = connection.cursor()
+    cursor.execute(query)
+    rows = dictfetchall(cursor)
+    cursor.close()
+    content = loader.render_to_string(
+        'zerver/realm_summary_table.html',
+        dict(rows=rows)
+    )
+    return dict(content=content)
+
 def can_view_activity(request):
     return request.user.realm.domain == 'zulip.com'
 
@@ -1854,7 +1915,12 @@ def get_activity(request, realm=REQ(default=None)):
         ("send_message", ["/api/v1/send_message"]),
     )
 
-    data = [
+    data = []
+
+    if realm is None:
+        data.append(('General', realm_summary_table()))
+
+    data += [
         ('Website',    ActivityTable(realm, 'website',       web_queries)),
         ('Mirror',     ActivityTable(realm, 'zephyr_mirror', api_queries)),
         ('Desktop',    ActivityTable(realm, 'desktop',       api_queries)),

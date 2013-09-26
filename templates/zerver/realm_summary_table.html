@@ -1,0 +1,30 @@
+<table class="table sortable table-striped table-bordered">
+
+    <thead class="activity_head">
+    <tr>
+        <th>Domain</th>
+        <th>Active User Count</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for row in rows %}
+        <tr>
+
+            {# Domain #}
+            <td>
+                <a href="?realm={{ row.domain }}">
+                    {{ row.domain }}
+                </a>
+            </td>
+
+            {# Active User Count #}
+            <td class="number">
+                {{ row.active_user_count }}
+            </td>
+
+        </tr>
+    {% endfor %}
+    </tbody>
+
+</table>
