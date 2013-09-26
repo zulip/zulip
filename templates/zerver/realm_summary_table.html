@@ -6,6 +6,7 @@
     <tr>
         <th>Domain</th>
         <th>Active User Count</th>
+        <th>User Profile Count</th>
     </tr>
     </thead>
 
@@ -23,6 +24,11 @@
             {# Active User Count #}
             <td class="number">
                 {{ row.active_user_count }}
+            </td>
+
+            {# User Profile Count #}
+            <td class="number">
+                {{ row.user_profile_count }}
             </td>
 
         </tr>

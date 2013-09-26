@@ -1845,7 +1845,14 @@ def realm_summary_table():
     query = '''
         SELECT
             realm.domain,
-            coalesce(user_counts.active_user_count, 0) active_user_count
+            coalesce(user_counts.active_user_count, 0) active_user_count,
+            (
+                SELECT
+                    count(*)
+                FROM zerver_userprofile up
+                WHERE up.realm_id = realm.id
+                AND is_active
+            ) user_profile_count
         FROM zerver_realm realm
         LEFT OUTER JOIN
             (
