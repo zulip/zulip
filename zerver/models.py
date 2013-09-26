@@ -271,6 +271,8 @@ class Stream(models.Model):
     email_token = models.CharField(
         max_length=32, default=lambda: generate_random_token(32))
 
+    date_created = models.DateTimeField(default=timezone.now)
+
     def __repr__(self):
         return (u"<Stream: %s>" % (self.name,)).encode("utf-8")
     def __str__(self):
