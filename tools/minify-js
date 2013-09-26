@@ -95,7 +95,7 @@ for js_group, filespec in JS_SPECS.iteritems():
     map_file = os.path.join(MAP_DIR, os.path.basename(filespec['output_filename'])
                                      + '.map')
 
-    if (prev_deploy and len(set(in_files) & changed_files) == 0):
+    if (not 'force_minify' in filespec) and (prev_deploy and len(set(in_files) & changed_files) == 0):
         # Try to reuse the output file from previous deploy
         try:
             for dest in [out_file, map_file]:
