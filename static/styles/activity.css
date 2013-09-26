@@ -28,6 +28,7 @@ td.number {
     text-align: right;
 }
 
-.table {
+.summary-table {
     width: auto;
+    margin: 0px auto;
 }
