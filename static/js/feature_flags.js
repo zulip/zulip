@@ -5,8 +5,13 @@ var exports = {};
 exports.mark_read_at_bottom = true;
 exports.summarize_read_while_narrowed = true;
 
-exports.twenty_four_hour_time = _.contains([],
-                                  page_params.email);
+var internal_24_hour_people= _.contains([],
+    page_params.email);
+
+var iceland = page_params.domain === 'customer8.invalid';
+
+exports.twenty_four_hour_time = internal_24_hour_people || iceland;
+
 exports.dropbox_integration = page_params.staging || _.contains(['dropbox.com'], page_params.domain);
 
 exports.mandatory_topics = _.contains([
