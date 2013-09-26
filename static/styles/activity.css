@@ -27,3 +27,7 @@
 td.number {
     text-align: right;
 }
+
+.table {
+    width: auto;
+}
