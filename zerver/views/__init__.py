@@ -1933,7 +1933,7 @@ def get_activity(request, realm=REQ(default=None)):
     data += [
         ('Website',    ActivityTable(realm, 'website',       web_queries)),
         ('Mirror',     ActivityTable(realm, 'zephyr_mirror', api_queries)),
-        ('Desktop',    ActivityTable(realm, 'desktop',       api_queries)),
+        ('Desktop',    ActivityTable(realm, 'desktop',       web_queries)),
         ('API',        ActivityTable(realm, 'API',           api_queries)),
         ('Android',    ActivityTable(realm, 'Android',       api_queries)),
         ('iPhone',     ActivityTable(realm, 'iPhone',        api_queries))
