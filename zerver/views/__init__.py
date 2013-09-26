@@ -1889,9 +1889,19 @@ def realm_summary_table():
     cursor.execute(query)
     rows = dictfetchall(cursor)
     cursor.close()
+
+    def meets_goal(row):
+        # We don't count toward company goals for obvious reasons, and
+        # customer4.invalid is essentially a dup for users.customer4.invalid.
+        if row['domain'] in ['zulip.com', 'customer4.invalid']:
+            return False
+        return row['active_user_count'] >= 5
+
+    num_active_sites = len(filter(meets_goal, rows))
+
     content = loader.render_to_string(
         'zerver/realm_summary_table.html',
-        dict(rows=rows)
+        dict(rows=rows, num_active_sites=num_active_sites)
     )
     return dict(content=content)
 
