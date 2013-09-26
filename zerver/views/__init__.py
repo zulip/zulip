@@ -1796,19 +1796,17 @@ class ActivityTable(object):
                     row[count_field] = count
                     row[last_visit_field] = last_visit
 
-                # Now update domain-level row
-                row = self.rows.setdefault(domain,
-                                           {'realm': domain,
-                                            'full_name': '(all users)',
-                                            'email': '',
-                                            'type': 'realm'})
-                row.setdefault(count_field, 0)
-                row[count_field] += count
-
-                if last_visit_field in row:
-                    row[last_visit_field] = max(last_visit, row[last_visit_field])
                 else:
-                    row[last_visit_field] = last_visit
+                    row = self.rows.setdefault(domain,
+                                               {'realm': domain,
+                                                'type': 'realm'})
+                    row.setdefault(count_field, 0)
+                    row[count_field] += count
+
+                    if last_visit_field in row:
+                        row[last_visit_field] = max(last_visit, row[last_visit_field])
+                    else:
+                        row[last_visit_field] = last_visit
 
 
         for query_name, urls in queries:
