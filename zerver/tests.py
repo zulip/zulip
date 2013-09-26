@@ -18,7 +18,8 @@ from zerver.decorator import RespondAsynchronously, \
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
-    do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user
+    do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
+    set_default_streams
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -382,9 +383,16 @@ class LoginTest(AuthedTestCase):
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
     def test_register(self):
+        realm = Realm.objects.get(domain="zulip.com")
+        streams = ["stream_%s" % i for i in xrange(40)]
+        for stream in streams:
+            create_stream_if_needed(realm, stream)
+
+        set_default_streams(realm, streams)
         with queries_captured() as queries:
             self.register("test", "test")
-        self.assertTrue(len(queries) <= 53)
+        # Ensure the number of queries we make is not O(streams)
+        self.assertTrue(len(queries) <= 59)
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
@@ -1201,11 +1209,13 @@ class SubscriptionAPITest(AuthedTestCase):
         streams_to_sub = ['multi_user_stream']
         events = []
         with tornado_redirected_to_list(events):
-            self.common_subscribe_to_streams(
+            with queries_captured() as queries:
+                self.common_subscribe_to_streams(
                     self.test_email,
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
             )
+        self.assertTrue(len(queries) <= 34)
 
         self.assertEqual(len(events), 2)
         for ev in events:
@@ -1221,12 +1231,13 @@ class SubscriptionAPITest(AuthedTestCase):
         # Now add ourselves
         events = []
         with tornado_redirected_to_list(events):
-            self.common_subscribe_to_streams(
-                    self.test_email,
-                    streams_to_sub,
-                    dict(principals=ujson.dumps([self.test_email])),
-            )
-
+            with queries_captured() as queries:
+                self.common_subscribe_to_streams(
+                        self.test_email,
+                        streams_to_sub,
+                        dict(principals=ujson.dumps([self.test_email])),
+                )
+        self.assertTrue(len(queries) <= 4)
 
         self.assertEqual(len(events), 2)
         add_event, add_peer_event = events
@@ -1270,6 +1281,40 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_email'], email3)
 
+
+    def test_bulk_subscribe_MIT(self):
+        realm = Realm.objects.get(domain="mit.edu")
+        streams = ["stream_%s" % i for i in xrange(40)]
+        for stream in streams:
+            create_stream_if_needed(realm, stream)
+
+        events = []
+        with tornado_redirected_to_list(events):
+            with queries_captured() as queries:
+                self.common_subscribe_to_streams(
+                        'starnine@mit.edu',
+                        streams,
+                        dict(principals=ujson.dumps(['starnine@mit.edu'])),
+                )
+        # Make sure MIT does not get any tornado subscription events
+        self.assertEqual(len(events), 0)
+        self.assertTrue(len(queries) <= 5)
+
+    def test_bulk_subscribe_many(self):
+        # Create a whole bunch of streams
+        realm = Realm.objects.get(domain="zulip.com")
+        streams = ["stream_%s" % i for i in xrange(20)]
+        for stream in streams:
+            create_stream_if_needed(realm, stream)
+
+        with queries_captured() as queries:
+                self.common_subscribe_to_streams(
+                        self.test_email,
+                        streams,
+                        dict(principals=ujson.dumps([self.test_email])),
+                )
+        # Make sure we don't make O(streams) queries
+        self.assertTrue(len(queries) <= 7)
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
