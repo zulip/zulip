@@ -1149,11 +1149,18 @@ def get_default_subs(user_profile):
 
 def do_update_user_activity_interval(user_profile, log_time):
     effective_end = log_time + datetime.timedelta(minutes=15)
+    earliest_overlap = log_time - datetime.timedelta(minutes=15)
+
+    # This code isn't perfect, because with various races we might end
+    # up creating two overlapping intervals, but that shouldn't happen
+    # often, and can be corrected for in post-processing
     try:
-        last = UserActivityInterval.objects.filter(user_profile=user_profile).order_by("-end")[0]
+        last = UserActivityInterval.objects.filter(user_profile=user_profile,
+                                                   start__gte=earliest_overlap).order_by("-end")[0]
         if log_time < last.end:
-            last.end = effective_end
-            last.save(update_fields=["end"])
+            last.end = max(last.end, effective_end)
+            last.start = min(last.start, log_time)
+            last.save(update_fields=["start", "end"])
             return
     except IndexError:
         pass
