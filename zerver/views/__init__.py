@@ -318,9 +318,10 @@ def accounts_register(request):
                 # Give you the last 100 messages on your streams, so you have
                 # something to look at in your home view once you finish the
                 # tutorial.
+                one_week_ago = now() - datetime.timedelta(weeks=1)
                 recipients = Recipient.objects.filter(type=Recipient.STREAM,
                                                       type_id__in=[stream.id for stream in streams])
-                messages = Message.objects.filter(recipient_id__in=recipients, sender__realm=realm).order_by("-id")[0:100]
+                messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
                 if len(messages) > 0:
                     ums_to_create = [UserMessage(user_profile=user_profile, message=message,
                                                  flags=UserMessage.flags.read)
