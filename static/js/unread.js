@@ -121,18 +121,18 @@ exports.get_counts = function () {
             return true;
         }
 
-        var count = msgs.num_items();
-        res.stream_count.set(stream, count);
-
-        if (stream_data.in_home_view(stream)) {
-            res.home_unread_messages += count;
-        }
-
         if (unread_subjects.has(stream)) {
             res.subject_count.set(stream, new Dict());
+            var stream_count = 0;
             unread_subjects.get(stream).each(function (msgs, subject) {
-                res.subject_count.get(stream).set(subject, msgs.num_items());
+                var subject_count = msgs.num_items();
+                res.subject_count.get(stream).set(subject, subject_count);
+                stream_count += subject_count;
             });
+            res.stream_count.set(stream, stream_count);
+            if (stream_data.in_home_view(stream)) {
+                res.home_unread_messages += stream_count;
+            }
         }
 
     });
