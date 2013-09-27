@@ -22,6 +22,7 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     set_default_streams
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
+from zerver.lib import cache
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.rate_limiter import clear_user_history
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
@@ -53,6 +54,25 @@ def tornado_redirected_to_list(lst):
     tornado_callbacks.process_event = lst.append
     yield
     tornado_callbacks.process_event = real_tornado_callbacks_process_event
+
+@contextmanager
+def simulated_empty_cache():
+    cache_queries = []
+    def my_cache_get(key, cache_name=None):
+        cache_queries.append(('get', key, cache_name))
+        return None
+
+    def my_cache_get_many(keys, cache_name=None):
+        cache_queries.append(('getmany', keys, cache_name))
+        return None
+
+    old_get = cache.cache_get
+    old_get_many = cache.cache_get_many
+    cache.cache_get = my_cache_get
+    cache.cache_get_many = my_cache_get_many
+    yield cache_queries
+    cache.cache_get = old_get
+    cache.cache_get_many = old_get_many
 
 @contextmanager
 def queries_captured():
@@ -2304,6 +2324,15 @@ class GetProfileTest(AuthedTestCase):
 
         self.assertEqual(json["max_message_id"], max_id)
         return json
+
+    def test_cache_behavior(self):
+        with queries_captured() as queries:
+            with simulated_empty_cache() as cache_queries:
+                user_profile = get_user_profile_by_email('hamlet@zulip.com')
+
+        self.assertEqual(len(queries), 1)
+        self.assertEqual(len(cache_queries), 1)
+        self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
     def test_api_get_empty_profile(self):
         """
