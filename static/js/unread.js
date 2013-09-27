@@ -6,14 +6,6 @@ var unread_mentioned = new Dict();
 var unread_subjects = new Dict({fold_case: true});
 var unread_privates = new Dict();
 
-function unread_hashkey(message) {
-    var hashkey = message.reply_to;
-
-    unread_privates.setdefault(hashkey, new Dict());
-
-    return hashkey;
-}
-
 exports.message_unread = function (message) {
     if (message === undefined) {
         return false;
@@ -49,8 +41,8 @@ exports.process_loaded_messages = function (messages) {
         }
 
         if (message.type === 'private') {
-            var hashkey = unread_hashkey(message);
-            unread_privates.get(hashkey).set(message.id, true);
+            unread_privates.setdefault(message.reply_to, new Dict());
+            unread_privates.get(message.reply_to).set(message.id, true);
         }
 
         if (message.type === 'stream') {
@@ -71,8 +63,10 @@ exports.process_loaded_messages = function (messages) {
 exports.process_read_message = function (message) {
 
     if (message.type === 'private') {
-        var hashkey = unread_hashkey(message);
-        unread_privates.get(hashkey).del(message.id);
+        var dict = unread_privates.get(message.reply_to);
+        if (dict) {
+            dict.del(message.id);
+        }
     }
 
     if (message.type === 'stream') {

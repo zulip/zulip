@@ -207,6 +207,17 @@ var zero_counts = {
     unread.process_read_message(message);
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
+
+    // Test unknown message is harmless
+    message = {
+        id: 9,
+        type: 'private',
+        reply_to: 'unknown@zulip.com'
+    };
+
+    unread.process_read_message(message);
+    counts = unread.get_counts();
+    assert.equal(counts.private_message_count, 0);
 }());
 
 (function test_num_unread_for_person() {
