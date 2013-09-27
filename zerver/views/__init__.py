@@ -320,7 +320,7 @@ def accounts_register(request):
                 # tutorial.
                 recipients = Recipient.objects.filter(type=Recipient.STREAM,
                                                       type_id__in=[stream.id for stream in streams])
-                messages = Message.objects.filter(recipient_id__in=recipients).order_by("-id")[0:100]
+                messages = Message.objects.filter(recipient_id__in=recipients, sender__realm=realm).order_by("-id")[0:100]
                 if len(messages) > 0:
                     ums_to_create = [UserMessage(user_profile=user_profile, message=message,
                                                  flags=UserMessage.flags.read)
