@@ -3,27 +3,15 @@ var unread = (function () {
 var exports = {};
 
 var unread_counts = {
-    'stream': new Dict(),
     'private': new Dict()
 };
 var unread_mentioned = new Dict();
 var unread_subjects = new Dict({fold_case: true});
 
 function unread_hashkey(message) {
-    var hashkey;
-    if (message.type === 'stream') {
-        hashkey = stream_data.canonicalized_name(message.stream);
-    } else {
-        hashkey = message.reply_to;
-    }
+    var hashkey = message.reply_to;
 
     unread_counts[message.type].setdefault(hashkey, new Dict());
-
-    if (message.type === 'stream') {
-        var canon_subject = stream_data.canonicalized_name(message.subject);
-        unread_subjects.setdefault(hashkey, new Dict());
-        unread_subjects.get(hashkey).setdefault(canon_subject, new Dict());
-    }
 
     return hashkey;
 }
@@ -62,12 +50,18 @@ exports.process_loaded_messages = function (messages) {
             return;
         }
 
-        var hashkey = unread_hashkey(message);
-        unread_counts[message.type].get(hashkey).set(message.id, true);
+        if (message.type === 'private') {
+            var hashkey = unread_hashkey(message);
+            unread_counts[message.type].get(hashkey).set(message.id, true);
+        }
 
         if (message.type === 'stream') {
+            var canon_stream = stream_data.canonicalized_name(message.stream);
             var canon_subject = stream_data.canonicalized_name(message.subject);
-            unread_subjects.get(hashkey).get(canon_subject).set(message.id, true);
+
+            unread_subjects.setdefault(canon_stream, new Dict());
+            unread_subjects.get(canon_stream).setdefault(canon_subject, new Dict());
+            unread_subjects.get(canon_stream).get(canon_subject).set(message.id, true);
         }
 
         if (message.mentioned) {
@@ -77,8 +71,12 @@ exports.process_loaded_messages = function (messages) {
 };
 
 exports.process_read_message = function (message) {
-    var hashkey = unread_hashkey(message);
-    unread_counts[message.type].get(hashkey).del(message.id);
+
+    if (message.type === 'private') {
+        var hashkey = unread_hashkey(message);
+        unread_counts[message.type].get(hashkey).del(message.id);
+    }
+
     if (message.type === 'stream') {
         var canon_stream = stream_data.canonicalized_name(message.stream);
         var canon_subject = stream_data.canonicalized_name(message.subject);
@@ -88,7 +86,8 @@ exports.process_read_message = function (message) {
 };
 
 exports.declare_bankruptcy = function () {
-    unread_counts = {'stream': new Dict(), 'private': new Dict()};
+    unread_counts = {'private': new Dict()};
+    unread_subjects = new Dict({fold_case: true});
 };
 
 exports.num_unread_current_messages = function () {
@@ -116,7 +115,7 @@ exports.get_counts = function () {
     res.subject_count = new Dict(); // hash of hashes (stream, then subject -> count)
     res.pm_count = new Dict(); // Hash by email -> count
 
-    unread_counts.stream.each(function (msgs, stream) {
+    unread_subjects.each(function (_, stream) {
         if (! stream_data.is_subscribed(stream)) {
             return true;
         }
