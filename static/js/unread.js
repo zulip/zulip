@@ -2,16 +2,14 @@ var unread = (function () {
 
 var exports = {};
 
-var unread_counts = {
-    'private': new Dict()
-};
 var unread_mentioned = new Dict();
 var unread_subjects = new Dict({fold_case: true});
+var unread_privates = new Dict();
 
 function unread_hashkey(message) {
     var hashkey = message.reply_to;
 
-    unread_counts[message.type].setdefault(hashkey, new Dict());
+    unread_privates.setdefault(hashkey, new Dict());
 
     return hashkey;
 }
@@ -52,7 +50,7 @@ exports.process_loaded_messages = function (messages) {
 
         if (message.type === 'private') {
             var hashkey = unread_hashkey(message);
-            unread_counts[message.type].get(hashkey).set(message.id, true);
+            unread_privates.get(hashkey).set(message.id, true);
         }
 
         if (message.type === 'stream') {
@@ -74,7 +72,7 @@ exports.process_read_message = function (message) {
 
     if (message.type === 'private') {
         var hashkey = unread_hashkey(message);
-        unread_counts[message.type].get(hashkey).del(message.id);
+        unread_privates.get(hashkey).del(message.id);
     }
 
     if (message.type === 'stream') {
@@ -86,7 +84,7 @@ exports.process_read_message = function (message) {
 };
 
 exports.declare_bankruptcy = function () {
-    unread_counts = {'private': new Dict()};
+    unread_privates = new Dict();
     unread_subjects = new Dict({fold_case: true});
 };
 
@@ -137,7 +135,7 @@ exports.get_counts = function () {
     });
 
     var pm_count = 0;
-    unread_counts["private"].each(function (obj, index) {
+    unread_privates.each(function (obj, index) {
         var count = obj.num_items();
         res.pm_count.set(index, count);
         pm_count += count;
@@ -165,10 +163,10 @@ exports.num_unread_for_subject = function (stream, subject) {
 };
 
 exports.num_unread_for_person = function (email) {
-    if (!unread_counts['private'].has(email)) {
+    if (!unread_privates.has(email)) {
         return 0;
     }
-    return unread_counts['private'].get(email).num_items();
+    return unread_privates.get(email).num_items();
 };
 
 return exports;
