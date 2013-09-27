@@ -1529,6 +1529,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         ret['realm_emoji'] = user_profile.realm.get_emoji()
     if event_types is None or "alert_words" in event_types:
         ret['alert_words'] = user_alert_words(user_profile)
+    if event_types is None or "muted_topics" in event_types:
+        ret['muted_topics'] = ujson.loads(user_profile.muted_topics)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)

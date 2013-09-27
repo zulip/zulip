@@ -708,6 +708,7 @@ def home(request):
         onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
         staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
         alert_words           = register_ret['alert_words'],
+        muted_topics          = register_ret['muted_topics'],
         show_admin            = user_profile.show_admin,
         notify_for_streams_by_default = notify_for_streams_by_default(user_profile)
     ))

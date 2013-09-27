@@ -45,6 +45,10 @@ exports.handle_updates = function (muted_topics) {
     exports.rerender();
 };
 
+$(function () {
+    muting.set_muted_topics(page_params.muted_topics);
+});
+
 return exports;
 }());
 
