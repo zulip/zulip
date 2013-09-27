@@ -8,15 +8,19 @@ function timestamp_ms() {
 
 var last_topic_update = 0;
 
+exports.rerender = function () {
+    current_msg_list.rerender_after_muting_changes();
+    if (current_msg_list !== home_msg_list) {
+        home_msg_list.rerender_after_muting_changes();
+    }
+};
+
 exports.persist_and_rerender = function () {
     // Optimistically rerender our new muting preferences.  The back
     // end should eventually save it, and if it doesn't, it's a recoverable
     // error--the user can just mute the topic again, and the topic might
     // die down before the next reload anyway, making the muting moot.
-    current_msg_list.rerender_after_muting_changes();
-    if (current_msg_list !== home_msg_list) {
-        home_msg_list.rerender_after_muting_changes();
-    }
+    exports.rerender();
     var data = {
         muted_topics: JSON.stringify(muting.get_muted_topics())
     };
@@ -38,7 +42,7 @@ exports.handle_updates = function (muted_topics) {
     }
 
     muting.set_muted_topics(muted_topics);
-    current_msg_list.rerender();
+    exports.rerender();
 };
 
 return exports;
