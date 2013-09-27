@@ -118,7 +118,9 @@ exports.get_counts = function () {
             unread_subjects.get(stream).each(function (msgs, subject) {
                 var subject_count = msgs.num_items();
                 res.subject_count.get(stream).set(subject, subject_count);
-                stream_count += subject_count;
+                if (!muting.is_topic_muted(stream, subject)) {
+                    stream_count += subject_count;
+                }
             });
             res.stream_count.set(stream, stream_count);
             if (stream_data.in_home_view(stream)) {

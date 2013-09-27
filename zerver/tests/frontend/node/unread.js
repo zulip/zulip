@@ -9,6 +9,7 @@
 
 add_dependencies({
     _: 'third/underscore/underscore.js',
+    muting: 'js/muting.js',
     Dict: 'js/dict.js'
 });
 
@@ -20,6 +21,7 @@ stream_data = {
 set_global('stream_data', stream_data);
 
 var Dict = global.Dict;
+var muting = global.muting;
 var unread = require('js/unread.js');
 var assert = require('assert');
 
@@ -103,9 +105,39 @@ var zero_counts = {
     assert.equal(count, 0);
 }());
 
+(function test_muting() {
+    stream_data.is_subscribed = function () {
+        return true;
+    };
+
+    stream_data.in_home_view = function () {
+        return true;
+    };
+
+    unread.declare_bankruptcy();
+
+    var message = {
+        id: 15,
+        type: 'stream',
+        stream: 'social',
+        subject: 'test_muting'
+    };
+
+    unread.process_loaded_messages([message]);
+    var counts = unread.get_counts();
+    assert.equal(counts.stream_count.get('social'), 1);
+    assert.equal(counts.home_unread_messages, 1);
+
+    muting.mute_topic('social', 'test_muting');
+    counts = unread.get_counts();
+    assert.equal(counts.stream_count.get('social'), 0);
+    assert.equal(counts.home_unread_messages, 0);
+}());
+
 (function test_num_unread_for_subject() {
     // Test the num_unread_for_subject() function using many
     // messages.
+    unread.declare_bankruptcy();
 
     var count = unread.num_unread_for_subject('social', 'lunch');
     assert.equal(count, 0);
