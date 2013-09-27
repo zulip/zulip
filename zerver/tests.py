@@ -3019,6 +3019,9 @@ int x = 3
                         "<p>%s</p>",
                         'http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov'),
 
+         # Links that match other InlinePatterns
+         ('https://metacpan.org/module/Image::Resize::OpenCV', '<p>%s</p>', 'https://metacpan.org/module/Image::Resize::OpenCV'),
+
          # Just because it has a TLD and parentheses in it doesn't mean it's a link. Trac #1364
          ('a.commandstuff()', '<p>a.commandstuff()</p>', ''),
          ('love...it', '<p>love...it</p>', ''),

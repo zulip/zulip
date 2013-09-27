@@ -365,7 +365,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
             src = 'static/third/gemoji/images/emoji/%s.png' % (name)
             return make_emoji(name, src, orig_syntax)
         else:
-            return orig_syntax
+            return None
 
 def fixup_link(link, target_blank=True):
     """Set certain attributes we want on every link."""
