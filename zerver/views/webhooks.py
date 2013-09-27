@@ -439,45 +439,6 @@ def api_newrelic_webhook(request, alert=REQ(converter=json_to_dict, default=None
     check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
     return json_success()
 
-@authenticated_api_view
-@has_request_variables
-def api_redmine_webhook(request, user_profile,
-                        payload=REQ(converter=json_to_dict), stream=REQ):
-
-    subject = payload["project"]
-
-    if payload["type"] == "new":
-        # Opening a new ticket.
-        content = """%s opened [issue %d: %s](%s) in %s
-
-~~~ quote
-%s
-~~~
-
-**Priority**: %s
-**Status**: %s
-**Assigned to**: %s
-""" % (
-        payload["author"], payload["issue_id"], payload["issue_subject"],
-        payload["url"], payload["project"], payload["issue_description"],
-        payload["priority"], payload["status"], payload["assignee"])
-    elif payload["type"] == "edit":
-        # Editing an existing ticket.
-        content = """%s updated [issue %d: %s](%s) in %s
-
-~~~ quote
-%s
-~~~""" % (
-        payload["author"], payload["issue_id"], payload["issue_subject"],
-        payload["url"], payload["project"], payload["notes"])
-    else:
-        return json_error("Unknown issue update type.")
-
-    check_send_message(user_profile, get_client("API"), "stream",
-                       [stream], subject, content)
-    return json_success()
-
-
 @authenticated_rest_api_view
 @has_request_variables
 def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_dict),
