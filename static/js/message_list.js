@@ -153,16 +153,23 @@ MessageList.prototype = {
             blueslip.fatal("Bad message id");
         }
 
-        if (this.get(id) === undefined) {
-            if (!opts.use_closest) {
-                blueslip.error("Selected message id not in MessageList",
-                               {table_name: this.table_name, id: id});
-            }
-            id = this.closest_id(id);
-            opts.id = id;
+        var closest_id = this.closest_id(id);
+
+        // The name "use_closest" option is a bit legacy.  We
+        // are always gonna move to the closest visible id; the flag
+        // just says whether we call blueslip.error or not.  The caller
+        // sets use_closest to true when it expects us to move the
+        // pointer as needed, so only generate an error if the flag is
+        // false.
+        if (!opts.use_closest && closest_id !== id) {
+            blueslip.error("Selected message id not in MessageList",
+                           {table_name: this.table_name, id: id});
         }
 
+        id = closest_id;
+        opts.id = id;
         this._selected_id = id;
+
         if (!opts.from_rendering) {
             this.view.maybe_rerender();
         }
