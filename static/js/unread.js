@@ -72,7 +72,13 @@ exports.process_read_message = function (message) {
     if (message.type === 'stream') {
         var canon_stream = stream_data.canonicalized_name(message.stream);
         var canon_subject = stream_data.canonicalized_name(message.subject);
-        unread_subjects.get(canon_stream).get(canon_subject).del(message.id);
+        var stream_dict = unread_subjects.get(canon_stream);
+        if (stream_dict) {
+            var subject_dict = stream_dict.get(canon_subject);
+            if (subject_dict) {
+                subject_dict.del(message.id);
+            }
+        }
     }
     unread_mentioned.del(message.id);
 };

@@ -215,6 +215,19 @@ var zero_counts = {
 
 }());
 
+(function test_phantom_messages() {
+    var message = {
+        id: 999,
+        type: 'stream',
+        stream: 'foo',
+        subject: 'phantom'
+    };
+
+    unread.process_read_message(message);
+    var counts = unread.get_counts();
+    assert.equal(counts.home_unread_messages, 0);
+}());
+
 (function test_private_messages() {
     narrow.active = function () {
         return false;
