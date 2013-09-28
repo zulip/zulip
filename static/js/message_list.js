@@ -42,7 +42,10 @@ MessageList.prototype = {
         // If we're initially populating the list, save the messages in
         // bottom_messages regardless
         if (self.selected_id() === -1 && self.empty()) {
-            bottom_messages = _.filter(messages, predicate);
+            var narrow_messages = _.filter(messages, predicate);
+            bottom_messages = _.reject(narrow_messages, function (msg) {
+                return self.get(msg.id);
+            });
         } else {
             _.each(messages, function (msg) {
                 // Filter out duplicates that are already in self, and all messages
