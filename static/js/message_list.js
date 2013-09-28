@@ -124,6 +124,10 @@ MessageList.prototype = {
     clear: function  MessageList_clear(opts) {
         opts = _.extend({clear_selected_id: true}, opts);
 
+        if (this.muting_enabled) {
+            this._all_items = [];
+        }
+
         this._items = [];
         this._hash = {};
         this.view.clear_rendering_state(true);
