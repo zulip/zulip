@@ -404,7 +404,6 @@ JS_SPECS = {
         'source_filenames': (
             'third/sorttable/sorttable.js',
         ),
-        'force_minify': True,
         'output_filename': 'min/activity.js'
     },
 }
