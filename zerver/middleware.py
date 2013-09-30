@@ -4,6 +4,7 @@ from django.conf import settings
 from zerver.lib.response import json_error
 from django.db import connection
 from zerver.lib.utils import statsd
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_memcached_time, get_memcached_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
 from zerver.models import flush_per_process_display_recipient_cache
@@ -137,11 +138,15 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
-        logger.info('%-15s %-7s %3d %5s%s%s%s%s %s (%s via %s)' %
-                    (remote_ip, request.method, response.status_code,
-                     format_timedelta(time_delta), optional_orig_delta,
-                     memcached_output, bugdown_output,
-                     db_time_output, request.get_full_path(), email, client))
+        logger_line = '%-15s %-7s %3d %5s%s%s%s%s %s (%s via %s)' % \
+                        (remote_ip, request.method, response.status_code,
+                        format_timedelta(time_delta), optional_orig_delta,
+                        memcached_output, bugdown_output,
+                        db_time_output, request.get_full_path(), email, client)
+        logger.info(logger_line)
+
+        if time_delta >= 1:
+            queue_json_publish("slow_queries", logger_line, lambda e: None)
 
         # Log some additional data whenever we return certain 40x errors
         if 400 <= response.status_code < 500 and response.status_code not in [401, 404, 405]:

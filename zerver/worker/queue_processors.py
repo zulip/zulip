@@ -7,7 +7,8 @@ from zerver.models import UserActivityInterval, get_user_profile_by_email, \
 from zerver.lib.queue import SimpleQueueClient
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation_email, \
-    do_update_user_activity, do_update_user_activity_interval, do_update_user_presence
+    do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
+    internal_send_message
 from zerver.decorator import JsonableError
 import os
 import ujson
@@ -112,3 +113,21 @@ class MissedMessageWorker(QueueProcessingWorker):
             # Aggregate all messages received every 2 minutes to let someone finish sending a batch
             # of messages
             time.sleep(2 * 60)
+
+@assign_queue('slow_queries')
+class SlowQueryWorker(QueueProcessingWorker):
+    def start(self):
+        while True:
+            slow_queries = self.q.drain_queue("slow_queries", json=True)
+
+            if len(slow_queries) > 0:
+                topic = "%s: slow queries" % (settings.STATSD_PREFIX,)
+
+                content = "Slow query report on %s:\n\n" % (settings.STATSD_PREFIX,)
+                for query in slow_queries:
+                    content += "    %s\n" % (query,)
+
+                internal_send_message("error-bot@zulip.com", "stream", "logs", topic, content)
+
+            # Aggregate all slow query messages in 1-minute chunks to avoid message spam
+            time.sleep(1 * 60)

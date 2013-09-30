@@ -168,6 +168,15 @@ INSTALLED_APPS = (
 LOCAL_STATSD = (False)
 USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED) or LOCAL_STATSD
 
+# These must be named STATSD_PREFIX for the statsd module
+# to pick them up
+if STAGING_DEPLOYED:
+    STATSD_PREFIX = 'staging'
+elif DEPLOYED:
+    STATSD_PREFIX = 'app'
+else:
+    STATSD_PREFIX = 'user'
+
 if USING_STATSD:
     if LOCAL_STATSD:
         STATSD_HOST = 'localhost'
@@ -177,13 +186,6 @@ if USING_STATSD:
     INSTALLED_APPS = ('django_statsd',) + INSTALLED_APPS
     STATSD_PORT = 8125
     STATSD_CLIENT = 'django_statsd.clients.normal'
-
-    if STAGING_DEPLOYED:
-        STATSD_PREFIX = 'staging'
-    elif DEPLOYED:
-        STATSD_PREFIX = 'app'
-    else:
-        STATSD_PREFIX = 'user'
 
 RATE_LIMITING = True
 REDIS_HOST = '127.0.0.1'
