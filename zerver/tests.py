@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.db.backends.util import CursorDebugWrapper
 
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
-    get_display_recipient, Realm, Client, \
+    get_display_recipient, Realm, Client, UserActivity, \
     PreregistrationUser, UserMessage, \
     get_user_profile_by_email, email_to_domain, get_realm, get_stream
 from zerver.tornadoviews import json_get_updates, api_get_messages
@@ -328,6 +328,26 @@ class AuthedTestCase(TestCase):
         self.assertEqual(get_display_recipient(msg.recipient), stream_name)
 
         return msg
+
+
+class ActivityTest(AuthedTestCase):
+    def test_activity(self):
+        self.login("hamlet@zulip.com")
+        client, _ = Client.objects.get_or_create(name='website')
+        query = '/json/update_pointer'
+        last_visit = datetime.datetime.now()
+        count=150
+        for user_profile in UserProfile.objects.all():
+            UserActivity.objects.get_or_create(
+                user_profile=user_profile,
+                client=client,
+                query=query,
+                count=count,
+                last_visit=last_visit
+            )
+        with queries_captured() as queries:
+            self.client.get('/activity')
+        self.assertEqual(len(queries), 25)
 
 class PublicURLTest(TestCase):
     """
