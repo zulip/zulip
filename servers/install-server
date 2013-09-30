@@ -44,6 +44,7 @@ EOF
 set -e
 
 ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
+resize2fs /dev/xvda1
 echo "$hostname" > /etc/hostname
 sed -i 's/localhost$/localhost $hostname/' /etc/hosts
 /etc/init.d/hostname.sh start
