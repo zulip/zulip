@@ -1457,18 +1457,18 @@ def gather_subscriptions(user_profile):
         if stream.invite_only and not sub.active:
             subscribers = None
 
-        stream = {'name': stream.name,
-                  'in_home_view': sub.in_home_view,
-                  'invite_only': stream.invite_only,
-                  'color': sub.color,
-                  'notifications': sub.notifications,
-                  'email_address': encode_email_address(stream)}
+        stream_dict = {'name': stream.name,
+                       'in_home_view': sub.in_home_view,
+                       'invite_only': stream.invite_only,
+                       'color': sub.color,
+                       'notifications': sub.notifications,
+                       'email_address': encode_email_address(stream)}
         if subscribers is not None:
-            stream['subscribers'] = subscribers
+            stream_dict['subscribers'] = subscribers
         if sub.active:
-            subscribed.append(stream)
+            subscribed.append(stream_dict)
         else:
-            unsubscribed.append(stream)
+            unsubscribed.append(stream_dict)
 
     return (sorted(subscribed), sorted(unsubscribed))
 
