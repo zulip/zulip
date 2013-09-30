@@ -638,6 +638,7 @@ def home(request):
     request.session.modified = True
 
     user_profile = request.user
+    request._email = request.user.email
 
     register_ret = do_events_register(user_profile, get_client("website"),
                                       apply_markdown=True)
