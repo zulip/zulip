@@ -9,6 +9,7 @@ function timestamp_ms() {
 var last_topic_update = 0;
 
 exports.rerender = function () {
+    stream_list.update_streams_sidebar();
     current_msg_list.rerender_after_muting_changes();
     if (current_msg_list !== home_msg_list) {
         home_msg_list.rerender_after_muting_changes();

@@ -203,6 +203,7 @@ function rebuild_recent_subjects(stream, active_topic) {
                 topic_name: topic_name,
                 unread: num_unread,
                 is_zero: num_unread === 0,
+                is_muted: muting.is_topic_muted(stream, topic_name),
                 url: narrow.by_stream_subject_uri(stream, topic_name)
             };
             display_subjects.push(display_subject);

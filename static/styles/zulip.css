@@ -629,6 +629,7 @@ ul.filters li.expanded_subject .topic-sidebar-arrow:hover {
     color: #000;
 }
 
+ul.filters li.muted_topic,
 ul.filters li.out_of_home_view {
     opacity: 0.25;
 }
