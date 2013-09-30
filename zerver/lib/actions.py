@@ -614,12 +614,25 @@ def get_subscription(stream_name, user_profile):
     return Subscription.objects.get(user_profile=user_profile,
                                     recipient=recipient, active=True)
 
-def get_subscribers_query(stream, requesting_user):
-    """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
+def validate_user_access_to_subscribers(user_profile, stream):
+    """ Validates whether the user can view the subscribers of a stream.  Raises a JsonableError if:
         * The user and the stream are in different realms
         * The realm is MIT and the stream is not invite only.
         * The stream is invite only, requesting_user is passed, and that user
           does not subscribe to the stream.
+    """
+    if user_profile is not None and user_profile.realm != stream.realm:
+        raise ValidationError("Requesting user not on given realm")
+
+    if stream.realm.domain == "mit.edu" and not stream.invite_only:
+        raise JsonableError("You cannot get subscribers for public streams in this realm")
+
+    if (user_profile is not None and stream.invite_only and
+        not subscribed_to_stream(user_profile, stream)):
+        raise JsonableError("Unable to retrieve subscribers for invite-only stream")
+
+def get_subscribers_query(stream, requesting_user):
+    """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
 
     'stream' can either be a string representing a stream name, or a Stream
     object. If it's a Stream object, 'realm' is optional.
@@ -627,17 +640,7 @@ def get_subscribers_query(stream, requesting_user):
     The caller can refine this query with select_related(), values(), etc. depending
     on whether it wants objects or just certain fields
     """
-
-    # requesting_user, if passed, shouldn't be on a different realm.
-    if requesting_user is not None and requesting_user.realm != stream.realm:
-        raise ValidationError("Requesting user not on given realm")
-
-    if stream.realm.domain == "mit.edu" and not stream.invite_only:
-        raise JsonableError("You cannot get subscribers for public streams in this realm")
-
-    if (requesting_user is not None and stream.invite_only
-            and not subscribed_to_stream(requesting_user, stream)):
-        raise JsonableError("Unable to retrieve subscribers for invite-only stream")
+    validate_user_access_to_subscribers(requesting_user, stream)
 
     # Note that non-active users may still have "active" subscriptions, because we
     # want to be able to easily reactivate them with their old subscriptions.  This
