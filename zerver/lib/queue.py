@@ -25,9 +25,10 @@ class SimpleQueueClient(object):
         self._connect()
 
     def _connect(self):
+        start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
         self.channel    = self.connection.channel()
-        self.log.info('SimpleQueueClient connected')
+        self.log.info('SimpleQueueClient connected (connecting took %.3fs)' % (time.time() - start,))
 
     def _reconnect(self):
         self.connection = None
