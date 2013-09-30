@@ -1621,7 +1621,11 @@ def json_upload_file(request, user_profile):
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
-    subscribers = get_subscriber_emails(stream_name, user_profile.realm, user_profile)
+    stream = get_stream(stream_name, user_profile.realm)
+    if stream is None:
+        raise JsonableError("Stream does not exist: %s" % (stream_name,))
+
+    subscribers = get_subscriber_emails(stream, user_profile)
 
     return json_success({'subscribers': subscribers})
 

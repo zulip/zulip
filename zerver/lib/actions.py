@@ -614,9 +614,9 @@ def get_subscription(stream_name, user_profile):
     return Subscription.objects.get(user_profile=user_profile,
                                     recipient=recipient, active=True)
 
-def get_subscribers_query(stream, realm, requesting_user):
+def get_subscribers_query(stream, requesting_user):
     """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
-        * No stream by that name exists in the realm.
+        * The user and the stream are in different realms
         * The realm is MIT and the stream is not invite only.
         * The stream is invite only, requesting_user is passed, and that user
           does not subscribe to the stream.
@@ -628,21 +628,11 @@ def get_subscribers_query(stream, realm, requesting_user):
     on whether it wants objects or just certain fields
     """
 
-    try:
-        # If a Stream object was passed, get the realm from that.
-        realm = stream.realm
-    except AttributeError:
-        # Assume a stream name was passed. Get the corresponding Stream object.
-        stream_name = stream
-        stream = get_stream(stream_name, realm)
-        if stream is None:
-            raise JsonableError("Stream does not exist: %s" % stream_name)
-
     # requesting_user, if passed, shouldn't be on a different realm.
-    if requesting_user is not None and requesting_user.realm != realm:
+    if requesting_user is not None and requesting_user.realm != stream.realm:
         raise ValidationError("Requesting user not on given realm")
 
-    if realm.domain == "mit.edu" and not stream.invite_only:
+    if stream.realm.domain == "mit.edu" and not stream.invite_only:
         raise JsonableError("You cannot get subscribers for public streams in this realm")
 
     if (requesting_user is not None and stream.invite_only
@@ -659,18 +649,18 @@ def get_subscribers_query(stream, realm, requesting_user):
     return subscriptions
 
 
-def get_subscribers(stream, realm=None, requesting_user=None):
-    subscriptions = get_subscribers_query(stream, realm, requesting_user).select_related()
+def get_subscribers(stream, requesting_user=None):
+    subscriptions = get_subscribers_query(stream, requesting_user).select_related()
     return [subscription.user_profile for subscription in subscriptions]
 
-def get_subscriber_emails(stream, realm=None, requesting_user=None):
-    subscriptions = get_subscribers_query(stream, realm, requesting_user)
+def get_subscriber_emails(stream, requesting_user=None):
+    subscriptions = get_subscribers_query(stream, requesting_user)
     subscriptions = subscriptions.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
 def get_subscriber_ids(stream):
     try:
-        subscriptions = get_subscribers_query(stream, None, None)
+        subscriptions = get_subscribers_query(stream, None)
     except JsonableError:
         return []
 
