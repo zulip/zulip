@@ -1452,7 +1452,7 @@ def gather_subscriptions(user_profile):
     stream_ids = [sub.recipient.type_id for sub in subs]
 
     stream_hash = {}
-    for stream in Stream.objects.filter(id__in=stream_ids):
+    for stream in Stream.objects.select_related("realm").filter(id__in=stream_ids):
         stream_hash[stream.id] = stream
 
     subscribed = []
