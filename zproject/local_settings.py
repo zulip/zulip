@@ -66,7 +66,7 @@ if STAGING_DEPLOYED or TESTING_DEPLOYED:
     TWITTER_CONSUMER_KEY = "xxxxxxxxxxxxxxxxxxxxxx"
     TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 elif DEPLOYED:
     # This is the real set of API credentials used by our real server,
     # and we probably shouldn't test with it just so we don't waste its requests
