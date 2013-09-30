@@ -422,6 +422,7 @@ MessageList.prototype = {
         // We need to clear the rendering state, rather than just
         // doing clear_table, since we want to potentially recollapse
         // things.
+        this._selected_id = this.closest_id(this._selected_id);
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
         this.view.rerender_preserving_scrolltop();
@@ -436,7 +437,6 @@ MessageList.prototype = {
         }
 
         this._items = this.unmuted_messages(this._all_items);
-        this._selected_id = this.closest_id(this._selected_id);
         this.rerender();
     },
 
