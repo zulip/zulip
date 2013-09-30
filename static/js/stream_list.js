@@ -187,18 +187,26 @@ function rebuild_recent_subjects(stream, subject) {
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects.get(stream) || [];
     var active_orig_subject = subject;
-    var display_subjects = _.filter(subjects, function (subject_obj, idx) {
-        var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
-        subject_obj.unread = num_unread;
-        subject_obj.is_zero = num_unread === 0;
 
+    var display_subjects = [];
+
+    _.each(subjects, function (subject_obj, idx) {
         if (subject === subject_obj.canon_subject) {
             active_orig_subject = subject_obj.subject;
         }
-        subject_obj.url = narrow.by_stream_subject_uri(stream, subject_obj.subject);
+
+        var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
 
         // Show the most recent subjects, as well as any with unread messages
-        return idx < max_subjects || subject_obj.unread > 0;
+        if (idx < max_subjects || num_unread > 0) {
+            var display_subject = {
+                subject: subject_obj.subject,
+                unread: num_unread,
+                is_zero: num_unread === 0,
+                url: narrow.by_stream_subject_uri(stream, subject_obj.subject)
+            };
+            display_subjects.push(display_subject);
+        }
     });
 
     stream_li.append(templates.render('sidebar_subject_list',
