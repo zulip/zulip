@@ -326,8 +326,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sidebar-popover-mute-topic', function (e) {
-        var stream = $(e.currentTarget).data('stream-name');
-        var topic = $(e.currentTarget).data('topic-name');
+        var stream = $(e.currentTarget).attr('data-stream-name');
+        var topic = $(e.currentTarget).attr('data-topic-name');
         popovers.hide_topic_sidebar_popover();
         muting.mute_topic(stream, topic);
         muting_ui.persist_and_rerender();
@@ -336,8 +336,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sidebar-popover-unmute-topic', function (e) {
-        var stream = $(e.currentTarget).data('stream-name');
-        var topic = $(e.currentTarget).data('topic-name');
+        var stream = $(e.currentTarget).attr('data-stream-name');
+        var topic = $(e.currentTarget).attr('data-topic-name');
         popovers.hide_topic_sidebar_popover();
         muting.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
