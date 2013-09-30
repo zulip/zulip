@@ -187,6 +187,10 @@ function rebuild_recent_subjects(stream, active_topic) {
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects.get(stream) || [];
 
+    if (active_topic) {
+        active_topic = active_topic.toLowerCase();
+    }
+
     var display_subjects = [];
 
     _.each(subjects, function (subject_obj, idx) {
@@ -194,7 +198,7 @@ function rebuild_recent_subjects(stream, active_topic) {
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
 
         // Show the most recent subjects, as well as any with unread messages
-        if (idx < max_subjects || num_unread > 0) {
+        if ((idx < max_subjects) || (num_unread > 0) || (active_topic === topic_name)) {
             var display_subject = {
                 topic_name: topic_name,
                 unread: num_unread,
