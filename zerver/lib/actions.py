@@ -631,6 +631,27 @@ def validate_user_access_to_subscribers(user_profile, stream):
         not subscribed_to_stream(user_profile, stream)):
         raise JsonableError("Unable to retrieve subscribers for invite-only stream")
 
+def bulk_get_subscriber_emails(streams, user_profile):
+    target_streams = []
+    for stream in streams:
+        try:
+            validate_user_access_to_subscribers(user_profile, stream)
+        except JsonableError:
+            continue
+        target_streams.append(stream)
+
+    subscriptions = Subscription.objects.select_related("recipient", "user_profile").filter(
+        recipient__type=Recipient.STREAM,
+        recipient__type_id__in=[stream.id for stream in target_streams],
+        user_profile__is_active=True,
+        active=True).only("user_profile__email", "recipient__type_id")
+
+    result = dict((stream.id, []) for stream in streams)
+    for sub in subscriptions:
+        result[sub.recipient.type_id].append(sub.user_profile.email)
+
+    return result
+
 def get_subscribers_query(stream, requesting_user):
     """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
 
@@ -650,7 +671,6 @@ def get_subscribers_query(stream, requesting_user):
                                                 user_profile__is_active=True,
                                                 active=True)
     return subscriptions
-
 
 def get_subscribers(stream, requesting_user=None):
     subscriptions = get_subscribers_query(stream, requesting_user).select_related()
@@ -1438,12 +1458,12 @@ def gather_subscriptions(user_profile):
     subscribed = []
     unsubscribed = []
 
+    streams = [stream_hash[sub.recipient.type_id] for sub in subs]
+    subscriber_map = bulk_get_subscriber_emails(streams, user_profile)
+
     for sub in subs:
         stream = stream_hash[sub.recipient.type_id]
-        try:
-            subscribers = get_subscriber_emails(stream)
-        except JsonableError:
-            subscribers = None
+        subscribers = subscriber_map[stream.id]
 
         # Important: don't show the subscribers if the stream is invite only
         # and this user isn't on it anymore.
