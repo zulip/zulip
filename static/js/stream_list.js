@@ -179,22 +179,17 @@ function remove_expanded_subjects() {
     $("ul.expanded_subjects").remove();
 }
 
-function rebuild_recent_subjects(stream, subject) {
+function rebuild_recent_subjects(stream, active_topic) {
     // TODO: Call rebuild_recent_subjects less, not on every new
     // message.
     remove_expanded_subjects();
     var max_subjects = 5;
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects.get(stream) || [];
-    var active_orig_subject = subject;
 
     var display_subjects = [];
 
     _.each(subjects, function (subject_obj, idx) {
-        if (subject === subject_obj.canon_subject) {
-            active_orig_subject = subject_obj.subject;
-        }
-
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
 
         // Show the most recent subjects, as well as any with unread messages
@@ -214,8 +209,8 @@ function rebuild_recent_subjects(stream, subject) {
                                        topic_sidebar_arrow: feature_flags.muting,
                                        stream: stream}));
 
-    if (active_orig_subject !== undefined) {
-        get_subject_filter_li(stream, active_orig_subject).addClass('active-subject-filter');
+    if (active_topic) {
+        get_subject_filter_li(stream, active_topic).addClass('active-subject-filter');
     }
 }
 
