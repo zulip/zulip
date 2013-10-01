@@ -80,8 +80,11 @@ class ZulipPlugin(Component):
         content = "%s created %s in component **%s**, priority **%s**:\n" % \
             (ticket.values.get("reporter"), markdown_ticket_url(ticket),
              ticket.values.get("component"), ticket.values.get("priority"))
+        # Include the full subject if it will be truncated
+        if len(ticket.values.get("summary")) > 60:
+            content += "**%s**\n" % (ticket.values.get("summary"),)
         if ticket.values.get("description") != "":
-            content += "%s" % markdown_block(ticket.values.get("description"))
+            content += "%s" % (markdown_block(ticket.values.get("description")),)
         send_update(ticket, content)
 
     def ticket_changed(self, ticket, comment, author, old_values):
@@ -96,7 +99,7 @@ class ZulipPlugin(Component):
 
         content = "%s updated %s" % (author, markdown_ticket_url(ticket))
         if comment:
-            content += ' with comment: %s\n\n' % (markdown_block(comment,))
+            content += ' with comment: %s\n\n' % (markdown_block(comment),)
         else:
             content += ":\n\n"
         field_changes = []
