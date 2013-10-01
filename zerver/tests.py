@@ -3445,9 +3445,13 @@ class JiraHookTests(AuthedTestCase):
         self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15):
 
 
-~~~ quote
 Adding a comment. Oh, what a comment it is!
-~~~""")
+""")
+
+    def test_commented_markup(self):
+        msg = self.send_jira_message('commented_markup')
+        self.assertEqual(msg.subject, "TEST-7: Testing of rich text")
+        self.assertEqual(msg.content, """Leonardo Franchi [Administrator] **updated** [TEST-7](https://zulipp.atlassian.net/browse/TEST-7):\n\n\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~\n""")
 
     def test_deleted(self):
         msg = self.send_jira_message('deleted')
@@ -3469,9 +3473,8 @@ Adding a comment. Oh, what a comment it is!
 
 * Changed status from **Resolved** to **Reopened**
 
-~~~ quote
 Re-opened yeah!
-~~~""")
+""")
 
     def test_resolved(self):
         msg = self.send_jira_message('resolved')
@@ -3482,9 +3485,8 @@ Re-opened yeah!
 * Changed status from **Open** to **Resolved**
 * Changed assignee from **None** to **Leo Franchi**
 
-~~~ quote
 Fixed it, finally!
-~~~""")
+""")
 
     def test_workflow_postfuncion(self):
         msg = self.send_jira_message('postfunction_hook')

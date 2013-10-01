@@ -17,6 +17,7 @@ import base64
 import logging
 import re
 import ujson
+import markdown.inlinepatterns
 from functools import wraps
 
 def github_generic_subject(noun, repository, blob):
@@ -173,6 +174,42 @@ def elide_subject(subject):
         subject = subject[:57].rstrip() + '...'
     return subject
 
+def convert_jira_markup(content):
+    # Attempt to do some simplistic conversion of JIRA
+    # formatting to Markdown, for consumption in Zulip
+
+    # Jira uses *word* for bold, we use **word**
+    content = re.sub(r'\*([^\*]+)\*', r'**\1**', content)
+
+    # Jira uses {{word}} for monospacing, we use `word`
+    content = re.sub(r'{{([^\*]+?)}}', r'`\1`', content)
+
+    # Starting a line with bq. block quotes that line
+    content = re.sub(r'bq\. (.*)', r'> \1', content)
+
+    # Wrapping a block of code in {quote}stuff{quote} also block-quotes it
+    quote_re = re.compile(r'{quote}(.*?){quote}', re.DOTALL)
+    content = re.sub(quote_re, r'~~~ quote\n\1\n~~~', content)
+
+    # {noformat}stuff{noformat} blocks are just code blocks with no
+    # syntax highlighting
+    noformat_re = re.compile(r'{noformat}(.*?){noformat}', re.DOTALL)
+    content = re.sub(noformat_re, r'~~~\n\1\n~~~', content)
+
+    # Code blocks are delineated by {code[: lang]} {code}
+    code_re = re.compile(r'{code[^\n]*}(.*?){code}', re.DOTALL)
+    content = re.sub(code_re, r'~~~\n\1\n~~~', content)
+
+    # Links are of form: [https://www.google.com] or [Link Title|https://www.google.com]
+    # In order to support both forms, we don't match a | in bare links
+    content = re.sub(r'\[([^\|]+?)\]', r'[\1](\1)', content)
+
+    # Full links which have a | are converted into a better markdown link
+    full_link_re = re.compile(r'\[(?:(?P<title>[^|]+)\|)(?P<url>.*)\]')
+    content = re.sub(full_link_re, r'[\g<title>](\g<url>)', content)
+
+    return content
+
 @csrf_exempt
 def api_jira_webhook(request):
     try:
@@ -245,7 +282,8 @@ def api_jira_webhook(request):
                     content += "* Changed %s from **%s** to **%s**\n" % (field, item.get('fromString'), item.get('toString'))
 
         if comment != '':
-            content += "\n~~~ quote\n%s\n~~~" % (comment,)
+            comment = convert_jira_markup(comment)
+            content += "\n%s\n" % (comment,)
     elif 'transition' in payload:
         from_status = get_in(payload, ['transition', 'from_status'])
         to_status = get_in(payload, ['transition', 'to_status'])
