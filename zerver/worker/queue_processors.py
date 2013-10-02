@@ -123,7 +123,7 @@ class SlowQueryWorker(QueueProcessingWorker):
             if len(slow_queries) > 0:
                 topic = "%s: slow queries" % (settings.STATSD_PREFIX,)
 
-                content = "Slow query report on %s:\n\n" % (settings.STATSD_PREFIX,)
+                content = ""
                 for query in slow_queries:
                     content += "    %s\n" % (query,)
 
