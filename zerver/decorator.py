@@ -85,6 +85,27 @@ def validate_api_key(email, api_key):
         raise JsonableError("User account is not active")
     return user_profile
 
+# Use this for webhook views that don't get an email passed in.
+def api_key_only_webhook_view(view_func):
+    @csrf_exempt
+    @has_request_variables
+    @wraps(view_func)
+    def _wrapped_view_func(request, api_key=REQ,
+                           *args, **kwargs):
+
+        try:
+            user_profile = UserProfile.objects.get(api_key=api_key, is_active=True)
+        except UserProfile.DoesNotExist:
+            raise JsonableError("Failed to find user with API key: %s" % (api_key,))
+
+        request.user = user_profile
+        request._email = user_profile.email
+        process_client(request, user_profile, "API")
+        rate_limit_user(request, user_profile, domain='all')
+        return view_func(request, user_profile, *args, **kwargs)
+    return _wrapped_view_func
+
+
 # authenticated_api_view will add the authenticated user's user_profile to
 # the view function's arguments list, since we have to look it up
 # anyway.
