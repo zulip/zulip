@@ -30,9 +30,6 @@ setup(name='zulip',
                                              "examples/get-public-streams", "examples/unsubscribe",
                                              "examples/list-members", "examples/list-subscriptions",
                                              "examples/print-messages"])] + \
-          list(recur_expand('share/zulip', 'integrations/')) + \
-          [('share/zulip/demos',
-            [os.path.join("demos", relpath) for relpath in
-            os.listdir("demos")])],
+          list(recur_expand('share/zulip', 'integrations/')),
       scripts=["bin/zulip-send"],
      )
