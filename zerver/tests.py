@@ -297,8 +297,9 @@ class AuthedTestCase(TestCase):
                                  "fixtures/%s/%s_%s.%s" % (type, type, action,file_type))).read()
 
     # Subscribe to a stream directly
-    def subscribe_to_stream(self, email, stream_name):
-        stream, _ = create_stream_if_needed(Realm.objects.get(domain="zulip.com"), stream_name)
+    def subscribe_to_stream(self, email, stream_name, realm=None):
+        realm = Realm.objects.get(domain=email_to_domain(email))
+        stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
         do_add_subscription(user_profile, stream, no_log=True)
 
@@ -2566,6 +2567,68 @@ class GetSubscribersTest(AuthedTestCase):
         """
         stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
         self.make_successful_subscriber_request(stream_name)
+
+    @slow(0.15, "common_subscribe_to_streams is slow")
+    def test_gather_subscriptions(self):
+        """
+        gather_subscriptions returns correct results with only 3 queries
+        """
+        realm = Realm.objects.get(domain="zulip.com")
+        streams = ["stream_%s" % i for i in xrange(10)]
+        for stream in streams:
+            create_stream_if_needed(realm, stream)
+        users_to_subscribe = [self.email, "othello@zulip.com", "cordelia@zulip.com"]
+        ret = self.common_subscribe_to_streams(
+            self.email,
+            streams,
+            dict(principals=ujson.dumps(users_to_subscribe)))
+        self.assert_json_success(ret)
+        ret = self.common_subscribe_to_streams(
+            self.email,
+            ["stream_invite_only_1"],
+            dict(principals=ujson.dumps(users_to_subscribe)),
+            invite_only=True)
+        self.assert_json_success(ret)
+
+        with queries_captured() as queries:
+            subscriptions = gather_subscriptions(self.user_profile)
+        self.assertTrue(len(subscriptions[0]) >= 11)
+        for sub in subscriptions[0]:
+            if not sub["name"].startswith("stream_"):
+                continue
+            self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
+        self.assertTrue(len(queries) == 3)
+
+    @slow(0.15, "common_subscribe_to_streams is slow")
+    def test_gather_subscriptions_mit(self):
+        """
+        gather_subscriptions returns correct results with only 3 queries
+        """
+        # Subscribe only ourself because invites are disabled on mit.edu
+        users_to_subscribe = ["starnine@mit.edu", "espuser@mit.edu"]
+        for email in users_to_subscribe:
+            self.subscribe_to_stream(email, "mit_stream")
+
+        ret = self.common_subscribe_to_streams(
+            "starnine@mit.edu",
+            ["mit_invite_only"],
+            dict(principals=ujson.dumps(users_to_subscribe)),
+            invite_only=True)
+        self.assert_json_success(ret)
+
+        with queries_captured() as queries:
+            subscriptions = gather_subscriptions(get_user_profile_by_email("starnine@mit.edu"))
+
+        self.assertTrue(len(subscriptions[0]) >= 2)
+        for sub in subscriptions[0]:
+            if not sub["name"].startswith("mit_"):
+                continue
+            if sub["name"] == "mit_invite_only":
+                self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
+            else:
+                print sub
+                self.assertTrue(len(sub["subscribers"]) == 0)
+        self.assertTrue(len(queries) == 3)
 
     def test_nonsubscriber(self):
         """
