@@ -1779,12 +1779,9 @@ class ActivityTable(object):
 
             records = UserActivity.objects.filter(
                     query=url,
-                    client__name__startswith=client_name
+                    client__name__startswith=client_name,
+                    user_profile__realm__domain=realm
             )
-
-            if realm:
-                records = records.filter(user_profile__realm__domain=realm)
-
             records = records.select_related().only(*fields)
 
             count_field = query_name + '_count'
@@ -1797,26 +1794,13 @@ class ActivityTable(object):
                 count = record.count
                 last_visit = record.last_visit
 
-                if realm:
-                    row = self.rows.setdefault(email,
-                                               {'realm': domain,
-                                                'full_name': full_name,
-                                                'email': email,
-                                                'type': 'user'})
-                    row[count_field] = count
-                    row[last_visit_field] = last_visit
-
-                else:
-                    row = self.rows.setdefault(domain,
-                                               {'realm': domain,
-                                                'type': 'realm'})
-                    row.setdefault(count_field, 0)
-                    row[count_field] += count
-
-                    if last_visit_field in row:
-                        row[last_visit_field] = max(last_visit, row[last_visit_field])
-                    else:
-                        row[last_visit_field] = last_visit
+                row = self.rows.setdefault(email,
+                                           {'realm': domain,
+                                            'full_name': full_name,
+                                            'email': email,
+                                            'type': 'user'})
+                row[count_field] = count
+                row[last_visit_field] = last_visit
 
 
         for query_name, urls in queries:
@@ -1940,19 +1924,19 @@ def get_activity(request, realm=REQ(default=None)):
         ("send_message", ["/api/v1/send_message"]),
     )
 
-    data = []
-
     if realm is None:
-        data.append(('General', realm_summary_table()))
-
-    data += [
-        ('Website',    ActivityTable(realm, 'website',       web_queries)),
-        ('Mirror',     ActivityTable(realm, 'zephyr_mirror', api_queries)),
-        ('Desktop',    ActivityTable(realm, 'desktop',       web_queries)),
-        ('API',        ActivityTable(realm, 'API',           api_queries)),
-        ('Android',    ActivityTable(realm, 'Android',       api_queries)),
-        ('iPhone',     ActivityTable(realm, 'iPhone',        api_queries))
-    ]
+        data = [
+            ('Counts', realm_summary_table())
+        ]
+    else:
+        data = [
+            ('Website',    ActivityTable(realm, 'website',       web_queries)),
+            ('Mirror',     ActivityTable(realm, 'zephyr_mirror', api_queries)),
+            ('Desktop',    ActivityTable(realm, 'desktop',       web_queries)),
+            ('API',        ActivityTable(realm, 'API',           api_queries)),
+            ('Android',    ActivityTable(realm, 'Android',       api_queries)),
+            ('iPhone',     ActivityTable(realm, 'iPhone',        api_queries))
+        ]
 
     return render_to_response(
         'zerver/activity.html',

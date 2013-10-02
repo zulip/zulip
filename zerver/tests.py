@@ -347,7 +347,7 @@ class ActivityTest(AuthedTestCase):
             )
         with queries_captured() as queries:
             self.client.get('/activity')
-        self.assertEqual(len(queries), 25)
+        self.assertEqual(len(queries), 1)
 
 class PublicURLTest(TestCase):
     """
