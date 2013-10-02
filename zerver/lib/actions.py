@@ -1450,13 +1450,17 @@ def decode_email_address(email):
     # transformed.
     return re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), email)
 
+# In general, it's better to avoid using .values() because it makes
+# the code pretty ugly, but in this case, it has significant
+# performance impact for loading / for users with large numbers of
+# subscriptions, so it's worth optimizing.
 def gather_subscriptions(user_profile):
-    # For now, don't display subscriptions for private messages.
-    subs = Subscription.objects.select_related("recipient").filter(
+    sub_dicts = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
-        recipient__type = Recipient.STREAM)
+        recipient__type = Recipient.STREAM).values(
+        "recipient__type_id", "in_home_view", "color", "notifications", "active")
 
-    stream_ids = [sub.recipient.type_id for sub in subs]
+    stream_ids = [sub["recipient__type_id"] for sub in sub_dicts]
 
     stream_hash = {}
     for stream in Stream.objects.select_related("realm").filter(id__in=stream_ids):
@@ -1465,27 +1469,27 @@ def gather_subscriptions(user_profile):
     subscribed = []
     unsubscribed = []
 
-    streams = [stream_hash[sub.recipient.type_id] for sub in subs]
+    streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts]
     subscriber_map = bulk_get_subscriber_emails(streams, user_profile)
 
-    for sub in subs:
-        stream = stream_hash[sub.recipient.type_id]
+    for sub in sub_dicts:
+        stream = stream_hash[sub["recipient__type_id"]]
         subscribers = subscriber_map[stream.id]
 
         # Important: don't show the subscribers if the stream is invite only
         # and this user isn't on it anymore.
-        if stream.invite_only and not sub.active:
+        if stream.invite_only and not sub["active"]:
             subscribers = None
 
         stream_dict = {'name': stream.name,
-                       'in_home_view': sub.in_home_view,
+                       'in_home_view': sub["in_home_view"],
                        'invite_only': stream.invite_only,
-                       'color': sub.color,
-                       'notifications': sub.notifications,
+                       'color': sub["color"],
+                       'notifications': sub["notifications"],
                        'email_address': encode_email_address(stream)}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
-        if sub.active:
+        if sub["active"]:
             subscribed.append(stream_dict)
         else:
             unsubscribed.append(stream_dict)
