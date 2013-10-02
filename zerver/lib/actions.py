@@ -644,11 +644,11 @@ def bulk_get_subscriber_emails(streams, user_profile):
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=[stream.id for stream in target_streams],
         user_profile__is_active=True,
-        active=True).only("user_profile__email", "recipient__type_id")
+        active=True).values("user_profile__email", "recipient__type_id")
 
     result = dict((stream.id, []) for stream in streams)
     for sub in subscriptions:
-        result[sub.recipient.type_id].append(sub.user_profile.email)
+        result[sub["recipient__type_id"]].append(sub["user_profile__email"])
 
     return result
 
