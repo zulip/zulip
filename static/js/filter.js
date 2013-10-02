@@ -97,8 +97,11 @@ function encodeOperand(operand) {
                   .replace(/ /g,  '+');
 }
 
-function decodeOperand(encoded) {
-    return util.robust_uri_decode(encoded.replace(/\+/g, ' '));
+function decodeOperand(encoded, operator) {
+    if (operator !== 'pm-with' && operator !== 'sender') {
+        encoded = encoded.replace(/\+/g, ' ');
+    }
+    return util.robust_uri_decode(encoded);
 }
 
 // Parse a string into a list of operators (see below).
@@ -119,7 +122,7 @@ Filter.parse = function (str) {
             // Looks like an operator.
             // FIXME: Should we skip unknown operator names here?
             operator = parts.shift();
-            operators.push([operator, decodeOperand(parts.join(':'))]);
+            operators.push([operator, decodeOperand(parts.join(':'), operator)]);
         }
     });
     // NB: Callers of 'parse' can assume that the 'search' operator is last.

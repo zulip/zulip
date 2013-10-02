@@ -177,6 +177,18 @@ function get_predicate(operators) {
     string = 'stream:Foo topic:Bar yo';
     assert.deepEqual(Filter.unparse(operators), string);
 
+    string = 'pm-with:leo+test@zulip.com';
+    operators = [['pm-with', 'leo+test@zulip.com']];
+    assert.deepEqual(Filter.parse(string), operators);
+
+    string = 'sender:leo+test@zulip.com';
+    operators = [['sender', 'leo+test@zulip.com']];
+    assert.deepEqual(Filter.parse(string), operators);
+
+    string = 'stream:With+Space';
+    operators = [['stream', 'With Space']];
+    assert.deepEqual(Filter.parse(string), operators);
+
     operators = [['id', 50]];
     string = 'id:50';
     assert.deepEqual(Filter.unparse(operators), string);
