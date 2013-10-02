@@ -2029,7 +2029,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # We only sent emails to the new users.
         self.check_sent_emails(new)
 
-    @slow(0.20, 'inviting is slow')
     def test_invite_outside_domain_in_closed_realm(self):
         """
         In a realm with `restricted_to_domain = True`, you can't invite people
@@ -2913,7 +2912,7 @@ int x = 3
         self.common_bugdown_test('__foo__', '<p>__foo__</p>')
         self.common_bugdown_test('**foo**', '<p><strong>foo</strong></p>')
 
-    @slow(1.1, 'lots of examples')
+    @slow(0.3, 'lots of examples')
     def test_linkify(self):
         def replaced(payload, url, phrase=''):
             target = " target=\"_blank\""
@@ -3037,7 +3036,6 @@ int x = 3
             converted = bugdown_convert(inline_url)
             self.assertEqual(match, converted)
 
-    @slow(0.545, 'BugDown is slow, several items to test')
     def test_manual_links(self):
         # These are links that the default markdown XSS fails due to to : in the path
         urls = (('[Haskell NYC Meetup](http://www.meetsup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/108707682/\
