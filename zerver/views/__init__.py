@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
 from django.utils.timezone import now
+from django.utils.html import mark_safe
 from django.utils.cache import patch_cache_control
 from django.core.exceptions import ValidationError
 from django.core import validators
@@ -18,7 +19,7 @@ from django.core.mail import send_mail, mail_admins, EmailMessage
 from django.db import transaction
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, bulk_get_recipients, \
-    PreregistrationUser, get_client, MitUser, UserActivity, \
+    PreregistrationUser, get_client, MitUser, UserActivity, UserActivityInterval, \
     MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
@@ -64,6 +65,7 @@ from zerver.lib.cache import cache_get_many, cache_set_many, \
 from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver import tornado_callbacks
 from django.db import connection
 
@@ -72,6 +74,7 @@ from confirmation.models import Confirmation
 import subprocess
 import calendar
 import datetime
+import itertools
 import ujson
 import simplejson
 import re
@@ -1904,6 +1907,52 @@ def realm_summary_table():
     )
     return dict(content=content)
 
+
+def user_activity_intervals():
+    day_end = timestamp_to_datetime(time.time())
+    day_start = day_end - datetime.timedelta(hours=24)
+
+    output = "Per-user online duration for the last 24 hours:\n"
+    total_duration = datetime.timedelta(0)
+
+    all_intervals = UserActivityInterval.objects.filter(
+        end__gte=day_start,
+        start__lte=day_end
+    ).select_related(
+        'user_profile',
+        'user_profile__realm'
+    ).only(
+        'start',
+        'end',
+        'user_profile__email',
+        'user_profile__realm__domain'
+    ).order_by(
+        'user_profile__realm__domain',
+        'user_profile__email'
+    )
+
+    by_domain = lambda row: row.user_profile.realm.domain
+    by_email = lambda row: row.user_profile.email
+
+    for domain, realm_intervals in itertools.groupby(all_intervals, by_domain):
+        output += '<hr>%s\n' % (domain,)
+        for email, intervals in itertools.groupby(realm_intervals, by_email):
+            duration = datetime.timedelta(0)
+            for interval in intervals:
+                start = max(day_start, interval.start)
+                end = min(day_end, interval.end)
+                duration += end - start
+
+            total_duration += duration
+            output += "  %-*s%s\n" % (37, email, duration, )
+
+    output += "\nTotal Duration:                      %s\n" % (total_duration,)
+    output += "\nTotal Duration in minutes:           %s\n" % (total_duration.total_seconds() / 60.,)
+    output += "Total Duration amortized to a month: %s" % (total_duration.total_seconds() * 30. / 60.,)
+    content = mark_safe('<pre>' + output + '</pre>')
+    return dict(content=content)
+
+
 def can_view_activity(request):
     return request.user.realm.domain == 'zulip.com'
 
@@ -1926,7 +1975,8 @@ def get_activity(request, realm=REQ(default=None)):
 
     if realm is None:
         data = [
-            ('Counts', realm_summary_table())
+            ('Counts', realm_summary_table()),
+            ('Durations', user_activity_intervals()),
         ]
     else:
         data = [
