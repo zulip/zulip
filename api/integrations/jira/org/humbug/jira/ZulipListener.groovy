@@ -134,6 +134,7 @@ class ZulipListener extends AbstractIssueEventListener {
     String sendStreamMessage(String stream, String subject, String message) {
       NameValuePair[] body = [new NameValuePair("api-key", zulipAPIKey),
                               new NameValuePair("email",   zulipEmail),
+                              new NameValuePair("client",  "jira-groovy"),
                               new NameValuePair("type",    "stream"),
                               new NameValuePair("to",      stream),
                               new NameValuePair("subject", subject),
