@@ -1452,7 +1452,7 @@ def decode_email_address(email):
 
 def gather_subscriptions(user_profile):
     # For now, don't display subscriptions for private messages.
-    subs = Subscription.objects.select_related().filter(
+    subs = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM)
 
