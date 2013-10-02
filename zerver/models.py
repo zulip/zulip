@@ -86,6 +86,9 @@ class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
     restricted_to_domain = models.BooleanField(default=True)
     date_created = models.DateTimeField(default=timezone.now)
+    notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True)
+
+    NOTIFICATION_STREAM_NAME = 'zulip'
 
     def __repr__(self):
         return (u"<Realm: %s %s>" % (self.domain, self.id)).encode("utf-8")

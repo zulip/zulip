@@ -1113,6 +1113,22 @@ def do_create_realm(domain, restricted_to_domain=True):
     if created:
         realm = Realm(domain=domain, restricted_to_domain=restricted_to_domain)
         realm.save()
+
+        # Create stream once Realm object has been saved
+        notifications_stream, _ = create_stream_if_needed(realm, Realm.NOTIFICATION_STREAM_NAME)
+        realm.notifications_stream = notifications_stream
+        realm.save(update_fields=['notifications_stream'])
+
+        # Include a welcome message in this notifications stream
+        content = """Welcome to Zulip!
+
+This is a message sent to the `zulip` stream, used for system-generated notifications.
+Feel free to reply to say hello, though I am a bot so I won't be able to respond!"""
+        msg = internal_prep_message('notification-bot@zulip.com', 'stream',
+                                     notifications_stream.name, "Welcome",
+                                     content, realm=realm)
+        do_send_messages([msg])
+
         # Log the event
         log_event({"type": "realm_created",
                    "domain": domain,
@@ -1158,6 +1174,10 @@ def set_default_streams(realm, stream_names):
     for stream_name in stream_names:
         stream, _ = create_stream_if_needed(realm, stream_name)
         DefaultStream.objects.create(stream=stream, realm=realm)
+
+    # All realms get a notifications stream by default
+    notifications_stream, _ = create_stream_if_needed(realm, Realm.NOTIFICATION_STREAM_NAME)
+    DefaultStream.objects.create(stream=notifications_stream, realm=realm)
 
 def get_default_subs(user_profile):
     return [default.stream for default in

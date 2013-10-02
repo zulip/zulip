@@ -132,12 +132,23 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
 
     return existing_streams, created_streams
 
-def send_signup_message(sender, signups_stream, user_profile, internal=False):
+def send_signup_message(sender, signups_stream, user_profile,
+                        internal=False, realm=None):
     if internal:
         # When this is done using manage.py vs. the web interface
         internal_blurb = " **INTERNAL SIGNUP** "
     else:
         internal_blurb = " "
+
+    # Send notification to realm notifications stream if it exists
+    # Don't send notification for the first user in a realm
+    realm_user_count = get_active_user_profiles_by_realm(user_profile.realm).count()
+    if user_profile.realm.notifications_stream is not None and realm_user_count > 1:
+        internal_send_message(sender, "stream",
+                              user_profile.realm.notifications_stream.name,
+                              "New users", "%s just signed up for Zulip. Say hello!" % \
+                                (user_profile.full_name,),
+                              realm=user_profile.realm)
 
     internal_send_message(sender,
             "stream", signups_stream, user_profile.realm.domain,
@@ -1578,17 +1589,31 @@ def add_subscriptions_backend(request, user_profile,
                                                        "private", email, "", msg))
 
     if announce and len(created_streams) > 0:
-        for realm_user in get_active_user_profiles_by_realm(user_profile.realm):
-            # Don't announce to yourself or to people you explicitly added
-            # (who will get the notification above instead).
-            if realm_user.email in principals or realm_user.email == user_profile.email:
-                continue
-            msg = ("Hi there!  %s just created a new stream '%s'. "
-                   "To join, click the gear in the left-side streams list."
-                   % (user_profile.full_name, created_streams[0].name))
+        notifications_stream = user_profile.realm.notifications_stream
+        if notifications_stream is not None:
+            if len(created_streams) > 1:
+                stream_msg = "the following streams: %s" % \
+                              (", ".join('`%s`' % (s.name,) for s in created_streams),)
+            else:
+                stream_msg = "a new stream `%s`" % (created_streams[0].name)
+            msg = ("%s just created %s. To join, click the gear "
+                   "in the left-side streams list.") % (user_profile.full_name, stream_msg)
             notifications.append(internal_prep_message("notification-bot@zulip.com",
-                                                       "private",
-                                                       realm_user.email, "", msg))
+                                   "stream",
+                                   notifications_stream.name, "Streams", msg,
+                                   realm=notifications_stream.realm))
+        else:
+            for realm_user in get_active_user_profiles_by_realm(user_profile.realm):
+                # Don't announce to yourself or to people you explicitly added
+                # (who will get the notification above instead).
+                if realm_user.email in principals or realm_user.email == user_profile.email:
+                    continue
+                msg = ("Hi there!  %s just created a new stream '%s'. "
+                           "To join, click the gear in the left-side streams list."
+                           % (user_profile.full_name, created_streams[0].name))
+                notifications.append(internal_prep_message("notification-bot@zulip.com",
+                                                           "private",
+                                                           realm_user.email, "", msg))
 
     if len(notifications) > 0:
         do_send_messages(notifications)
