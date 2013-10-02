@@ -431,7 +431,7 @@ def url_to_a(url, text = None):
         # Rejected by sanitize_url; render it as plain text.
         return url
     if text is None:
-        text = url
+        text = markdown.util.AtomicString(url)
 
     a.set('href', href)
     a.text = text
@@ -609,7 +609,7 @@ class Bugdown(markdown.Extension):
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
-        md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_begin')
+        md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
         for (pattern, format_string) in self.getConfig("realm_filters"):

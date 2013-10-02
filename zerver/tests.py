@@ -3021,6 +3021,7 @@ int x = 3
 
          # Links that match other InlinePatterns
          ('https://metacpan.org/module/Image::Resize::OpenCV', '<p>%s</p>', 'https://metacpan.org/module/Image::Resize::OpenCV'),
+         ('foo.com/a::trollface::b', '<p>%s</p>', 'foo.com/a::trollface::b'),
 
          # Just because it has a TLD and parentheses in it doesn't mean it's a link. Trac #1364
          ('a.commandstuff()', '<p>a.commandstuff()</p>', ''),
