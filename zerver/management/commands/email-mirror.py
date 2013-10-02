@@ -157,6 +157,17 @@ def extract_body(message):
 
     raise ZulipEmailForwardError("Unable to find plaintext or HTML message body")
 
+def filter_footer(text):
+    # Try to filter out obvious footers.
+    possible_footers = filter(lambda line: line.strip().startswith("--"),
+                              text.split("\n"))
+    if len(possible_footers) != 1:
+        # Be conservative and don't try to scrub content if there
+        # isn't a trivial footer structure.
+        return text
+
+    return text.partition("--")[0].strip()
+
 def extract_and_upload_attachments(message):
     attachment_links = []
 
@@ -225,7 +236,7 @@ def fetch(result, proto, mailboxes):
         debug_info = {}
 
         try:
-            body = extract_body(message)
+            body = filter_footer(extract_body(message))
             to = find_emailgateway_recipient(message)
             debug_info["to"] = to
             stream = extract_and_validate(to)
