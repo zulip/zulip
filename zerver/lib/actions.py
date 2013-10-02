@@ -621,32 +621,48 @@ def validate_user_access_to_subscribers(user_profile, stream):
         * The stream is invite only, requesting_user is passed, and that user
           does not subscribe to the stream.
     """
-    if user_profile is not None and user_profile.realm != stream.realm:
+    return validate_user_access_to_subscribers_helper(
+        user_profile,
+        {"realm__domain": stream.realm.domain,
+         "realm_id": stream.realm_id,
+         "invite_only": stream.invite_only},
+        # We use a lambda here so that we only compute whether the
+        # user is subscribed if we have to
+        lambda: subscribed_to_stream(user_profile, stream))
+
+def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_user_subscribed):
+    """ Helper for validate_user_access_to_subscribers that doesn't require a full stream object
+    * check_user_subscribed is a function that when called with no
+      arguments, will report whether the user is subscribed to the stream
+    """
+    if user_profile is not None and user_profile.realm_id != stream_dict["realm_id"]:
         raise ValidationError("Requesting user not on given realm")
 
-    if stream.realm.domain == "mit.edu" and not stream.invite_only:
+    if stream_dict["realm__domain"] == "mit.edu" and not stream_dict["invite_only"]:
         raise JsonableError("You cannot get subscribers for public streams in this realm")
 
-    if (user_profile is not None and stream.invite_only and
-        not subscribed_to_stream(user_profile, stream)):
+    if (user_profile is not None and stream_dict["invite_only"] and
+        not check_user_subscribed()):
         raise JsonableError("Unable to retrieve subscribers for invite-only stream")
 
-def bulk_get_subscriber_emails(streams, user_profile):
-    target_streams = []
-    for stream in streams:
+# sub_dict is a dictionary mapping stream_id => whether the user is subscribed to that stream
+def bulk_get_subscriber_emails(stream_dicts, user_profile, sub_dict):
+    target_stream_dicts = []
+    for stream_dict in stream_dicts:
         try:
-            validate_user_access_to_subscribers(user_profile, stream)
+            validate_user_access_to_subscribers_helper(user_profile, stream_dict,
+                                                       lambda: sub_dict[stream_dict["id"]])
         except JsonableError:
             continue
-        target_streams.append(stream)
+        target_stream_dicts.append(stream_dict)
 
     subscriptions = Subscription.objects.select_related("recipient", "user_profile").filter(
         recipient__type=Recipient.STREAM,
-        recipient__type_id__in=[stream.id for stream in target_streams],
+        recipient__type_id__in=[stream["id"] for stream in target_stream_dicts],
         user_profile__is_active=True,
         active=True).values("user_profile__email", "recipient__type_id")
 
-    result = dict((stream.id, []) for stream in streams)
+    result = dict((stream["id"], []) for stream in stream_dicts)
     for sub in subscriptions:
         result[sub["recipient__type_id"]].append(sub["user_profile__email"])
 
@@ -1433,6 +1449,9 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     tornado_callbacks.send_notification(notice)
 
 def encode_email_address(stream):
+    return encode_email_address_helper(stream.name, stream.email_token)
+
+def encode_email_address_helper(name, email_token):
     # Given the fact that we have almost no restrictions on stream names and
     # that what characters are allowed in e-mail addresses is complicated and
     # dependent on context in the address, we opt for a very simple scheme:
@@ -1441,9 +1460,8 @@ def encode_email_address(stream):
     # everything that isn't alphanumeric plus _ as the percent-prefixed integer
     # ordinal of that character, padded with zeroes to the maximum number of
     # bytes of a UTF-8 encoded Unicode character.
-    encoded_name = re.sub("\W", lambda x: "%" + str(ord(x.group(0))).zfill(4),
-                          stream.name)
-    return "%s+%s@streams.zulip.com" % (encoded_name, stream.email_token)
+    encoded_name = re.sub("\W", lambda x: "%" + str(ord(x.group(0))).zfill(4), name)
+    return "%s+%s@streams.zulip.com" % (encoded_name, email_token)
 
 def decode_email_address(email):
     # Perform the reverse of encode_email_address. Only the stream name will be
@@ -1462,31 +1480,35 @@ def gather_subscriptions(user_profile):
 
     stream_ids = [sub["recipient__type_id"] for sub in sub_dicts]
 
+    stream_dicts = Stream.objects.select_related("realm").filter(id__in=stream_ids).values(
+        "id", "name", "invite_only", "realm_id", "realm__domain", "email_token")
     stream_hash = {}
-    for stream in Stream.objects.select_related("realm").filter(id__in=stream_ids):
-        stream_hash[stream.id] = stream
+    for stream in stream_dicts:
+        stream_hash[stream["id"]] = stream
 
     subscribed = []
     unsubscribed = []
 
     streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts]
-    subscriber_map = bulk_get_subscriber_emails(streams, user_profile)
+    streams_subscribed_map = dict((sub["recipient__type_id"], sub["active"]) for sub in sub_dicts)
+    subscriber_map = bulk_get_subscriber_emails(streams, user_profile,
+                                                streams_subscribed_map)
 
     for sub in sub_dicts:
         stream = stream_hash[sub["recipient__type_id"]]
-        subscribers = subscriber_map[stream.id]
+        subscribers = subscriber_map[stream["id"]]
 
         # Important: don't show the subscribers if the stream is invite only
         # and this user isn't on it anymore.
-        if stream.invite_only and not sub["active"]:
+        if stream["invite_only"] and not sub["active"]:
             subscribers = None
 
-        stream_dict = {'name': stream.name,
+        stream_dict = {'name': stream["name"],
                        'in_home_view': sub["in_home_view"],
-                       'invite_only': stream.invite_only,
+                       'invite_only': stream["invite_only"],
                        'color': sub["color"],
                        'notifications': sub["notifications"],
-                       'email_address': encode_email_address(stream)}
+                       'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
         if sub["active"]:
