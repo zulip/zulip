@@ -2626,7 +2626,6 @@ class GetSubscribersTest(AuthedTestCase):
             if sub["name"] == "mit_invite_only":
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
-                print sub
                 self.assertTrue(len(sub["subscribers"]) == 0)
         self.assertTrue(len(queries) == 3)
 
