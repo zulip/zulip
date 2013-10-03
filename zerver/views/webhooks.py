@@ -64,6 +64,9 @@ def api_github_landing(request, user_profile, event=REQ,
         subject = github_generic_subject('pull request', repository, pull_req)
         content = github_generic_content('pull request', payload, pull_req)
     elif event == 'issues':
+        if user_profile.realm.domain in ('customer37.invalid',):
+            return json_success()
+
         if user_profile.realm.domain not in ('zulip.com', 'customer5.invalid'):
             return json_success()
 
@@ -72,6 +75,9 @@ def api_github_landing(request, user_profile, event=REQ,
         subject = github_generic_subject('issue', repository, issue)
         content = github_generic_content('issue', payload, issue)
     elif event == 'issue_comment':
+        if user_profile.realm.domain in ('customer37.invalid',):
+            return json_success()
+
         if payload['action'] != 'created':
             return json_success()
 
@@ -95,6 +101,9 @@ def api_github_landing(request, user_profile, event=REQ,
                       issue['html_url'],
                       comment['body']))
     elif event == 'push':
+        if user_profile.realm.domain in ('customer37.invalid',):
+            return json_success()
+
         short_ref = re.sub(r'^refs/heads/', '', payload['ref'])
         # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
         # get spammed when people commit to non-master all over the place.
