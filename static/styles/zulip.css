@@ -1936,7 +1936,8 @@ table.floating_recipient {
 }
 
 .message_inline_image img {
-    height: 100%;
+    height: auto;
+    max-height: 100%;
 }
 
 .popover {
