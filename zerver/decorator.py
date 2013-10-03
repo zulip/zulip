@@ -102,7 +102,7 @@ def api_key_only_webhook_view(view_func):
         try:
             user_profile = UserProfile.objects.get(api_key=api_key, is_active=True)
         except UserProfile.DoesNotExist:
-            raise JsonableError("Failed to find user with API key: %s" % (api_key,))
+            raise JsonableError("Invalid API key")
 
         request.user = user_profile
         request._email = user_profile.email
