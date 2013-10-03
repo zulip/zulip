@@ -1899,6 +1899,23 @@ def realm_summary_table(realm_minutes):
         minutes = str(int(minutes))
         row['minutes'] = minutes
 
+    # create totals
+    total_active_user_count = 0
+    total_user_profile_count = 0
+    total_minutes = 0
+    for row in rows:
+        total_active_user_count += int(row['active_user_count'])
+        total_user_profile_count += int(row['user_profile_count'])
+        total_minutes += int(row['minutes'])
+
+    rows.append(dict(
+        domain='Total',
+        active_user_count=total_active_user_count,
+        user_profile_count=total_user_profile_count,
+        minutes=total_minutes
+    ))
+
+
     def meets_goal(row):
         # We don't count toward company goals for obvious reasons, and
         # customer4.invalid is essentially a dup for users.customer4.invalid.
