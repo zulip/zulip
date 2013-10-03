@@ -1838,7 +1838,7 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
-def realm_summary_table():
+def realm_summary_table(realm_minutes):
     query = '''
         SELECT
             realm.domain,
@@ -1892,6 +1892,13 @@ def realm_summary_table():
     rows = dictfetchall(cursor)
     cursor.close()
 
+    # augment data with realm_minutes
+    for row in rows:
+        domain = row['domain']
+        minutes = realm_minutes.get(domain, 0)
+        minutes = str(int(minutes))
+        row['minutes'] = minutes
+
     def meets_goal(row):
         # We don't count toward company goals for obvious reasons, and
         # customer4.invalid is essentially a dup for users.customer4.invalid.
@@ -1934,7 +1941,10 @@ def user_activity_intervals():
     by_domain = lambda row: row.user_profile.realm.domain
     by_email = lambda row: row.user_profile.email
 
+    realm_minutes = {}
+
     for domain, realm_intervals in itertools.groupby(all_intervals, by_domain):
+        realm_duration = datetime.timedelta(0)
         output += '<hr>%s\n' % (domain,)
         for email, intervals in itertools.groupby(realm_intervals, by_email):
             duration = datetime.timedelta(0)
@@ -1944,13 +1954,16 @@ def user_activity_intervals():
                 duration += end - start
 
             total_duration += duration
+            realm_duration += duration
             output += "  %-*s%s\n" % (37, email, duration, )
+
+        realm_minutes[domain] = realm_duration.total_seconds() / 60
 
     output += "\nTotal Duration:                      %s\n" % (total_duration,)
     output += "\nTotal Duration in minutes:           %s\n" % (total_duration.total_seconds() / 60.,)
     output += "Total Duration amortized to a month: %s" % (total_duration.total_seconds() * 30. / 60.,)
     content = mark_safe('<pre>' + output + '</pre>')
-    return dict(content=content)
+    return dict(content=content), realm_minutes
 
 
 def can_view_activity(request):
@@ -1974,9 +1987,11 @@ def get_activity(request, realm=REQ(default=None)):
     )
 
     if realm is None:
+        duration_content, realm_minutes = user_activity_intervals()
+        counts_content = realm_summary_table(realm_minutes)
         data = [
-            ('Counts', realm_summary_table()),
-            ('Durations', user_activity_intervals()),
+            ('Counts', counts_content),
+            ('Durations', duration_content),
         ]
     else:
         data = [
