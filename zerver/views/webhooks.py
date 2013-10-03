@@ -419,23 +419,14 @@ def api_deskdotcom_webhook(request, user_profile, data=REQ(),
     check_send_message(user_profile, get_client("API"), "stream", [stream], topic, data)
     return json_success()
 
-@csrf_exempt
+@api_key_only_webhook_view
 @has_request_variables
-def api_newrelic_webhook(request, alert=REQ(converter=json_to_dict, default=None),
+def api_newrelic_webhook(request, user_profile, alert=REQ(converter=json_to_dict, default=None),
                              deployment=REQ(converter=json_to_dict, default=None)):
     try:
-        api_key = request.GET['api_key']
         stream = request.GET['stream']
     except (AttributeError, KeyError):
-        return json_error("Missing api_key or stream parameter.")
-
-    try:
-        user_profile = UserProfile.objects.get(api_key=api_key)
-        request.user = user_profile
-    except UserProfile.DoesNotExist:
-        return json_error("Failed to find user with API key: %s" % (api_key,))
-
-    rate_limit_user(request, user_profile, domain='all')
+        return json_error("Missing stream parameter.")
 
     if alert:
         # Use the message as the subject because it stays the same for
