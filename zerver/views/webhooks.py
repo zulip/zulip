@@ -8,7 +8,8 @@ from zerver.models import UserProfile, get_client, MAX_SUBJECT_LENGTH
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import rate_limit_user, authenticated_api_view, REQ, \
-    has_request_variables, json_to_dict, authenticated_rest_api_view
+    has_request_variables, json_to_dict, authenticated_rest_api_view, \
+    api_key_only_webhook_view
 from zerver.views import send_message_backend
 
 from defusedxml.ElementTree import fromstring as xml_fromstring
@@ -210,13 +211,8 @@ def convert_jira_markup(content):
 
     return content
 
-@csrf_exempt
-def api_jira_webhook(request):
-    try:
-        api_key = request.GET['api_key']
-    except (AttributeError, KeyError):
-        return json_error("Missing api_key parameter.")
-
+@api_key_only_webhook_view
+def api_jira_webhook(request, user_profile):
     try:
         payload = ujson.loads(request.body)
     except ValueError:
@@ -226,14 +222,6 @@ def api_jira_webhook(request):
         stream = request.GET['stream']
     except (AttributeError, KeyError):
         stream = 'jira'
-
-    try:
-        user_profile = UserProfile.objects.get(api_key=api_key)
-        request.user = user_profile
-    except UserProfile.DoesNotExist:
-        return json_error("Failed to find user with API key: %s" % (api_key,))
-
-    rate_limit_user(request, user_profile, domain='all')
 
     def get_in(payload, keys, default=''):
         try:
