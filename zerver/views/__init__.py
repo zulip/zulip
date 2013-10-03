@@ -212,6 +212,11 @@ def rest_dispatch(request, **kwargs):
             del kwargs[arg]
     if request.method in supported_methods.keys():
         target_function = globals()[supported_methods[request.method]]
+
+        # Set request._query for update_activity_user(), which is called
+        # by some of the later wrappers.
+        request._query = target_function.__name__
+
         # We want to support authentication by both cookies (web client)
         # and API keys (API clients). In the former case, we want to
         # do a check to ensure that CSRF etc is honored, but in the latter
