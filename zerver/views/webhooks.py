@@ -287,21 +287,12 @@ def api_jira_webhook(request, user_profile):
     check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
     return json_success()
 
-@csrf_exempt
-def api_pivotal_webhook(request):
+@api_key_only_webhook_view
+def api_pivotal_webhook(request, user_profile):
     try:
-        api_key = request.GET['api_key']
         stream = request.GET['stream']
     except (AttributeError, KeyError):
-        return json_error("Missing api_key or stream parameter.")
-
-    try:
-        user_profile = UserProfile.objects.get(api_key=api_key)
-        request.user = user_profile
-    except UserProfile.DoesNotExist:
-        return json_error("Failed to find user with API key: %s" % (api_key,))
-
-    rate_limit_user(request, user_profile, domain='all')
+        return json_error("Missing stream parameter.")
 
     payload = xml_fromstring(request.body)
 
