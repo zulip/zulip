@@ -43,7 +43,13 @@ def update_user_activity(request, user_profile):
     # redundant to log that here as well.
     if request.META["PATH_INFO"] == '/json/update_active_status':
         return
-    event={'query': request.META["PATH_INFO"],
+
+    if hasattr(request, '_query'):
+        query = request._query
+    else:
+        query = request.META['PATH_INFO']
+
+    event={'query': query,
            'user_profile_id': user_profile.id,
            'time': datetime_to_timestamp(now()),
            'client': request.client.name}
