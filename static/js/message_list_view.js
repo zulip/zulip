@@ -187,7 +187,7 @@ MessageListView.prototype = {
                     // the original message, so we make a fake message based on the real one
                     // that will trigger the right part of the handlebars template and won't
                     // show the content, date, etc. from the real message.
-                    summary_group[key] = _.extend(_.pick(message,
+                    var fake_message = _.extend(_.pick(message,
                         'timestamp', 'show_date', 'historical', 'stream',
                         'is_stream', 'subject', 'display_recipient', 'display_reply_to'), {
                         is_summary: true,
@@ -197,6 +197,14 @@ MessageListView.prototype = {
                         summary_adjective: summary_adjective,
                         messages: [message]
                     });
+                    if (message.stream) {
+                        fake_message.stream_url = narrow.by_stream_uri(message.stream);
+                        fake_message.topic_url = narrow.by_stream_subject_uri(message.stream, message.subject);
+                    } else {
+                        fake_message.pm_with_url = narrow.pm_with_uri(message.reply_to);
+                    }
+
+                    summary_group[key] = fake_message;
                 } else {
                     summary_group[key].messages.push(message);
                 }
@@ -230,6 +238,13 @@ MessageListView.prototype = {
                     } else {
                         message.subscribed = message.stream;
                     }
+                }
+
+                if (message.stream) {
+                    message.stream_url = narrow.by_stream_uri(message.stream);
+                    message.topic_url = narrow.by_stream_subject_uri(message.stream, message.subject);
+                } else {
+                    message.pm_with_url = narrow.pm_with_uri(message.reply_to);
                 }
             }
 

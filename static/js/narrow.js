@@ -407,6 +407,10 @@ exports.hide_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
 };
 
+exports.pm_with_uri = function (reply_to) {
+    return "#narrow/pm-with/" + hashchange.encodeHashComponent(reply_to);
+};
+
 exports.by_stream_uri = function (stream) {
     return "#narrow/stream/" + hashchange.encodeHashComponent(stream);
 };

@@ -482,6 +482,7 @@ ul.filters {
     list-style-type: none;
 }
 
+.message_header_stream a.message_label_clickable,
 ul.filters a {
     color: #333;
 }
@@ -1089,7 +1090,7 @@ just a temporary hack.
     color: #0088CC;
 }
 
-.message_label_clickable:hover {
+a.message_label_clickable:hover {
     cursor: pointer;
     color: #08C;
 }
@@ -1128,11 +1129,12 @@ just a temporary hack.
 }
 
 /* Brighten text because of the dark background */
+.dark_background a,
 .dark_background {
     color: #ffffff;
 }
 
-.dark_background .message_label_clickable:hover {
+.dark_background a.message_label_clickable:hover {
     color: #3BF;
 }
 

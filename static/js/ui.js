@@ -1195,26 +1195,62 @@ $(function () {
         condense(row);
     });
 
-    $("#home").on("click", ".narrows_by_recipient", function (e) {
-        var row = rows.get_closest_row(this);
+    function cancel_compose_and_get_row_id_for_narrowing(narrow_link_elem) {
+        // This oddly named function exists due to the fragile
+        // sequencing of operations that needs to happen here.
+        //
+        // Calling compose.cancel() has the non-obvious side effect
+        // of making a clone of the floating recipient bar's biggest <td>
+        // element and orphaning it from its enclosing <tr>.
+        //
+        // You might be asking two questions:
+        //
+        //   1) Why would we ever clone td tags in the recipient bar?
+        //   2) Why does canceling the compose box touch the recipient bar?
+        //
+        // For question #1, I don't have a perfect answer, as the decision dates
+        // back to very early days, but the basic idea is that the floating recipient
+        // bar does mutate its content as you scroll, so making an assumption
+        // that a recipient bar element's will stay under the same parent is
+        // something that we can't simply and reliably guarantee for any
+        // non-trivial operation.
+        //
+        // For question #2, one of the jobs of compose.cancel() is to address
+        // how we fade messages in the message pane as part of the compose-fade
+        // feature.  Consider the case where the floating recipient's recipient
+        // doesn't match the compose box's recipient info--we would want to
+        // unset the fading styles on the floating recipient bar.
+        //
+        // Most callers to compose.cancel() don't actually care about the FRB
+        // side effect details, as it's rightfully encapsulated in that high level
+        // function, but this code path is sensitive to having the rug pulled
+        // out from under us, so it's critically important that we grab the
+        // id of the recipient bar's parent <tr> before we indirectly call
+        // replace_floating_recipient_bar().
+
+        // The order of these two lines is critical.  See comment above.
+        var row = rows.get_closest_row(narrow_link_elem);
+        compose.cancel();
+
         var nearest = current_msg_list.get(rows.id(row));
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
-            narrow.by_recipient(selected.id, {trigger: 'message header'});
+            return selected.id;
         } else {
-            narrow.by_recipient(nearest.id, {trigger: 'message header'});
+            return nearest.id;
         }
+    }
+
+    $("#home").on("click", ".narrows_by_recipient", function (e) {
+        e.preventDefault();
+        var row_id = cancel_compose_and_get_row_id_for_narrowing(this);
+        narrow.by_recipient(row_id, {trigger: 'message header'});
     });
 
     $("#home").on("click", ".narrows_by_subject", function (e) {
-        var row = rows.get_closest_row(this);
-        var nearest = current_msg_list.get(rows.id(row));
-        var selected = current_msg_list.selected_message();
-        if (util.same_recipient(nearest, selected)) {
-            narrow.by_subject(selected.id, {trigger: 'message header'});
-        } else {
-            narrow.by_subject(nearest.id, {trigger: 'message header'});
-        }
+        e.preventDefault();
+        var row_id = cancel_compose_and_get_row_id_for_narrowing(this);
+        narrow.by_subject(row_id, {trigger: 'message header'});
     });
 
     $("#userlist-toggle-button").on("click", function (e) {
