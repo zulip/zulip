@@ -19,6 +19,13 @@ class zulip::trac {
     source => "puppet:///modules/zulip/trac.ini",
     require => User['humbug'],
   }
+  file { "/home/zulip/trac/cgi-bin/":
+    recurse => true,
+    owner => "humbug",
+    group => "humbug",
+    mode => 644,
+    source => "puppet:///modules/zulip/trac/cgi-bin/",
+  }
   file { '/home/zulip/trac/plugins/zulip_trac.py':
     ensure => 'link',
     target => '/home/zulip/zulip/api/integrations/trac/zulip_trac.py',
