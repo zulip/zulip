@@ -1522,6 +1522,13 @@ $(function () {
     // End Webathena code
 
     $(document).on('click', function (e) {
+        if (e.button !== 0) {
+            // Firefox emits right click events on the document, but not on
+            // the child nodes, so the #compose stopPropagation doesn't get a
+            // chance to capture right clicks.
+            return;
+        }
+
         // Dismiss popovers if the user has clicked outside them
         if ($('.popover-inner').has(e.target).length === 0) {
             popovers.hide_all();
