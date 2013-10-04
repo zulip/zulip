@@ -30,27 +30,27 @@ from os import path, environ
 #
 # Expects Tddium environment variables plus:
 #
-#   HUMBUG_USER    e.g. builds@solanolabs.com
-#   HUMBUG_API_KEY e.g. 00000000000000000000000000000000
-#   HUMBUG_STREAM  e.g. builds
+#   ZULIP_USER    e.g. builds@solanolabs.com
+#   ZULIP_API_KEY e.g. 00000000000000000000000000000000
+#   ZULIP_STREAM  e.g. builds
 #
-# If HUMBUG_API_KEY is not specified, it will be read from
-# ~/.humbug-api-key.
+# If ZULIP_API_KEY is not specified, it will be read from
+# ~/.zulip-api-key.
 
 
-# Path to the directory where humbug.py lives.
+# Path to the directory where zulip.py lives.
 # Here we assume it's in the parent of the directory
 # where this script lives.
 
-humbug_directory = path.join(path.dirname(__file__), '../api')
+zulip_directory = path.join(path.dirname(__file__), '../api')
 
 
-sys.path.append(humbug_directory)
+sys.path.append(zulip_directory)
 import zulip
 
 client = zulip.Client(
-    email   = environ['HUMBUG_USER'],
-    api_key = environ.get('HUMBUG_API_KEY'))
+    email   = environ['ZULIP_USER'],
+    api_key = environ.get('ZULIP_API_KEY'))
 
 tddium_server = environ.get('TDDIUM_API_SERVER', 'api.tddium.com')
 report_url    = 'https://%s/1/reports/%s' % (tddium_server, environ['TDDIUM_SESSION_ID'])
@@ -58,7 +58,7 @@ repo_name     = path.basename(environ['TDDIUM_REPO_ROOT'])
 
 result = client.send_message(dict(
     type    = 'stream',
-    to      = environ['HUMBUG_STREAM'],
+    to      = environ['ZULIP_STREAM'],
     subject = 'build for ' + repo_name,
     content = '%s [%s](%s)' %
         (repo_name, environ['TDDIUM_BUILD_STATUS'], report_url)))
