@@ -27,7 +27,7 @@ parser.add_option('--root-path',
 (options, args) = parser.parse_args()
 
 # The 'api' directory needs to go first, so that 'import zulip' won't pick up
-# some other directory named 'humbug'.
+# some other directory named 'zulip'.
 pyzephyr_lib_path = "python-zephyr/build/lib.linux-%s-%s/" % (os.uname()[4], sys.version[0:3])
 sys.path[:0] = [os.path.join(options.root_path, "api/"),
                 os.path.join(options.root_path, "python-zephyr"),

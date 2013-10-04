@@ -60,7 +60,7 @@ subprocess.check_call('./tools/clean-repo')
 os.setpgrp()
 
 # Pass --nostatic because we configure static serving ourselves in
-# humbug/urls.py.
+# zulip/urls.py.
 for cmd in ['python manage.py runserver --nostatic %s localhost:%d'
                 % (manage_args, django_port),
             'python manage.py runtornado %s localhost:%d'

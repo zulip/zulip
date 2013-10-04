@@ -126,7 +126,7 @@ class Client(object):
                 return False
             if self.verbose:
                 if not query_state["had_error_retry"]:
-                    sys.stdout.write("humbug API(%s): connection error%s -- retrying." % \
+                    sys.stdout.write("zulip API(%s): connection error%s -- retrying." % \
                             (url.split(API_VERSTRING, 2)[0], error_string,))
                     query_state["had_error_retry"] = True
                 else:
