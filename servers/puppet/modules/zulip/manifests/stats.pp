@@ -80,8 +80,8 @@ class zulip::stats {
 
   file { "/home/zulip/graphiti/config/settings.yml":
     ensure => file,
-    owner  => "humbug",
-    group  => "humbug",
+    owner  => "zulip",
+    group  => "zulip",
     mode => 644,
     source => "puppet:///modules/zulip/graphiti/settings.yml",
   }

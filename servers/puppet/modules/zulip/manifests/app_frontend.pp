@@ -47,8 +47,8 @@ class zulip::app_frontend {
   }
   file { "/home/zulip/tornado":
     ensure => directory,
-    owner => "humbug",
-    group => "humbug",
+    owner => "zulip",
+    group => "zulip",
     mode => 755,
   }
   file { "/etc/redis/redis.conf":

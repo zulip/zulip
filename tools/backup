@@ -25,7 +25,7 @@ function commit {
 
 cd ../message_logs
 for h in staging.zulip.net prod0.zulip.net; do
-    rsync -v humbug@$h:logs/event_log/events.* .
+    rsync -v zulip@$h:logs/event_log/events.* .
 done
 git add events.*
 commit

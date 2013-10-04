@@ -15,8 +15,8 @@ os.chdir(deploy_path)
 
 if os.path.exists("/etc/humbug-server"):
     with open("/etc/humbug-machinetype") as mtf:
-        if pwd.getpwuid(os.getuid())[0] != "humbug":
-            logging.error("Must be run as user 'humbug'.")
+        if pwd.getpwuid(os.getuid())[0] != "zulip":
+            logging.error("Must be run as user 'zulip'.")
             sys.exit(1)
 
 # Send a statsd event on restarting the server

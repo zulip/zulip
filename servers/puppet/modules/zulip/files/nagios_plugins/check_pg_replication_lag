@@ -20,7 +20,7 @@ def report(state, msg):
     exit(states[state])
 
 def get_loc_over_ssh(host, func):
-    return subprocess.check_output(['ssh', host, '-l', 'humbug',
+    return subprocess.check_output(['ssh', host, '-l', 'zulip',
                                     'psql -t -c "SELECT %s()"' % (func,)])
 
 def loc_to_abs_offset(loc_str):

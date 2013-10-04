@@ -13,8 +13,8 @@ class zulip::builder {
   file { "/home/zulip/.sbuildrc":
     require => Package[sbuild],
     ensure => file,
-    owner  => "humbug",
-    group  => "humbug",
+    owner  => "zulip",
+    group  => "zulip",
     mode => 644,
     source => "puppet:///modules/zulip/builder/sbuildrc",
   }
@@ -32,7 +32,7 @@ class zulip::builder {
   }
 
   exec { "adduser root sbuild": }
-  exec { "adduser humbug sbuild": }
+  exec { "adduser zulip sbuild": }
   chroot { "precise":
     distro => "ubuntu",
     ensure => present,

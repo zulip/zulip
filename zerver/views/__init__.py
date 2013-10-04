@@ -444,7 +444,7 @@ def webathena_kerberos_login(request, user_profile,
 
     # TODO: Send these data via (say) rabbitmq
     try:
-        subprocess.check_call(["ssh", "humbug@zmirror2.zulip.net", "--",
+        subprocess.check_call(["ssh", "zulip@zmirror2.zulip.net", "--",
                                "/home/zulip/zulip/bots/process_ccache",
                                user,
                                user_profile.api_key,

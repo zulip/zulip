@@ -13,16 +13,16 @@ class zulip::trac {
     ensure => present,
   }
   file { "/home/zulip/trac/conf/trac.ini":
-    owner  => "humbug",
-    group  => "humbug",
+    owner  => "zulip",
+    group  => "zulip",
     mode => 644,
     source => "puppet:///modules/zulip/trac.ini",
-    require => User['humbug'],
+    require => User['zulip'],
   }
   file { "/home/zulip/trac/cgi-bin/":
     recurse => true,
-    owner => "humbug",
-    group => "humbug",
+    owner => "zulip",
+    group => "zulip",
     mode => 644,
     source => "puppet:///modules/zulip/trac/cgi-bin/",
   }

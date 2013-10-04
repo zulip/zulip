@@ -2,10 +2,10 @@
 #
 # Zulip's post-receive hook.  There is a symlink
 #   from /home/git/repositories/eng/zulip.git/hooks/post-receive
-#   to   ~humbug/humbug/tools/post-receive
+#   to   ~zulip/zulip/tools/post-receive
 # on git.zulip.net.  So to deploy changes to this script, run
 #
-#   ssh humbug@git.zulip.net 'cd humbug; git pull'
+#   ssh zulip@git.zulip.net 'cd zulip; git pull'
 #
 # To send the Zulip notices, this script calls out to our
 # for-distribution git hook (under api/integrations/); since the git

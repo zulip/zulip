@@ -12,20 +12,20 @@ class zulip::base {
   apt::key {"A529EF65":
     source  =>  "http://apt.zulip.com/ops.asc",
   }
-  apt::sources_list {"humbug":
+  apt::sources_list {"zulip":
     ensure  => present,
     content => 'deb http://apt.zulip.com/ops wheezy main',
   }
 
-  group { 'humbug':
+  group { 'zulip':
     ensure     => present,
     gid        => '1000',
   }
-  user { 'humbug':
+  user { 'zulip':
     ensure     => present,
     uid        => '1000',
     gid        => '1000',
-    require    => Group['humbug'],
+    require    => Group['zulip'],
     shell      => '/bin/bash',
     home       => '/home/zulip',
     managehome => true,
@@ -34,15 +34,15 @@ class zulip::base {
     ensure     => file,
     require    => File['/home/zulip/.ssh'],
     mode       => 600,
-    owner      => "humbug",
-    group      => "humbug",
+    owner      => "zulip",
+    group      => "zulip",
     source     => 'puppet:///modules/zulip/authorized_keys',
   }
   file { '/home/zulip/.ssh':
     ensure     => directory,
-    require    => User['humbug'],
-    owner      => "humbug",
-    group      => "humbug",
+    require    => User['zulip'],
+    owner      => "zulip",
+    group      => "zulip",
     mode       => 600,
   }
 
@@ -102,8 +102,8 @@ class zulip::base {
 
   file { '/var/log/zulip':
     ensure => 'directory',
-    owner  => 'humbug',
-    group  => 'humbug',
+    owner  => 'zulip',
+    group  => 'zulip',
     mode   => 640,
   }
 

@@ -17,8 +17,8 @@ class zulip::zmirror_personals {
           '/home/zulip/mirror_status']:
     ensure     => directory,
     mode       => 644,
-    owner      => "humbug",
-    group      => "humbug",
+    owner      => "zulip",
+    group      => "zulip",
   }
 
   file { "/etc/cron.d/test_zephyr_personal_mirrors":

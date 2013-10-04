@@ -85,7 +85,7 @@ userdel admin
 passwd -d root
 puppet apply -e 'class {"zulip": machinetype => "$type"}'
 cp -a /root/zulip /home/zulip/zulip
-chown -R humbug:humbug /home/zulip/zulip
+chown -R zulip:zulip /home/zulip/zulip
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
 if [ -e "/etc/init.d/nginx" ]; then
@@ -98,8 +98,8 @@ fi
 EOF
 
 # TODO: Don't give servers push access to our git!
-scp $SSH_OPTS -i "$amazon_key_file" "$server_private_key_file" humbug@"$server":/home/zulip/.ssh/id_rsa
-ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lhumbug <<EOF
+scp $SSH_OPTS -i "$amazon_key_file" "$server_private_key_file" zulip@"$server":/home/zulip/.ssh/id_rsa
+ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lzulip <<EOF
 chmod 600 /home/zulip/.ssh/id_rsa
 EOF
 
