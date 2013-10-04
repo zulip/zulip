@@ -511,6 +511,7 @@ function replace_floating_recipient_bar(desired_label) {
         new_label.css('display', 'table-row');
         new_label.attr("zid", rows.id(desired_label));
 
+        new_label.toggleClass('faded', desired_label.hasClass('faded'));
         old_label = desired_label;
     }
     show_floating_recipient_bar();
@@ -558,12 +559,6 @@ exports.update_floating_recipient_bar = function () {
     // covering up a label that already exists).
     if (floating_recipient_bar_bottom <=
         (current_label.offset().top + current_label.outerHeight())) {
-        hide_floating_recipient_bar();
-        return;
-    }
-
-    // Hide if the message is faded
-    if (current_label.hasClass('faded')) {
         hide_floating_recipient_bar();
         return;
     }
