@@ -13,7 +13,7 @@ if ! $(echo "$hostname" | grep -q zulip); then
     exit 1
 fi
 
-humbug_root=${HUMBUG_ROOT:-$HOME/humbug}
+humbug_root=${HUMBUG_ROOT:-$HOME/zulip}
 
 amazon_key_file=$humbug_root/humbug.pem
 if ! [ -e "$amazon_key_file" ]; then
@@ -84,8 +84,8 @@ cp -a /root/humbug/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
 userdel admin
 passwd -d root
 puppet apply -e 'class {"zulip": machinetype => "$type"}'
-cp -a /root/humbug /home/humbug/humbug
-chown -R humbug:humbug /home/humbug/humbug
+cp -a /root/humbug /home/humbug/zulip
+chown -R humbug:humbug /home/humbug/zulip
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
 if [ -e "/etc/init.d/nginx" ]; then

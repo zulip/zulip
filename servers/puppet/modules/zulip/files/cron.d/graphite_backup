@@ -1,4 +1,4 @@
 MAILTO=root
 SHELL=/bin/bash
 
-0 3 * * * humbug /home/humbug/humbug/servers/puppet/modules/zulip/files/graphite/daily_rsync_backup.sh
+0 3 * * * humbug /home/humbug/zulip/servers/puppet/modules/zulip/files/graphite/daily_rsync_backup.sh

@@ -30,5 +30,5 @@ def commit_notice_destination(repo, branch, commit):
     # Return None for cases where you don't want a notice sent
     return None
 
-ZULIP_API_PATH = "/home/humbug/humbug/api"
+ZULIP_API_PATH = "/home/humbug/zulip/api"
 ZULIP_SITE = "https://staging.zulip.com"
