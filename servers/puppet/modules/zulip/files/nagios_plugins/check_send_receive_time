@@ -105,14 +105,14 @@ zulip_sender = zulip.Client(
     email=sender,
     api_key=sender_key,
     verbose=True,
-    client="test: Zulip API",
+    client="test: Zulip monitoring",
     site=site)
 
 zulip_recipient = zulip.Client(
     email=recipient,
     api_key=recipient_key,
     verbose=True,
-    client="test: Zulip API",
+    client="test: Zulip monitoring",
     site=site)
 
 
