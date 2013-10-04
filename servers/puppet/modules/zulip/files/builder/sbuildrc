@@ -6,10 +6,10 @@ $mailto = 'buildd-maintainers@zulip.net';
 # umt compare-bin relies upon this being unset.
 #
 # The above comment is a lie. ~ lfaraone
-$build_dir='/home/humbug/ubuntu/build';
+$build_dir='/home/zulip/ubuntu/build';
 
 # Directory for writing build logs to
-$log_dir="/home/humbug/ubuntu/logs";
+$log_dir="/home/zulip/ubuntu/logs";
 
 # Override default sbuild dependency resolver (see 'man sbuild'). The default
 # resolver (apt) mostly works ok but not always (eg, oneiric libreoffice).

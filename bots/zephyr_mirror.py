@@ -46,7 +46,7 @@ if options.sync_subscriptions:
     sys.exit(0)
 
 if options.forward_class_messages and not options.noshard:
-    sys.path.append("/home/humbug/zulip")
+    sys.path.append("/home/zulip/zulip")
     if options.on_startup_command is not None:
         subprocess.call([options.on_startup_command])
     from zerver.lib.parallel import run_parallel

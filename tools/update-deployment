@@ -19,7 +19,7 @@ refname = sys.argv[1]
 
 subprocess.check_call(["mkdir", '-p',
                        DEPLOYMENTS_DIR,
-                       '/home/humbug/logs'])
+                       '/home/zulip/logs'])
 
 start_time = time.time()
 got_lock = False

@@ -33,5 +33,5 @@ class zulip::zmirror {
 
   # TODO: Do the rest of our setup, which includes at least:
   # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
-  # Putting tabbott/extra's keytab on the system at /home/humbug/tabbott.extra.keytab
+  # Putting tabbott/extra's keytab on the system at /home/zulip/tabbott.extra.keytab
 }

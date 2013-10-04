@@ -43,7 +43,7 @@ def fetch_public_streams():
     return public_streams
 
 if __name__ == "__main__":
-    log_file = "/home/humbug/sync_public_streams.log"
+    log_file = "/home/zulip/sync_public_streams.log"
     logger = logging.getLogger(__name__)
     log_format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=log_format)
@@ -59,9 +59,9 @@ if __name__ == "__main__":
         if public_streams is None:
             continue
 
-        f = file("/home/humbug/public_streams.tmp", "w")
+        f = file("/home/zulip/public_streams.tmp", "w")
         f.write(simplejson.dumps(list(public_streams)) + "\n")
         f.close()
 
-        subprocess.call(["mv", "/home/humbug/public_streams.tmp", "/home/humbug/public_streams"])
+        subprocess.call(["mv", "/home/zulip/public_streams.tmp", "/home/zulip/public_streams"])
 

@@ -10,7 +10,7 @@ class zulip::builder {
     ]
   package { $buildd_packages: ensure => "installed" }
 
-  file { "/home/humbug/.sbuildrc":
+  file { "/home/zulip/.sbuildrc":
     require => Package[sbuild],
     ensure => file,
     owner  => "humbug",
@@ -28,7 +28,7 @@ class zulip::builder {
 
   file { "/root/.sbuildrc":
     ensure => 'link',
-    target => '/home/humbug/.sbuildrc',
+    target => '/home/zulip/.sbuildrc',
   }
 
   exec { "adduser root sbuild": }

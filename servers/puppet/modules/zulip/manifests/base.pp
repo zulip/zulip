@@ -27,18 +27,18 @@ class zulip::base {
     gid        => '1000',
     require    => Group['humbug'],
     shell      => '/bin/bash',
-    home       => '/home/humbug',
+    home       => '/home/zulip',
     managehome => true,
   }
-  file { '/home/humbug/.ssh/authorized_keys':
+  file { '/home/zulip/.ssh/authorized_keys':
     ensure     => file,
-    require    => File['/home/humbug/.ssh'],
+    require    => File['/home/zulip/.ssh'],
     mode       => 600,
     owner      => "humbug",
     group      => "humbug",
     source     => 'puppet:///modules/zulip/authorized_keys',
   }
-  file { '/home/humbug/.ssh':
+  file { '/home/zulip/.ssh':
     ensure     => directory,
     require    => User['humbug'],
     owner      => "humbug",

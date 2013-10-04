@@ -32,17 +32,17 @@
     Header add Strict-Transport-Security "max-age=15768000"
     Header add X-Frame-Options DENY
 
-    Alias /chrome/common /home/humbug/trac/htdocs/common
-    Alias /chrome/site /home/humbug/trac/htdocs/site
+    Alias /chrome/common /home/zulip/trac/htdocs/common
+    Alias /chrome/site /home/zulip/trac/htdocs/site
 
-    <Directory "/home/humbug/trac/htdocs">
+    <Directory "/home/zulip/trac/htdocs">
         Order allow,deny
         Allow from all
     </Directory>
 
-    WSGIScriptAlias / /home/humbug/trac/cgi-bin/trac.wsgi
+    WSGIScriptAlias / /home/zulip/trac/cgi-bin/trac.wsgi
 
-    <Directory /home/humbug/trac>
+    <Directory /home/zulip/trac>
         WSGIApplicationGroup %{GLOBAL}
         Order deny,allow
         Allow from all

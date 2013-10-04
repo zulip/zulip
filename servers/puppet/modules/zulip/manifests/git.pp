@@ -13,6 +13,6 @@ class zulip::git {
 
   file { '/home/git/repositories/eng/zulip.git/hooks/post-receive':
     ensure => 'link',
-    target => '/home/humbug/zulip/tools/post-receive',
+    target => '/home/zulip/zulip/tools/post-receive',
   }
 }

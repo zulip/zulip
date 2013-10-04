@@ -1,5 +1,5 @@
 [program:zmirror-USERNAME]
-command=python /home/humbug/zulip/bots/zephyr_mirror_backend.py --root-path=/home/humbug/zulip/bots --user=USERNAME --log-path=/home/humbug/logs/mirror-log-%(program_name)s --use-sessions --session-path=/home/humbug/zephyr_sessions/%(program_name)s --api-key-file=/home/humbug/api-keys/%(program_name)s --ignore-expired-tickets --nagios-path=/home/humbug/mirror_status/%(program_name)s --nagios-class=zulip-mirror-nagios
+command=python /home/zulip/zulip/bots/zephyr_mirror_backend.py --root-path=/home/zulip/zulip/bots --user=USERNAME --log-path=/home/zulip/logs/mirror-log-%(program_name)s --use-sessions --session-path=/home/zulip/zephyr_sessions/%(program_name)s --api-key-file=/home/zulip/api-keys/%(program_name)s --ignore-expired-tickets --nagios-path=/home/zulip/mirror_status/%(program_name)s --nagios-class=zulip-mirror-nagios
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -8,4 +8,4 @@ stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=humbug                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/%(program_name)s.log         ; stdout log path, NONE for none; default AUTO
-environment=HOME="/home/humbug",USER="humbug",KRB5CCNAME="/home/humbug/ccache/%(program_name)s"
+environment=HOME="/home/zulip",USER="humbug",KRB5CCNAME="/home/zulip/ccache/%(program_name)s"

@@ -960,7 +960,7 @@ def parse_args():
                       help=optparse.SUPPRESS_HELP)
     parser.add_option('--stream-file-path',
                       dest='stream_file_path',
-                      default="/home/humbug/public_streams",
+                      default="/home/zulip/public_streams",
                       help=optparse.SUPPRESS_HELP)
     parser.add_option('--no-forward-personals',
                       dest='forward_personals',

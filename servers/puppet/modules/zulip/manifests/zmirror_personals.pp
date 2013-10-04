@@ -13,8 +13,8 @@ class zulip::zmirror_personals {
     group      => "root",
     source     => 'puppet:///modules/zulip/debathena.list',
   }
-  file { ['/home/humbug/api-keys', '/home/humbug/zephyr_sessions', '/home/humbug/ccache',
-          '/home/humbug/mirror_status']:
+  file { ['/home/zulip/api-keys', '/home/zulip/zephyr_sessions', '/home/zulip/ccache',
+          '/home/zulip/mirror_status']:
     ensure     => directory,
     mode       => 644,
     owner      => "humbug",

@@ -12,22 +12,22 @@ class zulip::trac {
                 ],
     ensure => present,
   }
-  file { "/home/humbug/trac/conf/trac.ini":
+  file { "/home/zulip/trac/conf/trac.ini":
     owner  => "humbug",
     group  => "humbug",
     mode => 644,
     source => "puppet:///modules/zulip/trac.ini",
     require => User['humbug'],
   }
-  file { '/home/humbug/trac/plugins/zulip_trac.py':
+  file { '/home/zulip/trac/plugins/zulip_trac.py':
     ensure => 'link',
-    target => '/home/humbug/zulip/api/integrations/trac/zulip_trac.py',
+    target => '/home/zulip/zulip/api/integrations/trac/zulip_trac.py',
   }
-  file { '/home/humbug/trac/plugins/zulip_trac_config.py':
+  file { '/home/zulip/trac/plugins/zulip_trac_config.py':
     ensure => 'link',
-    target => '/home/humbug/zulip/bots/zulip_trac_config.py',
+    target => '/home/zulip/zulip/bots/zulip_trac_config.py',
   }
-  # TODO: Add downloading and installing trac at /home/humbug/trac
+  # TODO: Add downloading and installing trac at /home/zulip/trac
 
   file { '/etc/sysctl.d/40-postgresql.conf':
     ensure => file,

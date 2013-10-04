@@ -45,7 +45,7 @@ class zulip::app_frontend {
     source => "puppet:///modules/zulip/supervisor/conf.d/zulip.conf",
     notify => Service["supervisor"],
   }
-  file { "/home/humbug/tornado":
+  file { "/home/zulip/tornado":
     ensure => directory,
     owner => "humbug",
     group => "humbug",

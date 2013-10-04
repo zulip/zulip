@@ -2,9 +2,9 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 USER=root
 
-* * * * * root /home/humbug/deployments/current/tools/write-rabbitmq-consumers-state-file notify_tornado
-* * * * * root /home/humbug/deployments/current/tools/write-rabbitmq-consumers-state-file user_activity
-* * * * * root /home/humbug/deployments/current/tools/write-rabbitmq-consumers-state-file user_activity_interval
-* * * * * root /home/humbug/deployments/current/tools/write-rabbitmq-consumers-state-file user_presence
-* * * * * root /home/humbug/deployments/current/tools/write-rabbitmq-consumers-state-file invites
-* * * * * root /home/humbug/deployments/current/tools/write-rabbitmq-consumers-state-file signups
+* * * * * root /home/zulip/deployments/current/tools/write-rabbitmq-consumers-state-file notify_tornado
+* * * * * root /home/zulip/deployments/current/tools/write-rabbitmq-consumers-state-file user_activity
+* * * * * root /home/zulip/deployments/current/tools/write-rabbitmq-consumers-state-file user_activity_interval
+* * * * * root /home/zulip/deployments/current/tools/write-rabbitmq-consumers-state-file user_presence
+* * * * * root /home/zulip/deployments/current/tools/write-rabbitmq-consumers-state-file invites
+* * * * * root /home/zulip/deployments/current/tools/write-rabbitmq-consumers-state-file signups

@@ -4,7 +4,7 @@
 Nagios plugin to check that Zephyr personals mirrors are forwarding.
 
 This script works by just monitoring the files under
-/home/humbug/mirror_status, which are updated by the Zephyr personals
+/home/zulip/mirror_status, which are updated by the Zephyr personals
 mirrors when they receive the messages sent every minute by
 /etc/cron.d/test_zephyr_personal_mirrors
 """
@@ -12,7 +12,7 @@ mirrors when they receive the messages sent every minute by
 import os
 import time
 
-RESULTS_DIR = "/home/humbug/mirror_status"
+RESULTS_DIR = "/home/zulip/mirror_status"
 
 states = {
     "OK": 0,

@@ -34,10 +34,10 @@ from zulip_tools import check_output, ENDC, FAIL
 
 def update_deployment(server, refname):
     return subprocess.call(["ssh", server, "--", "env", "-u", "GIT_DIR",
-                            "/home/humbug/deployments/current/tools/update-deployment", refname])
+                            "/home/zulip/deployments/current/tools/update-deployment", refname])
 
 def send_deployment_finished_message(branch, message):
-    subprocess.check_call(["/home/humbug/zulip/api/bin/zulip-send", "--user=commit-bot@zulip.com",
+    subprocess.check_call(["/home/zulip/zulip/api/bin/zulip-send", "--user=commit-bot@zulip.com",
                            "--api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "--stream=commits",
                            "--site=https://staging.zulip.com",
                            (u"--subject=deploy \u21D2 %s" % (branch,)).encode("utf-8"), "--message=%s" % (message,)])
@@ -51,7 +51,7 @@ deployments = {
 for ln in sys.stdin:
     oldrev, newrev, refname = ln.strip().split()
     if refname in deployments:
-        p = subprocess.Popen("/home/humbug/zulip/bots/githook-post-receive",
+        p = subprocess.Popen("/home/zulip/zulip/bots/githook-post-receive",
                              stdin=subprocess.PIPE)
         p.communicate(input=ln)
 

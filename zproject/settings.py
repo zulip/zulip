@@ -226,7 +226,7 @@ else:
         'zerver.finders.ZulipFinder',
     )
     if DEPLOYED:
-        STATIC_ROOT = '/home/humbug/prod-static'
+        STATIC_ROOT = '/home/zulip/prod-static'
     else:
         STATIC_ROOT = 'prod-static/serve'
 
@@ -451,9 +451,9 @@ CACHES = {
 if DEPLOYED:
     SERVER_LOG_PATH = "/var/log/zulip/server.log"
     WORKER_LOG_PATH = "/var/log/zulip/workers.log"
-    EVENT_LOG_DIR = '/home/humbug/logs/event_log'
-    STATS_DIR = '/home/humbug/stats'
-    PERSISTENT_QUEUE_FILENAME = "/home/humbug/tornado/event_queues.pickle"
+    EVENT_LOG_DIR = '/home/zulip/logs/event_log'
+    STATS_DIR = '/home/zulip/stats'
+    PERSISTENT_QUEUE_FILENAME = "/home/zulip/tornado/event_queues.pickle"
     EMAIL_LOG_PATH = "/var/log/zulip/email-mirror.log"
 else:
     EVENT_LOG_DIR = 'event_log'

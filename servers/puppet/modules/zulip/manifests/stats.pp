@@ -78,7 +78,7 @@ class zulip::stats {
     source => "puppet:///modules/zulip/graphite/graphite.wsgi",
   }
 
-  file { "/home/humbug/graphiti/config/settings.yml":
+  file { "/home/zulip/graphiti/config/settings.yml":
     ensure => file,
     owner  => "humbug",
     group  => "humbug",

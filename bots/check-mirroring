@@ -22,7 +22,7 @@ parser.add_option('--sharded',
                   action='store_true')
 parser.add_option('--root-path',
                   dest='root_path',
-                  default="/home/humbug",
+                  default="/home/zulip",
                   action='store')
 (options, args) = parser.parse_args()
 

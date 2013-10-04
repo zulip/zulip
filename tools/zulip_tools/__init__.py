@@ -16,7 +16,7 @@ def check_output(*popenargs, **kwargs):
         raise subprocess.CalledProcessError(retcode, cmd, output=output)
     return output
 
-DEPLOYMENTS_DIR = "/home/humbug/deployments"
+DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
 TIMESTAMP_FORMAT = '%Y-%m-%d-%H-%M-%S'
 
