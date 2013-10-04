@@ -8,7 +8,7 @@ While you were away you received {{ message_count }} new message{{ messages|plur
 
 
 {% for recipient_block in messages %}
-    {{ recipient_block.header|safe }}
+    {{ recipient_block.header.plain|safe }}
     {% for sender_block in recipient_block.senders %}
         {% if sender_block.sender %}{{ sender_block.sender }}{% endif %}{% for message_block in sender_block.content %}
                 {{ message_block.plain }}

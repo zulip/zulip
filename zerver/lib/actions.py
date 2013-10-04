@@ -59,6 +59,7 @@ import platform
 import logging
 from collections import defaultdict
 from os import path
+import urllib
 
 # Store an event in the log for re-importing messages
 def log_event(event):
@@ -1691,6 +1692,26 @@ def do_send_confirmation_email(invitee, referrer):
         subject_template_path=subject_template_path,
         body_template_path=body_template_path)
 
+def hashchange_encode(string):
+    # Do the same encoding operation as hashchange.encodeHashComponent on the
+    # frontend.
+    return urllib.quote(
+        string.encode("utf-8")).replace(".", "%2E").replace("%", ".")
+
+def pm_narrow_url(participants):
+    participants.sort()
+    base_url = "https://zulip.com/#narrow/pm-with/"
+    return base_url + hashchange_encode(",".join(participants))
+
+def stream_narrow_url(stream):
+    base_url = "https://zulip.com/#narrow/stream/"
+    return base_url + hashchange_encode(stream)
+
+def topic_narrow_url(stream, topic):
+    base_url = "https://zulip.com/#narrow/stream/"
+    return "%s%s/topic/%s" % (base_url, hashchange_encode(stream),
+                              hashchange_encode(topic))
+
 def build_message_list(user_profile, messages):
     """
     Builds the message list object for the missed message email template.
@@ -1718,18 +1739,31 @@ def build_message_list(user_profile, messages):
         disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
             header = "You and %s" % (message.sender.full_name)
+            html_link = pm_narrow_url([message.sender.email])
+            header_html = "<a href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
             other_recipients = [r['full_name'] for r in disp_recipient
                                     if r['email'] != user_profile.email]
             header = "You and %s" % (", ".join(other_recipients),)
+            html_link = pm_narrow_url([r["email"] for r in disp_recipient
+                                       if r["email"] != user_profile.email])
+            header_html = "<a href='%s'>%s</a>" % (html_link, header)
         else:
             header = "%s > %s" % (disp_recipient, message.subject)
-        return header
+            stream_link = stream_narrow_url(disp_recipient)
+            topic_link = topic_narrow_url(disp_recipient, message.subject)
+            header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
+                stream_link, disp_recipient, topic_link, message.subject)
+        return {"plain": header,
+                "html": header_html}
 
     # # Collapse message list to
     # [
     #    {
-    #       "header":"xxx",
+    #       "header": {
+    #                   "plain":"header",
+    #                   "html":"htmlheader"
+    #                 }
     #       "senders":[
     #          {
     #             "sender":"sender_name",

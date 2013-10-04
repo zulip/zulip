@@ -11,7 +11,7 @@ While you were away you received {{ message_count }} new message{{ message_count
 <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: scroll;">
 {% for recipient_block in messages %}
     <div class='recipient_block' style="border: 1px solid black;margin-bottom: 4px;">
-        <div class='recipient_header' style="background-color: #9ecaff;border-bottom: 1px solid black;font-weight: bold;padding: 2px">{{ recipient_block.header }}</div>
+        <div class='recipient_header' style="background-color: #9ecaff;border-bottom: 1px solid black;font-weight: bold;padding: 2px">{{ recipient_block.header.html|safe }}</div>
         <div class='message_content' style="margin-left: 1px;margin-right: 2px;">
         {% for sender_block in recipient_block.senders %}
             {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
