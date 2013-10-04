@@ -70,21 +70,21 @@ chmod 600 /root/.ssh/id_rsa
 cat > /root/.ssh/known_hosts <<EOF2
 git.zulip.net ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDjW3wKDRuah6XT5a7Xta+S2d5ew1ZPxWTbKKgp6Cun111zFw1bvLGSKS0W3HnbXOyXLbVVsAH/cSNFHMvH2nitM15zp7w2w3NV8YbLZCkdFXp5KeKHuBQ+DYL+nDCKjunlrDfxDXvD7jn/wMN995ZsnEJqnc7N8uzIgt+5lbmie5jz3Xbt/7gQdjG5E0xGL7DzzJPp8kBzfE6B1qr5pWLVKXMuGXLCcbMaco5kEjRuM8dPrtG3kGG2YsjOkoHIqwtRwztXEmjklt1FFI06JYsW43PjmdP586nOg7n28k1ibhlF968PmRRX7USI7jJ+awPd/XH4neCdNG2f8JL2kRD
 EOF2
-# clone humbug repository
+# clone zulip repository
 cd /root
-rm -rf /root/humbug
-git clone git@git.zulip.net:eng/zulip.git humbug
-cd /root/humbug
+rm -rf /root/zulip
+git clone git@git.zulip.net:eng/zulip.git
+cd /root/zulip
 git checkout master
 EOF
 
 ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
-cp -a /root/humbug/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
+cp -a /root/zulip/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
 
 userdel admin
 passwd -d root
 puppet apply -e 'class {"zulip": machinetype => "$type"}'
-cp -a /root/humbug /home/humbug/zulip
+cp -a /root/zulip /home/humbug/zulip
 chown -R humbug:humbug /home/humbug/zulip
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade

@@ -38,7 +38,7 @@ class zulip::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "/root/humbug/certs/humbug-self-signed.crt",
+    source => "/root/zulip/certs/humbug-self-signed.crt",
   }
 
   file { "/etc/apache2/certs/humbug-self-signed.key":
@@ -47,7 +47,7 @@ class zulip::apache {
     owner  => "root",
     group  => "root",
     mode => 600,
-    source => "/root/humbug/certs/humbug-self-signed.key",
+    source => "/root/zulip/certs/humbug-self-signed.key",
   }
 
   file { "/etc/apache2/ports.conf":

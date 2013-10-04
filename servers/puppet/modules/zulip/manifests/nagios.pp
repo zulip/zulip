@@ -40,14 +40,14 @@ class zulip::nagios {
     mode       => 644,
     owner      => "root",
     group      => "root",
-    source => '/root/humbug/api/integrations/nagios/zulip_nagios.cfg',
+    source => '/root/zulip/api/integrations/nagios/zulip_nagios.cfg',
   }
   file { '/etc/nagios3/zuliprc':
     ensure     => file,
     mode       => 644,
     owner      => "root",
     group      => "root",
-    source => '/root/humbug/bots/zuliprc.nagios',
+    source => '/root/zulip/bots/zuliprc.nagios',
   }
 
   exec { "fix_nagios_permissions":
