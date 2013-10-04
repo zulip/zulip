@@ -706,7 +706,7 @@ exports.small_avatar_url = function (message) {
 };
 
 exports.wait_for_gravatar = function () {
-    poll_for_gravatar_update($.now(), $(".gravatar-profile").attr("src"));
+    poll_for_gravatar_update($.now(), $("img.gravatar-profile").attr("src"));
 };
 
 var loading_more_messages_indicator_showing = false;
