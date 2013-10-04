@@ -13,15 +13,15 @@ if ! $(echo "$hostname" | grep -q zulip); then
     exit 1
 fi
 
-humbug_root=${HUMBUG_ROOT:-$HOME/zulip}
+zulip_root=${ZULIP_ROOT:-$HOME/zulip}
 
-amazon_key_file=$humbug_root/humbug.pem
+amazon_key_file=$zulip_root/zulip.pem
 if ! [ -e "$amazon_key_file" ]; then
-    echo "You need humbug.pem at $amazon_key_file; ask tabbott for it"
+    echo "You need zulip.pem at $amazon_key_file; ask tabbott for it"
     exit 1
 fi
 
-server_private_key_file=$humbug_root/servers/puppet/modules/zulip/files/id_rsa
+server_private_key_file=$zulip_root/servers/puppet/modules/zulip/files/id_rsa
 if ! [ -e "$server_private_key_file" ]; then
     echo "You need a server ssh key at $server_private_key_file"
     exit 1
@@ -50,7 +50,7 @@ sed -i 's/localhost$/localhost $hostname/' /etc/hosts
 /etc/init.d/hostname.sh start
 
 # First, install any updates from the apt repo that may be needed
-cat >/etc/apt/sources.list.d/humbug.list <<EOF2
+cat >/etc/apt/sources.list.d/zulip.list <<EOF2
 deb http://apt.zulip.com/ops wheezy main
 EOF2
 apt-get update
