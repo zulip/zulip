@@ -3747,6 +3747,16 @@ class GithubHookTests(AuthedTestCase):
                         "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [pull request 9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
                         send_stream=True)
 
+    def test_commit_comment(self):
+        self.basic_test('commit_comment', 'commits',
+                        "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252302)\n\n~~~ quote\nAre we sure this is enough cowbell?\n~~~")
+
+    def test_commit_comment_line(self):
+        self.basic_test('commit_comment_line', 'commits',
+                        "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on `cowbell`, line 13\n\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
+
 class PivotalHookTests(AuthedTestCase):
 
     def send_pivotal_message(self, name):

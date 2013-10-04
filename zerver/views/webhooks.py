@@ -124,6 +124,18 @@ def api_github_landing(request, user_profile, event=REQ,
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
                                                      payload['pusher']['name'])
+    elif event == 'commit_comment':
+        comment = payload['comment']
+        subject = "%s: commit %s" % (repository['name'], comment['commit_id'])
+
+        content = ("%s [commented](%s)"
+                   % (comment['user']['login'],
+                      comment['html_url']))
+
+        if comment['position'] is not None:
+            content += " on `%s`, line %d" % (comment['path'], comment['line'])
+
+        content += "\n\n~~~ quote\n%s\n~~~" % (comment['body'],)
     else:
         # We don't handle other events even though we get notified
         # about them
