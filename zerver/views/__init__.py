@@ -260,8 +260,8 @@ Company: %s
 # users: %s
 Currently using: %s""" % (name, email, company, count, product,)
     subject = "Interest in Zulip: %s" % (company,)
-    from_email = '"%s" <humbug+signups@humbughq.com>' % (name,)
-    to_email = '"Zulip Signups" <humbug+signups@humbughq.com>'
+    from_email = '"%s" <zulip+signups@zulip.com>' % (name,)
+    to_email = '"Zulip Signups" <zulip+signups@zulip.com>'
     headers = {'Reply-To' : '"%s" <%s>' % (name, email,)}
     msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
     msg.send()
@@ -408,7 +408,7 @@ def accounts_accept_terms(request):
                          'email': email,
                          'ip': request.META['REMOTE_ADDR'],
                          'browser': request.META['HTTP_USER_AGENT']}),
-                        "humbug@humbughq.com",
+                        settings.EMAIL_HOST_USER,
                         ["all@zulip.com"])
             do_change_full_name(request.user, full_name)
             return redirect(home)

@@ -34,7 +34,7 @@ CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'humbug@humbughq.com'
+EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
 
