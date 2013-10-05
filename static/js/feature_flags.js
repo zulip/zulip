@@ -33,8 +33,7 @@ var is_customer4 = _.contains(customer4_realms, page_params.domain);
 
 exports.fade_users_when_composing = page_params.staging || is_customer4;
 
-exports.alert_words =
-  _.contains(['reddit.com', 'mit.edu', 'zulip.com', 'pixleeteam.com'], page_params.domain);
+exports.alert_words = true;
 
 
 var zulip_mit_emails = [];
