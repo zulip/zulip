@@ -45,20 +45,44 @@ staging_client = zulip.Client(
     verbose=True,
     site="https://staging.zulip.com/api")
 
+def get_ticket_number():
+    fn = '/var/tmp/.feedback-bot-ticket-number'
+    try:
+        ticket_number = int(open(fn).read()) + 1
+    except:
+        ticket_number = 1
+    open(fn, 'w').write('%d' % ticket_number)
+    return ticket_number
+
 def forward_message(message):
     if message["type"] != "private" or len(message["display_recipient"]) != 2:
         return
+
     if "sender_domain" in message:
         subject = "feedback: %s (%s)" % (message["sender_email"], message["sender_domain"])
     else:
         subject = "feedback from %s" % message["sender_email"],
     if len(subject) > 60:
         subject = subject[:57].rstrip() + "..."
+
+    ticket_number = get_ticket_number()
+    content = '@support, Please ack this new request.'
+    content += '\n~~~'
+    content += '\nticket Z%03d' % (ticket_number,)
+    content += '\nsender: %s' % (message['sender_full_name'],)
+    content += '\nemail: %s' % (message['sender_email'],)
+    if 'sender_domain' in message:
+        content += '\nrealm: %s' % (message['sender_domain'],)
+    content += '\n~~~'
+
+    content += '\n\n'
+    content += message['content']
+
     forwarded_message = {
         "type": "stream",
         "to": "support",
         "subject": subject,
-        "content": message["content"],
+        "content": content,
         }
     staging_client.send_message(forwarded_message)
     logging.info("Forwarded feedback from %s" % (message["sender_email"],))
