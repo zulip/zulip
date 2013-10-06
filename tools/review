@@ -384,6 +384,19 @@ def main(args):
     print >>sys.stderr, '%s: no revisions specified' % os.path.basename(args[0])
     return 2
 
+  if not opts.stdout:
+    import zulip
+    client = zulip.Client(verbose=True)
+
+    if 'staging' not in client.base_url:
+      print '''
+
+        HEY!  You have to point your .zuliprc to staging.
+        ABORTING
+
+        '''
+      sys.exit(1)
+
   # Attempt to catch permissions/invalid paths early for tmp_dir
   if opts.run_tests:
     tmp_path = opts.tmp_dir + "/humbug_test.git"
@@ -433,8 +446,6 @@ def main(args):
     print >>sys.stdout, msg.get_payload(decode=True),
   else:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../api'))
-    import zulip
-    client = zulip.Client(verbose=True)
 
     reviewer_usernames = [x.split("@")[0] for x in opts.reviewers]
 
