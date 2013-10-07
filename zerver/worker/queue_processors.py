@@ -8,7 +8,7 @@ from zerver.lib.queue import SimpleQueueClient
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message
+    internal_send_message, send_local_email_template_with_delay
 from zerver.decorator import JsonableError
 import os
 import ujson
@@ -49,12 +49,15 @@ class SignupWorker(QueueProcessingWorker):
         super(SignupWorker, self).__init__()
         self.pm = PostMonkey(settings.MAILCHIMP_API_KEY, timeout=10)
 
+    # Changes to this should also be reflected in
+    # zerver/management/commands/queue_followup_emails.py:queue()
     def consume(self, ch, method, properties, data):
+        merge_vars=data['merge_vars']
         try:
             self.pm.listSubscribe(
                     id=settings.ZULIP_FRIENDS_LIST_ID,
                     email_address=data['EMAIL'],
-                    merge_vars=data['merge_vars'],
+                    merge_vars=merge_vars,
                     double_optin=False,
                     send_welcome=False)
         except MailChimpException, e:
@@ -62,6 +65,27 @@ class SignupWorker(QueueProcessingWorker):
                 logging.warning("Attempted to sign up already existing email to list: %s" % (data['EMAIL'],))
             else:
                 raise e
+
+        email = data.get("EMAIL")
+        name = merge_vars.get("NAME")
+        #Send day 1 email
+        send_local_email_template_with_delay([{'email': email, 'name': name}],
+                                             "zerver/emails/followup/day1",
+                                             {'name': name},
+                                             datetime.timedelta(hours=1),
+                                             tags=["followup-emails"],
+                                             sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'})
+        #Send day 2 email
+        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        # 11 AM EDT
+        tomorrow_morning = datetime.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 15, 0)
+        assert(datetime.datetime.utcnow() < tomorrow_morning)
+        send_local_email_template_with_delay([{'email': email, 'name': name}],
+                                             "zerver/emails/followup/day2",
+                                             {'name': name},
+                                             tomorrow_morning - datetime.datetime.utcnow(),
+                                             tags=["followup-emails"],
+                                             sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'})
 
 @assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):

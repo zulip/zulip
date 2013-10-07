@@ -1,0 +1,21 @@
+Hi {{ name }},
+
+One of the big things that's different about Zulip is the idea of "streams" and "topics".
+
+While they take a little getting used to, once you get the hang of them, they're really powerful.
+
+Some tips:
+
+* Would you make a mailing list for something? If so, it should probably be a stream.
+
+* Topics, on the other hand, are a lot more like subject lines - or conversations in Gmail
+
+* The big difference: keep topics super-short and lightweight. One or two words will do it.
+
+* Good topics: jQuery, Bug 345, lunch, zulip
+
+* Bad topics: "What do people think of this?" "Where should we go to lunch?"
+
+Try it out now! https://zulip.com
+
+-Waseem, for the Zulip team

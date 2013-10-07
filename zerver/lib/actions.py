@@ -2064,3 +2064,19 @@ def send_future_email(recipients, email_html, email_text, subject,
         raise Exception("While sending email (%s), encountered problems with these recipients: %r"
                         % (subject, problems))
     return
+
+def send_local_email_template_with_delay(recipients, template_prefix,
+                                         template_payload, delay,
+                                         tags=[], sender={'email': 'noreply@zulip.com', 'name': 'Zulip'}):
+    html_content = loader.render_to_string(template_prefix + ".html", template_payload)
+    text_content = loader.render_to_string(template_prefix + ".text", template_payload)
+    subject = loader.render_to_string(template_prefix + ".subject").strip()
+
+    return send_future_email(recipients,
+                             html_content,
+                             text_content,
+                             subject,
+                             delay=delay,
+                             sender=sender,
+                             tags=tags)
+
