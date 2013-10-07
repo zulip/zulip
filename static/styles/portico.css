@@ -435,14 +435,14 @@ input.text-error {
     background-color: #333;
     background-image: url('/static/images/landing-page/hd-back2.jpg');
     background-repeat: no-repeat;
-    background: -moz-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%, rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
-    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(54%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.6))), url('/static/images/landing-page/hd-back2.jpg');
-    background: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
-    background: -o-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
-    background: -ms-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
-    background-position: center center, center center;
-    background-size: auto, cover;
+    background: -moz-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%, rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(54%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.6))), url('/static/images/landing-page/hd-back2.jpg'), #333;
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
+    background: -o-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
+    background: -ms-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
+    background-position: center, center, center;
+    background-size: auto, cover, auto;
 }
 
 
