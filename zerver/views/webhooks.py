@@ -4,7 +4,8 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from zerver.models import UserProfile, get_client, MAX_SUBJECT_LENGTH
+from zerver.models import UserProfile, get_client, MAX_SUBJECT_LENGTH, \
+      get_user_profile_by_email
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import rate_limit_user, authenticated_api_view, REQ, \
@@ -266,6 +267,15 @@ def api_jira_webhook(request, user_profile):
     title = get_in(payload, ['issue', 'fields', 'summary'])
     priority = get_in(payload, ['issue', 'fields', 'priority', 'name'])
     assignee = get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one')
+    assignee_email = get_in(payload, ['issue', 'fields', 'assignee', 'emailAddress'], '')
+    assignee_mention = ''
+    if assignee_email != '':
+        try:
+            assignee_profile = get_user_profile_by_email(assignee_email)
+            assignee_mention = "@**%s**" % (assignee_profile.full_name,)
+        except UserProfile.DoesNotExist:
+            assignee_mention = "**%s**" % (assignee_email,)
+
     subject = "%s: %s" % (issueId, title)
 
     if event == 'jira:issue_created':
@@ -278,7 +288,11 @@ def api_jira_webhook(request, user_profile):
         # Reassigned, commented, reopened, and resolved events are all bundled
         # into this one 'updated' event type, so we try to extract the meaningful
         # event that happened
-        content = "%s **updated** %s:\n\n" % (author, issue)
+        if assignee_mention != '':
+            assignee_blurb = " (assigned to %s)" % (assignee_mention,)
+        else:
+            assignee_blurb = ''
+        content = "%s **updated** %s%s:\n\n" % (author, issue, assignee_blurb)
         changelog = get_in(payload, ['changelog',])
         comment = get_in(payload, ['comment', 'body'])
 
@@ -287,8 +301,14 @@ def api_jira_webhook(request, user_profile):
             items = changelog.get('items')
             for item in items:
                 field = item.get('field')
+
+                # Convert a user's target to a @-mention if possible
+                targetFieldString = "**%s**" % (item.get('toString'),)
+                if field == 'assignee' and assignee_mention != '':
+                    targetFieldString = assignee_mention
+
                 if field in ('status', 'assignee'):
-                    content += "* Changed %s from **%s** to **%s**\n" % (field, item.get('fromString'), item.get('toString'))
+                    content += "* Changed %s from **%s** to %s\n" % (field, item.get('fromString'), targetFieldString)
 
         if comment != '':
             comment = convert_jira_markup(comment)

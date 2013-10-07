@@ -3526,7 +3526,7 @@ class JiraHookTests(AuthedTestCase):
     def test_commented(self):
         msg = self.send_jira_message('commented')
         self.assertEqual(msg.subject, "BUG-15: New bug with hook")
-        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15):
+        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to @**Othello, the Moor of Venice**):
 
 
 Adding a comment. Oh, what a comment it is!
@@ -3545,15 +3545,15 @@ Adding a comment. Oh, what a comment it is!
     def test_reassigned(self):
         msg = self.send_jira_message('reassigned')
         self.assertEqual(msg.subject, "BUG-15: New bug with hook")
-        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15):
+        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to @**Othello, the Moor of Venice**):
 
-* Changed assignee from **None** to **Leo Franchi**
+* Changed assignee from **None** to @**Othello, the Moor of Venice**
 """)
 
     def test_reopened(self):
         msg = self.send_jira_message('reopened')
         self.assertEqual(msg.subject, "BUG-7: More cowbell polease")
-        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-7](http://lfranchi.com:8080/browse/BUG-7):
+        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-7](http://lfranchi.com:8080/browse/BUG-7) (assigned to @**Othello, the Moor of Venice**):
 
 * Changed status from **Resolved** to **Reopened**
 
@@ -3564,10 +3564,10 @@ Re-opened yeah!
         msg = self.send_jira_message('resolved')
 
         self.assertEqual(msg.subject, "BUG-13: Refreshing the page loses the user's current posi...")
-        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-13](http://lfranchi.com:8080/browse/BUG-13):
+        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-13](http://lfranchi.com:8080/browse/BUG-13) (assigned to @**Othello, the Moor of Venice**):
 
 * Changed status from **Open** to **Resolved**
-* Changed assignee from **None** to **Leo Franchi**
+* Changed assignee from **None** to @**Othello, the Moor of Venice**
 
 Fixed it, finally!
 """)
