@@ -4,14 +4,14 @@ class zulip::git {
   $git_packages = [ ]
   package { $git_packages: ensure => "installed" }
 
-  file { '/srv/git/humbug.git':
+  file { '/home/git/repositories/eng/zulip.git/hooks':
     ensure => 'directory',
-    owner  => 'humbug',
-    group  => 'humbug',
+    owner  => 'git',
+    group  => 'git',
     mode   => 755,
   }
 
-  file { '/srv/git/humbug.git/hooks/post-receive':
+  file { '/home/git/repositories/eng/zulip.git/hooks/post-receive':
     ensure => 'link',
     target => '/home/humbug/humbug/tools/post-receive',
   }

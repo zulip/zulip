@@ -43,7 +43,7 @@ deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
 
 logging.info("Cloning the repository")
 subprocess.check_call(["git", "clone", "-q", "-b", refname,
-                       "humbug@git.zulip.net:/srv/git/humbug.git",
+                       "git@git.zulip.net:eng/zulip.git",
                        deploy_path], stdout=open('/dev/null', 'w'))
 os.chdir(deploy_path)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Zulip's post-receive hook.  There is a symlink
-#   from /srv/git/humbug.git/hooks/post-receive
+#   from /home/git/repositories/eng/zulip.git/hooks/post-receive
 #   to   ~humbug/humbug/tools/post-receive
 # on git.zulip.net.  So to deploy changes to this script, run
 #

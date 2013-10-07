@@ -73,7 +73,7 @@ EOF2
 # clone humbug repository
 cd /root
 rm -rf /root/humbug
-git clone humbug@git.zulip.net:/srv/git/humbug.git
+git clone git@git.zulip.net:eng/zulip.git humbug
 cd /root/humbug
 git checkout master
 EOF
