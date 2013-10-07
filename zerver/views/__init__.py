@@ -1603,14 +1603,14 @@ def add_subscriptions_backend(request, user_profile,
                                    notifications_stream.name, "Streams", msg,
                                    realm=notifications_stream.realm))
         else:
+            msg = ("Hi there!  %s just created a new stream '%s'. "
+                       "To join, click the gear in the left-side streams list."
+                       % (user_profile.full_name, created_streams[0].name))
             for realm_user in get_active_user_profiles_by_realm(user_profile.realm):
                 # Don't announce to yourself or to people you explicitly added
                 # (who will get the notification above instead).
                 if realm_user.email in principals or realm_user.email == user_profile.email:
                     continue
-                msg = ("Hi there!  %s just created a new stream '%s'. "
-                           "To join, click the gear in the left-side streams list."
-                           % (user_profile.full_name, created_streams[0].name))
                 notifications.append(internal_prep_message("notification-bot@zulip.com",
                                                            "private",
                                                            realm_user.email, "", msg))
