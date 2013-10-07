@@ -142,7 +142,7 @@ function get_stream_suggestions(operators) {
     return objs;
 }
 
-function get_private_suggestions(all_people, operators) {
+function get_private_suggestions(all_people, operators, person_operator_matches) {
     if (operators.length === 0) {
         return [];
     }
@@ -151,24 +151,38 @@ function get_private_suggestions(all_people, operators) {
     if ((operators[0][0] === 'is') && (operators[0][1] === 'private')) {
         operators = operators.slice(1);
         ok = true;
-    } else if (operators[0][0] === 'pm-with') {
-        ok = true;
+    } else  {
+        _.each(person_operator_matches, function (item) {
+            if (operators[0][0] === item) {
+                ok = true;
+            }
+        });
     }
 
     if (!ok) {
         return [];
     }
 
-    var query;
+    var query, matching_operator;
 
     if (operators.length === 0) {
         query = '';
+        matching_operator = person_operator_matches[0];
     } else if (operators.length === 1) {
         var operator = operators[0][0];
-        if (operator === 'search' || operator === 'pm-with') {
+
+        if (operator === 'search') {
             query = operators[0][1];
+        } else {
+            _.each(person_operator_matches, function (item) {
+                if (operator === item) {
+                    query = operators[0][1];
+                    matching_operator = item;
+                }
+            });
         }
-        else {
+
+        if (query === undefined) {
             return [];
         }
     }
@@ -186,10 +200,12 @@ function get_private_suggestions(all_people, operators) {
     // Take top 15 people, since they're ordered by pm_recipient_count.
     people = people.slice(0, 15);
 
+    var prefix = operator_to_prefix(matching_operator);
+
     var suggestions = _.map(people, function (person) {
         var name = highlight_person(query, person);
-        var description = 'Narrow to private messages with ' + name;
-        var search_string = Filter.unparse([['pm-with', person.email]]);
+        var description = prefix + ' ' + name;
+        var search_string = Filter.unparse([[matching_operator, person.email]]);
         return {description: description, search_string: search_string};
     });
 
@@ -201,7 +217,7 @@ function get_private_suggestions(all_people, operators) {
     return suggestions;
 }
 
-function get_person_suggestions(all_people, query, prefix, operator) {
+function get_person_suggestions(all_people, query, autocomplete_operator) {
     if (query === '') {
         return [];
     }
@@ -212,10 +228,12 @@ function get_person_suggestions(all_people, query, prefix, operator) {
 
     people.sort(typeahead_helper.compare_by_pms);
 
+    var prefix = operator_to_prefix(autocomplete_operator);
+
     var objs = _.map(people, function (person) {
         var name = highlight_person(query, person);
         var description = prefix + ' ' + name;
-        var search_string = operator + ':' + person.email;
+        var search_string = autocomplete_operator + ':' + person.email;
         return {description: description, search_string: search_string};
     });
 
@@ -427,13 +445,13 @@ exports.get_suggestions = function (query) {
 
     var people = page_params.people_list;
 
-    suggestions = get_person_suggestions(people, query, 'Narrow to private messages with', 'pm-with');
+    suggestions = get_person_suggestions(people, query, 'pm-with');
     result = result.concat(suggestions);
 
-    suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender');
+    suggestions = get_person_suggestions(people, query, 'sender');
     result = result.concat(suggestions);
 
-    suggestions = get_private_suggestions(people, operators);
+    suggestions = get_private_suggestions(people, operators, ['pm-with', 'sender']);
     result = result.concat(suggestions);
 
     suggestions = get_topic_suggestions(operators);

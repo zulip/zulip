@@ -102,10 +102,45 @@ set_global('narrow', {});
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    query = 'pm-with:t';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:t",
+        "pm-with:ted@zulip.com",
+        "is:private"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
     query = 'pm-with:ted@zulip.com';
     suggestions = search.get_suggestions(query);
     expected = [
         "pm-with:ted@zulip.com",
+        "is:private"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:ted';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sender:ted",
+        "sender:ted@zulip.com",
+        "is:private"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:te';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sender:te",
+        "sender:ted@zulip.com",
+        "is:private"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:ted@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sender:ted@zulip.com",
         "is:private"
     ];
     assert.deepEqual(suggestions.strings, expected);
