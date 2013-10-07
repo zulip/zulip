@@ -432,12 +432,17 @@ input.text-error {
 }
 
 .main-headline {
-    padding-top: 41px;
     background-color: #333;
     background-image: url('/static/images/landing-page/hd-back2.jpg');
     background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center center;
+    background: -moz-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%, rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(54%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.6))), url('/static/images/landing-page/hd-back2.jpg');
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
+    background: -o-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
+    background: -ms-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg');
+    background-position: center center, center center;
+    background-size: auto, cover;
 }
 
 
@@ -772,7 +777,7 @@ a.bottom-signup-button {
     display: block;
     text-align: center;
     color: #fff;
-    text-shadow: 0px 0px 6px rgba(0,0,0,0.9);
+    text-shadow: 0px 0px 4px rgba(0,0,0,1);
     font-weight: 300;
 }
 
@@ -784,7 +789,7 @@ a.bottom-signup-button {
 .main-headline-text .footnote {
     display: block;
     font-size: 18px;
-    color: #eee;
+    color: #fff;
     margin-top: 15px;
 }
 
@@ -792,6 +797,7 @@ a.bottom-signup-button {
     margin-top: 15px;
     margin-bottom: 15px;
     font-size: 22px;
+    box-shadow: 0px 0px 4px rgba(0,0,0,0.4);
 }
 
 .app-main,
@@ -882,6 +888,16 @@ a.bottom-signup-button {
     line-height: 54px;
     float: right;
     margin-right: 10px;
+}
+
+.centered-button {
+    text-align: center;
+}
+
+.button-muted {
+    display: block;
+    font-size: 12px;
+    color: #ddd;
 }
 
 @media (max-width: 950px) {
