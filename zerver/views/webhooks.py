@@ -5,13 +5,14 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from zerver.models import UserProfile, get_client, MAX_SUBJECT_LENGTH, \
-      get_user_profile_by_email
+      get_user_profile_by_email, Realm
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import rate_limit_user, authenticated_api_view, REQ, \
     has_request_variables, json_to_dict, authenticated_rest_api_view, \
     api_key_only_webhook_view
 from zerver.views import send_message_backend
+from django.db.models import Q
 
 from defusedxml.ElementTree import fromstring as xml_fromstring
 
@@ -197,7 +198,22 @@ def elide_subject(subject):
         subject = subject[:57].rstrip() + '...'
     return subject
 
-def convert_jira_markup(content):
+def guess_zulip_user_from_jira(jira_username, realm):
+    try:
+        # Try to find a matching user in Zulip
+        # We search a user's full name, short name,
+        # and beginning of email address
+        user = UserProfile.objects.filter(
+                Q(full_name__iexact=jira_username) |
+                Q(short_name__iexact=jira_username) |
+                Q(email__istartswith=jira_username),
+                is_active=True,
+                realm=realm).order_by("id")[0]
+        return user
+    except IndexError:
+        return None
+
+def convert_jira_markup(content, realm):
     # Attempt to do some simplistic conversion of JIRA
     # formatting to Markdown, for consumption in Zulip
 
@@ -225,11 +241,26 @@ def convert_jira_markup(content):
 
     # Links are of form: [https://www.google.com] or [Link Title|https://www.google.com]
     # In order to support both forms, we don't match a | in bare links
-    content = re.sub(r'\[([^\|]+?)\]', r'[\1](\1)', content)
+    content = re.sub(r'\[([^\|~]+?)\]', r'[\1](\1)', content)
 
     # Full links which have a | are converted into a better markdown link
-    full_link_re = re.compile(r'\[(?:(?P<title>[^|]+)\|)(?P<url>.*)\]')
+    full_link_re = re.compile(r'\[(?:(?P<title>[^|~]+)\|)(?P<url>.*)\]')
     content = re.sub(full_link_re, r'[\g<title>](\g<url>)', content)
+
+    # Try to convert a JIRA user mention of format [~username] into a
+    # Zulip user mention. We don't know the email, just the JIRA username,
+    # so we naively guess at their Zulip account using this
+    if realm:
+        mention_re = re.compile(r'\[~(.*?)\]')
+        for username in mention_re.findall(content):
+            # Try to look up username
+            user_profile = guess_zulip_user_from_jira(username, realm)
+            if user_profile:
+                replacement = "@**%s**" % (user_profile.full_name,)
+            else:
+                replacement = "**%s**" % (username,)
+
+            content = content.replace("[~%s]" % (username,), replacement)
 
     return content
 
@@ -311,7 +342,7 @@ def api_jira_webhook(request, user_profile):
                     content += "* Changed %s from **%s** to %s\n" % (field, item.get('fromString'), targetFieldString)
 
         if comment != '':
-            comment = convert_jira_markup(comment)
+            comment = convert_jira_markup(comment, user_profile.realm)
             content += "\n%s\n" % (comment,)
     elif 'transition' in payload:
         from_status = get_in(payload, ['transition', 'from_status'])

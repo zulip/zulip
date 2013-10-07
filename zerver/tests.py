@@ -3596,6 +3596,15 @@ Fixed it, finally!
         self.assertEqual(msg.subject, "TEST-7: Gluttony of Post Functions")
         self.assertEqual(msg.content, """Leo Franchi [Administrator] **transitioned** [TEST-7](https://lfranchi-test.atlassian.net/browse/TEST-7) from Open to Resolved""")
 
+    def test_mention(self):
+        msg = self.send_jira_message('watch_mention_updated')
+        self.assertEqual(msg.subject, "TEST-5: Lunch Decision Needed")
+        self.assertEqual(msg.content, """Leonardo Franchi [Administrator] **updated** [TEST-5](https://zulipp.atlassian.net/browse/TEST-5) (assigned to @**Othello, the Moor of Venice**):
+
+
+Making a comment, @**Othello, the Moor of Venice** is watching this issue
+""")
+
 class BeanstalkHookTests(AuthedTestCase):
 
     def http_auth(self, username, password):
