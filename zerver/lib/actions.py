@@ -37,7 +37,7 @@ from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, cache_set_many, \
     cache_delete, cache_delete_many, message_cache_key
 from zerver.decorator import get_user_profile_by_email, json_to_list, JsonableError, \
-     statsd_increment
+     statsd_increment, uses_mandrill
 from zerver.lib.event_queue import request_event_queue, get_user_events
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
@@ -2006,3 +2006,61 @@ def do_set_muted_topics(user_profile, muted_topics):
     notice = dict(event=dict(type="muted_topics", muted_topics=muted_topics),
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
+
+@uses_mandrill
+def clear_followup_emails_queue(email, from_email=None, mail_client=None):
+    """
+    Clear out queued emails (from Mandrill's queue) that would otherwise
+    be sent to a specific email address. Optionally specify which sender
+    to filter by (useful when there are more Zulip subsystems using our
+    mandrill account).
+
+    `email` is a string representing the recipient email
+    `from_email` is a string representing the zulip email account used
+    to send the email (for example `support@zulip.com` or `signups@zulip.com`)
+    """
+    for email in mail_client.messages.list_scheduled(to=email):
+        result = mail_client.messages.cancel_scheduled(id=email["_id"])
+        if result.get("status") == "error":
+            print result.get("name"), result.get("error")
+    return
+
+@uses_mandrill
+def send_future_email(recipients, email_html, email_text, subject,
+                      delay=datetime.timedelta(0), sender=None,
+                      tags=[], mail_client=None):
+    """
+    Sends email via Mandrill, with optional delay
+
+    'mail_client' is filled in by the decorator
+    """
+    # message = {"from_email": "othello@zulip.com",
+    #            "from_name": "Othello",
+    #            "html": "<p>hello</p> there",
+    #            "tags": ["signup-reminders"],
+    #            "to": [{'email':"acrefoot@zulip.com", 'name': "thingamajig"}]
+    #            }
+    if sender is None:
+        sender = {'email': 'noreply@zulip.com', 'name': 'Zulip'}
+
+    message = {'from_email': sender['email'],
+               'from_name': sender['name'],
+               'to': recipients,
+               'subject': subject,
+               'html': email_html,
+               'text': email_text,
+               'tags': tags,
+               }
+    # ignore any delays smaller than 1-minute because it's cheaper just to sent them immediately
+    if type(delay) is not datetime.timedelta:
+        raise TypeError("specified delay is of the wrong type: %s" % (type(delay),))
+    if delay < datetime.timedelta(minutes=1):
+        results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool")
+    else:
+        send_time = (datetime.datetime.utcnow() + delay).__format__("%Y-%m-%d %H:%M:%S")
+        results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool", send_at=send_time)
+    problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
+    if problems:
+        raise Exception("While sending email (%s), encountered problems with these recipients: %r"
+                        % (subject, problems))
+    return

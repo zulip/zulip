@@ -20,6 +20,7 @@ from functools import wraps
 import base64
 import logging
 import cProfile
+from zerver.lib.mandrill_client import get_mandrill_client
 
 class _RespondAsynchronously(object):
     pass
@@ -482,3 +483,15 @@ def profiled(func):
         prof.dump_stats(fn)
         return retval
     return wrapped_func
+
+def uses_mandrill(func):
+    """
+    This decorator takes a function with keyword argument "mail_client" and
+    fills it in with the mail_client for the Mandrill account.
+    """
+    @wraps(func)
+    def wrapped_func(*args, **kwargs):
+        kwargs['mail_client'] = get_mandrill_client()
+        return func(*args, **kwargs)
+    return wrapped_func
+

@@ -32,6 +32,9 @@ ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 # This can be filled in automatically from the database
 FEEDBACK_BOT_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
+# This comes from our mandrill accounts page
+MANDRILL_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxx'
+
 # This should be synced with our camo installation
 CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
