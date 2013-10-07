@@ -1,3 +1,33 @@
-#!/bin/sh
+#!/usr/bin/python
 
-puppet apply -e "class {'zulip': machinetype => '$(cat /etc/humbug-machinetype)'}" "$@"
+import sys
+import subprocess
+
+force = False
+extra_args = sys.argv[1:]
+
+if len(extra_args) and extra_args[0] in ('-f', '--force'):
+    force = True
+    eatra_args = extra_args[1:]
+
+with open('/etc/humbug-machinetype') as f:
+    machinetype = f.readline().strip()
+
+puppet_cmd = ["puppet", "apply", "-e", "class {'zulip': machinetype => '%s'}" % (machinetype,)]
+puppet_cmd += extra_args
+
+if force:
+    subprocess.check_call(puppet_cmd)
+    sys.exit(0)
+
+subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'])
+
+do_apply = None
+while not (do_apply == 'y' or do_apply == 'n'):
+    sys.stdout.write("Apply changes? [y/N] ")
+    do_apply = sys.stdin.readline().strip().lower()
+    if do_apply == '':
+        do_apply = 'n'
+
+if do_apply == 'y':
+    subprocess.check_call(puppet_cmd)
