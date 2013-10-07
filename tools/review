@@ -49,6 +49,9 @@ from time import sleep
 from signal import SIGINT, SIGTERM
 from errno import EAGAIN
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../api'))
+import zulip
+
 usage = """
 %%prog -r <reviewer> [-r <another-reviewer>] [-T  <alt tmp dir>] [-s <summary>] [-m <message>] [options] {<since>|<revision-range>}
 
@@ -385,7 +388,6 @@ def main(args):
     return 2
 
   if not opts.stdout:
-    import zulip
     client = zulip.Client(verbose=True)
 
     if 'staging' not in client.base_url:
@@ -445,8 +447,6 @@ def main(args):
     print >>sys.stdout
     print >>sys.stdout, msg.get_payload(decode=True),
   else:
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../api'))
-
     reviewer_usernames = [x.split("@")[0] for x in opts.reviewers]
 
     content = ("Sent a review request to %s for\n%s" %
