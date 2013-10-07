@@ -1834,7 +1834,7 @@ def do_send_missedmessage_email(user_profile, missed_messages):
         disp_recipients = [", ".join(recipient['email']
                                 for recipient in get_display_recipient(msg.recipient)
                                     if recipient['email'] != user_profile.email)
-                                 for msg in missed_messages]
+                                 for mesg in missed_messages]
         if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages) and \
             len(set(disp_recipients)) == 1:
             headers['Reply-To'] = disp_recipients[0]
