@@ -29,6 +29,35 @@ function stream_matches_query(stream_name, q) {
     return phrase_match(stream_name, q);
 }
 
+function operator_to_prefix(operator) {
+    switch (operator) {
+    case 'stream':
+        return 'Narrow to stream';
+
+    case 'near':
+        return 'Narrow to messages around';
+
+    case 'id':
+        return 'Narrow to message ID';
+
+    case 'topic':
+        return 'Narrow to topic';
+
+    case 'sender':
+        return 'Narrow to messages sent by';
+
+    case 'pm-with':
+        return 'Narrow to private messages with';
+
+    case 'search':
+        return 'Search for';
+
+    case 'in':
+        return 'Narrow to messages in';
+    }
+    return '';
+}
+
 // Convert a list of operators to a human-readable description.
 function describe(operators) {
     if (operators.length === 0) {
@@ -49,8 +78,8 @@ function describe(operators) {
 
     var more_parts = _.map(operators, function (elem) {
         var operand = elem[1];
-        switch (Filter.canonicalize_operator(elem[0])) {
-        case 'is':
+        var canonicalized_operator = Filter.canonicalize_operator(elem[0]);
+        if (canonicalized_operator ==='is') {
             if (operand === 'private') {
                 return 'Narrow to all private messages';
             } else if (operand === 'starred') {
@@ -60,31 +89,11 @@ function describe(operators) {
             } else if (operand === 'alerted') {
                 return 'Narrow to alerted messages';
             }
-            break;
-
-        case 'stream':
-            return 'Narrow to stream ' + operand;
-
-        case 'near':
-            return 'Narrow to messages around ' + operand;
-
-        case 'id':
-            return 'Narrow to message ID ' + operand;
-
-        case 'topic':
-            return 'Narrow to topic ' + operand;
-
-        case 'sender':
-            return 'Narrow to sender ' + operand;
-
-        case 'pm-with':
-            return 'Narrow to private messages with ' + operand;
-
-        case 'search':
-            return 'Search for ' + operand;
-
-        case 'in':
-            return 'Narrow to messages in ' + operand;
+        } else {
+            var prefix_for_operator = operator_to_prefix(canonicalized_operator);
+            if (prefix_for_operator !== '') {
+                return prefix_for_operator + ' ' + operand;
+            }
         }
         return 'Narrow to (unknown operator)';
     });
