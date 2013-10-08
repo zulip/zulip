@@ -181,7 +181,7 @@ class TornadoQueueClient(SimpleQueueClient):
         self._reconnect_consumer_callbacks()
         self.log.info('TornadoQueueClient connected')
 
-    def _on_connection_closed(self, method_frame):
+    def _on_connection_closed(self, connection, reply_code, reply_text):
         self.log.warning("TornadoQueueClient lost connection to RabbitMQ, reconnecting...")
         from tornado import ioloop
 
