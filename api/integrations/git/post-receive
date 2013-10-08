@@ -70,11 +70,14 @@ def git_repository_name():
 
 def git_commit_range(oldrev, newrev):
     log_cmd = ["git", "log", "--reverse",
-               "--pretty=%aE %s", "%s..%s" % (oldrev, newrev)]
+               "--pretty=%aE %H %s", "%s..%s" % (oldrev, newrev)]
     commits = ''
     for ln in subprocess.check_output(log_cmd).splitlines():
-        email, subject = ln.split(None, 1)
-        commits += '!gravatar(%s) %s\n' % (email, subject)
+        author_email, commit_id, subject  = ln.split(None, 2)
+        if hasattr(config, "format_commit_message"):
+            commits += config.format_commit_message(author_email, subject, commit_id)
+        else:
+            commits += '!gravatar(%s) %s\n' % (author_email, subject)
     return commits
 
 def send_bot_message(oldrev, newrev, refname):

@@ -49,6 +49,14 @@ def commit_notice_destination(repo, branch, commit):
     # Return None for cases where you don't want a notice sent
     return None
 
+# Modify this function to change how commits are displayed; the most
+# common customization is to include a link to the commit in your
+# graphical repository viewer, e.g.
+#
+# return '!gravatar(%s) [%s](https://example.com/commits/%s)\n' % (author, subject, commit_id)
+def format_commit_message(author, subject, commit_id):
+    return '!gravatar(%s) %s\n' % (author, subject)
+
 ## If properly installed, the Zulip API should be in your import
 ## path, but if not, set a custom path below
 ZULIP_API_PATH = None
