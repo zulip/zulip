@@ -1368,7 +1368,7 @@ def send_message_backend(request, user_profile,
         return json_error("User not authorized for this query")
 
     realm = None
-    if domain:
+    if domain and domain != user_profile.realm.domain:
         if not is_super_user:
             # The email gateway bot needs to be able to send messages in
             # any realm.

@@ -1547,12 +1547,21 @@ def encode_email_address_helper(name, email_token):
     # ordinal of that character, padded with zeroes to the maximum number of
     # bytes of a UTF-8 encoded Unicode character.
     encoded_name = re.sub("\W", lambda x: "%" + str(ord(x.group(0))).zfill(4), name)
-    return "%s+%s@streams.zulip.com" % (encoded_name, email_token)
+    encoded_token = "%s+%s" % (encoded_name, email_token)
+    return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
 def decode_email_address(email):
-    # Perform the reverse of encode_email_address. Only the stream name will be
-    # transformed.
-    return re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), email)
+    # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
+    pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
+    match_email_re = re.compile("(.*?)".join(pattern_parts))
+    match = match_email_re.match(email)
+
+    if not match:
+        return None
+
+    token = match.group(1)
+    decoded_token = re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), token)
+    return decoded_token.split('+')
 
 # In general, it's better to avoid using .values() because it makes
 # the code pretty ugly, but in this case, it has significant

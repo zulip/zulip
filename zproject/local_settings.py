@@ -117,3 +117,22 @@ else:
     APNS_SANDBOX = "push_sandbox"
     APNS_FEEDBACK = "feedback_sandbox"
     APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"
+
+# Administrator domain for this install
+ADMIN_DOMAIN = "zulip.com"
+
+# Email mirror configuration
+# The email of the Zulip bot that the email gateway
+# should post as
+EMAIL_GATEWAY_BOT_ZULIP_USER = "emailgateway-bot@zulip.com"
+
+EMAIL_GATEWAY_LOGIN = "emailgateway@zulip.com"
+EMAIL_GATEWAY_PASSWORD = "xxxxxxxxxxxxxxxx"
+EMAIL_GATEWAY_IMAP_SERVER = "imap.gmail.com"
+EMAIL_GATEWAY_IMAP_PORT = 993
+EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
+
+# The email address pattern to use for auto-generated stream emails
+# The %s will be replaced with a unique token, and the resulting email
+# must be delivered to the Inbox of the EMAIL_GATEWAY_LOGIN account above
+EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"

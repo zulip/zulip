@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Forward messages sent to @streams.zulip.com to Zulip.
+Forward messages sent to the configured email gateway to Zulip.
 
 Messages to that address go to the Inbox of emailgateway@zulip.com.
 
@@ -37,13 +37,6 @@ import html2text
 sys.path.insert(0, path.join(path.dirname(__file__), "../../../api"))
 import zulip
 
-GATEWAY_EMAIL = "emailgateway@zulip.com"
-# Application-specific password.
-PASSWORD = "xxxxxxxxxxxxxxxx"
-
-SERVER = "imap.gmail.com"
-PORT = 993
-
 ## Setup ##
 
 log_format = "%(asctime)s: %(message)s"
@@ -57,28 +50,36 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
-email_gateway_user = get_user_profile_by_email(GATEWAY_EMAIL)
+email_gateway_user = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT_ZULIP_USER)
 api_key = email_gateway_user.api_key
+
 if settings.DEPLOYED:
-    staging_client = zulip.Client(
-        site="https://staging.zulip.com", email=GATEWAY_EMAIL, api_key=api_key)
-    prod_client = zulip.Client(
-        site="https://api.zulip.com", email=GATEWAY_EMAIL, api_key=api_key)
-    inbox = "INBOX"
+    staging_api_client = zulip.Client(
+            site="https://staging.zulip.com",
+            email=settings.EMAIL_GATEWAY_BOT_ZULIP_USER,
+            api_key=api_key)
+
+
+    api_client = zulip.Client(
+            site=settings.EXTERNAL_HOST,
+            email=settings.EMAIL_GATEWAY_BOT_ZULIP_USER,
+            api_key=api_key)
 else:
-    staging_client = prod_client = zulip.Client(
-        site="http://localhost:9991/api", email=GATEWAY_EMAIL, api_key=api_key)
-    inbox = "Test"
+    api_client = staging_api_client = zulip.Client(
+            site=settings.EXTERNAL_HOST,
+            email=settings.EMAIL_GATEWAY_BOT_ZULIP_USER,
+            api_key=api_key)
 
 def redact_stream(error_message):
-    stream_match = re.search("(\S+?)\+(\S+?)@streams.zulip.com", error_message)
+    domain = settings.EMAIL_GATEWAY_PATTERN.rsplit('@')[-1]
+    stream_match = re.search(r'\b(.*?)@' + domain, error_message)
     if stream_match:
         stream_name = stream_match.groups()[0]
         return error_message.replace(stream_name, "X" * len(stream_name))
     return error_message
 
 def report_to_zulip(error_message):
-    error_stream = Stream.objects.get(name="errors", realm__domain="zulip.com")
+    error_stream = Stream.objects.get(name="errors", realm__domain=settings.ADMIN_DOMAIN)
     send_zulip(error_stream, "email mirror error",
                """~~~\n%s\n~~~""" % (error_message,))
 
@@ -103,13 +104,13 @@ class ZulipEmailForwardError(Exception):
     pass
 
 def send_zulip(stream, topic, content):
-    if stream.realm.domain in ["zulip.com", "wdaher.com"]:
-        api_client = staging_client
-    else:
-        api_client = prod_client
-
     # TODO: restrictions on who can send? Consider: cross-realm
     # messages, private streams.
+    if stream.realm.domain == 'zulip.com':
+        client = staging_api_client
+    else:
+        client = api_client
+
     message_data = {
         "type": "stream",
         # TODO: handle rich formatting.
@@ -119,7 +120,7 @@ def send_zulip(stream, topic, content):
         "domain": stream.realm.domain
         }
 
-    response = api_client.send_message(message_data)
+    response = client.send_message(message_data)
     if response["result"] != "success":
         raise ZulipEmailForwardError(response["msg"])
 
@@ -189,12 +190,9 @@ def extract_and_upload_attachments(message):
     return "\n".join(attachment_links)
 
 def extract_and_validate(email):
-    # Recipient is of the form
-    # <stream name>+<regenerable stream token>@streams.zulip.com
     try:
-        stream_name_and_token = decode_email_address(email).rsplit("@", 1)[0]
-        stream_name, token = stream_name_and_token.rsplit("+", 1)
-    except ValueError:
+        stream_name, token = decode_email_address(email)
+    except TypeError:
         raise ZulipEmailForwardError("Malformed email recipient " + email)
 
     if not valid_stream(stream_name, token):
@@ -214,13 +212,24 @@ def delete(result, proto):
     return proto.close().addCallback(logout, proto)
 
 def find_emailgateway_recipient(message):
-    # We can't use Delivered-To; that is emailgateway@zulip.com.
-    recipients = message.get_all("X-Gm-Original-To", [])
+    # We can't use Delivered-To; if there is a X-Gm-Original-To
+    # it is more accurate, so try to find the most-accurate
+    # recipient list in descending priority order
+    recipient_headers = ["X-Gm-Original-To", "Delivered-To", "To"]
+    recipients = []
+    for recipient_header in recipient_headers:
+        r = message.get_all(recipient_header, None)
+        if r:
+            recipients = r
+            break
+
+    pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
+    match_email_re = re.compile(".*?".join(pattern_parts))
     for recipient_email in recipients:
-        if recipient_email.lower().endswith("@streams.zulip.com"):
+        if match_email_re.match(recipient_email):
             return recipient_email
 
-    raise ZulipEmailForwardError("Missing recipient @streams.zulip.com")
+    raise ZulipEmailForwardError("Missing recipient in mirror email")
 
 def fetch(result, proto, mailboxes):
     if not result:
@@ -264,7 +273,7 @@ def examine_mailbox(result, proto, mailbox):
 
 def select_mailbox(result, proto):
     # Select which mailbox we care about.
-    mbox = filter(lambda x: inbox in x[2], result)[0][2]
+    mbox = filter(lambda x: settings.EMAIL_GATEWAY_IMAP_FOLDER in x[2], result)[0][2]
     return proto.select(mbox).addCallback(examine_mailbox, proto, result)
 
 def list_mailboxes(res, proto):
@@ -272,7 +281,7 @@ def list_mailboxes(res, proto):
     return proto.list("","*").addCallback(select_mailbox, proto)
 
 def connected(proto):
-    d = proto.login(GATEWAY_EMAIL, PASSWORD)
+    d = proto.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)
     d.addCallback(list_mailboxes, proto)
     d.addErrback(login_failed)
     return d
@@ -285,12 +294,12 @@ def done(_):
 
 def main():
     imap_client = protocol.ClientCreator(reactor, imap4.IMAP4Client)
-    d = imap_client.connectSSL(SERVER, PORT, ssl.ClientContextFactory())
+    d = imap_client.connectSSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT, ssl.ClientContextFactory())
     d.addCallbacks(connected, login_failed)
     d.addBoth(done)
 
 class Command(BaseCommand):
-    help = """Forward emails set to @streams.zulip.com to Zulip.
+    help = """Forward emails sent to the configured email gateway to Zulip.
 
 Run this command out of a cron job.
 """
