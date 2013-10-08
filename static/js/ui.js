@@ -445,6 +445,7 @@ exports.resize_page_components = function () {
         $("#userlist-toggle").css("display", '');
     }
 
+
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
@@ -1085,6 +1086,10 @@ $(function () {
     // box, but, close enough for now.
     resizehandler();
     hack_for_floating_recipient_bar();
+
+    if (!feature_flags.left_side_userlist) {
+        $("#navbar-buttons").addClass("right-userlist");
+    }
 
     if (feature_flags.summarize_read_while_narrowed) {
         $("#main_div").on("click", ".summary_row  .messages-expand", function (e) {

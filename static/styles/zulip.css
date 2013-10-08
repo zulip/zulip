@@ -1708,6 +1708,7 @@ input.recipient_box {
 
 .nav .dropdown-menu {
     left: -10px;
+    top: 30px;
     min-width: 180px;
     -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
@@ -1719,7 +1720,7 @@ input.recipient_box {
     width: 0px;
     height: 0px;
     top: -5px;
-    left: 10px;
+    right: 5px;
     display: inline-block;
     border-right: 7px solid transparent;
     border-bottom: 7px solid #fff;
@@ -1731,9 +1732,8 @@ input.recipient_box {
 
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle {
-    font-size: 18px;
-    margin-top: 4px;
-    color: #dadada;
+    font-size: 20px;
+    color: #fff;
     text-shadow: none;
     padding-left: 0px !important;
     background-color: inherit;
@@ -1741,12 +1741,14 @@ input.recipient_box {
     -webkit-box-shadow: inherit;
     -moz-box-shadow: inherit;
     display: block;
-    width: 15px;
+    position: absolute;
+    right: 0px;
+    top: 3px;
 }
 
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle:hover {
-    color: #eeeeee;
+    text-shadow: 0px 0px 1px #000, 0px 0px 3px #fff;
 }
 
 #navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
@@ -2246,9 +2248,9 @@ table.floating_recipient {
     display: none;
 }
 
-#settings-dropdown {
-    padding: 5px;
-    font-size: 175%;
+.settings-dropdown-caret {
+    margin-left: 8px;
+    font-size: 14px;
 }
 
 #notifications-area {
@@ -2966,8 +2968,20 @@ div.edit_bot {
         margin-left: 0px;
         margin-top: 0px;
         position: absolute;
-        right: 45px;
-        top: 3px;
+        right: 15px;
+        top: 8px;
+    }
+
+    #navbar-buttons.right-userlist .settings-dropdown-caret {
+        display: none;
+    }
+
+    #navbar-buttons.right-userlist #settings-dropdown {
+        right: 37px;
+    }
+
+    #navbar-buttons.right-userlist .nav .dropdown-menu {
+        left: -223px;
     }
 
     #userlist-toggle {
@@ -2983,7 +2997,7 @@ div.edit_bot {
     }
 
     .nav .dropdown-menu {
-        left: -160px;
+        left: -190px;
         min-width: 180px;
         -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
         -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
@@ -2991,7 +3005,7 @@ div.edit_bot {
     }
 
     .nav .dropdown-menu:after {
-        left: 160px;
+        right: 10px;
     }
 
     .column-middle {
