@@ -140,7 +140,7 @@ def handle_event(event):
         name = raw_props.get('subject')
         assignee = raw_props.get('assignee')
         priority = raw_props.get('priority')
-        url = make_url("project/%s/tickets/%s" % (project_link, num))
+        url = make_url("projects/%s/tickets/%s" % (project_link, num))
 
         if assignee is None:
             assignee = "no one"
@@ -156,7 +156,7 @@ def handle_event(event):
         changes = raw_props.get('changes')
 
 
-        url = make_url("project/%s/tickets/%s" % (project_link, num))
+        url = make_url("projects/%s/tickets/%s" % (project_link, num))
         subject = "#%s: %s" % (num, name)
 
         content = ""
@@ -171,7 +171,7 @@ def handle_event(event):
 
         name = raw_props.get('name')
         identifier = raw_props.get('identifier')
-        url = make_url("project/%s/milestone/%s" % (project_link, identifier))
+        url = make_url("projects/%s/milestone/%s" % (project_link, identifier))
 
         subject = name
         content = "%s created a new milestone [%s](%s)" % (actor_name, name, url)
@@ -182,7 +182,7 @@ def handle_event(event):
         commit = raw_props.get('commit_ref')
         repo_link = raw_props.get('repository_permalink')
 
-        url = make_url('project/%s/repositories/%s/commit/%s' % (project_link, repo_link, commit))
+        url = make_url('projects/%s/repositories/%s/commit/%s' % (project_link, repo_link, commit))
 
         subject = "%s commented on %s" % (actor_name, commit)
         content = "%s commented on [%s](%s):\n\n~~~ quote\n%s" % (actor_name, commit, url, comment)
