@@ -152,6 +152,13 @@ try:
     sys.stdout.write('\x1B[1;31m')
     sys.stdout.flush()
 
+    check_handlebar_templates_pid = os.fork()
+    if check_handlebar_templates_pid == 0:
+        logging.info("start check-handlebar-templates")
+        result = subprocess.call(['tools/check-handlebar-templates'])
+        logging.info("finish check-handlebar-templates")
+        os._exit(result)
+
     jslint_pid = os.fork()
     if jslint_pid == 0:
         logging.info("start jslint")
@@ -180,6 +187,10 @@ try:
         failed = check_pyflakes()
         logging.info("finish pyflakes")
         os._exit(1 if failed else 0)
+
+    (_, status) = os.waitpid(check_handlebar_templates_pid, 0)
+    if status != 0:
+        failed = True
 
     (_, status) = os.waitpid(custom_pid, 0)
     if status != 0:

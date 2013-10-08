@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+from zulip_tools import check_output
+import re
+import glob
+
+class Record:
+    pass
+
+def validate(fn):
+    text = open(fn).read()
+
+    state = Record()
+
+    def NoStartTag(end_tag):
+        raise Exception('No start tag for %s' % end_tag)
+
+    def start_tag_matcher(s):
+        start_line = state.line
+        start_col = state.col
+        state.depth += 1
+        tag = s[1:-1]
+        start_tag = tag.split()[0]
+        old_matcher = state.matcher
+        def f(end_tag):
+            problem = None
+            if start_tag != end_tag[2:-1]:
+                problem = 'Mismatched tag.'
+            elif state.line > start_line + 1 and state.col != start_col:
+                problem = 'Bad indentation.'
+            if problem:
+                raise Exception('''
+                    fn: %s
+                    %s
+                    start:
+                        %s
+                        line %d, col %d
+                    end tag:
+                        %s
+                        line %d, col %d
+                    ''' % (fn, problem, s, start_line, start_col, end_tag, state.line, state.col))
+            state.matcher = old_matcher
+            state.depth -= 1
+        return f
+
+    state.depth = 0
+    state.i = 0
+    state.line = 1
+    state.col = 1
+    state.matcher = NoStartTag
+
+    def advance(n):
+        for _ in range(n):
+            state.i += 1
+            if state.i >= 0 and text[state.i - 1] == '\n':
+                state.line += 1
+                state.col = 1
+            else:
+                state.col += 1
+
+    while True:
+        if state.i >= len(text):
+            break
+        c = text[state.i]
+        if c == '<':
+            end = state.i + 1
+            while end < len(text) and text[end] != '>':
+                end += 1
+            if text[end] != '>':
+                raise Exception('Tag missing >')
+            s = text[state.i:end+1]
+            if s.startswith('</'):
+                state.matcher(s)
+            else:
+                if not s.endswith('/>'):
+                    state.matcher = start_tag_matcher(s)
+            advance(len(s))
+            continue
+        advance(1)
+
+    assert state.depth == 0
+
+git_files = map(str.strip, check_output(['git', 'ls-files']).split('\n'))
+templates = [fn for fn in git_files if fn.endswith('.handlebars')]
+assert len(templates) >= 10 # sanity check that we are actually doing work
+for fn in templates:
+    validate(fn)
