@@ -220,6 +220,9 @@ def handle_event(event):
         logging.info("Unknown event type %s, ignoring!" % (event_type,))
 
     if subject and content:
+        if len(subject) > 60:
+            subject = subject[:57].rstrip() + '...'
+
         res = client.send_message({"type": "stream",
                                    "to": stream,
                                    "subject": subject,
