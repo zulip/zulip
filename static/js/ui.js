@@ -1264,6 +1264,11 @@ $(function () {
         e.preventDefault();
     });
 
+    $('#global_filters li a').on('click', function (e) {
+        // Cancel a compose if you click on one of the global filters
+        compose.cancel();
+    });
+
     $(".brand").on('click', function (e) {
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
