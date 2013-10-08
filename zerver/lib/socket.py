@@ -147,6 +147,7 @@ def respond_send_message(chan, method, props, data):
                       200, 'send_message', connection.session.user_profile.email)
 
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
-                                            {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.EXTERNAL_HOST,)})
+                                            {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.EXTERNAL_HOST,),
+                                             'disabled_transports': ['eventsource', 'htmlfile']})
 def get_sockjs_router():
     return sockjs_router

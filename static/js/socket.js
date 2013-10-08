@@ -12,7 +12,9 @@ function Socket(url) {
         this._is_unloading = true;
     });
 
-    this._sockjs = new SockJS(url);
+    this._supported_protocols = ['websocket', 'xdr-streaming', 'xhr-streaming',
+                                 'xdr-polling', 'xhr-polling', 'jsonp-polling'];
+    this._sockjs = new SockJS(url, null, {protocols_whitelist: this._supported_protocols});
     this._setup_sockjs_callbacks(this._sockjs);
 }
 
@@ -119,7 +121,7 @@ Socket.prototype = {
 
         setTimeout(function () {
             blueslip.info("Attempting reconnect.");
-            that._sockjs = new SockJS(that.url);
+            that._sockjs = new SockJS(that.url, null, {protocols_whitelist: that._supported_protocols});
             that._setup_sockjs_callbacks(that._sockjs);
         }, wait_time);
     }
