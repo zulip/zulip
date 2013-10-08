@@ -13,7 +13,7 @@ import datetime
 import sys
 import optparse
 import random
-
+import traceback
 
 def total_seconds(timedelta):
     return (timedelta.microseconds + (timedelta.seconds + timedelta.days * 24 * 3600) * 10**6) / 10.**6
@@ -80,11 +80,14 @@ def send_zulip(sender, message):
     if result["result"] != "success" and options.nagios:
         report("CRITICAL", "Error sending Zulip, args were: %s, %s" % (message, result))
 
-def get_zulip(recipient, max_message_id):
-    result = recipient.get_messages({'last': str(max_message_id)})
-    if result['result'] != "success" and options.nagios:
-        report("CRITICAL", "Error receiving Zulips, args were: %s, %s" % (max_message_id, result))
-    return result['messages']
+def get_zulips():
+    global queue_id, last_event_id
+    res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
+    if 'error' in res.get('result'):
+        report("CRITICAL", "Error receiving Zulips, error was: %s" % (res["msg"]))
+    for event in res['events']:
+        last_event_id = max(last_event_id, int(event['id']))
+    return [event['message'] for event in res['events']]
 
 if "staging" in options.site:
     # hamlet and othello are default users on staging
@@ -116,7 +119,13 @@ zulip_recipient = zulip.Client(
     site=site)
 
 
-max_message_id = zulip_recipient.get_profile().get('max_message_id')
+try:
+    res = zulip_recipient.register(event_types=["message"])
+    if 'error' in res.get('result'):
+        report("CRITICAL", "Error subscribing to Zulips: %s" % (res['msg']))
+    queue_id, last_event_id = (res['queue_id'], res['last_event_id'])
+except Exception:
+    report("CRITICAL", "Error subscribing to Zulips:\n%s" % (traceback.format_exc()))
 msg_to_send = str(random.getrandbits(64))
 time_start = datetime.datetime.now()
 
@@ -130,12 +139,9 @@ send_zulip(zulip_sender, {
 msg_content = []
 
 while msg_to_send not in msg_content:
-    messages = get_zulip(zulip_recipient, max_message_id)
+    messages = get_zulips()
     time_diff = datetime.datetime.now() - time_start
 
-    # Prevents checking the same messages everytime in the conditional
-    # statement of the while loop
-    max_message_id = max([msg['id'] for msg in messages])
     msg_content = [m['content'] for m in messages]
 
     if options.nagios:
