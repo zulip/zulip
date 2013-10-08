@@ -27,9 +27,9 @@ subprocess.check_call(["python", "./manage.py", "fill_memcached_caches"])
 
 # Restart the FastCGI and related processes via supervisorctl.
 logging.info("Killing daemons")
-subprocess.check_call(["supervisorctl", "stop", "humbug-workers:* humbug-django humbug-tornado"])
+subprocess.check_call(["supervisorctl", "stop", "zulip-workers:* zulip-django zulip-tornado"])
 subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "current")])
-subprocess.check_call(["supervisorctl", "start", "humbug-tornado humbug-django humbug-workers:*"])
+subprocess.check_call(["supervisorctl", "start", "zulip-tornado zulip-django zulip-workers:*"])
 
 logging.info("Done!")
 print OKGREEN + "Application restarted successfully!" + ENDC
