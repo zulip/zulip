@@ -688,7 +688,6 @@ key (perhaps because your AFS tokens expired). That means that while \
 Zulip users (like you) received it, Zephyr users did not.
 
 %s""" % (support_heading, support_closing))
-            return
 
         # Proceed with sending a zcrypted message
         wrapped_content = result
