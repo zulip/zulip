@@ -155,12 +155,10 @@ exports.activate = function (operators, opts) {
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top - viewport.scrollTop();
     }
 
-    var can_summarize = feature_flags.summarize_read_while_narrowed
-        && !current_filter.is_search() && !exports.narrowed_by_reply();
     narrowed_msg_list = new MessageList('zfilt', current_filter, {
         collapse_messages: ! current_filter.is_search(),
         muting_enabled: muting_enabled,
-        summarize_read: can_summarize ? 'stream' : false
+        summarize_read: this.summary_enabled()
     });
 
 
@@ -481,6 +479,30 @@ exports.narrowed_to_search = function () {
 
 exports.muting_enabled = function () {
     return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() && !exports.narrowed_to_pms());
+};
+
+exports.summary_enabled = function () {
+    if (!feature_flags.summarize_read_while_narrowed) {
+        return false;
+    }
+
+    if (current_filter === undefined){
+        return 'home'; // Home view, but this shouldn't run anyway
+    }
+
+    var operators = current_filter.operators();
+
+    if (operators.length === 1 && (
+        current_filter.has_operand("in", "home") ||
+        current_filter.has_operand("in", "all"))) {
+        return 'home';
+    }
+
+    if (operators.length === 1 && (
+        current_filter.operands("stream").length === 1 ||
+        current_filter.has_operand("is", "private"))) {
+        return 'stream';
+    }
 };
 
 return exports;
