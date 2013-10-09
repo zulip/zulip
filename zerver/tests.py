@@ -156,12 +156,16 @@ def get_user_messages(user_profile):
         order_by('message')
     return [um.message for um in query]
 
-def most_recent_message(user_profile):
+def most_recent_usermessage(user_profile):
     query = UserMessage.objects. \
         select_related("message"). \
         filter(user_profile=user_profile). \
         order_by('-message')
-    return query[0].message # Django does LIMIT here
+    return query[0] # Django does LIMIT here
+
+def most_recent_message(user_profile):
+    usermessage = most_recent_usermessage(user_profile)
+    return usermessage.message
 
 def slow(expected_run_time, slowness_reason):
     '''
@@ -4020,6 +4024,37 @@ class AlertWordTests(AuthedTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['alert_words'], ['a', 'b', 'c'])
+
+    def message_does_alert(self, user_profile, message):
+        # Send a bunch of messages as othello, so Hamlet is notified
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)
+        message = most_recent_usermessage(user_profile)
+        return 'has_alert_word' in message.flags_list()
+
+    def test_alert_flags(self):
+        self.login("hamlet@zulip.com")
+        user_profile_hamlet = get_user_profile_by_email("hamlet@zulip.com")
+
+        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        self.assert_json_success(result)
+
+        result = self.client.get('/json/users/me/alert_words')
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
+
+
+        self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one time"))
+        self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one"))
+        self.assertTrue(self.message_does_alert(user_profile_hamlet, "two normal alerts"))
+        self.assertTrue(self.message_does_alert(user_profile_hamlet, "This one? should alert"))
+        self.assertTrue(self.message_does_alert(user_profile_hamlet, "Definitely time for three."))
+        self.assertTrue(self.message_does_alert(user_profile_hamlet, "One two three o'clock"))
+        self.assertTrue(self.message_does_alert(user_profile_hamlet, "One o'clock"))
+        self.assertTrue(self.message_does_alert(user_profile_hamlet, "Case of ONE, won't stop me"))
+
+        self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one/ urls"))
+        self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one urls"))
 
 class MutedTopicsTests(AuthedTestCase):
     def test_json_set(self):

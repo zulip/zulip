@@ -17,9 +17,15 @@ exports.process_message = function (message) {
 
     _.each(exports.words, function (word) {
         var clean = escape_user_regex(word);
-        var regex = new RegExp('(\\b' + clean + '\\b)', 'i');
-        var replaced = "<span class='alert-word'>$1</span>";
-        message.content = message.content.replace(regex, replaced);
+        var before_punctuation = '\\s|^|>|[\\(\\"]';
+        var after_punctuation = '\\s|$|<|[\\)\\"\\?:.,]';
+
+        var regex = new RegExp('(' + before_punctuation + ')' +
+                               '(' + clean + ')' +
+                               '(' + after_punctuation + ')' , 'i');
+        message.content = message.content.replace(regex, function (match, before, word, after) {
+            return before + "<span class='alert-word'>" + word + "</span>" + after;
+        });
     });
 };
 

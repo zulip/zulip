@@ -577,12 +577,18 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             # We check for a user's custom notifications here, as we want
             # to check for plaintext words that depend on the recipient.
             realm_words = db_data['realm_alert_words']
+            content = '\n'.join(lines).lower()
 
-            content = '\n'.join(lines)
+            allowed_before_punctuation = "|".join([r'\s', '^', r'[\(\"]'])
+            allowed_after_punctuation = "|".join([r'\s', '$', r'[\)\"\?:.,]'])
+
             for user_id, words in realm_words.iteritems():
                 for word in words:
-                    escaped = re.escape(word)
-                    match_re = re.compile(r'\b%s\b' % (escaped,))
+                    escaped = re.escape(word.lower())
+                    match_re = re.compile(r'(?:%s)%s(?:%s)' %
+                                            (allowed_before_punctuation,
+                                             escaped,
+                                             allowed_after_punctuation))
                     if re.search(match_re, content):
                         current_message.user_ids_with_alert_words.add(user_id)
 

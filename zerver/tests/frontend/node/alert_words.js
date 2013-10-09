@@ -30,6 +30,10 @@ var multialert_message = { sender_email: 'another@zulip.com', content:
                            flags: ['has_alert_word'] };
 var unsafe_word_message = { sender_email: 'another@zulip.com', content: '<p>gotta al*rt.*s all</p>',
                             flags: ['has_alert_word'] };
+var alert_in_url_message = { sender_email: 'another@zulip.com', content: '<p>http://www.google.com/alertone/me</p>',
+                            flags: ['has_alert_word'] };
+var question_word_message = { sender_email: 'another@zulip.com', content: '<p>still alertone? me</p>',
+                            flags: ['has_alert_word'] };
 
 (function test_notifications() {
     assert.equal(alert_words.notifies(regular_message), false);
@@ -58,7 +62,12 @@ var unsafe_word_message = { sender_email: 'another@zulip.com', content: '<p>gott
     alert_words.process_message(multialert_message);
     assert.equal(multialert_message.content, "<p>another alertthreemessage <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>");
 
-
     alert_words.process_message(unsafe_word_message);
     assert.equal(unsafe_word_message.content, "<p>gotta <span class='alert-word'>al*rt.*s</span> all</p>");
+
+    alert_words.process_message(alert_in_url_message);
+    assert.equal(alert_in_url_message.content, "<p>http://www.google.com/alertone/me</p>");
+
+    alert_words.process_message(question_word_message);
+    assert.equal(question_word_message.content, "<p>still <span class='alert-word'>alertone</span>? me</p>");
 }());
