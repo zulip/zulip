@@ -188,10 +188,22 @@ function in_browser_notify(message, title, content) {
                                                                 title: title,
                                                                 content: content}));
     $('.top-right').notify({
-        message: { html: notification_html },
-        fadeOut: {enabled:true, delay: 4000}
+        message: {html: notification_html},
+        fadeOut: {enabled: true, delay: 4000}
     }).show();
 }
+
+exports.notify_above_composebox = function (title, content, link_class, link_msg_id, link_text) {
+    var notification_html = $(templates.render('compose-notification', {title: title,
+                                                                        content: content,
+                                                                        link_class: link_class,
+                                                                        link_msg_id: link_msg_id,
+                                                                        link_text: link_text}));
+    $('#compose-notifications').notify({
+        message: {html: notification_html},
+        fadeOut: {enabled: true, delay: 8000}
+    }).show();
+};
 
 function process_notification(notification) {
     var i, notification_object, key, content, other_recipients;
@@ -361,6 +373,64 @@ exports.received_messages = function (messages) {
     });
 };
 
+exports.possibly_notify_new_messages_outside_viewport = function (messages) {
+    _.each(messages, function (message) {
+        if (message.sender_email !== page_params.email) {
+            return;
+        }
+        // queue up offscreen because of narrowed, or (secondarily) offscreen
+        // because it doesn't fit in the currently visible viewport
+        var msg_text = $(message.content).text();
+        var note;
+        var link_class;
+        var link_msg_id = message.id;
+        var link_text;
+
+        var row = current_msg_list.get_row(message.id);
+        if (row.length  === 0) {
+            // offscreen because it is outside narrow
+            // we can only look for these on non-search (can_apply_locally) messages
+            // see also: exports.notify_messages_outside_current_search
+            note = "is outside the current narrow.";
+            link_class = "compose_notification_narrow_by_subject";
+            link_text = "narrow to that conversation";
+        }
+        else if (viewport.is_below_visible_bottom(row.offset().top + row.height()) && !narrow.narrowed_by_reply()){
+            // offscreen because it's too far down.
+            // offer scroll to message link.
+            note = "is further down.";
+            if (!narrow.active()) {
+                // in the home view, let's offer to take them to it.
+                link_class = "compose_notification_narrow_by_time_travel";
+                link_text = "show in context";
+            }
+        } else {
+            // return with _.each is like continue for normal for loops.
+            return;
+        }
+        exports.notify_above_composebox(msg_text, note, link_class, link_msg_id, link_text);
+    });
+};
+
+// for callback when we have to check with the server if a message should be in
+// the current_msg_list (!can_apply_locally; a.k.a. "a search").
+exports.notify_messages_outside_current_search = function (messages) {
+    _.each(messages, function (message) {
+        if (message.sender_email !== page_params.email) {
+            return;
+        }
+        exports.notify_above_composebox($(message.content).text(),
+                                        "is outside the current search.",
+                                        "compose_notification_narrow_by_subject",
+                                        message.id,
+                                        "narrow to it");
+    });
+};
+
+exports.clear_compose_notifications = function () {
+    $("#compose-notifications").children().remove();
+};
+
 $(function () {
     // Shim for Cocoa WebScript exporting top-level JS
     // objects instead of window.foo objects
@@ -368,6 +438,22 @@ $(function () {
         window.bridge = bridge;
     }
 });
+
+exports.register_click_handlers = function () {
+    $('body').on('click', '.compose_notification_narrow_by_subject', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        narrow.by_subject(msgid, {trigger: 'compose_notification'});
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('body').on('click', '.compose_notification_narrow_by_time_travel', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        narrow.by_time_travel(msgid, {trigger: 'compose_notification'});
+	scroll_to_selected();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+};
 
 return exports;
 

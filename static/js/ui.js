@@ -1345,6 +1345,7 @@ $(function () {
     });
 
     popovers.register_click_handlers();
+    notifications.register_click_handlers();
 
     $('#stream_filters').on('click', '.subject_box', function (e) {
         if (e.metaKey || e.ctrlKey) {

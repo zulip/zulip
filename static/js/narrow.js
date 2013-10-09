@@ -97,6 +97,10 @@ exports.stream = function () {
 };
 
 exports.activate = function (operators, opts) {
+    // most users aren't going to send a bunch of a out-of-narrow messages
+    // and expect to visit a list of narrows, so let's get these out of the way.
+    notifications.clear_compose_notifications();
+
     if (operators.length === 0) {
         return exports.deactivate();
     }
@@ -283,7 +287,8 @@ exports.by = function (operator, operand, opts) {
 };
 
 exports.by_subject = function (target_id, opts) {
-    var original = current_msg_list.get(target_id);
+    // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
+    var original = all_msg_list.get(target_id);
     if (original.type !== 'stream') {
         // Only stream messages have subjects, but the
         // user wants us to narrow in some way.
@@ -301,7 +306,8 @@ exports.by_subject = function (target_id, opts) {
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
-    var message = current_msg_list.get(target_id);
+    // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
+    var message = all_msg_list.get(target_id);
     mark_message_as_read(message);
     switch (message.type) {
     case 'private':

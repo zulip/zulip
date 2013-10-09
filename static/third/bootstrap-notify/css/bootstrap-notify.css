@@ -162,6 +162,7 @@
 
 
 .notifications{position:fixed;}.notifications.top-right{right:25px;top:60px;z-index:9980;width:300px;}
+.notifications.above-composebox{max-width:800px;margin:auto;bottom:10px;position:relative;}
 .notifications.top-left{left:10px;top:25px;}
 .notifications.bottom-left{left:10px;bottom:25px;}
 .notifications.bottom-right{right:10px;bottom:25px;}
@@ -169,10 +170,13 @@
 .notifications.center{top:48%;left:0;width:100%;}.notifications.center>div{margin:5px auto;width:20%;text-align:center;}
 .notifications-gravatar{display:inline-block;position:absolute;top:10px;left:10px}
 .notifications-content{margin-left:40px;}
-.notifications-content .title {
+.notifications-content,.compose-notifications-content .title {
     font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 .fade.alert-success{color:#000;background-color:#FFF;border-color:green;}
+.above-composebox .alert{width:200px; margin-left:auto; margin-right:0px}
+.compose-notifications-content{margin-left:0px;}
+

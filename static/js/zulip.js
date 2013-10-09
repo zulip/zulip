@@ -666,17 +666,22 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             }
 
             var new_messages = [];
+            var elsewhere_messages = [];
             _.each(messages, function (elem) {
                 if (data.messages.hasOwnProperty(elem.id)) {
                     elem.match_subject = data.messages[elem.id].match_subject;
                     elem.match_content = data.messages[elem.id].match_content;
                     new_messages.push(elem);
+                } else {
+                    elsewhere_messages.push(elem);
                 }
             });
 
             new_messages = _.map(new_messages, add_message_metadata);
             add_messages(new_messages, msg_list, messages_are_new);
             process_visible_unread_messages();
+            notifications.possibly_notify_new_messages_outside_viewport(new_messages);
+            notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error: function (xhr) {
             // We might want to be more clever here
@@ -867,9 +872,13 @@ function get_updates_success(data) {
         if (narrow.active()) {
             if (narrow.filter().can_apply_locally()) {
                 add_messages(messages, narrowed_msg_list, true);
+                notifications.possibly_notify_new_messages_outside_viewport(messages);
             } else {
+                // if we cannot apply locally, we have to wait for this callback to happen to notify
                 maybe_add_narrowed_messages(messages, narrowed_msg_list, true);
             }
+        } else {
+            notifications.possibly_notify_new_messages_outside_viewport(messages);
         }
 
         process_loaded_for_unread(messages);
