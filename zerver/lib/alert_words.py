@@ -10,10 +10,10 @@ import ujson
 
 @cache_with_key(realm_alert_words_cache_key, timeout=3600*24)
 def alert_words_in_realm(realm):
-    users = zerver.models.UserProfile.objects.filter(realm=realm, is_active=True)
-    all_user_words = dict((user, user_alert_words(user)) for user in users)
-    users_with_words = dict((u, w) for (u, w) in all_user_words.iteritems() if len(w))
-    return users_with_words
+    users = zerver.models.UserProfile.objects.filter(realm=realm, is_active=True).values('id', 'alert_words')
+    all_user_words = dict((user['id'], ujson.loads(user['alert_words'])) for user in users)
+    user_ids_with_words = dict((user_id, w) for (user_id, w) in all_user_words.iteritems() if len(w))
+    return user_ids_with_words
 
 def user_alert_words(user_profile):
     return ujson.loads(user_profile.alert_words)

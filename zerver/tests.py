@@ -614,7 +614,7 @@ class StreamMessagesTest(AuthedTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assertTrue(len(queries) <= 4)
+        self.assertTrue(len(queries) <= 5)
 
     def test_message_mentions(self):
         user_profile = get_user_profile_by_email("iago@zulip.com")
@@ -3966,9 +3966,9 @@ class AlertWordTests(AuthedTestCase):
 
         realm_words = alert_words_in_realm(user2.realm)
         self.assertEqual(len(realm_words), 2)
-        self.assertEqual(realm_words.keys(), [user1, user2])
-        self.assertEqual(realm_words[user1], ['alert', 'word'])
-        self.assertEqual(realm_words[user2], ['another'])
+        self.assertEqual(realm_words.keys(), [user1.id, user2.id])
+        self.assertEqual(realm_words[user1.id], ['alert', 'word'])
+        self.assertEqual(realm_words[user2.id], ['another'])
 
     def test_json_list_default(self):
         self.login("hamlet@zulip.com")

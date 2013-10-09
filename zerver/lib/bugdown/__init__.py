@@ -356,8 +356,9 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        if current_message:
-            realm_emoji = current_message.get_realm().get_emoji()
+        realm_emoji = {}
+        if db_data is not None:
+            realm_emoji = db_data['emoji']
 
         if current_message and name in realm_emoji:
             return make_emoji(name, realm_emoji[name], orig_syntax)
@@ -534,19 +535,32 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
                         m.group("name"))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
+    def find_user_for_mention(self, name):
+        if db_data is None:
+            return (False, None)
+
+        if mention.user_mention_matches_wildcard(name):
+            return (True, None)
+
+        user = db_data['full_names'].get(name.lower(), None)
+        if user is None:
+            user = db_data['short_names'].get(name.lower(), None)
+
+        return (False, user)
+
     def handleMatch(self, m):
         name = m.group(2) or m.group(3)
 
         if current_message:
-            wildcard, user = mention.find_user_for_mention(name, current_message.sender.realm)
+            wildcard, user = self.find_user_for_mention(name)
 
             if wildcard:
                 current_message.mentions_wildcard = True
                 email = "*"
             elif user:
-                current_message.mentions_user_ids.add(user.id)
-                name = user.full_name
-                email = user.email
+                current_message.mentions_user_ids.add(user['id'])
+                name = user['full_name']
+                email = user['email']
             else:
                 # Don't highlight @mentions that don't refer to a valid user
                 return None
@@ -559,17 +573,18 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
-        if current_message:
+        if current_message and db_data is not None:
             # We check for a user's custom notifications here, as we want
             # to check for plaintext words that depend on the recipient.
-            realm_words = alert_words.alert_words_in_realm(current_message.sender.realm)
+            realm_words = db_data['realm_alert_words']
+
             content = '\n'.join(lines)
-            for user, words in realm_words.iteritems():
+            for user_id, words in realm_words.iteritems():
                 for word in words:
                     escaped = re.escape(word)
                     match_re = re.compile(r'\b%s\b' % (escaped,))
                     if re.search(match_re, content):
-                        current_message.user_ids_with_alert_words.add(user.id)
+                        current_message.user_ids_with_alert_words.add(user_id)
 
         return lines
 
@@ -711,8 +726,14 @@ def _sanitize_for_log(md):
 # provides no way to pass extra params through to a pattern. Thus, a global.
 current_message = None
 
+# We avoid doing DB queries in our markdown thread to avoid the overhead of
+# opening a new DB connection. These connections tend to live longer than the
+# threads themselves, as well.
+db_data = None
+
 def do_convert(md, realm_domain=None, message=None):
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
+    from zerver.models import UserProfile
 
     if realm_domain in md_engines:
         _md_engine = md_engines[realm_domain]
@@ -723,6 +744,18 @@ def do_convert(md, realm_domain=None, message=None):
 
     global current_message
     current_message = message
+
+    # Pre-fetch data from the DB that is used in the bugdown thread
+    global db_data
+    if message:
+        realm_users = UserProfile.objects.filter(realm=message.get_realm(), is_active=True) \
+                                         .values('id', 'full_name', 'short_name', 'email')
+
+        db_data = {'realm_alert_words': alert_words.alert_words_in_realm(message.get_realm()),
+                   'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
+                   'short_names':       dict((user['short_name'].lower(), user) for user in realm_users),
+                   'emoji':             message.get_realm().get_emoji()}
+
     try:
         # Spend at most 5 seconds rendering.
         # Sometimes Python-Markdown is really slow; see
@@ -745,6 +778,7 @@ def do_convert(md, realm_domain=None, message=None):
         return None
     finally:
         current_message = None
+        db_data = None
 
 bugdown_time_start = 0
 bugdown_total_time = 0
