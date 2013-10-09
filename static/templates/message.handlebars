@@ -14,7 +14,8 @@
 {{#each messages}}
 {{#with this}}
 {{#include_bookend}}
-<tr class="bookend_tr"><td colspan="2" class="bookend{{#if subscribed}} sub-unsub-message{{/if}}{{#if unsubscribed}} sub-unsub-message{{/if}}">
+<tr class="bookend_tr">
+<td colspan="2" class="bookend{{#if subscribed}} sub-unsub-message{{/if}}{{#if unsubscribed}} sub-unsub-message{{/if}}">
 {{#if subscribed}}
 <span>--- Subscribed to stream {{subscribed}} ---</span>
 {{/if}}
@@ -161,15 +162,16 @@
         <a class="message_label_clickable narrows_by_recipient"
                href="{{pm_with_url}}"
                title="Narrow to your private messages with {{display_reply_to}}">
-        You and {{display_reply_to}}</a>
+        You and {{display_reply_to}}
+        </a>
     </td>
 {{/if}}
 </tr>
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
     class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#unread}} unread{{/unread}} selectable_row">
-        <td class="messagebox_colorblock{{^is_stream}} message_header_private_message{{/is_stream}}" style="background-color: {{background_color}};"><span class="pointer_icon"><i class="icon-vector-caret-right"></i></span></td>
-        <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
+    <td class="messagebox_colorblock{{^is_stream}} message_header_private_message{{/is_stream}}" style="background-color: {{background_color}};"><span class="pointer_icon"><i class="icon-vector-caret-right"></i></span></td>
+    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
         <div class="message_top_line">
         <div class="unread_marker"></div>
         {{#include_sender}}
@@ -208,8 +210,10 @@
 {{/each}}
 
 {{#if trailing_bookend}}
-<tr id="trailing_bookend" class="bookend_tr"><td colspan="2" class="bookend">
-<center>{{trailing_bookend}}</center>
-<span class="tiny"><p></p></span></td>
+<tr id="trailing_bookend" class="bookend_tr">
+  <td colspan="2" class="bookend">
+    <center>{{trailing_bookend}}</center>
+    <span class="tiny"><p></p></span>
+  </td>
 </tr>
 {{/if}}
