@@ -3,6 +3,9 @@ class zulip::local_server {
   class { 'zulip::app_frontend': }
 
   package { "postgresql-9.1": ensure => installed }
+  # This should be migrated over to app_frontend, once validated as functional
+  # on app servers.
+  package { "nodejs": ensure => installed }
 
   file { "/etc/nginx/sites-available/zulip-local":
     require => Package[nginx],
