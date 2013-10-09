@@ -268,7 +268,7 @@ class MitUser(models.Model):
     status = models.IntegerField(default=0)
 
 class Stream(models.Model):
-    MAX_NAME_LENGTH = 30
+    MAX_NAME_LENGTH = 60
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)
     invite_only = models.NullBooleanField(default=False)

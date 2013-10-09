@@ -88,8 +88,10 @@ from collections import defaultdict
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
     """Converts plaintext stream names to a list of Streams, validating input in the process
 
-    For each stream name, we validate it to ensure it meets our requirements for a proper
-    stream name: that is, that it is shorter than 30 characters and passes valid_stream_name.
+    For each stream name, we validate it to ensure it meets our
+    requirements for a proper stream name: that is, that it is shorter
+    than Stream.MAX_NAME_LENGTH characters and passes
+    valid_stream_name.
 
     This function in autocreate mode should be atomic: either an exception will be raised
     during a precheck, or all the streams specified will have been created if applicable.
