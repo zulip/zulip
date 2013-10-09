@@ -90,8 +90,8 @@ def check_python_gotchas(fn):
             continue
 
         gotcha_regexes = [
-                "'.*'\s+\(", # 'foo'(2) makes no sense
-                '".*"\s+\(', # ditto
+                "'[^']*'\s+\([^']*$", # 'foo'(2) makes no sense
+                '"[^"]*"\s+\([^"]*$', # ditto
                 '% [a-z_]*$', # "%s" % s [we prefer "%s" % (s,)]
         ]
         for gotcha_regex in gotcha_regexes:
