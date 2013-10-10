@@ -1208,12 +1208,18 @@ $(function () {
     }
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
         e.preventDefault();
         var row_id = get_row_id_for_narrowing(this);
         narrow.by_recipient(row_id, {trigger: 'message header'});
     });
 
     $("#home").on("click", ".narrows_by_subject", function (e) {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
         e.preventDefault();
         var row_id = get_row_id_for_narrowing(this);
         narrow.by_subject(row_id, {trigger: 'message header'});
@@ -1335,6 +1341,9 @@ $(function () {
     });
 
     $('#stream_filters li').on('click', '.subscription_block', function (e) {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
         }
@@ -1348,6 +1357,9 @@ $(function () {
     popovers.register_click_handlers();
 
     $('#stream_filters').on('click', '.subject_box', function (e) {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
         }
