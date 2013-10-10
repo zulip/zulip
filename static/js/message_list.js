@@ -282,6 +282,17 @@ MessageList.prototype = {
         }
     },
 
+    summary_adjective: function (message) {
+        if (_.contains(message.flags, 'force_collapse')) {
+            return 'collapsed';
+        } else if (!_.contains(message.flags, 'force_expand')) {
+            if (this.is_summarized_message(message)) {
+                return 'read';
+            }
+        }
+        return null;
+    },
+
     selected_idx: function MessageList_selected_idx() {
         return util.lower_bound(this._items, this._selected_id,
                                 function (a, b) { return a.id < b; });

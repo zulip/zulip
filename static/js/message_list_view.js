@@ -164,15 +164,7 @@ MessageListView.prototype = {
                 finish_summary();
             }
 
-            var summary_adjective;
-
-            if (_.contains(message.flags, 'force_collapse')) {
-                summary_adjective = 'collapsed';
-            } else if (!_.contains(message.flags, 'force_expand')) {
-                if (list.is_summarized_message(message)) {
-                    summary_adjective = 'read';
-                }
-            }
+            var summary_adjective = list.summary_adjective(message);
 
             if (summary_adjective) {
                 if (prev) {
