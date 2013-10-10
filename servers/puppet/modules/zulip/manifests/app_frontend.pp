@@ -15,7 +15,7 @@ class zulip::app_frontend {
                     "python-django-bitfield", "python-embedly",
                     "python-postmonkey", "python-django-jstemplate",
                     "redis-server", "python-redis", "python-django-guardian",
-                    "python-diff-match-patch", "python-sourcemap",]
+                    "python-diff-match-patch", "python-sourcemap", "python-mandrill"]
   package { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/zulip-include/":
