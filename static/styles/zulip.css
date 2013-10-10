@@ -1227,6 +1227,32 @@ table.focused_table {
     text-decoration: underline;
 }
 
+div.message_content table {
+    padding-right: 10px;
+    margin: 5px 5px 5px 5px;
+    width: 99%;
+}
+
+div.message_content thead {
+    background-color: #EFEFEF;
+}
+
+div.message_content tr {
+    display: table-row;
+    vertical-align: inherit;
+}
+
+div.message_content tr th {
+    border: 1px solid #cccccc;
+    padding: 4px;
+    text-align: left;
+}
+
+div.message_content tr td {
+    border: 1px solid #cccccc;
+    padding: 4px;
+}
+
 blockquote {
     margin-bottom: 6px;
 }

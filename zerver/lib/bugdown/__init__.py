@@ -689,6 +689,7 @@ def make_md_engine(key, opts):
         safe_mode     = 'escape',
         output_format = 'html',
         extensions    = ['nl2br',
+                         'tables',
                          codehilite.makeExtension(configs=[
                     ('force_linenos', False),
                     ('guess_lang',    False)]),
