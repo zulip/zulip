@@ -9,8 +9,10 @@ from zerver.lib.queue import SimpleQueueClient
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, send_local_email_template_with_delay
+    internal_send_message, send_local_email_template_with_delay, clear_followup_emails_queue
 from zerver.decorator import JsonableError
+from confirmation.models import Confirmation
+
 import os
 import ujson
 import traceback
@@ -58,6 +60,10 @@ class SignupWorker(QueueProcessingWorker):
     # zerver/management/commands/queue_followup_emails.py:queue()
     def consume(self, ch, method, properties, data):
         merge_vars=data['merge_vars']
+
+        # This should clear out any invitation reminder emails
+        clear_followup_emails_queue(data["EMAIL"], from_email="zulip@zulip.com")
+
         try:
             self.pm.listSubscribe(
                     id=settings.ZULIP_FRIENDS_LIST_ID,
@@ -98,6 +104,15 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         invitee = get_prereg_user_by_email(data["email"])
         referrer = get_user_profile_by_email(data["referrer_email"])
         do_send_confirmation_email(invitee, referrer)
+
+        # queue invitation reminder for two days from now.
+        link = Confirmation.objects.get_link_for_object(invitee)
+        send_local_email_template_with_delay([{'email': data["email"], 'name': ""}],
+                                             "zerver/emails/invitation/invitation_reminder_email",
+                                             {'activate_url': link, 'referrer': referrer},
+                                             datetime.timedelta(days=2),
+                                             tags=["invitation-reminders"],
+                                             sender={'email': 'zulip@zulip.com', 'name': 'Zulip'})
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
