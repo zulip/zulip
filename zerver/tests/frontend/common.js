@@ -179,7 +179,7 @@ exports.wait_for_receive = function (step) {
 
 // Wait until the loading spinner goes away (helpful just after logging in).
 exports.wait_for_load = function (step) {
-    casper.waitWhileVisible('.loading_indicator_spinner', step);
+    casper.waitWhileVisible('#page_loading_indicator', step);
 };
 
 // innerText sometimes gives us non-breaking space characters, and occasionally
