@@ -74,6 +74,7 @@ exports.show_actions_popover = function (element, id) {
             can_edit_message: can_edit,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
+            single_message_narrowing: feature_flags.single_message_narrowing,
             narrowed: narrow.active()
         };
 
@@ -445,6 +446,13 @@ exports.register_click_handlers = function () {
         var msgid = $(e.currentTarget).data('msgid');
         popovers.hide_actions_popover();
         narrow.by_time_travel(msgid, {trigger: 'popover'});
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('body').on('click', '.popover_narrow_by_id', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        popovers.hide_actions_popover();
+        narrow.by_id(msgid, {trigger: 'popover'});
         e.stopPropagation();
         e.preventDefault();
     });

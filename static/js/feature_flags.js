@@ -45,6 +45,7 @@ exports.muting = true;
 exports.left_side_userlist = page_params.staging ||
   _.contains(['customer7.invalid'], page_params.domain);
 
+exports.single_message_narrowing = page_params.staging || ('customer12.invalid' === page_params.domain);
 return exports;
 
 }());

@@ -42,6 +42,14 @@
   </li>
   {{/if}}
 
+  {{#if single_message_narrowing}}
+    <li>
+      <a href="#" class="popover_narrow_by_id" data-msgid="{{message.id}}">
+        <i class="icon-vector-link"></i> Narrow to just this message
+      </a>
+    </li>
+  {{/if}}
+
   {{#if can_edit_message}}
   <li>
     <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">

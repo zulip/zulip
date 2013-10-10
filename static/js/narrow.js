@@ -306,6 +306,11 @@ exports.by_time_travel = function (target_id, opts) {
     narrow.activate([["near", target_id]], opts);
 };
 
+exports.by_id = function (target_id, opts) {
+    opts = _.defaults({}, opts, {then_select_id: target_id});
+    narrow.activate([["id", target_id]], opts);
+};
+
 exports.deactivate = function () {
     if (current_filter === undefined) {
         return;
