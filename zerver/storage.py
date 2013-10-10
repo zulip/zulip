@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.conf import settings
 from django.contrib.staticfiles.storage import CachedFilesMixin, StaticFilesStorage
 from pipeline.storage import PipelineMixin

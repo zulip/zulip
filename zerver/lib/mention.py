@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import re
 
 from django.db.models import F, Q

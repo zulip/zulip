@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from diff_match_patch import diff_match_patch
 import platform
 import logging

@@ -15,6 +15,8 @@ recipient address and retrieve, forward, and archive the message.
 Run this management command out of a cron job.
 """
 
+from __future__ import absolute_import
+
 import email
 from os import path
 from email.header import decode_header
