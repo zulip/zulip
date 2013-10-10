@@ -23,7 +23,7 @@ exports.mandatory_topics = _.contains([
 exports.collapsible = false;
 
 exports.propagate_topic_edits = page_params.staging ||
-  _.contains(['customer7.invalid'], page_params.domain);
+  _.contains(['customer7.invalid', 'customer9.invalid'], page_params.domain);
 
 var customer4_realms = [
   'customer4.invalid',
