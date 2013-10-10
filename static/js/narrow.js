@@ -242,7 +242,16 @@ exports.activate = function (operators, opts) {
     // Put the narrow operators in the search bar.
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
-    compose.update_recipient_on_narrow();
+
+    if (opts.trigger === 'sidebar' && exports.narrowed_by_reply()) {
+        if (exports.narrowed_to_topic()) {
+            compose.start('stream');
+        }
+        else {
+            compose.start('private');
+        }
+    }
+
     compose_fade.update_message_list();
 
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: narrowed_msg_list,

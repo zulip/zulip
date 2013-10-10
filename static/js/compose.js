@@ -117,22 +117,6 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(stream_color.get_color_class(color));
 };
 
-exports.update_recipient_on_narrow = function () {
-    if (!compose.composing()) {
-        return;
-    }
-    if (compose.message_content() !== "") {
-        return;
-    }
-    var compose_opts = {};
-    narrow.set_compose_defaults(compose_opts);
-    if (compose_opts.stream) {
-        compose.start("stream");
-    } else {
-        compose.start("private");
-    }
-};
-
 function update_fade () {
     if (!is_composing_message) {
         return;

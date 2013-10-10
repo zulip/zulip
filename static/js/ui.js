@@ -1309,9 +1309,7 @@ $(function () {
 
     $('#user_presences').on('click', '.selectable_sidebar_block', function (e) {
         var email = $(e.target).parents('li').attr('data-email');
-        narrow.by('pm-with', email, {trigger: 'presence list'});
-        compose.start('private', {private_message_recipient: email,
-                                  trigger: 'presence list'});
+        narrow.by('pm-with', email, {trigger: 'sidebar'});
         // The preventDefault is necessary so that clicking the
         // link doesn't jump us to the top of the page.
         e.preventDefault();
@@ -1360,9 +1358,6 @@ $(function () {
         narrow.activate([['stream',  stream],
                          ['topic', subject]],
                         {select_first_unread: true, trigger: 'sidebar'});
-
-        compose.start('stream', {stream: stream, subject: subject,
-                                 trigger: 'sidebar subject click'});
 
         e.preventDefault();
     });
