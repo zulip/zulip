@@ -5,6 +5,8 @@ import logging
 
 sys.path.append(path.join(path.dirname(__file__), '../api'))
 import zulip
+sys.path.append(path.join(path.dirname(__file__), '../zproject'))
+import local_settings
 
 class StreamLogger(object):
     """
@@ -34,12 +36,12 @@ sys.stderr = stderr_logger
 
 prod_client = zulip.Client(
     email="feedback@zulip.com",
-    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    api_key=local_settings.FEEDBACK_BOT_KEY,
     verbose=True,
     site="https://api.zulip.com")
 staging_client = zulip.Client(
     email="feedback@zulip.com",
-    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    api_key=local_settings.FEEDBACK_BOT_KEY,
     verbose=True,
     site="https://staging.zulip.com/api")
 

@@ -29,6 +29,9 @@ RABBITMQ_PASSWORD = 'xxxxxxxxxxxxxxxx'
 MAILCHIMP_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us4'
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
+# This can be filled in automatically from the database
+FEEDBACK_BOT_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
 # This should be synced with our camo installation
 CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
