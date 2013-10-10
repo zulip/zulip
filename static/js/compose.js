@@ -399,6 +399,11 @@ exports.subject         = get_or_set('subject');
 exports.message_content = get_or_set('new_message_content', true);
 exports.recipient       = get_or_set('private_message_recipient');
 
+exports.has_message_content = function () {
+    return exports.message_content() !== "";
+};
+
+
 // *Synchronously* check if a stream exists.
 exports.check_stream_existence = function (stream_name) {
     var result = "error";

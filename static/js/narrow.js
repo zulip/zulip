@@ -102,7 +102,11 @@ exports.activate = function (operators, opts) {
     }
     var filter = new Filter(operators);
 
-    compose.cancel();
+    var had_message_content = compose.has_message_content();
+
+    if (!had_message_content) {
+        compose.cancel();
+    }
 
     opts = _.defaults({}, opts, {
         then_select_id: home_msg_list.selected_id(),
@@ -243,7 +247,7 @@ exports.activate = function (operators, opts) {
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
 
-    if (opts.trigger === 'sidebar' && exports.narrowed_by_reply()) {
+    if (!had_message_content && opts.trigger === 'sidebar' && exports.narrowed_by_reply()) {
         if (exports.narrowed_to_topic()) {
             compose.start('stream');
         }
@@ -315,7 +319,9 @@ exports.deactivate = function () {
         return;
     }
 
-    compose.cancel();
+    if (!compose.has_message_content()) {
+        compose.cancel();
+    }
 
     current_filter = undefined;
 
