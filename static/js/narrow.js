@@ -102,6 +102,8 @@ exports.activate = function (operators, opts) {
     }
     var filter = new Filter(operators);
 
+    compose.cancel();
+
     opts = _.defaults({}, opts, {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
@@ -303,6 +305,8 @@ exports.deactivate = function () {
         setTimeout(exports.deactivate, 50);
         return;
     }
+
+    compose.cancel();
 
     current_filter = undefined;
 
