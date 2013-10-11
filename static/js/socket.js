@@ -14,6 +14,11 @@ function Socket(url) {
 
     this._supported_protocols = ['websocket', 'xdr-streaming', 'xhr-streaming',
                                  'xdr-polling', 'xhr-polling', 'jsonp-polling'];
+    if (page_params.test_suite) {
+        this._supported_protocols = _.reject(this._supported_protocols,
+                                             function (x) { return x === 'xhr-streaming'; });
+    }
+
     this._sockjs = new SockJS(url, null, {protocols_whitelist: this._supported_protocols});
     this._setup_sockjs_callbacks(this._sockjs);
 }

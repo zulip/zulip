@@ -704,6 +704,7 @@ def home(request):
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = simplejson.encoder.JSONEncoderForHTML().encode(dict(
         debug_mode            = settings.DEBUG,
+        test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
         have_initial_messages = user_has_messages,
         stream_list           = register_ret['subscriptions'],
