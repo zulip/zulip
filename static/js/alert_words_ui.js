@@ -1,7 +1,4 @@
 $(function () {
-    if (!feature_flags.alert_words) {
-        $('#word-alert-area').remove();
-    }
     var word_list = $('#word-alerts');
     _.each(alert_words.words, function (word) {
         var li = templates.render('alert_word_settings_item', {'word': word});

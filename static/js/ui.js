@@ -1433,7 +1433,7 @@ $(function () {
 
     var notification_docs = $("#notification-docs");
     notification_docs.popover({"placement": "right",
-                               "content": templates.render('notification_docs', {alert_words: feature_flags.alert_words}),
+                               "content": templates.render('notification_docs', {}),
                                "trigger": "manual"});
     $("body").on("mouseover", "#notification-docs", function (e) {
         notification_docs.popover('show');

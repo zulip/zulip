@@ -11,7 +11,7 @@ function escape_user_regex(value) {
 }
 
 exports.process_message = function (message) {
-    if (!feature_flags.alert_words || !exports.notifies(message)) {
+    if (!exports.notifies(message)) {
         return;
     }
 
