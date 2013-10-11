@@ -1899,7 +1899,9 @@ def realm_summary_table(realm_minutes):
                 GROUP BY realm_id
             ) user_counts
             ON user_counts.realm_id = realm.id
-        WHERE EXISTS (
+        WHERE
+            realm.domain not in ('zulip.com', 'customer4.invalid')
+        AND EXISTS (
                 SELECT *
                 FROM zerver_useractivity ua
                 JOIN zerver_userprofile up
