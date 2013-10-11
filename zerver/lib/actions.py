@@ -1832,7 +1832,7 @@ def do_send_missedmessage_email(user_profile, missed_messages):
         # If we have one huddle, set a reply-to to all of the members
         # of the huddle except the user herself
         disp_recipients = [", ".join(recipient['email']
-                                for recipient in get_display_recipient(msg.recipient)
+                                for recipient in get_display_recipient(mesg.recipient)
                                     if recipient['email'] != user_profile.email)
                                  for mesg in missed_messages]
         if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages) and \
