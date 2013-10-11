@@ -11,8 +11,10 @@ import ujson
 import logging
 import time
 
-from zerver.models import UserProfile
+from zerver.models import UserProfile, get_user_profile_by_id, get_client
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.actions import check_send_message, extract_recipients
+from zerver.decorator import JsonableError
 
 djsession_engine = import_module(settings.SESSION_ENGINE)
 def get_user_profile(session_id):
@@ -127,7 +129,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                                   server_meta=dict(connection_id=self.connection_id,
                                                                    return_queue="tornado_return",
                                                                    start_time=start_time)),
-                           lambda e: None)
+                           fake_message_sender)
 
     def on_close(self):
         deregister_connection(self)
@@ -137,6 +139,23 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         else:
             fake_log_line(self.session.conn_info, 0, 200,
                           'Connection closed', 'unknown')
+
+def fake_message_sender(event):
+    req = event['request']
+    try:
+        sender = get_user_profile_by_id(req['sender_id'])
+        client = get_client(req['client_name'])
+
+        msg_id = check_send_message(sender, client, req['type'],
+                                    extract_recipients(req['to']),
+                                    req['subject'], req['content'])
+        resp = {"result": "success", "msg": "", "id": msg_id}
+    except JsonableError as e:
+        resp = {"result": "error", "msg": str(e)}
+
+    result = {'response': resp, 'client_meta': event['client_meta'],
+              'server_meta': event['server_meta']}
+    respond_send_message(None, None, None, result)
 
 def respond_send_message(chan, method, props, data):
     connection = get_connection(data['server_meta']['connection_id'])

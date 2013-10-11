@@ -456,7 +456,7 @@ def process_notification(data):
 # different types and for compatibility with non-HTTP transports.
 
 def send_notification_http(data):
-    if settings.TORNADO_SERVER:
+    if settings.TORNADO_SERVER and not settings.RUNNING_INSIDE_TORNADO:
         requests.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
                 data   = ujson.dumps(data),
                 secret = settings.SHARED_SECRET))
