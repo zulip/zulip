@@ -212,7 +212,6 @@ function rebuild_recent_subjects(stream, active_topic) {
 
     stream_li.append(templates.render('sidebar_subject_list',
                                       {subjects: display_subjects,
-                                       topic_sidebar_arrow: feature_flags.muting,
                                        stream: stream}));
 
     if (active_topic) {

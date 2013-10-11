@@ -58,12 +58,10 @@ exports.show_actions_popover = function (element, id) {
         var message = current_msg_list.get(id);
         var can_edit = message.sent_by_me;
         var can_mute_topic =
-                feature_flags.muting &&
                 message.stream &&
                 message.subject &&
                 !muting.is_topic_muted(message.stream, message.subject);
         var can_unmute_topic =
-                feature_flags.muting &&
                 message.stream &&
                 message.subject &&
                 muting.is_topic_muted(message.stream, message.subject);
@@ -290,8 +288,8 @@ exports.register_click_handlers = function () {
         var topic_name = $(elt).closest('li').expectOne().attr('data-name');
 
         var is_muted = muting.is_topic_muted(stream_name, topic_name);
-        var can_mute_topic = feature_flags.muting && !is_muted;
-        var can_unmute_topic = feature_flags.muting && is_muted;
+        var can_mute_topic = !is_muted;
+        var can_unmute_topic = is_muted;
 
         var content = templates.render('topic_sidebar_actions', {
             'stream_name': stream_name,

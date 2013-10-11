@@ -32,14 +32,9 @@ var is_customer4 = _.contains(customer4_realms, page_params.domain);
 
 exports.fade_users_when_composing = page_params.staging || is_customer4;
 
-exports.alert_words = true;
-
-
 var zulip_mit_emails = [];
 
 var is_zulip_mit_user = _.contains(zulip_mit_emails, page_params.email);
-
-exports.muting = true;
 
 exports.left_side_userlist = page_params.staging ||
   _.contains(['customer7.invalid'], page_params.domain);
