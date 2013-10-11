@@ -493,14 +493,13 @@ MessageListView.prototype = {
     },
 
     update_render_window: function MessageListView__update_render_window(selected_idx, check_for_changed) {
-        var new_start = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
+        var new_start = this.list.idx_full_messages_before(selected_idx, this._RENDER_WINDOW_SIZE / 2);
         if (check_for_changed && new_start === this._render_win_start) {
             return false;
         }
 
         this._render_win_start = new_start;
-        this._render_win_end = Math.min(this._render_win_start + this._RENDER_WINDOW_SIZE,
-                                        this.list.num_items());
+        this._render_win_end = this.list.idx_full_messages_after(selected_idx, this._RENDER_WINDOW_SIZE / 2);
         return true;
     },
 
@@ -513,17 +512,15 @@ MessageListView.prototype = {
         var selected_idx = this.list.selected_idx();
 
         // We rerender under the following conditions:
-        // * The selected message is within this._RENDER_THRESHOLD messages
-        //   of the top of the currently rendered window and the top
-        //   of the window does not abut the beginning of the message
-        //   list
-        // * The selected message is within this._RENDER_THRESHOLD messages
-        //   of the bottom of the currently rendered window and the
-        //   bottom of the window does not abut the end of the
-        //   message list
-        if (! (((selected_idx - this._render_win_start < this._RENDER_THRESHOLD)
+        // * The selected message is within this._RENDER_THRESHOLD visible
+        //   messages of the top of the currently rendered window and the top
+        //   of the window does not abut the beginning of the message list
+        // * The selected message is within this._RENDER_THRESHOLD visible
+        //   messages of the bottom of the currently rendered window and the
+        //   bottom of the window does not abut the end of the message list
+        if (! (((this.list.count_full_messages_between(this._render_win_start, selected_idx) < this._RENDER_THRESHOLD)
                 && (this._render_win_start !== 0)) ||
-               ((this._render_win_end - selected_idx <= this._RENDER_THRESHOLD)
+               ((this.list.count_full_messages_between(selected_idx, this._render_win_end) <= this._RENDER_THRESHOLD)
                 && (this._render_win_end !== this.list.num_items()))))
         {
             return false;
