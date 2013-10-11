@@ -1925,26 +1925,26 @@ def realm_summary_table(realm_minutes):
     cursor.close()
 
     # augment data with realm_minutes
+    total_hours = 0
     for row in rows:
         domain = row['domain']
         minutes = realm_minutes.get(domain, 0)
-        minutes = str(int(minutes))
-        row['minutes'] = minutes
+        hours = minutes / 60.0
+        total_hours += hours
+        row['hours'] = str(int(hours))
 
     # create totals
     total_active_user_count = 0
     total_user_profile_count = 0
-    total_minutes = 0
     for row in rows:
         total_active_user_count += int(row['active_user_count'])
         total_user_profile_count += int(row['user_profile_count'])
-        total_minutes += int(row['minutes'])
 
     rows.append(dict(
         domain='Total',
         active_user_count=total_active_user_count,
         user_profile_count=total_user_profile_count,
-        minutes=total_minutes
+        hours=int(total_hours)
     ))
 
 
