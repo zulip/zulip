@@ -1879,7 +1879,16 @@ def realm_summary_table(realm_minutes):
                 FROM zerver_userprofile up
                 WHERE up.realm_id = realm.id
                 AND is_active
-            ) user_profile_count
+                AND not is_bot
+            ) user_profile_count,
+            (
+                SELECT
+                    count(*)
+                FROM zerver_userprofile up
+                WHERE up.realm_id = realm.id
+                AND is_active
+                AND is_bot
+            ) bot_count
         FROM zerver_realm realm
         LEFT OUTER JOIN
             (
@@ -1936,14 +1945,17 @@ def realm_summary_table(realm_minutes):
     # create totals
     total_active_user_count = 0
     total_user_profile_count = 0
+    total_bot_count = 0
     for row in rows:
         total_active_user_count += int(row['active_user_count'])
         total_user_profile_count += int(row['user_profile_count'])
+        total_bot_count += int(row['bot_count'])
 
     rows.append(dict(
         domain='Total',
         active_user_count=total_active_user_count,
         user_profile_count=total_user_profile_count,
+        bot_count=total_bot_count,
         hours=int(total_hours)
     ))
 

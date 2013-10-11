@@ -7,6 +7,7 @@
         <th>Domain</th>
         <th>Active users</th>
         <th>Total users</th>
+        <th>Bots</th>
         <th>Hours</th>
     </tr>
     </thead>
@@ -30,6 +31,11 @@
             {# Total users #}
             <td class="number">
                 {{ row.user_profile_count }}
+            </td>
+
+            {# Bots #}
+            <td class="number">
+                {{ row.bot_count }}
             </td>
 
             {# Hours #}
