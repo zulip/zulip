@@ -2058,6 +2058,7 @@ def get_activity(request, realm=REQ(default=None)):
             ('Counts', counts_content),
             ('Durations', duration_content),
         ]
+        title = 'Activity'
     else:
         data = [
             ('Website',    ActivityTable(realm, 'website',       web_queries)),
@@ -2067,10 +2068,11 @@ def get_activity(request, realm=REQ(default=None)):
             ('Android',    ActivityTable(realm, 'Android',       api_queries)),
             ('iPhone',     ActivityTable(realm, 'iPhone',        api_queries))
         ]
+        title = '%s activity' % (realm,)
 
     return render_to_response(
         'zerver/activity.html',
-        dict(data=data, realm=realm),
+        dict(data=data, realm=realm, title=title),
         context_instance=RequestContext(request)
     )
 

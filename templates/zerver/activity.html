@@ -5,6 +5,11 @@
 
 {# User Activity. #}
 
+{% block title %}
+<title>{{ title }}</title>
+{% endblock %}
+
+
 {% block customhead %}
 {{ block.super }}
 {% minified_js 'activity' %}
