@@ -2,13 +2,22 @@ var feature_flags = (function () {
 
 var exports = {};
 
-exports.mark_read_at_bottom = true;
-exports.summarize_read_while_narrowed = true;
-
+// Helpers
 var internal_24_hour_people= _.contains([],
     page_params.email);
 
+var zulip_mit_emails = [];
+var is_zulip_mit_user = _.contains(zulip_mit_emails, page_params.email);
+
 var iceland = page_params.domain === 'customer8.invalid';
+
+var customer4_realms = [
+  'customer4.invalid',
+  'users.customer4.invalid'
+];
+var is_customer4 = _.contains(customer4_realms, page_params.domain);
+
+// Permanent realm-specific stuff:
 
 exports.twenty_four_hour_time = internal_24_hour_people || iceland;
 
@@ -20,24 +29,22 @@ exports.mandatory_topics = _.contains([
     page_params.domain
 );
 
-exports.collapsible = false;
-
-exports.propagate_topic_edits = true;
-
-var customer4_realms = [
-  'customer4.invalid',
-  'users.customer4.invalid'
-];
-var is_customer4 = _.contains(customer4_realms, page_params.domain);
-
-exports.fade_users_when_composing = page_params.staging || is_customer4;
-
-var zulip_mit_emails = [];
-
-var is_zulip_mit_user = _.contains(zulip_mit_emails, page_params.email);
-
 exports.left_side_userlist = page_params.staging ||
   _.contains(['customer7.invalid'], page_params.domain);
+
+
+// Still very beta:
+exports.fade_users_when_composing = page_params.staging || is_customer4;
+
+
+// Still burning in...
+exports.mark_read_at_bottom = true;
+exports.summarize_read_while_narrowed = true;
+exports.propagate_topic_edits = true;
+
+// Ready for deprecation.
+exports.collapsible = false;
+
 
 exports.single_message_narrowing = page_params.staging || ('customer12.invalid' === page_params.domain);
 return exports;
