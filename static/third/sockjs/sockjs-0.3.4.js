@@ -1,6 +1,6 @@
 /** @preserve
  Software from "SockJS" is Copyright (c) 2011-2012 VMware, Inc. and is provided
- under the following license:
+ under the following license (the SockJS software has been modified):
  --
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -1934,7 +1934,7 @@ InfoReceiver.prototype = new EventEmitter(['finish']);
 InfoReceiver.prototype.doXhr = function(base_url, AjaxObject) {
     var that = this;
     var t0 = (new Date()).getTime();
-    var xo = new AjaxObject('GET', base_url + '/info');
+    var xo = new AjaxObject('GET', base_url + '/info?cb=' + utils.random_string(10));
 
     var tref = utils.delay(8000,
                            function(){xo.ontimeout();});
