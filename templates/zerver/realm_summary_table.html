@@ -8,6 +8,7 @@
         <th>Active users</th>
         <th>Total users</th>
         <th>Bots</th>
+        <th>Hours per user</th>
         <th>Hours</th>
     </tr>
     </thead>
@@ -36,6 +37,11 @@
             {# Bots #}
             <td class="number">
                 {{ row.bot_count }}
+            </td>
+
+            {# Hours per user #}
+            <td class="number">
+                {{ row.hours_per_user }}
             </td>
 
             {# Hours #}

@@ -1941,6 +1941,10 @@ def realm_summary_table(realm_minutes):
         hours = minutes / 60.0
         total_hours += hours
         row['hours'] = str(int(hours))
+        try:
+            row['hours_per_user'] = '%.1f' % (hours / row['active_user_count'],)
+        except:
+            pass
 
     # create totals
     total_active_user_count = 0
