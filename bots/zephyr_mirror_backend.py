@@ -82,6 +82,9 @@ def to_zulip_username(zephyr_username):
     else:
         (user, realm) = (zephyr_username, "ATHENA.MIT.EDU")
     if realm.upper() == "ATHENA.MIT.EDU":
+        # Hack to make ctl's fake username setup work :)
+        if user.lower() == 'golem':
+            user = 'ctl'
         return user.lower() + "@mit.edu"
     return user.lower() + "|" + realm.upper() + "@mit.edu"
 
