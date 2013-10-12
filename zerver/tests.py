@@ -3285,7 +3285,6 @@ Content Cell  | Content Cell
 
         converted = bugdown_convert(msg)
 
-        print converted
         self.assertEqual(converted, expected)
 
 class UserPresenceTests(AuthedTestCase):
