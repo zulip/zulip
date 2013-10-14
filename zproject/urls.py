@@ -80,7 +80,7 @@ urlpatterns = patterns('',
     url(r'^zephyr/$', TemplateView.as_view(template_name='zerver/zephyr.html')),
     url(r'^mit/$', TemplateView.as_view(template_name='zerver/mit.html')),
     url(r'^zephyr-mirror/$', TemplateView.as_view(template_name='zerver/zephyr-mirror.html')),
-    url(r'^apps$', TemplateView.as_view(template_name='zerver/apps.html')),
+    url(r'^apps/$', TemplateView.as_view(template_name='zerver/apps.html')),
 
     # Job postings
     url(r'^jobs/$', TemplateView.as_view(template_name='zerver/jobs/index.html')),
