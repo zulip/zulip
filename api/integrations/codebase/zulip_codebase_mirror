@@ -180,12 +180,28 @@ def handle_event(event):
 
         comment = raw_props.get('content')
         commit = raw_props.get('commit_ref')
-        repo_link = raw_props.get('repository_permalink')
 
-        url = make_url('projects/%s/repositories/%s/commit/%s' % (project_link, repo_link, commit))
+        # If there's a commit id, it's a comment to a commit
+        if commit:
+            repo_link = raw_props.get('repository_permalink')
 
-        subject = "%s commented on %s" % (actor_name, commit)
-        content = "%s commented on [%s](%s):\n\n~~~ quote\n%s" % (actor_name, commit, url, comment)
+            url = make_url('projects/%s/repositories/%s/commit/%s' % (project_link, repo_link, commit))
+
+            subject = "%s commented on %s" % (actor_name, commit)
+            content = "%s commented on [%s](%s):\n\n~~~ quote\n%s" % (actor_name, commit, url, comment)
+        else:
+            # Otherwise, this is a Discussion item, and handle it
+            subj = raw_props.get("subject")
+            category = raw_props.get("category")
+            comment_content = raw_props.get("content")
+
+            subject = "Discussion: %s" % (subj,)
+
+            if category:
+                content = "%s started a new discussion in %s:\n\n~~~ quote\n%s\n~~~" % (actor_name, category, comment_content)
+            else:
+                content = "%s posted:\n\n~~~ quote\n%s\n~~~" % (actor_name, comment_content)
+
     elif event_type == 'deployment':
         stream = config.ZULIP_COMMITS_STREAM_NAME
 
