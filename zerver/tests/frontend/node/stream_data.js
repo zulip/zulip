@@ -102,6 +102,14 @@ var stream_data = require('js/stream_data.js');
     stream_data.remove_subscriber('Rome', email);
     assert(!stream_data.user_is_subscribed('Rome', email));
 
+    // Verify defensive code in set_subscribers, where the second parameter
+    // can be undefined.
+    stream_data.set_subscribers(sub);
+    stream_data.add_sub('Rome', sub);
+    stream_data.add_subscriber('Rome', email);
+    sub.subscribed = true;
+    assert(stream_data.user_is_subscribed('Rome', email));
+
     // Verify that we noop and don't crash when unsubsribed.
     sub.subscribed = false;
     global.blueslip.warn = function () {};
