@@ -2724,6 +2724,22 @@ And all was good."""
 
         self.common_bugdown_test(fenced_code, expected_convert)
 
+    def test_codeblock_backticks(self):
+        fenced_code = \
+"""
+```
+fenced code
+```
+
+```inline code```
+"""
+        expected_convert = \
+u"""<div class="codehilite"><pre>fenced code
+</pre></div>
+
+
+<p><code>inline code</code></p>"""
+        self.common_bugdown_test(fenced_code, expected_convert)
 
     def test_hanging_multi_codeblock(self):
         fenced_code = \
