@@ -81,10 +81,17 @@ var zero_counts = {
         subject: 'lunch'
     };
 
-    unread.process_loaded_messages([message]);
+    var other_message = {
+        id: 16,
+        type: 'stream',
+        stream: 'social',
+        subject: 'lunch'
+    };
+
+    unread.process_loaded_messages([message, other_message]);
 
     count = unread.num_unread_for_subject('Social', 'lunch');
-    assert.equal(count, 1);
+    assert.equal(count, 2);
 
     var event = {
         subject: 'dinner'
@@ -93,15 +100,45 @@ var zero_counts = {
     unread.update_unread_subjects(message, event);
 
     count = unread.num_unread_for_subject('social', 'lunch');
-    assert.equal(count, 0);
+    assert.equal(count, 1);
 
     count = unread.num_unread_for_subject('social', 'dinner');
     assert.equal(count, 1);
+
+    event = {
+        subject: 'snack'
+    };
+
+    unread.update_unread_subjects(other_message, event);
+
+    count = unread.num_unread_for_subject('social', 'lunch');
+    assert.equal(count, 0);
+
+    count = unread.num_unread_for_subject('social', 'snack');
+    assert.equal(count, 1);
+
+    // Test defensive code.  Trying to update a message we don't know
+    // about should be a no-op.
+    var unknown_message = {
+        id: 18,
+        type: 'stream',
+        stream: 'social',
+        subject: 'lunch'
+    };
+    event = {
+        subject: 'brunch'
+    };
+    unread.update_unread_subjects(other_message, event);
 
     // cleanup
     message.subject = 'dinner';
     unread.process_read_message(message);
     count = unread.num_unread_for_subject('social', 'dinner');
+    assert.equal(count, 0);
+
+    other_message.subject = 'snack';
+    unread.process_read_message(other_message);
+    count = unread.num_unread_for_subject('social', 'snack');
     assert.equal(count, 0);
 }());
 
