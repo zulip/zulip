@@ -2747,6 +2747,7 @@ u"""<div class="codehilite"><pre>fenced code
 ~~~~
 def speak(self):
     x = 1
+# Comment to make this code block longer to test Trac #1162
 ~~~~
 
 Then he mentioned ````y = 4 + x**2```` and
@@ -2758,6 +2759,7 @@ def foobar(self):
 """<p>Hamlet said:</p>
 <div class="codehilite"><pre>def speak(self):
     x = 1
+# Comment to make this code block longer to test Trac #1162
 </pre></div>
 
 

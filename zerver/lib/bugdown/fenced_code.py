@@ -147,17 +147,15 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             self.checked_for_codehilite = True
 
         text = "\n".join(lines)
-        end = 0
         while 1:
             m = FENCED_BLOCK_RE.search(text)
             if m:
-                end = m.end()
                 text = self.process_fence(m, text)
             else:
                 break
 
 
-        fence = FENCE_RE.search(text, end)
+        fence = FENCE_RE.search(text)
         if fence:
             # If we found a starting fence but no ending fence,
             # then we add a closing fence before the two newlines that
