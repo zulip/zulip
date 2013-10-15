@@ -1260,11 +1260,11 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_subscriptions_add_too_long(self):
         """
-        Calling /json/subscriptions/add on a stream whose name is >30
+        Calling /json/subscriptions/add on a stream whose name is >60
         characters should return a JSON error.
         """
-        # character limit is 30 characters
-        long_stream_name = "a" * 31
+        # character limit is 60 characters
+        long_stream_name = "a" * 61
         result = self.common_subscribe_to_streams(self.test_email, [long_stream_name])
         self.assert_json_error(result,
                                "Stream name (%s) too long." % (long_stream_name,))
