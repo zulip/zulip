@@ -4175,6 +4175,25 @@ class CheckMessageTest(AuthedTestCase):
         self.assertEqual(new_count, old_count + 1)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
 
+class APNSTokenTests(AuthedTestCase):
+    def test_add_token(self):
+        email = "cordelia@zulip.com"
+        self.login(email)
+
+        result = self.client.post('/json/users/me/apns_device_token', {'token': "test_token"})
+        self.assert_json_success(result)
+
+    def test_delete_token(self):
+        email = "cordelia@zulip.com"
+        self.login(email)
+
+        token = "test_token"
+        result = self.client.post('/json/users/me/apns_device_token', {'token':token})
+        self.assert_json_success(result)
+
+        result = self.client.delete('/json/users/me/apns_device_token', urllib.urlencode({'token': token}))
+        self.assert_json_success(result)
+
 def full_test_name(test):
     test_class = test.__class__.__name__
     test_method = test._testMethodName

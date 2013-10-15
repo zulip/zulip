@@ -16,7 +16,7 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q, F
 from django.core.mail import send_mail, mail_admins, EmailMessage
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, bulk_get_recipients, \
     PreregistrationUser, get_client, MitUser, UserActivity, UserActivityInterval, \
@@ -24,7 +24,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
     email_to_domain, email_to_username, get_realm, completely_open, \
-    is_super_user, get_active_user_profiles_by_realm
+    is_super_user, get_active_user_profiles_by_realm, AppleDeviceToken
 from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
@@ -2360,4 +2360,30 @@ def remove_alert_words(request, user_profile,
 def json_set_muted_topics(request, user_profile,
                          muted_topics=REQ(converter=json_to_list, default=[])):
     do_set_muted_topics(user_profile, muted_topics)
+    return json_success()
+
+@has_request_variables
+def add_apns_device_token(request, user_profile, token=REQ):
+    if token == '' or len(token) > 255:
+        return json_error('Empty or invalid length APNS token')
+
+    try:
+        apns_token = AppleDeviceToken(user=user_profile, token=token)
+        apns_token.save()
+    except IntegrityError:
+        return json_error("APNS token already exists")
+
+    return json_success()
+
+@has_request_variables
+def remove_apns_device_token(request, user_profile, token=REQ):
+    if token == '' or len(token) > 255:
+        return json_error('Empty or invalid length APNS token')
+
+    try:
+        apns_token = AppleDeviceToken.objects.get(token=token)
+        apns_token.delete()
+    except AppleDeviceToken.DoesNotExist:
+        return json_error("APNS token does not exist")
+
     return json_success()

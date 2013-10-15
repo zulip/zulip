@@ -261,6 +261,15 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True)
 
+class AppleDeviceToken(models.Model):
+    # The token is a unique device-specific token that is
+    # sent to us from each iOS device, after registering with
+    # the APNS service
+    token = models.CharField(max_length=255, unique=True)
+
+    # The user who's device this is
+    user = models.ForeignKey(UserProfile, db_index=True)
+
 class MitUser(models.Model):
     email = models.EmailField(unique=True)
     # status: whether an object has been confirmed.
