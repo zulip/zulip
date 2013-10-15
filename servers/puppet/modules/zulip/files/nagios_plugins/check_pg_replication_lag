@@ -20,8 +20,12 @@ def report(state, msg):
     exit(states[state])
 
 def get_loc_over_ssh(host, func):
-    return subprocess.check_output(['ssh', host, '-l', 'zulip',
-                                    'psql -t -c "SELECT %s()"' % (func,)])
+    try:
+        return subprocess.check_output(['ssh', host, '-l', 'zulip',
+                                        'psql -t -c "SELECT %s()"' % (func,)],
+                                       stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        report('CRITICAL', 'ssh failed: %s: %s' % (str(e),e.output))
 
 def loc_to_abs_offset(loc_str):
     m = re.match(r'^\s*([0-9a-fA-F]+)/([0-9a-fA-F]+)\s*$', loc_str)
