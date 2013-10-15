@@ -91,6 +91,9 @@ def to_zulip_username(zephyr_username):
 def to_zephyr_username(zulip_username):
     (user, realm) = zulip_username.split("@")
     if "|" not in user:
+        # Hack to make ctl's fake username setup work :)
+        if user.lower() == 'ctl':
+            user = 'golem'
         return user.lower() + "@ATHENA.MIT.EDU"
     match_user = re.match(r'([a-zA-Z0-9_]+)\|(.+)', user)
     if not match_user:
