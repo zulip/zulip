@@ -45,7 +45,7 @@ parser = optparse.OptionParser(r"""
 
 Send Twitter search results to a Zulip stream.
 
-Depends on: twitter-python
+Depends on: twitter-python version 1.0 or later
 
 To use this script:
 
