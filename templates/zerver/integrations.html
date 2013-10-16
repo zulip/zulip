@@ -49,9 +49,7 @@
       <li><a href="#svn">Subversion</a></li>
       <li><a href="#trac">Trac</a></li>
       <li><a href="#trello">Trello</a></li>
-      {% comment %}
       <li><a href="#twitter">Twitter</a></li>
-      {% endcomment %}
       <li>...and more coming soon! <a href="mailto:support@zulip.com?subject=Integration%20request">Email us</a> with requests!</li>
     </ul>
 
@@ -919,6 +917,87 @@ key=NAGIOS_BOT_API_KEY
 
       <img class="screenshot" src="/static/images/integrations/trello/001.png">
       <p><small>Thanks to Nathan from FoundationDB for <a href="https://github.com/nathanlws/trello-to-zulip">submitting this integration</a>!</small></p>
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+{#--------------------------------------------------------------------#}
+    <div id="twitter" class="integration">
+      <h4>Twitter</h4>
+
+      <p>See Twitter search results in Zulip! This is great for seeing and
+      discussing who is talking about you, friends, competitors, or important
+      topics in real time.</p>
+
+      <p>First, create the stream you'd like to use for tweets, and subscribe
+      all interested parties to this stream. We recommend the
+      name <code>twitter</code>.</p>
+
+      <p>Next, download and install our <a href="/api">Python bindings and
+      example scripts</a>. This bot should be set up on a trusted machine,
+      because your API key is visible to local users through the command line or
+      config file.</p>
+
+      <p>Next, install <b>version 1.0 or later</b> of
+      the <code>twitter-python</code> library. If your operating system
+      distribution doesn't package a new enough version, you can install the
+      library from source
+      from <a href="https://github.com/bear/python-twitter">the GitHub
+      repository</a>.</p>
+
+      <p>Next, set up Twitter authentication. This bot uses OAuth to
+      authenticate with Twitter, and in order to obtain a consumer key & secret,
+      you must register a new application under your Twitter account:</p>
+
+      <ol>
+        <li>
+          Log in to <a href="http://dev.twitter.com">http://dev.twitter.com</a>.
+        </li>
+        <li>
+          In the menu under your username,
+          click <a href="https://dev.twitter.com/apps">My Applications</a>. From
+          this page, create a new application.
+        </li>
+        <li>
+          Click on the application you created and click "create my access
+          token". Fill in the requested values.
+        </li>
+      </ol>
+
+      <p>To configure and deploy this bot:</p>
+
+      <ol>
+        <li>
+          Create a <code>~/.zulip_twitterrc</code> with the following
+          contents:
+
+<pre>[twitter]
+consumer_key =
+consumer_secret =
+access_token_key =
+access_token_secret =</pre>
+        </li>
+        <li>
+          Test the script by running it manually:
+
+          <pre>/usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics"</pre>
+
+          Note: <code>twitter-search-bot</code> may install to a different
+          location on your operating system distribution.
+        </li>
+        <li>
+          Configure a crontab entry for this script. A sample crontab entry that
+          will process tweets every minute is:
+
+          <pre>* * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics"</pre>
+        </li>
+      </ol>
+
+      <p><b>Congratulations! You're done!</b><br /> When someone tweets a
+      message containing one of your search terms, you'll get a Zulip on your
+      specified stream, with the search term as the topic.</p>
+
+      <img class="screenshot" src="/static/images/integrations/twitter/001.png">
       <p>
         <a href="#services">^ Back to top</a>
       </p>
