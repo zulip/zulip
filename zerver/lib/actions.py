@@ -2040,6 +2040,8 @@ def clear_followup_emails_queue(email, from_email=None, mail_client=None):
     to send the email (for example `support@zulip.com` or `signups@zulip.com`)
     """
     for email in mail_client.messages.list_scheduled(to=email):
+        if from_email is not None and email.get('from_email') != from_email:
+            continue
         result = mail_client.messages.cancel_scheduled(id=email["_id"])
         if result.get("status") == "error":
             print result.get("name"), result.get("error")
@@ -2090,7 +2092,7 @@ def send_local_email_template_with_delay(recipients, template_prefix,
                                          tags=[], sender={'email': 'noreply@zulip.com', 'name': 'Zulip'}):
     html_content = loader.render_to_string(template_prefix + ".html", template_payload)
     text_content = loader.render_to_string(template_prefix + ".text", template_payload)
-    subject = loader.render_to_string(template_prefix + ".subject").strip()
+    subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()
 
     return send_future_email(recipients,
                              html_content,
