@@ -2705,11 +2705,12 @@ def add_apns_device_token(request, user_profile, token=REQ):
     if token == '' or len(token) > 255:
         return json_error('Empty or invalid length APNS token')
 
-    try:
-        apns_token = AppleDeviceToken(user=user_profile, token=token)
-        apns_token.save()
-    except IntegrityError:
-        return json_error("APNS token already exists")
+    # The iOS app receives the token on each startup, so overwrite with our
+    # latest value
+    token, created = AppleDeviceToken.objects.get_or_create(user=user_profile, token=token)
+    if not created:
+        token.last_updated = now()
+        token.save(update_fields=['last_updated'])
 
     return json_success()
 
