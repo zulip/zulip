@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.db.transaction import commit_on_success
 from django.conf import settings
 from postmonkey import PostMonkey, MailChimpException
 from zerver.models import UserActivityInterval, get_user_profile_by_email, \
@@ -151,7 +152,8 @@ class SlowQueryWorker(QueueProcessingWorker):
                 for query in slow_queries:
                     content += "    %s\n" % (query,)
 
-                internal_send_message("error-bot@zulip.com", "stream", "logs", topic, content)
+                with commit_on_success():
+                    internal_send_message("error-bot@zulip.com", "stream", "logs", topic, content)
 
             # Aggregate all slow query messages in 1-minute chunks to avoid message spam
             time.sleep(1 * 60)
