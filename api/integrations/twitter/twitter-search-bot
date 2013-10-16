@@ -53,12 +53,12 @@ To use this script:
 2. Subscribe to the stream that will receive Twitter updates (default stream: twitter)
 3. Test the script by running it manually, like this:
 
-/usr/local/share/zulip/demos/twitter-search-bot --search="@nprnews,quantum physics"
+/usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics"
 
 4. Configure a crontab entry for this script. A sample crontab entry
 that will process tweets every 5 minutes is:
 
-*/5 * * * * /usr/local/share/zulip/demos/twitter-search-bot --search="@nprnews,quantum physics"
+*/5 * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics"
 
 == Setting up Twitter authentications ==
 
