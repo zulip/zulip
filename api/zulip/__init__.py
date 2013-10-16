@@ -59,12 +59,16 @@ def generate_option_group(parser):
     group.add_option('-v', '--verbose',
                      action='store_true',
                      help='Provide detailed output.')
+    group.add_option('--client',
+                     action='store',
+                     default="API: Python",
+                     help=optparse.SUPPRESS_HELP)
 
     return group
 
 def init_from_options(options):
     return Client(email=options.email, api_key=options.api_key, config_file=options.config_file,
-                  verbose=options.verbose, site=options.site)
+                  verbose=options.verbose, site=options.site, client=options.client)
 
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
