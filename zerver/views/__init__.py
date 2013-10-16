@@ -2038,6 +2038,201 @@ def can_view_activity(request):
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 @has_request_variables
+def ad_hoc_queries(request):
+    def get_data(query, cols, title):
+        cursor = connection.cursor()
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        cursor.close()
+
+        data = dict(
+            rows=rows,
+            cols=cols,
+            title=title
+        )
+        return data
+
+    queries = []
+
+    ###
+
+    title = 'Android usage'
+
+    query = '''
+        select
+            realm.domain,
+            up.id user_id,
+            client.name,
+            sum(count) as hits,
+            max(last_visit) as last_time
+        from zerver_useractivity ua
+        join zerver_client client on client.id = ua.client_id
+        join zerver_userprofile up on up.id = ua.user_profile_id
+        join zerver_realm realm on realm.id = up.realm_id
+        where
+            client.name like 'Android'
+        and
+            query = 'send_message_backend'
+        group by domain, up.id, client.name
+        having max(last_visit) > now() - interval '2 week'
+        order by domain, up.id, client.name
+    '''
+
+    cols = [
+        'Domain',
+        'User id',
+        'Name',
+        'Hits',
+        'Last time'
+    ]
+
+    data = get_data(query, cols, title)
+    queries.append(data)
+
+    ###
+
+    title = 'Desktop users'
+
+    query = '''
+        select
+            realm.domain,
+            client.name,
+            sum(count) as hits,
+            max(last_visit) as last_time
+        from zerver_useractivity ua
+        join zerver_client client on client.id = ua.client_id
+        join zerver_userprofile up on up.id = ua.user_profile_id
+        join zerver_realm realm on realm.id = up.realm_id
+        where
+            client.name like 'desktop%%'
+        group by domain, client.name
+        having max(last_visit) > now() - interval '2 week'
+        order by domain, client.name
+    '''
+
+    cols = [
+        'Domain',
+        'Client',
+        'Hits',
+        'Last time'
+    ]
+
+    data = get_data(query, cols, title)
+    queries.append(data)
+
+    ###
+
+    title = 'Pure API'
+
+    query = '''
+        select
+            realm.domain,
+            sum(count) as hits,
+            max(last_visit) as last_time
+        from zerver_useractivity ua
+        join zerver_client client on client.id = ua.client_id
+        join zerver_userprofile up on up.id = ua.user_profile_id
+        join zerver_realm realm on realm.id = up.realm_id
+        where
+            query = '/api/v1/send_message'
+        and
+            client.name = 'API'
+        and
+            domain != 'zulip.com'
+        group by domain
+        having max(last_visit) > now() - interval '2 week'
+        order by domain
+    '''
+
+    cols = [
+        'Domain',
+        'Hits',
+        'Last time'
+    ]
+
+    data = get_data(query, cols, title)
+    queries.append(data)
+
+    ###
+
+    title = 'Integrations by domain'
+
+    query = '''
+        select
+            realm.domain,
+            case
+            when client.name = 'phabricator' then 'phabricator'
+            else split_part(query, '/', 5)
+            end client_name,
+            sum(count) as hits,
+            max(last_visit) as last_time
+        from zerver_useractivity ua
+        join zerver_client client on client.id = ua.client_id
+        join zerver_userprofile up on up.id = ua.user_profile_id
+        join zerver_realm realm on realm.id = up.realm_id
+        where
+            client.name = 'phabricator'
+        or
+            query like '%%external%%'
+        group by domain, client_name
+        having max(last_visit) > now() - interval '2 week'
+        order by domain, client_name
+    '''
+
+    cols = [
+        'Domain',
+        'Client',
+        'Hits',
+        'Last time'
+    ]
+
+    data = get_data(query, cols, title)
+    queries.append(data)
+
+    ###
+
+    title = 'Integrations by client'
+
+    query = '''
+        select
+            case
+            when client.name = 'phabricator' then 'phabricator'
+            else split_part(query, '/', 5)
+            end client_name,
+            realm.domain,
+            sum(count) as hits,
+            max(last_visit) as last_time
+        from zerver_useractivity ua
+        join zerver_client client on client.id = ua.client_id
+        join zerver_userprofile up on up.id = ua.user_profile_id
+        join zerver_realm realm on realm.id = up.realm_id
+        where
+            client.name = 'phabricator'
+        or
+            query like '%%external%%'
+        group by client_name, domain
+        having max(last_visit) > now() - interval '2 week'
+        order by client_name, domain
+    '''
+
+    cols = [
+        'Client',
+        'Domain',
+        'Hits',
+        'Last time'
+    ]
+
+    data = get_data(query, cols, title)
+    queries.append(data)
+
+    return render_to_response(
+        'zerver/ad_hoc_queries.html',
+        dict(queries=queries),
+        context_instance=RequestContext(request)
+    )
+
+@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@has_request_variables
 def get_activity(request, realm=REQ(default=None)):
     if not can_view_activity(request):
         return HttpResponseRedirect(reverse('zerver.views.login_page'))

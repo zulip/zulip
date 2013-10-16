@@ -40,6 +40,7 @@ urlpatterns = patterns('',
 
 
     url(r'^activity$', 'zerver.views.get_activity'),
+    url(r'^queries$', 'zerver.views.ad_hoc_queries'),
 
     # Registration views, require a confirmation ID.
     url(r'^accounts/home/', 'zerver.views.accounts_home'),
