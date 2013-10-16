@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from zerver.lib.statistics import seconds_usage_between
+
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from zerver.models import get_user_profile_by_email, UserActivityInterval, \
@@ -19,16 +21,10 @@ def analyze_activity(options):
     print "Per-user online duration:\n"
     total_duration = datetime.timedelta(0)
     for user_profile in user_profile_query:
-        intervals = UserActivityInterval.objects.filter(user_profile=user_profile,
-                                                        end__gte=day_start, start__lte=day_end)
-        if len(intervals) == 0:
-            continue
+        duration = seconds_usage_between(user_profile, day_start, day_end)
 
-        duration = datetime.timedelta(0)
-        for interval in intervals:
-            start = max(day_start, interval.start)
-            end = min(day_end, interval.end)
-            duration += end - start
+        if duration == datetime.timedelta(0):
+            continue
 
         total_duration += duration
         print "%-*s%s" % (37, user_profile.email, duration, )
