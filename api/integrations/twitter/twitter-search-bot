@@ -65,7 +65,7 @@ that will process tweets every 5 minutes is:
 Run this on a personal or trusted machine, because your API key is
 visible to local users through the command line or config file.
 
-This bot uses OAuth to authenticate with twitter. Please create a
+This bot uses OAuth to authenticate with Twitter. Please create a
 ~/.zulip_twitterrc with the following contents:
 
 [twitter]
@@ -75,7 +75,7 @@ access_token_key =
 access_token_secret =
 
 In order to obtain a consumer key & secret, you must register a
-new application under your twitter account:
+new application under your Twitter account:
 
 1. Go to http://dev.twitter.com
 2. Log in
@@ -138,7 +138,7 @@ api = twitter.Api(consumer_key=consumer_key,
 user = api.VerifyCredentials()
 
 if not user.GetId():
-    print "Unable to log in to twitter with supplied credentials.\
+    print "Unable to log in to Twitter with supplied credentials.\
 Please double-check and try again."
     sys.exit()
 
