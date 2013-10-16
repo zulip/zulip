@@ -576,6 +576,11 @@ def restore_saved_messages():
             user_profile.enable_offline_email_notifications = (old_message["enable_offline_email_notifications"] != "false")
             user_profile.save(update_fields=["enable_offline_email_notifications"])
             continue
+        elif message_type == "enable_offline_push_notifications_changed":
+            user_profile = users[old_message["user"]]
+            user_profile.enable_offline_push_notifications = (old_message["enable_offline_push_notifications"] != "false")
+            user_profile.save(update_fields=["enable_offline_push_notifications"])
+            continue
         elif message_type == "default_streams":
             set_default_streams(Realm.objects.get(domain=old_message["domain"]),
                                 old_message["streams"])

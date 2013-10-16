@@ -124,6 +124,18 @@
           </label>
         </div>
 
+        <div class="control-group">
+          <div class="controls">
+            <input type="checkbox" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
+              {% if user_profile.enable_offline_push_notifications %}
+              checked="yes"
+              {% endif %} />
+          </div>
+          <label for="enable_offline_push_notifications" class="control-label">
+            Mobile push notifications when offline
+          </label>
+        </div>
+
         <p class="notification-settings-note">Change notification settings for individual streams on your <a href="/#subscriptions">Streams page</a>.</p>
 
         <div class="control-group">

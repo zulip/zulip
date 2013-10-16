@@ -40,8 +40,9 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     update_user_activity_interval, do_set_muted_topics, do_rename_stream, \
-    notify_for_streams_by_default
+    notify_for_streams_by_default, do_change_enable_offline_push_notifications
 from zerver.lib.create_user import random_api_key
+from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, not_mit_mailing_list
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -734,6 +735,8 @@ def home(request):
             user_profile.enable_sounds,
         enable_offline_email_notifications =
             user_profile.enable_offline_email_notifications,
+        enable_offline_push_notifications =
+            user_profile.enable_offline_push_notifications,
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
         max_message_id        = register_ret['max_message_id'],
@@ -744,7 +747,8 @@ def home(request):
         alert_words           = register_ret['alert_words'],
         muted_topics          = register_ret['muted_topics'],
         show_admin            = user_profile.show_admin,
-        notify_for_streams_by_default = notify_for_streams_by_default(user_profile)
+        notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
+        has_mobile_devices    = num_push_devices_for_user(user_profile) > 0
     ))
 
     statsd.incr('views.home')
@@ -1727,6 +1731,8 @@ def json_change_settings(request, user_profile, full_name=REQ,
                          enable_sounds=REQ(converter=lambda x: x == "on",
                                                           default=False),
                          enable_offline_email_notifications=REQ(converter=lambda x: x == "on",
+                                                                default=False),
+                         enable_offline_push_notifications=REQ(converter=lambda x: x == "on",
                                                                 default=False)):
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
@@ -1761,6 +1767,10 @@ def json_change_settings(request, user_profile, full_name=REQ,
     if user_profile.enable_offline_email_notifications != enable_offline_email_notifications:
         do_change_enable_offline_email_notifications(user_profile, enable_offline_email_notifications)
         result['enable_offline_email_notifications'] = enable_offline_email_notifications
+
+    if user_profile.enable_offline_push_notifications != enable_offline_push_notifications:
+        do_change_enable_offline_push_notifications(user_profile, enable_offline_push_notifications)
+        result['enable_offline_push_notifications'] = enable_offline_push_notifications
 
     return json_success(result)
 

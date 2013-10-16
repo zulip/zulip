@@ -1186,6 +1186,14 @@ def do_change_enable_offline_email_notifications(user_profile, offline_email_not
                    'user': user_profile.email,
                    'enable_offline_email_notifications': offline_email_notifications})
 
+def do_change_enable_offline_push_notifications(user_profile, offline_push_notifications, log=True):
+    user_profile.enable_offline_push_notifications = offline_push_notifications
+    user_profile.save(update_fields=["enable_offline_push_notifications"])
+    if log:
+        log_event({'type': 'enable_offline_push_notifications_changed',
+                   'user': user_profile.email,
+                   'enable_offline_push_notifications': offline_push_notifications})
+
 def do_change_enter_sends(user_profile, enter_sends):
     user_profile.enter_sends = enter_sends
     user_profile.save(update_fields=["enter_sends"])

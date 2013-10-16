@@ -1025,6 +1025,10 @@ $(function () {
                 page_params.enable_offline_email_notifications = result.enable_offline_email_notifications;
             }
 
+            if (result.enable_offline_push_notifications !== undefined) {
+                page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
+            }
+
             settings_status.removeClass(status_classes)
                 .addClass('alert-success')
                 .text(message).stop(true).fadeTo(0,1);
