@@ -37,8 +37,12 @@ class QueueProcessingWorker(object):
     def __init__(self):
         self.q = SimpleQueueClient()
 
+    def consume_and_commit(self, *args):
+        with commit_on_success():
+            self.consume(*args)
+
     def start(self):
-        self.q.register_json_consumer(self.queue_name, self.consume)
+        self.q.register_json_consumer(self.queue_name, self.consume_and_commit)
         self.q.start_consuming()
 
     def stop(self):
