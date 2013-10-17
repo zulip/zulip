@@ -55,5 +55,6 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             domain, name, restricted_to_domain=not options["open_realm"])
         if created:
             print domain, "created."
+            print "\033[1;36mDon't forget to run set_default_streams!\033[0m"
         else:
             print domain, "already exists."
