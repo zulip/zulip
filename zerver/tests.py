@@ -11,7 +11,7 @@ from django.db.backends.util import CursorDebugWrapper
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, UserActivity, \
     PreregistrationUser, UserMessage, \
-    get_user_profile_by_email, email_to_domain, get_realm, get_stream
+    get_user_profile_by_email, email_to_domain, get_realm, get_stream, get_client
 from zerver.tornadoviews import json_get_updates, api_get_messages
 from zerver.decorator import RespondAsynchronously, \
     RequestVariableConversionError, profiled, JsonableError
@@ -28,6 +28,8 @@ from zerver.lib.rate_limiter import clear_user_history
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
 from zerver.forms import not_mit_mailing_list
+
+from zerver.worker import queue_processors
 
 import base64
 from django.conf import settings
@@ -47,6 +49,13 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from contextlib import contextmanager
 from zerver import tornado_callbacks
+
+@contextmanager
+def simulated_queue_client(client):
+    real_SimpleQueueClient = queue_processors.SimpleQueueClient
+    queue_processors.SimpleQueueClient = client
+    yield
+    queue_processors.SimpleQueueClient = real_SimpleQueueClient
 
 @contextmanager
 def tornado_redirected_to_list(lst):
@@ -334,6 +343,48 @@ class AuthedTestCase(TestCase):
 
         return msg
 
+
+class WorkerTest(TestCase):
+    class FakeClient:
+        def __init__(self):
+            self.consumers = {}
+            self.queue = []
+
+        def register_json_consumer(self, queue_name, callback):
+            self.consumers[queue_name] = callback
+
+        def start_consuming(self):
+            for queue_name, data in self.queue:
+                callback = self.consumers[queue_name]
+                callback(None, None, None, data)
+
+
+    def test_UserActivityWorker(self):
+        fake_client = self.FakeClient()
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        UserActivity.objects.filter(
+                user_profile = user.id,
+                client = get_client('iPhone')
+        ).delete()
+
+        data = dict(
+                user_profile_id = user.id,
+                client = 'iPhone',
+                time = time.time(),
+                query = 'send_message'
+        )
+        fake_client.queue.append(('user_activity', data))
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.UserActivityWorker()
+            worker.start()
+            activity_records = UserActivity.objects.filter(
+                    user_profile = user.id,
+                    client = get_client('iPhone')
+            )
+            self.assertTrue(len(activity_records), 1)
+            self.assertTrue(activity_records[0].count, 1)
 
 class ActivityTest(AuthedTestCase):
     def test_activity(self):
