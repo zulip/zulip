@@ -543,7 +543,7 @@ def check_message(sender, client, message_type_name, message_to,
     message.recipient = recipient
     if message_type_name == 'stream':
         message.subject = subject
-    if forged:
+    if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
         message.pub_date = timestamp_to_datetime(forged_timestamp)
     else:
