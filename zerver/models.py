@@ -83,7 +83,12 @@ def get_realm_emoji_cache_key(realm):
     return 'realm_emoji:%s' % (realm.id,)
 
 class Realm(models.Model):
+    # domain is a domain in the Internet sense. It must be structured like a
+    # valid email domain. We use is to restrict access, identify bots, etc.
     domain = models.CharField(max_length=40, db_index=True, unique=True)
+    # name is the user-visible identifier for the realm. It has no required
+    # structure.
+    name = models.CharField(max_length=40, null=True)
     restricted_to_domain = models.BooleanField(default=True)
     date_created = models.DateTimeField(default=timezone.now)
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True)
