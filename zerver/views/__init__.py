@@ -89,6 +89,12 @@ import logging
 from os import path
 from collections import defaultdict
 
+# Import the Tornado REST views that are used by rest_dispatch
+from zerver.tornadoviews import get_events_backend, get_updates_backend
+
+from zerver.lib.rest import rest_dispatch as _rest_dispatch
+rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
+
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
     """Converts plaintext stream names to a list of Streams, validating input in the process
 
@@ -195,72 +201,6 @@ def principal_to_user_profile(agent, principal):
         raise PrincipalError(principal)
 
     return principal_user_profile
-
-METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
-
-# Import the Tornado REST views that are used by rest_dispatch
-from zerver.tornadoviews import get_events_backend, get_updates_backend
-
-@csrf_exempt
-def rest_dispatch(request, **kwargs):
-    """Dispatch to a REST API endpoint.
-
-    This calls the function named in kwargs[request.method], if that request
-    method is supported, and after wrapping that function to:
-
-        * protect against CSRF (if the user is already authenticated through
-          a Django session)
-        * authenticate via an API key (otherwise)
-        * coerce PUT/PATCH/DELETE into having POST-like semantics for
-          retrieving variables
-
-    Any keyword args that are *not* HTTP methods are passed through to the
-    target function.
-
-    Note that we search views.py globals for the function to call, so never
-    make a urls.py pattern put user input into a variable called GET, POST,
-    etc.
-    """
-    supported_methods = {}
-    # duplicate kwargs so we can mutate the original as we go
-    for arg in list(kwargs):
-        if arg in METHODS:
-            supported_methods[arg] = kwargs[arg]
-            del kwargs[arg]
-
-    # Override requested method if magic method=??? parameter exists
-    method_to_use = request.method
-    if request.POST and 'method' in request.POST:
-        method_to_use = request.POST['method']
-
-    if method_to_use in supported_methods.keys():
-        target_function = globals()[supported_methods[method_to_use]]
-
-        # Set request._query for update_activity_user(), which is called
-        # by some of the later wrappers.
-        request._query = target_function.__name__
-
-        # We want to support authentication by both cookies (web client)
-        # and API keys (API clients). In the former case, we want to
-        # do a check to ensure that CSRF etc is honored, but in the latter
-        # we can skip all of that.
-        #
-        # Security implications of this portion of the code are minimal,
-        # as we should worst-case fail closed if we miscategorise a request.
-        if request.user.is_authenticated():
-            # Authenticated via sessions framework, only CSRF check needed
-            target_function = csrf_protect(authenticated_json_view(target_function))
-        else:
-            # Wrap function with decorator to authenticate the user before
-            # proceeding
-            target_function = authenticated_rest_api_view(target_function)
-        if method_to_use not in ["GET", "POST"]:
-            # process_as_post needs to be the outer decorator, because
-            # otherwise we might access and thus cache a value for
-            # request.REQUEST.
-            target_function = process_as_post(target_function)
-        return target_function(request, **kwargs)
-    return json_method_not_allowed(supported_methods.keys())
 
 @require_post
 @has_request_variables
