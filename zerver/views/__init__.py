@@ -26,7 +26,8 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     email_to_domain, email_to_username, get_realm, completely_open, \
     is_super_user, get_active_user_profiles_by_realm, AppleDeviceToken
 from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
-    do_change_password, create_mit_user_if_needed, do_change_full_name, \
+    do_change_password, create_mirror_user_if_needed, compute_irc_user_fullname, \
+    do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
     do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
     do_change_subscription_property, internal_send_message, \
@@ -1245,6 +1246,19 @@ def mit_to_mit(user_profile, email):
 
     return user_profile.realm.domain == "mit.edu" and domain == "mit.edu"
 
+def same_realm_irc_user(user_profile, email):
+    # Check whether the target email address is an IRC user in the
+    # same realm as user_profile, i.e. if the domain were example.com,
+    # the IRC user would need to be username@irc.example.com
+    try:
+        validators.validate_email(email)
+    except ValidationError:
+        return False
+
+    domain = email_to_domain(email)
+
+    return user_profile.realm.domain == domain.replace("@irc.", "@")
+
 def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
         return (False, None)
@@ -1255,14 +1269,24 @@ def create_mirrored_message_users(request, user_profile, recipients):
         for email in recipients:
             referenced_users.add(email.lower())
 
-    # Check that all referenced users are in our realm:
+    if request.client.name == "zephyr_mirror":
+        user_check = mit_to_mit
+        fullname_function = compute_mit_user_fullname
+    elif request.client.name == "irc_mirror":
+        user_check = same_realm_irc_user
+        fullname_function = compute_irc_user_fullname
+    else:
+        # Unrecognized mirroring client
+        return (False, None)
+
     for email in referenced_users:
-        if not mit_to_mit(user_profile, email):
+        # Check that all referenced users are in our realm:
+        if not user_check(user_profile, email):
             return (False, None)
 
     # Create users for the referenced users, if needed.
     for email in referenced_users:
-        create_mit_user_if_needed(user_profile.realm, email)
+        create_mirror_user_if_needed(user_profile.realm, email, fullname_function)
 
     sender = get_user_profile_by_email(sender_email)
     return (True, sender)
@@ -1334,17 +1358,22 @@ def send_message_backend(request, user_profile,
         if not realm:
             return json_error("Unknown domain " + domain)
 
-    if client.name == "zephyr_mirror":
-        # Here's how security works for non-superuser mirroring:
+    if client.name == "zephyr_mirror" or client.name == "irc_mirror":
+        # Here's how security works for mirroring:
         #
-        # The message must be (1) a private message (2) that
-        # is both sent and received exclusively by other users in your
-        # realm which (3) must be the MIT realm and (4) you must have
-        # received the message.
+        # For private messages, the message must be (1) both sent and
+        # received exclusively by users in your realm, and (2)
+        # received by the forwarding user.
         #
-        # If that's the case, we let it through, but we still have the
-        # security flaw that we're trusting your Hesiod data for users
-        # you report having sent you a message.
+        # For stream messages, the message must be (1) being forwarded
+        # by an API superuser for your realm and (2) being sent to a
+        # mirrored stream (any stream for the Zephyr mirror, but only
+        # streams with names starting with a "#" for IRC mirrors)
+        #
+        # The security checks are split between the below code
+        # (especially create_mirrored_message_users which checks the
+        # same-realm constraint) and recipient_for_emails (which
+        # checks that PMs are received by the forwarding user)
         if "sender" not in request.POST:
             return json_error("Missing sender")
         if message_type_name != "private" and not is_super_user:
@@ -1353,8 +1382,11 @@ def send_message_backend(request, user_profile,
             create_mirrored_message_users(request, user_profile, message_to)
         if not valid_input:
             return json_error("Invalid mirrored message")
-        if user_profile.realm.domain != "mit.edu":
+        if client.name == "zephyr_mirror" and user_profile.realm.domain != "mit.edu":
             return json_error("Invalid mirrored realm")
+        if (client.name == "irc_mirror" and message_type_name != "private" and
+            not message_to.startswith("#")):
+            return json_error("IRC stream names must start with #")
         sender = mirror_sender
     else:
         sender = user_profile

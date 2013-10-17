@@ -166,6 +166,9 @@ def do_change_user_email(user_profile, new_email):
                'old_email': old_email,
                'new_email': new_email})
 
+def compute_irc_user_fullname(email):
+    return email.split("@")[0] + " (IRC)"
+
 def compute_mit_user_fullname(email):
     try:
         # Input is either e.g. starnine@mit.edu or user|CROSSREALM.INVALID@mit.edu
@@ -186,17 +189,17 @@ def compute_mit_user_fullname(email):
         traceback.print_exc()
     return email.lower()
 
-@cache_with_key(lambda realm, email: user_profile_by_email_cache_key(email),
+@cache_with_key(lambda realm, email, f: user_profile_by_email_cache_key(email),
                 timeout=3600*24*7)
 @transaction.commit_on_success
-def create_mit_user_if_needed(realm, email):
+def create_mirror_user_if_needed(realm, email, email_to_fullname):
     try:
         return get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
             return create_user(email, initial_password(email), realm,
-                               compute_mit_user_fullname(email), email_to_username(email),
+                               email_to_fullname(email), email_to_username(email),
                                active=False)
         except IntegrityError:
             # Unless we raced with another thread doing the same
@@ -363,7 +366,8 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
     return stream, created
 
-def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender):
+def recipient_for_emails(emails, not_forged_mirror_message,
+                         user_profile, sender):
     recipient_profile_ids = set()
     for email in emails:
         try:
@@ -371,7 +375,7 @@ def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender)
         except UserProfile.DoesNotExist:
             raise ValidationError("Invalid email '%s'" % (email,))
 
-    if not_forged_zephyr_mirror and user_profile.id not in recipient_profile_ids:
+    if not_forged_mirror_message and user_profile.id not in recipient_profile_ids:
         raise ValidationError("User not authorized for this query")
 
     # If the private message is just between the sender and
@@ -527,9 +531,10 @@ def check_message(sender, client, message_type_name, message_to,
             raise JsonableError("Not authorized to send to stream '%s'" % (stream.name,))
 
     elif message_type_name == 'private':
-        not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
+        mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror"]
+        not_forged_mirror_message = mirror_message and not forged
         try:
-            recipient = recipient_for_emails(message_to, not_forged_zephyr_mirror,
+            recipient = recipient_for_emails(message_to, not_forged_mirror_message,
                                              forwarder_user_profile, sender)
         except ValidationError, e:
             assert isinstance(e.messages[0], basestring)
