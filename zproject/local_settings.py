@@ -65,6 +65,11 @@ else:
 
 EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
+if DEPLOYED:
+    FEEDBACK_TARGET="https://staging.zulip.com/api"
+else:
+    FEEDBACK_TARGET="http://localhost:9991/api"
+
 # For now, LOCALSERVER is only testing, so write to our test buckets
 if DEPLOYED and not LOCALSERVER:
     S3_KEY="xxxxxxxxxxxxxxxxxxxx"

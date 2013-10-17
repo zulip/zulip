@@ -342,6 +342,13 @@ def do_send_messages(messages):
             if message['stream'].invite_only:
                 data['invite_only'] = True
         tornado_callbacks.send_notification(data)
+        if message['message'].recipient.type == Recipient.PERSONAL and \
+                message['recipients'][0].email == "feedback@zulip.com":
+            queue_json_publish(
+                    'feedback_messages',
+                    message['message'].to_dict(apply_markdown=False),
+                    lambda x: None
+            )
 
     # Note that this does not preserve the order of message ids
     # returned.  In practice, this shouldn't matter, as we only

@@ -15,12 +15,14 @@ from zerver.decorator import JsonableError
 from confirmation.models import Confirmation
 
 import os
+import sys
 import ujson
 import traceback
 from collections import defaultdict
 import time
 import datetime
 import logging
+import simplejson
 
 def assign_queue(queue_name):
     def decorate(clazz):
@@ -158,6 +160,27 @@ class MissedMessageWorker(QueueProcessingWorker):
             # Aggregate all messages received every 2 minutes to let someone finish sending a batch
             # of messages
             time.sleep(2 * 60)
+
+@assign_queue('feedback_messages')
+class FeedbackBot(QueueProcessingWorker):
+    def start(self):
+        sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
+        import zulip
+        self.staging_client = zulip.Client(
+            email=settings.DEPLOYMENT_ROLE_NAME,
+            api_key=settings.DEPLOYMENT_ROLE_KEY,
+            verbose=True,
+            site=settings.FEEDBACK_TARGET)
+        self.staging_client._register(
+                'forward_feedback',
+                method='POST',
+                url='deployments/feedback',
+                make_request=(lambda request: {'message': simplejson.dumps(request)}),
+        )
+        QueueProcessingWorker.start(self)
+
+    def consume(self, ch, method, properties, event):
+        self.staging_client.forward_feedback(event)
 
 @assign_queue('slow_queries')
 class SlowQueryWorker(QueueProcessingWorker):
