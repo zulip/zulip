@@ -2393,16 +2393,19 @@ def json_events_register(request, user_profile):
 # Does not need to be authenticated because it's called from rest_dispatch
 @has_request_variables
 def api_events_register(request, user_profile,
-                        apply_markdown=REQ(default=False, converter=json_to_bool)):
+                        apply_markdown=REQ(default=False, converter=json_to_bool),
+                        all_public_streams=REQ(default=False, converter=json_to_bool)):
     return events_register_backend(request, user_profile,
-                                   apply_markdown=apply_markdown)
+                                   apply_markdown=apply_markdown,
+                                   all_public_streams=all_public_streams)
 
 @has_request_variables
 def events_register_backend(request, user_profile, apply_markdown=True,
+                            all_public_streams=False,
                             event_types=REQ(converter=json_to_list, default=None),
                             queue_lifespan_secs=REQ(converter=int, default=0)):
     ret = do_events_register(user_profile, request.client, apply_markdown,
-                             event_types, queue_lifespan_secs)
+                             event_types, queue_lifespan_secs, all_public_streams)
     return json_success(ret)
 
 @authenticated_json_post_view

@@ -11,7 +11,8 @@ from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile
 from zerver.lib.cache_helpers import cache_save_message
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.event_queue import get_client_descriptors_for_user
+from zerver.lib.event_queue import get_client_descriptors_for_user,\
+    get_client_descriptors_for_realm_all_streams
 from zerver.lib.timestamp import timestamp_to_datetime
 
 import os
@@ -375,6 +376,13 @@ def process_new_message(data):
     message_dict_markdown = message.to_dict(True)
     message_dict_no_markdown = message.to_dict(False)
 
+    # To remove duplicate clients: Maps queue ID to (Client, flags)
+    send_to_clients = dict()
+
+    if 'stream_name' in data and not data.get("invite_only"):
+        for client in get_client_descriptors_for_realm_all_streams(data['realm_id']):
+            send_to_clients[client.event_queue.id] = (client, None)
+
     for user_data in data['users']:
         user_profile_id = user_data['id']
         user_profile = user_profiles[user_data['id']]
@@ -383,26 +391,7 @@ def process_new_message(data):
         user_receive_message(user_profile_id, message)
 
         for client in get_client_descriptors_for_user(user_profile_id):
-            if not client.accepts_event_type('message'):
-                continue
-
-            # The below prevents (Zephyr) mirroring loops.
-            if ('mirror' in message.sending_client.name and
-                message.sending_client == client.client_type):
-                continue
-
-            if client.apply_markdown:
-                message_dict = message_dict_markdown
-            else:
-                message_dict = message_dict_no_markdown
-
-            # Make sure Zephyr mirroring bots know whether stream is invite-only
-            if "mirror" in client.client_type.name and data.get("invite_only"):
-                message_dict = message_dict.copy()
-                message_dict["invite_only_stream"] = True
-
-            event = dict(type='message', message=message_dict, flags=flags)
-            client.add_event(event)
+            send_to_clients[client.event_queue.id] = (client, flags)
 
         # If the recipient was offline and the message was a single or group PM to him
         # or she was @-notified potentially notify more immediately
@@ -417,6 +406,28 @@ def process_new_message(data):
                 # We require RabbitMQ to do this, as we can't call the email handler
                 # from the Tornado process. So if there's no rabbitmq support do nothing
                 queue_json_publish("missedmessage_emails", event, lambda event: None)
+
+    for client, flags in send_to_clients.itervalues():
+        if not client.accepts_event_type('message'):
+            continue
+
+        # The below prevents (Zephyr) mirroring loops.
+        if ('mirror' in message.sending_client.name and
+            message.sending_client == client.client_type):
+            continue
+
+        if client.apply_markdown:
+            message_dict = message_dict_markdown
+        else:
+            message_dict = message_dict_no_markdown
+
+        # Make sure Zephyr mirroring bots know whether stream is invite-only
+        if "mirror" in client.client_type.name and data.get("invite_only"):
+            message_dict = message_dict.copy()
+            message_dict["invite_only_stream"] = True
+
+        event = dict(type='message', message=message_dict, flags=flags)
+        client.add_event(event)
 
     if 'stream_name' in data:
         stream_receive_message(data['realm_id'], data['stream_name'], message)

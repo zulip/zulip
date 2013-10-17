@@ -36,15 +36,20 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor(object):
-    def __init__(self, user_profile_id, id, event_types, client_type,
-                 apply_markdown=True, lifespan_secs=0):
+    def __init__(self, user_profile_id, realm_id, id, event_types, client_type,
+                 apply_markdown=True, all_public_streams=False, lifespan_secs=0):
+        # These objects are pickled on shutdown and restored on restart.
+        # If fields are added or semantics are changed, temporary code must be
+        # added to load_event_queues() to update the restored objects
         self.user_profile_id = user_profile_id
+        self.realm_id = realm_id
         self.current_handler = None
         self.event_queue = EventQueue(id)
         self.queue_timeout = lifespan_secs
         self.event_types = event_types
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
+        self.all_public_streams = all_public_streams
         self.client_type = client_type
         self._timeout_handle = None
 
@@ -129,6 +134,8 @@ class EventQueue(object):
 clients = {}
 # maps user id to list of client descriptors
 user_clients = {}
+# maps realm id to list of client descriptors with all_public_streams=True
+realm_clients_all_streams = {}
 
 # list of registered gc hooks.
 # each one will be called with a user profile id, queue, and bool
@@ -148,33 +155,49 @@ def get_client_descriptor(queue_id):
 def get_client_descriptors_for_user(user_profile_id):
     return user_clients.get(user_profile_id, [])
 
-def allocate_client_descriptor(user_profile_id, event_types, client_type,
-                               apply_markdown, lifespan_secs):
+def get_client_descriptors_for_realm_all_streams(realm_id):
+    return realm_clients_all_streams.get(realm_id, [])
+
+def allocate_client_descriptor(user_profile_id, realm_id, event_types, client_type,
+                               apply_markdown, all_public_streams, lifespan_secs):
     global next_queue_id
     id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
     next_queue_id += 1
-    client = ClientDescriptor(user_profile_id, id, event_types, client_type,
-                              apply_markdown, lifespan_secs)
+    client = ClientDescriptor(user_profile_id, realm_id, id, event_types, client_type,
+                              apply_markdown, all_public_streams, lifespan_secs)
     clients[id] = client
     user_clients.setdefault(user_profile_id, []).append(client)
+    if all_public_streams:
+        realm_clients_all_streams.setdefault(realm_id, []).append(client)
     return client
 
 def gc_event_queues():
     start = time.time()
     to_remove = set()
     affected_users = set()
+    affected_realms = set()
     for (id, client) in clients.iteritems():
         if client.idle(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
+            affected_realms.add(client.realm_id)
+
+    def filter_client_dict(client_dict, key):
+        if key not in client_dict:
+            return
+
+        new_client_list = filter(lambda c: c.event_queue.id not in to_remove,
+                                client_dict[key])
+        if len(new_client_list) == 0:
+            del client_dict[key]
+        else:
+            client_dict[key] = new_client_list
 
     for user_id in affected_users:
-        new_client_list = filter(lambda c: c.event_queue.id not in to_remove,
-                                user_clients[user_id])
-        if len(new_client_list) == 0:
-            del user_clients[user_id]
-        else:
-            user_clients[user_id] = new_client_list
+        filter_client_dict(user_clients, user_id)
+
+    for realm_id in affected_realms:
+        filter_client_dict(realm_clients_all_streams, realm_id)
 
     for id in to_remove:
         for cb in gc_hooks:
@@ -210,11 +233,17 @@ def load_event_queues():
         pass
 
     for client in clients.itervalues():
-        # The following client_type block can be dropped once we've
+        # The following block can be dropped once we've
         # cleared out all our old event queues
-        if not hasattr(client, 'client_type'):
-            client.client_type = get_client("website")
+        if not hasattr(client, 'realm_id') or not hasattr(client, 'all_public_streams'):
+            from zerver.models import get_user_profile_by_id
+            client.realm_id = get_user_profile_by_id(client.user_profile_id).realm.id
+            client.all_public_streams = False
+            logging.info("Tornado updated a queue")
+
         user_clients.setdefault(client.user_profile_id, []).append(client)
+        if client.all_public_streams:
+            realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
 
     logging.info('Tornado loaded %d event queues in %.3fs'
                  % (len(clients), time.time() - start))
@@ -256,10 +285,11 @@ def extract_json_response(resp):
         return resp.json
 
 def request_event_queue(user_profile, user_client, apply_markdown,
-                        queue_lifespan_secs, event_types=None):
+                        queue_lifespan_secs, event_types=None, all_public_streams=False):
     if settings.TORNADO_SERVER:
         req = {'dont_block'    : 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
+               'all_public_streams': ujson.dumps(all_public_streams),
                'client'        : 'internal',
                'user_client'   : user_client.name,
                'lifespan_secs' : queue_lifespan_secs}

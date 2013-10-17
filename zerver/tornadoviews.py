@@ -193,6 +193,7 @@ def get_events_backend(request, user_profile, handler = None,
                        last_event_id = REQ(converter=int, default=None),
                        queue_id = REQ(default=None),
                        apply_markdown = REQ(default=False, converter=json_to_bool),
+                       all_public_streams = REQ(default=False, converter=json_to_bool),
                        event_types = REQ(default=None, converter=json_to_list),
                        dont_block = REQ(default=False, converter=json_to_bool),
                        lifespan_secs = REQ(default=0, converter=int)):
@@ -202,8 +203,9 @@ def get_events_backend(request, user_profile, handler = None,
     orig_queue_id = queue_id
     if queue_id is None:
         if dont_block:
-            client = allocate_client_descriptor(user_profile.id, event_types,
-                                                user_client, apply_markdown, lifespan_secs)
+            client = allocate_client_descriptor(user_profile.id, user_profile.realm.id,
+                                                event_types, user_client, apply_markdown,
+                                                all_public_streams, lifespan_secs)
             queue_id = client.event_queue.id
         else:
             return json_error("Missing 'queue_id' argument")
