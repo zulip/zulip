@@ -29,8 +29,10 @@ RABBITMQ_PASSWORD = ''
 # TODO: Make USING_MAILCHIMP do something (and default to False)
 USING_MAILCHIMP = False
 
-# This can be filled in automatically from the database
-FEEDBACK_BOT_KEY = ''
+
+# These credentials are for communication with the central Zulip deployment manager
+DEPLOYMENT_ROLE_NAME = ''
+DEPLOYMENT_ROLE_KEY = ''
 
 # TODO: Make USING_MANDRILL do something (and default to False)
 USING_MANDRILL = False

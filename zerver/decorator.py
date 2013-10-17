@@ -18,11 +18,16 @@ from zerver.lib.utils import statsd
 from zerver.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
      api_calls_left
+
+from zilencer.models import get_deployment_by_domain, Deployment
 from functools import wraps
 import base64
 import logging
 import cProfile
 from zerver.lib.mandrill_client import get_mandrill_client
+
+def get_deployment_or_userprofile(role):
+    return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)
 
 class _RespondAsynchronously(object):
     pass
@@ -75,24 +80,26 @@ def process_client(request, user_profile, default):
 
     update_user_activity(request, user_profile)
 
-def validate_api_key(email, api_key):
+def validate_api_key(role, api_key):
     # Remove whitespace to protect users from trivial errors.
-    email, api_key = email.strip(), api_key.strip()
+    role, api_key = role.strip(), api_key.strip()
 
     try:
-        user_profile = get_user_profile_by_email(email)
+        profile = get_deployment_or_userprofile(role)
     except UserProfile.DoesNotExist:
-        raise JsonableError("Invalid user: %s" % (email,))
+        raise JsonableError("Invalid user: %s" % (role,))
+    except Deployment.DoesNotExist:
+        raise JsonableError("Invalid deployment: %s" % (role,))
 
-    if api_key != user_profile.api_key:
+    if api_key != profile.api_key:
         if len(api_key) != 32:
             reason = "Incorrect API key length (keys should be 32 characters long)"
         else:
             reason = "Invalid API key"
-        raise JsonableError(reason + " for user '%s'" % (email,))
-    if not user_profile.is_active:
-        raise JsonableError("User account is not active")
-    return user_profile
+        raise JsonableError(reason + " for role '%s'" % (role,))
+    if not profile.is_active:
+        raise JsonableError("Account not active")
+    return profile
 
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(view_func):
@@ -158,7 +165,7 @@ def authenticated_rest_api_view(view_func):
             # case insensitive per RFC 1945
             if auth_type.lower() != "basic":
                 return json_error("Only Basic authentication is supported.")
-            email, api_key = base64.b64decode(encoded_value).split(":")
+            role, api_key = base64.b64decode(encoded_value).split(":")
         except ValueError:
             return json_error("Invalid authorization header for basic auth")
         except KeyError:
@@ -166,15 +173,19 @@ def authenticated_rest_api_view(view_func):
 
         # Now we try to do authentication or die
         try:
-            user_profile = validate_api_key(email, api_key)
+            # Could be a UserProfile or a Deployment
+            profile = validate_api_key(role, api_key)
         except JsonableError, e:
             return json_unauthorized(e.error)
-        request.user = user_profile
-        request._email = user_profile.email
-        process_client(request, user_profile, "API")
+        request.user = profile
+        process_client(request, profile, "API")
+        if isinstance(profile, UserProfile):
+            request._email = profile.email
+        else:
+            request._email = "deployment:" + role
+            profile.rate_limits = ""
         # Apply rate limiting
-        limited_func = rate_limit()(view_func)
-        return limited_func(request, user_profile, *args, **kwargs)
+        return rate_limit()(view_func)(request, profile, *args, **kwargs)
     return _wrapped_view_func
 
 def process_as_post(view_func):
@@ -422,7 +433,7 @@ def rate_limit_user(request, user, domain):
     request._ratelimit_over_limit = ratelimited
     # Abort this request if the user is over her rate limits
     if ratelimited:
-        statsd.incr("ratelimiter.limited.%s" % user.id)
+        statsd.incr("ratelimiter.limited.%s.%s" % (type(user), user.id))
         raise RateLimited()
 
     incr_ratelimit(user, domain)

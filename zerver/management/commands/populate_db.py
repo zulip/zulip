@@ -19,6 +19,7 @@ from zerver.lib.bulk_create import bulk_create_realms, \
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import MAX_MESSAGE_LENGTH
 from zerver.models import DefaultStream, get_stream
+from zilencer.models import Deployment
 
 import ujson
 import datetime
@@ -118,6 +119,12 @@ class Command(BaseCommand):
             realms = {}
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
+
+            if not settings.LOCALSERVER:
+                # Associate initial deployment with Realm
+                dep = Deployment.objects.all()[0]
+                dep.realms = [realms["zulip.com"]]
+                dep.save()
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).

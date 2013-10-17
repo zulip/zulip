@@ -105,6 +105,17 @@ class Realm(models.Model):
     def get_emoji(self):
         return get_realm_emoji_uncached(self)
 
+    @property
+    def deployment(self):
+        try:
+            return self._deployments.all()[0]
+        except IndexError:
+            return None
+
+    @deployment.setter
+    def set_deployments(self, value):
+        self._deployments = [value]
+
     class Meta:
         permissions = (
             ('administer', "Administer a realm"),

@@ -164,6 +164,7 @@ INSTALLED_APPS = (
     'guardian',
     'pipeline',
     'zerver',
+    'zilencer',
 )
 
 LOCAL_STATSD = (False)

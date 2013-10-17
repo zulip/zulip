@@ -20,7 +20,7 @@ def _rules_for_user(user):
 
 def redis_key(user, domain):
     """Return the redis keys for this user"""
-    return ["ratelimit:%s:%s:%s" % (user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
+    return ["ratelimit:%s:%s:%s:%s" % (type(user), user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
 
 def max_api_calls(user):
     "Returns the API rate limit for the highest limit"

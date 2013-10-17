@@ -29,8 +29,9 @@ RABBITMQ_PASSWORD = 'xxxxxxxxxxxxxxxx'
 MAILCHIMP_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us4'
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
-# This can be filled in automatically from the database
-FEEDBACK_BOT_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+# This can be filled in automatically from the database, maybe
+DEPLOYMENT_ROLE_NAME = 'zulip.com'
+DEPLOYMENT_ROLE_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # This comes from our mandrill accounts page
 MANDRILL_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxx'
