@@ -11,7 +11,7 @@ def bulk_create_realms(realm_list):
     realms_to_create = []
     for domain in realm_list:
         if domain not in existing_realms:
-            realms_to_create.append(Realm(domain=domain))
+            realms_to_create.append(Realm(domain=domain, name=domain))
             existing_realms.add(domain)
     Realm.objects.bulk_create(realms_to_create)
 
