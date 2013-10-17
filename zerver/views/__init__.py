@@ -712,6 +712,7 @@ def home(request):
         fullname              = user_profile.full_name,
         email                 = user_profile.email,
         domain                = user_profile.realm.domain,
+        realm_name            = user_profile.realm.name,
         enter_sends           = user_profile.enter_sends,
         referrals             = register_ret['referrals'],
         realm_emoji           = register_ret['realm_emoji'],

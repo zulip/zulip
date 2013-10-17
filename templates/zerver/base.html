@@ -8,8 +8,8 @@
 <head>
     <meta charset="UTF-8">
     {% block title %}
-        {% if user_profile.realm.domain %}
-        <title>{{user_profile.realm.domain}} - Zulip</title>
+        {% if user_profile.realm.name %}
+        <title>{{user_profile.realm.name}} - Zulip</title>
         {% else %}
         <title>Zulip</title>
         {% endif %}
