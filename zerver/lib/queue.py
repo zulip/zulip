@@ -96,8 +96,12 @@ class SimpleQueueClient(object):
 
     def register_consumer(self, queue_name, consumer):
         def wrapped_consumer(ch, method, properties, body):
-            consumer(ch, method, properties, body)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
+            try:
+                consumer(ch, method, properties, body)
+                ch.basic_ack(delivery_tag=method.delivery_tag)
+            except Exception, e:
+                ch.basic_nack(delivery_tag=method.delivery_tag)
+                raise e
 
         self.consumers[queue_name].add(wrapped_consumer)
         self.ensure_queue(queue_name,
