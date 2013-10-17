@@ -363,6 +363,8 @@ function mark_all_as_read(cont) {
 }
 
 function process_loaded_for_unread(messages) {
+    activity.process_loaded_messages(messages);
+    activity.update_huddles();
     unread.process_loaded_messages(messages);
     update_unread_counts();
 }

@@ -1303,7 +1303,7 @@ $(function () {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $('#user_presences').on('click', '.selectable_sidebar_block', function (e) {
+    $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
         var email = $(e.target).parents('li').attr('data-email');
         narrow.by('pm-with', email, {trigger: 'sidebar'});
         // The preventDefault is necessary so that clicking the
@@ -1318,6 +1318,14 @@ $(function () {
         e.stopPropagation();
         // Since we're stopping propagation we have to manually close any
         // open popovers.
+        popovers.hide_all();
+    });
+
+    $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
+        var emails = $(e.target).parents('li').attr('data-emails');
+        narrow.by('pm-with', emails, {trigger: 'sidebar'});
+        e.preventDefault();
+        e.stopPropagation();
         popovers.hide_all();
     });
 

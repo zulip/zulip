@@ -199,6 +199,30 @@ function update_users() {
     compose_fade.update_faded_users();
 }
 
+exports.update_huddles = function () {
+    var section = $('#group-pm-list').expectOne();
+
+    var huddles = exports.get_huddles().slice(0, 10);
+
+    if (huddles.length === 0 || !feature_flags.show_huddles) {
+        section.hide();
+        return;
+    }
+
+    var group_pms = _.map(huddles, function (huddle) {
+        return {
+            emails: huddle,
+            name: exports.full_huddle_name(huddle),
+            fraction_present: exports.huddle_fraction_present(huddle, presence_info),
+            short_name: exports.short_huddle_name(huddle)
+        };
+    });
+
+    var html = templates.render('group_pms', {group_pms: group_pms});
+    $('#group-pms').expectOne().html(html);
+    section.show();
+};
+
 function status_from_timestamp(baseline_time, presence) {
     if (presence.website === undefined) {
         return 'offline';
@@ -242,6 +266,7 @@ function focus_ping() {
             }
         });
         update_users();
+        exports.update_huddles();
     });
 }
 
@@ -282,6 +307,7 @@ exports.set_user_statuses = function (users, server_time) {
     });
 
     update_users();
+    exports.update_huddles();
 };
 
 return exports;

@@ -64,7 +64,11 @@ function get_filter_li(type, name) {
     if (type === 'stream') {
         return $("#stream_sidebar_" + subs.stream_id(name));
     } else if (type === "private") {
-        return $("li.user_sidebar_entry[data-email='" + name + "']");
+        if (name.indexOf(",") < 0) {
+            return $("li.user_sidebar_entry[data-email='" + name + "']");
+        } else {
+            return $("li.group-pms-sidebar-entry[data-emails='" + name + "']");
+        }
     }
     return iterate_to_find("#" + type + "_filters > li", name);
 }
@@ -120,6 +124,9 @@ function update_count_in_dom(count_span, value_span, count) {
         else if (count_span.parent().hasClass("user_sidebar_entry")) {
             count_span.parent(".user_sidebar_entry").removeClass("user-with-count");
         }
+        else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
+            count_span.parent(".group-pms-sidebar-entry").removeClass("group-with-count");
+        }
         value_span.text('');
         return;
     }
@@ -131,6 +138,9 @@ function update_count_in_dom(count_span, value_span, count) {
     }
     else if (count_span.parent().hasClass("user_sidebar_entry")) {
         count_span.parent(".user_sidebar_entry").addClass("user-with-count");
+    }
+    else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
+            count_span.parent(".group-pms-sidebar-entry").addClass("group-with-count");
     }
     value_span.text(count);
 }

@@ -410,38 +410,38 @@ a:hover code {
     background-color: #ccd6cc;
 }
 
-#user_presences {
+#user_presences, #group-pms {
     list-style-position: inside; /* Draw the bullets inside our box */
     margin-left: 0;
     overflow-y:  hidden;
 }
-#user_presences:hover {
+#user_presences:hover, #group-pms:hover {
     overflow-y: auto;
 }
 
-#user_presences li:hover {
+#user_presences li:hover, #group-pms li:hover {
     background-color: #e2e8dd;
 }
 
-#user_presences .user_sidebar_entry:hover {
+#user_presences .user_sidebar_entry:hover, #group-pms .group-pms-sidebar-entry:hover {
     cursor: pointer;
 }
 
-#user_presences li {
+#user_presences li, #group-pms li {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.user_sidebar_entry .count {
+.user_sidebar_entry .count, .group-pms-sidebar-entry .count {
     display: none;
 }
 
-#user_presences li {
+#user_presences li, #group-pms li {
     list-style-type: none;
 }
 
-.user-status-indicator {
+.user-status-indicator, .group-pm-status-indicator {
     display: block;
     width: 8px;
     height: 8px;
@@ -453,7 +453,7 @@ a:hover code {
     margin-right: 0.5em;
 }
 
-.user_active .user-status-indicator {
+.user_active .user-status-indicator, .group-pm-status-indicator {
     background-color: #44C21D;
     border-color: #44C21D;
 }
@@ -476,7 +476,7 @@ a:hover code {
     border-color: gray;
 }
 
-#user_presences a {
+#user_presences a, #group-pms a {
     color: #333;
 }
 
@@ -533,7 +533,8 @@ ul.filters {
     position: relative;
 }
 
-.user_sidebar_entry .selectable_sidebar_block {
+.user_sidebar_entry .selectable_sidebar_block,
+.group-pms-sidebar-entry .selectable_sidebar_block {
     width: 170px;
     overflow: hidden;
     display: block;
@@ -545,7 +546,12 @@ ul.filters {
     width: 150px;
 }
 
+.group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
+    width: 170px;
+}
+
 .user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
 #global_filters .count,
 #stream_filters .count {
     position: absolute;
@@ -559,6 +565,10 @@ ul.filters {
     font-weight: normal;
 }
 
+.group-pms-sidebar-entry .count {
+    right: 2px;
+}
+
 #stream_filters .count,
 #global_filters .count {
     margin-left: 0.5em;
@@ -566,6 +576,7 @@ ul.filters {
 }
 
 .user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
 #global_filters .count
 {
     line-height: 11px;
@@ -2516,7 +2527,11 @@ li.expanded_subject {
     margin-right: 5px;
 }
 
-#streams_header, #userlist-header, #sharethelove-header {
+#group-pm-list {
+    display: none;
+}
+
+#streams_header, #userlist-header, #sharethelove-header, #group-pm-header {
     border-top: 1px solid #ddd;
     margin-top: 5px;
     margin-right: 10px;
