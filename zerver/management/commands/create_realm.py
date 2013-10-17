@@ -4,6 +4,8 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_realm
 
+import re
+
 class Command(BaseCommand):
     help = """Create a realm for the specified domain.
 
@@ -17,12 +19,26 @@ Usage: python manage.py create_realm foo.com"""
                     help='Make this an open realm.'),
         )
 
+    def validate_domain(self, domain):
+        # Domains can't contain whitespace if they are to be used in memcached
+        # keys.
+        if re.search("\s", domain):
+            raise ValueError("Domains can't contain whitespace")
+
+        # Domains must look like domains, ie have the structure of
+        # <subdomain(s)>.<tld>. One reason for this is that bots need
+        # to have valid looking emails.
+        if len(domain.split(".")) < 2:
+            raise ValueError("Domains must contain a '.'")
+
     def handle(self, *args, **options):
         if not args:
             self.print_help("python manage.py", "create_realm")
             exit(1)
 
         domain = args[0]
+        self.validate_domain(domain)
+
         realm, created = do_create_realm(
             domain, restricted_to_domain=not options["open_realm"])
         if created:
