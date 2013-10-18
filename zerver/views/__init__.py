@@ -2057,6 +2057,46 @@ def ad_hoc_queries(request):
 
     ###
 
+    title = 'At risk users'
+
+    query = '''
+        select
+            realm.domain,
+            cast(floor(extract(epoch from age(now(), max(last_visit))) / 3600) as int) as age,
+            up.email,
+            sum(count) as hits,
+            max(last_visit) as last_time
+        from zerver_useractivity ua
+        join zerver_userprofile up on up.id = ua.user_profile_id
+        join zerver_realm realm on realm.id = up.realm_id
+        where up.is_active
+        and (not up.is_bot)
+        and domain not in (
+            'users.customer4.invalid',
+            'ios_appreview.zulip.com',
+            'mit.edu'
+        )
+        and email not like '%%+%%'
+        group by up.email, realm.domain
+        having max(last_visit) between
+            now() - interval '7 day' and
+            now() - interval '1 day'
+        order by domain, max(last_visit)
+    '''
+
+    cols = [
+        'Domain',
+        'Hours since activity',
+        'Email',
+        'Hits',
+        'Last visit'
+    ]
+
+    data = get_data(query, cols, title)
+    queries.append(data)
+
+    ###
+
     title = 'Android usage'
 
     query = '''
