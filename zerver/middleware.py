@@ -141,7 +141,7 @@ class LogRequests(object):
         logger_timing = '%5s%s%s%s%s %s (%s via %s)' % \
                          (format_timedelta(time_delta), optional_orig_delta,
                           memcached_output, bugdown_output,
-                          db_time_output, request.get_full_path(), email, client)
+                          db_time_output, request.path, email, client)
         logger_line = '%-15s %-7s %3d %s' % \
                         (remote_ip, request.method, response.status_code,
                          logger_timing)
