@@ -660,8 +660,9 @@ def home(request):
 
     user_profile = request.user
     request._email = request.user.email
+    request.client = get_client("website")
 
-    register_ret = do_events_register(user_profile, get_client("website"),
+    register_ret = do_events_register(user_profile, request.client,
                                       apply_markdown=True)
     user_has_messages = (register_ret['max_message_id'] != -1)
 
