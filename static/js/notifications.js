@@ -308,6 +308,14 @@ function message_is_notifiable(message) {
     if (message.sent_by_me) {
         return false;
     }
+    if ((message.type === "stream") &&
+        !stream_data.in_home_view(message.stream)) {
+        return false;
+    }
+    if ((message.type === "stream") &&
+        muting.is_topic_muted(message.stream, message.subject)) {
+        return false;
+    }
 
     // Then, do any properties make it notifiable?
     if (message.type === "private") {
