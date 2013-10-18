@@ -301,13 +301,31 @@ exports.speaking_at_me = function (message) {
 };
 
 function message_is_notifiable(message) {
-    // based purely on message contents, can we notify the user about the message?
-    return (!message.sent_by_me &&
-            (message.type === "private" ||
-             exports.speaking_at_me(message) ||
-             (message.type === "stream" &&
-              subs.receives_notifications(message.stream)) ||
-             alert_words.notifies(message)));
+    // Based purely on message contents, can we notify the user about
+    // the message?
+
+    // First, does anything disqualify it from being notifiable?
+    if (message.sent_by_me) {
+        return false;
+    }
+
+    // Then, do any properties make it notifiable?
+    if (message.type === "private") {
+        return true;
+    }
+    if (exports.speaking_at_me(message)) {
+        return true;
+    }
+    if ((message.type === "stream") &&
+        subs.receives_notifications(message.stream)) {
+        return true;
+    }
+    if (alert_words.notifies(message)) {
+        return true;
+    }
+
+    // Nope.
+    return false;
 }
 
 exports.received_messages = function (messages) {
