@@ -138,17 +138,18 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
-        logger_timing = '%5s%s%s%s%s %s (%s via %s)' % \
+        logger_client = "(%s via %s)" % (email, client)
+        logger_timing = '%5s%s%s%s%s %s' % \
                          (format_timedelta(time_delta), optional_orig_delta,
                           memcached_output, bugdown_output,
-                          db_time_output, request.path, email, client)
-        logger_line = '%-15s %-7s %3d %s' % \
+                          db_time_output, request.path)
+        logger_line = '%-15s %-7s %3d %s %s' % \
                         (remote_ip, request.method, response.status_code,
-                         logger_timing)
+                         logger_timing, logger_client)
         logger.info(logger_line)
 
         if time_delta >= 1:
-            queue_json_publish("slow_queries", logger_timing, lambda e: None)
+            queue_json_publish("slow_queries", "%s (%s)" % (logger_timing, email), lambda e: None)
 
         # Log some additional data whenever we return certain 40x errors
         if 400 <= response.status_code < 500 and response.status_code not in [401, 404, 405]:
