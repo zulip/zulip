@@ -3,12 +3,7 @@ class zulip::bots {
   class { 'zulip::supervisor': }
 
   file { '/etc/supervisor/conf.d/feedback-bot.conf':
-    require => Package['supervisor'],
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => 640,
-    source  => "puppet:///modules/zulip/supervisor/conf.d/feedback-bot.conf",
-    notify  => Service['supervisor'],
+    ensure => absent,
   }
+
 }
