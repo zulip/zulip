@@ -138,14 +138,18 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
+        try:
+            extra_request_data = " %s" % (request._extra_log_data,)
+        except Exception:
+            extra_request_data = ""
         logger_client = "(%s via %s)" % (email, client)
         logger_timing = '%5s%s%s%s%s %s' % \
                          (format_timedelta(time_delta), optional_orig_delta,
                           memcached_output, bugdown_output,
                           db_time_output, request.path)
-        logger_line = '%-15s %-7s %3d %s %s' % \
+        logger_line = '%-15s %-7s %3d %s%s %s' % \
                         (remote_ip, request.method, response.status_code,
-                         logger_timing, logger_client)
+                         logger_timing, extra_request_data, logger_client)
         logger.info(logger_line)
 
         if time_delta >= 1:

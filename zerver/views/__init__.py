@@ -1046,6 +1046,11 @@ def get_old_messages_backend(request, user_profile,
         query = UserMessage.objects.select_related("message").only("flags", "id", "message__id") \
             .filter(user_profile=user_profile).order_by('message')
 
+    # Add some metadata to our logging data for narrows
+    if narrow is not None:
+        operator_data = ",".join(operator for (operator, operand) in narrow)
+        request._extra_log_data = "[%s]" % (operator_data,)
+
     num_extra_messages = 1
     is_search = False
 
