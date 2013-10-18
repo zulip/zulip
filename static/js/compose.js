@@ -560,7 +560,7 @@ $(function () {
 
         if (data !== undefined && data.mentioned !== undefined) {
             var email = data.mentioned.email;
-            if (!compose_fade.would_receive_message(email)) {
+            if (compose_fade.would_receive_message(email) === false) {
                 var new_row = templates.render("compose-invite-users", {email: email,
                                                                         name: data.mentioned.full_name});
                 var error_area = $("#compose_invite_users");

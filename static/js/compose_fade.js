@@ -84,6 +84,13 @@ exports.would_receive_message = function (email) {
     }
 
     if (focused_recipient.type === 'stream') {
+        var user = realm_people_dict.get(email);
+        var sub = stream_data.get_sub(focused_recipient.stream);
+        if (user && sub && user.is_bot && !sub.invite_only) {
+            // Bots may receive messages on public streams even if they are
+            // not subscribed.
+            return undefined;
+        }
         return stream_data.user_is_subscribed(focused_recipient.stream, email);
     }
 
