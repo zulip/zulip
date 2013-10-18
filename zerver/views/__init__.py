@@ -1081,12 +1081,11 @@ def get_old_messages_backend(request, user_profile,
             before_anchor = anchor - 1
         if use_raw_query:
             cursor = connection.cursor()
-            # These queries should always be the same as what we would do
-            # in the !include_history case.
-            cursor.execute("SELECT zerver_message.id, zerver_usermessage.flags FROM " +
-                           "zerver_usermessage INNER JOIN zerver_message ON " +
-                           "zerver_message.id = zerver_usermessage.message_id " +
-                           "WHERE zerver_usermessage.user_profile_id = %s and zerver_message.id <= %s " +
+            # These queries should always be equivalent to what we
+            # would do in the !use_raw_query case.  In this case we
+            # don't actually need the zerver_message join at all.
+            cursor.execute("SELECT message_id, flags FROM zerver_usermessage "
+                           "WHERE user_profile_id = %s and message_id <= %s " +
                            "ORDER BY message_id DESC LIMIT %s", [user_profile.id, before_anchor, num_before])
             before_result = reversed(cursor.fetchall())
         else:
@@ -1094,12 +1093,11 @@ def get_old_messages_backend(request, user_profile,
     if num_after != 0:
         if use_raw_query:
             cursor = connection.cursor()
-            # These queries should always be the same as what we would do
-            # in the !include_history case.
-            cursor.execute("SELECT zerver_message.id, zerver_usermessage.flags FROM " +
-                           "zerver_usermessage INNER JOIN zerver_message ON " +
-                           "zerver_message.id = zerver_usermessage.message_id " +
-                           "WHERE zerver_usermessage.user_profile_id = %s and zerver_message.id >= %s " +
+            # These queries should always be equivalent to what we
+            # would do in the !use_raw_query case.  In this case we
+            # don't actually need the zerver_message join at all.
+            cursor.execute("SELECT message_id, flags FROM zerver_usermessage "
+                           "WHERE user_profile_id = %s and message_id >= %s " +
                            "ORDER BY message_id LIMIT %s", [user_profile.id, anchor, num_after])
             after_result = cursor.fetchall()
         else:
