@@ -343,6 +343,18 @@ def do_send_messages(messages):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
+def do_create_stream(realm, stream_name):
+    # This is used by a management command now, mostly to facilitate testing.  It
+    # doesn't simulate every single aspect of creating a subscription; for example,
+    # we don't send Zulips to users to tell them they have been subscribed.
+    stream = Stream()
+    stream.realm = realm
+    stream.name = stream_name
+    stream.save()
+    Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+    subscribers = get_active_user_profiles_by_realm(realm).filter(is_bot=False)
+    bulk_add_subscriptions([stream], subscribers)
+
 def create_stream_if_needed(realm, stream_name, invite_only=False):
     (stream, created) = Stream.objects.get_or_create(
         realm=realm, name__iexact=stream_name,
