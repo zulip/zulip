@@ -666,7 +666,7 @@ def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_
         raise JsonableError("Unable to retrieve subscribers for invite-only stream")
 
 # sub_dict is a dictionary mapping stream_id => whether the user is subscribed to that stream
-def bulk_get_subscriber_emails(stream_dicts, user_profile, sub_dict):
+def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
     target_stream_dicts = []
     for stream_dict in stream_dicts:
         try:
@@ -676,15 +676,15 @@ def bulk_get_subscriber_emails(stream_dicts, user_profile, sub_dict):
             continue
         target_stream_dicts.append(stream_dict)
 
-    subscriptions = Subscription.objects.select_related("recipient", "user_profile").filter(
+    subscriptions = Subscription.objects.select_related("recipient").filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=[stream["id"] for stream in target_stream_dicts],
         user_profile__is_active=True,
-        active=True).values("user_profile__email", "recipient__type_id")
+        active=True).values("user_profile_id", "recipient__type_id")
 
     result = dict((stream["id"], []) for stream in stream_dicts)
     for sub in subscriptions:
-        result[sub["recipient__type_id"]].append(sub["user_profile__email"])
+        result[sub["recipient__type_id"]].append(sub["user_profile_id"])
 
     return result
 
@@ -1524,7 +1524,7 @@ def decode_email_address(email):
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
 # subscriptions, so it's worth optimizing.
-def gather_subscriptions(user_profile):
+def gather_subscriptions_helper(user_profile):
     sub_dicts = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
@@ -1543,8 +1543,7 @@ def gather_subscriptions(user_profile):
 
     streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts]
     streams_subscribed_map = dict((sub["recipient__type_id"], sub["active"]) for sub in sub_dicts)
-    subscriber_map = bulk_get_subscriber_emails(streams, user_profile,
-                                                streams_subscribed_map)
+    subscriber_map = bulk_get_subscriber_user_ids(streams, user_profile, streams_subscribed_map)
 
     for sub in sub_dicts:
         stream = stream_hash[sub["recipient__type_id"]]
@@ -1568,7 +1567,23 @@ def gather_subscriptions(user_profile):
         else:
             unsubscribed.append(stream_dict)
 
-    return (sorted(subscribed), sorted(unsubscribed))
+    user_ids = set()
+    for subs in [subscribed, unsubscribed]:
+        for sub in subs:
+            if 'subscribers' in sub:
+                for subscriber in sub['subscribers']:
+                    user_ids.add(subscriber)
+    email_dict = get_emails_from_user_ids(list(user_ids))
+    return (sorted(subscribed), sorted(unsubscribed), email_dict)
+
+def gather_subscriptions(user_profile):
+    subscribed, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
+    for subs in [subscribed, unsubscribed]:
+        for sub in subs:
+            if 'subscribers' in sub:
+                sub['subscribers'] = [email_dict[user_id] for user_id in sub['subscribers']]
+
+    return (subscribed, unsubscribed)
 
 def get_status_dict(requesting_user_profile):
     # Return no status info for MIT

@@ -2669,7 +2669,7 @@ class GetSubscribersTest(AuthedTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
-        self.assertTrue(len(queries) == 3)
+        self.assertTrue(len(queries) == 4)
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
@@ -2699,7 +2699,7 @@ class GetSubscribersTest(AuthedTestCase):
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
                 self.assertTrue(len(sub["subscribers"]) == 0)
-        self.assertTrue(len(queries) == 3)
+        self.assertTrue(len(queries) == 4)
 
     def test_nonsubscriber(self):
         """
