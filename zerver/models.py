@@ -251,6 +251,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.__repr__()
 
+    @staticmethod
+    def emails_from_ids(user_ids):
+        rows = UserProfile.objects.filter(id__in=user_ids).values('id', 'email')
+        return {row['id']: row['email'] for row in rows}
+
 # Make sure we flush the UserProfile object from our memcached
 # whenever we save it.
 post_save.connect(update_user_profile_cache, sender=UserProfile)

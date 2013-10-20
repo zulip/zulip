@@ -19,7 +19,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
-    set_default_streams
+    set_default_streams, get_emails_from_user_ids
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -406,6 +406,14 @@ class ActivityTest(AuthedTestCase):
 
         # We have 8 tabs, and one query per tab.
         self.assertEqual(len(queries), 8)
+
+class UserProfileTest(TestCase):
+    def test_get_emails_from_user_ids(self):
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        othello = get_user_profile_by_email('othello@zulip.com')
+        dct = get_emails_from_user_ids([hamlet.id, othello.id])
+        self.assertEqual(dct[hamlet.id], 'hamlet@zulip.com')
+        self.assertEqual(dct[othello.id], 'othello@zulip.com')
 
 class PublicURLTest(TestCase):
     """

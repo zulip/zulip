@@ -2034,6 +2034,10 @@ def do_set_muted_topics(user_profile, muted_topics):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
+def get_emails_from_user_ids(user_ids):
+    # We may eventually use memcached to speed this up, but the DB is fast.
+    return UserProfile.emails_from_ids(user_ids)
+
 @uses_mandrill
 def clear_followup_emails_queue(email, from_email=None, mail_client=None):
     """
