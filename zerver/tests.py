@@ -1243,13 +1243,16 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_successful_subscriptions_list(self):
         """
-        Calling /json/subscriptions/list should successfully return your subscriptions.
+        Calling /api/v1/subscriptions/list should successfully return your subscriptions.
         """
-        result = self.client.post("/json/subscriptions/list", {})
+        email = self.test_email
+        api_key = self.get_api_key(email)
+        params = {'email': email, 'api-key': api_key}
+        result = self.client.post("/api/v1/subscriptions/list", params)
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
-        for stream in json["subscriptions"]:
+        for stream in json['subscriptions']:
             self.assertIsInstance(stream['name'], basestring)
             self.assertIsInstance(stream['color'], basestring)
             self.assertIsInstance(stream['invite_only'], bool)
@@ -2465,12 +2468,15 @@ class GetPublicStreamsTest(AuthedTestCase):
 
         # Check it correctly lists the user's subs with include_public=false
         result = self.client.get("/api/v1/streams?include_public=false", **self.api_auth(email))
-        result2 = self.client.post("/json/subscriptions/list", {})
+        api_key = self.get_api_key(email)
+        params = {'email': email, 'api-key': api_key}
+        result2 = self.client.post("/api/v1/subscriptions/list", params)
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
 
         self.assertIn("streams", json)
+
         self.assertIsInstance(json["streams"], list)
 
         self.assert_json_success(result2)
@@ -2513,7 +2519,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
 
     def test_list_respects_invite_only_bit(self):
         """
-        Make sure that /json/subscriptions/list properly returns
+        Make sure that /api/v1/subscriptions/list properly returns
         the invite-only bit for streams that are invite-only
         """
         email = 'hamlet@zulip.com'
@@ -2523,7 +2529,9 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assert_json_success(result1)
         result2 = self.common_subscribe_to_streams(email, ["Normandy"], invite_only=False)
         self.assert_json_success(result2)
-        result = self.client.post("/json/subscriptions/list", {})
+        api_key = self.get_api_key(email)
+        params = {'email': email, 'api-key': api_key}
+        result = self.client.post("/api/v1/subscriptions/list", params)
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
