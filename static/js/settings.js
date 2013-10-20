@@ -104,12 +104,12 @@ $(function () {
     });
 
     $("#bots_list").on("click", "button.delete_bot", function (e) {
-        var email = $(e.target).data('email');
+        var email = $(e.currentTarget).data('email');
         $.ajax({
             url: '/json/users/' + encodeURIComponent(email),
             type: 'DELETE',
             success: function () {
-                var row = $(e.target).closest("li");
+                var row = $(e.currentTarget).closest("li");
                 row.hide('slow', function () { row.remove(); });
             },
             error: function (xhr) {
@@ -119,17 +119,17 @@ $(function () {
     });
 
     $("#bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
-        var email = $(e.target).data('email');
+        var email = $(e.currentTarget).data('email');
         $.ajax({
             url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
             type: 'POST',
             success: function (data) {
-                var row = $(e.target).closest("li");
+                var row = $(e.currentTarget).closest("li");
                 row.find(".api_key").find(".value").text(data.api_key);
                 row.find("api_key_error").hide();
             },
             error: function (xhr) {
-                var row = $(e.target).closest("li");
+                var row = $(e.currentTarget).closest("li");
                 row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
             }
         });
@@ -138,7 +138,7 @@ $(function () {
     var image_version = 0;
 
     $("#bots_list").on("click", "button.open_edit_bot_form", function (e) {
-        var li = $(e.target).closest('li');
+        var li = $(e.currentTarget).closest('li');
         var edit_div = li.find('div.edit_bot');
         var form = li.find('.edit_bot_form');
         var image = li.find(".image");

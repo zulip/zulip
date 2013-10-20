@@ -1,58 +1,64 @@
-<li>
-	<div class="image">
-		<img src="{{avatar_url}}" class=avatar />
-	</div>
-	<div class="bot_info">
-		<div class="name">{{name}}</div>
-		<div class="email">
-			<span class="field">Email</span>
-			<span class="value">{{email}}</span>
-		</div>
-		<div class="api_key">
-			<span class="field">API Key</span>
-			<span class="value">{{api_key}}</span>
-			<button type="submit" class="btn btn-secondary regenerate_bot_api_key" data-email="{{email}}">
-				Generate new API Key
-			</button>
-			<div class="api_key_error text-error"></div>
-		</div>
-		<button type="submit" class="btn btn-primary open_edit_bot_form">
-			Edit Bot
-		</button>
-		<button type="submit" class="btn btn-secondary delete_bot" data-email="{{email}}">
-			Delete Bot
-		</button>
-		<div id="bot_delete_error" class="alert alert-error hide"></div>
-	</div>
-
-
-	<div class='edit_bot'>
-	    <form class="edit_bot_form form-horizontal" data-email="{{email}}">
-		    <div class="bot_edit_errors alert alert-error hide"></div>
-
-    		<div class="edit_bot_email">{{email}}</div>
-            <label for="edit_bot_name" class="control-label">Full name</label>
-            <input type="text" name="bot_name" class="edit_bot_name required"
-               maxlength=50 />
-            <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
-
-
-            <br clear="left" />
-
-    		<label for="bot_avatar_file_input" class="control-label">Avatar</label>
-    		<input type="file" name="bot_avatar_file_input" class="notdisplayed edit_bot_avatar_file_input" value="Upload avatar" />
-	        <button type="button" class="btn edit_bot_avatar_upload_button">Choose avatar</button>
-	        <button type="button" class="btn edit_bot_avatar_clear_button">Clear avatar</button>
-    		<span class="edit_bot_avatar_file"></span>
-            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
-
-
-		    <br clear="left" />
-
-		    <input type="submit" class="btn btn-primary edit_bot_button" value="Save" />
-	    	<button type="submit" class="btn btn-secondary reset_edit_bot">Cancel</button>
-		    <div class="edit_bot_spinner"></div>
-	    </form>
-	</div>
-
+<li class="bot-information-box">
+    <div class="image">
+        <img src="{{avatar_url}}" class="avatar" />
+    </div>
+    <div class="bot_info">
+        <div class="name">{{name}}</div>
+        <div class="email">
+            <span class="field">Email</span>
+            <span class="value">{{email}}</span>
+        </div>
+        <div class="api_key">
+            <span class="field">API Key</span>
+            <span class="api-key-value-and-button">
+               <span class="value">{{api_key}}
+               </span>
+               <button type="submit" class="btn btn-secondary regenerate_bot_api_key" title="Generate new API key" data-email="{{email}}">
+                   <i class="icon-vector-refresh"></i>
+               </button>
+            </span>
+            <div class="api_key_error text-error"></div>
+        </div>
+        <div class="edit-bot-buttons">
+           <button type="submit" class="btn btn-primary open_edit_bot_form" title="Edit bot">
+            <i class="icon-vector-pencil"></i>
+           </button>
+           <button type="submit" class="btn btn-danger delete_bot" title="Delete bot" data-email="{{email}}">
+            <i class="icon-vector-trash"></i>
+           </button>
+        </div>
+        <div id="bot_delete_error" class="alert alert-error hide"></div>
+    </div>
+    <div class='edit_bot'>
+        <form class="edit_bot_form form-horizontal" data-email="{{email}}">
+            <div class="bot_edit_errors alert alert-error hide"></div>
+            <div class="edit_bot_email">{{email}}</div>
+            <div class="edit-bot-form-box">
+              <div class="control-group">
+               <label for="edit_bot_name" class="control-label">Full name</label>
+               <div class="controls">
+                  <input type="text" name="bot_name" class="edit_bot_name required" maxlength=50 />
+                  <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
+               </div>
+              </div>
+              <div class="control-group">
+               <label for="bot_avatar_file_input" class="control-label">Avatar</label>
+               <input type="file" name="bot_avatar_file_input" class="notdisplayed edit_bot_avatar_file_input" value="Upload avatar" />
+                <div class="controls">
+                  <div class="edit_bot_avatar_file"></div>
+                  <button type="button" class="btn edit_bot_avatar_upload_button">Choose avatar</button>
+                  <button type="button" class="btn edit_bot_avatar_clear_button">Clear avatar</button>
+                </div>
+               <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+              </div>
+              <div class="control-group">
+               <div class="controls">
+                  <input type="submit" class="btn btn-primary edit_bot_button" value="Save" />
+                  <button type="submit" class="btn btn-secondary reset_edit_bot">Cancel</button>
+               </div>
+               <div class="edit_bot_spinner"></div>
+              </div>
+            </div>
+        </form>
+    </div>
 </li>

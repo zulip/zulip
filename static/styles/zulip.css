@@ -2426,8 +2426,9 @@ li.expanded_subject {
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
-    /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
+    height: 25px;
+    margin-bottom: 0px;
 }
 
 /* Override padding-top on form labels when they label only text */
@@ -2546,12 +2547,40 @@ li.expanded_subject {
 #word-alerts {
     list-style-type: none;
 
-    width: 295px;
-    margin-left: 0px;
+    width: 300px;
+    margin: auto;
 }
 
 .alert-word-item {
-    margin-bottom: 5px;
+    padding: 8px;
+}
+
+#word-alerts li.alert-word-item:nth-child(odd) {
+    background: #fdfdfd;
+}
+
+#word-alerts li.alert-word-item:nth-child(even) {
+    background: #f9f9f9;
+}
+
+#word-alerts li.alert-word-item:first-child {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+#word-alerts li.alert-word-item:nth-last-child(2) {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+#word-alerts li.alert-word-item:last-child {
+    background: none;
+    margin-top: 8px;
+}
+
+#word-alert-settings {
+    margin-top: 15px;
+    margin-bottom: 30px;
 }
 
 .remove-alert-word,
@@ -2586,17 +2615,40 @@ input.edit-alert-word::-webkit-input-placeholder {
 }
 
 #bots_list .name {
-    font-weight: bold;
-    font-size: 130%;
+    font-weight: 300;
+    font-size: 18px;
+    margin-bottom: 20px;
 }
 
 #bots_list .field:after {
     content: ':';
 }
 
+#bots_list .regenerate_bot_api_key {
+    padding: 2px;
+    width: 20px;
+    height: 20px;
+    background: #e3e3e3;
+    color: #666;
+    position: relative;
+    top: -2px;
+}
+
+#bots_list .regenerate_bot_api_key:hover {
+    color: #000;
+}
+
+
+#bots_list .edit-bot-buttons {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
 .bot_info .field {
-    width: 7em;
-    display: inline-block;
+    width: 4em;
+    font-weight: 300;
+    position: absolute;
 }
 
 .edit_bot_form {
@@ -2604,34 +2656,27 @@ input.edit-alert-word::-webkit-input-placeholder {
 }
 
 .edit_bot_email {
-    font-weight: bold;
+    font-weight: 300;
+    font-size: 18px;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 div.edit_bot {
-    border: 1px black solid;
     display: none;
-    padding: 10px;
 }
 
 .edit_bot_form .control-label,
 #create_bot_form .control-label {
     width: 10em;
-    text-align: left;
-    margin-right: 3px;
-}
-
-#create_bot_button {
-    margin-left: 24em;
+    text-align: right;
+    margin-right: 20px;
 }
 
 .edit_bot_avatar_clear_button,
 #bot_avatar_clear_button {
     display: none;
-}
-
-.edit_bot_name,
-#create_bot_name {
-    width: 20em;
 }
 
 #create_bot_short_name {
@@ -2648,9 +2693,16 @@ div.edit_bot {
 }
 
 #bots_list .email .value,
-#bots_list .api_key .value {
-    font-family: monospace;
-    font-size: 85%;
+#bots_list .api_key .api-key-value-and-button {
+    display: inline-block;
+    margin-left: 4em;
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
 }
 
 #onboarding-header {
@@ -2760,8 +2812,280 @@ div.edit_bot {
 }
 
 #settings {
-    margin-top: 45px;
+    margin-top: 55px;
     margin-left: 15px;
+}
+
+#settings .settings-section {
+    background-color: #f1f1f1;
+    border: 1px solid #e3e3e3;
+    border-top: 6px solid #e3e3e3;
+    padding: 45px 0px 15px 0px;
+    margin-right: 5px;
+    position: relative;
+}
+
+#settings .settings-section .account-settings-form,
+#settings .settings-section .new-bot-form,
+#settings .settings-section .edit-bot-form-box {
+    width: 400px;
+    margin: auto;
+}
+
+#settings .settings-section .new-bot-form,
+#settings .settings-section .edit-bot-form-box {
+    margin-top: 35px;
+}
+
+#settings .settings-section .new-bot-section-title {
+    top: 20px;
+    left: 20px;
+}
+
+#settings .settings-section .notification-settings-form {
+    width: 400px;
+    margin: auto;
+}
+
+
+#settings .settings-section .account-settings-form .control-label,
+#settings .settings-section .new-bot-form .control-label,
+#settings .settings-section .edit-bot-form-box .control-label {
+    width: 120px;
+}
+
+#settings .settings-section .account-settings-form .controls,
+#settings .settings-section .new-bot-form .controls,
+#settings .settings-section .edit-bot-form-box .controls  {
+    margin-left: 140px;
+}
+
+#settings .settings-section .notification-settings-form .controls  {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0px;
+    margin-left: 110px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    line-height: 30px;
+    margin-right: 12px;
+}
+
+#settings .settings-section .notification-settings-form .controls input[type='checkbox'] {
+    margin: 0px;
+    padding: 0px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+#settings .settings-section .notification-settings-form .control-label {
+    float: none;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0px;
+    padding: 0px;
+    line-height: 30px;
+    width: 200px;
+}
+
+#settings .settings-section .notification-settings-form .notification-submission {
+    margin-left: 140px;
+}
+
+#settings .notification-settings-form .notification-settings-note {
+    margin-left: 110px;
+    width: 250px;
+    font-size: 13px;
+    line-height: 14px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+#settings .bot-settings-note {
+    margin-left: 38px;
+    font-size: 13px;
+}
+
+#settings .bot-information-box,
+#settings .add-new-bot-box {
+    background: #e3e3e3;
+    padding: 10px;
+    margin-left: 38px;
+    margin-right: 38px;
+    margin-bottom: 15px;
+    box-shadow: 0px 0px 2px rgba(0,0,0,0.5);
+    position: relative;
+    font-size: 14px;
+}
+
+#settings .add-new-bot-box {
+    background: #cbe3cb;
+}
+
+#settings #get_api_key_box,
+#settings #show_api_key_box,
+#settings #api_key_button_box .control-group {
+    text-align: center;
+}
+
+#settings #get_api_key_box .control-group {
+    margin: 0px;
+    width: 100%;
+}
+
+#settings #get_api_key_box .control-group .control-label {
+    float: none;
+    width: auto;
+    margin: 0px;
+    display: inline-block;
+    margin-right: 15px;
+}
+
+#settings #get_api_key_box .control-group input {
+    width: auto;
+    margin: 0px;
+    display: inline-block;
+}
+
+#settings #get_api_key_box .control-group .btn {
+    margin-top: 20px;
+}
+
+#settings .bot-information-box .email,
+#settings .bot-information-box .api_key {
+    position: relative;
+}
+
+#settings .bot-information-box .image {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #676767;
+}
+
+#settings .settings-section .api-key-note {
+    padding: 0px 20px 20px 20px;
+}
+
+@media (max-width: 580px) {
+
+
+#settings .settings-section .new-bot-form .control-label,
+#settings .settings-section .edit-bot-form-box .control-label {
+    float: left;
+    width: 120px;
+    padding-top: 0;
+    text-align: right;
+}
+
+#settings .settings-section .new-bot-form .controls {
+    margin-left: 110px;
+}
+
+}
+
+@media (max-width: 480px) {
+
+#pw_strength {
+    margin: auto;
+}
+
+#settings .settings-section .account-settings-form,
+#settings .settings-section .new-bot-form,
+#settings .settings-section .notification-settings-form,
+#settings .settings-section .edit-bot-form-box {
+    width: 100%;
+}
+
+#settings .settings-section .account-settings-form .control-label,
+#settings .settings-section .new-bot-form .control-label,
+#settings .settings-section .edit-bot-form-box .control-label {
+    display: block;
+    width: 120px;
+    padding: 0px;
+    padding-top: 0;
+    text-align: center;
+    margin: auto;
+    float: none;
+}
+
+#settings .settings-section .account-settings-form .controls,
+#settings .settings-section .new-bot-form .controls,
+#settings .settings-section .edit-bot-form-box .controls {
+    margin: auto;
+    text-align: center;
+}
+
+#settings .settings-section .account-settings-form .controls button,
+#settings .settings-section .account-settings-form .controls input,
+#settings .settings-section .new-bot-form .controls button,
+#settings .settings-section .edit-bot-form-box .controls button,
+#settings .settings-section .new-bot-form .controls input,
+#settings .settings-section .edit-bot-form-box .controls input {
+    margin: auto;
+}
+
+#settings .settings-section .new-bot-form {
+    padding: 0px;
+    width: 100%;
+    text-align: center;
+}
+
+#settings .settings-section .notification-settings-form .controls,
+#settings .notification-settings-form .notification-settings-note {
+    margin-left: 80px;
+}
+
+#settings .settings-section .notification-settings-form .notification-submission {
+    margin: 0px;
+    width: 100%;
+    text-align: center;
+}
+
+}
+
+#settings .settings-section .settings-section-title {
+    font-size: 18px;
+    font-weight: 300;
+    position: absolute;
+    left: 12px;
+    top: 15px;
+}
+
+#settings .settings-section .settings-section-icon {
+    margin-right: 8px;
+}
+
+#settings h1 {
+    font-size: 25px;
+    font-weight: 300;
+}
+
+#settings .settings-icon {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+#settings #notification-settings {
+    margin-top: 15px;
+}
+
+#notification-docs {
+    color: #666666;
+    font-size: 11px;
+    position: relative;
+    top: -6px;
+}
+
+#notification-docs:hover {
+    color: #111111;
+}
+
+#settings-status {
+    text-align: center;
+    width: 50%;
+    margin: auto;
+    margin-bottom: 20px;
 }
 
 #home {

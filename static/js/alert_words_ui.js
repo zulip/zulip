@@ -48,7 +48,7 @@ $(function () {
     });
 
     $('#word-alerts').on('click', '.remove-alert-word', function (event) {
-        var li = $(event.target).parent();
+        var li = $(event.currentTarget).parent();
         li.remove();
 
         update_word_alerts();
