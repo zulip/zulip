@@ -559,7 +559,7 @@ MessageListView.prototype = {
     },
 
     append: function MessageListView__append(messages, messages_are_new) {
-        var cur_window_size = this._render_win_end - this._render_win_start;
+        var cur_window_size = this.list.count_full_messages_between(this._render_win_start, this._render_win_end);
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
             var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
             this.render(slice_to_render, 'bottom', messages_are_new);
