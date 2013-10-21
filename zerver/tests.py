@@ -449,7 +449,6 @@ class PublicURLTest(TestCase):
                            "/json/send_message",
                            "/json/invite_users",
                            "/json/settings/change",
-                           "/json/subscriptions/list",
                            "/json/subscriptions/remove",
                            "/json/subscriptions/exists",
                            "/json/subscriptions/add",

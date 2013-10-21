@@ -1482,11 +1482,6 @@ def api_list_subscriptions(request, user_profile):
 def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
-@authenticated_json_post_view
-def json_list_subscriptions(request, user_profile):
-    all_subs = gather_subscriptions(user_profile)
-    return json_success({"subscriptions": all_subs[0], "unsubscribed": all_subs[1]})
-
 @transaction.commit_on_success
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
