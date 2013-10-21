@@ -225,8 +225,14 @@ def rest_dispatch(request, **kwargs):
         if arg in METHODS:
             supported_methods[arg] = kwargs[arg]
             del kwargs[arg]
-    if request.method in supported_methods.keys():
-        target_function = globals()[supported_methods[request.method]]
+
+    # Override requested method if magic method=??? parameter exists
+    method_to_use = request.method
+    if request.POST and 'method' in request.POST:
+        method_to_use = request.POST['method']
+
+    if method_to_use in supported_methods.keys():
+        target_function = globals()[supported_methods[method_to_use]]
 
         # Set request._query for update_activity_user(), which is called
         # by some of the later wrappers.
@@ -246,7 +252,7 @@ def rest_dispatch(request, **kwargs):
             # Wrap function with decorator to authenticate the user before
             # proceeding
             target_function = authenticated_rest_api_view(target_function)
-        if request.method not in ["GET", "POST"]:
+        if method_to_use not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because
             # otherwise we might access and thus cache a value for
             # request.REQUEST.

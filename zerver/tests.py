@@ -917,6 +917,27 @@ class BotTest(AuthedTestCase):
         bot = self.get_bot()
         self.assertEqual('Fred', bot['full_name'])
 
+    def test_patch_bot_via_post(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/create_bot", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'full_name': 'Fred',
+            'method': 'PATCH'
+        }
+        result = self.client.post("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        full_name = ujson.loads(result.content)['full_name']
+        self.assertEqual('Fred', full_name)
+
+        bot = self.get_bot()
+        self.assertEqual('Fred', bot['full_name'])
+
     def test_patch_bogus_bot(self):
         # Deleting a bogus bot will succeed silently.
         self.login("hamlet@zulip.com")
