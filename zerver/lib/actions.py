@@ -1626,9 +1626,10 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         ret['onboarding_steps'] = [{'email' : profile.email,
                                     'steps' : profile.onboarding_steps}]
     if event_types is None or "subscription" in event_types:
-        subs = gather_subscriptions(user_profile)
-        ret['subscriptions'] = subs[0]
-        ret['unsubscribed'] = subs[1]
+        subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
+        ret['subscriptions'] = subscriptions
+        ret['unsubscribed'] = unsubscribed
+        ret['email_dict'] = email_dict
     if event_types is None or "presence" in event_types:
         ret['presences'] = get_status_dict(user_profile)
     if event_types is None or "referral" in event_types:
