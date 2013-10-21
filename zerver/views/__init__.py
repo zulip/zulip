@@ -1262,7 +1262,7 @@ def same_realm_irc_user(user_profile, email):
 
     domain = email_to_domain(email)
 
-    return user_profile.realm.domain == domain.replace("@irc.", "@")
+    return user_profile.realm.domain == domain.replace("irc.", "")
 
 def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
@@ -1390,7 +1390,7 @@ def send_message_backend(request, user_profile,
         if client.name == "zephyr_mirror" and user_profile.realm.domain != "mit.edu":
             return json_error("Invalid mirrored realm")
         if (client.name == "irc_mirror" and message_type_name != "private" and
-            not message_to.startswith("#")):
+            not message_to[0].startswith("#")):
             return json_error("IRC stream names must start with #")
         sender = mirror_sender
     else:
