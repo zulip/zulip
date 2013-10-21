@@ -17,6 +17,9 @@ var customer4_realms = [
 ];
 var is_customer4 = _.contains(customer4_realms, page_params.domain);
 
+// Manually-flipped debugging flags
+exports.log_send_times = false;
+
 // Permanent realm-specific stuff:
 
 exports.twenty_four_hour_time = internal_24_hour_people || iceland;

@@ -355,7 +355,11 @@ function send_message() {
         request.to = JSON.stringify([request.to]);
     }
 
+    var start_time = new Date();
     function success() {
+        if (feature_flags.log_send_times) {
+            blueslip.log("send time: " + (new Date() - start_time));
+        }
         $("#new_message_content").val('').focus();
         autosize_textarea();
         $("#send-status").hide(0);
