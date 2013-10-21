@@ -260,9 +260,9 @@ code {
 }
 
 pre {
-    /* 13/14 em, so bootstrap's default 13 px,
+    /* 12/14 em, so bootstrap's default 12 px,
        when body is the default 14 px */
-    font-size: 0.929em;
+    font-size: 0.857em;
     line-height: inherit;
     white-space: pre;
     overflow-x: auto;
