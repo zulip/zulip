@@ -131,8 +131,8 @@ function update_stream_name(sub, new_name) {
     sub.name = new_name;
     stream_data.add_sub(new_name, sub);
 
-    // Update the stream sidebar.
-    exports.reload_subscriptions({clear_first: true});
+    // Update the left sidebar.
+    stream_list.rename_stream(sub);
 
     // Update the message feed.
     _.each([home_msg_list, current_msg_list, all_msg_list], function (list) {
