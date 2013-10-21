@@ -182,6 +182,9 @@ $(function () {
                 var formData = new FormData();
                 formData.append('full_name', full_name);
                 formData.append('csrfmiddlewaretoken', csrf_token);
+                // Send a PATCH as a POST in order to work around QtWebkit (Linux/Windows desktop app)
+                // not supporting PATCH body.
+                formData.append('method', 'PATCH');
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
                 });
@@ -189,7 +192,7 @@ $(function () {
                 edit_button.hide();
                 $.ajax({
                     url: '/json/bots/' + encodeURIComponent(email),
-                    type: 'PATCH',
+                    type: 'POST',
                     data: formData,
                     cache: false,
                     processData: false,
