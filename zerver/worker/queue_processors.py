@@ -11,6 +11,7 @@ from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, send_local_email_template_with_delay, clear_followup_emails_queue, \
     check_send_message, extract_recipients
+from zerver.lib.digest import handle_digest_email
 from zerver.decorator import JsonableError
 from confirmation.models import Confirmation
 
@@ -224,3 +225,14 @@ class MessageSenderWorker(QueueProcessingWorker):
                   'server_meta': event['server_meta']}
         queue_json_publish(event['server_meta']['return_queue'], result, lambda e: None)
 
+@assign_queue('digest_emails')
+class DigestWorker(QueueProcessingWorker):
+    # Who gets a digest is entirely determined by the queue_digest_emails
+    # management command, not here.
+    def start(self):
+        while True:
+            digest_events = self.q.drain_queue("digest_emails", json=True)
+
+            for event in digest_events:
+                logging.info("Received digest event: %s" % (event,))
+                handle_digest_email(event["user_profile_id"], event["cutoff"])
