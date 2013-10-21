@@ -628,6 +628,95 @@ a.bottom-signup-button {
     height: 54px !important;
 }
 
+.portico-page-header {
+    font-weight: 300;
+    font-size: 35px;
+    display: block;
+    padding-top: 40px;
+    margin-bottom: 20px;
+}
+
+.portico-page-header .portico-page-header-icon {
+    margin-right: 12px;
+}
+
+.portico-page-header a,
+.portico-page-header a:hover {
+    color: #000;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.portico-large-text {
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.portico-secondary-header {
+    font-weight: 300;
+    font-size: 25px;
+}
+
+.integration-lozenges {
+    text-align: center;
+}
+.integration-lozenge {
+    width: 125px;
+    background: #ededed;
+    border-radius: 10px;
+    margin: 15px 5px 0px 5px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.integration-lozenge:hover {
+    box-shadow: 0px 0px 3px rgba(0,0,0,0.5);
+    background: #fefefe;
+}
+
+.integration-lozenge-static:hover {
+    box-shadow: none;
+    background: #ededed;
+}
+
+.integration-lozenge .integration-link:hover {
+    text-decoration: none;
+}
+
+.integration-lozenge .integration-logo {
+    width: 125px;
+    height: auto;
+    display: block;
+}
+
+.integration-lozenge .integration-label {
+    display: block;
+    font-weight: 300;
+    font-size: 18px;
+    color: #000;
+    text-align: center;
+    padding-bottom: 18px;
+    padding-top: 8px;
+}
+
+.integration-lozenge .integration-label-secondary {
+    display: block;
+    font-size: 12px;
+    font-weight: 300;
+    text-align: center;
+    padding-bottom: 5px;
+    color: #000;
+}
+
+.integration-instructions {
+    margin-left: 150px;
+    margin-top: -175px;
+}
+
+#integration-instructions-group {
+    display: none;
+}
+
 .login-page-header,
 .apps-page-header,
 .feature-page-header,
@@ -676,6 +765,28 @@ a.bottom-signup-button {
 .api-page-header,
 .jobs-page-header {
     text-align: left;
+}
+
+.integrations-page-header {
+    font-size: 25px;
+    padding-top: 20px;
+}
+
+.integration-instruction-block {
+    position: relative;
+}
+
+#integration-list-link {
+    position: absolute;
+    top: 200px;
+    width: 130px;
+    text-align: center;
+    display: none;
+}
+
+.integrations-page-header .integrations-icon {
+    font-size: 22px;
+    margin-right: 10px;
 }
 
 .apps-instructions-header {

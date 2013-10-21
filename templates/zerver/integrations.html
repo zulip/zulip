@@ -3,61 +3,171 @@
 {# API information page #}
 
 {% block portico_content %}
-    <div class="integrations-page-header">Integrations</div>
 
-    <p>The English poet John Donne once wrote that "no man is an
-    island", and we feel the same about software. No system exists in
-    complete isolation, so we've made it easy for Zulip to connect to
-    the services you already use.</p>
+    <div class="portico-page-header"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations</a></div>
 
-    <p>With Zulip integrations, your team can stay up-to-date on
-    code changes, issue tickets, build system results, and much
-    more. So ask not for whom the notification tolls&mdash;it tolls
-    for thee! (Or for a team member of yours, I guess.)</p>
+    <p class="portico-large-text">With Zulip integrations, your team can stay up-to-date on
+    code changes, issue tickets, build system results, and much more. Choose one of the following systems
+    to integrate with. If you don't see the system you would like to integrate with it, or run into any
+    trouble, don't hesitate to <a href="mailto:support@zulip.com?subject=Integration%20question">email us</a>.</p>
 
-    <h3>Getting started</h3>
+    <div id="integration-instruction-block" class="integration-instruction-block">
+       <a href="#" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i>&nbsp;Back to list</a>
+    </div>
 
-    <p>First, create a bot from your <a href="/#settings"
-    target="_blank">settings page</a>.  Your bot will be issued an
-    API key.
+    <div class="integration-lozenges">
+       <div class="integration-lozenge integration-basecamp">
+         <a class="integration-link integration-basecamp" href="#basecamp">
+            <img class="integration-logo" src="/static/images/integrations/logos/basecamp.png">
+            <span class="integration-label">Basecamp</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-beanstalk">
+         <a class="integration-link integration-beanstalk" href="#beanstalk">
+            <img class="integration-logo" src="/static/images/integrations/logos/beanstalk.png">
+            <span class="integration-label">Beanstalk</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-bitbucket">
+         <a class="integration-link integration-bitbucket" href="#bitbucket">
+            <img class="integration-logo" src="/static/images/integrations/logos/bitbucket.png">
+            <span class="integration-label">Bitbucket</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-capistrano">
+         <a class="integration-link integration-capistrano" href="#capistrano">
+            <img class="integration-logo" src="/static/images/integrations/logos/capistrano.png">
+            <span class="integration-label">Capistrano</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-codebase">
+         <a class="integration-link integration-codebase" href="#codebase">
+            <img class="integration-logo" src="/static/images/integrations/logos/codebase.png">
+            <span class="integration-label">Codebase</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-deskcom">
+         <a class="integration-link integration-deskcom" href="#deskcom">
+            <img class="integration-logo" src="/static/images/integrations/logos/deskcom.png">
+            <span class="integration-label">Desk.com</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-email">
+         <a class="integration-link integration-email" href="#email">
+            <img class="integration-logo" src="/static/images/integrations/logos/email.png">
+            <span class="integration-label">Email</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-git">
+         <a class="integration-link integration-git" href="#git">
+            <img class="integration-logo" src="/static/images/integrations/logos/git.png">
+            <span class="integration-label">Git</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-github">
+         <a class="integration-link integration-github" href="#github">
+            <img class="integration-logo" src="/static/images/integrations/logos/github.png">
+            <span class="integration-label">GitHub</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-hubot">
+         <a class="integration-link integration-hubot" href="#hubot">
+            <img class="integration-logo" src="/static/images/integrations/logos/hubot.png">
+            <span class="integration-label">Hubot</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-jenkins">
+         <a class="integration-link integration-jenkins" href="#jenkins">
+            <img class="integration-logo" src="/static/images/integrations/logos/jenkins.png">
+            <span class="integration-label" style="padding-top: 0px; padding-bottom: 0px;">Jenkins</span>
+            <span class="integration-label-secondary">(or Hudson)</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-jira">
+         <a class="integration-link integration-jira" href="#jira">
+            <img class="integration-logo" src="/static/images/integrations/logos/jira.png">
+            <span class="integration-label" style="padding-top: 0px; padding-bottom: 0px;">JIRA</span>
+            <span class="integration-label-secondary">(hosted or v5.2+)</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-jira-plugin">
+         <a class="integration-link integration-jira" href="#jira-plugin">
+            <img class="integration-logo" src="/static/images/integrations/logos/jira.png">
+            <span class="integration-label" style="padding-top: 0px; padding-bottom: 0px;">JIRA</span>
+            <span class="integration-label-secondary">(locally installed)</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-mercurial">
+         <a class="integration-link integration-mercurial" href="#mercurial">
+            <img class="integration-logo" src="/static/images/integrations/logos/mercurial.png">
+            <span class="integration-label">Mercurial (hg)</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-nagios">
+         <a class="integration-link integration-nagios" href="#nagios">
+            <img class="integration-logo" src="/static/images/integrations/logos/nagios.png">
+            <span class="integration-label">Nagios</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-newrelic">
+         <a class="integration-link integration-newrelic" href="#newrelic">
+            <img class="integration-logo" src="/static/images/integrations/logos/newrelic.png">
+            <span class="integration-label">New Relic</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-phabricator">
+         <a class="integration-link integration-phabricator" href="#phabricator">
+            <img class="integration-logo" src="/static/images/integrations/logos/phabricator.png">
+            <span class="integration-label">Phabricator</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-pivotal">
+         <a class="integration-link integration-pivotal" href="#pivotal">
+            <img class="integration-logo" src="/static/images/integrations/logos/pivotal.png">
+            <span class="integration-label">Pivotal Tracker</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-redmine">
+         <a class="integration-link integration-redmine" href="#redmine">
+            <img class="integration-logo" src="/static/images/integrations/logos/redmine.png">
+            <span class="integration-label">Redmine</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-stash">
+         <a class="integration-link integration-stash" href="#stash">
+            <img class="integration-logo" src="/static/images/integrations/logos/stash.png">
+            <span class="integration-label">Stash</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-subversion">
+         <a class="integration-link integration-subversion" href="#subversion">
+            <img class="integration-logo" src="/static/images/integrations/logos/subversion.png">
+            <span class="integration-label">Subversion</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-trac">
+         <a class="integration-link integration-trac" href="#trac">
+            <img class="integration-logo" src="/static/images/integrations/logos/trac.png">
+            <span class="integration-label">Trac</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-trello">
+         <a class="integration-link integration-trello" href="#trello">
+            <img class="integration-logo" src="/static/images/integrations/logos/trello.png">
+            <span class="integration-label">trello</span>
+         </a>
+       </div>
+       <div class="integration-lozenge integration-twitter">
+         <a class="integration-link integration-twitter" href="#twitter">
+            <img class="integration-logo" src="/static/images/integrations/logos/twitter.png">
+            <span class="integration-label">Twitter</span>
+         </a>
+       </div>
+    </div>
 
-    <p>Then, follow the integration instructions below for the service
-    you are interested in. It's as easy as that! If you run into any
-    trouble, don't hesitate
-    to <a href="mailto:support@zulip.com?subject=Integration%20question">email
-    us</a>.</p>
+<div id="integration-instructions-group">
+<div id="basecamp" class="integration-instructions">
 
-    <h3 id="services">Services with integrations</h3>
-    <ul>
-      <li><a href="#basecamp">Basecamp</a></li>
-      <li><a href="#beanstalk">Beanstalk</a></li>
-      <li><a href="#bitbucket">Bitbucket</a></li>
-      <li><a href="#capistrano">Capistrano</a></li>
-      <li><a href="#codebase">Codebase HQ</a></li>
-      <li><a href="#desk">Desk.com</a></li>
-      <li><a href="#email">Email</a></li>
-      <li><a href="#git">Git</a></li>
-      <li><a href="#github">GitHub</a></li>
-      <li><a href="#hubot">Hubot</a></li>
-      <li><a href="#jenkins">Jenkins (or Hudson)</a></li>
-      <li><a href="#jira">Jira (hosted or v5.2+)</a></li>
-      <li><a href="#jira-plugin">Jira (locally installed)</a></li>
-      <li><a href="#mercurial">Mercurial (hg)</a></li>
-      <li><a href="#nagios">Nagios</a></li>
-      <li><a href="#newrelic">New Relic</a></li>
-      <li><a href="#phabricator">Phabricator</a></li>
-      <li><a href="#pivotal">Pivotal Tracker</a></li>
-      <li><a href="#redmine">Redmine</a></li>
-      <li><a href="#svn">Subversion</a></li>
-      <li><a href="#trac">Trac</a></li>
-      <li><a href="#trello">Trello</a></li>
-      <li><a href="#twitter">Twitter</a></li>
-      <li>...and more coming soon! <a href="mailto:support@zulip.com?subject=Integration%20request">Email us</a> with requests!</li>
-    </ul>
-
-    {#--------------------------------------------------------------------#}
-    <div id="basecamp" class="integration">
-      <h4>Basecamp</h4>
       <p>First, create the stream you'd like to use for Basecamp notifications,
       and subscribe all interested parties to this stream. We recommend the
       name <code>basecamp</code>.</p>
@@ -95,13 +205,10 @@
       calendar event, comment, message, or more, you'll get a notification in your selected stream
       with the project or calendar as the topic.
       <img class="screenshot" src="/static/images/integrations/basecamp/002.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-    {#--------------------------------------------------------------------#}
-    <div id="beanstalk" class="integration">
-      <h4>Beanstalk</h4>
+
+<div id="beanstalk" class="integration-instructions">
+
      <p>Zulip supports both SVN and Git notifications from Beanstalk.</p>
 
      <p>First, create the stream <code>commits</code> and subscribe all
@@ -118,13 +225,10 @@
       deployment, you'll get an automated notification that looks like
       this:</p>
       <img class="screenshot" src="/static/images/integrations/beanstalk/002.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-    {#--------------------------------------------------------------------#}
-    <div id="bitbucket" class="integration">
-      <h4>Bitbucket</h4>
+
+    <div id="bitbucket" class="integration-instructions">
+
 
      <p>Zulip supports both Git and Mercurial notifications from Bitbucket.</p>
 
@@ -149,13 +253,10 @@
       <p><b>Congratulations! You're done!</b><br /> Whenever you push code to your repository,
         you'll get an automated notification that looks like this:</p>
       <img class="screenshot" src="/static/images/integrations/bitbucket/002.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-    {#--------------------------------------------------------------------#}
-    <div id="capistrano" class="integration">
-      <h4>Capistrano</h4>
+
+    <div id="capistrano" class="integration-instructions">
+
       <p>First, download and install our <a href="/api">Python
       bindings and example scripts</a> on your Capistrano server.
       Once you've done that, you'll use the <code>zulip-send</code>
@@ -193,13 +294,10 @@
       <img class="screenshot" src="/static/images/integrations/capistrano/001.png">
 
       <p><small>Thanks to Wes of TurboVote for <a href="https://gist.github.com/cap10morgan/5100822">submitting this integration</a>!</small></p>
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="codebase" class="integration">
-      <h4>Codebase HQ</h4>
+
+    <div id="codebase" class="integration-instructions">
+
       <p>First, create the streams you'd like to use for Codebase notifications. There will be two types of
       messages: commit-related updates and issue-related updates. After creating these streams (we suggest naming
       them <code>codebase commits</code> and <code>codebase issues</code>), make sure to subscribe all interested parties.</p>
@@ -236,13 +334,10 @@
       commit, issue, deployment, or more, you'll get notifications in your selected streams
       with the associated information.</p>
       <img class="screenshot" src="/static/images/integrations/codebase/001.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="desk" class="integration">
-      <h4>Desk.com</h4>
+
+    <div id="deskcom" class="integration-instructions">
+
 
       <p>First, create the stream you'd like to use for Desk.com notifications,
       and subscribe all interested parties to this stream. We recommend the
@@ -316,16 +411,12 @@
       you'll see a notification like the following, to the stream
       <code>desk</code>, with a topic that matches the case's subject name:</p>
       <img class="screenshot" src="/static/images/integrations/desk/006.png">
-
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
 
 
-{#--------------------------------------------------------------------#}
-    <div id="email" class="integration">
-      <h4>Email <img src="/static/images/integrations/zulip_mail.png" style="width: 50px;" /></h4>
+
+    <div id="email" class="integration-instructions">
+
 
       <p>You can send emails to Zulip! This is useful:</p>
 
@@ -353,15 +444,11 @@
 
       <p>Please note that it may take up to one minute for the message to show up
       in Zulip.</p>
-
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
 
-{#--------------------------------------------------------------------#}
-    <div id="git" class="integration">
-      <h4>Git</h4>
+
+    <div id="git" class="integration-instructions">
+
       <p>First, download and install our <a href="/api">Python
       bindings and example scripts</a> on your Git server.</p>
 
@@ -404,14 +491,10 @@
       <p><b>Testing</b><br />You can test the plugin without changing
       your <code>master</code> branch by pushing to
       the <code>test-post-receive</code> branch.</p>
-
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="github" class="integration">
-      <h4>GitHub</h4>
+
+    <div id="github" class="integration-instructions">
+
 
       <p>First, create the stream you'd like to use for GitHub notifications,
       and subscribe all interested parties to this stream. The integration will
@@ -435,13 +518,10 @@ to your repository, you'll see a commit message like the
 following, to the stream <code>commits</code> with a subject that matches the repository name (in this case "humbug-test"):</p>
       <img class="screenshot" src="/static/images/integrations/github/004.png">
 
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="hubot" class="integration">
-      <h4>Hubot</h4>
+
+    <div id="hubot" class="integration-instructions">
+
 
       <ol>
         <li><p>Follow the "Getting Started with Hubot" section of the <a href="https://github.com/github/hubot/blob/master/docs/README.md">Hubot README</a> to create your Hubot. You'll have a new directory from which <code>bin/hubot</code> starts a vanilla Hubot instance with the shell backend.</p></li>
@@ -471,14 +551,10 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <img class="screenshot" src="/static/images/integrations/hubot/001.png">
 
       <p><a href='https://github.com/zulip/hubot-zulip'>Source code for the hubot-zulip adapter is available on GitHub</a>.</p>
-
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="jenkins" class="integration">
-      <h4>Jenkins (or Hudson)</h4>
+
+    <div id="jenkins" class="integration-instructions">
+
 
       <p>First, create the stream you'd like to use for Jenkins or Hudson
       notifications, and subscribe all interested parties to this stream. We
@@ -525,13 +601,10 @@ following, to the stream <code>commits</code> with a subject that matches the re
           <li>Are your access key and email address correct? Test them using <a href="/api">our curl API</a>.
           <li>Still stuck? Email <a href="mailto:support@zulip.com?subject=Jenkins">support@zulip.com</a>.</li>
         </ul>
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-   <div id="jira" class="integration">
-      <h4>JIRA</h4>
+
+   <div id="jira" class="integration-instructions">
+
 
       <p><em>If you are running JIRA version 5.2 or greater, or if you are
           using the hosted JIRA provided by Atlassian, you can use the built-in
@@ -563,13 +636,10 @@ following, to the stream <code>commits</code> with a subject that matches the re
       Updates from JIRA will be sent to the Zulip stream you specified in the JIRA web-hook.
       </p>
       <img class="screenshot" src="/static/images/integrations/jira/001.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-   <div id="jira-plugin" class="integration">
-      <h4>JIRA (Plugin)</h4>
+
+   <div id="jira-plugin" class="integration-instructions">
+
 
       <p><em>If you are running JIRA version 5.2 or greater, or using the
           hosted JIRA provided by Atlassian, we recommend using the <a
@@ -614,13 +684,118 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <p><b>Congratulations! You're done!</b><br />
       Updates from JIRA will be sent to the stream you've configured, as below.</p>
       <img class="screenshot" src="/static/images/integrations/jira/001.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="mercurial" class="integration">
-      <h4>Mercurial (hg)</h4>
+
+    <div id="nagios" class="integration-instructions">
+
+
+      <p>First, create the stream you'd like to use for Nagios notifications,
+      and subscribe all interested parties to this stream. The integration will
+      use the default stream <code>nagios</code> if no stream is supplied in the
+      configuration; you still need to create the stream even if you are using
+      this default.</p>
+
+      <p>Next, download and install our <a href="/api">Python
+      bindings and example scripts</a> on your Nagios server.</p>
+
+      <p>Next, open <code>integrations/nagios/zuliprc.example</code>
+      in your favorite editor, and change the following lines to
+      specify the email address and API key for your Nagios bot,
+      saving it to <code>/etc/nagios3/zuliprc</code> on your Nagios
+      server:</p>
+
+<div class="codehilite"><pre>[api]
+email=NAGIOS_BOT_EMAIL_ADDRESS
+key=NAGIOS_BOT_API_KEY
+</pre></div>
+
+      <p>Copy <code>integrations/nagios/zulip_nagios.cfg</code>
+      to <code>/etc/nagios3/conf.d</code> on your Nagios server.</p>
+
+      <p>Finally, add <code>zulip</code> to the <code>members</code>
+      list for one or more of the contact groups in the <code>CONTACT
+      GROUPS</code> section
+      of <code>/etc/nagios3/conf.d/contacts.cfg</code>, doing
+      something like:
+
+<div class="codehilite"><pre>define contactgroup{
+        contactgroup_name       admins
+        alias                   Nagios Administrators
+        members                 monitoring<span class="na">, zulip</span>
+        }
+</pre></div>
+
+      Once you've done that, reload your Nagios configuration
+      using <code>/etc/init.d/nagios3 reload</code>.
+
+      <p><b>Congratulations! You're done!</b><br /> When your Nagios
+      system makes an alert, you'll see a message like the following,
+      to the stream <code>nagios</code> (to change this, edit the
+      arguments to <code>nagios-notify-zulip</code>
+      in <code>/etc/nagios3/conf.d/zulip_nagios.cfg</code>) with a
+      subject indicating the service with an issue:</p>
+      <img class="screenshot" src="/static/images/integrations/nagios/001.png">
+
+      <p><b>Testing</b><br />If you
+        have <a href="http://nagios.sourceforge.net/docs/3_0/extcommands.html">external
+        commands enabled in Nagios</a>, you can generate a test notice
+        from your Nagios instance by visiting using the <code>Send
+        custom service notification</code> command in
+        the <code>Service Commands</code> section of any individual
+        service's page on your Nagios instance.</p>
+
+      <p><b>Troubleshooting</b><br />You can confirm whether you've
+      correctly configured Nagios to run the Zulip plugin by looking
+      for <code>SERVICE NOTIFICATION</code> lines mentioning zulip
+      in <code>/var/log/nagios3/nagios.log</code>.  You can confirm
+      whether you've configured the Zulip plugin code correctly by
+      running <code>/usr/local/share/zulip/integrations/nagios/nagios-notify-zulip</code>
+      directly.</p>
+    </div>
+
+    <div id="phabricator" class="integration-instructions">
+
+
+      <p>Zulip supports Phabricator integration and can notify you of the
+      latest items in your Phabricator feed.</p>
+
+      <p>You can follow the instructions at
+          <a href="https://github.com/zulip/phabricator-to-zulip">
+           https://github.com/zulip/phabricator-to-zulip
+          </a>
+        to get it set up.
+
+    </div>
+
+
+    <div id="pivotal" class="integration-instructions">
+
+
+      <p>Zulip supports Pivotal Tracker integration and can notify you of changes
+      to the stories in your Pivotal Tracker project.</p>
+
+      <p>First, create the stream you'd like to use for Pivotal Tracker
+      notifications, and subscribe all interested parties to this stream. We
+      recommend the name <code>pivotal</code>.</p>
+
+      <p>Next, in the Settings page for your project, choose the Integrations
+      tab. Scroll down to the <code>Activity Web Hook</code> section, and enter
+      the following url:</p>
+
+      <p><code>https://api.zulip.com/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to.</p>
+
+      <img class="screenshot" src="/static/images/integrations/pivotal/001.png">
+
+      <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Zulip:</p>
+      <img class="screenshot" src="/static/images/integrations/pivotal/002.png">
+    </div>
+
+
+    <div id="mercurial" class="integration-instructions">
 
       <p>Get Zulip notifications when you <code>hg push</code>!</p>
 
@@ -713,128 +888,10 @@ ignore_branches = "noisy,even-more-noisy"</pre>
       looks like this:</p>
 
       <img class="screenshot" src="/static/images/integrations/hg/001.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
-    </div>
-{#--------------------------------------------------------------------#}
-    <div id="nagios" class="integration">
-      <h4>Nagios</h4>
-
-      <p>First, create the stream you'd like to use for Nagios notifications,
-      and subscribe all interested parties to this stream. The integration will
-      use the default stream <code>nagios</code> if no stream is supplied in the
-      configuration; you still need to create the stream even if you are using
-      this default.</p>
-
-      <p>Next, download and install our <a href="/api">Python
-      bindings and example scripts</a> on your Nagios server.</p>
-
-      <p>Next, open <code>integrations/nagios/zuliprc.example</code>
-      in your favorite editor, and change the following lines to
-      specify the email address and API key for your Nagios bot,
-      saving it to <code>/etc/nagios3/zuliprc</code> on your Nagios
-      server:</p>
-
-<div class="codehilite"><pre>[api]
-email=NAGIOS_BOT_EMAIL_ADDRESS
-key=NAGIOS_BOT_API_KEY
-</pre></div>
-
-      <p>Copy <code>integrations/nagios/zulip_nagios.cfg</code>
-      to <code>/etc/nagios3/conf.d</code> on your Nagios server.</p>
-
-      <p>Finally, add <code>zulip</code> to the <code>members</code>
-      list for one or more of the contact groups in the <code>CONTACT
-      GROUPS</code> section
-      of <code>/etc/nagios3/conf.d/contacts.cfg</code>, doing
-      something like:
-
-<div class="codehilite"><pre>define contactgroup{
-        contactgroup_name       admins
-        alias                   Nagios Administrators
-        members                 monitoring<span class="na">, zulip</span>
-        }
-</pre></div>
-
-      Once you've done that, reload your Nagios configuration
-      using <code>/etc/init.d/nagios3 reload</code>.
-
-      <p><b>Congratulations! You're done!</b><br /> When your Nagios
-      system makes an alert, you'll see a message like the following,
-      to the stream <code>nagios</code> (to change this, edit the
-      arguments to <code>nagios-notify-zulip</code>
-      in <code>/etc/nagios3/conf.d/zulip_nagios.cfg</code>) with a
-      subject indicating the service with an issue:</p>
-      <img class="screenshot" src="/static/images/integrations/nagios/001.png">
-
-      <p><b>Testing</b><br />If you
-        have <a href="http://nagios.sourceforge.net/docs/3_0/extcommands.html">external
-        commands enabled in Nagios</a>, you can generate a test notice
-        from your Nagios instance by visiting using the <code>Send
-        custom service notification</code> command in
-        the <code>Service Commands</code> section of any individual
-        service's page on your Nagios instance.</p>
-
-      <p><b>Troubleshooting</b><br />You can confirm whether you've
-      correctly configured Nagios to run the Zulip plugin by looking
-      for <code>SERVICE NOTIFICATION</code> lines mentioning zulip
-      in <code>/var/log/nagios3/nagios.log</code>.  You can confirm
-      whether you've configured the Zulip plugin code correctly by
-      running <code>/usr/local/share/zulip/integrations/nagios/nagios-notify-zulip</code>
-      directly.</p>
-
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
-    </div>
-{#--------------------------------------------------------------------#}
-    <div id="phabricator" class="integration">
-      <h4>Phabricator</h4>
-
-      <p>Zulip supports Phabricator integration and can notify you of the
-      latest items in your Phabricator feed.</p>
-
-      <p>You can follow the instructions at
-          <a href="https://github.com/zulip/phabricator-to-zulip">
-           https://github.com/zulip/phabricator-to-zulip
-          </a>
-        to get it set up.
-
     </div>
 
-{#--------------------------------------------------------------------#}
-    <div id="pivotal" class="integration">
-      <h4>Pivotal Tracker</h4>
+    <div id="newrelic" class="integration-instructions">
 
-      <p>Zulip supports Pivotal Tracker integration and can notify you of changes
-      to the stories in your Pivotal Tracker project.</p>
-
-      <p>First, create the stream you'd like to use for Pivotal Tracker
-      notifications, and subscribe all interested parties to this stream. We
-      recommend the name <code>pivotal</code>.</p>
-
-      <p>Next, in the Settings page for your project, choose the Integrations
-      tab. Scroll down to the <code>Activity Web Hook</code> section, and enter
-      the following url:</p>
-
-      <p><code>https://api.zulip.com/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <img class="screenshot" src="/static/images/integrations/pivotal/001.png">
-
-      <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Zulip:</p>
-      <img class="screenshot" src="/static/images/integrations/pivotal/002.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
-    </div>
-{#--------------------------------------------------------------------#}
-    <div id="newrelic" class="integration">
-     <h4>New Relic</h4>
 
       <p>New Relic can send messages to a Zulip stream for alerts and
       deploys.</p>
@@ -858,13 +915,10 @@ key=NAGIOS_BOT_API_KEY
       <p><b>Congratulations! You're done!</b><br /> Your New Relic events will
        appear in Zulip:</p>
       <img class="screenshot" src="/static/images/integrations/newrelic/002.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="redmine" class="integration">
-      <h4>Redmine</h4>
+
+    <div id="redmine" class="integration-instructions">
+
 
       <p>Get information on new or updated Redmine issues right in
       Zulip with our Zulip Redmine plugin! Note: this setup must be
@@ -935,13 +989,68 @@ key=NAGIOS_BOT_API_KEY
       Redmine, the team can see these updates in real time in Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/redmine/001.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="svn" class="integration">
-      <h4>Subversion</h4>
+
+
+    <div id="stash" class="integration-instructions">
+      <h4>Stash</h4>
+
+      <p>See what the team is committing to Stash right in Zulip with the Zulip
+      Stash plugin!</p>
+
+      <p>First, create the stream you'd like to use for Stash notifications, and
+      subscribe all interested parties to this stream. We recommend the
+      name <code>commits</code>.</p>
+
+      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
+      page</a>, create a Stash bot.</p>
+
+      <p>Then:</p>
+
+      <ol>
+        <li>
+          <p>Visit the Settings page for the Project that you'd like to generate
+          Zulip notifications. Click the "Hooks" option in the left sidebar, and
+          click "Add Hook" on the resulting page. Click the "Search for hook
+          plugins" link:</p>
+
+          <img class="screenshot" src="/static/images/integrations/stash/001.png">
+        </li>
+        <li>
+          <p>On the search results page, look for and install the "Post-Receive
+          WebHook for Stash" plugin:</p>
+
+          <img class="screenshot" src="/static/images/integrations/stash/002.png">
+        </li>
+        <li>
+          <p>Return to the Settings page for this Project and click the "Hooks"
+          option in the left sidebar. The newly-installed post-receive webhook
+          plugin is now listed in the "Post-receive" hooks section. Click the
+          edit icon next to the hook to configure it:</p>
+
+          <img class="screenshot" src="/static/images/integrations/stash/003.png">
+        </li>
+        <li>
+          <p>Supply the following webhook URL, replacing the bot email address,
+          bot API key, and Zulip stream with the appropriate
+          information. <b>Note:</b> the <code>@</code>-sign in the bot e-mail
+          address must be escaped to <code>%40</code>:</p>
+
+          <p><code>https://<font color="#00A26F">stash-bot%40example.com</font>:<font color="#00A26F">api_key</font>@api.zulip.com/v1/external/stash?stream=<font color="#00A26F">commits</font></code></p>
+
+          <img class="screenshot" src="/static/images/integrations/stash/004.png">
+        </li>
+      </ol>
+
+      <p><b>Congratulations! You're done!</b><br /> When you push to Stash, the
+      team can see these updates in real time in Zulip:</p>
+
+      <img class="screenshot" src="/static/images/integrations/stash/005.png">
+    </div>
+
+
+    <div id="subversion" class="integration-instructions">
+
 
       <p>It is easy to send Zulips on SVN commits, by configuring a post-commit
       hook. To do this:</p>
@@ -981,13 +1090,10 @@ key=NAGIOS_BOT_API_KEY
       repository, the team can see these updates in real time in Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/svn/001.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="trac" class="integration">
-      <h4>Trac</h4>
+
+    <div id="trac" class="integration-instructions">
+
 
       <p>First, create the stream you'd like to use for Trac notifications, and
       subscribe all interested parties to this stream. The integration will use
@@ -1034,14 +1140,10 @@ key=NAGIOS_BOT_API_KEY
       result in a Zulip notification using
       the <code>TRAC_NOTIFY_FIELDS</code> setting
       in <code>zulip_trac_config.py</code>.</p>
-
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="trello" class="integration">
-      <h4>Trello</h4>
+
+    <div id="trello" class="integration-instructions">
+
 
       <p>First, create the stream you'd like to use for Trello notifications,
       and subscribe all interested parties to this stream. We recommend the
@@ -1055,13 +1157,10 @@ key=NAGIOS_BOT_API_KEY
 
       <img class="screenshot" src="/static/images/integrations/trello/001.png">
       <p><small>Thanks to Nathan from FoundationDB for <a href="https://github.com/nathanlws/trello-to-zulip">submitting this integration</a>!</small></p>
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
-    <div id="twitter" class="integration">
-      <h4>Twitter</h4>
+
+    <div id="twitter" class="integration-instructions">
+
 
       <p>See Twitter search results in Zulip! This is great for seeing and
       discussing who is talking about you, friends, competitors, or important
@@ -1136,11 +1235,8 @@ access_token_secret =</pre>
       specified stream, with the search term as the topic.</p>
 
       <img class="screenshot" src="/static/images/integrations/twitter/001.png">
-      <p>
-        <a href="#services">^ Back to top</a>
-      </p>
     </div>
-{#--------------------------------------------------------------------#}
+</div>
 
 {% endblock %}
 
@@ -1159,6 +1255,54 @@ $(function() {
                          $(".integral").css("display", "none");
                          $("a.title").css("left", 0);
                        });
+
+    var newlozenge,
+        currentblock,
+        currentlink,
+        currentlozenge,
+        instructionbox = $("#integration-instruction-block"),
+        hashes = $('.integration-instructions').map(function() {
+                    return this.id || null;
+                 }).get();
+
+
+
+    function switchToIntegration(integrationHash) {
+      var cleanHash = integrationHash.substr(1);
+      if (hashes.indexOf(cleanHash) > -1) {
+           currentblock = $(integrationHash);
+           currentlozenge = $(".integration-lozenge.integration-" + cleanHash);
+           $(".integration-lozenges").hide();
+           newlozenge = currentlozenge.clone();
+           newlozenge.find(".integration-logo").unwrap();
+           newlozenge.addClass("integration-lozenge-static");
+           instructionbox.hide();
+           instructionbox.children(".integration-lozenge").remove();
+           instructionbox.children(".integration-instructions").appendTo("#integration-instructions-group");
+           instructionbox.append(newlozenge);
+           instructionbox.append(currentblock);
+           instructionbox.show();
+           $("#integration-list-link").css("display", "block");
+           window.scrollTo(0,0);
+      }
+    }
+
+    function updateHash () {
+      if (document.location.hash) {
+        switchToIntegration(document.location.hash);
+      }
+      else if (currentblock && newlozenge) {
+         $("#integration-list-link").css("display", "none");
+         $(".integration-lozenges").show();
+         instructionbox.hide();
+         newlozenge.remove();
+         currentblock.appendTo("#integration-instructions-group");
+      }
+    }
+
+    window.onhashchange = updateHash;
+    updateHash();
 });
 </script>
+
 {% endblock %}
