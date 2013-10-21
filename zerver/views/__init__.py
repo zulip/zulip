@@ -917,7 +917,12 @@ class NarrowBuilder(object):
         return self.pQ(subject__iexact=operand)
 
     def by_sender(self, operand):
-        return self.pQ(sender__email__iexact=operand)
+        try:
+            sender = get_user_profile_by_email(operand)
+        except UserProfile.DoesNotExist:
+            raise BadNarrowOperator('unknown user ' + operand)
+
+        return self.pQ(sender=sender)
 
     def by_near(self, operand):
         return Q()
