@@ -43,6 +43,10 @@ exports.subscribed_streams = function () {
     return _.pluck(subscribed_streams(), 'name');
 };
 
+exports.all_subs = function () {
+    return stream_info.values();
+};
+
 exports.get_colors = function () {
     return _.pluck(subscribed_streams(), 'color');
 };

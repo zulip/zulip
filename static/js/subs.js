@@ -393,38 +393,17 @@ exports.reload_subscriptions = function (opts) {
 exports.setup_page = function () {
     util.make_loading_indicator($('#subs_page_loading_indicator'));
 
-    function populate_and_fill(data_for_streams, subscription_data) {
-        var all_streams = [];
-        var our_subs = [];
+    function populate_and_fill(data_for_streams) {
         var sub_rows = [];
 
-        /* arguments are [ "success", statusText, jqXHR ] */
-        if (data_for_streams.length > 2 && data_for_streams[2]) {
-            var stream_response = JSON.parse(data_for_streams[2].responseText);
-            _.each(stream_response.streams, function (stream) {
-                all_streams.push(stream.name);
-            });
-        }
-        if (subscription_data.length > 2 && subscription_data[2]) {
-            var subs_response = JSON.parse(subscription_data[2].responseText);
-            our_subs = subs_response.subscriptions;
-        }
-
-        // All streams won't contain invite-only streams,
-        // or anything at all if should_list_all_streams() is false
-        _.each(our_subs, function (stream) {
-            if (_.indexOf(all_streams, stream.name) === -1) {
-                all_streams.push(stream.name);
+        _.each(data_for_streams.streams, function (stream) {
+            var sub = stream_data.get_sub(stream.name);
+            if (!sub) {
+                sub = create_sub(stream.name, {subscribed: false});
             }
         });
 
-        populate_subscriptions(our_subs, true);
-
-        all_streams.forEach(function (stream) {
-            var sub = stream_data.get_sub(stream);
-            if (!sub) {
-                sub = create_sub(stream, {subscribed: false});
-            }
+        _.each(stream_data.all_subs(), function (sub) {
             sub = _.extend(sub, {'allow_rename': page_params.show_admin});
             sub_rows.push(sub);
         });
@@ -456,30 +435,20 @@ exports.setup_page = function () {
         ui.report_error("Error listing streams or subscriptions", xhr, $("#subscriptions-status"));
     }
 
-    var requests = [];
     if (should_list_all_streams()) {
-        // This query must go first to prevent a race when we are not
-        // listing all streams
         var req = $.ajax({
             type:     'POST',
             url:      '/json/get_public_streams',
             dataType: 'json',
-            timeout:  10*1000
+            timeout:  10*1000,
+            success: populate_and_fill,
+            error: failed_listing
+
         });
-        requests.push(req);
     } else {
-        // Handing an object to $.when() means that it counts as a 'success' with the
-        // object delivered directly to the callback
-        requests.push({streams: []});
+        populate_and_fill({streams: []});
         $('#create_stream_button').val("Subscribe");
     }
-
-    requests.push(exports.reload_subscriptions({custom_callbacks: true}));
-
-    // Trigger finished callback when:
-    // * Both AJAX requests are finished, if we sent themm both
-    // * Just one AJAX is finished if should_list_all_streams() is false
-    $.when.apply(this, requests).then(populate_and_fill, failed_listing);
 };
 
 exports.update_subscription_properties = function (stream_name, property, value) {
