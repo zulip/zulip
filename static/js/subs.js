@@ -357,39 +357,6 @@ function populate_subscriptions(subs, subscribed) {
     return sub_rows;
 }
 
-exports.reload_subscriptions = function (opts) {
-    var on_success;
-    opts = _.defaults({}, opts, {clear_first: false, custom_callbacks: false});
-
-    if (! opts.custom_callbacks) {
-        on_success = function (data) {
-                         if (data) {
-                             populate_subscriptions(data.subscriptions, true);
-                         }
-                     };
-    }
-
-    if (opts.clear_first) {
-        // Only clear the subscriptions just before we're ready to repopulate,
-        // otherwise the stream list will go blank in the UI while we wait for
-        // the network request to finish.
-        var existing_callback = on_success;
-        on_success = function (data) {
-            stream_data.clear_subscriptions();
-            stream_list.remove_all_narrow_filters();
-            existing_callback(data);
-        };
-    }
-
-    return $.ajax({
-                    type:     'POST',
-                    url:      '/json/subscriptions/list',
-                    dataType: 'json',
-                    timeout:  10*1000,
-                    success: on_success
-    });
-};
-
 exports.setup_page = function () {
     util.make_loading_indicator($('#subs_page_loading_indicator'));
 

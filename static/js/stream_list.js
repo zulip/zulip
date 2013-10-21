@@ -173,10 +173,6 @@ exports.remove_narrow_filter = function (name, type) {
     get_filter_li(type, name).remove();
 };
 
-exports.remove_all_narrow_filters = function () {
-    $("#stream_filters").children().remove();
-};
-
 function remove_expanded_subjects() {
     popovers.hide_topic_sidebar_popover();
     $("ul.expanded_subjects").remove();
