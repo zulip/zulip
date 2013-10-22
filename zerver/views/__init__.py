@@ -2078,6 +2078,66 @@ def user_activity_intervals():
 def can_view_activity(request):
     return request.user.realm.domain == 'zulip.com'
 
+
+@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@has_request_variables
+def sent_messages_report(request, realm=REQ(default=None)):
+    if not can_view_activity(request):
+        return HttpResponseRedirect(reverse('zerver.views.login_page'))
+
+    title = 'Recently sent messages for ' + realm
+
+    cols = [
+        'Date',
+        'Count'
+    ]
+
+    query = '''
+        select
+            series.day::date,
+            q.cnt
+        from (
+            select generate_series(
+                (now()::date - interval '2 week'),
+                now()::date,
+                interval '1 day'
+            ) as day
+        ) as series
+        left join (
+            select
+                pub_date::date pub_date,
+                count(*) cnt
+            from zerver_message m
+            join zerver_userprofile up on up.id = m.sender_id
+            join zerver_realm r on r.id = up.realm_id
+            where
+                r.domain = %s
+            and
+                pub_date > now() - interval '2 week'
+            group by
+                pub_date::date
+            order by
+                pub_date::date
+        ) q on
+            series.day = q.pub_date
+    '''
+    cursor = connection.cursor()
+    cursor.execute(query, [realm])
+    rows = cursor.fetchall()
+    cursor.close()
+
+    data = dict(
+        rows=rows,
+        cols=cols,
+        title=title
+    )
+
+    return render_to_response(
+        'zerver/ad_hoc_queries.html',
+        dict(queries=[data]),
+        context_instance=RequestContext(request)
+    )
+
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 @has_request_variables
 def ad_hoc_queries(request):
