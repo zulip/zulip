@@ -291,10 +291,10 @@ JS_SPECS = {
     'common': {
         'source_filenames': (
             'third/jquery/jquery-1.7.2.js',
+            'third/underscore/underscore.js',
             'js/blueslip.js',
             'third/bootstrap/js/bootstrap.js',
             'js/common.js',
-            'third/underscore/underscore.js',
             ),
         'output_filename':  'min/common.js'
     },
