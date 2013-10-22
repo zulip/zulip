@@ -613,7 +613,7 @@ class Bugdown(markdown.Extension):
         for k in ('image_link', 'image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
                   'escape', 'strong_em', 'emphasis', 'emphasis2',
-                  'strong'):
+                  'linebreak', 'linebreak2', 'strong'):
             del md.inlinePatterns[k]
 
         md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")

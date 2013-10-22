@@ -3196,6 +3196,15 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
 
         self.assertEqual(converted, '<p>Look at the new dropbox logo: <a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png">https://www.dropbox.com/static/images/home_logo.png</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png"><img src="https://www.dropbox.com/static/images/home_logo.png"></a></div>')
 
+    def test_nl2br(self):
+        msg = 'test\nbar'
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, '<p>test<br>\nbar</p>')
+
+        msg = 'test  '
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, '<p>test  </p>')
+
     def test_inline_interesting_links(self):
         def make_link(url):
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
