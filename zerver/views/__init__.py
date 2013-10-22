@@ -2131,10 +2131,8 @@ def sent_messages_report(request, realm=REQ(default=None)):
         context_instance=RequestContext(request)
     )
 
-@zulip_internal
-@has_request_variables
-def ad_hoc_queries(request):
-    def get_data(query, cols, title):
+def ad_hoc_queries():
+    def get_page(query, cols, title):
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -2145,9 +2143,18 @@ def ad_hoc_queries(request):
             cols=cols,
             title=title
         )
-        return data
 
-    queries = []
+        content = loader.render_to_string(
+            'zerver/ad_hoc_query.html',
+            dict(data=data)
+        )
+
+        return dict(
+            content=content,
+            title=title
+        )
+
+    pages = []
 
     ###
 
@@ -2186,8 +2193,7 @@ def ad_hoc_queries(request):
         'Last visit'
     ]
 
-    data = get_data(query, cols, title)
-    queries.append(data)
+    pages.append(get_page(query, cols, title))
 
     ###
 
@@ -2221,8 +2227,7 @@ def ad_hoc_queries(request):
         'Last time'
     ]
 
-    data = get_data(query, cols, title)
-    queries.append(data)
+    pages.append(get_page(query, cols, title))
 
     ###
 
@@ -2252,8 +2257,7 @@ def ad_hoc_queries(request):
         'Last time'
     ]
 
-    data = get_data(query, cols, title)
-    queries.append(data)
+    pages.append(get_page(query, cols, title))
 
     ###
 
@@ -2285,8 +2289,7 @@ def ad_hoc_queries(request):
         'Last time'
     ]
 
-    data = get_data(query, cols, title)
-    queries.append(data)
+    pages.append(get_page(query, cols, title))
 
     ###
 
@@ -2321,8 +2324,7 @@ def ad_hoc_queries(request):
         'Last time'
     ]
 
-    data = get_data(query, cols, title)
-    queries.append(data)
+    pages.append(get_page(query, cols, title))
 
     ###
 
@@ -2357,14 +2359,9 @@ def ad_hoc_queries(request):
         'Last time'
     ]
 
-    data = get_data(query, cols, title)
-    queries.append(data)
+    pages.append(get_page(query, cols, title))
 
-    return render_to_response(
-        'zerver/ad_hoc_queries.html',
-        dict(queries=queries),
-        context_instance=RequestContext(request)
-    )
+    return pages
 
 @zulip_internal
 @has_request_variables
@@ -2387,6 +2384,9 @@ def get_activity(request, realm=REQ(default=None)):
             ('Counts', counts_content),
             ('Durations', duration_content),
         ]
+        for page in ad_hoc_queries():
+            print page
+            data.append((page['title'], page))
         title = 'Activity'
     else:
         data = [

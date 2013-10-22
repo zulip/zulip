@@ -1,0 +1,21 @@
+<h3>{{ data.title }}</h3>
+
+<table class="table sortable table-striped table-bordered">
+
+    <thead class="activity_head">
+        <tr>
+        {% for col in data.cols %}
+            <th>{{ col }}</th>
+        {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data.rows %}
+            <tr>
+                {% for field in row %}
+                    <td sortable>{{ field }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

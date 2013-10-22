@@ -28,7 +28,7 @@
 <ul class="nav nav-tabs">
 {% for name, activity in data %}
     <li {% if forloop.first %} class="active" {% endif %}>
-        <a href="#{{ name }}" data-toggle="tab">{{ name }}</a>
+        <a href="#{{ name|slugify }}" data-toggle="tab">{{ name }}</a>
     </li>
 {% endfor %}
 </ul>
@@ -37,7 +37,7 @@
 
 {% for name, activity in data %}
 
-    <div class="tab-pane {% if forloop.first %} active {% endif %}" id="{{ name }}">
+    <div class="tab-pane {% if forloop.first %} active {% endif %}" id="{{ name|slugify }}">
         {{ activity.content }}
     </div>
 
