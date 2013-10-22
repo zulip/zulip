@@ -2075,9 +2075,7 @@ def user_activity_intervals():
     content = mark_safe('<pre>' + output + '</pre>')
     return dict(content=content), realm_minutes
 
-@zulip_internal
-@has_request_variables
-def sent_messages_report(request, realm=REQ(default=None)):
+def sent_messages_report(realm):
     title = 'Recently sent messages for ' + realm
 
     cols = [
@@ -2125,11 +2123,12 @@ def sent_messages_report(request, realm=REQ(default=None)):
         title=title
     )
 
-    return render_to_response(
-        'zerver/ad_hoc_queries.html',
-        dict(queries=[data]),
-        context_instance=RequestContext(request)
+    content = loader.render_to_string(
+        'zerver/ad_hoc_query.html',
+        dict(data=data)
     )
+
+    return content
 
 def ad_hoc_queries():
     def get_page(query, cols, title):
@@ -2400,7 +2399,8 @@ def get_activity(request, realm=REQ(default=None)):
             ('Desktop',    ActivityTable(realm, 'desktop',       web_queries)),
             ('API',        ActivityTable(realm, 'API',           api_queries)),
             ('Android',    ActivityTable(realm, 'Android',       api_queries)),
-            ('iPhone',     ActivityTable(realm, 'iPhone',        api_queries))
+            ('iPhone',     ActivityTable(realm, 'iPhone',        api_queries)),
+            ('History',    dict(content=sent_messages_report(realm))),
         ]
         title = '%s activity' % (realm,)
 
