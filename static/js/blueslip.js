@@ -52,6 +52,12 @@ Logger.prototype = (function () {
             var log_entry = date_str + " " + name.toUpperCase() +
                 ': ' + str_args.join("");
             this._memory_log.push(log_entry);
+
+            // Don't let the log grow without bound
+            if (this._memory_log.length > 1000) {
+                this._memory_log.shift();
+            }
+
             return console[name].apply(console, arguments);
         };
     }
@@ -110,7 +116,8 @@ function report_error(msg, stack, opts) {
                     ui_message: opts.show_ui_msg,
                     more_info: JSON.stringify(opts.more_info),
                     href: window.location.href,
-                    user_agent: window.navigator.userAgent},
+                    user_agent: window.navigator.userAgent,
+                    log: logger.get_log().join("\n")},
         timeout:  3*1000,
         success:  function () {
             reported_errors[key] = true;

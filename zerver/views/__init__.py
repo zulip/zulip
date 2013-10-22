@@ -2452,7 +2452,7 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 @has_request_variables
 def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
                       ui_message=REQ(converter=json_to_bool), user_agent=REQ,
-                      href=REQ,
+                      href=REQ, log=REQ,
                       more_info=REQ(converter=json_to_dict, default=None)):
     subject = "error for %s" % (user_profile.email,)
     if ui_message:
@@ -2478,6 +2478,8 @@ def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
         body += "\nAdditional information:"
         for (key, value) in more_info.iteritems():
             body += "\n  %s: %s" % (key, value)
+
+    body += "\n\nLog:\n%s" % (log,)
 
     mail_admins(subject, body)
     return json_success()
