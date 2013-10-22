@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from django.http import HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.http import QueryDict
@@ -112,6 +114,13 @@ def api_key_only_webhook_view(view_func):
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
+def zulip_internal(view_func):
+    @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+    def _wrapped_view_func(request, *args, **kwargs):
+        if request.user.realm.domain != 'zulip.com':
+            return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func
 
 # authenticated_api_view will add the authenticated user's user_profile to
 # the view function's arguments list, since we have to look it up

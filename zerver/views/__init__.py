@@ -56,7 +56,8 @@ from zerver.decorator import require_post, \
     has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, get_user_profile_by_email, \
-    authenticated_rest_api_view, process_as_post, REQ, rate_limit_user
+    authenticated_rest_api_view, process_as_post, REQ, rate_limit_user, \
+    zulip_internal
 from zerver.lib.query import last_n
 from zerver.lib.avatar import avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image
@@ -2074,17 +2075,9 @@ def user_activity_intervals():
     content = mark_safe('<pre>' + output + '</pre>')
     return dict(content=content), realm_minutes
 
-
-def can_view_activity(request):
-    return request.user.realm.domain == 'zulip.com'
-
-
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@zulip_internal
 @has_request_variables
 def sent_messages_report(request, realm=REQ(default=None)):
-    if not can_view_activity(request):
-        return HttpResponseRedirect(reverse('zerver.views.login_page'))
-
     title = 'Recently sent messages for ' + realm
 
     cols = [
@@ -2138,7 +2131,7 @@ def sent_messages_report(request, realm=REQ(default=None)):
         context_instance=RequestContext(request)
     )
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@zulip_internal
 @has_request_variables
 def ad_hoc_queries(request):
     def get_data(query, cols, title):
@@ -2373,12 +2366,9 @@ def ad_hoc_queries(request):
         context_instance=RequestContext(request)
     )
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@zulip_internal
 @has_request_variables
 def get_activity(request, realm=REQ(default=None)):
-    if not can_view_activity(request):
-        return HttpResponseRedirect(reverse('zerver.views.login_page'))
-
     web_queries = (
         ("get_updates",    ["/json/get_updates", "/json/get_events"]),
         ("send_message",   ["/json/send_message"]),
