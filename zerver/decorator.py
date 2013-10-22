@@ -119,6 +119,9 @@ def zulip_internal(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         if request.user.realm.domain != 'zulip.com':
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
+
+        request._email = request.user.email
+        process_client(request, request.user, "website")
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
