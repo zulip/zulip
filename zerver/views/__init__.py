@@ -2299,8 +2299,8 @@ def ad_hoc_queries():
         select
             realm.domain,
             case
-            when client.name = 'phabricator' then 'phabricator'
-            else split_part(query, '/', 5)
+                when query like '%%external%%' then split_part(query, '/', 5)
+                else client.name
             end client_name,
             sum(count) as hits,
             max(last_visit) as last_time
@@ -2309,7 +2309,10 @@ def ad_hoc_queries():
         join zerver_userprofile up on up.id = ua.user_profile_id
         join zerver_realm realm on realm.id = up.realm_id
         where
-            client.name = 'phabricator'
+            (query = 'send_message_backend'
+            and client.name not in ('Android', 'API', 'API: Python')
+            and client.name not like 'test: Zulip%%'
+            )
         or
             query like '%%external%%'
         group by domain, client_name
@@ -2333,8 +2336,8 @@ def ad_hoc_queries():
     query = '''
         select
             case
-            when client.name = 'phabricator' then 'phabricator'
-            else split_part(query, '/', 5)
+                when query like '%%external%%' then split_part(query, '/', 5)
+                else client.name
             end client_name,
             realm.domain,
             sum(count) as hits,
@@ -2344,7 +2347,10 @@ def ad_hoc_queries():
         join zerver_userprofile up on up.id = ua.user_profile_id
         join zerver_realm realm on realm.id = up.realm_id
         where
-            client.name = 'phabricator'
+            (query = 'send_message_backend'
+            and client.name not in ('Android', 'API', 'API: Python')
+            and client.name not like 'test: Zulip%%'
+            )
         or
             query like '%%external%%'
         group by client_name, domain
