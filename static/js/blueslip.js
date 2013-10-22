@@ -24,6 +24,59 @@ var console = (function () {
     return proxy;
 }());
 
+function Logger() {
+    this._memory_log = [];
+}
+
+Logger.prototype = (function () {
+    function make_logger_func(name) {
+        return function Logger_func() {
+            var now = new Date();
+            var date_str =
+                now.getUTCFullYear() + '-' +
+                (now.getUTCMonth() + 1) + '-' +
+                now.getUTCDate() + ' ' +
+                now.getUTCHours() + ':' +
+                now.getUTCMinutes() + ':' +
+                now.getUTCSeconds() + '.' +
+                now.getUTCMilliseconds() + ' UTC';
+
+            var str_args = _.map(arguments, function (x) {
+                if (typeof(x) === 'object') {
+                    return JSON.stringify(x);
+                } else {
+                    return x;
+                }
+            });
+
+            var log_entry = date_str + " " + name.toUpperCase() +
+                ': ' + str_args.join("");
+            this._memory_log.push(log_entry);
+            return console[name].apply(console, arguments);
+        };
+    }
+
+    var proto = {
+        get_log: function Logger_get_log() {
+            return this._memory_log;
+        }
+    };
+
+    var methods = ['log', 'info', 'warn', 'error'];
+    var i;
+    for (i = 0; i < methods.length; i++) {
+        proto[methods[i]] = make_logger_func(methods[i]);
+    }
+
+    return proto;
+}());
+
+var logger = new Logger();
+
+exports.get_log = function blueslip_get_log() {
+    return logger.get_log();
+};
+
 var reported_errors = {};
 var last_report_attempt = {};
 function report_error(msg, stack, opts) {
@@ -283,17 +336,17 @@ function build_arg_list(msg, more_info) {
 
 exports.log = function blueslip_log (msg, more_info) {
     var args = build_arg_list(msg, more_info);
-    console.log.apply(console, args);
+    logger.log.apply(logger, args);
 };
 
 exports.info = function blueslip_info (msg, more_info) {
     var args = build_arg_list(msg, more_info);
-    console.info.apply(console, args);
+    logger.info.apply(logger, args);
 };
 
 exports.warn = function blueslip_warn (msg, more_info) {
     var args = build_arg_list(msg, more_info);
-    console.warn.apply(console, args);
+    logger.warn.apply(logger, args);
     if (page_params.debug_mode) {
         console.trace();
     }
@@ -304,7 +357,7 @@ exports.error = function blueslip_error (msg, more_info) {
         throw new BlueslipError(msg, more_info);
     } else {
         var args = build_arg_list(msg, more_info);
-        console.error.apply(console, args);
+        logger.error.apply(logger, args);
         report_error(msg, Error().stack, {more_info: more_info});
     }
 };
