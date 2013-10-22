@@ -2391,7 +2391,6 @@ def get_activity(request, realm=REQ(default=None)):
             ('Durations', duration_content),
         ]
         for page in ad_hoc_queries():
-            print page
             data.append((page['title'], page))
         title = 'Activity'
     else:
