@@ -83,7 +83,9 @@ def active_user_ids(realm):
 def notify_created_user(user_profile):
     notice = dict(event=dict(type="realm_user", op="add",
                              person=dict(email=user_profile.email,
-                                         full_name=user_profile.full_name)),
+                                         full_name=user_profile.full_name,
+                                         is_bot=user_profile.is_bot,
+                  )),
                   users=active_user_ids(user_profile.realm))
     tornado_callbacks.send_notification(notice)
 
