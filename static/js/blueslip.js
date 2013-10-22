@@ -273,27 +273,29 @@ exports.wrap_function = function blueslip_wrap_function(func) {
     }
 }());
 
-exports.log = function blueslip_log (msg, more_info) {
-    console.log(msg);
+function build_arg_list(msg, more_info) {
+    var args = [msg];
     if (more_info !== undefined) {
-        console.log("Additional information: ", more_info);
+        args.push("\nAdditional information: ", more_info);
     }
+    return args;
+}
+
+exports.log = function blueslip_log (msg, more_info) {
+    var args = build_arg_list(msg, more_info);
+    console.log.apply(console, args);
 };
 
 exports.info = function blueslip_info (msg, more_info) {
-    console.info(msg);
-    if (more_info !== undefined) {
-        console.info("Additional information: ", more_info);
-    }
+    var args = build_arg_list(msg, more_info);
+    console.info.apply(console, args);
 };
 
 exports.warn = function blueslip_warn (msg, more_info) {
-    console.warn(msg);
+    var args = build_arg_list(msg, more_info);
+    console.warn.apply(console, args);
     if (page_params.debug_mode) {
         console.trace();
-    }
-    if (more_info !== undefined) {
-        console.warn("Additional information: ", more_info);
     }
 };
 
@@ -301,10 +303,8 @@ exports.error = function blueslip_error (msg, more_info) {
     if (page_params.debug_mode) {
         throw new BlueslipError(msg, more_info);
     } else {
-        console.error(msg);
-        if (more_info !== undefined) {
-            console.error("Additional information: ", more_info);
-        }
+        var args = build_arg_list(msg, more_info);
+        console.error.apply(console, args);
         report_error(msg, Error().stack, {more_info: more_info});
     }
 };
