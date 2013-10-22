@@ -403,7 +403,9 @@ class ActivityTest(AuthedTestCase):
             )
         with queries_captured() as queries:
             self.client.get('/activity')
-        self.assertEqual(len(queries), 2)
+
+        # We have 8 tabs, and one query per tab.
+        self.assertEqual(len(queries), 8)
 
 class PublicURLTest(TestCase):
     """
