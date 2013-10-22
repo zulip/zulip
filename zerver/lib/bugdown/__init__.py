@@ -613,8 +613,14 @@ class Bugdown(markdown.Extension):
         for k in ('image_link', 'image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
                   'escape', 'strong_em', 'emphasis', 'emphasis2',
-                  'linebreak', 'linebreak2', 'strong'):
+                  'linebreak', 'strong'):
             del md.inlinePatterns[k]
+        try:
+            # linebreak2 was removed upstream in version 3.2.1, so
+            # don't throw an error if it is not there
+            del md.inlinePatterns['linebreak2']
+        except Exception:
+            pass
 
         md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
 
