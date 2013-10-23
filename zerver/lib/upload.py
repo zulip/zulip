@@ -23,16 +23,18 @@ import os
 # This is great, because passing the pseudofile object that Django gives
 # you to boto would be a pain.
 
-def gen_s3_key(user_profile, name):
+# To come up with a s3 key we randomly generate a "directory". The "file
+# name" is the original filename provided by the user run through Django's
+# slugify.
+
+def sanitize_name(name):
     split_name = name.split('.')
     base = ".".join(split_name[:-1])
     extension = split_name[-1]
+    return slugify(base) + "." + slugify(extension)
 
-    # To come up with a s3 key we randomly generate a "directory". The "file
-    # name" is the original filename provided by the user run through Django's
-    # slugify.
-
-    return base64.urlsafe_b64encode(os.urandom(60)) + "/" + slugify(base) + "." + slugify(extension)
+def random_name(bytes=60):
+    return base64.urlsafe_b64encode(os.urandom(bytes))
 
 def upload_image_to_s3(
         bucket_name,
@@ -66,7 +68,7 @@ def get_file_info(request, user_file):
 
 def upload_message_image(uploaded_file_name, content_type, file_data, user_profile):
     bucket_name = settings.S3_BUCKET
-    s3_file_name = gen_s3_key(user_profile, uploaded_file_name)
+    s3_file_name = "/".join([random_name(60), sanitize_name(uploaded_file_name)])
     upload_image_to_s3(
             bucket_name,
             s3_file_name,
