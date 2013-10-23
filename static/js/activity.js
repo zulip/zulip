@@ -82,11 +82,11 @@ function focus_lost() {
 }
 
 function update_users() {
-    var users = sort_users(Object.keys(presence_info), presence_info);
-
     if (page_params.domain === 'mit.edu') {
         return;  // MIT realm doesn't have a presence list
     }
+
+    var users = sort_users(Object.keys(presence_info), presence_info);
 
     var my_info = {
         name: page_params.fullname,
