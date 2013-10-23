@@ -102,3 +102,16 @@ else:
     TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+if STAGING_DEPLOYED:
+    APNS_SANDBOX = "push_sandbox"
+    APNS_FEEDBACK = "feedback_sandbox"
+    APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"
+elif DEPLOYED:
+    APNS_SANDBOX = "push_production"
+    APNS_FEEDBACK = "feedback_production"
+    APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
+else:
+    APNS_SANDBOX = "push_sandbox"
+    APNS_FEEDBACK = "feedback_sandbox"
+    APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"

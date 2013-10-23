@@ -261,7 +261,8 @@ def update_pointer(user_profile_id, new_pointer):
 
 
 def receives_offline_notifications(user_profile):
-    return (user_profile.enable_offline_email_notifications and
+    return ((user_profile.enable_offline_email_notifications or
+             user_profile.enable_offline_push_notifications) and
             not user_profile.is_bot)
 
 def receives_offline_notifications_by_id(user_profile_id):

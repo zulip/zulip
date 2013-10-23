@@ -43,6 +43,7 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
+from zerver.lib.push_notifications import num_push_devices_for_user, send_apple_push_notification
 
 import confirmation.settings
 
@@ -1886,57 +1887,77 @@ def build_message_list(user_profile, messages):
     return messages_to_render
 
 @statsd_increment("missed_message_reminders")
-def do_send_missedmessage_email(user_profile, missed_messages):
+def do_send_missedmessage_events(user_profile, missed_messages):
     """
-    Send a reminder email to a user if she's missed some PMs by being offline
+    Send a reminder email and/or push notifications to a user if she's missed some PMs by being offline
 
     `user_profile` is the user to send the reminder to
     `missed_messages` is a list of Message objects to remind about
     """
-    template_payload = {'name': user_profile.full_name,
-                        'messages': build_message_list(user_profile, missed_messages),
-                        'message_count': len(missed_messages),
-                        'url': 'https://zulip.com',
-                        'reply_warning': False}
-
     senders = set(m.sender.full_name for m in missed_messages)
     sender_str = ", ".join(senders)
-
-    headers = {}
-    if all(msg.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL)
-            for msg in missed_messages):
-        # If we have one huddle, set a reply-to to all of the members
-        # of the huddle except the user herself
-        disp_recipients = [", ".join(recipient['email']
-                                for recipient in get_display_recipient(mesg.recipient)
-                                    if recipient['email'] != user_profile.email)
-                                 for mesg in missed_messages]
-        if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages) and \
-            len(set(disp_recipients)) == 1:
-            headers['Reply-To'] = disp_recipients[0]
-        elif len(senders) == 1:
-            headers['Reply-To'] = missed_messages[0].sender.email
+    plural_messages = 's' if len(missed_messages) > 1 else ''
+    if user_profile.enable_offline_email_notifications:
+        template_payload = {'name': user_profile.full_name,
+                            'messages': build_message_list(user_profile, missed_messages),
+                            'message_count': len(missed_messages),
+                            'url': 'https://zulip.com',
+                            'reply_warning': False}
+        headers = {}
+        if all(msg.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL)
+                for msg in missed_messages):
+            # If we have one huddle, set a reply-to to all of the members
+            # of the huddle except the user herself
+            disp_recipients = [", ".join(recipient['email']
+                                    for recipient in get_display_recipient(mesg.recipient)
+                                        if recipient['email'] != user_profile.email)
+                                     for mesg in missed_messages]
+            if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages) and \
+                len(set(disp_recipients)) == 1:
+                headers['Reply-To'] = disp_recipients[0]
+            elif len(senders) == 1:
+                headers['Reply-To'] = missed_messages[0].sender.email
+            else:
+                template_payload['reply_warning'] = True
         else:
+            # There are some @-mentions mixed in with personals
+            template_payload['mention'] = True
             template_payload['reply_warning'] = True
-    else:
-        # There are some @-mentions mixed in with personals
-        template_payload['mention'] = True
-        template_payload['reply_warning'] = True
-        headers['Reply-To'] = "Nobody <noreply@zulip.com>"
+            headers['Reply-To'] = "Nobody <noreply@zulip.com>"
 
-    subject = "Missed Zulip%s from %s" % ('s' if len(senders) > 1 else '', sender_str)
-    from_email = "%s (via Zulip) <noreply@zulip.com>" % (sender_str)
+        subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
+        from_email = "%s (via Zulip) <noreply@zulip.com>" % (sender_str)
 
-    text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
-    html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
+        text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
+        html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
 
-    msg = EmailMultiAlternatives(subject, text_content, from_email, [user_profile.email],
-                                 headers = headers)
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [user_profile.email],
+                                     headers = headers)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
 
-    user_profile.last_reminder = datetime.datetime.now()
-    user_profile.save(update_fields=['last_reminder'])
+        user_profile.last_reminder = datetime.datetime.now()
+        user_profile.save(update_fields=['last_reminder'])
+
+    if user_profile.enable_offline_push_notifications:
+        if num_push_devices_for_user(user_profile) == 0:
+            return
+
+        badge_count = len(missed_messages)
+
+        # Determine what alert string to display based on the missed messages
+        if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages):
+            alert = "New private group message%s from %s" % (plural_messages, sender_str)
+        elif all(msg.recipient.type == Recipient.PERSONAL for msg in missed_messages):
+            alert = "New private message%s from %s" % (plural_messages, sender_str)
+        elif all(msg.recipient.type == Recipient.STREAM for msg in missed_messages):
+            alert = "New mention%s from %s" % (plural_messages, sender_str)
+        else:
+            alert = "New Zulip mentions and private messages from %s" % (sender_str,)
+
+        extra_data = {'message_ids': [amsg.id for amsg in missed_messages]}
+
+        send_apple_push_notification(user_profile, alert, badge=badge_count, zulip=extra_data)
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     message_ids = [event.get('message_id') for event in missed_email_events]
@@ -1947,7 +1968,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
                                                                 flags=~UserMessage.flags.read)]
 
     if messages:
-        do_send_missedmessage_email(user_profile, messages)
+        do_send_missedmessage_events(user_profile, messages)
 
 def user_email_is_unique(value):
     try:
