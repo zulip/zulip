@@ -38,14 +38,15 @@ def upload_image_to_s3(
         bucket_name,
         file_name,
         content_type,
-        user_profile_id,
+        user_profile,
         contents,
     ):
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     key = Key(conn.get_bucket(bucket_name))
     key.key = file_name
-    key.set_metadata("user_profile_id", str(user_profile_id))
+    key.set_metadata("user_profile_id", str(user_profile.id))
+    key.set_metadata("realm_id", str(user_profile.realm.id))
 
     if content_type:
         headers = {'Content-Type': content_type}
@@ -70,7 +71,7 @@ def upload_message_image(uploaded_file_name, content_type, file_data, user_profi
             bucket_name,
             s3_file_name,
             content_type,
-            user_profile.id,
+            user_profile,
             file_data
     )
     return "https://%s.s3.amazonaws.com/%s" % (bucket_name, s3_file_name)
@@ -87,7 +88,7 @@ def upload_avatar_image(user_file, user_profile, email):
         bucket_name,
         s3_file_name,
         content_type,
-        user_profile.id,
+        user_profile,
         user_file.read(),
     )
     # See avatar_url in avatar.py for URL.  (That code also handles the case
