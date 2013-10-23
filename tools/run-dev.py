@@ -3,6 +3,7 @@ import optparse
 import subprocess
 import signal
 import traceback
+import sys
 import os
 from os import path
 
@@ -43,7 +44,15 @@ base_port   = 9991
 manage_args = ''
 if options.test:
     base_port   = 9981
-    manage_args = '--settings=zproject.test_settings'
+    settings_module = "zproject.test_settings"
+else:
+    settings_module = "zproject.settings"
+
+manage_args = '--settings=%s' % (settings_module,)
+os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from zerver.worker.queue_processors import get_active_worker_queues
 
 proxy_port   = base_port
 django_port  = base_port+1
@@ -61,10 +70,14 @@ os.setpgrp()
 
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.
-for cmd in ['python manage.py runserver --nostatic %s localhost:%d'
-                % (manage_args, django_port),
-            'python manage.py runtornado %s localhost:%d'
-                % (manage_args, tornado_port)]:
+cmds = ['python manage.py runserver --nostatic %s localhost:%d'
+          % (manage_args, django_port),
+        'python manage.py runtornado %s localhost:%d'
+          % (manage_args, tornado_port)]
+for queue in get_active_worker_queues():
+    cmds.append('python manage.py process_queue %s %s' %(manage_args, queue))
+
+for cmd in cmds:
     subprocess.Popen(cmd, shell=True)
 
 class Resource(resource.Resource):
