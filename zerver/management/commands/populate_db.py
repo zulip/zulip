@@ -12,6 +12,7 @@ from zerver.lib.actions import do_send_message, set_default_streams, \
     do_activate_user, do_deactivate, do_change_password
 from zerver.lib.parallel import run_parallel
 from django.db import transaction, connection
+from django.db.models import Count
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_realms, \
     bulk_create_streams, bulk_create_users, bulk_create_huddles, \
@@ -124,6 +125,17 @@ class Command(BaseCommand):
                 # Associate initial deployment with Realm
                 dep = Deployment.objects.all()[0]
                 dep.realms = [realms["zulip.com"]]
+                dep.base_api_url = "https://staging.zulip.com/api/"
+                dep.base_site_url = "https://staging.zulip.com/"
+                dep.save()
+
+                # non-zulip.com realms on the main site go into a separate Deployment
+                dep = Deployment()
+                dep.api_key = settings.DEPLOYMENT_ROLE_KEY
+                dep.base_api_url = 'https://api.zulip.com/'
+                dep.base_site_url = 'https://zulip.com/'
+                dep.save()
+                dep.realms = Realm.objects.annotate(dc=Count("_deployments")).filter(dc=0)
                 dep.save()
 
             # Create test Users (UserProfiles are automatically created,
