@@ -20,6 +20,18 @@ set_global('document', {
     }
 });
 
+set_global('people_dict', new global.Dict.from({
+    'alice@zulip.com': {
+        full_name: 'Alice Smith'
+    },
+    'fred@zulip.com': {
+        full_name: "Fred Flintstone"
+    },
+    'jill@zulip.com': {
+        full_name: 'Jill Hill'
+    }
+}));
+
 var activity = require('js/activity.js');
 
 (function test_sort_users() {
@@ -30,13 +42,6 @@ var activity = require('js/activity.js');
         'fred@zulip.com': 'active',
         'jill@zulip.com': 'active'
     };
-
-
-    set_global('people_dict', new global.Dict.from({
-        'alice@zulip.com': 'Alice Smith',
-        'fred@zulip.com': 'Fred Flintstone',
-        'jill@zulip.com': 'Jill Hill'
-    }));
 
     activity._sort_users(users, user_info);
 
