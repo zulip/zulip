@@ -31,20 +31,20 @@ $("html").on("mousemove", function () {
     exports.new_user_input = true;
 });
 
-var user_info = {};
+var presence_info = {};
 
-function sort_users(users, user_info) {
+function sort_users(users, presence_info) {
     // TODO sort by unread count first, once we support that
     users.sort(function (a, b) {
-        if (user_info[a] === 'active' && user_info[b] !== 'active') {
+        if (presence_info[a] === 'active' && presence_info[b] !== 'active') {
             return -1;
-        } else if (user_info[b] === 'active' && user_info[a] !== 'active') {
+        } else if (presence_info[b] === 'active' && presence_info[a] !== 'active') {
             return 1;
         }
 
-        if (user_info[a] === 'idle' && user_info[b] !== 'idle') {
+        if (presence_info[a] === 'idle' && presence_info[b] !== 'idle') {
             return -1;
-        } else if (user_info[b] === 'idle' && user_info[a] !== 'idle') {
+        } else if (presence_info[b] === 'idle' && presence_info[a] !== 'idle') {
             return 1;
         }
 
@@ -75,8 +75,8 @@ function focus_lost() {
 }
 
 function update_users() {
-    var users = sort_users(Object.keys(user_info), user_info);
-    ui.set_presence_list(users, user_info);
+    var users = sort_users(Object.keys(presence_info), presence_info);
+    ui.set_presence_list(users, presence_info);
 }
 
 function status_from_timestamp(baseline_time, presence) {
@@ -104,7 +104,7 @@ function focus_ping() {
             return;
         }
 
-        user_info = {};
+        presence_info = {};
 
         // Update Zephyr mirror activity warning
         if (data.zephyr_mirror_active === false) {
@@ -118,7 +118,7 @@ function focus_ping() {
         // Ping returns the active peer list
         _.each(data.presences, function (presence, this_email) {
             if (page_params.email !== this_email) {
-                user_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
+                presence_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
             }
         });
         update_users();
@@ -158,7 +158,7 @@ exports.set_user_statuses = function (users, server_time) {
         if (email === page_params.email) {
             return;
         }
-        user_info[email] = status_from_timestamp(server_time, presence);
+        presence_info[email] = status_from_timestamp(server_time, presence);
     });
 
     update_users();
