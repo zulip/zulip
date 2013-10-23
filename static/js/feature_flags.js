@@ -42,7 +42,7 @@ exports.left_side_userlist = page_params.staging ||
 
 // Still very beta:
 exports.fade_users_when_composing = page_params.staging || is_customer4;
-exports.use_socket = page_params.staging && ! page_params.debug_mode;
+exports.use_socket = page_params.staging;
 
 
 // Still burning in...
