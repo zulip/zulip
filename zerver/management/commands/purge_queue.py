@@ -14,4 +14,6 @@ class Command(BaseCommand):
 
         queue_name = args[0]
         queue = SimpleQueueClient()
-        queue.drain_queue(queue_name)
+        queue.ensure_queue(queue_name, lambda: None)
+        queue.channel.queue_purge(queue_name)
+        print "Done"
