@@ -39,6 +39,30 @@ $("html").on("mousemove", function () {
 
 var presence_info = {};
 
+var huddle_timestamps = new Dict();
+
+exports.process_loaded_messages = function (messages) {
+    _.each(messages, function (message) {
+        if (message.type === 'private') {
+            if (message.reply_to.indexOf(',') > 0) {
+                var old_timestamp = huddle_timestamps.get(message.reply_to);
+
+                if (!old_timestamp || (old_timestamp < message.timestamp)) {
+                    huddle_timestamps.set(message.reply_to, message.timestamp);
+                }
+            }
+        }
+    });
+};
+
+exports.get_huddles = function () {
+    var huddles = huddle_timestamps.keys();
+    huddles = _.sortBy(huddles, function (huddle) {
+        return huddle_timestamps.get(huddle);
+    });
+    return huddles.reverse();
+};
+
 function sort_users(users, presence_info) {
     // TODO sort by unread count first, once we support that
     users.sort(function (a, b) {

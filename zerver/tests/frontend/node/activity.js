@@ -46,3 +46,45 @@ var activity = require('js/activity.js');
         'alice@zulip.com'
     ]);
 }());
+
+(function test_process_loaded_messages() {
+
+    var huddle1 = 'bar@zulip.com,foo@zulip.com';
+    var timestamp1 = 1382479029; // older
+
+    var huddle2 = 'alice@zulip.com,bob@zulip.com';
+    var timestamp2 = 1382479033; // newer
+
+    var old_timestamp = 1382479000;
+
+    var messages = [
+        {
+            type: 'private',
+            reply_to: huddle1,
+            timestamp: timestamp1
+        },
+        {
+            type: 'stream'
+        },
+        {
+            type: 'private',
+            reply_to: 'ignore@zulip.com'
+        },
+        {
+            type: 'private',
+            reply_to: huddle2,
+            timestamp: timestamp2
+        },
+        {
+            type: 'private',
+            reply_to: huddle2,
+            timestamp: old_timestamp
+        }
+    ];
+
+    activity.process_loaded_messages(messages);
+
+    assert.deepEqual(activity.get_huddles(), [huddle2, huddle1]);
+}());
+
+
