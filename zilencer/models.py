@@ -14,3 +14,7 @@ class Deployment(models.Model):
 
     base_api_url = models.CharField(max_length=128)
     base_site_url = models.CharField(max_length=128)
+
+    @property
+    def endpoints(self):
+        return {'base_api_url': self.base_api_url, 'base_site_url': self.base_site_url}
