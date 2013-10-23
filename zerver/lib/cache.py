@@ -236,6 +236,9 @@ def user_profile_by_id_cache_key(user_profile_id):
 def cache_save_user_profile(user_profile):
     cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
 
+def active_user_dicts_in_realm_cache_key(realm):
+    return "active_user_dicts_in_realm:%s" % (realm.id,)
+
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
 def update_user_profile_cache(sender, **kwargs):
@@ -245,10 +248,16 @@ def update_user_profile_cache(sender, **kwargs):
     items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
     cache_set_many(items_for_memcached)
 
+    # Invalidate our active_users_in_realm info dict if any user has changed
+    # name or email
+    if kwargs['update_fields'] is None or \
+        len(set(['full_name', 'short_name', 'email']) & set(kwargs['update_fields'])) > 0:
+        cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm))
+
     # Invalidate realm-wide alert words cache if any user in the realm has changed
     # alert words
     if kwargs['update_fields'] is None or "alert_words" in kwargs['update_fields']:
-        djcache.delete(KEY_PREFIX + realm_alert_words_cache_key(user_profile.realm))
+        cache_delete(realm_alert_words_cache_key(user_profile.realm))
 
 def realm_alert_words_cache_key(realm):
     return "realm_alert_words:%s" % (realm.domain,)

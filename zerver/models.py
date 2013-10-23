@@ -7,7 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
 from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     generic_bulk_cached_fetch, cache_set, \
-    display_recipient_cache_key
+    display_recipient_cache_key, active_user_dicts_in_realm_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
 from zerver.lib import bugdown
@@ -816,9 +816,10 @@ def get_user_profile_by_id(uid):
 def get_user_profile_by_email(email):
     return UserProfile.objects.select_related().get(email__iexact=email)
 
-def get_active_user_profiles_by_realm(realm):
-    return UserProfile.objects.select_related().filter(realm=realm,
-                                                       is_active=True)
+@cache_with_key(active_user_dicts_in_realm_cache_key, timeout=3600*24*7)
+def get_active_user_dicts_in_realm(realm):
+     return UserProfile.objects.filter(realm=realm, is_active=True) \
+                               .values('id', 'full_name', 'short_name', 'email', 'is_bot')
 
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest

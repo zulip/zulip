@@ -24,7 +24,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
     email_to_domain, email_to_username, get_realm, completely_open, \
-    is_super_user, get_active_user_profiles_by_realm, AppleDeviceToken
+    is_super_user, AppleDeviceToken, get_active_user_dicts_in_realm
 from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mirror_user_if_needed, compute_irc_user_fullname, \
     do_change_full_name, \
@@ -151,7 +151,7 @@ def send_signup_message(sender, signups_stream, user_profile,
 
     # Send notification to realm notifications stream if it exists
     # Don't send notification for the first user in a realm
-    realm_user_count = get_active_user_profiles_by_realm(user_profile.realm).count()
+    realm_user_count = len(get_active_user_dicts_in_realm(user_profile.realm))
     if user_profile.realm.notifications_stream is not None and realm_user_count > 1:
         internal_send_message(sender, "stream",
                               user_profile.realm.notifications_stream.name,
@@ -1597,14 +1597,14 @@ def add_subscriptions_backend(request, user_profile,
             msg = ("Hi there!  %s just created a new stream '%s'. "
                        "To join, click the gear in the left-side streams list."
                        % (user_profile.full_name, created_streams[0].name))
-            for realm_user in get_active_user_profiles_by_realm(user_profile.realm):
+            for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
                 # Don't announce to yourself or to people you explicitly added
                 # (who will get the notification above instead).
-                if realm_user.email in principals or realm_user.email == user_profile.email:
+                if realm_user_dict['email'] in principals or realm_user_dict['email'] == user_profile.email:
                     continue
                 notifications.append(internal_prep_message("notification-bot@zulip.com",
                                                            "private",
-                                                           realm_user.email, "", msg))
+                                                           realm_user_dict['email'], "", msg))
 
     if len(notifications) > 0:
         do_send_messages(notifications)

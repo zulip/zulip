@@ -768,7 +768,7 @@ db_data = None
 
 def do_convert(md, realm_domain=None, message=None):
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
-    from zerver.models import UserProfile
+    from zerver.models import get_active_user_dicts_in_realm
 
     if realm_domain in md_engines:
         _md_engine = md_engines[realm_domain]
@@ -783,8 +783,7 @@ def do_convert(md, realm_domain=None, message=None):
     # Pre-fetch data from the DB that is used in the bugdown thread
     global db_data
     if message:
-        realm_users = UserProfile.objects.filter(realm=message.get_realm(), is_active=True) \
-                                         .values('id', 'full_name', 'short_name', 'email')
+        realm_users = get_active_user_dicts_in_realm(message.get_realm())
 
         db_data = {'realm_alert_words': alert_words.alert_words_in_realm(message.get_realm()),
                    'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
