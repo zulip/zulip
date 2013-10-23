@@ -196,6 +196,18 @@ RATE_LIMITING_RULES = [
     (60, 100),     # 100 requests max every minute
     ]
 
+# For any settings that are not defined in local_settings.py,
+# we want to initialize them to sane default
+DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
+                    'TWITTER_CONSUMER_SECRET': '',
+                    'TWITTER_ACCESS_TOKEN_KEY': '',
+                    'TWITTER_ACCESS_TOKEN_SECRET': '',
+                    'EMBEDLY_KEY': ''}
+
+for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
+    if not setting_name in vars():
+        vars()[setting_name] = setting_val
+
 # Static files and minification
 
 STATIC_URL = '/static/'

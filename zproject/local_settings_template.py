@@ -66,9 +66,6 @@ elif DEPLOYED:
 else:
     EXTERNAL_HOST = 'localhost:9991'
 
-# TODO: Make this not required
-EMBEDLY_KEY=""
-
 # TODO: Replace these
 S3_KEY=""
 S3_SECRET_KEY=""
