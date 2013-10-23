@@ -40,6 +40,9 @@ def register_worker(queue_name, clazz):
 def get_worker(queue_name):
     return worker_classes[queue_name]()
 
+def get_active_worker_queues():
+    return worker_classes.iterkeys()
+
 class QueueProcessingWorker(object):
     def __init__(self):
         self.q = SimpleQueueClient()
