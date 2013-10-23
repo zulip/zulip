@@ -19,6 +19,7 @@ var is_customer4 = _.contains(customer4_realms, page_params.domain);
 
 // Manually-flipped debugging flags
 exports.log_send_times = false;
+exports.collect_send_times = false;
 
 // Permanent realm-specific stuff:
 

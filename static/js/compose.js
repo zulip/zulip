@@ -345,8 +345,11 @@ function send_message_socket(request, success) {
     });
 }
 
-function send_message() {
-    var request = create_message_object();
+exports.send_times_data = [];
+function send_message(request) {
+    if (request === undefined) {
+        request = create_message_object();
+    }
     exports.snapshot_message(request);
 
     if (request.type === "private") {
@@ -359,6 +362,9 @@ function send_message() {
     function success() {
         if (feature_flags.log_send_times) {
             blueslip.log("send time: " + (new Date() - start_time));
+        }
+        if (feature_flags.collect_send_times) {
+            exports.send_times_data.push((new Date() - start_time));
         }
         $("#new_message_content").val('').focus();
         autosize_textarea();
@@ -379,6 +385,34 @@ function send_message() {
         send_message_ajax(request, success);
     }
 }
+
+// This function is for debugging / data collection only.  Arguably it
+// should live in debug.js, but then it wouldn't be able to call
+// send_message() directly below.
+exports.test_send_many_messages = function (stream, subject, count) {
+    var num_sent = 0;
+
+    function do_send_one () {
+        var message = {};
+        num_sent += 1;
+
+        message.type = "stream";
+        message.to = stream;
+        message.subject = subject;
+        message.content = num_sent.toString();
+        message.client = client();
+
+        send_message(message);
+
+        if (num_sent === count) {
+            return;
+        }
+
+        setTimeout(do_send_one, 1000);
+    }
+
+    do_send_one();
+};
 
 exports.finish = function () {
     clear_invites();
