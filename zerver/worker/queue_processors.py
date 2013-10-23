@@ -25,10 +25,11 @@ import datetime
 import logging
 import simplejson
 
-def assign_queue(queue_name):
+def assign_queue(queue_name, enabled=True):
     def decorate(clazz):
         clazz.queue_name = queue_name
-        register_worker(queue_name, clazz)
+        if enabled:
+            register_worker(queue_name, clazz)
         return clazz
     return decorate
 
@@ -54,7 +55,7 @@ class QueueProcessingWorker(object):
     def stop(self):
         self.q.stop_consuming()
 
-@assign_queue('signups')
+@assign_queue('signups', enabled=settings.DEPLOYED)
 class SignupWorker(QueueProcessingWorker):
     def __init__(self):
         super(SignupWorker, self).__init__()
@@ -106,7 +107,7 @@ class SignupWorker(QueueProcessingWorker):
                                              tags=["followup-emails"],
                                              sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'})
 
-@assign_queue('invites')
+@assign_queue('invites', enabled=settings.DEPLOYED)
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, ch, method, properties, data):
         invitee = get_prereg_user_by_email(data["email"])
