@@ -16,7 +16,6 @@ var OFFLINE_THRESHOLD_SECS = 140;
 
 var presence_descriptions = {
     active: 'is active',
-    away:   'was recently active',
     idle:   'is not active'
 };
 
