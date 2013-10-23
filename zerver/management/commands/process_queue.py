@@ -29,6 +29,10 @@ class Command(BaseCommand):
             worker.stop()
             sys.exit(0)
 
+        if not settings.USING_RABBITMQ:
+            logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
+            sys.exit(1)
+
         signal.signal(signal.SIGTERM, signal_handler)
         signal.signal(signal.SIGINT, signal_handler)
 
