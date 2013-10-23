@@ -31,4 +31,6 @@ class zulip::staging_app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip/cron.d/clearsessions",
   }
+  # Staging has our Apple Push Notifications Service private key at
+  # /etc/ssl/django-private/apns-dev.pem
 }

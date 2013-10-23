@@ -56,4 +56,6 @@ class zulip::prod_app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip/sparkle/win/sparkle-changelog.html",
   }
+  # Prod has our Apple Push Notifications Service private key at
+  # /etc/ssl/django-private/apns-dist.pem
 }
