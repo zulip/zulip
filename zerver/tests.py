@@ -2253,7 +2253,8 @@ class MITNameTest(TestCase):
         self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
 class S3Test(AuthedTestCase):
-    test_uris = []
+    test_uris = [] # full URIs in public bucket
+    test_keys = [] # keys in authed bucket
 
     @slow(2.6, "has to contact external S3 service")
     def test_file_upload(self):
@@ -2264,13 +2265,36 @@ class S3Test(AuthedTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
 
-        result = self.client.post("/json/upload_file", {'file': fp})
+        result = self.client.post("/json/upload_file", {'file': fp, 'private':'false'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
         self.test_uris.append(uri)
         self.assertEquals("zulip!", urllib2.urlopen(uri).read().strip())
+
+    @slow(2.6, "has to contact external S3 service")
+    def test_file_upload_authed(self):
+        """
+        A call to /json/upload_file should return a uri and actually create an object.
+        """
+        self.login("hamlet@zulip.com")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        result = self.client.post("/json/upload_file", {'file': fp, 'private':'true'})
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("uri", json)
+        uri = json["uri"]
+        base = '/user_uploads/'
+        self.assertEquals(base, uri[:len(base)])
+        self.test_keys.append(uri[len(base):])
+
+        response = self.client.get(uri)
+        redirect_url = response['Location']
+
+        self.assertEquals("zulip!", urllib2.urlopen(redirect_url).read().strip())
 
     def test_multiple_upload_failure(self):
         """
@@ -2302,6 +2326,12 @@ class S3Test(AuthedTestCase):
             key.name = urllib2.urlparse.urlparse(uri).path[1:]
             key.delete()
             self.test_uris.remove(uri)
+
+        for path in self.test_keys:
+            key = Key(conn.get_bucket(settings.S3_AUTH_UPLOADS_BUCKET))
+            key.name = path
+            key.delete()
+            self.test_keys.remove(path)
 
 
 class DummyStream:

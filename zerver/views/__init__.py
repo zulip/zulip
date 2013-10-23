@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
 from django.utils.timezone import now
@@ -61,7 +61,8 @@ from zerver.decorator import require_post, \
     zulip_internal
 from zerver.lib.query import last_n
 from zerver.lib.avatar import avatar_url
-from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image
+from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
+    get_signed_upload_url
 from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zerver.lib.cache import cache_get_many, cache_set_many, \
     generic_bulk_cached_fetch
@@ -1699,15 +1700,25 @@ def json_get_subscribers(request, user_profile):
     return get_subscribers_backend(request, user_profile)
 
 @authenticated_json_post_view
-def json_upload_file(request, user_profile):
+@has_request_variables
+def json_upload_file(request, user_profile, private=REQ(converter=json_to_bool, default=None)):
     if len(request.FILES) == 0:
         return json_error("You must specify a file to upload")
     if len(request.FILES) != 1:
         return json_error("You may only upload one file at a time")
 
     user_file = request.FILES.values()[0]
-    uri = upload_message_image_through_web_client(request, user_file, user_profile)
+    uri = upload_message_image_through_web_client(request, user_file, user_profile, private=private)
     return json_success({'uri': uri})
+
+@authenticated_json_view
+def get_uploaded_file(request, user_profile, realm_id, filename):
+    # Internal users can access all uploads so we can receive attachments in cross-realm messages
+    if user_profile.realm.id == int(realm_id) or user_profile.realm.domain == 'zulip.com':
+        url = get_signed_upload_url("%s/%s" % (realm_id, filename))
+        return redirect(url)
+    else:
+        return HttpResponseForbidden()
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):

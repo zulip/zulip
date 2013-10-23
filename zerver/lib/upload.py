@@ -66,9 +66,25 @@ def get_file_info(request, user_file):
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
     return uploaded_file_name, content_type
 
-def upload_message_image(uploaded_file_name, content_type, file_data, user_profile):
-    bucket_name = settings.S3_BUCKET
-    s3_file_name = "/".join([random_name(60), sanitize_name(uploaded_file_name)])
+def authed_upload_enabled(user_profile):
+    return user_profile.realm.domain == 'zulip.com'
+
+def upload_message_image(uploaded_file_name, content_type, file_data, user_profile, private=None):
+    if private is None:
+        private = authed_upload_enabled(user_profile)
+    if private:
+        bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
+        s3_file_name = "/".join([
+            str(user_profile.realm.id),
+            random_name(18),
+            sanitize_name(uploaded_file_name)
+        ])
+        url = "/user_uploads/%s" % (s3_file_name)
+    else:
+        bucket_name = settings.S3_BUCKET
+        s3_file_name = "/".join([random_name(60), sanitize_name(uploaded_file_name)])
+        url = "https://%s.s3.amazonaws.com/%s" % (bucket_name, s3_file_name)
+
     upload_image_to_s3(
             bucket_name,
             s3_file_name,
@@ -76,11 +92,15 @@ def upload_message_image(uploaded_file_name, content_type, file_data, user_profi
             user_profile,
             file_data
     )
-    return "https://%s.s3.amazonaws.com/%s" % (bucket_name, s3_file_name)
+    return url
 
-def upload_message_image_through_web_client(request, user_file, user_profile):
+def upload_message_image_through_web_client(request, user_file, user_profile, private=None):
     uploaded_file_name, content_type = get_file_info(request, user_file)
-    return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile)
+    return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile, private)
+
+def get_signed_upload_url(path):
+    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+    return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
 
 def upload_avatar_image(user_file, user_profile, email):
     content_type = guess_type(user_file.name)[0]

@@ -69,6 +69,7 @@ if DEPLOYED and not LOCALSERVER:
     S3_KEY="xxxxxxxxxxxxxxxxxxxx"
     S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     S3_BUCKET="humbug-user-uploads"
+    S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
     S3_AVATAR_BUCKET="humbug-user-avatars"
 
     MIXPANEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -76,6 +77,7 @@ else:
     S3_KEY="xxxxxxxxxxxxxxxxxxxx"
     S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     S3_BUCKET="humbug-user-uploads-test"
+    S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads-test"
     S3_AVATAR_BUCKET="humbug-user-avatars-test"
 
     MIXPANEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

@@ -5,6 +5,23 @@ var is_composing_message = false;
 var message_snapshot;
 var empty_subject_placeholder = "(no topic)";
 
+var uploads_domain = document.location.protocol + '//' + document.location.host;
+var uploads_path = '/user_uploads';
+var uploads_re = new RegExp("\\]\\(" + uploads_domain + "(" + uploads_path + "[^\\)]+)\\)", 'g');
+
+function make_upload_absolute(uri) {
+    if (uri.indexOf(uploads_path) === 0) {
+        // Rewrite the URI to a usable link
+        return uploads_domain + uri;
+    }
+    return uri;
+}
+
+function make_uploads_relative(content) {
+    // Rewrite uploads in markdown links back to domain-relative form
+    return content.replace(uploads_re, "]($1)");
+}
+
 function client() {
     if ((window.bridge !== undefined) &&
         (window.bridge.desktopAppVersion !== undefined)) {
@@ -248,12 +265,15 @@ function create_message_object() {
     if (subject === "") {
         subject = compose.empty_subject_placeholder();
     }
+
+    var content = make_uploads_relative(compose.message_content());
+
     var message = {client: client(),
                    type: compose.composing(),
                    subject: subject,
                    stream: compose.stream_name(),
                    private_message_recipient: compose.recipient(),
-                   content: compose.message_content()};
+                   content: content};
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -757,12 +777,15 @@ $(function () {
             if (!compose.composing()) {
                 compose.start('stream');
             }
+
+            var uri = make_upload_absolute(response.uri);
+
             if (i === -1) {
                 // This is a paste, so there's no filename. Show the image directly
-                textbox.val(textbox.val() + "[pasted image](" + response.uri + ") ");
+                textbox.val(textbox.val() + "[pasted image](" + uri + ") ");
             } else {
                 // This is a dropped file, so make the filename a link to the image
-                textbox.val(textbox.val() + "[" + filename + "](" + response.uri + ")" + " ");
+                textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
             }
             autosize_textarea();
             $("#compose-send-button").removeAttr("disabled");

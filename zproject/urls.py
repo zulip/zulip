@@ -41,6 +41,8 @@ urlpatterns = patterns('',
 
     url(r'^activity$', 'zerver.views.get_activity'),
 
+    url(r'^user_uploads/(?P<realm_id>\d*)/(?P<filename>.*)', 'zerver.views.get_uploaded_file'),
+
     # Registration views, require a confirmation ID.
     url(r'^accounts/home/', 'zerver.views.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
