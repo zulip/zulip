@@ -277,6 +277,7 @@ class AppleDeviceToken(models.Model):
     # sent to us from each iOS device, after registering with
     # the APNS service
     token = models.CharField(max_length=255, unique=True)
+    last_updated = models.DateTimeField(auto_now=True, default=timezone.now)
 
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True)
