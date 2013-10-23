@@ -92,4 +92,14 @@ var activity = require('js/activity.js');
     assert.deepEqual(activity.get_huddles(), [huddle2, huddle1]);
 }());
 
+(function test_full_huddle_name() {
+    assert.equal(
+        activity.full_huddle_name('alice@zulip.com,jill@zulip.com'),
+        'Alice Smith, Jill Hill'
+    );
 
+    assert.equal(
+        activity.full_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
+        'Alice Smith, Fred Flintstone, Jill Hill'
+    );
+}());

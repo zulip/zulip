@@ -63,6 +63,17 @@ exports.get_huddles = function () {
     return huddles.reverse();
 };
 
+exports.full_huddle_name = function (huddle) {
+    var emails = huddle.split(',');
+
+    var names = _.map(emails, function (email) {
+        var person = people_dict.get(email);
+        return person ? person.full_name : email;
+    });
+
+    return names.join(', ');
+};
+
 function sort_users(users, presence_info) {
     // TODO sort by unread count first, once we support that
     users.sort(function (a, b) {
