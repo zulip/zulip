@@ -1619,60 +1619,6 @@ exports.register_scroll_handler = function () {
     }));
 };
 
-var presence_descriptions = {
-    active: 'is active',
-    away:   'was recently active',
-    idle:   'is not active'
-};
-
-exports.set_presence_list = function (users, presence_info) {
-    if (page_params.domain === 'mit.edu') {
-        return;  // MIT realm doesn't have a presence list
-    }
-
-    var my_info = {
-        name: page_params.fullname,
-        email: page_params.email,
-        type: (activity.has_focus) ? activity.ACTIVE : activity.IDLE,
-        type_desc: presence_descriptions.active,
-        my_fullname: true
-    };
-
-    function info_for(email) {
-        var presence = presence_info[email];
-        return {
-            name: people_dict.get(email).full_name,
-            email: email,
-            type: presence,
-            type_desc: presence_descriptions[presence]
-        };
-    }
-
-    var user_emails = _.filter(users, function (email) {
-        return people_dict.has(email);
-    });
-
-    var user_info = [my_info].concat(_.map(user_emails, info_for));
-
-    $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
-
-    // Update the counts in the presence list.
-    if (!suppress_unread_counts) {
-        // We do this after rendering the template, to avoid dealing with
-        // the suppress_unread_counts conditional in the template.
-
-        var set_count = function (email) {
-            stream_list.set_presence_list_count(email, unread.num_unread_for_person(email));
-        };
-
-        _.each(user_emails, set_count);
-        set_count(page_params.email);
-    }
-
-    // Update user fading, if necessary.
-    compose_fade.update_faded_users();
-};
-
 // Save the compose content cursor position and restore when we
 // shift-tab back in (see hotkey.js).
 var saved_compose_cursor = 0;
