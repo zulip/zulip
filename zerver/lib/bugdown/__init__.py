@@ -69,7 +69,7 @@ def add_a(root, url, link, height=None):
     a = markdown.util.etree.SubElement(div, "a")
     a.set("href", link)
     a.set("target", "_blank")
-    a.set("title", link)
+    a.set("title", url_filename(link))
     img = markdown.util.etree.SubElement(a, "img")
     img.set("src", url)
 
@@ -374,11 +374,20 @@ class Emoji(markdown.inlinepatterns.Pattern):
         else:
             return None
 
+upload_re = re.compile(r"^(?:https://%s.s3.amazonaws.com|/user_uploads/\d+)/[^/]*/([^/]*)$" % (settings.S3_BUCKET,))
+def url_filename(url):
+    """Extract the filename if a URL is an uploaded file, or return the original URL"""
+    match = upload_re.match(url)
+    if match:
+        return match.group(1)
+    else:
+        return url
+
 def fixup_link(link, target_blank=True):
     """Set certain attributes we want on every link."""
     if target_blank:
         link.set('target', '_blank')
-    link.set('title',  link.get('href'))
+    link.set('title',  url_filename(link.get('href')))
 
 
 def sanitize_url(url):
