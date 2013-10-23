@@ -230,10 +230,16 @@ class TornadoQueueClient(SimpleQueueClient):
             lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
                 consumer_tag=self._generate_ctag(queue_name)))
 
-if settings.RUNNING_INSIDE_TORNADO and settings.USING_RABBITMQ:
-    queue_client = TornadoQueueClient()
-elif settings.USING_RABBITMQ:
-    queue_client = SimpleQueueClient()
+queue_client = None
+def get_queue_client():
+    global queue_client
+    if queue_client is None:
+        if settings.RUNNING_INSIDE_TORNADO and settings.USING_RABBITMQ:
+            queue_client = TornadoQueueClient()
+        elif settings.USING_RABBITMQ:
+            queue_client = SimpleQueueClient()
+
+    return queue_client
 
 def setup_tornado_rabbitmq():
     # When tornado is shut down, disconnect cleanly from rabbitmq
@@ -250,7 +256,7 @@ queue_lock = threading.RLock()
 def queue_json_publish(queue_name, event, processor):
     with queue_lock:
         if settings.USING_RABBITMQ:
-            queue_client.json_publish(queue_name, event)
+            get_queue_client().json_publish(queue_name, event)
         else:
             processor(event)
 

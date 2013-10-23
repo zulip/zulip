@@ -26,7 +26,7 @@ from zerver.lib.socket import get_sockjs_router, respond_send_message
 from zerver.middleware import async_request_stop
 
 if settings.USING_RABBITMQ:
-    from zerver.lib.queue import queue_client
+    from zerver.lib.queue import get_queue_client
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -80,6 +80,7 @@ class Command(BaseCommand):
             print "Quit the server with %s." % (quit_command,)
 
             if settings.USING_RABBITMQ:
+                queue_client = get_queue_client()
                 # Process notifications received via RabbitMQ
                 def process_notification(chan, method, props, data):
                     tornado_callbacks.process_notification(data)
