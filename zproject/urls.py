@@ -41,8 +41,6 @@ urlpatterns = patterns('',
 
     url(r'^activity$', 'zerver.views.get_activity'),
 
-    url(r'^user_uploads/(?P<realm_id>\d*)/(?P<filename>.*)', 'zerver.views.get_uploaded_file'),
-
     # Registration views, require a confirmation ID.
     url(r'^accounts/home/', 'zerver.views.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
@@ -151,6 +149,9 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/external/newrelic$',      'webhooks.api_newrelic_webhook'),
     url(r'^api/v1/external/bitbucket$',     'webhooks.api_bitbucket_webhook'),
     url(r'^api/v1/external/desk$',          'webhooks.api_deskdotcom_webhook'),
+
+    url(r'^user_uploads/(?P<realm_id>\d*)/(?P<filename>.*)', 'rest_dispatch',
+        {'GET': 'get_uploaded_file'}),
 )
 
 v1_api_and_json_patterns = patterns('zerver.views',

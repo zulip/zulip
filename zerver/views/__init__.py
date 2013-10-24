@@ -1711,7 +1711,6 @@ def json_upload_file(request, user_profile, private=REQ(converter=json_to_bool, 
     uri = upload_message_image_through_web_client(request, user_file, user_profile, private=private)
     return json_success({'uri': uri})
 
-@authenticated_json_view
 def get_uploaded_file(request, user_profile, realm_id, filename):
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
     if user_profile.realm.id == int(realm_id) or user_profile.realm.domain == 'zulip.com':
