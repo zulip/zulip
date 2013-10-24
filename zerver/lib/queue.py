@@ -39,7 +39,7 @@ class SimpleQueueClient(object):
     def _get_parameters(self):
         return pika.ConnectionParameters('localhost',
             credentials = pika.PlainCredentials(
-                'humbug', settings.RABBITMQ_PASSWORD))
+                settings.RABBITMQ_USERNAME, settings.RABBITMQ_PASSWORD))
 
     def _generate_ctag(self, queue_name):
         return "%s_%s" % (queue_name, str(random.getrandbits(16)))
