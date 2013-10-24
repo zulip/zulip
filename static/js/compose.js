@@ -355,6 +355,9 @@ function send_message_ajax(request, success) {
 }
 
 var socket = new Socket("/sockjs");
+// For debugging.  The socket will eventually move out of this file anyway.
+exports._socket = socket;
+
 function send_message_socket(request, success) {
     socket.send(request, success, function (type, resp) {
         var err_msg = "Error sending message";
