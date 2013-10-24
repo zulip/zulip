@@ -8,13 +8,14 @@ from apnsclient import Session, Connection, Message, APNs
 
 from django.conf import settings
 
-import base64, binascii, logging
+import base64, binascii, logging, os
 
 # Maintain a long-lived Session object to avoid having to re-SSL-handshake
 # for each request
 session = Session()
-connection = session.get_connection(settings.APNS_SANDBOX, cert_file=settings.APNS_CERT_FILE)
-
+connection = None
+if os.path.exists(settings.APNS_CERT_FILE):
+    connection = session.get_connection(settings.APNS_SANDBOX, cert_file=settings.APNS_CERT_FILE)
 
 def num_push_devices_for_user(user_profile):
     return AppleDeviceToken.objects.filter(user=user_profile).count()
