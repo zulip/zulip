@@ -82,7 +82,7 @@ def upload_message_image(uploaded_file_name, content_type, file_data, user_profi
         url = "/user_uploads/%s" % (s3_file_name)
     else:
         bucket_name = settings.S3_BUCKET
-        s3_file_name = "/".join([random_name(60), sanitize_name(uploaded_file_name)])
+        s3_file_name = "/".join([random_name(18), sanitize_name(uploaded_file_name)])
         url = "https://%s.s3.amazonaws.com/%s" % (bucket_name, s3_file_name)
 
     upload_image_to_s3(
