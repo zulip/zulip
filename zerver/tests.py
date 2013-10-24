@@ -3561,7 +3561,12 @@ class UnreadCountTests(AuthedTestCase):
     def test_update_all_flags(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([1, 2]),
+        message_ids = [self.send_message("hamlet@zulip.com", "iago@zulip.com",
+                                         Recipient.PERSONAL, "test"),
+                       self.send_message("hamlet@zulip.com", "cordelia@zulip.com",
+                                         Recipient.PERSONAL, "test2")]
+
+        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps(message_ids),
                                                                  "op": "add",
                                                                  "flag": "read"})
         self.assert_json_success(result)
@@ -3589,15 +3594,16 @@ class StarTests(AuthedTestCase):
         /json/update_message_flags.
         """
         self.login("hamlet@zulip.com")
-        message_ids = [1, 2]
+        message_ids = [self.send_message("hamlet@zulip.com", "hamlet@zulip.com",
+                                         Recipient.PERSONAL, "test")]
 
-        # Star a few messages.
+        # Star a message.
         result = self.change_star(message_ids)
         self.assert_json_success(result)
 
         for msg in self.get_old_messages():
             if msg['id'] in message_ids:
-                self.assertEqual(msg['flags'], ['read', 'starred'])
+                self.assertEqual(msg['flags'], ['starred'])
             else:
                 self.assertEqual(msg['flags'], ['read'])
 
@@ -3607,7 +3613,7 @@ class StarTests(AuthedTestCase):
         # Remove the stars.
         for msg in self.get_old_messages():
             if msg['id'] in message_ids:
-                self.assertEqual(msg['flags'], ['read'])
+                self.assertEqual(msg['flags'], [])
 
     def test_new_message(self):
         """
