@@ -397,9 +397,14 @@ def sanitize_url(url):
     # treat it as a mailto: and set the appropriate scheme
     if scheme == '' and netloc == '' and '@' in path:
         scheme = 'mailto'
+    elif scheme == '' and netloc == '' and len(path) > 0 and path[0] == '/':
+        # Allow domain-relative links
+        return urlparse.urlunparse(('', '', path, params, query, fragment))
+    elif (scheme, netloc, path, params, query) == ('', '', '', '', '') and len(fragment) > 0:
+        # Allow fragment links
+        return urlparse.urlunparse(('', '', '', '', '', fragment))
 
     # Zulip modification: If scheme is not specified, assume http://
-    # It's unlikely that users want relative links within zulip.com.
     # We re-enter sanitize_url because netloc etc. need to be re-parsed.
     if not scheme:
         return sanitize_url('http://' + url)
