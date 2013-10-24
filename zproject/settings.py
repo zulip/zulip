@@ -446,7 +446,7 @@ PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 
 
 USING_RABBITMQ = DEPLOYED
-RABBITMQ_USERNAME = 'humbug'
+RABBITMQ_USERNAME = 'zulip'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
