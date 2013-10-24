@@ -67,7 +67,7 @@ def get_file_info(request, user_file):
     return uploaded_file_name, content_type
 
 def authed_upload_enabled(user_profile):
-    return user_profile.realm.domain == 'zulip.com'
+    return user_profile.realm.domain in ('zulip.com', 'squarespace.com')
 
 def upload_message_image(uploaded_file_name, content_type, file_data, user_profile, private=None):
     if private is None:
