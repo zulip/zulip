@@ -84,7 +84,15 @@ def validate(fn):
     assert state.depth == 0
 
 git_files = map(str.strip, check_output(['git', 'ls-files']).split('\n'))
+
+# Check all our handlebars templates.
 templates = [fn for fn in git_files if fn.endswith('.handlebars')]
 assert len(templates) >= 10 # sanity check that we are actually doing work
+
+# Django templates are pretty messy now, so we whitelist them for now.
+templates += [
+    'templates/zerver/settings.html'
+]
+
 for fn in templates:
     validate(fn)

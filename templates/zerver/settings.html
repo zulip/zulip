@@ -4,11 +4,13 @@
 
   <div class="alert" id="settings-status"></div>
   <div id="settings-change-box">
+
     <form action="/json/settings/change" method="post"
           class="form-horizontal">{% csrf_token %}
+
     <div id="account-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>Your Account</div>
-    <div class="account-settings-form">
+        <div class="account-settings-form">
            <div class="control-group" id="name_change_container">
              <label for="full_name" class="control-label">Full name</label>
              <div class="controls">
@@ -21,7 +23,7 @@
              <label for="change_password_button" class="control-label">Password</label>
              <div class="controls">
                <button class="btn change_password_button" data-dismiss="modal" aria-hidden="true">Change Password</button>
-               </div>
+             </div>
            </div>
 
            <div id="pw_change_controls">
@@ -81,7 +83,7 @@
              </div>
            </div>
         </div>
-      </div>
+    </div>
 
 
 
@@ -143,13 +145,18 @@
             <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
           </div>
         </div>
-      </div>
-     </div>
+    </div>
+
+    </div>
+
     </form>
+
   </div>
 
     <div id="bot-settings" class="settings-section">
+
       <div class="settings-section-title"><i class="icon-vector-github settings-section-icon"></i>Your Bots</div>
+
     <div class="bot-settings-form">
     <p class="bot-settings-note">Looking for our <a href="/integrations" target="_blank">Integrations</a>
     or <a href="/api" target="_blank">API</a> documentation?</p>
@@ -181,7 +188,8 @@
         <button class="btn" id="bot_avatar_upload_button">Customize avatar</button> (Optional)
        </div>
       </div>
-      </p>
+    </div>
+
       <p>
         <div id="bot_avatar_file_input_error" class="text-error"></div>
       </p>
@@ -192,7 +200,7 @@
       </div>
       <div id="create_bot_spinner"></div>
     </div>
-    </div>
+
     </form>
     <hr class="settings_separator" />
 
@@ -200,7 +208,8 @@
         <p class="api-key-note">For most bots using the API, you'll want to give each bot
         its own name and API key using the above section.  But if you
         want to write a bot that can access your own private
-        messages, you should use your personal API key.</p>
+        messages, you should use your personal API key.
+        </p>
         <div class="control-group">
           <button class="btn" id="api_key_button">Show/change your API key</button>
         </div>
@@ -231,7 +240,8 @@
       </div>
 
     </div>
-  </div>
+    </div>
+
 
 
   <div id="word-alert-settings" class="settings-section">
