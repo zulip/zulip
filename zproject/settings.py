@@ -11,13 +11,13 @@ import sys
 from zerver.openid import openid_failure_handler
 
 # Whether we're running in a production environment. Note that DEPLOYED does
-# **not** mean hosted by us; customer sites are DEPLOYED and LOCALSERVER
+# **not** mean hosted by us; customer sites are DEPLOYED and LOCAL_SERVER
 # and as such should not for example assume they are the main Zulip site.
 DEPLOYED = os.path.exists('/etc/humbug-server')
 STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
 TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
 
-LOCALSERVER = os.path.exists('/etc/zulip-local')
+LOCAL_SERVER = os.path.exists('/etc/zulip-local')
 
 # TODO: Clean this up
 if TESTING_DEPLOYED:
@@ -42,8 +42,8 @@ TEST_SUITE = False
 
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
-if TESTING_DEPLOYED or LOCALSERVER:
-    # XXX we should probably tighten this for LOCALSERVER
+if TESTING_DEPLOYED or LOCAL_SERVER:
+    # XXX we should probably tighten this for LOCAL_SERVER
     # Allow any hosts for our test instances, to reduce 500 spam
     ALLOWED_HOSTS = ['*']
 elif DEPLOYED:
@@ -73,7 +73,7 @@ DATABASES = {"default": {
     },
 }
 
-if not DEPLOYED or LOCALSERVER:
+if not DEPLOYED or LOCAL_SERVER:
     DATABASES["default"].update({
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost',
@@ -187,7 +187,7 @@ INSTALLED_APPS = (
 )
 
 LOCAL_STATSD = (False)
-USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED and not LOCALSERVER) or LOCAL_STATSD
+USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED and not LOCAL_SERVER) or LOCAL_STATSD
 
 # These must be named STATSD_PREFIX for the statsd module
 # to pick them up
@@ -272,7 +272,7 @@ else:
     STATICFILES_FINDERS = (
         'zerver.finders.ZulipFinder',
     )
-    if DEPLOYED or LOCALSERVER:
+    if DEPLOYED or LOCAL_SERVER:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
         STATIC_ROOT = 'prod-static/serve'

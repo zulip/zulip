@@ -6,7 +6,7 @@ import ujson
 def add_settings(request):
     return {
         'full_navbar':   settings.FULL_NAVBAR,
-        'localserver':   settings.LOCALSERVER,
+        'local_server':  settings.LOCAL_SERVER,
     }
 
 def add_metrics(request):

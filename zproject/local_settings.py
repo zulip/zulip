@@ -46,13 +46,13 @@ EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
 
 # Whether we're running in a production environment. Note that DEPLOYED does
-# **not** mean hosted by us; customer sites are DEPLOYED and LOCALSERVER
+# **not** mean hosted by us; customer sites are DEPLOYED and LOCAL_SERVER
 # and as such should not for example assume they are the main Zulip site.
 DEPLOYED = os.path.exists('/etc/humbug-server')
 STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
 TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
 
-LOCALSERVER = os.path.exists('/etc/zulip-local')
+LOCAL_SERVER = os.path.exists('/etc/zulip-local')
 
 if TESTING_DEPLOYED:
     EXTERNAL_HOST = platform.node()
@@ -70,8 +70,8 @@ if DEPLOYED:
 else:
     FEEDBACK_TARGET="http://localhost:9991/api"
 
-# For now, LOCALSERVER is only testing, so write to our test buckets
-if DEPLOYED and not LOCALSERVER:
+# For now, LOCAL_SERVER is only testing, so write to our test buckets
+if DEPLOYED and not LOCAL_SERVER:
     S3_KEY="xxxxxxxxxxxxxxxxxxxx"
     S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     S3_BUCKET="humbug-user-uploads"
@@ -96,7 +96,7 @@ if STAGING_DEPLOYED or TESTING_DEPLOYED:
     TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-elif DEPLOYED and not LOCALSERVER:
+elif DEPLOYED and not LOCAL_SERVER:
     # This is the real set of API credentials used by our real server,
     # and we probably shouldn't test with it just so we don't waste its requests
     # Application: "Humbug HQ - Production"
