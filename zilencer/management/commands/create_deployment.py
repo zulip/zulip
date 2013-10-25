@@ -47,5 +47,5 @@ class Command(BaseCommand):
             old_dep.save()
         dep.realms = [realm]
         dep.save()
-        print "Deployment created."
+        print "Deployment %s created." % dep.id
 
