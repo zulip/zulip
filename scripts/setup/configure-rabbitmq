@@ -4,6 +4,6 @@
 # with a real password
 
 rabbitmqctl delete_user guest
-rabbitmqctl add_user zulip $($(dirname $0)/../../tools/get-django-setting RABBITMQ_PASSWORD)
+rabbitmqctl add_user zulip $($(dirname $0)/../../bin/get-django-setting RABBITMQ_PASSWORD)
 rabbitmqctl set_user_tags zulip administrator
 rabbitmqctl set_permissions -p / zulip '.*' '.*' '.*'
