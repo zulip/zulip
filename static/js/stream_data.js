@@ -33,14 +33,12 @@ exports.get_stream_info = function () {
     return stream_info;
 };
 
-// List subscribed streams.
-// Internal version returns the full stream info object for each stream.
-function subscribed_streams() {
+exports.subscribed_subs = function () {
     return _.where(stream_info.values(), {subscribed: true});
-}
+};
 
 exports.subscribed_streams = function () {
-    return _.pluck(subscribed_streams(), 'name');
+    return _.pluck(exports.subscribed_subs(), 'name');
 };
 
 exports.all_subs = function () {
@@ -48,11 +46,11 @@ exports.all_subs = function () {
 };
 
 exports.get_colors = function () {
-    return _.pluck(subscribed_streams(), 'color');
+    return _.pluck(exports.subscribed_subs(), 'color');
 };
 
 exports.all_subscribed_streams_are_in_home_view = function () {
-    return _.every(subscribed_streams(), function (sub) {
+    return _.every(exports.subscribed_subs(), function (sub) {
         return sub.in_home_view; }
     );
 };
