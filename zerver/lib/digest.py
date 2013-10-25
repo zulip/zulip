@@ -18,12 +18,6 @@ from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
 # 4. Interesting stream traffic, as determined by the longest and most
 #    diversely comment upon topics.
 
-def and_n_others(things, limit):
-    # A helper for the commonly appended "and N other(s)" string, with
-    # the appropriate pluralization.
-    return " and %d other%s" % (len(things) - limit,
-                                "" if len(things) == limit + 1 else "s")
-
 def gather_hot_conversations(user_profile, stream_messages):
     # Gather stream conversations of 2 types:
     # 1. long conversations
