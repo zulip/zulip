@@ -1,8 +1,10 @@
 from __future__ import absolute_import
 from optparse import make_option
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_realm
+from zilencer.models import Deployment
 
 import re
 import sys
@@ -26,6 +28,11 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                     dest='name',
                     type='str',
                     help='The user-visible name for the realm.'),
+        make_option('--deployment',
+                    dest='deployment_id',
+                    type='int',
+                    default=None,
+                    help='Optionally, the ID of the deployment you want to associate the realm with.'),
         )
 
     def validate_domain(self, domain):
@@ -46,6 +53,14 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             self.print_help("python manage.py", "create_realm")
             exit(1)
 
+        if options["open_realm"] and options["deployment_id"] is not None:
+            print >>sys.stderr, "\033[1;31mExternal deployments cannot be open realms.\033[0m\n"
+            self.print_help("python manage.py", "create_realm")
+            exit(1)
+        if options["deployment_id"] is not None and settings.LOCALSERVER:
+            print >>sys.stderr, "\033[1;31mExternal deployments are not supported on local server deployments.\033[0m\n"
+            exit(1)
+
         domain = options["domain"]
         name = options["name"]
 
@@ -55,6 +70,15 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             domain, name, restricted_to_domain=not options["open_realm"])
         if created:
             print domain, "created."
+            if options["deployment_id"] is not None:
+                deployment = Deployment.objects.get(id=options["deployment_id"])
+                deployment.realms.add(realm)
+                deployment.save()
+                print "Added to deployment", str(deployment.id)
+            elif not settings.LOCALSERVER:
+                deployment = Deployment.objects.get(base_site_url="https://zulip.com/")
+                deployment.realms.add(realm)
+                deployment.save()
             print "\033[1;36mDon't forget to run set_default_streams!\033[0m"
         else:
             print domain, "already exists."

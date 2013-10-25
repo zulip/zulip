@@ -41,6 +41,10 @@ class Command(BaseCommand):
         dep = Deployment()
         dep.api_key = random_api_key()
         dep.save()
+        old_dep = realm.deployment
+        if old_dep is not None:
+            old_dep.realms.remove(realm)
+            old_dep.save()
         dep.realms = [realm]
         dep.save()
         print "Deployment created."
