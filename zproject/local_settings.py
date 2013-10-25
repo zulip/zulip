@@ -124,7 +124,7 @@ ADMIN_DOMAIN = "zulip.com"
 # Email mirror configuration
 # The email of the Zulip bot that the email gateway
 # should post as
-EMAIL_GATEWAY_BOT_ZULIP_USER = "emailgateway-bot@zulip.com"
+EMAIL_GATEWAY_BOT_ZULIP_USER = "emailgateway@zulip.com"
 
 EMAIL_GATEWAY_LOGIN = "emailgateway@zulip.com"
 EMAIL_GATEWAY_PASSWORD = "xxxxxxxxxxxxxxxx"
