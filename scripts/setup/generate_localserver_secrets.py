@@ -3,7 +3,7 @@
 
 import sys, os, os.path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 
 from django.utils.crypto import get_random_string
