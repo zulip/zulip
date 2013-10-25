@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from zerver.models import get_client
 
 from zerver.decorator import asynchronous, authenticated_api_view, \
@@ -20,6 +21,9 @@ from zerver.lib.event_queue import allocate_client_descriptor, get_client_descri
 
 import ujson
 import socket
+
+from zerver.lib.rest import rest_dispatch as _rest_dispatch
+rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 @internal_notify_view
 def notify(request):

@@ -89,9 +89,6 @@ import logging
 from os import path
 from collections import defaultdict
 
-# Import the Tornado REST views that are used by rest_dispatch
-from zerver.tornadoviews import get_events_backend, get_updates_backend
-
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
