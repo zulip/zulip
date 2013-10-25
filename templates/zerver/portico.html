@@ -24,7 +24,11 @@ hence the name.
 
   <div class="column-right top-links">
           <a href="/accounts/login/?next=/">Log in</a>
+          {% if local_server %}
+          <a href="{% url 'register' %}">Sign up</a>
+          {% else %}
           <a href="{% url 'signup' %}">Sign up</a>
+          {% endif %}
   </div>
 </div>
 </div>
@@ -46,7 +50,13 @@ hence the name.
       <li><span class="little-bullet">·</span></li>
       <li><a href="/accounts/login/?next=/">Log in</a></li>
       <li><span class="little-bullet">·</span></li>
-      <li><a href="{% url 'signup' %}">Sign up</a></li>
+      <li>
+          {% if local_server %}
+          <a href="{% url 'register' %}">Sign up</a>
+          {% else %}
+          <a href="{% url 'signup' %}">Sign up</a>
+          {% endif %}
+      </li>
       {# We only want the mixpanel badge on the front page #}
       {% block mixpanel_badge %}
       {% endblock %}
