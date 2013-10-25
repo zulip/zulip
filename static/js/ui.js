@@ -984,7 +984,7 @@ $(function () {
             .text(message).stop(true).fadeTo(0,1);
     }
 
-    $("#settings-change-box form").ajaxForm({
+    $("form.your-account-settings").expectOne().ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         beforeSubmit: function (arr, form, options) {
             // FIXME: Check that the two password fields match
@@ -1013,6 +1013,36 @@ $(function () {
                 $(".my_fullname").text(result.full_name);
             }
             update_gravatars();
+
+            settings_status.removeClass(status_classes)
+                .addClass('alert-success')
+                .text(message).stop(true).fadeTo(0,1);
+            // TODO: In theory we should auto-reload or something if
+            // you changed the email address or other fields that show
+            // up on all screens
+        },
+        error: function (xhr, error_type, xhn) {
+            var response = "Error changing settings";
+            if (xhr.status.toString().charAt(0) === "4") {
+                // Only display the error response for 4XX, where we've crafted
+                // a nice response.
+                response += ": " + $.parseJSON(xhr.responseText).msg;
+            }
+            settings_change_error(response);
+        },
+        complete: function (xhr, statusText) {
+            // Whether successful or not, clear the password boxes.
+            // TODO: Clear these earlier, while the request is still pending.
+            clear_password_change();
+        }
+    });
+
+    $("form.notify-settings").expectOne().ajaxForm({
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+
+        success: function (resp, statusText, xhr, form) {
+            var message = "Updated notification settings!";
+            var result = $.parseJSON(xhr.responseText);
 
             if (result.enable_desktop_notifications !== undefined) {
                 page_params.desktop_notifications_enabled = result.enable_desktop_notifications;
@@ -1044,11 +1074,6 @@ $(function () {
                 response += ": " + $.parseJSON(xhr.responseText).msg;
             }
             settings_change_error(response);
-        },
-        complete: function (xhr, statusText) {
-            // Whether successful or not, clear the password boxes.
-            // TODO: Clear these earlier, while the request is still pending.
-            clear_password_change();
         }
     });
 

@@ -1669,19 +1669,11 @@ def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_change_settings(request, user_profile, full_name=REQ,
-                         old_password=REQ, new_password=REQ,
-                         confirm_password=REQ,
-                         # enable_desktop_notification needs to default to False
-                         # because browsers POST nothing for an unchecked checkbox
-                         enable_desktop_notifications=REQ(converter=lambda x: x == "on",
-                                                          default=False),
-                         enable_sounds=REQ(converter=lambda x: x == "on",
-                                                          default=False),
-                         enable_offline_email_notifications=REQ(converter=lambda x: x == "on",
-                                                                default=False),
-                         enable_offline_push_notifications=REQ(converter=lambda x: x == "on",
-                                                                default=False)):
+def json_change_settings(request, user_profile,
+                         full_name=REQ,
+                         old_password=REQ,
+                         new_password=REQ,
+                         confirm_password=REQ):
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
             return json_error("New password must match confirmation password!")
@@ -1703,6 +1695,24 @@ def json_change_settings(request, user_profile, full_name=REQ,
                 return json_error("Name too long!")
             do_change_full_name(user_profile, new_full_name)
             result['full_name'] = new_full_name
+
+    return json_success(result)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_change_notify_settings(request, user_profile,
+                                # enable_desktop_notification needs to default to False
+                                # because browsers POST nothing for an unchecked checkbox
+                                enable_desktop_notifications=REQ(converter=lambda x: x == "on",
+                                                              default=False),
+                                enable_sounds=REQ(converter=lambda x: x == "on",
+                                                              default=False),
+                                enable_offline_email_notifications=REQ(converter=lambda x: x == "on",
+                                                                    default=False),
+                                enable_offline_push_notifications=REQ(converter=lambda x: x == "on",
+                                                                    default=False)):
+
+    result = {}
 
     if user_profile.enable_desktop_notifications != enable_desktop_notifications:
         do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)

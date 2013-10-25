@@ -2173,17 +2173,12 @@ class ChangeSettingsTest(AuthedTestCase):
         post_params = {"full_name": "Foo Bar",
                   "old_password": initial_password("hamlet@zulip.com"),
                   "new_password": "foobar1", "confirm_password": "foobar1",
-                  "enable_desktop_notifications": "",
-                  "enable_offline_email_notifications": "",
-                  "enable_sounds": ""}
+        }
         post_params.update(modified_params)
         return self.client.post("/json/settings/change", dict(post_params))
 
     def check_well_formed_change_settings_response(self, result):
         self.assertIn("full_name", result)
-        self.assertIn("enable_desktop_notifications", result)
-        self.assertIn("enable_sounds", result)
-        self.assertIn("enable_offline_email_notifications", result)
 
     def test_successful_change_settings(self):
         """
@@ -2197,12 +2192,18 @@ class ChangeSettingsTest(AuthedTestCase):
         self.check_well_formed_change_settings_response(result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                 full_name, "Foo Bar")
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
-                enable_desktop_notifications, False)
         self.client.post('/accounts/logout/')
         self.login("hamlet@zulip.com", "foobar1")
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
+
+    def test_notify_settings(self):
+        # This is basically a don't-explode test.
+        self.login("hamlet@zulip.com")
+        json_result = self.client.post("/json/notify_settings/change", {})
+        self.assert_json_success(json_result)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
+                enable_desktop_notifications, False)
 
     def test_missing_params(self):
         """

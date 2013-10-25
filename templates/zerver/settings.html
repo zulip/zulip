@@ -6,7 +6,7 @@
   <div id="settings-change-box">
 
     <form action="/json/settings/change" method="post"
-          class="form-horizontal">{% csrf_token %}
+          class="form-horizontal your-account-settings">{% csrf_token %}
 
     <div id="account-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>Your Account</div>
@@ -85,7 +85,10 @@
         </div>
     </div>
 
+    </form>
 
+    <form action="/json/notify_settings/change" method="post"
+          class="form-horizontal notify-settings">{% csrf_token %}
 
     <div id="notification-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>Notifications <i class="tiny icon-vector-question-sign" id="notification-docs"></i></div>
