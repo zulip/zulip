@@ -27,7 +27,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import decode_email_address
 from zerver.lib.upload import upload_message_image
-from zerver.models import Stream, get_user_profile_by_email
+from zerver.models import Stream, get_user_profile_by_email, UserProfile
 
 from twisted.internet import protocol, reactor, ssl
 from twisted.mail import imap4
@@ -50,8 +50,14 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
-email_gateway_user = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT_ZULIP_USER)
-api_key = email_gateway_user.api_key
+email_gateway_user = None
+api_key = None
+try:
+    email_gateway_user = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT_ZULIP_USER)
+    api_key = email_gateway_user.api_key
+except UserProfile.DoesNotExist:
+    print "No configured %s user" % (settings.EMAIL_GATEWAY_BOT_ZULIP_USER,)
+
 
 if settings.DEPLOYED:
     staging_api_client = zulip.Client(
@@ -305,5 +311,12 @@ Run this command out of a cron job.
 """
 
     def handle(self, **options):
+        if (not settings.EMAIL_GATEWAY_BOT_ZULIP_USER or not settings.EMAIL_GATEWAY_LOGIN or
+            not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
+            not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER or
+            not email_gateway_user):
+            print "Please configure the Email Mirror Gateway in your local_settings.py"
+            exit(1)
+
         reactor.callLater(0, main)
         reactor.run()

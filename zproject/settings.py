@@ -202,7 +202,13 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'TWITTER_CONSUMER_SECRET': '',
                     'TWITTER_ACCESS_TOKEN_KEY': '',
                     'TWITTER_ACCESS_TOKEN_SECRET': '',
-                    'EMBEDLY_KEY': ''}
+                    'EMBEDLY_KEY': '',
+                    'EMAIL_GATEWAY_BOT_ZULIP_USER': None,
+                    'EMAIL_GATEWAY_LOGIN': None,
+                    'EMAIL_GATEWAY_PASSWORD': None,
+                    'EMAIL_GATEWAY_IMAP_SERVER': None,
+                    'EMAIL_GATEWAY_IMAP_PORT': None,
+                    'EMAIL_GATEWAY_IMAP_FOLDER': None}
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
     if not setting_name in vars():
