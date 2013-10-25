@@ -3,78 +3,44 @@ import os
 import platform
 import re
 
-# TODO: Rewrite this file to be more or less self-documenting as to
-# how to generate each token securely and what other setup is needed.
-# For now, we'll do that piecewise by component.
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = ''
-
-# A fixed salt used for hashing in certain places, e.g. email-based
-# username generation.
-HASH_SALT = ''
-
-# Use this salt to hash a user's email into a filename for their user-uploaded
-# avatar.  If this salt is discovered, attackers will only be able to determine
-# that the owner of an email account has uploaded an avatar to Zulip, which isn't
-# the end of the world.  Don't use the salt where there is more security exposure.
-AVATAR_SALT = ''
-
-# A shared secret, used to authenticate different parts of the app to each other.
-SHARED_SECRET = ''
-
-# Password for rabbitmq
-RABBITMQ_PASSWORD = ''
-
-# TODO: Make USING_MAILCHIMP do something (and default to False)
-USING_MAILCHIMP = False
-
+# This is the user-accessible Zulip hostname for this installation
+EXTERNAL_HOST = ''
 
 # These credentials are for communication with the central Zulip deployment manager
 DEPLOYMENT_ROLE_NAME = ''
 DEPLOYMENT_ROLE_KEY = ''
 
-# TODO: Make USING_MANDRILL do something (and default to False)
-USING_MANDRILL = False
-
-# This needs to be synced with the camo installation
-CAMO_KEY = ''
-
-# TODO: Put in example values
+# Configure the outgoing SMTP server below. For outgoing email
+# via a GMail SMTP server, EMAIL_USE_TLS must be True and the
+# outgoing port must be 587. The EMAIL_HOST is prepopulated
+# for GMail servers, change it for other hosts
 EMAIL_USE_TLS = True
-EMAIL_HOST = ''
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 
-# Whether we're running in a production environment. Note that DEPLOYED does
-# **not** mean hosted by us; customer sites are DEPLOYED and LOCALSERVER
-# and as such should not for example assume they are the main Zulip site.
+# By default uploaded files are stored directly on the Zulip server
+# If file storage to Amazon S3 is desired, please contact Zulip Support
+# (support@zulip.com) for further instructions on setting up S3 integration
+
+# In order to show Tweet previews inline in messages, Zulip must have access
+# to the Twitter API via OAuth. To fetch the various access tokens needed below,
+# you must register a new application under your Twitter account by doing the following:
 #
-# TODO: Set these variables inside settings.py properly
-DEPLOYED = os.path.exists('/etc/humbug-server')
-STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
-TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
+# 1. Log in to http://dev.twitter.com.
+# 2. In the menu under your username, click My Applications. From this page, create a new application.
+# 3. Click on the application you created and click "create my access token". Fill in the requested values.
+TWITTER_CONSUMER_KEY = ''
+TWITTER_CONSUMER_SECRET = ''
+TWITTER_ACCESS_TOKEN_KEY = ''
+TWITTER_ACCESS_TOKEN_SECRET = ''
 
-LOCALSERVER = os.path.exists('/etc/zulip-local')
-
-# TODO: Clean this up
-if TESTING_DEPLOYED:
-    EXTERNAL_HOST = platform.node()
-elif STAGING_DEPLOYED:
-    EXTERNAL_HOST = 'staging.zulip.com'
-elif DEPLOYED:
-    EXTERNAL_HOST = 'zulip.com'
-else:
-    EXTERNAL_HOST = 'localhost:9991'
-
-# TODO: Replace these
-S3_KEY=""
-S3_SECRET_KEY=""
-S3_BUCKET=""
-S3_AVATAR_BUCKET=""
-
-# TODO: Replace these
-MIXPANEL_TOKEN = ""
-
-# TODO: Add twitter template variables below.
+# The following keys are automatically generated during the install process
+# PLEASE DO NOT EDIT THEM
+CAMO_KEY = ''
+SECRET_KEY = ''
+HASH_SALT = ''
+RABBITMQ_PASSWORD = ''
+AVATAR_SALT = ''
+SHARED_SECRET = ''

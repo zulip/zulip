@@ -57,11 +57,15 @@ class QueueProcessingWorker(object):
 class SignupWorker(QueueProcessingWorker):
     def __init__(self):
         super(SignupWorker, self).__init__()
-        self.pm = PostMonkey(settings.MAILCHIMP_API_KEY, timeout=10)
+        if settings.MAILCHIMP_API_KEY != '':
+            self.pm = PostMonkey(settings.MAILCHIMP_API_KEY, timeout=10)
 
     # Changes to this should also be reflected in
     # zerver/management/commands/queue_followup_emails.py:queue()
     def consume(self, ch, method, properties, data):
+        if settings.MAILCHIMP_API_KEY == '':
+            return
+
         merge_vars=data['merge_vars']
 
         # This should clear out any invitation reminder emails

@@ -10,10 +10,29 @@ import sys
 
 from zerver.openid import openid_failure_handler
 
+# Whether we're running in a production environment. Note that DEPLOYED does
+# **not** mean hosted by us; customer sites are DEPLOYED and LOCALSERVER
+# and as such should not for example assume they are the main Zulip site.
+DEPLOYED = os.path.exists('/etc/humbug-server')
+STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
+TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
+
+LOCALSERVER = os.path.exists('/etc/zulip-local')
+
+# TODO: Clean this up
+if TESTING_DEPLOYED:
+    EXTERNAL_HOST = platform.node()
+elif STAGING_DEPLOYED:
+    EXTERNAL_HOST = 'staging.zulip.com'
+elif DEPLOYED:
+    EXTERNAL_HOST = 'zulip.com'
+else:
+    EXTERNAL_HOST = 'localhost:9991'
+
 # Import variables like secrets from the local_settings file
+# Import local_settings after determining the deployment/machine type
 from local_settings import *
 
-# DEPLOYED and similar variables are set by local_settings.py
 SERVER_GENERATION = int(time.time())
 
 # Uncomment end of next line to test JS/CSS minification.
@@ -209,7 +228,15 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'EMAIL_GATEWAY_PASSWORD': None,
                     'EMAIL_GATEWAY_IMAP_SERVER': None,
                     'EMAIL_GATEWAY_IMAP_PORT': None,
-                    'EMAIL_GATEWAY_IMAP_FOLDER': None}
+                    'EMAIL_GATEWAY_IMAP_FOLDER': None,
+                    'MANDRILL_API_KEY': '',
+                    'S3_KEY': '',
+                    'S3_SECRET_KEY': '',
+                    'S3_BUCKET': '',
+                    'S3_AVATAR_BUCKET': '',
+                    'MIXPANEL_TOKEN': '',
+                    'MAILCHIMP_API_KEY': '',
+                    'MANDRILL_API_KEY': ''}
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
     if not setting_name in vars():

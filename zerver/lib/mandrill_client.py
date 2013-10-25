@@ -4,9 +4,12 @@ from django.conf import settings
 MAIL_CLIENT = None
 
 def get_mandrill_client():
+    if settings.MANDRILL_API_KEY == '':
+        return None
+
     global MAIL_CLIENT
-    if MAIL_CLIENT:
-        return MAIL_CLIENT
-    MAIL_CLIENT = mandrill.Mandrill(settings.MANDRILL_API_KEY)
+    if not MAIL_CLIENT:
+        MAIL_CLIENT = mandrill.Mandrill(settings.MANDRILL_API_KEY)
+
     return MAIL_CLIENT
 

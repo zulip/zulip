@@ -2136,6 +2136,9 @@ def clear_followup_emails_queue(email, from_email=None, mail_client=None):
     `from_email` is a string representing the zulip email account used
     to send the email (for example `support@zulip.com` or `signups@zulip.com`)
     """
+    if not mail_client:
+        return
+
     for email in mail_client.messages.list_scheduled(to=email):
         if from_email is not None and email.get('from_email') != from_email:
             continue
@@ -2159,6 +2162,9 @@ def send_future_email(recipients, email_html, email_text, subject,
     #            "tags": ["signup-reminders"],
     #            "to": [{'email':"acrefoot@zulip.com", 'name': "thingamajig"}]
     #            }
+    if not mail_client:
+        return
+
     if sender is None:
         sender = {'email': 'noreply@zulip.com', 'name': 'Zulip'}
 
