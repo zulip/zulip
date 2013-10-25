@@ -1673,8 +1673,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                                'full_name' : profile.full_name}
                               for profile in get_active_user_profiles_by_realm(user_profile.realm)]
     if event_types is None or "onboarding_steps" in event_types:
-        ret['onboarding_steps'] = [{'email' : profile.email,
-                                    'steps' : profile.onboarding_steps}]
+        ret['onboarding_steps'] = {'email' : user_profile.email,
+                                   'steps' : user_profile.onboarding_steps}
     if event_types is None or "subscription" in event_types:
         subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
         ret['subscriptions'] = subscriptions
