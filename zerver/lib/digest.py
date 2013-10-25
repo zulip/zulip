@@ -62,24 +62,7 @@ def gather_hot_conversations(user_profile, stream_messages):
                 message__recipient__type_id=stream_id,
                 message__subject=subject)[:2]]
 
-        # Show up to 4 participants names.
-        participant_limit = 4
-
-        if len(users) == 1:
-            # One participant.
-            participants_string = "%s" % (users[0],)
-        elif len(users) <= participant_limit:
-            # A few participants, show all of them.
-            participants_string = ", ".join(
-                "%s" % (user,) for user in users[:-1])
-            participants_string += " and %s" % (users[-1],)
-        else:
-            # More than 4 participants, only mention a few.
-            participants_string = ", ".join(
-                "%s" % (user,) for user in users[:participant_limit])
-            participants_string += and_n_others(users, participant_limit)
-
-        teaser_data = {"participants_string": participants_string,
+        teaser_data = {"participants": users,
                        "count": count - len(first_few_messages),
                        "first_few_messages": build_message_list(
                 user_profile, first_few_messages)}
@@ -93,66 +76,24 @@ def gather_new_users(user_profile, threshold):
     new_users = list(UserProfile.objects.filter(
             realm=user_profile.realm, date_joined__gt=threshold,
             is_bot=False))
+    user_names = [user.full_name for user in new_users]
 
-    # Show up to 4 new users.
-    user_limit = 4
-
-    if not new_users:
-        # No new users.
-        new_users_string = None
-    elif len(new_users) == 1:
-        # One new user.
-        new_users_string = "%s" % (new_users[0].full_name,)
-    elif len(new_users) <= user_limit:
-        # A few new users, show all of them.
-        new_users_string = ", ".join(
-            "%s" % (user.full_name,) for user in new_users[:-1])
-        new_users_string += " and %s" % (new_users[-1].full_name,)
-    else:
-        # More than 4 new users, only mention a few.
-        new_users_string = ", ".join(
-            "%s" % (user.full_name,) for user in new_users[:user_limit])
-        new_users_string += and_n_others(new_users, user_limit)
-
-    return len(new_users), new_users_string
+    return len(user_names), user_names
 
 def gather_new_streams(user_profile, threshold):
     new_streams = list(Stream.objects.filter(
             realm=user_profile.realm, date_created__gt=threshold))
 
     base_url = "https://zulip.com/#narrow/stream/"
-    stream_links = []
+
+    streams_html = []
+    streams_plain = []
+
     for stream in new_streams:
         narrow_url = base_url + hashchange_encode(stream.name)
         stream_link = "<a href='%s'>%s</a>" % (narrow_url, stream.name)
-        stream_links.append(stream_link)
-
-    # Show up to 4 new streams.
-    stream_limit = 4
-
-    if not stream_links:
-        # No new stream.
-        streams_html = streams_plain = None
-    elif len(stream_links) == 1:
-        # One new stream.
-        streams_html = "%s" % (stream_links[0],)
-        streams_plain = stream.name
-    elif len(stream_links) <= stream_limit:
-        # A few new streams, show all of them.
-        streams_html = ", ".join(
-            "%s" % (stream_link,) for stream_link in stream_links[:-1])
-        streams_html += " and %s." % (stream_links[-1],)
-        streams_plain = ", ".join(
-            "%s" % (stream.name,) for stream in new_streams[:-1])
-        streams_plain += " and %s." % (new_streams[-1].name,)
-    else:
-        # More than 4 new users, only mention a few.
-        streams_html = ", ".join(
-            "%s" % (stream_link,) for stream_link in stream_links[:stream_limit])
-        streams_html += and_n_others(stream_links, stream_limit)
-        streams_plain = ", ".join(
-            "%s" % (stream.name,) for stream in new_streams[:stream_limit])
-        streams_plain += and_n_others(new_streams, stream_limit)
+        streams_html.append(stream_link)
+        streams_plain.append(stream.name)
 
     return len(new_streams), {"html": streams_html, "plain": streams_plain}
 

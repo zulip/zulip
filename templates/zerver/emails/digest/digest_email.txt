@@ -1,3 +1,4 @@
+{% load app_filters %}
 {% comment %}
 Mail sent to a user who hasn't logged in for 24 hours.
 {% endcomment %}
@@ -31,7 +32,7 @@ been gone:
 {% endif %}
 {% for message_block in sender_block.content %}{{ message_block.plain }}
 {% endfor %}{% endfor %}
-{% if convo.count > 0 %}+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants_string }}.{% endif %}
+{% if convo.count > 0 %}+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list:4 }}.{% endif %}
 {% endfor %}{% endfor %}
 Catch up on the rest of these conversations: https://zulip.com.{% endif %}
 
@@ -40,11 +41,11 @@ Catch up on the rest of these conversations: https://zulip.com.{% endif %}
 
 {% if new_streams.plain %}{% if new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:
 
-    {{ new_streams.plain }}.
+    {{ new_streams.plain|display_list:4 }}.
 
 Visit your Streams page to subscribe: https://zulip.com/#subscriptions.{% endif %}
 
-{% if new_users %}{% if new_streams.plain or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users }} to Zulip!{% endif %}
+{% if new_users %}{% if new_streams.plain or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list:4 }} to Zulip!{% endif %}
 
 Click here to log in to Zulip and catch up: https://zulip.com.
 
