@@ -6,7 +6,7 @@ import time
 
 from os import path, environ
 
-sys.path.append(path.join(path.dirname(__file__), '../tools'))
+sys.path.append(path.join(path.dirname(__file__), '..'))
 from zulip_tools import check_output
 
 WARN_THRESHOLD = 50

@@ -8,6 +8,7 @@ import subprocess
 from os          import path
 from collections import defaultdict
 
+sys.path.append(path.join(path.dirname(__file__), '..'))
 from zulip_tools import check_output
 
 parser = optparse.OptionParser()

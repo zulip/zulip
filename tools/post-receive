@@ -28,8 +28,10 @@
 #
 # see contrib/hooks/ for a sample
 
+import os
 import sys
 import subprocess
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from zulip_tools import check_output, ENDC, FAIL
 
 def update_deployment(server, refname):
