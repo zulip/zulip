@@ -68,6 +68,14 @@ class zulip::base {
     source     => 'puppet:///modules/zulip/puppet.conf',
   }
 
+  file { '/etc/security/limits.conf':
+    ensure     => file,
+    mode       => 640,
+    owner      => "root",
+    group      => "root",
+    source     => 'puppet:///modules/zulip/limits.conf',
+  }
+
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
     mode       => 644,
