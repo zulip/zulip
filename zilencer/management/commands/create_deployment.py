@@ -20,12 +20,19 @@ class Command(BaseCommand):
                     action='store_true',
                     default=False,
                     help='Do not create a new realm; associate with an existing one.' + \
-                           ' In this case, only the domain needs to be specified.'),
+                           ' In this case, only the domain and URLs need to be specified.'),
+        make_option('-a', '--api-url',
+                    dest='api',
+                    type='str'),
+        make_option('-w', '--web-url',
+                    dest='web',
+                    type='str'),
+
         )
 
     def handle(self, *args, **options):
-        if options["domain"] is None:
-            print >>sys.stderr, "\033[1;31mPlease provide a domain.\033[0m\n"
+        if None in (options["api"], options["web"], options["domain"]):
+            print >>sys.stderr, "\033[1;31mYou must provide a domain, an API URL, and a web URL.\033[0m\n"
             self.print_help("python manage.py", "create_realm")
             exit(1)
 
@@ -46,6 +53,8 @@ class Command(BaseCommand):
             old_dep.realms.remove(realm)
             old_dep.save()
         dep.realms = [realm]
+        dep.base_api_url = options["api"]
+        dep.base_web_url = options["web"]
         dep.save()
         print "Deployment %s created." % dep.id
 
