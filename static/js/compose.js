@@ -47,7 +47,7 @@ function autosize_textarea() {
 }
 
 // Show the compose box.
-function show_box(tabname, focus_area) {
+function show_box(tabname, focus_area, opts) {
     if (tabname === "stream") {
         $('#private-message').hide();
         $('#stream-message').show();
@@ -64,7 +64,9 @@ function show_box(tabname, focus_area) {
     autosize_textarea();
     $(".new_message_textarea").css("min-height", "3em");
 
-    if (focus_area !== undefined) {
+    if (focus_area !== undefined &&
+        (window.getSelection().toString() === "" ||
+         opts.trigger !== "message click")) {
         focus_area.focus().select();
     }
 
@@ -187,9 +189,9 @@ function show_box_for_msg_type(msg_type, opts) {
     }
 
     if (msg_type === 'stream') {
-        show_box('stream', $("#" + (focus_area || 'stream')));
+        show_box('stream', $("#" + (focus_area || 'stream')), opts);
     } else {
-        show_box('private', $("#" + (focus_area || 'private_message_recipient')));
+        show_box('private', $("#" + (focus_area || 'private_message_recipient')), opts);
     }
 }
 
