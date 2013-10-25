@@ -648,6 +648,7 @@ def home(request):
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = simplejson.encoder.JSONEncoderForHTML().encode(dict(
+        local_server          = settings.LOCAL_SERVER,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
