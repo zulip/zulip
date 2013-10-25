@@ -360,29 +360,48 @@ function populate_subscriptions(subs, subscribed) {
 exports.setup_page = function () {
     util.make_loading_indicator($('#subs_page_loading_indicator'));
 
-    function populate_and_fill(data_for_streams) {
-        var sub_rows = [];
+    function populate_and_fill(public_streams) {
+        // public_streams.streams is a bunch of one-field objects; we only care about name
+        var public_stream_names = _.pluck(public_streams.streams, 'name');
 
-        _.each(data_for_streams.streams, function (stream) {
-            var sub = stream_data.get_sub(stream.name);
-            if (!sub) {
-                sub = create_sub(stream.name, {subscribed: false});
-            }
+        // Build up our list of subscribed streams from the data we already have.
+        var subscribed_rows = stream_data.subscribed_subs();
+
+        // To avoid dups, build a set of names we already subscribed to.
+        var subscribed_set = new Dict({fold_case: true});
+        _.each(subscribed_rows, function (sub) {
+            subscribed_set.set(sub.name, true);
         });
 
-        _.each(stream_data.all_subs(), function (sub) {
+        // Right now the back end gives us all public streams; we really only
+        // need to add the ones we haven't already subscribed to.
+        var unsubscribed_stream_names = _.reject(public_stream_names, function (name) {
+            return subscribed_set.has(name);
+        });
+
+        // Build up our list of unsubscribed rows.
+        var unsubscribed_rows = [];
+        _.each(unsubscribed_stream_names, function (name) {
+            var sub = stream_data.get_sub(name);
+            if (!sub) {
+                sub = create_sub(name, {subscribed: false});
+            }
+            unsubscribed_rows.push(sub);
+        });
+
+        // Sort and combine all our streams.
+        function by_name(a,b) {
+            return util.strcmp(a.name, b.name);
+        }
+        subscribed_rows.sort(by_name);
+        unsubscribed_rows.sort(by_name);
+        var all_subs = subscribed_rows.concat(unsubscribed_rows);
+
+        // Add in admin options.
+        var sub_rows = [];
+        _.each(all_subs, function (sub) {
             sub = _.extend(sub, {'allow_rename': page_params.show_admin});
             sub_rows.push(sub);
-        });
-
-        sub_rows.sort(function (streama, streamb) {
-            if (streama.subscribed && !streamb.subscribed) {
-                return -1;
-            } else if (streamb.subscribed && !streama.subscribed) {
-                return 1;
-            } else {
-                return util.strcmp(streama.name, streamb.name);
-            }
         });
 
         $('#subscriptions_table').empty();
