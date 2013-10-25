@@ -26,7 +26,7 @@ class zulip::rabbit {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip/rabbitmq/rabbitmq-server",
-  } 
+  }
 
   file { "/etc/rabbitmq/rabbitmq.config":
     require => Package[rabbitmq-server],
@@ -37,5 +37,5 @@ class zulip::rabbit {
     source => "puppet:///modules/zulip/rabbitmq/rabbitmq.config",
   }
 
-  # TODO: Should also call exactly once "servers/configure-rabbitmq"
+  # TODO: Should also call exactly once "configure-rabbitmq"
 }
