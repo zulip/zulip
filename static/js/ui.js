@@ -973,7 +973,8 @@ $(function () {
         password_quality($('#new_password').val(), $('#pw_strength .bar'));
     });
 
-    var settings_status = $('#settings-status');
+    var settings_status = $('#settings-status').expectOne();
+    var notify_settings_status = $('#notify-settings-status').expectOne();
 
     function settings_change_error(message) {
         // Scroll to the top so the error message is visible.
@@ -1059,7 +1060,7 @@ $(function () {
                 page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
             }
 
-            settings_status.removeClass(status_classes)
+            notify_settings_status.removeClass(status_classes)
                 .addClass('alert-success')
                 .text(message).stop(true).fadeTo(0,1);
             // TODO: In theory we should auto-reload or something if
@@ -1073,7 +1074,10 @@ $(function () {
                 // a nice response.
                 response += ": " + $.parseJSON(xhr.responseText).msg;
             }
-            settings_change_error(response);
+
+            notify_settings_status.removeClass(status_classes)
+                .addClass('alert-error')
+                .text(response).stop(true).fadeTo(0,1);
         }
     });
 
