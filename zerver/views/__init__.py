@@ -1654,14 +1654,19 @@ def json_upload_file(request, user_profile, private=REQ(converter=json_to_bool, 
     uri = upload_message_image_through_web_client(request, user_file, user_profile, private=private)
     return json_success({'uri': uri})
 
-def get_uploaded_file(request, user_profile, realm_id, filename):
+@has_request_variables
+def get_uploaded_file(request, user_profile, realm_id, filename,
+                      redir=REQ(converter=json_to_bool, default=True)):
     if settings.LOCAL_UPLOADS_DIR is not None:
         return HttpResponseForbidden() # Should have been served by nginx
 
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
     if user_profile.realm.id == int(realm_id) or user_profile.realm.domain == 'zulip.com':
-        url = get_signed_upload_url("%s/%s" % (realm_id, filename))
-        return redirect(url)
+        uri = get_signed_upload_url("%s/%s" % (realm_id, filename))
+        if redir:
+            return redirect(uri)
+        else:
+            return json_success({'uri': uri})
     else:
         return HttpResponseForbidden()
 
