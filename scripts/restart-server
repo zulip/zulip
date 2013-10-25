@@ -5,6 +5,8 @@ import pwd
 import subprocess
 import logging
 import time
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../tools'))
 from zulip_tools import ENDC, OKGREEN, DEPLOYMENTS_DIR
 
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",

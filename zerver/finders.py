@@ -15,7 +15,7 @@ class ExcludeUnminifiedMixin(object):
 
         # source-map/ should also not be included.
         # However, we work around that by moving it later,
-        # in tools/update-prod-static.
+        # in update-prod-static.
 
         super_class = super(ExcludeUnminifiedMixin, self)
         for path, storage in super_class.list(ignore_patterns):

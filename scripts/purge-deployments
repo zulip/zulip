@@ -1,8 +1,11 @@
 #!/usr/bin/python
+import sys
 import os
 import logging
 import datetime
 import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../tools'))
 from zulip_tools import DEPLOYMENTS_DIR, TIMESTAMP_FORMAT
 
 logging.basicConfig(format="%(asctime)s purge-deployments: %(message)s",

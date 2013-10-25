@@ -3,10 +3,12 @@ import os
 import sys
 import subprocess
 import logging
-from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, WARNING, ENDC
 import datetime
 import shutil
 import time
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../tools'))
+from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, WARNING, ENDC
 
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
                     level=logging.INFO)
@@ -34,7 +36,7 @@ while time.time() - start_time < 300:
 
 if not got_lock:
     print FAIL + "Deployment already in progress.  Please run\n" \
-               + "  %s/current/tools/update-deployment %s\n" % (DEPLOYMENTS_DIR, refname) \
+               + "  %s/current/scripts/update-deployment %s\n" % (DEPLOYMENTS_DIR, refname) \
                + "manually when the current deployment finishes." + ENDC
     sys.exit(1)
 
@@ -52,13 +54,13 @@ subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/
 
 # Update static files
 logging.info("Updating static files")
-subprocess.check_call(["./tools/update-prod-static", "--prev-deploy",
+subprocess.check_call(["./scripts/update-prod-static", "--prev-deploy",
                       os.path.join(DEPLOYMENTS_DIR, 'current')])
 
 logging.info("Restarting server...")
-subprocess.check_call(["./tools/restart-server"])
+subprocess.check_call(["./scripts/restart-server"])
 
 logging.info("Deployment complete")
 shutil.rmtree(LOCK_DIR)
 
-subprocess.check_call(["./tools/purge-deployments"])
+subprocess.check_call(["./scripts/purge-deployments"])

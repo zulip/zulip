@@ -283,7 +283,7 @@ STATIC_HEADER_FILE = 'zerver/static_header.txt'
 # To use minified files in dev, set PIPELINE = True.  For the full
 # cache-busting behavior, you must also set DEBUG = False.
 #
-# You will need to run ./tools/update-prod-static after changing
+# You will need to run update-prod-static after changing
 # static files.
 
 PIPELINE_CSS = {
