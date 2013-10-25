@@ -187,7 +187,7 @@ INSTALLED_APPS = (
 )
 
 LOCAL_STATSD = (False)
-USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED) or LOCAL_STATSD
+USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED and not LOCALSERVER) or LOCAL_STATSD
 
 # These must be named STATSD_PREFIX for the statsd module
 # to pick them up
