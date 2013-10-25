@@ -1542,7 +1542,7 @@ $(function () {
         }
     });
 
-    $("#compose").click(function (e) {
+    function handle_compose_click(e) {
         // Don't let clicks in the compose area count as
         // "unfocusing" our compose -- in other words, e.g.
         // clicking "Press enter to send" should not
@@ -1553,7 +1553,10 @@ $(function () {
         }
         // Still hide the popovers, however
         popovers.hide_all();
-    });
+    }
+
+    $("#compose_buttons").click(handle_compose_click);
+    $(".compose-content").click(handle_compose_click);
 
     $("#compose_close").click(function (e) {
         compose.cancel();
