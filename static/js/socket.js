@@ -67,6 +67,7 @@ Socket.prototype = {
     _setup_sockjs_callbacks: function Socket__setup_sockjs_callbacks(sockjs) {
         var that = this;
         sockjs.onopen = function Socket__sockjs_onopen() {
+            blueslip.info("Socket connected.");
             that._is_open = true;
 
             // We can only authenticate after the DOM has loaded because we need
@@ -125,7 +126,7 @@ Socket.prototype = {
         }
 
         setTimeout(function () {
-            blueslip.info("Attempting reconnect.");
+            blueslip.info("Attempting socket reconnect.");
             that._sockjs = new SockJS(that.url, null, {protocols_whitelist: that._supported_protocols});
             that._setup_sockjs_callbacks(that._sockjs);
         }, wait_time);
