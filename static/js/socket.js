@@ -87,7 +87,8 @@ Socket.prototype = {
         };
 
         sockjs.onmessage = function Socket__sockjs_onmessage(event) {
-            var req_info = that._requests[event.data.client_meta.req_id];
+            var req_id = event.data.client_meta.req_id;
+            var req_info = that._requests[req_id];
             if (req_info === undefined) {
                 blueslip.error("Got a response for an unknown request");
                 return;
@@ -98,6 +99,7 @@ Socket.prototype = {
             } else {
                 req_info.error('response', event.data.response);
             }
+            delete that._requests[req_id];
         };
 
         sockjs.onclose = function Socket__sockjs_onclose() {
