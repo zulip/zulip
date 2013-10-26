@@ -6,6 +6,7 @@ function Socket(url) {
     this._next_req_id = 0;
     this._requests = {};
     this._connection_failures = 0;
+    this._timeout_id = null;
 
     this._is_unloading = false;
     $(window).on("unload", function () {
@@ -27,6 +28,10 @@ Socket.prototype = {
     send: function Socket_send(msg, success, error) {
         if (! this._can_send()) {
             this._send_queue.push({msg: msg, success: success, error: error});
+            if (this._timeout_id !== null) {
+                clearTimeout(this._timeout_id);
+            }
+            this._do_reconnect();
             return;
         }
 
@@ -111,6 +116,12 @@ Socket.prototype = {
         };
     },
 
+    _do_reconnect: function Socket__do_reconnect() {
+        blueslip.info("Attempting socket reconnect.");
+        this._sockjs = new SockJS(this.url, null, {protocols_whitelist: this._supported_protocols});
+        this._setup_sockjs_callbacks(this._sockjs);
+    },
+
     _try_to_reconnect: function Socket__try_to_reconnect() {
         var that = this;
         this._is_open = false;
@@ -127,10 +138,9 @@ Socket.prototype = {
             wait_time = Math.min(90, Math.exp(this._connection_failures/2)) * 1000;
         }
 
-        setTimeout(function () {
-            blueslip.info("Attempting socket reconnect.");
-            that._sockjs = new SockJS(that.url, null, {protocols_whitelist: that._supported_protocols});
-            that._setup_sockjs_callbacks(that._sockjs);
+        this._timeout_id = setTimeout(function () {
+            that._timeout_id = null;
+            that._do_reconnect();
         }, wait_time);
     }
 };
