@@ -912,13 +912,13 @@ class NarrowBuilder(object):
 
     def do_search(self, query, operand):
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
-            tsquery = "plainto_tsquery('humbug.english_us_search', %s)"
+            tsquery = "plainto_tsquery('zulip.english_us_search', %s)"
             where = "search_tsvector @@ " + tsquery
-            match_content = "ts_headline('humbug.english_us_search', rendered_content, " \
+            match_content = "ts_headline('zulip.english_us_search', rendered_content, " \
                 + tsquery + ", 'StartSel=\"<span class=\"\"highlight\"\">\", StopSel=</span>, " \
                 "HighlightAll=TRUE')"
             # We HTML-escape the subject in Postgres to avoid doing a server round-trip
-            match_subject = "ts_headline('humbug.english_us_search', escape_html(subject), " \
+            match_subject = "ts_headline('zulip.english_us_search', escape_html(subject), " \
                 + tsquery + ", 'StartSel=\"<span class=\"\"highlight\"\">\", StopSel=</span>, " \
                 "HighlightAll=TRUE')"
 

@@ -16,7 +16,7 @@ def report(state, msg):
     print "%s: %s" % (state, msg)
     exit(states[state])
 
-if subprocess.check_output(['psql', '-h', 'localhost', 'humbug', 'humbug', '-t', '-c',
+if subprocess.check_output(['psql', '-h', 'localhost', 'zulip', 'zulip', '-t', '-c',
                             'SELECT pg_is_in_recovery()']).strip() != 'f':
     report('OK', 'this is not the primary')
 

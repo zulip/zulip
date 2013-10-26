@@ -40,7 +40,7 @@ class Migration(SchemaMigration):
         db.execute("CREATE TRIGGER zephyr_message_update_search_tsvector "
                    "BEFORE INSERT OR UPDATE OF subject, rendered_content ON zephyr_message "
                    "FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger(search_tsvector, "
-                   "'humbug.english_us_search', subject, rendered_content)")
+                   "'zulip.english_us_search', subject, rendered_content)")
 
         db.execute("DROP TRIGGER zephyr_message_update_search_tsvector_async ON zephyr_message")
         db.execute("DROP FUNCTION append_to_fts_update_log()")

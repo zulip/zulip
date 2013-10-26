@@ -13,8 +13,8 @@ class Migration(SchemaMigration):
 
         db.execute("""CREATE TEXT SEARCH DICTIONARY english_us_hunspell (template = ispell,
                       DictFile = en_us, AffFile = en_us, StopWords = english)""")
-        db.execute("CREATE TEXT SEARCH CONFIGURATION humbug.english_us_search (COPY=pg_catalog.english)")
-        db.execute("""ALTER TEXT SEARCH CONFIGURATION humbug.english_us_search ALTER MAPPING FOR
+        db.execute("CREATE TEXT SEARCH CONFIGURATION zulip.english_us_search (COPY=pg_catalog.english)")
+        db.execute("""ALTER TEXT SEARCH CONFIGURATION zulip.english_us_search ALTER MAPPING FOR
                       asciiword, asciihword, hword_asciipart, word, hword, hword_part
                       WITH english_us_hunspell, english_stem""")
 
@@ -22,7 +22,7 @@ class Migration(SchemaMigration):
         if "postgres" not in settings.DATABASES["default"]["ENGINE"]:
             return
 
-        db.execute("DROP TEXT SEARCH CONFIGURATION humbug.english_us_search")
+        db.execute("DROP TEXT SEARCH CONFIGURATION zulip.english_us_search")
         db.execute("DROP TEXT SEARCH DICTIONARY english_us_hunspell")
 
     models = {

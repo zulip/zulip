@@ -62,11 +62,11 @@ MANAGERS = ADMINS
 
 DATABASES = {"default": {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    'NAME': 'humbug',
-    'USER': 'humbug',
+    'NAME': 'zulip',
+    'USER': 'zulip',
     'PASSWORD': '', # Authentication done via certificates
-    'HOST': 'postgres.humbughq.com',
-    'SCHEMA': 'humbug',
+    'HOST': 'postgres.zulip.net',
+    'SCHEMA': 'zulip',
     'OPTIONS': {
         'sslmode': 'verify-full',
         },

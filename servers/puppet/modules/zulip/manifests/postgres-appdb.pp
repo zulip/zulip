@@ -32,13 +32,13 @@ class zulip::postgres-appdb {
     source => "puppet:///modules/zulip/postgresql/pg_hba.conf",
   }
 
-  file { "/usr/share/postgresql/9.1/tsearch_data/humbug_english.stop":
+  file { "/usr/share/postgresql/9.1/tsearch_data/zulip_english.stop":
     require => Package["postgresql-9.1"],
     ensure => file,
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/postgresql/humbug_english.stop",
+    source => "puppet:///modules/zulip/postgresql/zulip_english.stop",
   }
 
 }

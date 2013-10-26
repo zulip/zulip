@@ -8,9 +8,9 @@ if [ "$(uname)" = "Darwin" ]; then
 fi
 
 if [[ $# == 0 ]]; then
-    USERNAME=humbug
+    USERNAME=zulip
     PASSWORD=xxxxxxxxxxxx
-    DBNAME=humbug
+    DBNAME=zulip
     SEARCH_PATH="$USERNAME",public
 elif [[ $# == 4 ]]; then
     USERNAME=$1
@@ -19,7 +19,7 @@ elif [[ $# == 4 ]]; then
     SEARCH_PATH=$4
 else
     echo "Usage Instructions"
-    echo "Run with either no arguments (sets up devel db for local deploy--humbug with user humbug)"
+    echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
     echo "or specify <db-username> <password> <db-name> <user-schema-search-path>"
     exit
 fi

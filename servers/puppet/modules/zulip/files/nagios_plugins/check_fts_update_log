@@ -17,7 +17,7 @@ def report(state, num):
     print "%s: %s rows in fts_update_log table" % (state, num)
     exit(states[state])
 
-conn = psycopg2.connect("host=localhost user=humbug")
+conn = psycopg2.connect("host=localhost user=zulip")
 cursor = conn.cursor()
 
 cursor.execute("SELECT count(*) FROM fts_update_log")

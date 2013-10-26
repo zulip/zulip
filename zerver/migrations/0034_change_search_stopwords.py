@@ -8,7 +8,7 @@ from django.conf import settings
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        db.execute("ALTER TEXT SEARCH DICTIONARY english_us_hunspell (StopWords = humbug_english)")
+        db.execute("ALTER TEXT SEARCH DICTIONARY english_us_hunspell (StopWords = zulip_english)")
 
     def backwards(self, orm):
         db.execute("ALTER TEXT SEARCH DICTIONARY english_us_hunspell (StopWords = english)")

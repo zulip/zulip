@@ -1,6 +1,6 @@
 #!/bin/sh -xe
 
-echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbshell
+echo "DROP SCHEMA zulip CASCADE; CREATE SCHEMA zulip;" | python manage.py dbshell
 
 python manage.py syncdb --noinput
 python manage.py migrate

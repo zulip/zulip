@@ -17,12 +17,12 @@ class Migration(DataMigration):
         db.execute("""CREATE TRIGGER zephyr_message_update_search_tsvector
                       BEFORE INSERT OR UPDATE OF subject, rendered_content ON zephyr_message
                       FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger(search_tsvector,
-                      'humbug.english_us_search', subject, rendered_content)""")
+                      'zulip.english_us_search', subject, rendered_content)""")
         db.commit_transaction()
 
         (min_id, max_id) = db.execute("SELECT MIN(id), MAX(id) FROM zephyr_message")[0]
         if min_id is not None:
-            self.set_search_tsvector('humbug.english_us_search', 'rendered_content',
+            self.set_search_tsvector('zulip.english_us_search', 'rendered_content',
                                      min_id, max_id)
 
     def set_search_tsvector(self, config, column, min_id, max_id):
