@@ -1,0 +1,21 @@
+#!/bin/bash -xe
+
+echo 'ALTER USER humbug RENAME TO zulip;' | psql humbug
+echo "ALTER USER zulip PASSWORD 'xxxxxxxxxxxx';" | psql humbug
+echo 'ALTER DATABASE humbug RENAME TO zulip;' | psql postgres
+
+# On a local dev instance, you will need to adjust this path
+TSEARCH_PATH=/usr/local/Cellar/postgresql/9.2.4/share/postgresql/tsearch_data/
+mv $TSEARCH_PATH/humbug_english.stop $TSEARCH_PATH/zulip_english.stop
+
+echo 'ALTER TEXT SEARCH DICTIONARY zulip.english_us_hunspell (StopWords = zulip_english);' | psql zulip
+echo 'ALTER SCHEMA humbug RENAME TO zulip;' | psql zulip
+echo 'ALTER ROLE zulip SET search_path TO zulip,public;' | psql zulip
+
+echo 'DROP DATABASE IF EXISTS humbug_test;' | psql zulip
+echo 'DROP DATABASE IF EXISTS humbug_test_template;' | psql zulip
+echo 'DROP USER humbug_test;' | psql zulip
+tools/postgres-init-test-db
+tools/do-destroy-rebuild-test-database
+
+
