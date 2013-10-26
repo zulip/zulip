@@ -1,4 +1,3 @@
 #/bin/sh -xe
 
-$(dirname $0)/postgres-init-db humbug_test xxxxxxxxxxxx humbug_test humbug,public
-
+$(dirname $0)/postgres-init-db zulip_test xxxxxxxxxxxx zulip_test zulip,public

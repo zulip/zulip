@@ -4,16 +4,16 @@ function migration_status {
     ./manage.py migrate --list | sed 's/*/ /' > "$1"
 }
 
-template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='humbug_test_template';" | python manage.py dbshell --settings=zproject.test_settings | grep -q "1 row"; echo $?)
+template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='zulip_test_template';" | python manage.py dbshell --settings=zproject.test_settings | grep -q "1 row"; echo $?)
 
 if [ $template_grep_error_code == "0" ]; then
     migration_status zerver/fixtures/available-migrations
     if [ -e zerver/fixtures/migration-status ] &&
         cmp -s zerver/fixtures/available-migrations zerver/fixtures/migration-status &&
         [ "$1" != "--force" ]; then
-            psql -h localhost postgres humbug_test << EOF
-DROP DATABASE humbug_test;
-CREATE DATABASE humbug_test TEMPLATE humbug_test_template;
+            psql -h localhost postgres zulip_test << EOF
+DROP DATABASE zulip_test;
+CREATE DATABASE zulip_test TEMPLATE zulip_test_template;
 EOF
         exit 0
     fi
@@ -26,7 +26,7 @@ mkdir -p zerver/fixtures
 rm -f zerver/lib/time.pyc
 
 
-echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbshell --settings=zproject.test_settings
+echo "DROP SCHEMA zulip CASCADE; CREATE SCHEMA zulip;" | python manage.py dbshell --settings=zproject.test_settings
 python manage.py syncdb --noinput --settings=zproject.test_settings
 python manage.py migrate --settings=zproject.test_settings --all
 migration_status "zerver/fixtures/migration-status"
@@ -41,7 +41,7 @@ python manage.py dumpdata  --settings=zproject.test_settings \
     zerver.DefaultStream > zerver/fixtures/messages.json
 
 # create pristine template database, for fast fixture restoration after tests are run.
-psql -h localhost postgres humbug_test << EOF
-DROP DATABASE humbug_test_template;
-CREATE DATABASE humbug_test_template TEMPLATE humbug_test;
+psql -h localhost postgres zulip_test << EOF
+DROP DATABASE zulip_test_template;
+CREATE DATABASE zulip_test_template TEMPLATE zulip_test;
 EOF

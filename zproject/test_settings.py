@@ -1,13 +1,13 @@
 from settings import *
 import os
 
-DATABASES["default"] = {"NAME": "humbug_test",
-                        "USER": "humbug_test",
+DATABASES["default"] = {"NAME": "zulip_test",
+                        "USER": "zulip_test",
                         "PASSWORD": "xxxxxxxxxxxx",
                         "HOST": "localhost",
-                        "SCHEMA": "humbug",
+                        "SCHEMA": "zulip",
                         "ENGINE": "django.db.backends.postgresql_psycopg2",
-                        "TEST_NAME": "django_humbug_tests",
+                        "TEST_NAME": "django_zulip_tests",
                         "OPTIONS": { },}
 
 
@@ -39,7 +39,7 @@ TUTORIAL_ENABLED = False
 # Disable use of memcached for caching
 CACHES['database'] = {
     'BACKEND':  'django.core.cache.backends.dummy.DummyCache',
-    'LOCATION': 'humbug-database-test-cache',
+    'LOCATION': 'zulip-database-test-cache',
     'TIMEOUT':  3600,
     'OPTIONS': {
         'MAX_ENTRIES': 100000
