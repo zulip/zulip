@@ -1,0 +1,20 @@
+#!/bin/bash -xe
+
+su postgres -c "psql -c 'ALTER USER humbug RENAME TO zulip;'"
+
+# On a local dev instance, you have to uncomment these lines:
+#su postgres -c "psql -c \"ALTER USER zulip PASSWORD 'xxxxxxxxxxxx';\""
+#su postgres -c "psql -c 'DROP USER humbug_test;'"
+#su postgres -c "psql -c 'DROP DATABASE IF EXISTS humbug_test;'"
+#su postgres -c "psql -c 'DROP DATABASE IF EXISTS humbug_test_template;'"
+#tools/postgres-init-test-db
+#tools/do-destroy-rebuild-test-database
+
+su postgres -c "psql -c 'ALTER DATABASE humbug RENAME TO zulip;'"
+
+su zulip -c "psql -c 'ALTER SCHEMA humbug RENAME TO zulip;'"
+su zulip -c "psql -c 'ALTER ROLE zulip SET search_path TO zulip,public;'"
+
+# On a local dev instance, you will need to adjust this path
+mv /usr/share/postgresql/9.1/tsearch_data/humbug_english.stop /usr/share/postgresql/9.1/tsearch_data/zulip_english.stop
+su zulip -c "psql -c 'ALTER TEXT SEARCH DICTIONARY zulip.english_us_hunspell (StopWords = zulip_english);'"
