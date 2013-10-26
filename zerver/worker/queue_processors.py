@@ -160,7 +160,8 @@ class MissedMessageWorker(QueueProcessingWorker):
                 by_recipient[event['user_profile_id']].append(event)
 
             for user_profile_id, events in by_recipient.items():
-                handle_missedmessage_emails(user_profile_id, events)
+                with commit_on_success():
+                    handle_missedmessage_emails(user_profile_id, events)
 
             # Aggregate all messages received every 2 minutes to let someone finish sending a batch
             # of messages
