@@ -478,7 +478,6 @@ PIPELINE_JS_COMPRESSOR  = None
 PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
 PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 
-
 USING_RABBITMQ = DEPLOYED
 RABBITMQ_USERNAME = 'zulip'
 
