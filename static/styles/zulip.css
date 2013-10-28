@@ -206,6 +206,13 @@ li,
     height: auto;
  }
 
+ #user-settings-avatar {
+    width: 100px;
+    height: 100px;
+    padding-top: 10px;
+    border-radius: 15px;
+ }
+
 .header-main .gravatar-profile {
     width: 25px;
     height: 25px;
@@ -2675,6 +2682,7 @@ div.edit_bot {
 }
 
 .edit_bot_avatar_clear_button,
+#user_avatar_clear_button,
 #bot_avatar_clear_button {
     display: none;
 }

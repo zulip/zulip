@@ -2545,6 +2545,22 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
     )
     return json_success(json_result)
 
+@authenticated_json_post_view
+def json_set_avatar(request, user_profile):
+    if len(request.FILES) != 1:
+        return json_error("You must upload exactly one avatar.")
+
+    user_file = request.FILES.values()[0]
+    upload_avatar_image(user_file, user_profile, user_profile.email)
+    user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
+    user_profile.save(update_fields=["avatar_source"])
+    user_avatar_url = avatar_url(user_profile)
+
+    json_result = dict(
+        avatar_url = user_avatar_url
+    )
+    return json_success(json_result)
+
 @has_request_variables
 def regenerate_api_key(request, user_profile):
     user_profile.api_key = random_api_key()

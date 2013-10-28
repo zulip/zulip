@@ -126,6 +126,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^json/refer_friend$',             'json_refer_friend'),
     url(r'^json/set_alert_words$',          'json_set_alert_words'),
     url(r'^json/set_muted_topics$',         'json_set_muted_topics'),
+    url(r'^json/set_avatar$',               'json_set_avatar'),
 
     # These are json format views used by the API.  They require an API key.
     url(r'^api/v1/get_profile$',            'api_get_profile'),

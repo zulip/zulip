@@ -21,6 +21,40 @@ function is_local_part(value, element) {
 }
 
 $(function () {
+
+    var avatar_stamp = 1;
+
+    function upload_avatar(file_input) {
+        var form_data = new FormData();
+
+        form_data.append('csrfmiddlewaretoken', csrf_token);
+        jQuery.each(file_input[0].files, function (i, file) {
+            form_data.append('file-'+i, file);
+        });
+
+        var spinner = $("#upload_avatar_spinner").expectOne();
+        util.make_loading_indicator(spinner, {text: 'Uploading avatar.'});
+
+        $.ajax({
+            url: '/json/set_avatar',
+            type: 'POST',
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                util.destroy_loading_indicator($("#upload_avatar_spinner"));
+                var url = data.avatar_url + '&stamp=' + avatar_stamp;
+                $(".gravatar-profile").expectOne().css("background-image", "url('" + url + "')");
+                $("#user-settings-avatar").expectOne().attr("src", url);
+                avatar_stamp += 1;
+            }
+        });
+
+    }
+
+    avatar.build_user_avatar_widget(upload_avatar);
+
     if (page_params.domain === "users.customer4.invalid") {
         // At the request of the facilitators, CUSTOMER4 users
         // can't change their names, so don't show that as a settings

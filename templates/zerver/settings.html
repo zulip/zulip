@@ -6,12 +6,12 @@
 
     <div class="alert" id="settings-status"></div>
 
-    <form action="/json/settings/change" method="post"
-          class="form-horizontal your-account-settings">{% csrf_token %}
-
     <div id="account-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>Your Account</div>
         <div class="account-settings-form">
+          <form action="/json/settings/change" method="post"
+                class="form-horizontal your-account-settings">{% csrf_token %}
+
            <div class="control-group" id="name_change_container">
              <label for="full_name" class="control-label">Full name</label>
              <div class="controls">
@@ -64,18 +64,6 @@
 
            </div>
 
-           <div class="form-horizontal">
-             <div class="control-group">
-               <label class="control-label">Avatar</label>
-               <div class="controls">
-                 <a href="https://en.gravatar.com/emails" target="_blank" class="change_gravatar_button">
-                   <p><img class="img-rounded gravatar-profile user-image-settings"
-                        src="{{ avatar_url }}&amp;s=120" /></p>
-                   <p>Change at Gravatar.com</p>
-                 </a>
-               </div>
-             </div>
-           </div>
 
            <div class="control-group">
              <div class="controls">
@@ -83,11 +71,28 @@
                       value="Save changes" class="btn btn-big btn-primary" />
              </div>
            </div>
+
+          </form>
+
+
+          <div id="user_avatar_file_input_error" class="text-error"></div>
+
+          <div class="control-group">
+            <div class="controls">
+              <div id="user_avatar_file"></div>
+                <input type="file" name="user_avatar_file_input" class="notdisplayed" id="user_avatar_file_input" value="Upload avatar" />
+                <button class="btn" id="user_avatar_upload_button">Customize avatar</button>
+                <p>
+                    <img id="user-settings-avatar" src="{{ avatar_url }}" />
+                </p>
+            </div>
+          </div>
+
+          <div id="upload_avatar_spinner"></div>
+
+
         </div>
     </div>
-
-    </form>
-
 
 
     <div class="alert" id="notify-settings-status"></div>

@@ -648,40 +648,6 @@ function toggle_star(row_id) {
     change_message_star(message, message.starred);
 }
 
-function update_gravatars() {
-    _.each($(".gravatar-profile"), function (profile) {
-        // Avatar URLs will have at least one param, so & is safe here.
-        $(profile).attr('src', $(profile).attr('src') + '&stamp=' + gravatar_stamp);
-    });
-    gravatar_stamp += 1;
-}
-
-function poll_for_gravatar_update(start_time, url) {
-    // Give users 5 minutes to update their picture on gravatar.com,
-    // during which we try to auto-update their image on our site. If
-    // they take longer than that, we'll update when they press the
-    // save button.
-    $.ajax({
-        type: "HEAD",
-        url: url,
-        async: false,
-        cache: false,
-        success: function (resp, statusText, xhr) {
-            if (new Date(xhr.getResponseHeader('Last-Modified')) > start_time) {
-                update_gravatars();
-            }
-            else {
-                if (($.now() - start_time) < 1000 * 60 * 5) {
-                    setTimeout(function () {
-                        poll_for_gravatar_update(start_time, url);
-                    }, 1500);
-                }
-            }
-        }
-    });
-
-}
-
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
     // gravatar images, so that the browser can help
@@ -699,10 +665,6 @@ exports.small_avatar_url = function (message) {
     } else {
         return "";
     }
-};
-
-exports.wait_for_gravatar = function () {
-    poll_for_gravatar_update($.now(), $("img.gravatar-profile").attr("src"));
 };
 
 var loading_more_messages_indicator_showing = false;
@@ -1013,7 +975,6 @@ $(function () {
             if (result.full_name !== undefined) {
                 $(".my_fullname").text(result.full_name);
             }
-            update_gravatars();
 
             settings_status.removeClass(status_classes)
                 .addClass('alert-success')
@@ -1450,9 +1411,6 @@ $(function () {
     $('#api_key_button').click(function (e) {
         $("#get_api_key_box").show();
         $("#api_key_button_box").hide();
-    });
-    $('.change_gravatar_button').click(function (e) {
-        ui.wait_for_gravatar();
     });
 
     var notification_docs = $("#notification-docs");

@@ -144,6 +144,76 @@ exports.build_widget = function (
     };
 };
 
+exports.build_user_avatar_widget = function (upload_function) {
+    var get_file_input = function () {
+        return $('#user_avatar_file_input').expectOne();
+    };
+
+    return exports.build_direct_upload_widget(
+            get_file_input,
+            $("#user_avatar_file_input_error").expectOne(),
+            $("#user_avatar_upload_button").expectOne(),
+            upload_function
+    );
+};
+
+exports.build_direct_upload_widget = function (
+        get_file_input, // function returns a jQuery file input object
+        input_error, // jQuery object for error text
+        upload_button, // jQuery button to open file dialog
+        upload_function
+) {
+
+    function accept(file) {
+        input_error.hide();
+        upload_function(get_file_input());
+    }
+
+    function clear() {
+        var control = get_file_input();
+        var new_control = control.clone(true);
+        control.replaceWith(new_control);
+    }
+
+    upload_button.on('drop', function (e) {
+        var files = e.dataTransfer.files;
+        if (files === null || files === undefined || files.length === 0) {
+            return false;
+        }
+        get_file_input().get(0).files = files;
+        e.preventDefault();
+        return false;
+    });
+
+    get_file_input().on('change', function (e) {
+        if (e.target.files.length === 0) {
+            input_error.hide();
+        } else if (e.target.files.length === 1) {
+            var file = e.target.files[0];
+            if (file.size > 5*1024*1024) {
+                input_error.text('File size must be < 5Mb.');
+                input_error.show();
+                clear();
+            }
+            else if (!is_image_format(file)) {
+                input_error.text('File type is not supported.');
+                input_error.show();
+                clear();
+            } else {
+                accept(file);
+            }
+        }
+        else {
+            input_error.text('Please just upload one file.');
+        }
+    });
+
+    upload_button.on('click', function (e) {
+        get_file_input().trigger('click');
+        e.preventDefault();
+    });
+};
+
 return exports;
 
 }());
