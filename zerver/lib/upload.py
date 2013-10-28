@@ -11,6 +11,8 @@ from mimetypes import guess_type, guess_extension
 
 import base64
 import os
+from PIL import Image, ImageOps
+from StringIO import StringIO
 
 # Performance Note:
 #
@@ -102,16 +104,35 @@ def get_signed_upload_url(path):
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
 
+def resize_avatar(image_data):
+    AVATAR_SIZE = 100
+    im = Image.open(StringIO(image_data))
+    im = ImageOps.fit(im, (AVATAR_SIZE, AVATAR_SIZE), Image.ANTIALIAS)
+    out = StringIO()
+    im.save(out, format='png')
+    return out.getvalue()
+
 def upload_avatar_image(user_file, user_profile, email):
     content_type = guess_type(user_file.name)[0]
     bucket_name = settings.S3_AVATAR_BUCKET
     s3_file_name = user_avatar_hash(email)
+
+    image_data = user_file.read()
+    upload_image_to_s3(
+        bucket_name,
+        s3_file_name + ".original",
+        content_type,
+        user_profile,
+        image_data,
+    )
+
+    resized_data = resize_avatar(image_data)
     upload_image_to_s3(
         bucket_name,
         s3_file_name,
-        content_type,
+        'image/png',
         user_profile,
-        user_file.read(),
+        resized_data,
     )
     # See avatar_url in avatar.py for URL.  (That code also handles the case
     # that users use gravatar.)
