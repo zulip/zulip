@@ -13,6 +13,8 @@ import base64
 import os
 from PIL import Image, ImageOps
 from StringIO import StringIO
+import errno
+import random
 
 # Performance Note:
 #
@@ -37,6 +39,17 @@ def sanitize_name(name):
 
 def random_name(bytes=60):
     return base64.urlsafe_b64encode(os.urandom(bytes))
+
+def resize_avatar(image_data):
+    AVATAR_SIZE = 100
+    im = Image.open(StringIO(image_data))
+    im = ImageOps.fit(im, (AVATAR_SIZE, AVATAR_SIZE), Image.ANTIALIAS)
+    out = StringIO()
+    im.save(out, format='png')
+    return out.getvalue()
+
+
+### S3
 
 def upload_image_to_s3(
         bucket_name,
@@ -71,7 +84,7 @@ def get_file_info(request, user_file):
 def authed_upload_enabled(user_profile):
     return user_profile.realm.domain in ('zulip.com', 'squarespace.com')
 
-def upload_message_image(uploaded_file_name, content_type, file_data, user_profile, private=None):
+def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_profile, private=None):
     if private is None:
         private = authed_upload_enabled(user_profile)
     if private:
@@ -96,23 +109,11 @@ def upload_message_image(uploaded_file_name, content_type, file_data, user_profi
     )
     return url
 
-def upload_message_image_through_web_client(request, user_file, user_profile, private=None):
-    uploaded_file_name, content_type = get_file_info(request, user_file)
-    return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile, private)
-
 def get_signed_upload_url(path):
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
 
-def resize_avatar(image_data):
-    AVATAR_SIZE = 100
-    im = Image.open(StringIO(image_data))
-    im = ImageOps.fit(im, (AVATAR_SIZE, AVATAR_SIZE), Image.ANTIALIAS)
-    out = StringIO()
-    im.save(out, format='png')
-    return out.getvalue()
-
-def upload_avatar_image(user_file, user_profile, email):
+def upload_avatar_image_s3(user_file, user_profile, email):
     content_type = guess_type(user_file.name)[0]
     bucket_name = settings.S3_AVATAR_BUCKET
     s3_file_name = user_avatar_hash(email)
@@ -136,3 +137,51 @@ def upload_avatar_image(user_file, user_profile, email):
     )
     # See avatar_url in avatar.py for URL.  (That code also handles the case
     # that users use gravatar.)
+
+### Local
+
+def mkdirs(path):
+    dirname = os.path.dirname(path)
+    if not os.path.isdir(dirname):
+        os.makedirs(dirname)
+
+def write_local_file(type, path, file_data):
+    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    mkdirs(file_path)
+    with open(file_path, 'wb') as f:
+        f.write(file_data)
+
+def upload_message_image_local(uploaded_file_name, content_type, file_data, user_profile, private=None):
+    # Split into 256 subdirectories to prevent directories from getting too big
+    path = "/".join([
+        str(user_profile.realm.id),
+        format(random.randint(0, 255), 'x'),
+        random_name(18),
+        sanitize_name(uploaded_file_name)
+    ])
+
+    write_local_file('files', path, file_data)
+
+    return '/user_uploads/' + path
+
+def upload_avatar_image_local(user_file, user_profile, email):
+    email_hash = user_avatar_hash(email)
+
+    image_data = user_file.read()
+    write_local_file('avatars', email_hash+'.original', image_data)
+
+    resized_data = resize_avatar(image_data)
+    write_local_file('avatars', email_hash+'.png', resized_data)
+
+### Common
+
+if settings.LOCAL_UPLOADS_DIR is not None:
+    upload_message_image = upload_message_image_local
+    upload_avatar_image  = upload_avatar_image_local
+else:
+    upload_message_image = upload_message_image_s3
+    upload_avatar_image  = upload_avatar_image_s3
+
+def upload_message_image_through_web_client(request, user_file, user_profile, private=None):
+    uploaded_file_name, content_type = get_file_info(request, user_file)
+    return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile, private)

@@ -29,10 +29,13 @@ def avatar_url(user_profile):
 
 def get_avatar_url(avatar_source, email):
     if avatar_source == 'U':
-        bucket = settings.S3_AVATAR_BUCKET
         hash_key = user_avatar_hash(email)
-        # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.s3.amazonaws.com/%s?x=x" % (bucket, hash_key)
+        if settings.LOCAL_UPLOADS_DIR is not None:
+            # ?x=x allows templates to append additional parameters with &s
+            return "/user_avatars/%s.png?x=x" % (hash_key)
+        else:
+            bucket = settings.S3_AVATAR_BUCKET
+            return "https://%s.s3.amazonaws.com/%s?x=x" % (bucket, hash_key)
     else:
         hash_key = gravatar_hash(email)
         return "https://secure.gravatar.com/avatar/%s?d=identicon" % (hash_key,)

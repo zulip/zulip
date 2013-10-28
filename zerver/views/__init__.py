@@ -1650,6 +1650,9 @@ def json_upload_file(request, user_profile, private=REQ(converter=json_to_bool, 
     return json_success({'uri': uri})
 
 def get_uploaded_file(request, user_profile, realm_id, filename):
+    if settings.LOCAL_UPLOADS_DIR is not None:
+        return HttpResponseForbidden() # Should have been served by nginx
+
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
     if user_profile.realm.id == int(realm_id) or user_profile.realm.domain == 'zulip.com':
         url = get_signed_upload_url("%s/%s" % (realm_id, filename))

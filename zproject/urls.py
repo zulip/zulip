@@ -90,6 +90,16 @@ urlpatterns = patterns('',
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
 )
 
+# These are used for localserver development. On a real localserver instance,
+# these files would be served by nginx.
+if not settings.DEPLOYED and settings.LOCAL_UPLOADS_DIR is not None:
+    urlpatterns += patterns('',
+        url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
+            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
+        url(r'^user_uploads/(?P<path>.*)$', 'django.views.static.serve',
+            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "files")}),
+    )
+
 urlpatterns += patterns('zerver.views',
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/update_pointer$',           'json_update_pointer'),

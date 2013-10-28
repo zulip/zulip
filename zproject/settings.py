@@ -236,6 +236,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'S3_AVATAR_BUCKET': '',
                     'MIXPANEL_TOKEN': '',
                     'MAILCHIMP_API_KEY': '',
+                    'LOCAL_UPLOADS_DIR': None,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():

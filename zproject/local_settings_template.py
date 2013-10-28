@@ -20,9 +20,10 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 
-# By default uploaded files are stored directly on the Zulip server
+# By default uploaded files and avatars are stored directly on the Zulip server
 # If file storage to Amazon S3 is desired, please contact Zulip Support
 # (support@zulip.com) for further instructions on setting up S3 integration
+LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 
 # In order to show Tweet previews inline in messages, Zulip must have access
 # to the Twitter API via OAuth. To fetch the various access tokens needed below,

@@ -10,5 +10,18 @@ server {
     ssl_certificate_key /etc/ssl/private/zulip-local-server.key;
 
     add_header X-Frame-Options DENY;
+
+    location /user_uploads {
+        add_header X-Content-Type-Options nosniff;
+        include /etc/nginx/zulip-include/uploads.types;
+        alias /home/zulip/uploads/files;
+    }
+
+    location /user_avatars {
+        add_header X-Content-Type-Options nosniff;
+        include /etc/nginx/zulip-include/uploads.types;
+        alias /home/zulip/uploads/avatars;
+    }
+
     include /etc/nginx/zulip-include/app;
 }
