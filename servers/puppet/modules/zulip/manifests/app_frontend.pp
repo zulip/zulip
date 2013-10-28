@@ -16,7 +16,7 @@ class zulip::app_frontend {
                     "python-postmonkey", "python-django-jstemplate",
                     "redis-server", "python-redis", "python-django-guardian",
                     "python-diff-match-patch", "python-sourcemap", "python-mandrill",
-                    "python-sockjs-tornado", "python-apns-client"]
+                    "python-sockjs-tornado", "python-apns-client", "python-imaging"]
   package { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/zulip-include/":
