@@ -42,6 +42,7 @@
       <li><a href="#jenkins">Jenkins (or Hudson)</a></li>
       <li><a href="#jira">Jira (hosted or v5.2+)</a></li>
       <li><a href="#jira-plugin">Jira (locally installed)</a></li>
+      <li><a href="#mercurial">Mercurial (hg)</a></li>
       <li><a href="#nagios">Nagios</a></li>
       <li><a href="#newrelic">New Relic</a></li>
       <li><a href="#phabricator">Phabricator</a></li>
@@ -613,6 +614,105 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <p><b>Congratulations! You're done!</b><br />
       Updates from JIRA will be sent to the stream you've configured, as below.</p>
       <img class="screenshot" src="/static/images/integrations/jira/001.png">
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+{#--------------------------------------------------------------------#}
+    <div id="mercurial" class="integration">
+      <h4>Mercurial (hg)</h4>
+
+      <p>Get Zulip notifications when you <code>hg push</code>!</p>
+
+      <p>First, create the stream you'd like to use for Mercurial notifications,
+      and subscribe all interested parties to this stream. We recommend the
+      name <code>commits</code>.</p>
+
+      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
+      page</a>, create a Mercurial bot.</p>
+
+      <p>Then:</p>
+      <ol>
+        <li>
+          <p>Download and install our <a href="/api">Python bindings</a> on the
+            server where the master Mercurial repository lives.</p>
+        </li>
+        <li>
+          <p>Edit the <code>hg/.hgrc</code> configuration file for this master
+          Mercurial repository and add the following sections, using the
+          credentials for your Mercurial bot and setting the appropriate path to
+          the integration hook if it installs in a different location on this
+          system:</p>
+
+          <pre>[hooks]
+changegroup = python:/usr/local/share/zulip/integrations/hg/zulip-changegroup.py:hook
+
+[zulip]
+email = "hg-bot@example.com"
+api_key = "0123456789abcdefg"
+stream = "commits"</pre>
+        </li>
+      </ol>
+
+      <p>That's all it takes for the basic setup! On the next <code>hg
+      push</code>, you'll get a Zulip update for the changeset.</p>
+
+      <h3>More configuration options</h3>
+
+      <p>The Mercurial integration also supports:</p>
+      <ul>
+        <li>linking to changelog and revision URLs for your repository's web
+        UI</li>
+        <li>branch whitelists and blacklists</li>
+      </ul>
+
+      <h4>Web repository links</h4>
+
+      <p>If you've set up your repository to
+      be <a href="http://mercurial.selenic.com/wiki/QuickStart#Network_support">browsable
+      via the web</a>, add a <code>web_url</code> configuration option to
+      the <code>zulip</code> section of your master <code>.hg/hgrc</code> to get
+      changelog and revision links in your Zulip notifications:</p>
+
+      <pre><font color="#B6B6B4">[zulip]
+email = "hg-bot@example.com"
+api_key = "0123456789abcdefg"
+stream = "commits"</font>
+web_url = "http://hg.example.com:8000/"</pre>
+
+
+      <h4>Branch whitelists and blacklists</h4>
+
+      <p>By default, this integration will send Zulip notifications for
+      changegroup events for all branches. If you'd prefer to only receive Zulip
+      notifications for specified branches, add a <code>branches</code>
+      configuration option to the <code>zulip</code> section of your
+      master <code>.hg/hgrc</code>, containing a comma-separated list of the
+      branches that should produce notifications:</p>
+
+      <pre><font color="#B6B6B4">[zulip]
+email = "hg-bot@example.com"
+api_key = "0123456789abcdefg"
+stream = "commits"</font>
+branches = "prod,master"</pre>
+
+      <p>You can also exclude branches that you don't want to cause
+      notifications. To do so, add an <code>ignore_branches</code> configuration
+      option to the <code>zulip</code> section of your
+      master <code>.hg/hgrc</code>, containing a comma-separated list of the
+      branches that should be ignored:</p>
+
+      <pre><font color="#B6B6B4">[zulip]
+email = "hg-bot@example.com"
+api_key = "0123456789abcdefg"
+stream = "commits"</font>
+ignore_branches = "noisy,even-more-noisy"</pre>
+
+      <p><b>Congratulations! You're done!</b><br /> When team members push new
+      changesets with <code>hg push</code>, you'll get a Zulip notification that
+      looks like this:</p>
+
+      <img class="screenshot" src="/static/images/integrations/hg/001.png">
       <p>
         <a href="#services">^ Back to top</a>
       </p>
