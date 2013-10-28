@@ -31,6 +31,14 @@ class zulip::zmirror {
     source => "puppet:///modules/zulip/cron.d/zephyr-mirror",
   }
 
+  file { "/etc/defaults/zephyr-clients.debathena":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/zephyr-clients.debathena",
+  }
+
   # TODO: Do the rest of our setup, which includes at least:
   # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
   # Putting tabbott/extra's keytab on the system at /home/zulip/tabbott.extra.keytab
