@@ -242,3 +242,5 @@ class DigestWorker(QueueProcessingWorker):
                 logging.info("Received digest event: %s" % (event,))
                 with commit_on_success():
                     handle_digest_email(event["user_profile_id"], event["cutoff"])
+
+            time.sleep(1 * 60)
