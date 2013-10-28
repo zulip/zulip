@@ -234,13 +234,7 @@ class MessageSenderWorker(QueueProcessingWorker):
 class DigestWorker(QueueProcessingWorker):
     # Who gets a digest is entirely determined by the queue_digest_emails
     # management command, not here.
-    def start(self):
-        while True:
-            digest_events = self.q.drain_queue("digest_emails", json=True)
+    def consume(self, ch, method, properties, event):
+        logging.info("Received digest event: %s" % (event,))
+        handle_digest_email(event["user_profile_id"], event["cutoff"])
 
-            for event in digest_events:
-                logging.info("Received digest event: %s" % (event,))
-                with commit_on_success():
-                    handle_digest_email(event["user_profile_id"], event["cutoff"])
-
-            time.sleep(1 * 60)
