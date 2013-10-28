@@ -59,7 +59,6 @@ import os
 import platform
 import logging
 from collections import defaultdict
-from os import path
 import urllib
 
 # Store an event in the log for re-importing messages
@@ -67,10 +66,10 @@ def log_event(event):
     if "timestamp" not in event:
         event["timestamp"] = time.time()
 
-    if not path.exists(settings.EVENT_LOG_DIR):
+    if not os.path.exists(settings.EVENT_LOG_DIR):
         os.mkdir(settings.EVENT_LOG_DIR)
 
-    template = path.join(settings.EVENT_LOG_DIR,
+    template = os.path.join(settings.EVENT_LOG_DIR,
         '%s.' + platform.node()
         + datetime.datetime.now().strftime('.%Y-%m-%d'))
 

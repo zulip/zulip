@@ -5,7 +5,6 @@ import signal
 import traceback
 import sys
 import os
-from os import path
 
 from twisted.internet import reactor
 from twisted.web      import proxy, server, resource
@@ -59,7 +58,7 @@ django_port  = base_port+1
 tornado_port = base_port+2
 proxy_host = 'localhost:%d' % (proxy_port,)
 
-os.chdir(path.join(path.dirname(__file__), '..'))
+os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
 # Clean up stale .pyc files etc.
 subprocess.check_call('./tools/clean-repo')

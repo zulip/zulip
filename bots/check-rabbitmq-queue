@@ -3,10 +3,9 @@
 import sys
 import re
 import time
+import os
 
-from os import path, environ
-
-sys.path.append(path.join(path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from zulip_tools import check_output
 
 WARN_THRESHOLD = 50
@@ -26,7 +25,7 @@ status = 0
 max_count = 0
 warn_queues = []
 
-if 'USER' in environ and not environ['USER'] in ['root', 'rabbitmq']:
+if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
     print "This script must be run as the root or rabbitmq user"
 
 for line in output.split("\n"):

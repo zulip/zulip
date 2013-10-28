@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 
 import sys
-from os import path
+import os
 import optparse
 
 usage = """list-members --user=<bot's email address> --api-key=<bot's api key> [options]
@@ -32,7 +32,7 @@ List the names and e-mail addresses of the people in your realm.
 You can omit --user and --api-key arguments if you have a properly set up ~/.zuliprc
 """
 
-sys.path.append(path.join(path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import zulip
 
 parser = optparse.OptionParser(usage=usage)

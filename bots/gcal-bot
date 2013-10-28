@@ -6,9 +6,9 @@ import optparse
 import urlparse
 import itertools
 import traceback
-from os import path
+import os
 
-sys.path.append(path.join(path.dirname(__file__), '../api'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../api'))
 import zulip
 
 parser = optparse.OptionParser(r"""
@@ -57,7 +57,7 @@ except ImportError:
 
 def get_calendar_url():
     parts = urlparse.urlparse(options.calendar)
-    pat = path.split(parts.path)
+    pat = os.path.split(parts.path)
     if pat[1] != 'basic':
         parser.error('The --calendar URL should be the XML "Private Address" ' +
                      'from your calendar settings')

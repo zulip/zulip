@@ -22,9 +22,9 @@
 # THE SOFTWARE.
 
 import sys
-from os import path
+import os
 import optparse
-sys.path.append(path.join(path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import zulip
 
 usage = """send-message --user=<bot's email address> --api-key=<bot's api key> [options] <recipients>

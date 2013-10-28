@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 
 import sys
-from os import path
+import os
 import optparse
 
 usage = """edit-message [options] --message=<msg_id> --subject=<new subject> --content=<new content> --user=<sender's email address> --api-key=<sender's api key>
@@ -34,7 +34,7 @@ Example: edit-message --message-id="348135" --subject="my subject" --content="te
 You can omit --user and --api-key arguments if you have a properly set up ~/.zuliprc
 """
 
-sys.path.insert(0, path.join(path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import zulip
 
 parser = optparse.OptionParser(usage=usage)

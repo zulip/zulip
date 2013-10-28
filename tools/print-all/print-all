@@ -3,7 +3,6 @@ import sh
 import os
 import re
 import sys
-from os import path
 
 # Prepare a PDF of the entire codebase, ready for printing.
 #
@@ -48,7 +47,7 @@ extensions = dict(
     sh   = 'sh',
     tex  = 'latex')
 
-os.chdir(path.join(path.dirname(__file__), '../..'))
+os.chdir(os.path.join(os.path.dirname(__file__), '../..'))
 orig_cwd = os.getcwd()
 
 try:
@@ -91,7 +90,7 @@ doc.write(r'''
 for fil in sh.git('ls-files', _iter=True):
     fil = fil.strip()
 
-    if (not path.isfile(fil)) or path.islink(fil):
+    if (not os.path.isfile(fil)) or os.path.islink(fil):
         notfile.append(fil)
         continue
 
@@ -105,7 +104,7 @@ for fil in sh.git('ls-files', _iter=True):
 
     filetype = None
     try:
-        filetype = extensions[path.basename(fil).split('.')[1]]
+        filetype = extensions[os.path.basename(fil).split('.')[1]]
     except (KeyError, IndexError):
         with open(fil, 'rb') as f:
             header = f.readline()
@@ -122,7 +121,7 @@ for fil in sh.git('ls-files', _iter=True):
     sh.pygmentize(
         '-l', (filetype if filetype else 'text'),
         '-f', 'tex',
-        '-o', path.join('tools/print-all/tex/files', outname+'.tex'),
+        '-o', os.path.join('tools/print-all/tex/files', outname+'.tex'),
         fil)
     doc.write('\\section{%s}\n\\input{files/%s}\n\n' % (fil.replace('_', r'\_'), outname))
 
@@ -146,9 +145,9 @@ print
 print 'Rendering...'
 os.chdir('tools/print-all/tex')
 
-if not path.exists('utf-8.def'):
+if not os.path.exists('utf-8.def'):
     # Fix up some TeX installation issue by copying files from where Debian puts them
-    utf8_dir = lambda p: path.join('/usr/share/doc/texlive-doc/generic/t2/etc/utf-8', p)
+    utf8_dir = lambda p: os.path.join('/usr/share/doc/texlive-doc/generic/t2/etc/utf-8', p)
     sh.cp(utf8_dir('utf-8.def'), '.')
     sh.zcat(utf8_dir('utfcyr.def.gz'), _out='utfcyr.def')
     sh.zcat(utf8_dir('utflat.def.gz'), _out='utflat.def')

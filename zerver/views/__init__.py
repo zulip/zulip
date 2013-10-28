@@ -86,7 +86,7 @@ import urllib
 import base64
 import time
 import logging
-from os import path
+import os
 from collections import defaultdict
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
@@ -2406,7 +2406,7 @@ def json_get_active_statuses(request, user_profile):
 # Read the source map information for decoding JavaScript backtraces
 js_source_map = None
 if not (settings.DEBUG or settings.TEST_SUITE):
-    js_source_map = SourceMap(path.join(
+    js_source_map = SourceMap(os.path.join(
         settings.DEPLOY_ROOT, 'prod-static/source-map'))
 
 @authenticated_json_post_view

@@ -5,7 +5,7 @@ Context managers, i.e. things you can use with the 'with' statement.
 from __future__ import absolute_import
 
 import fcntl
-from os import path
+import os
 from contextlib import contextmanager
 
 @contextmanager
@@ -28,7 +28,7 @@ def lockfile(filename, shared=False):
 
        The file is given by name and will be created if it does not exist."""
 
-    if not path.exists(filename):
+    if not os.path.exists(filename):
         with open(filename, 'w') as lock:
             lock.write('0')
 

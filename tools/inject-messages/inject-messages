@@ -3,7 +3,6 @@ import sys
 import os
 import optparse
 import re
-from os import path
 
 usage = """inject-messages [options]
 
@@ -16,7 +15,7 @@ parser.add_option("--site",
                   action="store")
 (options, args) = parser.parse_args()
 
-sys.path.append(path.join(path.dirname(__file__), '../../api'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
 import zulip
 
 characters = {'othello': {'api-key': '4e5d97591bec64bf57d2698ffbb563e3', 'intro': ''},

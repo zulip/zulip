@@ -6,7 +6,6 @@ import datetime
 import tempfile
 import traceback
 import ujson
-from os import path
 
 from django.core.management.base import BaseCommand
 from zerver.retention_policy     import should_expunge_from_log
@@ -36,7 +35,7 @@ def expunge(filename):
     #
     tmpfile = tempfile.NamedTemporaryFile(
         mode   = 'wb',
-        dir    = path.dirname(filename),
+        dir    = os.path.dirname(filename),
         delete = False)
 
     try:

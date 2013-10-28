@@ -5,7 +5,6 @@ import optparse
 import time
 import sys
 import os
-from os import path
 import glob
 
 #
@@ -31,10 +30,10 @@ parser.add_option('--remote-debug',
 test_files = []
 for file in args:
     if not os.path.exists(file):
-        file = path.join(path.dirname(__file__), 'tests', file)
-    test_files.append(path.abspath(file))
+        file = os.path.join(os.path.dirname(__file__), 'tests', file)
+    test_files.append(os.path.abspath(file))
 
-os.chdir(path.join(path.dirname(path.realpath(__file__)), '../../..'))
+os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../..'))
 
 subprocess.check_call('tools/generate-fixtures')
 

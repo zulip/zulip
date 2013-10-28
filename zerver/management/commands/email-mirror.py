@@ -18,7 +18,7 @@ Run this management command out of a cron job.
 from __future__ import absolute_import
 
 import email
-from os import path
+import os
 from email.header import decode_header
 import logging
 import re
@@ -36,7 +36,7 @@ from twisted.mail import imap4
 
 import html2text
 
-sys.path.insert(0, path.join(path.dirname(__file__), "../../../api"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../api"))
 import zulip
 
 ## Setup ##

@@ -27,7 +27,6 @@ import datetime
 import random
 import glob
 import os
-from os import path
 from optparse import make_option
 
 settings.TORNADO_SERVER = None
@@ -389,7 +388,7 @@ def restore_saved_messages():
         else:
             raise ValueError('Bad message type')
 
-    event_glob = path.join(settings.EVENT_LOG_DIR, 'events.*')
+    event_glob = os.path.join(settings.EVENT_LOG_DIR, 'events.*')
     for filename in sorted(glob.glob(event_glob)):
         with file(filename, "r") as message_log:
             for line in message_log.readlines():
