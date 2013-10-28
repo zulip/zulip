@@ -56,10 +56,17 @@ class zulip::base {
 
   # This is just an empty file.  It's used by the app to test if it's running
   # in production.
-  file { '/etc/humbug-server':
+  file { '/etc/zulip/server':
     ensure     => file,
     mode       => 644,
-    source     => 'puppet:///modules/zulip/humbug-server',
+    content    => '',
+  }
+
+  file { '/etc/zulip':
+    ensure     => 'directory',
+    mode       => 644,
+    owner      => 'zulip',
+    group      => 'zulip',
   }
 
   file { '/etc/puppet/puppet.conf':

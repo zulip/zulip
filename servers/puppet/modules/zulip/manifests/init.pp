@@ -1,7 +1,7 @@
 class zulip ($machinetype) {
   class { "zulip::$machinetype": }
 
-  file { '/etc/humbug-machinetype':
+  file { '/etc/zulip/machinetype':
     ensure  => file,
     mode    => 644,
     content => "$machinetype\n",

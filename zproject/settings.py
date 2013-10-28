@@ -13,7 +13,7 @@ from zerver.openid import openid_failure_handler
 # Whether we're running in a production environment. Note that DEPLOYED does
 # **not** mean hosted by us; customer sites are DEPLOYED and LOCAL_SERVER
 # and as such should not for example assume they are the main Zulip site.
-DEPLOYED = os.path.exists('/etc/humbug-server')
+DEPLOYED = os.path.exists('/etc/zulip/server')
 STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
 TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
 
