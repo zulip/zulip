@@ -116,11 +116,11 @@ Socket.prototype = {
         };
     },
 
-    _do_reconnect: function Socket__do_reconnect() {
+    _do_reconnect: _.throttle(function Socket__do_reconnect() {
         blueslip.info("Attempting socket reconnect.");
         this._sockjs = new SockJS(this.url, null, {protocols_whitelist: this._supported_protocols});
         this._setup_sockjs_callbacks(this._sockjs);
-    },
+    }, 1000),
 
     _try_to_reconnect: function Socket__try_to_reconnect() {
         var that = this;
