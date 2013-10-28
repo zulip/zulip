@@ -545,3 +545,39 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_d
     subject = elide_subject(subject)
     check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
     return json_success()
+
+@csrf_exempt
+@authenticated_rest_api_view
+@has_request_variables
+def api_stash_webhook(request, user_profile, stream=REQ(default='')):
+    try:
+        payload = ujson.loads(request.body)
+    except ValueError:
+        return json_error("Malformed JSON input")
+
+    # We don't get who did the push, or we'd try to report that.
+    try:
+        repo_name = payload["repository"]["name"]
+        project_name = payload["repository"]["project"]["name"]
+        commit_entries = payload["changesets"]["values"]
+        commits = [(entry["toCommit"]["displayId"],
+                    entry["toCommit"]["message"].split("\n")[0]) for \
+                       entry in commit_entries]
+        head_ref = commit_entries[-1]["toCommit"]["displayId"]
+    except KeyError, e:
+        return json_error("Missing key %s in JSON" % (e.message,))
+
+    try:
+        stream = request.GET['stream']
+    except (AttributeError, KeyError):
+        stream = 'commits'
+
+    subject = "%s/%s" % (project_name, repo_name)
+
+    content = "`%s` was pushed to **%s** with:\n\n" % (head_ref, subject)
+    content += "\n".join("* `%s`: %s" % (
+            commit[0], commit[1]) for commit in commits)
+
+    check_send_message(user_profile, get_client("Stash"), "stream", [stream],
+                       subject, content)
+    return json_success()
