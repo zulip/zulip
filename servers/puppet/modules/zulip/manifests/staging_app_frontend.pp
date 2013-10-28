@@ -24,6 +24,13 @@ class zulip::staging_app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip/cron.d/email-mirror",
   }
+  file { "/etc/cron.d/active-user-stats":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/active-user-stats",
+  }
   file { "/etc/cron.d/clearsessions":
     ensure => file,
     owner  => "root",
