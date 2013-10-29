@@ -236,7 +236,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'S3_AVATAR_BUCKET': '',
                     'MIXPANEL_TOKEN': '',
                     'MAILCHIMP_API_KEY': '',
-                    'MANDRILL_API_KEY': ''}
+                    }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
     if not setting_name in vars():
