@@ -24,17 +24,16 @@ import sys
 
 exclude_trees = """
 static/third
-servers/puppet/modules/common
-servers/puppet/modules/puppet-common
-servers/puppet/modules/apt
-servers/puppet/modules/puppet-apt
+puppet/common
+puppet/puppet-common
+puppet/apt
+puppet/puppet-apt
 certs
 """.split()
 
 exclude_files = """
 zerver/management/commands/test_messages.txt
 tools/usability_testing/humbug_usability_test_data
-servers/puppet/files/wiki/static/img/logo.png
 tools/jslint/jslint.js
 """.split()
 

@@ -21,7 +21,7 @@ if ! [ -e "$amazon_key_file" ]; then
     exit 1
 fi
 
-server_private_key_file=$zulip_root/servers/puppet/modules/zulip/files/id_rsa
+server_private_key_file=$zulip_root/puppet/zulip-internal/files/id_rsa
 if ! [ -e "$server_private_key_file" ]; then
     echo "You need a server ssh key at $server_private_key_file"
     exit 1
@@ -79,7 +79,7 @@ git checkout master
 EOF
 
 ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
-cp -a /root/zulip/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
+cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
 userdel admin
 passwd -d root
