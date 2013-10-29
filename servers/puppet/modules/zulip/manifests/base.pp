@@ -115,6 +115,13 @@ class zulip::base {
     mode   => 640,
   }
 
+  file { '/var/log/zulip/queue_error':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => 640,
+  }
+
   group { 'nagios':
     ensure     => present,
     gid => '1050',

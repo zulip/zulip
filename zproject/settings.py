@@ -511,6 +511,7 @@ if DEPLOYED:
     STATS_DIR = '/home/zulip/stats'
     PERSISTENT_QUEUE_FILENAME = "/home/zulip/tornado/event_queues.pickle"
     EMAIL_LOG_PATH = "/var/log/zulip/email-mirror.log"
+    QUEUE_ERROR_DIR = '/var/log/zulip/queue_error'
 else:
     EVENT_LOG_DIR = 'event_log'
     SERVER_LOG_PATH = "server.log"
@@ -518,6 +519,8 @@ else:
     STATS_DIR = 'stats'
     PERSISTENT_QUEUE_FILENAME = "event_queues.pickle"
     EMAIL_LOG_PATH = "email-mirror.log"
+    QUEUE_ERROR_DIR = 'queue_error'
+
 
 if len(sys.argv) > 2 and sys.argv[0].endswith('manage.py') and sys.argv[1] == 'process_queue':
     FILE_LOG_PATH = WORKER_LOG_PATH

@@ -5,6 +5,7 @@ from django.conf import settings
 from postmonkey import PostMonkey, MailChimpException
 from zerver.models import UserActivityInterval, get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client
+from zerver.lib.context_managers import lockfile
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation_email, \
@@ -47,12 +48,27 @@ class QueueProcessingWorker(object):
     def __init__(self):
         self.q = SimpleQueueClient()
 
-    def consume_and_commit(self, *args):
-        with commit_on_success():
-            self.consume(*args)
+    def consume_wrapper(self, ch, method, properties, data):
+        try:
+            with commit_on_success():
+                self.consume(ch, method, properties, data)
+        except Exception:
+            self._log_problem()
+            if not os.path.exists(settings.QUEUE_ERROR_DIR):
+                os.mkdir(settings.QUEUE_ERROR_DIR)
+            fname = '%s.errors' % (self.queue_name,)
+            fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
+            line = '%s\t%s\n' % (time.asctime(), ujson.dumps(data))
+            lock_fn = fn + '.lock'
+            with lockfile(lock_fn):
+                with open(fn, 'a') as f:
+                    f.write(line)
+
+    def _log_problem(self):
+        logging.exception("Problem handling data on queue %s" % (self.queue_name,))
 
     def start(self):
-        self.q.register_json_consumer(self.queue_name, self.consume_and_commit)
+        self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
         self.q.start_consuming()
 
     def stop(self):

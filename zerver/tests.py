@@ -386,6 +386,39 @@ class WorkerTest(TestCase):
             self.assertTrue(len(activity_records), 1)
             self.assertTrue(activity_records[0].count, 1)
 
+    def test_error_handling(self):
+        processed = []
+
+        @queue_processors.assign_queue('flake')
+        class FlakyWorker(queue_processors.QueueProcessingWorker):
+            def consume(self, ch, method, properties, data):
+                if data == 'freak out':
+                    raise Exception('Freaking out!')
+                processed.append(data)
+
+            def _log_problem(self):
+                # keep the tests quiet
+                pass
+
+        fake_client = self.FakeClient()
+        for msg in ['good', 'fine', 'freak out', 'back to normal']:
+            fake_client.queue.append(('flake', msg))
+
+        fn = os.path.join(settings.QUEUE_ERROR_DIR, 'flake.errors')
+        try:
+            os.remove(fn)
+        except OSError:
+            pass
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = FlakyWorker()
+            worker.start()
+
+        self.assertEqual(processed, ['good', 'fine', 'back to normal'])
+        line = open(fn).readline().strip()
+        event = ujson.loads(line.split('\t')[1])
+        self.assertEqual(event, 'freak out')
+
 class ActivityTest(AuthedTestCase):
     def test_activity(self):
         self.login("hamlet@zulip.com")
