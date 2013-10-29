@@ -1,0 +1,35 @@
+#!/bin/bash -xe
+
+# Assumes we've already been untarred
+
+apt-get update
+apt-get -y dist-upgrade
+apt-get install -y puppet git
+cp -a /root/zulip/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
+
+ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
+cp -a /root/zulip/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
+
+puppet apply -e 'class {"zulip": machinetype => "local_server"}'
+cp -a /root/zulip /home/zulip/zulip
+chown -R zulip:zulip /home/zulip/zulip
+
+# These server restarting bits should be moveable into puppet-land, ideally
+apt-get -y upgrade
+if [ -e "/etc/init.d/nginx" ]; then
+    service nginx restart
+fi
+if [ -e "/etc/init.d/apache2" ]; then
+    service apache2 restart
+fi
+
+EOF
+
+set +x
+cat <<EOF
+
+ Done.
+
+ Now do the next step!
+
+EOF
