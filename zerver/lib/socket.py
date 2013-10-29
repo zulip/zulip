@@ -15,6 +15,7 @@ from zerver.models import UserProfile, get_user_profile_by_id, get_client
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.actions import check_send_message, extract_recipients
 from zerver.decorator import JsonableError
+from zerver.lib.utils import statsd
 
 djsession_engine = import_module(settings.SESSION_ENGINE)
 def get_user_profile(session_id):
@@ -161,9 +162,14 @@ def respond_send_message(chan, method, props, data):
     connection = get_connection(data['server_meta']['connection_id'])
     if connection is not None:
         connection.session.send_message({'client_meta': data['client_meta'], 'response': data['response']})
+
+        time_elapsed = time.time() - data['server_meta']['start_time']
         fake_log_line(connection.session.conn_info,
-                      time.time() - data['server_meta']['start_time'],
+                      time_elapsed,
                       200, 'send_message', connection.session.user_profile.email)
+        # Fake the old JSON send_message endpoint
+        statsd_prefix = "webreq.json.send_message.total"
+        statsd.timing(statsd_prefix, time_elapsed * 1000)
 
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.EXTERNAL_HOST,),
