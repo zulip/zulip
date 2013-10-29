@@ -171,6 +171,9 @@ def do_change_user_email(user_profile, new_email):
 def compute_irc_user_fullname(email):
     return email.split("@")[0] + " (IRC)"
 
+def compute_jabber_user_fullname(email):
+    return email.split("@")[0] + " (XMPP)"
+
 def compute_mit_user_fullname(email):
     try:
         # Input is either e.g. starnine@mit.edu or user|CROSSREALM.INVALID@mit.edu
@@ -540,7 +543,7 @@ def check_message(sender, client, message_type_name, message_to,
             raise JsonableError("Not authorized to send to stream '%s'" % (stream.name,))
 
     elif message_type_name == 'private':
-        mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror"]
+        mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror"]
         not_forged_mirror_message = mirror_message and not forged
         try:
             recipient = recipient_for_emails(message_to, not_forged_mirror_message,

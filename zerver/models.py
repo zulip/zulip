@@ -29,7 +29,7 @@ MAX_MESSAGE_LENGTH = 10000
 
 def is_super_user(user):
     return user.email in ["tabbott/extra@mit.edu", "emailgateway@zulip.com",
-                          "irc-bot@zulip.com"]
+                          "irc-bot@zulip.com", "bot1@customer35.invalid"]
 
 # Doing 1000 memcached requests to get_display_recipient is quite slow,
 # so add a local cache as well as the memcached cache.

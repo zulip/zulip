@@ -27,7 +27,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     is_super_user, AppleDeviceToken, get_active_user_dicts_in_realm
 from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mirror_user_if_needed, compute_irc_user_fullname, \
-    do_change_full_name, \
+    compute_jabber_user_fullname, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
     do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
     do_change_subscription_property, internal_send_message, \
@@ -1216,6 +1216,16 @@ def same_realm_irc_user(user_profile, email):
 
     return user_profile.realm.domain == domain.replace("irc.", "")
 
+def same_realm_user(user_profile, email):
+    try:
+        validators.validate_email(email)
+    except ValidationError:
+        return False
+
+    domain = email_to_domain(email)
+
+    return user_profile.realm.domain == domain
+
 def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
         return (False, None)
@@ -1232,6 +1242,9 @@ def create_mirrored_message_users(request, user_profile, recipients):
     elif request.client.name == "irc_mirror":
         user_check = same_realm_irc_user
         fullname_function = compute_irc_user_fullname
+    elif request.client.name == "jabber_mirror":
+        user_check = same_realm_user
+        fullname_function = compute_jabber_user_fullname
     else:
         # Unrecognized mirroring client
         return (False, None)
@@ -1315,7 +1328,7 @@ def send_message_backend(request, user_profile,
         if not realm:
             return json_error("Unknown domain " + domain)
 
-    if client.name == "zephyr_mirror" or client.name == "irc_mirror":
+    if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror"]:
         # Here's how security works for mirroring:
         #
         # For private messages, the message must be (1) both sent and
@@ -1324,8 +1337,9 @@ def send_message_backend(request, user_profile,
         #
         # For stream messages, the message must be (1) being forwarded
         # by an API superuser for your realm and (2) being sent to a
-        # mirrored stream (any stream for the Zephyr mirror, but only
-        # streams with names starting with a "#" for IRC mirrors)
+        # mirrored stream (any stream for the Zephyr and Jabber
+        # mirrors, but only streams with names starting with a "#" for
+        # IRC mirrors)
         #
         # The security checks are split between the below code
         # (especially create_mirrored_message_users which checks the
