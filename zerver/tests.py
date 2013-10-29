@@ -3829,21 +3829,13 @@ Making a comment, @**Othello, the Moor of Venice** is watching this issue
 """)
 
 class BeanstalkHookTests(AuthedTestCase):
-
-    def http_auth(self, username, password):
-        import base64
-        credentials = base64.b64encode('%s:%s' % (username, password))
-        auth_string = 'Basic %s' % (credentials,)
-        return auth_string
-
     def send_beanstalk_message(self, action):
         email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
         data = {'payload': self.fixture_data('beanstalk', action)}
         return self.send_json_payload(email, "/api/v1/external/beanstalk",
                                       data,
                                       stream_name="commits",
-                                      HTTP_AUTHORIZATION=self.http_auth(email, api_key))
+                                      **self.api_auth(email))
 
     def test_git_single(self):
         msg = self.send_beanstalk_message('git_singlecommit')
