@@ -1,0 +1,3 @@
+#!/bin/sh -ex
+
+git archive -o /tmp/zulip-server.tar.gz HEAD
