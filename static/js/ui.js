@@ -979,9 +979,6 @@ $(function () {
             settings_status.removeClass(status_classes)
                 .addClass('alert-success')
                 .text(message).stop(true).fadeTo(0,1);
-            // TODO: In theory we should auto-reload or something if
-            // you changed the email address or other fields that show
-            // up on all screens
         },
         error: function (xhr, error_type, xhn) {
             var response = "Error changing settings";
@@ -1024,9 +1021,6 @@ $(function () {
             notify_settings_status.removeClass(status_classes)
                 .addClass('alert-success')
                 .text(message).stop(true).fadeTo(0,1);
-            // TODO: In theory we should auto-reload or something if
-            // you changed the email address or other fields that show
-            // up on all screens
         },
         error: function (xhr, error_type, xhn) {
             var response = "Error changing settings";
