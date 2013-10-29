@@ -237,6 +237,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'MIXPANEL_TOKEN': '',
                     'MAILCHIMP_API_KEY': '',
                     'LOCAL_UPLOADS_DIR': None,
+                    'DROPBOX_APP_KEY': ''
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():

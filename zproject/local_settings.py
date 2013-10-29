@@ -141,3 +141,6 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 # The %s will be replaced with a unique token, and the resulting email
 # must be delivered to the Inbox of the EMAIL_GATEWAY_LOGIN account above
 EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
+
+
+DROPBOX_APP_KEY = "xxxxxxxxxxxxxxx"

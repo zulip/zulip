@@ -20,7 +20,8 @@
     <![endif]-->
     <link href="/static/favicon.ico?v=2" rel="shortcut icon">
 
-    <script type="text/javascript">var dropboxAppKey = "xxxxxxxxxxxxxxx";</script>
+    {% if not local_server %}
+    <script type="text/javascript">var dropboxAppKey = "{{ dropboxAppKey }}";</script>
     {# mixpanel #}
     <script type="text/javascript">
 (function(e,b){if(!b.__SV){var a,f,i,g;window.mixpanel=b;a=e.createElement("script");a.type="text/javascript";a.async=!0;a.src=("https:"===e.location.protocol?"https:":"http:")+'//cdn.mxpnl.com/libs/mixpanel-2.2.min.js';f=e.getElementsByTagName("script")[0];f.parentNode.insertBefore(a,f);b._i=[];b.init=function(a,e,d){function f(b,h){var a=h.split(".");2==a.length&&(b=b[a[0]],h=a[1]);b[h]=function(){b.push([h].concat(Array.prototype.slice.call(arguments,0)))}}var c=b;"undefined"!==
@@ -31,6 +32,7 @@ b._i.push([a,e,d])};b.__SV=1.2}})(document,window.mixpanel||[]);
 {# mixpanel.init to get additional debugging information from it. #}
 mixpanel.init("{{ mixpanel_token }}", {track_pageview: {{ enable_metrics }}});
     </script>
+    {% endif %}
 
     {# We need to import jQuery before Bootstrap #}
     {% compressed_css 'common' %}
