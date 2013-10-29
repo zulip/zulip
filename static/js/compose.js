@@ -595,18 +595,6 @@ exports.validate = function () {
 $(function () {
     $("#new_message_content").autosize();
 
-    $("#new_message_content").focus(function (e) {
-        // If we click in the composebox, start up a new message
-        if (!compose.composing()) {
-            if (narrow.narrowed_to_pms()) {
-                compose.start('private');
-            } else {
-                compose.start('stream');
-            }
-            e.stopPropagation();
-        }
-    });
-
     // Run a feature test and decide whether to display
     // the "Attach files" button
     if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
