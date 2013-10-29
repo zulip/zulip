@@ -209,8 +209,8 @@ li,
  #user-settings-avatar {
     width: 100px;
     height: 100px;
-    padding-top: 10px;
-    border-radius: 15px;
+    margin-top: 10px;
+    border-radius: 50px;
  }
 
 .header-main .gravatar-profile {
