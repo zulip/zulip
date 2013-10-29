@@ -1,4 +1,4 @@
-class zulip::mediawiki {
+class zulip-internal::mediawiki {
   class { 'zulip::postgres-common': }
 
 
@@ -17,7 +17,7 @@ class zulip::mediawiki {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/mediawiki/LocalSettings.php",
+    source => "puppet:///modules/zulip-internal/mediawiki/LocalSettings.php",
   }
 
   file { '/usr/local/share/mediawiki/extensions/Auth_remoteuser.php':
@@ -25,7 +25,7 @@ class zulip::mediawiki {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/mediawiki/Auth_remoteuser.php",
+    source => "puppet:///modules/zulip-internal/mediawiki/Auth_remoteuser.php",
   }
 
   file { '/etc/mediawiki-extensions/extensions-available/Auth_remoteuser.php':

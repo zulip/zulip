@@ -1,5 +1,5 @@
-class zulip::postgres-appdb {
-  class { 'zulip::postgres-common': }
+class zulip-internal::postgres-appdb {
+  class { 'zulip-internal::postgres-common': }
   class { 'zulip::supervisor': }
 
   $appdb_packages = [ "python-psycopg2",]
@@ -10,7 +10,7 @@ class zulip::postgres-appdb {
     owner => "root",
     group => "root",
     mode => 755,
-    source => "puppet:///modules/zulip/postgresql/process_fts_updates",
+    source => "puppet:///modules/zulip-internal/postgresql/process_fts_updates",
   }
 
   file { "/etc/supervisor/conf.d/zulip_db.conf":
@@ -19,7 +19,7 @@ class zulip::postgres-appdb {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/supervisor/conf.d/zulip_db.conf",
+    source => "puppet:///modules/zulip-internal/supervisor/conf.d/zulip_db.conf",
     notify => Service[supervisor],
   }
 
@@ -29,7 +29,7 @@ class zulip::postgres-appdb {
     owner  => "postgres",
     group  => "postgres",
     mode => 640,
-    source => "puppet:///modules/zulip/postgresql/pg_hba.conf",
+    source => "puppet:///modules/zulip-internal/postgresql/pg_hba.conf",
   }
 
   file { "/usr/share/postgresql/9.1/tsearch_data/zulip_english.stop":
@@ -38,7 +38,7 @@ class zulip::postgres-appdb {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/postgresql/zulip_english.stop",
+    source => "puppet:///modules/zulip-internal/postgresql/zulip_english.stop",
   }
 
 }

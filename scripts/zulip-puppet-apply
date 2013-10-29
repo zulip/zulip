@@ -10,10 +10,10 @@ if len(extra_args) and extra_args[0] in ('-f', '--force'):
     force = True
     eatra_args = extra_args[1:]
 
-with open('/etc/humbug-machinetype') as f:
+with open('/etc/zulip/machinetype') as f:
     machinetype = f.readline().strip()
 
-puppet_cmd = ["puppet", "apply", "-e", "class {'zulip': machinetype => '%s'}" % (machinetype,)]
+puppet_cmd = ["puppet", "apply", "-e", "class {'zulip-internal': machinetype => '%s'}" % (machinetype,)]
 puppet_cmd += extra_args
 
 if force:

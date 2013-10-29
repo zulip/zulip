@@ -1,5 +1,5 @@
-class zulip::prod_app_frontend {
-  class { 'zulip::base': }
+class zulip-internal::prod_app_frontend {
+  class { 'zulip-internal::base': }
   class { 'zulip::app_frontend': }
 
   file { "/etc/nginx/sites-available/zulip":
@@ -8,7 +8,7 @@ class zulip::prod_app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/nginx/sites-available/zulip",
+    source => "puppet:///modules/zulip-internal/nginx/sites-available/zulip",
   }
   file { '/etc/nginx/sites-enabled/zulip':
     ensure => 'link',
@@ -30,7 +30,7 @@ class zulip::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip/sparkle/mac/sparkle.xml",
+    source => "puppet:///modules/zulip-internal/sparkle/mac/sparkle.xml",
   }
   file { "/srv/www/dist/apps/mac/sparkle-changelog.html":
     ensure => file,
@@ -38,7 +38,7 @@ class zulip::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip/sparkle/mac/sparkle-changelog.html",
+    source => "puppet:///modules/zulip-internal/sparkle/mac/sparkle-changelog.html",
   }
   file { "/srv/www/dist/apps/win/sparkle.xml":
     ensure => file,
@@ -46,7 +46,7 @@ class zulip::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip/sparkle/win/sparkle.xml",
+    source => "puppet:///modules/zulip-internal/sparkle/win/sparkle.xml",
   }
   file { "/srv/www/dist/apps/win/sparkle-changelog.html":
     ensure => file,
@@ -54,7 +54,7 @@ class zulip::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip/sparkle/win/sparkle-changelog.html",
+    source => "puppet:///modules/zulip-internal/sparkle/win/sparkle-changelog.html",
   }
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem

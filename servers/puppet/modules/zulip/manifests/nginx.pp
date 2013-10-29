@@ -1,4 +1,3 @@
-# For any system using nginx (currently just app frontends and load balancers)
 class zulip::nginx {
   $web_packages = [ "nginx", ]
   package { $web_packages: ensure => "installed" }

@@ -1,4 +1,4 @@
-class zulip::postgres-common {
+class zulip-internal::postgres-common {
 
   $postgres_packages = [ "postgresql-9.1", "pgtune",
                          "python-argparse", "python-gevent",
@@ -17,7 +17,7 @@ class zulip::postgres-common {
     owner => "root",
     group => "postgres",
     mode => 750,
-    source => "puppet:///modules/zulip/postgresql/env-wal-e",
+    source => "puppet:///modules/zulip-internal/postgresql/env-wal-e",
   }
 
   file { "/usr/local/bin/pg_backup_and_purge.py":
@@ -25,7 +25,7 @@ class zulip::postgres-common {
     owner => "root",
     group => "postgres",
     mode => 754,
-    source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge.py",
+    source => "puppet:///modules/zulip-internal/postgresql/pg_backup_and_purge.py",
     require => File["/usr/local/bin/env-wal-e"],
   }
 

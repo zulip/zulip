@@ -1,5 +1,5 @@
-class zulip ($machinetype) {
-  class { "zulip::$machinetype": }
+class zulip-internal ($machinetype) {
+  class { "zulip-internal::$machinetype": }
 
   file { '/etc/zulip/machinetype':
     ensure  => file,
