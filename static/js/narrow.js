@@ -101,6 +101,11 @@ exports.activate = function (operators, opts) {
         return exports.deactivate();
     }
     var filter = new Filter(operators);
+    blueslip.debug("Narrowed", {operators: _.map(filter.operators(),
+                                                 function (e) { return e[0]; }),
+                                previous_id: current_msg_list.selected_id(),
+                                previous_is_summarized: current_msg_list.is_summarized_message(
+                                    current_msg_list.get(current_msg_list.selected_id()))});
 
     var had_message_content = compose.has_message_content();
 
@@ -313,6 +318,7 @@ exports.deactivate = function () {
     if (current_filter === undefined) {
         return;
     }
+    blueslip.debug("Unnarrowed");
 
     if (ui.actively_scrolling()) {
         // There is no way to intercept in-flight scroll events, and they will

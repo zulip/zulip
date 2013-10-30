@@ -173,6 +173,10 @@ MessageList.prototype = {
                            {table_name: this.table_name, id: id});
         }
 
+        if (closest_id === -1) {
+            blueslip.fatal("Cannot select id -1", {table_name: this.table_name});
+        }
+
         id = closest_id;
         opts.id = id;
         this._selected_id = id;
