@@ -660,6 +660,7 @@ a.bottom-signup-button {
 .integration-lozenges {
     text-align: center;
 }
+
 .integration-lozenge {
     width: 125px;
     background: #ededed;
@@ -667,6 +668,11 @@ a.bottom-signup-button {
     margin: 15px 5px 0px 5px;
     display: inline-block;
     vertical-align: top;
+}
+
+.integration-instruction-block .integration-lozenge {
+    float: left;
+    margin-top: 5px;
 }
 
 .integration-lozenge:hover {
@@ -710,7 +716,6 @@ a.bottom-signup-button {
 
 .integration-instructions {
     margin-left: 150px;
-    margin-top: -175px;
 }
 
 #integration-instructions-group {
@@ -774,6 +779,7 @@ a.bottom-signup-button {
 
 .integration-instruction-block {
     position: relative;
+    margin-top: 15px;
 }
 
 #integration-list-link {
