@@ -341,9 +341,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 class Gravatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
         img = markdown.util.etree.Element('img')
-        img.set('class', 'message_body_gravatar img-rounded')
+        email_address = match.group('email')
+        img.set('class', 'message_body_gravatar')
         img.set('src', 'https://secure.gravatar.com/avatar/%s?d=identicon&s=30'
-            % (gravatar_hash(match.group('email')),))
+            % (gravatar_hash(email_address),))
+        img.set('title', email_address)
+        img.set('alt', email_address)
         return img
 
 path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',

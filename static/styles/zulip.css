@@ -2791,6 +2791,7 @@ div.edit_bot {
 .message_body_gravatar {
     width: 20px;
     height: 20px;
+    border-radius: 10px;
     margin: 2px 2px 2px 0px;
     border: 1px solid #000;
 }
