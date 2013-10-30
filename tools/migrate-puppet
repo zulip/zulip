@@ -1,0 +1,14 @@
+#!/bin/bash -xe
+
+# This is a one-off script to deal with changes in our puppet
+# configuration.  You should not normally have to run this.
+
+cd /root/zulip
+git fetch
+git checkout f4eb523244d3409b5809c279301225d3fdf0c230
+scripts/zulip-puppet-apply
+
+git checkout master
+git pull --rebase
+cp puppet/zulip/files/puppet.conf /etc/puppet/
+scripts/zulip-puppet-apply
