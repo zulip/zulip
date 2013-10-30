@@ -254,3 +254,15 @@ class DigestWorker(QueueProcessingWorker):
         logging.info("Received digest event: %s" % (event,))
         handle_digest_email(event["user_profile_id"], event["cutoff"])
 
+@assign_queue('test')
+class TestWorker(QueueProcessingWorker):
+    # This worker allows you to test the queue worker infrastructure without
+    # creating significant side effects.  It can be useful in development or
+    # for troubleshooting prod/staging.  It pulls a message off the test queue
+    # and appends it to a file in /tmp.
+    def consume(self, ch, method, properties, event):
+        fn = settings.ZULIP_WORKER_TEST_FILE
+        message = ujson.dumps(event)
+        logging.info("TestWorker should append this message to %s: %s" % (fn, message))
+        with open(fn, 'a') as f:
+            f.write(message + '\n')

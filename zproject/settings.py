@@ -522,6 +522,9 @@ else:
     QUEUE_ERROR_DIR = 'queue_error'
 
 
+ZULIP_WORKER_TEST_FILE = '/tmp/zulip-worker-test-file'
+
+
 if len(sys.argv) > 2 and sys.argv[0].endswith('manage.py') and sys.argv[1] == 'process_queue':
     FILE_LOG_PATH = WORKER_LOG_PATH
 else:
