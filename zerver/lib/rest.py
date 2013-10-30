@@ -4,7 +4,10 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
         process_as_post
-from zerver.lib.response import json_method_not_allowed
+from zerver.lib.response import json_method_not_allowed, json_unauthorized
+from django.http import HttpResponseRedirect
+from django.conf import settings
+
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 
@@ -57,10 +60,18 @@ def rest_dispatch(request, globals_list, **kwargs):
         if request.user.is_authenticated():
             # Authenticated via sessions framework, only CSRF check needed
             target_function = csrf_protect(authenticated_json_view(target_function))
-        else:
+        elif request.META.get('HTTP_AUTHORIZATION', None):
             # Wrap function with decorator to authenticate the user before
             # proceeding
             target_function = authenticated_rest_api_view(target_function)
+        else:
+            if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
+                # If this looks like a request from a top-level page in a
+                # browser, send the user to the login page
+                return HttpResponseRedirect('%s/?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
+            else:
+                return json_unauthorized("Not logged in: API authentication or user session required")
+
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because
             # otherwise we might access and thus cache a value for
