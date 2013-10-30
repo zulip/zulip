@@ -87,7 +87,7 @@ MessageList.prototype = {
         }
     },
 
-   get: function MessageList_get(id) {
+    get: function MessageList_get(id) {
         id = parseInt(id, 10);
         if (isNaN(id)) {
             return undefined;
