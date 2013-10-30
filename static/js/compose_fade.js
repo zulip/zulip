@@ -42,29 +42,55 @@ function _display_users_normally() {
     $('.user_sidebar_entry').removeClass('faded').removeClass('unfaded');
 }
 
+function change_fade_state(elt, should_fade_message) {
+    if (should_fade_message) {
+        elt.removeClass("unfaded").addClass("faded");
+    } else {
+        elt.removeClass("faded").addClass("unfaded");
+    }
+}
+
 function _fade_messages() {
     var i;
-    var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
     var should_fade_message = false;
+    var visible_messages = viewport.visible_messages(false);
 
     normal_display = false;
 
-    // Note: The below algorithm relies on the fact that all_elts is
-    // sorted as it would be displayed in the message view
-    for (i = 0; i < all_elts.length; i++) {
-        var elt = $(all_elts[i]);
-        if (elt.hasClass("recipient_row")) {
-            should_fade_message = !util.same_recipient(focused_recipient, current_msg_list.get(rows.id(elt)));
-        }
+    // Update the visible messages first, before the compose box opens
+    for (i = 0; i < visible_messages.length; i++) {
+        should_fade_message = !util.same_recipient(focused_recipient, visible_messages[i]);
+        var elt = current_msg_list.get_row(visible_messages[i].id);
+        var recipient_row = $(elt).prevAll(".recipient_row").first().expectOne();
 
-        if (should_fade_message) {
-            elt.removeClass("unfaded").addClass("faded");
-        } else {
-            elt.removeClass("faded").addClass("unfaded");
-        }
+        change_fade_state(elt, should_fade_message);
+        change_fade_state(recipient_row, should_fade_message);
     }
 
     ui.update_floating_recipient_bar();
+
+    // Defer updating all messages so that the compose box can open sooner
+    setTimeout(function (expected_msg_list, expected_recipient) {
+        var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
+
+        if (current_msg_list !== expected_msg_list ||
+            compose.recipient() !== expected_recipient) {
+            return;
+        }
+
+        should_fade_message = false;
+
+        // Note: The below algorithm relies on the fact that all_elts is
+        // sorted as it would be displayed in the message view
+        for (i = 0; i < all_elts.length; i++) {
+            var elt = $(all_elts[i]);
+            if (elt.hasClass("recipient_row")) {
+                should_fade_message = !util.same_recipient(focused_recipient, current_msg_list.get(rows.id(elt)));
+            }
+
+            change_fade_state(elt, should_fade_message);
+        }
+    }, 0, current_msg_list, compose.recipient());
 }
 
 exports.would_receive_message = function (email) {
@@ -214,11 +240,7 @@ exports.update_rendered_messages = function (messages, get_elements) {
         var should_fade_message = !util.same_recipient(focused_recipient, message);
 
         _.each(elts, function (elt) {
-            if (should_fade_message) {
-                elt.removeClass("unfaded").addClass("faded");
-            } else {
-                elt.removeClass("faded").addClass("unfaded");
-            }
+            change_fade_state(elt, should_fade_message);
         });
     });
 };

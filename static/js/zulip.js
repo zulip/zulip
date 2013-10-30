@@ -413,7 +413,7 @@ function process_visible_unread_messages(update_cursor) {
             mark_current_list_as_read();
         }
     } else {
-        mark_messages_as_read(viewport.visible_messages());
+        mark_messages_as_read(viewport.visible_messages(true));
     }
 }
 

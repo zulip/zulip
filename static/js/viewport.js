@@ -102,19 +102,26 @@ exports.set_message_position = function (message_top, message_height, viewport_i
     exports.scrollTop(new_scroll_top);
 };
 
-function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed) {
-    return ((rect.top > top_of_feed) && // Message top is in view and
-            ((rect.bottom < bottom_of_feed) || // message is fully in view or
-             ((rect.height > bottom_of_feed - top_of_feed) &&
-              (rect.top < bottom_of_feed)))); // message is tall.
+function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
+                             require_fully_visible) {
+    if (require_fully_visible) {
+        return ((rect.top > top_of_feed) && // Message top is in view and
+                ((rect.bottom < bottom_of_feed) || // message is fully in view or
+                 ((rect.height > bottom_of_feed - top_of_feed) &&
+                  (rect.top < bottom_of_feed)))); // message is tall.
+    } else {
+        return (rect.bottom > top_of_feed && rect.top < bottom_of_feed);
+    }
 }
 
 function add_to_visible_messages(candidates, visible_messages,
-                                 top_of_feed, bottom_of_feed) {
+                                 top_of_feed, bottom_of_feed,
+                                 require_fully_visible) {
     _.every(candidates, function (row) {
         var row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
-        if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed)) {
+        if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed,
+                                require_fully_visible)) {
             visible_messages.push(current_msg_list.get(rows.id($(row))));
             return true;
         } else {
@@ -135,7 +142,7 @@ var bottom_of_feed = new util.CachedValue({
     }
 });
 
-exports.visible_messages = function () {
+exports.visible_messages = function (require_fully_visible) {
     // Note that when using getBoundingClientRect() we are getting offsets
     // relative to the visible window, but when using jQuery's offset() we are
     // getting offsets relative to the full scrollable window. You can't try to
@@ -154,11 +161,11 @@ exports.visible_messages = function () {
     var messages_above_pointer = selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")");
     var messages_below_pointer = selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")");
     add_to_visible_messages(selected_row, visible_messages,
-                            top_of_feed.get(), bottom_of_feed.get());
+                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible);
     add_to_visible_messages(messages_above_pointer, visible_messages,
-                            top_of_feed.get(), bottom_of_feed.get());
+                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible);
     add_to_visible_messages(messages_below_pointer, visible_messages,
-                            top_of_feed.get(), bottom_of_feed.get());
+                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible);
 
     return visible_messages;
 };
