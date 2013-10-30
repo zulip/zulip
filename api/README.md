@@ -67,6 +67,23 @@ keys: msg, result.  For successful calls, result will be "success" and
 msg will be the empty string.  On error, result will be "error" and
 msg will describe what went wrong.
 
+#### Logging
+The Zulip API comes with a ZulipStream class which can be used with the
+logging module:
+
+```
+import zulip
+import logging
+stream = zulip.ZulipStream(type="stream", to=["support"], subject="your subject")
+logger = logging.getLogger("your_logger")
+logger.addHandler(logging.StreamHandler(stream))
+logger.setLevel(logging.DEBUG)
+logger.info("This is an INFO test.")
+logger.debug("This is a DEBUG test.")
+logger.warn("This is a WARN test.")
+logger.error("This is a ERROR test.")
+```
+
 #### Sending messages
 
 You can use the included `zulip-send` script to send messages via the

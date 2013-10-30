@@ -31,6 +31,7 @@ import optparse
 from distutils.version import LooseVersion
 
 from ConfigParser import SafeConfigParser
+import logging
 
 
 __version__ = "0.2.1"
@@ -292,6 +293,27 @@ def _mk_events(event_types=None):
 
 def _kwargs_to_dict(**kwargs):
     return kwargs
+
+class ZulipStream(object):
+    """
+    A Zulip stream-like object
+    """
+
+    def __init__(self, type, to, subject, **kwargs):
+        self.client = Client(**kwargs)
+        self.type = type
+        self.to = to
+        self.subject = subject
+
+    def write(self, content):
+        message = {"type": self.type,
+                   "to": self.to,
+                   "subject": self.subject,
+                   "content": content}
+        self.client.send_message(message)
+
+    def flush(self):
+        pass
 
 Client._register('send_message', url='messages', make_request=(lambda request: request))
 Client._register('update_message', method='PATCH', url='messages', make_request=(lambda request: request))
