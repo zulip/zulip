@@ -5,10 +5,10 @@
 apt-get update
 apt-get -y dist-upgrade
 apt-get install -y puppet git
-cp -a /root/zulip/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
+cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
 ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
-cp -a /root/zulip/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
+cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
 puppet apply -e 'class {"zulip": machinetype => "local_server"}'
 cp -a /root/zulip /home/zulip/zulip
