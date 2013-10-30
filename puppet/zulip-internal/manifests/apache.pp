@@ -32,24 +32,6 @@ class zulip-internal::apache {
     mode => 644,
   }
 
-  file { "/etc/apache2/certs/humbug-self-signed.crt":
-    require => File["/etc/apache2/certs/"],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 640,
-    source => "/root/zulip/certs/humbug-self-signed.crt",
-  }
-
-  file { "/etc/apache2/certs/humbug-self-signed.key":
-    require => File["/etc/apache2/certs/"],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 600,
-    source => "/root/zulip/certs/humbug-self-signed.key",
-  }
-
   file { "/etc/apache2/ports.conf":
     require => Package[apache2],
     ensure => file,
