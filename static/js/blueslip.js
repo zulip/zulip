@@ -58,7 +58,10 @@ Logger.prototype = (function () {
                 this._memory_log.shift();
             }
 
-            return console[name].apply(console, arguments);
+            if (console.hasOwnProperty(name)) {
+                return console[name].apply(console, arguments);
+            }
+            return undefined;
         };
     }
 
@@ -68,7 +71,7 @@ Logger.prototype = (function () {
         }
     };
 
-    var methods = ['log', 'info', 'warn', 'error'];
+    var methods = ['debug', 'log', 'info', 'warn', 'error'];
     var i;
     for (i = 0; i < methods.length; i++) {
         proto[methods[i]] = make_logger_func(methods[i]);
@@ -340,6 +343,11 @@ function build_arg_list(msg, more_info) {
     }
     return args;
 }
+
+exports.debug = function blueslip_debug (msg, more_info) {
+    var args = build_arg_list(msg, more_info);
+    logger.debug.apply(logger, args);
+};
 
 exports.log = function blueslip_log (msg, more_info) {
     var args = build_arg_list(msg, more_info);
