@@ -32,7 +32,7 @@ class zulip-internal::stats {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "/root/zulip/certs/stats1.zulip.net.crt",
+    source => "puppet:///modules/zulip-internal/certs/stats1.zulip.net.crt",
   }
 
   file { "/opt/graphite/conf/carbon.conf":
