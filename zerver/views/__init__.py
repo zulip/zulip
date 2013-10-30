@@ -151,7 +151,8 @@ def send_signup_message(sender, signups_stream, user_profile,
 
     # Send notification to realm notifications stream if it exists
     # Don't send notification for the first user in a realm
-    realm_user_count = len(get_active_user_dicts_in_realm(user_profile.realm))
+    user_dicts = get_active_user_dicts_in_realm(user_profile.realm)
+    realm_user_count = len([user_dict for user_dict in user_dicts if not user_dict["is_bot"]])
     if user_profile.realm.notifications_stream is not None and realm_user_count > 1:
         internal_send_message(sender, "stream",
                               user_profile.realm.notifications_stream.name,
