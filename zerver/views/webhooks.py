@@ -559,6 +559,7 @@ def api_stash_webhook(request, user_profile, stream=REQ(default='')):
     try:
         repo_name = payload["repository"]["name"]
         project_name = payload["repository"]["project"]["name"]
+        branch_name = payload["refChanges"][0]["refId"].split("/")[-1]
         commit_entries = payload["changesets"]["values"]
         commits = [(entry["toCommit"]["displayId"],
                     entry["toCommit"]["message"].split("\n")[0]) for \
@@ -572,9 +573,10 @@ def api_stash_webhook(request, user_profile, stream=REQ(default='')):
     except (AttributeError, KeyError):
         stream = 'commits'
 
-    subject = "%s/%s" % (project_name, repo_name)
+    subject = "%s/%s: %s" % (project_name, repo_name, branch_name)
 
-    content = "`%s` was pushed to **%s** with:\n\n" % (head_ref, subject)
+    content = "`%s` was pushed to **%s** in **%s/%s** with:\n\n" % (
+        head_ref, branch_name, project_name, repo_name)
     content += "\n".join("* `%s`: %s" % (
             commit[0], commit[1]) for commit in commits)
 

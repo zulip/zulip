@@ -4091,8 +4091,8 @@ class StashHookTests(AuthedTestCase):
             content_type="application/x-www-form-urlencoded",
             **self.api_auth(email))
 
-        self.assertEqual(msg.subject, u"Secret project/Operation unicorn")
-        self.assertEqual(msg.content, """`f259e90` was pushed to **Secret project/Operation unicorn** with:
+        self.assertEqual(msg.subject, u"Secret project/Operation unicorn: master")
+        self.assertEqual(msg.content, """`f259e90` was pushed to **master** in **Secret project/Operation unicorn** with:
 
 * `f259e90`: Updating poms ...""")
 
