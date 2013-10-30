@@ -39,9 +39,9 @@ class Command(BaseCommand):
 This currently sends out an email 24 hours and another 48 hours from right now.
 For this to work correctly, you should have a correctly set system clock.
 
-Usage: python manage.py queue_followup_emails "foobar@example.com" "Foo Bar"
+Usage: python manage.py enqueue_followup_emails "foobar@example.com" "Foo Bar"
 or:
-Usage: python manage.py queue_followup_emails --remove-queued "foobar@example.com"
+Usage: python manage.py enqueue_followup_emails --remove-queued "foobar@example.com"
 """
 
     option_list = BaseCommand.option_list + (
@@ -60,7 +60,7 @@ Usage: python manage.py queue_followup_emails --remove-queued "foobar@example.co
     def handle(self, *args, **options):
         if (options["remove_queued"] and not len(args) == 1) \
                 or (not options['remove_queued'] and len(args) != 2):
-            self.print_help("python manage.py", "queue_followup_emails")
+            self.print_help("python manage.py", "enqueue_followup_emails")
             exit(1)
         if "@" not in args[0]:
             print "It seems that you didn't supply a valid email address--did you swap parameters?"

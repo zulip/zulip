@@ -80,7 +80,7 @@ class SignupWorker(QueueProcessingWorker):
             self.pm = PostMonkey(settings.MAILCHIMP_API_KEY, timeout=10)
 
     # Changes to this should also be reflected in
-    # zerver/management/commands/queue_followup_emails.py:queue()
+    # zerver/management/commands/enqueue_followup_emails.py:queue()
     def consume(self, data):
         if settings.MAILCHIMP_API_KEY == '':
             return
