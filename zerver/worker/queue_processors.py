@@ -248,7 +248,7 @@ class MessageSenderWorker(QueueProcessingWorker):
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):
-    # Who gets a digest is entirely determined by the queue_digest_emails
+    # Who gets a digest is entirely determined by the enqueue_digest_emails
     # management command, not here.
     def consume(self, event):
         logging.info("Received digest event: %s" % (event,))
