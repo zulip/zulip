@@ -82,9 +82,7 @@ class Command(BaseCommand):
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
                 # Process notifications received via RabbitMQ
-                def process_notification(chan, method, props, data):
-                    tornado_callbacks.process_notification(data)
-                queue_client.register_json_consumer('notify_tornado', process_notification)
+                queue_client.register_json_consumer('notify_tornado', tornado_callbacks.process_notification)
                 queue_client.register_json_consumer('tornado_return', respond_send_message)
 
             try:

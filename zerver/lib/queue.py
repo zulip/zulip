@@ -110,7 +110,7 @@ class SimpleQueueClient(object):
 
     def register_json_consumer(self, queue_name, callback):
         def wrapped_callback(ch, method, properties, body):
-            return callback(ch, method, properties, ujson.loads(body))
+            return callback(ujson.loads(body))
         return self.register_consumer(queue_name, wrapped_callback)
 
     def drain_queue(self, queue_name, json=False):

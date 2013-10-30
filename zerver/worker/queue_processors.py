@@ -48,10 +48,10 @@ class QueueProcessingWorker(object):
     def __init__(self):
         self.q = SimpleQueueClient()
 
-    def consume_wrapper(self, ch, method, properties, data):
+    def consume_wrapper(self, data):
         try:
             with commit_on_success():
-                self.consume(ch, method, properties, data)
+                self.consume(data)
         except Exception:
             self._log_problem()
             if not os.path.exists(settings.QUEUE_ERROR_DIR):
@@ -83,7 +83,7 @@ class SignupWorker(QueueProcessingWorker):
 
     # Changes to this should also be reflected in
     # zerver/management/commands/queue_followup_emails.py:queue()
-    def consume(self, ch, method, properties, data):
+    def consume(self, data):
         if settings.MAILCHIMP_API_KEY == '':
             return
 
@@ -128,7 +128,7 @@ class SignupWorker(QueueProcessingWorker):
 
 @assign_queue('invites', enabled=settings.DEPLOYED)
 class ConfirmationEmailWorker(QueueProcessingWorker):
-    def consume(self, ch, method, properties, data):
+    def consume(self, data):
         invitee = get_prereg_user_by_email(data["email"])
         referrer = get_user_profile_by_email(data["referrer_email"])
         do_send_confirmation_email(invitee, referrer)
@@ -144,7 +144,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
-    def consume(self, ch, method, properties, event):
+    def consume(self, event):
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         client = get_client(event["client"])
         log_time = timestamp_to_datetime(event["time"])
@@ -153,14 +153,14 @@ class UserActivityWorker(QueueProcessingWorker):
 
 @assign_queue('user_activity_interval')
 class UserActivityIntervalWorker(QueueProcessingWorker):
-    def consume(self, ch, method, properties, event):
+    def consume(self, event):
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         log_time = timestamp_to_datetime(event["time"])
         do_update_user_activity_interval(user_profile, log_time)
 
 @assign_queue('user_presence')
 class UserPresenceWorker(QueueProcessingWorker):
-    def consume(self, ch, method, properties, event):
+    def consume(self, event):
         logging.info("Received event: %s" % (event),)
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         client = get_client(event["client"])
@@ -205,7 +205,7 @@ class FeedbackBot(QueueProcessingWorker):
         )
         QueueProcessingWorker.start(self)
 
-    def consume(self, ch, method, properties, event):
+    def consume(self, event):
         self.staging_client.forward_feedback(event)
 
 @assign_queue('slow_queries')
@@ -229,7 +229,7 @@ class SlowQueryWorker(QueueProcessingWorker):
 
 @assign_queue("message_sender")
 class MessageSenderWorker(QueueProcessingWorker):
-    def consume(self, ch, method, properties, event):
+    def consume(self, event):
         req = event['request']
         try:
             sender = get_user_profile_by_id(req['sender_id'])
@@ -250,7 +250,7 @@ class MessageSenderWorker(QueueProcessingWorker):
 class DigestWorker(QueueProcessingWorker):
     # Who gets a digest is entirely determined by the queue_digest_emails
     # management command, not here.
-    def consume(self, ch, method, properties, event):
+    def consume(self, event):
         logging.info("Received digest event: %s" % (event,))
         handle_digest_email(event["user_profile_id"], event["cutoff"])
 
@@ -260,7 +260,7 @@ class TestWorker(QueueProcessingWorker):
     # creating significant side effects.  It can be useful in development or
     # for troubleshooting prod/staging.  It pulls a message off the test queue
     # and appends it to a file in /tmp.
-    def consume(self, ch, method, properties, event):
+    def consume(self, event):
         fn = settings.ZULIP_WORKER_TEST_FILE
         message = ujson.dumps(event)
         logging.info("TestWorker should append this message to %s: %s" % (fn, message))

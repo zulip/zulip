@@ -156,9 +156,9 @@ def fake_message_sender(event):
 
     result = {'response': resp, 'client_meta': event['client_meta'],
               'server_meta': event['server_meta']}
-    respond_send_message(None, None, None, result)
+    respond_send_message(result)
 
-def respond_send_message(chan, method, props, data):
+def respond_send_message(data):
     connection = get_connection(data['server_meta']['connection_id'])
     if connection is not None:
         connection.session.send_message({'client_meta': data['client_meta'], 'response': data['response']})

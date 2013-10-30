@@ -356,7 +356,7 @@ class WorkerTest(TestCase):
         def start_consuming(self):
             for queue_name, data in self.queue:
                 callback = self.consumers[queue_name]
-                callback(None, None, None, data)
+                callback(data)
 
 
     def test_UserActivityWorker(self):
@@ -391,7 +391,7 @@ class WorkerTest(TestCase):
 
         @queue_processors.assign_queue('flake')
         class FlakyWorker(queue_processors.QueueProcessingWorker):
-            def consume(self, ch, method, properties, data):
+            def consume(self, data):
                 if data == 'freak out':
                     raise Exception('Freaking out!')
                 processed.append(data)
