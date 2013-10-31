@@ -103,6 +103,7 @@ exports.activate = function (operators, opts) {
     var filter = new Filter(operators);
     blueslip.debug("Narrowed", {operators: _.map(filter.operators(),
                                                  function (e) { return e[0]; }),
+                                trigger: opts.trigger,
                                 previous_id: current_msg_list.selected_id(),
                                 previous_is_summarized: current_msg_list.is_summarized_message(
                                     current_msg_list.get(current_msg_list.selected_id()))});
@@ -157,6 +158,15 @@ exports.activate = function (operators, opts) {
 
     // Save how far from the pointer the top of the message list was.
     if (current_msg_list.selected_id() !== -1) {
+        if (current_msg_list.selected_row().length === 0) {
+            blueslip.debug("narrow.activate missing selected row", {
+                selected_id: current_msg_list.selected_id(),
+                selected_idx: current_msg_list.selected_idx(),
+                selected_idx_exact: current_msg_list._items.indexOf(current_msg_list.get(current_msg_list.selected_id())),
+                render_start: current_msg_list.view._render_win_start,
+                render_end: current_msg_list.view._render_win_end
+            });
+        }
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top - viewport.scrollTop();
     }
 

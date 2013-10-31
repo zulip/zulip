@@ -1277,6 +1277,17 @@ $(function () {
         row.addClass('selected_message');
 
         if (event.then_scroll) {
+            if (row.length === 0) {
+                blueslip.debug("message_selected missing selected row", {
+                    previously_selected: event.previously_selected,
+                    selected_id: event.id,
+                    selected_idx: event.msg_list.selected_idx(),
+                    selected_idx_exact: event.msg_list._items.indexOf(event.msg_list.get(event.id)),
+                    render_start: event.msg_list.view._render_win_start,
+                    render_end: event.msg_list.view._render_win_end
+                });
+            }
+
             // Scroll to place the message within the current view;
             // but if this is the initial placement of the pointer,
             // just place it in the very center
