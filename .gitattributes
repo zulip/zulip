@@ -4,3 +4,4 @@
 /.gitattributes export-ignore
 /.gitignore export-ignore
 /templates/.gitignore export-ignore
+/puppet/zulip-internal export-ignore
