@@ -1563,7 +1563,6 @@ $(function () {
     invite.initialize();
     activity.initialize();
     tutorial.initialize();
-    onboarding.initialize();
 });
 
 

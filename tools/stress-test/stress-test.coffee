@@ -87,10 +87,6 @@ class ZulipSession extends Session
             content
         }, message_send_time.cbTimer()
 
-        @post '/json/update_onboarding_steps', {
-            onboarding_steps: '[["sent_stream_message",true],["sent_private_message",true],["made_app_sticky",true]]'
-        }, update_onboarding_steps_time.cbTimer()
-
     send_private_message: (recipients, content) ->
         @post '/json/send_message', {
             client: 'website'
@@ -161,7 +157,6 @@ stats = [
     message_latency = new Stat("Message Latency")
     message_send_time = new Stat("Message Send Time")
     update_status_time = new Stat("/json/update_status_time Time")
-    update_onboarding_steps_time = new Stat("/json/update_onboarding_steps Time")
     total_reload_time = new Stat("Total reload time")
     get_old_messages_time = new Stat("/json/get_old_messages Time")
 ]

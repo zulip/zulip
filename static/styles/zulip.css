@@ -2713,42 +2713,6 @@ div.edit_bot {
     white-space: normal;
 }
 
-#onboarding-header {
-    font-size: 16px;
-    font-weight: bold;
-    text-align: left;
-}
-#onboarding-checklist {
-    font-size: 14px;
-    border: 1px solid #ddd;
-    background-color: #F7F7F7;
-    padding: 10px 0px 10px 10px;
-    width: 175px;
-}
-
-#onboarding {
-    display: none;
-}
-
-.onboarding_success {
-    font-size: 40px;
-    color: #00CC00;
-    text-align: center;
-}
-
-#sticky-popover h1 {
-    text-align: center;
-}
-.done-button {
-    text-align: center;
-}
-.sticky-popover-inner {
-    max-width: 300px;
-}
-.sticky-popover-inner p {
-    padding-bottom: 5px;
-}
-
 #feedback_section {
     text-align: left;
     padding-bottom: 10px;
@@ -3193,10 +3157,6 @@ div.edit_bot {
 }
 .tutorial-done-button {
     text-align: right;
-}
-
-#onboarding-checklist i {
-    margin-right: 0.25em;
 }
 
 #share-the-love {

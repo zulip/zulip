@@ -8,13 +8,6 @@ import ujson
 import os
 import string
 
-# The ordered list of onboarding steps we want new users to complete. If the
-# steps are changed here, they must also be changed in onboarding.js.
-onboarding_steps = ["sent_stream_message", "sent_private_message", "made_app_sticky", "set_up_integration"]
-
-def create_onboarding_steps_blob():
-    return ujson.dumps([(step, False) for step in onboarding_steps])
-
 def random_api_key():
     choices = string.ascii_letters + string.digits
     altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)])
@@ -34,7 +27,7 @@ def create_user_profile(realm, email, password, active, bot, full_name, short_na
                                full_name=full_name, short_name=short_name,
                                last_login=now, date_joined=now, realm=realm,
                                pointer=-1, is_bot=bot, bot_owner=bot_owner,
-                               onboarding_steps=create_onboarding_steps_blob())
+                               onboarding_steps=ujson.dumps([]))
 
     if bot or not active:
         user_profile.set_unusable_password()

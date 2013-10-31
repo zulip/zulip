@@ -394,11 +394,7 @@ function send_message(request) {
         $("#new_message_content").val('').focus();
         autosize_textarea();
         $("#send-status").hide(0);
-        if (request.type === "private") {
-            onboarding.mark_checklist_step("sent_private_message");
-        } else {
-            onboarding.mark_checklist_step("sent_stream_message");
-        }
+
         clear_message_snapshot();
         $("#compose-send-button").removeAttr('disabled');
         $("#sending-indicator").hide();

@@ -435,7 +435,6 @@ JS_SPECS = {
             'js/invite.js',
             'js/message_list_view.js',
             'js/message_list.js',
-            'js/onboarding.js',
             'js/alert_words.js',
             'js/alert_words_ui.js',
             'js/zulip.js',

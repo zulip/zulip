@@ -779,9 +779,6 @@ function get_updates_success(data) {
         case 'restart':
             reload.initiate({message: "The application has been updated; reloading!"});
             break;
-        case 'onboarding_steps':
-            onboarding.set_step_info(event.steps);
-            break;
         case 'update_message':
             messages_to_update.push(event);
             break;

@@ -1407,18 +1407,6 @@ def subscribed_to_stream(user_profile, stream):
     except Subscription.DoesNotExist:
         return False
 
-def do_update_onboarding_steps(user_profile, steps):
-    user_profile.onboarding_steps = ujson.dumps(steps)
-    user_profile.save(update_fields=["onboarding_steps"])
-
-    log_event({'type': 'update_onboarding',
-               'user': user_profile.email,
-               'steps': steps})
-
-    notice = dict(event=dict(type="onboarding_steps", steps=steps),
-                  users=[user_profile.id])
-    tornado_callbacks.send_notification(notice)
-
 def do_update_message(user_profile, message_id, subject, propagate_mode, content):
     try:
         message = Message.objects.select_related().get(id=message_id)
@@ -1674,9 +1662,6 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                                'is_bot'    : userdict['is_bot'],
                                'full_name' : userdict['full_name']}
                               for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
-    if event_types is None or "onboarding_steps" in event_types:
-        ret['onboarding_steps'] = {'email' : user_profile.email,
-                                   'steps' : user_profile.onboarding_steps}
     if event_types is None or "subscription" in event_types:
         subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
         ret['subscriptions'] = subscriptions
@@ -1705,8 +1690,6 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
             ret['max_message_id'] = max(ret['max_message_id'], event['message']['id'])
         elif event['type'] == "pointer":
             ret['pointer'] = max(ret['pointer'], event['pointer'])
-        elif event['type'] == "onboarding_steps":
-            ret['onboarding_steps'] = event['steps']
         elif event['type'] == "realm_user":
             # We handle update by just removing the old value and
             # adding the new one.

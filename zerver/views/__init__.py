@@ -35,7 +35,7 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     update_user_presence, bulk_add_subscriptions, do_update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
-    do_update_onboarding_steps, do_update_message, internal_prep_message, \
+    do_update_message, internal_prep_message, \
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
@@ -681,7 +681,6 @@ def home(request):
         max_message_id        = register_ret['max_message_id'],
         unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
-        onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
         staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
         alert_words           = register_ret['alert_words'],
         muted_topics          = register_ret['muted_topics'],
@@ -1176,14 +1175,6 @@ def json_send_message(request, user_profile):
 def json_change_enter_sends(request, user_profile,
                             enter_sends=REQ('enter_sends', json_to_bool)):
     do_change_enter_sends(user_profile, enter_sends)
-    return json_success()
-
-@authenticated_json_post_view
-@has_request_variables
-def json_update_onboarding_steps(request, user_profile,
-                                 onboarding_steps=REQ(converter=json_to_list,
-                                                      default=[])):
-    do_update_onboarding_steps(user_profile, onboarding_steps)
     return json_success()
 
 def is_super_user_api(request):
