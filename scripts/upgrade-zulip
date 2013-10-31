@@ -1,0 +1,66 @@
+#!/usr/bin/python -u
+import os
+import sys
+import subprocess
+import logging
+import datetime
+import shutil
+import time
+import tempfile
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, WARNING, ENDC
+
+logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
+                    level=logging.INFO)
+
+if len(sys.argv) != 2:
+    print FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC
+    sys.exit(1)
+
+tarball_path = sys.argv[1]
+
+subprocess.check_call(["mkdir", '-p', DEPLOYMENTS_DIR, '/home/zulip/logs'])
+
+start_time = time.time()
+got_lock = False
+while time.time() - start_time < 300:
+    try:
+        os.mkdir(LOCK_DIR)
+        got_lock = True
+        break
+    except OSError:
+        print WARNING + "Another deployment in progress; waiting for lock..." + ENDC
+        time.sleep(10)
+
+if not got_lock:
+    print FAIL + "Deployment already in progress.  Please run\n" \
+               + "  %s/current/scripts/upgrade-zulip %s\n" % (DEPLOYMENTS_DIR, tarball_path) \
+               + "manually when the previous deployment finishes, or run\n" \
+               + "  rmdir %s\n"  % (LOCK_DIR,) \
+               + "if the previous deployment crashed." \
+               + ENDC
+    sys.exit(1)
+
+timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
+deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
+
+logging.info("Unpacking the tarball")
+extract_path = tempfile.mkdtemp()
+subprocess.check_call(["tar", "-xf", tarball_path, "-C", extract_path])
+subprocess.check_call(["mv", os.path.join(extract_path, "zulip-server"), deploy_path])
+subprocess.check_call(["rmdir", extract_path])
+os.chdir(deploy_path)
+
+# Update static files
+logging.info("Updating static files")
+subprocess.check_call(["./scripts/update-prod-static", "--prev-deploy",
+                      os.path.join(DEPLOYMENTS_DIR, 'current')])
+
+logging.info("Restarting server...")
+subprocess.check_call(["./scripts/restart-server"])
+
+logging.info("Deployment complete")
+shutil.rmtree(LOCK_DIR)
+
+subprocess.check_call(["./scripts/purge-deployments"])
