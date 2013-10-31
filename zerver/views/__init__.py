@@ -2392,6 +2392,141 @@ def get_activity(request, realm=REQ(default=None)):
         context_instance=RequestContext(request)
     )
 
+def get_user_activity_records_for_email(email):
+    fields = [
+        'query',
+        'client__name',
+        'count',
+        'last_visit'
+    ]
+
+    records = UserActivity.objects.filter(
+            user_profile__email=email
+    )
+    records = records.order_by("-last_visit")
+    records = records.select_related('client').only(*fields)
+    return records
+
+def raw_user_activity_table(records):
+    cols = [
+        'query',
+        'client',
+        'count',
+        'last_visit'
+    ]
+
+    def row(record):
+        return [
+                record.query,
+                record.client.name,
+                record.count,
+                record.last_visit
+        ]
+
+    rows = map(row, records)
+
+    title = 'Raw Data'
+
+    data = dict(
+        rows=rows,
+        cols=cols,
+        title=title
+    )
+
+    content = loader.render_to_string(
+        'zerver/ad_hoc_query.html',
+        dict(data=data)
+    )
+    return content
+
+def get_user_activity_summary(records):
+    summary = {}
+    def update(action, record):
+        if action not in summary:
+            summary[action] = dict(
+                    count=record.count,
+                    last_visit=record.last_visit
+            )
+        else:
+            summary[action]['count'] += record.count
+            summary[action]['last_visit'] = max(
+                    summary[action]['last_visit'],
+                    record.last_visit
+            )
+
+    for record in records:
+        client = record.client.name
+        query = record.query
+
+        if client == 'website':
+            update('website', record)
+        if query == '/json/send_message':
+            update('send', record)
+        if query in ['/json/update_pointer', '/api/v1/update_pointer']:
+            update('pointer', record)
+        update(client, record)
+
+
+    return summary
+
+def user_activity_summary_table(user_summary):
+    rows = []
+    for k, v in user_summary.items():
+        client = k
+        count = v['count']
+        last_visit = v['last_visit']
+        row = [
+                last_visit,
+                client,
+                count,
+        ]
+        rows.append(row)
+
+    rows = sorted(rows, key=lambda r: r[0], reverse=True)
+
+    cols = [
+            'last_visit',
+            'client',
+            'count',
+    ]
+
+    title = 'User Activity'
+
+    data = dict(
+        rows=rows,
+        cols=cols,
+        title=title
+    )
+
+    content = loader.render_to_string(
+        'zerver/ad_hoc_query.html',
+        dict(data=data)
+    )
+    return content
+
+@zulip_internal
+def get_user_activity(request, email):
+    records = get_user_activity_records_for_email(email)
+
+    data = []
+    user_summary = get_user_activity_summary(records)
+    content = user_activity_summary_table(user_summary)
+
+    user_content = dict(content=content)
+    data += [('Summary', user_content)]
+
+    content = raw_user_activity_table(records)
+    user_content = dict(content=content)
+    data += [('Info', user_content)]
+
+    realm = None
+    title = email
+    return render_to_response(
+        'zerver/activity.html',
+        dict(data=data, realm=realm, title=title),
+        context_instance=RequestContext(request)
+    )
+
 def get_status_list(requesting_user_profile):
     return {'presences': get_status_dict(requesting_user_profile),
             'server_timestamp': time.time()}
