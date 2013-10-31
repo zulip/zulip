@@ -72,11 +72,11 @@ exports.initialize = function () {
         if (audio[0].canPlayType('audio/ogg; codecs="vorbis"')) {
             audio.append($("<source>").attr("type", "audio/ogg")
                                       .attr("loop", "yes")
-                                      .attr("src", "/static/audio/humbug.ogg"));
+                                      .attr("src", "/static/audio/zulip.ogg"));
         } else {
             audio.append($("<source>").attr("type", "audio/mpeg")
                                       .attr("loop", "yes")
-                                      .attr("src", "/static/audio/humbug.mp3"));
+                                      .attr("src", "/static/audio/zulip.mp3"));
         }
     }
 
