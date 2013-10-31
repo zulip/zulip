@@ -13,9 +13,9 @@ class Command(BaseCommand):
 
 Usage examples:
 
-python manage.py client-activity
-python manage.py client-activity zulip.com
-python manage.py client-activity jesstess@zulip.com"""
+python manage.py client_activity
+python manage.py client_activity zulip.com
+python manage.py client_activity jesstess@zulip.com"""
 
     def compute_activity(self, user_activity_objects):
         # Report data from the past week.
