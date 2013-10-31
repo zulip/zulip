@@ -10,7 +10,7 @@ import sys
 class Command(BaseCommand):
     help = """Change the stream name for a realm.
 
-Usage: python manage.py rename-stream <domain> <old name> <new name>"""
+Usage: python manage.py rename_stream <domain> <old name> <new name>"""
 
     def handle(self, *args, **options):
         if len(args) != 3:
