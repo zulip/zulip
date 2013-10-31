@@ -318,7 +318,7 @@ def cleanup_tmp(cloned_repo):
   return
 
 def run_test_script(repo, tmp_path):
-  # Copy over relevant files to $tmp_dir/humbug_test.git
+  # Copy over relevant files to $tmp_dir/zulip_test.git
   working_dir = os.getcwd()
   clone = clone_to_tmp(repo, tmp_path)
   for filename in ['zerver/fixtures/available-migrations',
@@ -401,7 +401,7 @@ def main(args):
 
   # Attempt to catch permissions/invalid paths early for tmp_dir
   if opts.run_tests:
-    tmp_path = opts.tmp_dir + "/humbug_test.git"
+    tmp_path = opts.tmp_dir + "/zulip_test.git"
     clone_to_tmp(repo, tmp_path, test_existence_only=True)
     os.mkdir(tmp_path)
     os.rmdir(tmp_path)
