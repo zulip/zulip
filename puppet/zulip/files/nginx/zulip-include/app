@@ -1,5 +1,5 @@
-access_log /var/log/nginx/humbug.access.log;
-error_log /var/log/nginx/humbug.error.log;
+access_log /var/log/nginx/zulip.access.log;
+error_log /var/log/nginx/zulip.error.log;
 
 # Enable HSTS: tell browsers to always use HTTPS
 add_header Strict-Transport-Security max-age=15768000;
