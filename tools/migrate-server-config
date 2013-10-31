@@ -1,0 +1,25 @@
+#!/usr/bin/python
+import os
+import ConfigParser
+import platform
+import re
+
+config = ConfigParser.RawConfigParser()
+config.add_section("machine")
+
+with open('/etc/zulip/machinetype') as f:
+    machinetype = f.readline().strip()
+
+config.set('machine', 'puppet_classes', "zulip-internal::%s" % (machinetype,))
+
+if os.path.exists('/etc/zulip/server'):
+    if platform.node() == 'staging.zulip.net':
+        deploy_type = 'staging'
+    elif not not re.match(r'^test', platform.node()):
+        deploy_type = 'test'
+    else:
+        deploy_type = 'prod'
+
+    config.set('machine', 'deploy_type', deploy_type)
+
+config.write(open('/etc/zulip/zulip.conf', 'w'))

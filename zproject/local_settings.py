@@ -1,7 +1,7 @@
 # Secret Django settings for the Zulip project
 import os
 import platform
-import re
+import ConfigParser
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
@@ -44,14 +44,17 @@ EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
 
+config_file = ConfigParser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+
 # Whether we're running in a production environment. Note that DEPLOYED does
 # **not** mean hosted by us; customer sites are DEPLOYED and LOCAL_SERVER
 # and as such should not for example assume they are the main Zulip site.
-DEPLOYED = os.path.exists('/etc/zulip/server')
-STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
-TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
+DEPLOYED = config_file.has_option('machine', 'deploy_type')
+STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
+TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
 
-LOCAL_SERVER = os.path.exists('/etc/zulip-local')
+LOCAL_SERVER = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
 
 if TESTING_DEPLOYED:
     EXTERNAL_HOST = platform.node()

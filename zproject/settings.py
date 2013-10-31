@@ -5,19 +5,22 @@
 import os
 import platform
 import time
-import re
 import sys
+import ConfigParser
 
 from zerver.openid import openid_failure_handler
+
+config_file = ConfigParser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
 
 # Whether we're running in a production environment. Note that DEPLOYED does
 # **not** mean hosted by us; customer sites are DEPLOYED and LOCAL_SERVER
 # and as such should not for example assume they are the main Zulip site.
-DEPLOYED = os.path.exists('/etc/zulip/server')
-STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
-TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
+DEPLOYED = config_file.has_option('machine', 'deploy_type')
+STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
+TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
 
-LOCAL_SERVER = os.path.exists('/etc/zulip-local')
+LOCAL_SERVER = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
 
 # TODO: Clean this up
 if TESTING_DEPLOYED:

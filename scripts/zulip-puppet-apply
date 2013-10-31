@@ -2,6 +2,8 @@
 
 import sys
 import subprocess
+import ConfigParser
+import re
 
 force = False
 extra_args = sys.argv[1:]
@@ -10,10 +12,18 @@ if len(extra_args) and extra_args[0] in ('-f', '--force'):
     force = True
     eatra_args = extra_args[1:]
 
-with open('/etc/zulip/machinetype') as f:
-    machinetype = f.readline().strip()
+config = ConfigParser.RawConfigParser()
+config.read("/etc/zulip/zulip.conf")
 
-puppet_cmd = ["puppet", "apply", "-e", "class {'zulip-internal': machinetype => '%s'}" % (machinetype,)]
+puppet_config = """
+Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
+class { 'apt': }
+"""
+
+for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
+    puppet_config += "class { '%s': }\n" % (pclass,)
+
+puppet_cmd = ["puppet", "apply", "-e", puppet_config]
 puppet_cmd += extra_args
 
 if force:

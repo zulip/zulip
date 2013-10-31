@@ -38,14 +38,6 @@ class zulip::local_server {
     target => '/home/zulip/deployments/current/prod-static/serve',
   }
 
-  # This is just an empty file.  It's used by the app to test if it's running
-  # on a local server.
-  file { '/etc/zulip/local':
-    ensure     => file,
-    mode       => 644,
-    content    => '',
-  }
-
   file { "/usr/share/postgresql/9.1/tsearch_data/zulip_english.stop":
     require => Package["postgresql-9.1"],
     ensure => file,

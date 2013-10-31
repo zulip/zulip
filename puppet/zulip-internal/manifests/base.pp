@@ -28,14 +28,6 @@ class zulip-internal::base {
     source     => 'puppet:///modules/zulip-internal/root_authorized_keys',
   }
 
-  # This is just an empty file.  It's used by the app to test if it's running
-  # in production.
-  file { '/etc/zulip/server':
-    ensure     => file,
-    mode       => 644,
-    content    => '',
-  }
-
   file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
     ensure     => file,
     mode       => 755,

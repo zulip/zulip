@@ -83,7 +83,9 @@ cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
 userdel admin
 passwd -d root
-puppet apply -e 'class {"zulip": machinetype => "$type"}'
+mkdir /etc/zulip
+echo -e "[machine]\npuppet_classes =" $type > /etc/zulip/zulip.conf
+/root/zulip/scripts/zulip-puppet-apply -f
 cp -a /root/zulip /home/zulip/zulip
 chown -R zulip:zulip /home/zulip/zulip
 # These server restarting bits should be moveable into puppet-land, ideally

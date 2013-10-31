@@ -15,11 +15,9 @@ logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 os.chdir(deploy_path)
 
-if os.path.exists("/etc/zulip/server"):
-    with open("/etc/zulip/machinetype") as mtf:
-        if pwd.getpwuid(os.getuid())[0] != "zulip":
-            logging.error("Must be run as user 'zulip'.")
-            sys.exit(1)
+if pwd.getpwuid(os.getuid())[0] != "zulip":
+    logging.error("Must be run as user 'zulip'.")
+    sys.exit(1)
 
 # Send a statsd event on restarting the server
 subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
