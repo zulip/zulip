@@ -30,5 +30,6 @@ done
 git add events.*
 commit
 
+cd ../wiki
 ssh root@trac.zulip.net php /usr/share/mediawiki/maintenance/dumpBackup.php --full > mediawiki.xml
 commit
