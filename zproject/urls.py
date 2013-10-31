@@ -57,7 +57,6 @@ urlpatterns = patterns('',
     url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html')),
 
     # "About Zulip" information
-    url(r'^what-is-humbug/$', TemplateView.as_view(template_name='zerver/what-is-humbug.html')),
     url(r'^new-user/$', RedirectView.as_view(url='/hello')),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
     url(r'^compare/$', TemplateView.as_view(template_name='zerver/compare.html')),
