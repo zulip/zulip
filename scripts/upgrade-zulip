@@ -53,8 +53,9 @@ subprocess.check_call(["rmdir", extract_path])
 os.chdir(deploy_path)
 
 # Update static files
+# TODO: Remove this and replace it with shipping already minified js.
 logging.info("Updating static files")
-subprocess.check_call(["./scripts/update-prod-static", "--prev-deploy",
+subprocess.check_call(["./tools/update-prod-static", "--prev-deploy",
                       os.path.join(DEPLOYMENTS_DIR, 'current')])
 
 logging.info("Restarting server...")

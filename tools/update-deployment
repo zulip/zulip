@@ -36,7 +36,7 @@ while time.time() - start_time < 300:
 
 if not got_lock:
     print FAIL + "Deployment already in progress.  Please run\n" \
-               + "  %s/current/scripts/update-deployment %s\n" % (DEPLOYMENTS_DIR, refname) \
+               + "  %s/current/tools/update-deployment %s\n" % (DEPLOYMENTS_DIR, refname) \
                + "manually when the current deployment finishes." + ENDC
     sys.exit(1)
 
@@ -51,7 +51,7 @@ os.chdir(deploy_path)
 
 # Update static files
 logging.info("Updating static files")
-subprocess.check_call(["./scripts/update-prod-static", "--prev-deploy",
+subprocess.check_call(["./tools/update-prod-static", "--prev-deploy",
                       os.path.join(DEPLOYMENTS_DIR, 'current')])
 
 logging.info("Restarting server...")

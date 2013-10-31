@@ -36,7 +36,7 @@ from zulip_tools import check_output, ENDC, FAIL
 
 def update_deployment(server, refname):
     return subprocess.call(["ssh", "-l", "zulip", server, "--", "env", "-u", "GIT_DIR",
-                            "/home/zulip/deployments/current/scripts/update-deployment", refname])
+                            "/home/zulip/deployments/current/tools/update-deployment", refname])
 
 def send_deployment_finished_message(branch, message):
     subprocess.check_call(["/home/zulip/zulip/api/bin/zulip-send", "--user=commit-bot@zulip.com",
