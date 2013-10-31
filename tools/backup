@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-cd /home/tabbott/humbug-backups
+cd /home/tabbott/zulip-backups
 log="$(pwd)"/log
 
 # Redirect output to a log file, with timestamps.
