@@ -237,12 +237,28 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'MIXPANEL_TOKEN': '',
                     'MAILCHIMP_API_KEY': '',
                     'LOCAL_UPLOADS_DIR': None,
-                    'DROPBOX_APP_KEY': ''
+                    'DROPBOX_APP_KEY': '',
+                    # The following bots only exist in non-LOCAL_SERVER installs
+                    'ERROR_BOT': None,
+                    'NEW_USER_BOT': None
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
     if not setting_name in vars():
         vars()[setting_name] = setting_val
+
+REALM_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
+                'email_template': 'notification-bot@%s',
+                'name': 'Notification Bot'},
+               {'var_name': 'EMAIL_GATEWAY_BOT',
+                'email_template': 'emailgateway@%s',
+                'name': 'Email Gateway'} ]
+
+# Set the realm-specific bot names
+for bot in REALM_BOTS:
+    if not bot['var_name'] in vars():
+        bot_email = bot['email_template'] % (ADMIN_DOMAIN,)
+        vars()[bot['var_name'] ] = bot_email
 
 # Static files and minification
 

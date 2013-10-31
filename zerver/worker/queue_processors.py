@@ -208,10 +208,14 @@ class FeedbackBot(QueueProcessingWorker):
     def consume(self, event):
         self.staging_client.forward_feedback(event)
 
-@assign_queue('slow_queries')
+@assign_queue('slow_queries', enabled=settings.ERROR_BOT is not None)
 class SlowQueryWorker(QueueProcessingWorker):
     def start(self):
         while True:
+            if settings.ERROR_BOT is None:
+                time.sleep(1 * 60)
+                continue
+
             slow_queries = self.q.drain_queue("slow_queries", json=True)
 
             if len(slow_queries) > 0:
@@ -222,7 +226,7 @@ class SlowQueryWorker(QueueProcessingWorker):
                     content += "    %s\n" % (query,)
 
                 with commit_on_success():
-                    internal_send_message("error-bot@zulip.com", "stream", "logs", topic, content)
+                    internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
 
             # Aggregate all slow query messages in 1-minute chunks to avoid message spam
             time.sleep(1 * 60)

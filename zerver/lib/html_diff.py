@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from django.conf import settings
+
 from diff_match_patch import diff_match_patch
 import platform
 import logging
@@ -107,9 +109,10 @@ def highlight_html_differences(s1, s2):
         # We probably want more information here
         logging.getLogger('').error('HTML diff produced mal-formed HTML')
 
-        subject = "HTML diff failure on %s" % (platform.node(),)
-        internal_send_message("error-bot@zulip.com", "stream",
-                              "errors", subject, "HTML diff produced malformed HTML")
+        if settings.ERROR_BOT is not None:
+            subject = "HTML diff failure on %s" % (platform.node(),)
+            internal_send_message(settings.ERROR_BOT, "stream",
+                                  "errors", subject, "HTML diff produced malformed HTML")
         return s2
 
     return retval

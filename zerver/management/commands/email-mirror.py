@@ -55,27 +55,27 @@ logger.addHandler(file_handler)
 email_gateway_user = None
 api_key = None
 try:
-    email_gateway_user = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT_ZULIP_USER)
+    email_gateway_user = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
     api_key = email_gateway_user.api_key
 except UserProfile.DoesNotExist:
-    print "No configured %s user" % (settings.EMAIL_GATEWAY_BOT_ZULIP_USER,)
+    print "No configured %s user" % (settings.EMAIL_GATEWAY_BOT,)
 
 
 if settings.DEPLOYED:
     staging_api_client = zulip.Client(
             site="https://staging.zulip.com",
-            email=settings.EMAIL_GATEWAY_BOT_ZULIP_USER,
+            email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 
 
     api_client = zulip.Client(
             site=settings.EXTERNAL_HOST,
-            email=settings.EMAIL_GATEWAY_BOT_ZULIP_USER,
+            email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 else:
     api_client = staging_api_client = zulip.Client(
             site=settings.EXTERNAL_HOST,
-            email=settings.EMAIL_GATEWAY_BOT_ZULIP_USER,
+            email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 
 def redact_stream(error_message):

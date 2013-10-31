@@ -171,7 +171,8 @@ def send_signup_message(sender, signups_stream, user_profile,
             )
 
 def notify_new_user(user_profile, internal=False):
-    send_signup_message("new-user-bot@zulip.com", "signups", user_profile, internal)
+    if settings.NEW_USER_BOT is not None:
+        send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
     statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
 
 class PrincipalError(JsonableError):
@@ -297,9 +298,9 @@ def accounts_register(request):
 
                     UserMessage.objects.bulk_create(ums_to_create)
 
-                if prereg_user.referred_by is not None:
+                if prereg_user.referred_by is not None and settings.NEW_USER_BOT is not None:
                     # This is a cross-realm private message.
-                    internal_send_message("new-user-bot@zulip.com",
+                    internal_send_message(settings.NEW_USER_BOT,
                             "private", prereg_user.referred_by.email, user_profile.realm.domain,
                             "%s <`%s`> accepted your invitation to join Zulip!" % (
                                 user_profile.full_name,
@@ -1581,7 +1582,7 @@ def add_subscriptions_backend(request, user_profile,
 
             if len([s for s in subscriptions if not private_streams[s]]) > 0:
                 msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
-            notifications.append(internal_prep_message("notification-bot@zulip.com",
+            notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
                                                        "private", email, "", msg))
 
     if announce and len(created_streams) > 0:
@@ -1594,7 +1595,7 @@ def add_subscriptions_backend(request, user_profile,
                 stream_msg = "a new stream `%s`" % (created_streams[0].name)
             msg = ("%s just created %s. To join, click the gear "
                    "in the left-side streams list.") % (user_profile.full_name, stream_msg)
-            notifications.append(internal_prep_message("notification-bot@zulip.com",
+            notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
                                    "stream",
                                    notifications_stream.name, "Streams", msg,
                                    realm=notifications_stream.realm))
@@ -1607,7 +1608,7 @@ def add_subscriptions_backend(request, user_profile,
                 # (who will get the notification above instead).
                 if realm_user_dict['email'] in principals or realm_user_dict['email'] == user_profile.email:
                     continue
-                notifications.append(internal_prep_message("notification-bot@zulip.com",
+                notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
                                                            "private",
                                                            realm_user_dict['email'], "", msg))
 

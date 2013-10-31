@@ -209,14 +209,13 @@ class Command(BaseCommand):
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
-            hardcoded_zulip_users_nosubs = [
+            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.ADMIN_DOMAIN,)) for bot in settings.REALM_BOTS]
+            zulip_realm_bots = [
                 ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
-                ("Zulip Notification Bot", "notification-bot@zulip.com"),
-                ("Zulip Tutorial Bot", "tutorial-bot@zulip.com"),
-                ("Zulip Email Gateway", "emailgateway@zulip.com"),
                 ]
-            create_users(realms, hardcoded_zulip_users_nosubs, bot=True)
+            zulip_realm_bots.extend(all_realm_bots)
+            create_users(realms, zulip_realm_bots, bot=True)
 
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test

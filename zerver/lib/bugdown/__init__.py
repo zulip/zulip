@@ -807,8 +807,9 @@ def do_convert(md, realm_domain=None, message=None):
         logging.getLogger('').error('Exception in Markdown parser: %sInput (sanitized) was: %s'
             % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
-        internal_send_message("error-bot@zulip.com", "stream",
-                "errors", subject, "Markdown parser failed, email sent with details.")
+        if settings.ERROR_BOT is not None:
+            internal_send_message(settings.ERROR_BOT, "stream",
+                    "errors", subject, "Markdown parser failed, email sent with details.")
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)

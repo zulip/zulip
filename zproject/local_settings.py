@@ -129,7 +129,7 @@ ADMIN_DOMAIN = "zulip.com"
 # Email mirror configuration
 # The email of the Zulip bot that the email gateway
 # should post as
-EMAIL_GATEWAY_BOT_ZULIP_USER = "emailgateway@zulip.com"
+EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 
 EMAIL_GATEWAY_LOGIN = "emailgateway@zulip.com"
 EMAIL_GATEWAY_PASSWORD = "xxxxxxxxxxxxxxxx"
@@ -144,3 +144,7 @@ EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
 
 
 DROPBOX_APP_KEY = "xxxxxxxxxxxxxxx"
+
+NOTIFICATION_BOT = "notification-bot@zulip.com"
+ERROR_BOT = "error-bot@zulip.com"
+NEW_USER_BOT = "new-user-bot@zulip.com"

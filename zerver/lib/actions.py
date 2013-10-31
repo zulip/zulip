@@ -477,7 +477,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name):
                            "tried to send a message to stream `%s`, but %s"
                            "click the gear in the left-side stream list." %
                            (sender.full_name, stream_name, error_msg))
-                message = internal_prep_message("notification-bot@zulip.com", "private",
+                message = internal_prep_message(settings.NOTIFICATION_BOT, "private",
                                                 sender.bot_owner.email, "", content)
                 do_send_messages([message])
 
@@ -1155,7 +1155,7 @@ def do_create_realm(domain, name, restricted_to_domain=True):
 
 This is a message sent to the `zulip` stream, used for system-generated notifications.
 Feel free to reply to say hello, though I am a bot so I won't be able to respond!"""
-        msg = internal_prep_message('notification-bot@zulip.com', 'stream',
+        msg = internal_prep_message(settings.NOTIFICATION_BOT, 'stream',
                                      notifications_stream.name, "Welcome",
                                      content, realm=realm)
         do_send_messages([msg])
@@ -1165,11 +1165,12 @@ Feel free to reply to say hello, though I am a bot so I won't be able to respond
                    "domain": domain,
                    "restricted_to_domain": restricted_to_domain})
 
-        signup_message = "Signups enabled"
-        if not restricted_to_domain:
-            signup_message += " (open realm)"
-        internal_send_message("new-user-bot@zulip.com", "stream",
-                              "signups", domain, signup_message)
+        if settings.NEW_USER_BOT is not None:
+            signup_message = "Signups enabled"
+            if not restricted_to_domain:
+                signup_message += " (open realm)"
+            internal_send_message(settings.NEW_USER_BOT, "stream",
+                                  "signups", domain, signup_message)
     return (realm, created)
 
 def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications, log=True):
@@ -2054,7 +2055,7 @@ def do_refer_friend(user_profile, email):
 Realm: %s
 Referred: %s""" % (user_profile.full_name, user_profile.email, user_profile.realm.domain, email)
     subject = "Zulip referral: %s" % (email,)
-    from_email = '"%s" <referral-bot@zulip.com>' % (user_profile.full_name,)
+    from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
     to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
     headers = {'Reply-To' : '"%s" <%s>' % (user_profile.full_name, user_profile.email,)}
     msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
