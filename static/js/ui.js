@@ -1562,7 +1562,6 @@ $(function () {
     hashchange.initialize();
     invite.initialize();
     activity.initialize();
-    subs.update_all_messages_link();
     tutorial.initialize();
     onboarding.initialize();
 });
