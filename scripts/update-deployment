@@ -49,9 +49,6 @@ subprocess.check_call(["git", "clone", "-q", "-b", refname,
                        deploy_path], stdout=open('/dev/null', 'w'))
 os.chdir(deploy_path)
 
-# Delete all .pyc files to avoid old module files hanging around
-subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
-
 # Update static files
 logging.info("Updating static files")
 subprocess.check_call(["./scripts/update-prod-static", "--prev-deploy",
