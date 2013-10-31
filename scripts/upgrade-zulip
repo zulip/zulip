@@ -63,4 +63,4 @@ subprocess.check_call(["./scripts/restart-server"])
 logging.info("Deployment complete")
 shutil.rmtree(LOCK_DIR)
 
-subprocess.check_call(["./scripts/purge-deployments"])
+subprocess.check_call(["./scripts/purge-old-deployments"])
