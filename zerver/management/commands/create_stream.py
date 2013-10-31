@@ -13,7 +13,7 @@ class Command(BaseCommand):
 This should be used for TESTING only, unless you understand the limitations of
 the command.
 
-Usage: python manage.py create-stream <domain> <stream name>"""
+Usage: python manage.py create_stream <domain> <stream name>"""
 
     def handle(self, *args, **options):
         if len(args) != 2:
