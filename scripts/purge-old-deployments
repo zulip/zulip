@@ -17,6 +17,10 @@ for filename in os.listdir(DEPLOYMENTS_DIR):
     try:
         date = datetime.datetime.strptime(filename, TIMESTAMP_FORMAT)
         if date < one_week_ago:
+            if (os.path.abspath(os.readlink("/home/zulip/deployments/current")) ==
+                os.path.abspath(os.path.join(DEPLOYMENTS_DIR, filename))):
+                # Never purge the currently running deployment
+                continue
             to_purge.append(filename)
     except ValueError:
         pass
