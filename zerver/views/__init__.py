@@ -2678,6 +2678,10 @@ def get_realm_activity(request, realm):
     data += [(page_title, dict(content=content))]
 
 
+    page_title = 'History'
+    content = sent_messages_report(realm)
+    data += [(page_title, dict(content=content))]
+
     realm = None
     title = realm
     return render_to_response(
