@@ -11,7 +11,6 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
 from zerver.lib.actions import do_send_message, set_default_streams, \
     do_activate_user, do_deactivate, do_change_password
 from zerver.lib.parallel import run_parallel
-from django.db import transaction, connection
 from django.db.models import Count
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_realms, \
@@ -184,11 +183,9 @@ class Command(BaseCommand):
             if i < options["num_messages"] % threads:
                 count += 1
             jobs.append((count, personals_pairs, options, self.stdout.write))
-        for status, job in run_parallel(send_messages, jobs, threads=threads):
-            pass
-        # Get a new database connection, after our parallel jobs
-        # closed the original one
-        connection.close()
+
+        for job in jobs:
+            send_messages(job)
 
         if options["delete"]:
             # Create the "website" and "API" clients; if we don't, the
@@ -256,13 +253,11 @@ class Command(BaseCommand):
                 create_users(realms, internal_zulip_users_nosubs, bot=True)
 
             # Mark all messages as read
-            with transaction.commit_on_success():
-                UserMessage.objects.all().update(flags=UserMessage.flags.read)
+            UserMessage.objects.all().update(flags=UserMessage.flags.read)
 
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
             restore_saved_messages()
-        connection.close()
 
 recipient_hash = {}
 def get_recipient_by_id(rid):
@@ -677,10 +672,9 @@ def restore_saved_messages():
                          active=pending_subs[pending_sub])
         subscriptions_to_add.append(s)
     Subscription.objects.bulk_create(subscriptions_to_add)
-    with transaction.commit_on_success():
-        for (sub, active) in subscriptions_to_change:
-            current_subs_obj[sub].active = active
-            current_subs_obj[sub].save(update_fields=["active"])
+    for (sub, active) in subscriptions_to_change:
+        current_subs_obj[sub].active = active
+        current_subs_obj[sub].save(update_fields=["active"])
 
     subs = {}
     for sub in Subscription.objects.all():
@@ -699,15 +693,14 @@ def restore_saved_messages():
     print datetime.datetime.now(), "Filling in user pointers..."
 
     # Set restored pointers to the very latest messages
-    with transaction.commit_on_success():
-        for user_profile in UserProfile.objects.all():
-            try:
-                top = UserMessage.objects.filter(
-                    user_profile_id=user_profile.id).order_by("-message")[0]
-                user_profile.pointer = top.message_id
-            except IndexError:
-                user_profile.pointer = -1
-            user_profile.save(update_fields=["pointer"])
+    for user_profile in UserProfile.objects.all():
+        try:
+            top = UserMessage.objects.filter(
+                user_profile_id=user_profile.id).order_by("-message")[0]
+            user_profile.pointer = top.message_id
+        except IndexError:
+            user_profile.pointer = -1
+        user_profile.save(update_fields=["pointer"])
 
     print datetime.datetime.now(), "Done replaying old messages"
 
@@ -721,9 +714,6 @@ def restore_saved_messages():
 def send_messages(data):
     (tot_messages, personals_pairs, options, output) = data
     random.seed(os.getpid())
-    # Close the database connection, so that we get a new one that
-    # isn't shared with the other threads
-    connection.close()
     texts = file("zilencer/management/commands/test_messages.txt", "r").readlines()
     offset = random.randint(0, len(texts))
 
@@ -740,7 +730,6 @@ def send_messages(data):
     random_max = 1000000
     recipients = {}
     while num_messages < tot_messages:
-      with transaction.commit_on_success():
         saved_data = ''
         message = Message()
         message.sending_client = get_client('populate_db')
@@ -795,5 +784,4 @@ def send_messages(data):
 
         recipients[num_messages] = [message_type, message.recipient.id, saved_data]
         num_messages += 1
-    connection.close()
     return tot_messages
