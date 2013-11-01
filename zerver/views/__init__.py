@@ -2502,6 +2502,59 @@ def format_date_for_activity_reports(date):
     else:
         return ''
 
+def realm_client_table(user_summaries):
+    exclude_keys = [
+            'name',
+            'use',
+            'send',
+            'pointer',
+            'website',
+    ]
+
+    rows = []
+    for email, user_summary in user_summaries.items():
+        email_link = '<a href="/user_activity/%s/">%s</a>' % (email, email)
+        email_link = mark_safe(email_link)
+        name = user_summary['name']
+        for k, v in user_summary.items():
+            if k in exclude_keys:
+                continue
+            client = k
+            count = v['count']
+            last_visit = v['last_visit']
+            row = [
+                    format_date_for_activity_reports(last_visit),
+                    client,
+                    name,
+                    email_link,
+                    count,
+            ]
+            rows.append(row)
+
+    rows = sorted(rows, key=lambda r: r[0], reverse=True)
+
+    cols = [
+            'Last visit',
+            'Client',
+            'Name',
+            'Email',
+            'Count',
+    ]
+
+    title = 'Clients'
+
+    data = dict(
+        rows=rows,
+        cols=cols,
+        title=title
+    )
+
+    content = loader.render_to_string(
+        'zerver/ad_hoc_query.html',
+        dict(data=data)
+    )
+    return content
+
 def user_activity_summary_table(user_summary):
     rows = []
     for k, v in user_summary.items():
@@ -2601,21 +2654,29 @@ def realm_user_summary_table(all_records):
         dict(data=data)
     )
 
-    return content
+    return user_records, content
 
 @zulip_internal
 def get_realm_activity(request, realm):
     data = []
+    all_records = {}
+    all_user_records = {}
 
     for is_bot, page_title in [(False,  'Humans'), (True, 'Bots')]:
         all_records = get_user_activity_records_for_realm(realm, is_bot)
         all_records = list(all_records)
 
-        content = realm_user_summary_table(all_records)
+        user_records, content = realm_user_summary_table(all_records)
+        all_user_records.update(user_records)
 
         user_content = dict(content=content)
 
         data += [(page_title, user_content)]
+
+    page_title = 'Clients'
+    content = realm_client_table(all_user_records)
+    data += [(page_title, dict(content=content))]
+
 
     realm = None
     title = realm
