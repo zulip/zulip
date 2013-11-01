@@ -579,7 +579,8 @@ if DEPLOYED:
         EVENT_LOG_DIR = '/home/zulip/logs/event_log'
     STATS_DIR = '/home/zulip/stats'
     PERSISTENT_QUEUE_FILENAME = "/home/zulip/tornado/event_queues.pickle"
-    EMAIL_LOG_PATH = "/var/log/zulip/email-mirror.log"
+    EMAIL_MIRROR_LOG_PATH = "/var/log/zulip/email-mirror.log"
+    EMAIL_DELIVERER_LOG_PATH = "/var/log/zulip/email-deliverer.log"
     QUEUE_ERROR_DIR = '/var/log/zulip/queue_error'
 else:
     EVENT_LOG_DIR = 'event_log'
@@ -587,7 +588,8 @@ else:
     WORKER_LOG_PATH = "workers.log"
     STATS_DIR = 'stats'
     PERSISTENT_QUEUE_FILENAME = "event_queues.pickle"
-    EMAIL_LOG_PATH = "email-mirror.log"
+    EMAIL_MIRROR_LOG_PATH = "email-mirror.log"
+    EMAIL_DELIVERER_LOG_PATH = "email-deliverer.log"
     QUEUE_ERROR_DIR = 'queue_error'
 
 

@@ -43,7 +43,7 @@ log_format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=log_format)
 
 formatter = logging.Formatter(log_format)
-file_handler = logging.FileHandler(settings.EMAIL_LOG_PATH)
+file_handler = logging.FileHandler(settings.EMAIL_MIRROR_LOG_PATH)
 file_handler.setFormatter(formatter)
 
 logger = logging.getLogger(__name__)

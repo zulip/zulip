@@ -76,7 +76,7 @@ class QueueProcessingWorker(object):
     def stop(self):
         self.q.stop_consuming()
 
-@assign_queue('signups', enabled=settings.DEPLOYED)
+@assign_queue('signups')
 class SignupWorker(QueueProcessingWorker):
     def __init__(self):
         super(SignupWorker, self).__init__()
@@ -86,27 +86,22 @@ class SignupWorker(QueueProcessingWorker):
     # Changes to this should also be reflected in
     # zerver/management/commands/enqueue_followup_emails.py:queue()
     def consume(self, data):
-        if settings.MAILCHIMP_API_KEY == '':
-            return
-
         merge_vars=data['merge_vars']
-
         # This should clear out any invitation reminder emails
         clear_followup_emails_queue(data["EMAIL"], from_email="zulip@zulip.com")
-
-        try:
-            self.pm.listSubscribe(
-                    id=settings.ZULIP_FRIENDS_LIST_ID,
-                    email_address=data['EMAIL'],
-                    merge_vars=merge_vars,
-                    double_optin=False,
-                    send_welcome=False)
-        except MailChimpException, e:
-            if e.code == 214:
-                logging.warning("Attempted to sign up already existing email to list: %s" % (data['EMAIL'],))
-            else:
-                raise e
-
+        if settings.MAILCHIMP_API_KEY != '' and settings.DEPLOYED:
+            try:
+                self.pm.listSubscribe(
+                        id=settings.ZULIP_FRIENDS_LIST_ID,
+                        email_address=data['EMAIL'],
+                        merge_vars=merge_vars,
+                        double_optin=False,
+                        send_welcome=False)
+            except MailChimpException, e:
+                if e.code == 214:
+                    logging.warning("Attempted to sign up already existing email to list: %s" % (data['EMAIL'],))
+                else:
+                    raise e
         email = data.get("EMAIL")
         name = merge_vars.get("NAME")
         #Send day 1 email
@@ -128,7 +123,7 @@ class SignupWorker(QueueProcessingWorker):
                                              tags=["followup-emails"],
                                              sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'})
 
-@assign_queue('invites', enabled=settings.DEPLOYED)
+@assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data):
         invitee = get_prereg_user_by_email(data["email"])
