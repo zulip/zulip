@@ -22,16 +22,6 @@ TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'te
 
 LOCAL_SERVER = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
 
-# TODO: Clean this up
-if TESTING_DEPLOYED:
-    EXTERNAL_HOST = platform.node()
-elif STAGING_DEPLOYED:
-    EXTERNAL_HOST = 'staging.zulip.com'
-elif DEPLOYED:
-    EXTERNAL_HOST = 'zulip.com'
-else:
-    EXTERNAL_HOST = 'localhost:9991'
-
 # Import variables like secrets from the local_settings file
 # Import local_settings after determining the deployment/machine type
 from local_settings import *
