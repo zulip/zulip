@@ -177,7 +177,6 @@ class JsonErrorHandler(object):
 # Monkeypatch in time tracking to the Django non-debug cursor
 # Code comes from CursorDebugWrapper
 def wrapper_execute(self, action, sql, params=()):
-    self.set_dirty()
     start = time.time()
     try:
         return action(sql, params)

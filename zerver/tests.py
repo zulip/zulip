@@ -93,7 +93,6 @@ def queries_captured():
     queries = []
 
     def wrapper_execute(self, action, sql, params=()):
-        self.set_dirty()
         start = time.time()
         try:
             return action(sql, params)
