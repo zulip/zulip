@@ -313,7 +313,7 @@ Run this command out of a cron job.
 """
 
     def handle(self, **options):
-        if (not settings.EMAIL_GATEWAY_BOT_ZULIP_USER or not settings.EMAIL_GATEWAY_LOGIN or
+        if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
             not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
             not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER or
             not email_gateway_user):
