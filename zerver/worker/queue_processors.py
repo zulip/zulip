@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-from django.db.transaction import commit_on_success
 from django.conf import settings
 from postmonkey import PostMonkey, MailChimpException
 from zerver.models import UserActivityInterval, get_user_profile_by_email, \
@@ -50,8 +49,7 @@ class QueueProcessingWorker(object):
 
     def consume_wrapper(self, data):
         try:
-            with commit_on_success():
-                self.consume(data)
+            self.consume(data)
         except Exception:
             self._log_problem()
             if not os.path.exists(settings.QUEUE_ERROR_DIR):
@@ -180,8 +178,7 @@ class MissedMessageWorker(QueueProcessingWorker):
                 by_recipient[event['user_profile_id']].append(event)
 
             for user_profile_id, events in by_recipient.items():
-                with commit_on_success():
-                    handle_missedmessage_emails(user_profile_id, events)
+                handle_missedmessage_emails(user_profile_id, events)
 
             # Aggregate all messages received every 2 minutes to let someone finish sending a batch
             # of messages
@@ -225,8 +222,7 @@ class SlowQueryWorker(QueueProcessingWorker):
                 for query in slow_queries:
                     content += "    %s\n" % (query,)
 
-                with commit_on_success():
-                    internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
+                internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
 
             # Aggregate all slow query messages in 1-minute chunks to avoid message spam
             time.sleep(1 * 60)

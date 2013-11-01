@@ -196,7 +196,6 @@ def compute_mit_user_fullname(email):
 
 @cache_with_key(lambda realm, email, f: user_profile_by_email_cache_key(email),
                 timeout=3600*24*7)
-@transaction.commit_on_success
 def create_mirror_user_if_needed(realm, email, email_to_fullname):
     try:
         return get_user_profile_by_email(email)
@@ -207,9 +206,6 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
                                email_to_fullname(email), email_to_username(email),
                                active=False)
         except IntegrityError:
-            # Unless we raced with another thread doing the same
-            # thing, in which case we should get the user they made
-            transaction.commit()
             return get_user_profile_by_email(email)
 
 def log_message(message):
@@ -1249,19 +1245,13 @@ def do_update_user_activity_interval(user_profile, log_time):
                                         end=effective_end)
 
 @statsd_increment('user_activity')
-@transaction.commit_on_success
 def do_update_user_activity(user_profile, client, query, log_time):
-    try:
-        (activity, created) = UserActivity.objects.get_or_create(
-            user_profile = user_profile,
-            client = client,
-            query = query,
-            defaults={'last_visit': log_time, 'count': 0})
-    except IntegrityError:
-        transaction.commit()
-        activity = UserActivity.objects.get(user_profile = user_profile,
-                                            client = client,
-                                            query = query)
+    (activity, created) = UserActivity.objects.get_or_create(
+        user_profile = user_profile,
+        client = client,
+        query = query,
+        defaults={'last_visit': log_time, 'count': 0})
+
     activity.count += 1
     activity.last_visit = log_time
     activity.save(update_fields=["last_visit", "count"])
@@ -1275,19 +1265,12 @@ def send_presence_changed(user_profile, presence):
     tornado_callbacks.send_notification(notice)
 
 @statsd_increment('user_presence')
-@transaction.commit_on_success
 def do_update_user_presence(user_profile, client, log_time, status):
-    try:
-        (presence, created) = UserPresence.objects.get_or_create(
-            user_profile = user_profile,
-            client = client,
-            defaults = {'timestamp': log_time,
-                        'status': status})
-    except IntegrityError:
-        transaction.commit()
-        presence = UserPresence.objects.get(user_profile = user_profile,
-                                            client = client)
-        created = False
+    (presence, created) = UserPresence.objects.get_or_create(
+        user_profile = user_profile,
+        client = client,
+        defaults = {'timestamp': log_time,
+                    'status': status})
 
     stale_status = (log_time - presence.timestamp) > datetime.timedelta(minutes=1, seconds=10)
     was_idle = presence.status == UserPresence.IDLE
