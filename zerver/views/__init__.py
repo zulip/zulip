@@ -2481,7 +2481,7 @@ def get_user_activity_summary(records):
             update('desktop', record)
         if client == 'website':
             update('website', record)
-        if query == '/json/send_message':
+        if 'send_message' in query:
             update('send', record)
         if query in ['/json/update_pointer', '/api/v1/update_pointer']:
             update('pointer', record)
