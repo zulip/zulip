@@ -37,4 +37,23 @@ class zulip::local_server {
     ensure => 'link',
     target => '/home/zulip/deployments/current/prod-static/serve',
   }
+
+  file { '/etc/postgresql/9.1/main/postgresql.conf.template':
+    ensure => file,
+    owner  => "postgres",
+    group  => "postgres",
+    mode   => 644,
+    source => "puppet:///modules/zulip/postgres/postgresql.conf.template"
+  }
+
+  exec { 'pgtune':
+    command => 'pgtune -T Web -i /etc/postgresql/9.1/main/postgresql.conf.template -o /etc/postgresql/9.1/main/postgresql.conf',
+    refreshonly => true,
+    subscribe => File['/etc/postgresql/9.1/main/postgresql.conf.template']
+  }
+
+  exec { 'pg_ctlcluster 9.1 main restart':
+    refreshonly => true,
+    subscribe => Exec['pgtune']
+  }
 }
