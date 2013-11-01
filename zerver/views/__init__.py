@@ -2548,9 +2548,9 @@ def realm_user_summary_table(all_records):
     rows = sorted(rows, key=by_send_time, reverse=True)
 
     cols = [
-            'email',
-            'send_time',
-            'pointer_time'
+            'Email',
+            'Send',
+            'Pointer'
     ]
 
     title = 'Summary'
