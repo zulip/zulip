@@ -2558,9 +2558,9 @@ def realm_user_summary_table(all_records):
 
     cols = [
             'Email',
-            'Use',
-            'Send',
-            'Pointer',
+            'Heard from',
+            'Message sent',
+            'Pointer motion',
             'Desktop',
             'iPhone',
             'Android'
