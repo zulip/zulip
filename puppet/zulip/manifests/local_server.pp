@@ -1,8 +1,8 @@
 class zulip::local_server {
   include zulip::base
   include zulip::app_frontend
+  include zulip::postgres_appdb
 
-  package { "postgresql-9.1": ensure => installed }
   # This should be migrated over to app_frontend, once validated as functional
   # on app servers.
   package { "nodejs": ensure => installed }
@@ -37,14 +37,4 @@ class zulip::local_server {
     ensure => 'link',
     target => '/home/zulip/deployments/current/prod-static/serve',
   }
-
-  file { "/usr/share/postgresql/9.1/tsearch_data/zulip_english.stop":
-    require => Package["postgresql-9.1"],
-    ensure => file,
-    owner => "root",
-    group => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/postgresql/zulip_english.stop",
-  }
-
 }
