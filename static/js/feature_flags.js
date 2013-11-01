@@ -47,8 +47,8 @@ exports.use_socket = page_params.staging;
 
 // Still burning in...
 exports.mark_read_at_bottom = true;
-exports.summarize_read_while_narrowed = true;
 exports.propagate_topic_edits = true;
+exports.summarize_read_while_narrowed = false;
 
 // Ready for deprecation.
 exports.collapsible = false;
