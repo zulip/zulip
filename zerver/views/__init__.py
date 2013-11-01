@@ -2395,6 +2395,7 @@ def get_activity(request, realm=REQ(default=None)):
 
 def get_user_activity_records_for_realm(realm):
     fields = [
+        'user_profile__full_name',
         'user_profile__email',
         'query',
         'client__name',
@@ -2411,6 +2412,7 @@ def get_user_activity_records_for_realm(realm):
 
 def get_user_activity_records_for_email(email):
     fields = [
+        'user_profile__full_name',
         'query',
         'client__name',
         'count',
@@ -2421,7 +2423,7 @@ def get_user_activity_records_for_email(email):
             user_profile__email=email
     )
     records = records.order_by("-last_visit")
-    records = records.select_related('client').only(*fields)
+    records = records.select_related('user_profile', 'client').only(*fields)
     return records
 
 def raw_user_activity_table(records):
@@ -2471,6 +2473,9 @@ def get_user_activity_summary(records):
                     record.last_visit
             )
 
+    if records:
+        summary['name'] = records[0].user_profile.full_name
+
     for record in records:
         client = record.client.name
         query = record.query
@@ -2499,6 +2504,8 @@ def format_date_for_activity_reports(date):
 def user_activity_summary_table(user_summary):
     rows = []
     for k, v in user_summary.items():
+        if k == 'name':
+            continue
         client = k
         count = v['count']
         last_visit = v['last_visit']
@@ -2557,18 +2564,19 @@ def realm_user_summary_table(all_records):
         email_link = '<a href="/user_activity/%s/">%s</a>' % (email, email)
         email_link = mark_safe(email_link)
         sent_count = get_count(user_summary, 'send')
-        row = [email_link, sent_count]
+        row = [user_summary['name'], email_link, sent_count]
         for field in ['use', 'send', 'pointer', 'desktop', 'iPhone', 'Android']:
             val = get_last_visit(user_summary, field)
             row.append(val)
         rows.append(row)
 
     def by_used_time(row):
-        return row[2]
+        return row[3]
 
     rows = sorted(rows, key=by_used_time, reverse=True)
 
     cols = [
+            'Name',
             'Email',
             'Total sent',
             'Heard from',
