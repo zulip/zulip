@@ -390,21 +390,8 @@ def get_client_cache_key(name):
     return 'get_client:%s' % (make_safe_digest(name),)
 
 @cache_with_key(get_client_cache_key, timeout=3600*24*7)
-@transaction.commit_on_success
 def get_client(name):
-    try:
-        (client, _) = Client.objects.get_or_create(name=name)
-    except IntegrityError:
-        # If we're racing with other threads trying to create this
-        # client, get_or_create will throw IntegrityError (because our
-        # database is enforcing the no-duplicate-objects constraint);
-        # in this case one should just re-fetch the object.  This race
-        # actually happens with populate_db.
-        #
-        # Much of the rest of our code that writes to the database
-        # doesn't handle this duplicate object on race issue correctly :(
-        transaction.commit()
-        return Client.objects.get(name=name)
+    (client, _) = Client.objects.get_or_create(name=name)
     return client
 
 def get_stream_cache_key(stream_name, realm):
