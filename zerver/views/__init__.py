@@ -2537,9 +2537,11 @@ def realm_user_summary_table(all_records):
 
     rows = []
     for email, user_summary in user_records.items():
+        email_link = '<a href="/user_activity/%s/">%s</a>' % (email, email)
+        email_link = mark_safe(email_link)
         send_time = get_last_visit(user_summary, 'send')
         pointer_time = get_last_visit(user_summary, 'pointer')
-        rows.append((email, send_time, pointer_time))
+        rows.append((email_link, send_time, pointer_time))
 
     never = datetime.datetime(1970, 1, 1).replace(tzinfo=utc)
     def by_send_time(row):
