@@ -69,6 +69,7 @@ DATABASES = {"default": {
     'SCHEMA': 'zulip',
     'OPTIONS': {
         'sslmode': 'verify-full',
+        'autocommit': True,
         },
     },
 }
@@ -77,7 +78,9 @@ if not DEPLOYED or LOCAL_SERVER:
     DATABASES["default"].update({
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost',
-            'OPTIONS': {}
+            'OPTIONS': {
+                'autocommit': True,
+            }
             })
     INTERNAL_ZULIP_USERS = []
 
