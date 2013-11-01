@@ -38,6 +38,14 @@ urlpatterns = patterns('',
         {'post_reset_redirect' : '/accounts/password/done/',
          'template_name': 'zerver/reset_confirm.html',
          'set_password_form' : zerver.forms.LoggingSetPasswordForm}),
+
+    # the next line can be removed PASSWORD_RESET_TIMEOUT_DAYS after this code is deployed
+    url(r'^reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        'django.contrib.auth.views.password_reset_confirm_uidb36',
+        {'post_reset_redirect' : '/accounts/password/done/',
+         'template_name': 'zerver/reset_confirm.html',
+         'set_password_form' : zerver.forms.LoggingSetPasswordForm}),
+
     url(r'^accounts/password/done/$', 'django.contrib.auth.views.password_reset_complete',
         {'template_name': 'zerver/reset_done.html'}),
 
