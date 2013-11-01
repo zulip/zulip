@@ -57,6 +57,8 @@ TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'te
 
 LOCAL_SERVER = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
 
+SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
+
 if TESTING_DEPLOYED:
     EXTERNAL_HOST = platform.node()
     EXTERNAL_API_HOST = 'https://%s/api' % (platform.node())
