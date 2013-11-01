@@ -2546,23 +2546,31 @@ def realm_user_summary_table(all_records):
         else:
             return ''
 
+    def get_count(user_summary, k):
+        if k in user_summary:
+            return user_summary[k]['count']
+        else:
+            return ''
+
     rows = []
     for email, user_summary in user_records.items():
         email_link = '<a href="/user_activity/%s/">%s</a>' % (email, email)
         email_link = mark_safe(email_link)
-        row = [email_link]
+        sent_count = get_count(user_summary, 'send')
+        row = [email_link, sent_count]
         for field in ['use', 'send', 'pointer', 'desktop', 'iPhone', 'Android']:
             val = get_last_visit(user_summary, field)
             row.append(val)
         rows.append(row)
 
     def by_used_time(row):
-        return row[1]
+        return row[2]
 
     rows = sorted(rows, key=by_used_time, reverse=True)
 
     cols = [
             'Email',
+            'Total sent',
             'Heard from',
             'Message sent',
             'Pointer motion',
