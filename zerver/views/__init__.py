@@ -2393,7 +2393,7 @@ def get_activity(request, realm=REQ(default=None)):
         context_instance=RequestContext(request)
     )
 
-def get_user_activity_records_for_realm(realm):
+def get_user_activity_records_for_realm(realm, is_bot):
     fields = [
         'user_profile__full_name',
         'user_profile__email',
@@ -2404,7 +2404,8 @@ def get_user_activity_records_for_realm(realm):
     ]
 
     records = UserActivity.objects.filter(
-            user_profile__realm__domain=realm
+            user_profile__realm__domain=realm,
+            user_profile__is_bot=is_bot
     )
     records = records.order_by("user_profile__email", "-last_visit")
     records = records.select_related('user_profile', 'client').only(*fields)
@@ -2604,14 +2605,17 @@ def realm_user_summary_table(all_records):
 
 @zulip_internal
 def get_realm_activity(request, realm):
-    all_records = get_user_activity_records_for_realm(realm)
-    all_records = list(all_records)
-
     data = []
-    content = realm_user_summary_table(all_records)
 
-    user_content = dict(content=content)
-    data += [('Summary', user_content)]
+    for is_bot, page_title in [(False,  'Humans'), (True, 'Bots')]:
+        all_records = get_user_activity_records_for_realm(realm, is_bot)
+        all_records = list(all_records)
+
+        content = realm_user_summary_table(all_records)
+
+        user_content = dict(content=content)
+
+        data += [(page_title, user_content)]
 
     realm = None
     title = realm
