@@ -2437,7 +2437,7 @@ def raw_user_activity_table(records):
                 record.query,
                 record.client.name,
                 record.count,
-                record.last_visit
+                format_date_for_activity_reports(record.last_visit)
         ]
 
     rows = map(row, records)
@@ -2490,6 +2490,12 @@ def get_user_activity_summary(records):
 
     return summary
 
+def format_date_for_activity_reports(date):
+    if date:
+        return date.strftime('%Y-%m-%d %H:%M')
+    else:
+        return ''
+
 def user_activity_summary_table(user_summary):
     rows = []
     for k, v in user_summary.items():
@@ -2497,7 +2503,7 @@ def user_activity_summary_table(user_summary):
         count = v['count']
         last_visit = v['last_visit']
         row = [
-                last_visit,
+                format_date_for_activity_reports(last_visit),
                 client,
                 count,
         ]
@@ -2536,9 +2542,9 @@ def realm_user_summary_table(all_records):
 
     def get_last_visit(user_summary, k):
         if k in user_summary:
-            return user_summary[k]['last_visit']
+            return user_summary[k]['last_visit'].strftime('%Y-%m-%d %H:%M')
         else:
-            return None
+            return ''
 
     rows = []
     for email, user_summary in user_records.items():
@@ -2550,9 +2556,8 @@ def realm_user_summary_table(all_records):
             row.append(val)
         rows.append(row)
 
-    never = datetime.datetime(1970, 1, 1).replace(tzinfo=utc)
     def by_used_time(row):
-        return row[1] or never
+        return row[1]
 
     rows = sorted(rows, key=by_used_time, reverse=True)
 
