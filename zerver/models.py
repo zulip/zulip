@@ -773,7 +773,6 @@ class UserMessage(models.Model):
     # We're not using the archived field for now, but create it anyway
     # since this table will be an unpleasant one to do schema changes
     # on later
-    archived = models.BooleanField()
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
                  'has_alert_word', "historical"]
