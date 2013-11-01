@@ -1,3 +1,35 @@
 #!/bin/sh -ex
 
-git archive -o /tmp/zulip-server.tar.gz --prefix=zulip-server/ HEAD
+GITID=$(git rev-parse HEAD)
+
+TMPDIR=$(mktemp -d)
+DIR=$TMPDIR/zulip-server/
+TARBALL=$TMPDIR/zulip-server.tar.gz
+
+git checkout-index -f -a --prefix $DIR
+
+cd $DIR
+
+# update-prod-static generates the prod-static directory.
+# See COLLECTSTATIC in settings.py
+./tools/update-prod-static
+
+xargs rm -r <<EOF
+assets
+bots
+static
+tools
+zilencer
+.gitignore
+templates/.gitignore
+puppet/zulip-internal
+EOF
+
+echo $GITID > version_id
+mv update-prod-static.log ..
+
+cd ..
+tar -czf $TARBALL zulip-server
+
+rm -r zulip-server
+echo "Generated $TARBALL"

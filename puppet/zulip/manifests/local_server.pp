@@ -33,6 +33,10 @@ class zulip::local_server {
     ensure => 'link',
     target => '/home/zulip/zulip',
   }
+  file { '/home/zulip/prod-static':
+    ensure => 'link',
+    target => '/home/zulip/deployments/current/prod-static/serve',
+  }
 
   # This is just an empty file.  It's used by the app to test if it's running
   # on a local server.
