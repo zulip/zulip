@@ -1,9 +1,5 @@
 class zulip-internal::postgres-common {
-
-  $postgres_packages = [ "postgresql-9.1", "pgtune",
-                         "python-argparse", "python-gevent",
-                         "lzop", "pv", "hunspell-en-us", "python-dateutil"]
-  package { $postgres_packages: ensure => "installed" }
+  include zulip::postgres-common
 
   exec {"pip_wal-e":
     command  => "/usr/bin/pip install git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",
@@ -38,11 +34,6 @@ class zulip-internal::postgres-common {
     target => "postgres",
     user => "postgres",
     require => [ File["/usr/local/bin/pg_backup_and_purge.py"], Package["postgresql-9.1", "python-dateutil"] ]
-  }
-
-  exec { "disable_logrotate":
-    command => "/usr/bin/dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common",
-    creates => '/etc/logrotate.d/postgresql-common.disabled',
   }
 
   exec { "sysctl_p":
