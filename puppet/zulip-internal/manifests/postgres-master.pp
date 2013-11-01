@@ -1,6 +1,6 @@
 class zulip-internal::postgres-master {
-  class { 'zulip-internal::base': }
-  class { 'zulip-internal::postgres-appdb': }
+  include zulip-internal::base
+  include zulip-internal::postgres-appdb
 
   $master_packages = [ "xfsprogs", "mdadm", ]
   package { $master_packages: ensure => "installed" }

@@ -1,6 +1,6 @@
 class zulip-internal::prod_app_frontend {
-  class { 'zulip-internal::base': }
-  class { 'zulip::app_frontend': }
+  include zulip-internal::base
+  include zulip::app_frontend
 
   file { "/etc/nginx/sites-available/zulip":
     require => Package[nginx],

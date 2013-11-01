@@ -1,5 +1,5 @@
 class zulip-internal::builder {
-  class { 'zulip-internal::base': }
+  include zulip-internal::base
 
   $buildd_packages = [
     "apt-spy",

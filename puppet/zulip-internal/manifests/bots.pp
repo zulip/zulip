@@ -1,6 +1,6 @@
 class zulip-internal::bots {
-  class { 'zulip-internal::base': }
-  class { 'zulip::supervisor': }
+  include zulip-internal::base
+  include zulip::supervisor
 
   file { '/etc/supervisor/conf.d/feedback-bot.conf':
     ensure => absent,

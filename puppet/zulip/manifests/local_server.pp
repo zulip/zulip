@@ -1,6 +1,6 @@
 class zulip::local_server {
-  class { 'zulip::base': }
-  class { 'zulip::app_frontend': }
+  include zulip::base
+  include zulip::app_frontend
 
   package { "postgresql-9.1": ensure => installed }
   # This should be migrated over to app_frontend, once validated as functional

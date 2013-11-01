@@ -1,7 +1,7 @@
 class zulip-internal::stats {
-  class { 'zulip-internal::base': }
-  class { 'zulip-internal::apache': }
-  class { 'zulip::supervisor': }
+  include zulip-internal::base
+  include zulip-internal::apache
+  include zulip::supervisor
 
   $stats_packages = [ "libssl-dev", "zlib1g-dev", "python-twisted", "python-django", "python-django-tagging",
                       "python-carbon", "python-cairo", "python-graphite-web", "python-whisper", "redis-server" ]

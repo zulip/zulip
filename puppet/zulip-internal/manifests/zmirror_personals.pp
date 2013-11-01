@@ -1,6 +1,6 @@
 class zulip-internal::zmirror_personals {
-  class { 'zulip-internal::base': }
-  class { 'zulip::supervisor': }
+  include zulip-internal::base
+  include zulip::supervisor
 
   $zmirror_packages = [ "cython", "libzephyr-dev", "comerr-dev", "python-dev", "libzephyr4-krb5", "zephyr-clients",
                         "krb5-config", "krb5-user", "krb5-clients", "debathena-kerberos-config", "debathena-zephyr-config"]

@@ -1,6 +1,6 @@
 class zulip-internal::staging_app_frontend {
-  class { 'zulip-internal::base': }
-  class { 'zulip::app_frontend': }
+  include zulip-internal::base
+  include zulip::app_frontend
 
   $packages = [ "python-html2text" ]
   package { $packages: ensure => "installed" }

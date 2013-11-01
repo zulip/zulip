@@ -1,7 +1,7 @@
 class zulip-internal::trac {
-  class { 'zulip-internal::base': }
-  class { 'zulip-internal::apache': }
-  class { 'zulip-internal::mediawiki': }
+  include zulip-internal::base
+  include zulip-internal::apache
+  include zulip-internal::mediawiki
 
   $trac_packages = [ "trac", ]
   package { $trac_packages: ensure => "installed" }

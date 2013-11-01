@@ -1,7 +1,7 @@
 class zulip::app_frontend {
-  class { 'zulip::rabbit': }
-  class { 'zulip::nginx': }
-  class { 'zulip::supervisor': }
+  include zulip::rabbit
+  include zulip::nginx
+  include zulip::supervisor
 
   $web_packages = [ "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "python-psycopg2",

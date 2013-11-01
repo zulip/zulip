@@ -1,6 +1,6 @@
 class zulip-internal::loadbalancer {
-  class { 'zulip-internal::base': }
-  class { 'zulip::nginx': }
+  include zulip-internal::base
+  include zulip::nginx
 
   file { "/etc/nginx/zulip-include/":
     require => Package[nginx],

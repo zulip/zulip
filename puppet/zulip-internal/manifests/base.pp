@@ -1,5 +1,5 @@
 class zulip-internal::base {
-  class { 'zulip::base': }
+  include zulip::base
 
   $org_base_packages = [ "nagios-plugins-basic", "munin-node", "munin-plugins-extra" ]
   package { $org_base_packages: ensure => "installed" }
