@@ -64,12 +64,11 @@ class Command(BaseCommand):
             sys.stderr.close()
 
         def do_update(batch):
-            with transaction.commit_on_success():
-                msgs = UserMessage.objects.filter(id__in=batch)
-                if op == 'add':
-                    msgs.update(flags=models.F('flags').bitor(flag))
-                elif op == 'remove':
-                    msgs.update(flags=models.F('flags').bitand(~flag))
+            msgs = UserMessage.objects.filter(id__in=batch)
+            if op == 'add':
+                msgs.update(flags=models.F('flags').bitor(flag))
+            elif op == 'remove':
+                msgs.update(flags=models.F('flags').bitand(~flag))
 
         if not options["for_real"]:
             logging.info("Updating %s by %s %s" % (mids, op, flag))
