@@ -17,3 +17,5 @@ zerver/fixtures/test_data1.json
 humbug.kdev4
 memcached_prefix
 coverage/
+/queue_error
+/workers.log
