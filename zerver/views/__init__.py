@@ -2474,6 +2474,8 @@ def get_user_activity_summary(records):
         client = record.client.name
         query = record.query
 
+        update('use', record)
+
         if client == 'website':
             update('website', record)
         if query == '/json/send_message':
@@ -2539,18 +2541,20 @@ def realm_user_summary_table(all_records):
     for email, user_summary in user_records.items():
         email_link = '<a href="/user_activity/%s/">%s</a>' % (email, email)
         email_link = mark_safe(email_link)
+        use_time = get_last_visit(user_summary, 'use')
         send_time = get_last_visit(user_summary, 'send')
         pointer_time = get_last_visit(user_summary, 'pointer')
-        rows.append((email_link, send_time, pointer_time))
+        rows.append((email_link, use_time, send_time, pointer_time))
 
     never = datetime.datetime(1970, 1, 1).replace(tzinfo=utc)
-    def by_send_time(row):
+    def by_used_time(row):
         return row[1] or never
 
-    rows = sorted(rows, key=by_send_time, reverse=True)
+    rows = sorted(rows, key=by_used_time, reverse=True)
 
     cols = [
             'Email',
+            'Use',
             'Send',
             'Pointer'
     ]
