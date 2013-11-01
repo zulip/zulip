@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
-from django.utils.timezone import now
+from django.utils.timezone import now, utc
 from django.utils.html import mark_safe
 from django.utils.cache import patch_cache_control
 from django.core.exceptions import ValidationError
@@ -2392,6 +2392,22 @@ def get_activity(request, realm=REQ(default=None)):
         context_instance=RequestContext(request)
     )
 
+def get_user_activity_records_for_realm(realm):
+    fields = [
+        'user_profile__email',
+        'query',
+        'client__name',
+        'count',
+        'last_visit',
+    ]
+
+    records = UserActivity.objects.filter(
+            user_profile__realm__domain=realm
+    )
+    records = records.order_by("user_profile__email", "-last_visit")
+    records = records.select_related('user_profile', 'client').only(*fields)
+    return records
+
 def get_user_activity_records_for_email(email):
     fields = [
         'query',
@@ -2503,6 +2519,73 @@ def user_activity_summary_table(user_summary):
         dict(data=data)
     )
     return content
+
+def realm_user_summary_table(all_records):
+    user_records = {}
+
+    def by_email(record):
+        return record.user_profile.email
+
+    for email, records in itertools.groupby(all_records, by_email):
+        user_records[email] = get_user_activity_summary(list(records))
+
+    def get_last_visit(user_summary, k):
+        if k in user_summary:
+            return user_summary[k]['last_visit']
+        else:
+            return None
+
+    rows = []
+    for email, user_summary in user_records.items():
+        send_time = get_last_visit(user_summary, 'send')
+        pointer_time = get_last_visit(user_summary, 'pointer')
+        rows.append((email, send_time, pointer_time))
+
+    never = datetime.datetime(1970, 1, 1).replace(tzinfo=utc)
+    def by_send_time(row):
+        return row[1] or never
+
+    rows = sorted(rows, key=by_send_time, reverse=True)
+
+    cols = [
+            'email',
+            'send_time',
+            'pointer_time'
+    ]
+
+    title = 'Summary'
+
+    data = dict(
+        rows=rows,
+        cols=cols,
+        title=title
+    )
+
+    content = loader.render_to_string(
+        'zerver/ad_hoc_query.html',
+        dict(data=data)
+    )
+
+    return content
+
+@zulip_internal
+def get_realm_activity(request, realm):
+    all_records = get_user_activity_records_for_realm(realm)
+    all_records = list(all_records)
+
+    data = []
+    content = realm_user_summary_table(all_records)
+
+    user_content = dict(content=content)
+    data += [('Summary', user_content)]
+
+    realm = None
+    title = realm
+    return render_to_response(
+        'zerver/activity.html',
+        dict(data=data, realm=realm, title=title),
+        context_instance=RequestContext(request)
+    )
 
 @zulip_internal
 def get_user_activity(request, email):

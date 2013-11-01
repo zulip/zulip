@@ -40,6 +40,7 @@ urlpatterns = patterns('',
 
 
     url(r'^activity$', 'zerver.views.get_activity'),
+    url(r'^realm_activity/(?P<realm>[\S]+)/$', 'zerver.views.get_realm_activity'),
     url(r'^user_activity/(?P<email>[\S]+)/$', 'zerver.views.get_user_activity'),
 
     # Registration views, require a confirmation ID.
