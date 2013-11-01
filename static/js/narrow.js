@@ -288,7 +288,7 @@ exports.by = function (operator, operand, opts) {
 
 exports.by_subject = function (target_id, opts) {
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
-    var original = all_msg_list.get(target_id);
+    var original = msg_metadata_cache[target_id];
     if (original.type !== 'stream') {
         // Only stream messages have subjects, but the
         // user wants us to narrow in some way.
@@ -307,7 +307,7 @@ exports.by_subject = function (target_id, opts) {
 exports.by_recipient = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
-    var message = all_msg_list.get(target_id);
+    var message = msg_metadata_cache[target_id];
     mark_message_as_read(message);
     switch (message.type) {
     case 'private':
