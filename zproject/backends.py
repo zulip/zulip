@@ -3,7 +3,15 @@ from zerver.models import UserProfile, get_user_profile_by_id, \
 
 from openid.consumer.consumer import SUCCESS
 
-class EmailAuthBackend(object):
+class ZulipAuthMixin(object):
+    def get_user(self, user_profile_id):
+        """ Get a UserProfile object from the user_profile_id. """
+        try:
+            return get_user_profile_by_id(user_profile_id)
+        except UserProfile.DoesNotExist:
+            return None
+
+class EmailAuthBackend(ZulipAuthMixin):
     """
     Email Authentication Backend
 
@@ -26,16 +34,9 @@ class EmailAuthBackend(object):
         except UserProfile.DoesNotExist:
             return None
 
-    def get_user(self, user_profile_id):
-        """ Get a UserProfile object from the user_profile_id. """
-        try:
-            return get_user_profile_by_id(user_profile_id)
-        except UserProfile.DoesNotExist:
-            return None
-
 # Adapted from http://djangosnippets.org/snippets/2183/ by user Hangya (September 1, 2010)
 
-class GoogleBackend(object):
+class GoogleBackend(ZulipAuthMixin):
     def authenticate(self, openid_response):
         if openid_response is None:
             return None
@@ -52,9 +53,3 @@ class GoogleBackend(object):
 
         return user_profile
 
-    def get_user(self, user_profile_id):
-        """ Get a UserProfile object from the user_profile_id. """
-        try:
-            return get_user_profile_by_id(user_profile_id)
-        except UserProfile.DoesNotExist:
-            return None
