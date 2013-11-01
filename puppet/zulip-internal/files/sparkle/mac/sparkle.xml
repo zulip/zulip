@@ -5,6 +5,13 @@
       <description>Latest updates to Zulip's Desktop Application</description>
       <language>en</language>
       <item>
+         <title>Version 0.3.9</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.com/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Fri, 01 Nov 2013 12:44:37 </pubDate>
+         <enclosure length="8840952" sparkle:dsaSignature="MCwCFAJkSdexS2hmV5dvDl9ph22CegO3AhQt7fKVeaMcrQjt+5ApPdvIupmG3g==" sparkle:version="0.3.9" type="application/octet-stream" url="https://zulip.com/dist/apps/mac/Zulip-0.3.9.tar.bz2"/>
+      </item><item>
          <title>Version 0.3.8</title>
          <sparkle:releaseNotesLink>
              https://zulip.com/dist/apps/mac/sparkle-changelog.html
