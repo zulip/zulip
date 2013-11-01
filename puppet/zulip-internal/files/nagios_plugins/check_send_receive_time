@@ -14,6 +14,7 @@ import sys
 import optparse
 import random
 import traceback
+import os
 
 def total_seconds(timedelta):
     return (timedelta.microseconds + (timedelta.seconds + timedelta.days * 24 * 3600) * 10**6) / 10.**6
@@ -61,6 +62,11 @@ sendreceive.critical 5"""
 sys.path.append('/home/zulip/deployments/current/api')
 import zulip
 
+sys.path.append('/home/zulip/deployments/current')
+os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
+from zerver.models import get_user_profile_by_email
+from django.conf import settings
+
 states = {
     "OK": 0,
     "WARNING": 1,
@@ -89,35 +95,29 @@ def get_zulips():
         last_event_id = max(last_event_id, int(event['id']))
     return [event['message'] for event in res['events']]
 
-if "staging" in options.site:
-    # hamlet and othello are default users on staging
-    sender = "hamlet@zulip.com"
-    sender_key = "dfe1c934d555f4b9538d0d4cfd3069c2"
-    recipient = "othello@zulip.com"
-    recipient_key = "4e5d97591bec64bf57d2698ffbb563e3"
-    site = "https://staging.zulip.com/api"
+if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
+    settings.NAGIOS_STAGING_RECEIVE_BOT is not None:
+    sender = get_user_profile_by_email(settings.NAGIOS_STAGING_SEND_BOT)
+    recipient = get_user_profile_by_email(settings.NAGIOS_STAGING_RECEIVE_BOT)
+    site = "https://staging.zulip.com"
 else:
-    # cordelia and iago are default users on prod
-    sender = "iago@zulip.com"
-    sender_key = "d43b53c27a8106195b46781abc67901a"
-    recipient = "cordelia@zulip.com"
-    recipient_key = "24cf18de98d5c31da9c6c79f0cbec195"
-    site = "https://api.zulip.com"
+    sender = get_user_profile_by_email(settings.NAGIOS_SEND_BOT)
+    recipient = get_user_profile_by_email(settings.NAGIOS_RECEIVE_BOT)
+    site = settings.EXTERNAL_API_HOST
 
 zulip_sender = zulip.Client(
-    email=sender,
-    api_key=sender_key,
+    email=sender.email,
+    api_key=sender.api_key,
     verbose=True,
     client="test: Zulip monitoring",
     site=site)
 
 zulip_recipient = zulip.Client(
-    email=recipient,
-    api_key=recipient_key,
+    email=recipient.email,
+    api_key=recipient.api_key,
     verbose=True,
     client="test: Zulip monitoring",
     site=site)
-
 
 try:
     res = zulip_recipient.register(event_types=["message"])
@@ -133,7 +133,7 @@ send_zulip(zulip_sender, {
     "type": 'private',
     "content": msg_to_send,
     "subject": "time to send",
-    "to": recipient,
+    "to": recipient.email,
     })
 
 msg_content = []

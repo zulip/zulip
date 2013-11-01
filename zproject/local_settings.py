@@ -55,12 +55,16 @@ LOCAL_SERVER = os.path.exists('/etc/zulip-local')
 
 if TESTING_DEPLOYED:
     EXTERNAL_HOST = platform.node()
+    EXTERNAL_API_HOST = 'https://%s/api' % (platform.node())
 elif STAGING_DEPLOYED:
     EXTERNAL_HOST = 'staging.zulip.com'
+    EXTERNAL_API_HOST = 'https://staging.zulip.com/api'
 elif DEPLOYED:
     EXTERNAL_HOST = 'zulip.com'
+    EXTERNAL_API_HOST = 'https://api.zulip.com'
 else:
     EXTERNAL_HOST = 'localhost:9991'
+    EXTERNAL_API_HOST = 'http://localhost:9991/api'
 
 EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
@@ -148,3 +152,10 @@ DROPBOX_APP_KEY = "xxxxxxxxxxxxxxx"
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 NEW_USER_BOT = "new-user-bot@zulip.com"
+
+NAGIOS_SEND_BOT = 'iago@zulip.com'
+NAGIOS_RECEIVE_BOT = 'othello@zulip.com'
+
+# Our internal deployment has nagios checks for both staging and prod
+NAGIOS_STAGING_SEND_BOT = 'iago@zulip.com'
+NAGIOS_STAGING_RECEIVE_BOT = 'cordelia@zulip.com'

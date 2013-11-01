@@ -240,7 +240,9 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'DROPBOX_APP_KEY': '',
                     # The following bots only exist in non-LOCAL_SERVER installs
                     'ERROR_BOT': None,
-                    'NEW_USER_BOT': None
+                    'NEW_USER_BOT': None,
+                    'NAGIOS_STAGING_SEND_BOT': None,
+                    'NAGIOS_STAGING_RECEIVE_BOT': None
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
@@ -252,7 +254,13 @@ REALM_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
                 'name': 'Notification Bot'},
                {'var_name': 'EMAIL_GATEWAY_BOT',
                 'email_template': 'emailgateway@%s',
-                'name': 'Email Gateway'} ]
+                'name': 'Email Gateway'},
+               {'var_name': 'NAGIOS_SEND_BOT',
+                'email_template': 'nagios-send-bot@%s',
+                'name': 'Nagios Send Bot'},
+               {'var_name': 'NAGIOS_RECEIVE_BOT',
+                'email_template': 'nagios-receive-bot@%s',
+                'name': 'Nagios Receive Bot'} ]
 
 # Set the realm-specific bot names
 for bot in REALM_BOTS:
