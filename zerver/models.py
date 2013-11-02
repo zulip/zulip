@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import post_save, post_delete
+from guardian.shortcuts import get_users_with_perms
 import zlib
 
 from bitfield import BitField
@@ -115,6 +116,13 @@ class Realm(models.Model):
     @deployment.setter
     def set_deployments(self, value):
         self._deployments = [value]
+
+    def get_admin_users(self):
+        # This method is kind of expensive, due to our complex permissions model.
+        candidates = get_users_with_perms(self, attach_perms=True)
+        def is_admin(user):
+            return 'administer' in candidates[user]
+        return filter(is_admin, candidates)
 
     class Meta:
         permissions = (

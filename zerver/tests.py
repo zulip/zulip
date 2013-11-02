@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.backends.util import CursorDebugWrapper
+from guardian.shortcuts import assign_perm, remove_perm
 
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, UserActivity, \
@@ -343,6 +344,15 @@ class AuthedTestCase(TestCase):
 
         return msg
 
+class PermissionTest(TestCase):
+    def test_get_admin_users(self):
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        remove_perm('administer', user_profile, user_profile.realm)
+        admin_users = user_profile.realm.get_admin_users()
+        self.assertFalse(user_profile in admin_users)
+        assign_perm('administer', user_profile, user_profile.realm)
+        admin_users = user_profile.realm.get_admin_users()
+        self.assertTrue(user_profile in admin_users)
 
 class WorkerTest(TestCase):
     class FakeClient:
