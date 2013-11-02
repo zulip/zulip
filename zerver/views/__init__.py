@@ -2504,6 +2504,7 @@ def format_date_for_activity_reports(date):
 
 def realm_client_table(user_summaries):
     exclude_keys = [
+            'internal',
             'name',
             'use',
             'send',
