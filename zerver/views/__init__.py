@@ -2510,6 +2510,7 @@ def realm_client_table(user_summaries):
             'send',
             'pointer',
             'website',
+            'desktop',
     ]
 
     rows = []
