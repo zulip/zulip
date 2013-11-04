@@ -950,20 +950,22 @@ $(function () {
     $("form.your-account-settings").expectOne().ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         beforeSubmit: function (arr, form, options) {
-            // FIXME: Check that the two password fields match
-            // FIXME: Use the same jQuery validation plugin as the signup form?
-            var new_pw = $('#new_password').val();
-            if (new_pw !== '') {
-                var password_ok = password_quality(new_pw);
-                if (password_ok === undefined) {
-                    // zxcvbn.js didn't load, for whatever reason.
-                    settings_change_error(
-                        'An internal error occurred; try reloading the page. ' +
-                        'Sorry for the trouble!');
-                    return false;
-                } else if (!password_ok) {
-                    settings_change_error('New password is too weak');
-                    return false;
+            if (page_params.password_auth_enabled !== false) {
+                // FIXME: Check that the two password fields match
+                // FIXME: Use the same jQuery validation plugin as the signup form?
+                var new_pw = $('#new_password').val();
+                if (new_pw !== '') {
+                    var password_ok = password_quality(new_pw);
+                    if (password_ok === undefined) {
+                        // zxcvbn.js didn't load, for whatever reason.
+                        settings_change_error(
+                            'An internal error occurred; try reloading the page. ' +
+                            'Sorry for the trouble!');
+                        return false;
+                    } else if (!password_ok) {
+                        settings_change_error('New password is too weak');
+                        return false;
+                    }
                 }
             }
             return true;

@@ -66,6 +66,7 @@ from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token, statsd_key
 from zerver import tornado_callbacks
+from zproject.backends import password_auth_enabled
 from django.db import connection
 
 from confirmation.models import Confirmation
@@ -665,6 +666,7 @@ def home(request):
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
+        password_auth_enabled = password_auth_enabled(),
         have_initial_messages = user_has_messages,
         stream_list           = register_ret['subscriptions'],
         unsubbed_info         = register_ret['unsubscribed'],
@@ -1698,9 +1700,9 @@ def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
 @has_request_variables
 def json_change_settings(request, user_profile,
                          full_name=REQ,
-                         old_password=REQ,
-                         new_password=REQ,
-                         confirm_password=REQ):
+                         old_password=REQ(default=""),
+                         new_password=REQ(default=""),
+                         confirm_password=REQ(default="")):
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
             return json_error("New password must match confirmation password!")

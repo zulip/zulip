@@ -2248,20 +2248,15 @@ class ChangeSettingsTest(AuthedTestCase):
 
     def test_missing_params(self):
         """
-        full_name, old_password, and new_password are all required POST
-        parameters for json_change_settings. (enable_desktop_notifications is
-        false by default)
+        full_name is a required POST parameter for json_change_settings.
+        (enable_desktop_notifications is false by default, and password is
+        only required if you are changing it)
         """
         self.login("hamlet@zulip.com")
-        required_params = (("full_name", "Foo Bar"),
-                  ("old_password", initial_password("hamlet@zulip.com")),
-                  ("new_password", initial_password("hamlet@zulip.com")),
-                  ("confirm_password", initial_password("hamlet@zulip.com")))
-        for i in range(len(required_params)):
-            post_params = dict(required_params[:i] + required_params[i + 1:])
-            result = self.client.post("/json/settings/change", post_params)
-            self.assert_json_error(result,
-                    "Missing '%s' argument" % (required_params[i][0],))
+
+        result = self.client.post("/json/settings/change", {})
+        self.assert_json_error(result,
+                "Missing '%s' argument" % ("full_name",))
 
     def test_mismatching_passwords(self):
         """

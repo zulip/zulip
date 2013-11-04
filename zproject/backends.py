@@ -1,10 +1,18 @@
 from __future__ import absolute_import
 
 from django.contrib.auth.backends import RemoteUserBackend
+import django.contrib.auth
+
 from zerver.models import UserProfile, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email
 
 from openid.consumer.consumer import SUCCESS
+
+def password_auth_enabled():
+    for backend in django.contrib.auth.get_backends():
+         if isinstance(backend, EmailAuthBackend):
+             return True
+    return False
 
 class ZulipAuthMixin(object):
     def get_user(self, user_profile_id):
