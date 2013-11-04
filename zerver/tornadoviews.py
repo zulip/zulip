@@ -12,7 +12,7 @@ from zerver.decorator import asynchronous, authenticated_api_view, \
 from zerver.lib.response import json_success, json_error
 from zerver.middleware import async_request_restart
 from zerver.tornado_callbacks import \
-    get_user_pointer, fetch_stream_messages, fetch_user_messages, \
+    fetch_stream_messages, fetch_user_messages, \
     add_stream_receive_callback, add_user_receive_callback, \
     add_pointer_update_callback, process_notification
 
@@ -72,7 +72,7 @@ def return_messages_immediately(user_profile, last,
         client_server_generation != settings.SERVER_GENERATION):
         update_types.append("client_reload")
 
-    ptr = get_user_pointer(user_profile.id)
+    ptr = user_profile.pointer
     if (client_pointer is not None and ptr > client_pointer):
         new_pointer = ptr
         update_types.append("pointer_update")

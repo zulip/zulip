@@ -227,29 +227,7 @@ def stream_receive_message(realm_id, stream_name, message):
                          Callbacks.TYPE_STREAM_RECEIVE,
                          messages=[message], update_types=["new_messages"])
 
-# Simple caching implementation module for user pointers
-#
-# TODO: Write something generic in cache.py to support this
-# functionality?  The current primitives there don't support storing
-# to the cache.
-user_pointers = {}
-def get_user_pointer(user_profile_id):
-    if user_pointers == {}:
-        # Once, on startup, fill in the user_pointers table with
-        # everyone's current pointers
-        for u in UserProfile.objects.all():
-            user_pointers[u.id] = u.pointer
-    if user_profile_id not in user_pointers:
-        # This is a new user created since Tornado was started, so
-        # they will have an initial pointer of -1.
-        return -1
-    return user_pointers[user_profile_id]
-
-def set_user_pointer(user_profile_id, pointer):
-    user_pointers[user_profile_id] = pointer
-
 def update_pointer(user_profile_id, new_pointer):
-    set_user_pointer(user_profile_id, new_pointer)
     callbacks_table.call(user_profile_id, Callbacks.TYPE_POINTER_UPDATE,
                          new_pointer=new_pointer,
                          update_types=["pointer_update"])
