@@ -90,8 +90,8 @@ function update_in_home_view(sub, value) {
 
     stream_list.set_in_home_view(sub.name, sub.in_home_view);
 
-    var in_home_view_checkbox = $("#subscription_" + sub.id + " #sub_setting_in_home_view .sub_setting_control");
-    in_home_view_checkbox.attr('checked', value);
+    var not_in_home_view_checkbox = $("#subscription_" + sub.id + " #sub_setting_not_in_home_view .sub_setting_control");
+    not_in_home_view_checkbox.attr('checked', !value);
 }
 
 exports.toggle_home = function (stream_name) {
@@ -715,7 +715,7 @@ $(function () {
             control.prop("checked", ! control.prop("checked"));
         }
     });
-    $("#subscriptions_table").on("click", "#sub_setting_in_home_view", stream_home_view_clicked);
+    $("#subscriptions_table").on("click", "#sub_setting_not_in_home_view", stream_home_view_clicked);
     $("#subscriptions_table").on("click", "#sub_setting_notifications", stream_notifications_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
