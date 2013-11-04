@@ -1929,6 +1929,7 @@ def realm_summary_table(realm_minutes):
                 WHERE
                     query in (
                         '/json/send_message',
+                        'send_message_backend',
                         '/json/update_pointer'
                     )
                 AND
@@ -1946,6 +1947,7 @@ def realm_summary_table(realm_minutes):
                 WHERE
                     query in (
                         '/json/send_message',
+                        'send_message_backend',
                         '/json/update_pointer'
                     )
                 AND
