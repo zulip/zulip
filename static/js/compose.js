@@ -356,6 +356,15 @@ function send_message_ajax(request, success) {
     });
 }
 
+function report_send_time(time) {
+    $.ajax({
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        url: '/json/report_send_time',
+        type: 'POST',
+        data: {"time": time}
+    });
+}
+
 var socket = new Socket("/sockjs");
 // For debugging.  The socket will eventually move out of this file anyway.
 exports._socket = socket;
@@ -385,12 +394,15 @@ function send_message(request) {
 
     var start_time = new Date();
     function success() {
+        var send_time = (new Date() - start_time);
         if (feature_flags.log_send_times) {
-            blueslip.log("send time: " + (new Date() - start_time));
+            blueslip.log("send time: " + send_time);
         }
         if (feature_flags.collect_send_times) {
-            exports.send_times_data.push((new Date() - start_time));
+            exports.send_times_data.push(send_time);
         }
+        report_send_time(send_time.toString());
+
         $("#new_message_content").val('').focus();
         autosize_textarea();
         $("#send-status").hide(0);

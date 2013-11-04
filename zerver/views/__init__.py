@@ -2755,6 +2755,13 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 
 @authenticated_json_post_view
 @has_request_variables
+def json_report_send_time(request, user_profile,
+                          time=REQ(converter=to_non_negative_int)):
+    logging.info("End-to-end send time: %dms (%s)" % (time, user_profile.email))
+    return json_success()
+
+@authenticated_json_post_view
+@has_request_variables
 def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
                       ui_message=REQ(converter=json_to_bool), user_agent=REQ,
                       href=REQ, log=REQ,
