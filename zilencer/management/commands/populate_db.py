@@ -724,7 +724,7 @@ def send_messages(data):
     # Close the database connection, so that we get a new one that
     # isn't shared with the other threads
     connection.close()
-    texts = file("zerver/management/commands/test_messages.txt", "r").readlines()
+    texts = file("zilencer/management/commands/test_messages.txt", "r").readlines()
     offset = random.randint(0, len(texts))
 
     recipient_streams = [klass.id for klass in
