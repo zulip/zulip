@@ -1,7 +1,4 @@
 # Template for Django settings for the Zulip local servers
-import os
-import platform
-import re
 
 # This is the user-accessible Zulip hostname for this installation
 EXTERNAL_HOST = ''

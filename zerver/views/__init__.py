@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
-from django.utils.timezone import now, utc
+from django.utils.timezone import now
 from django.utils.html import mark_safe
 from django.utils.cache import patch_cache_control
 from django.core.exceptions import ValidationError
@@ -16,35 +16,35 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q, F
 from django.core.mail import send_mail, mail_admins, EmailMessage
-from django.db import transaction, IntegrityError
+from django.db import transaction
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, bulk_get_recipients, \
     PreregistrationUser, get_client, MitUser, UserActivity, UserActivityInterval, \
-    MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
-    get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
+    get_stream, bulk_get_streams, UserPresence, \
+    get_recipient, valid_stream_name, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
     email_to_domain, email_to_username, get_realm, completely_open, \
     is_super_user, AppleDeviceToken, get_active_user_dicts_in_realm
-from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
+from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_password, create_mirror_user_if_needed, compute_irc_user_fullname, \
     compute_jabber_user_fullname, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
-    do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
+    do_activate_user, do_create_user, check_send_message, \
     do_change_subscription_property, internal_send_message, \
-    create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
+    create_stream_if_needed, gather_subscriptions, \
     update_user_presence, bulk_add_subscriptions, do_update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_message, internal_prep_message, \
-    do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
+    do_send_messages, get_default_subs, do_deactivate, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
-    update_user_activity_interval, do_set_muted_topics, do_rename_stream, \
+    do_set_muted_topics, do_rename_stream, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
-    is_inactive, not_mit_mailing_list
+    is_inactive
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
@@ -56,16 +56,14 @@ from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
-    JsonableError, get_user_profile_by_email, \
-    authenticated_rest_api_view, process_as_post, REQ, rate_limit_user, \
+    JsonableError, get_user_profile_by_email, process_as_post, REQ, \
     zulip_internal
 from zerver.lib.query import last_n
 from zerver.lib.avatar import avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
     get_signed_upload_url
 from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
-from zerver.lib.cache import cache_get_many, cache_set_many, \
-    generic_bulk_cached_fetch
+from zerver.lib.cache import generic_bulk_cached_fetch
 from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token

@@ -20,7 +20,7 @@ from django.core.exceptions import ValidationError
 from django.utils.importlib import import_module
 from django.template import loader
 from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.utils.timezone import utc, is_naive, now
+from django.utils.timezone import now
 
 from confirmation.models import Confirmation
 
@@ -44,8 +44,6 @@ from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
 from zerver.lib.push_notifications import num_push_devices_for_user, send_apple_push_notification
-
-import confirmation.settings
 
 from zerver import tornado_callbacks
 

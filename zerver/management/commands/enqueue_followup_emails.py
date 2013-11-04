@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from optparse import make_option
 
-from django.template import loader
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import send_local_email_template_with_delay, clear_followup_emails_queue
 from datetime import timedelta

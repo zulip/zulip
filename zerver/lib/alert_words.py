@@ -1,13 +1,7 @@
 from __future__ import absolute_import
 
-import re
-
 import zerver.models
-
 from zerver.lib.cache import cache_with_key, realm_alert_words_cache_key
-
-import itertools
-import logging
 import ujson
 
 @cache_with_key(realm_alert_words_cache_key, timeout=3600*24)

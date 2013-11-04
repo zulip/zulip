@@ -1,10 +1,5 @@
 from __future__ import absolute_import
 
-import re
-
-from django.db.models import F, Q
-import zerver.models
-
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
 find_mentions = r'(?<![^\s\'\"\(,:<])@(?:\*\*([^\*]+)\*\*|(\w+))'

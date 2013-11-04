@@ -9,7 +9,7 @@ from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     generic_bulk_cached_fetch, cache_set, \
     display_recipient_cache_key, active_user_dicts_in_realm_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
-from django.db import transaction, IntegrityError
+from django.db import transaction
 from zerver.lib import bugdown
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
 from django.utils import timezone

@@ -1,16 +1,13 @@
 from __future__ import absolute_import
 
-import sys
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
-from django.core import validators
 
 from guardian.shortcuts import assign_perm, remove_perm
 
-from zerver.models import Realm, UserProfile
+from zerver.models import UserProfile
 
 class Command(BaseCommand):
     help = """Give an existing user administrative permissions over their (own) Realm.

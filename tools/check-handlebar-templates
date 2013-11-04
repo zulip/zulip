@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import os
 import sys
-import re
-import glob
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from zulip_tools import check_output

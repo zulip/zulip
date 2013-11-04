@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from django.core.management.base import BaseCommand
 from django.core.management import CommandError
 from zerver.lib.queue import SimpleQueueClient
-import logging
 
 class Command(BaseCommand):
     args = "<queue name>"

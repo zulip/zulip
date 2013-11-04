@@ -1,13 +1,12 @@
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 
 from zerver.decorator import has_request_variables, REQ, json_to_dict
 from zerver.lib.actions import internal_send_message
 from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.models import get_realm, get_user_profile_by_email, email_to_domain, \
-        UserProfile, Realm
-from zilencer.models import Deployment
+        UserProfile
 
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 

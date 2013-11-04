@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from zerver.models import UserProfile, Realm, UserActivity, UserActivityInterval
+from zerver.models import UserProfile, UserActivity, UserActivityInterval
 
 from django.utils.timezone import utc
 
-from datetime import timedelta, datetime
+from datetime import timedelta
 from itertools import chain
 
 def median(data):

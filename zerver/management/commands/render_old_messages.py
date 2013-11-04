@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
 
-from zerver.models import UserProfile, Message, get_user_profile_by_email
+from zerver.models import Message
 import datetime
 import time
 

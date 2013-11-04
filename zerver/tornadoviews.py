@@ -7,7 +7,7 @@ from zerver.models import get_client
 from zerver.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
     has_request_variables, to_non_negative_int, json_to_bool, json_to_list, \
-    authenticated_rest_api_view, REQ
+    REQ
 
 from zerver.lib.response import json_success, json_error
 from zerver.middleware import async_request_restart

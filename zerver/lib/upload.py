@@ -13,7 +13,6 @@ import base64
 import os
 from PIL import Image, ImageOps
 from StringIO import StringIO
-import errno
 import random
 
 # Performance Note:

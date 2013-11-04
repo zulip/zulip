@@ -10,9 +10,7 @@ import irc.bot
 import irc.strings
 from irc.client import ip_numstr_to_quad, ip_quad_to_numstr
 import zulip
-import time
 import optparse
-import sys
 
 def zulip_sender(sender_string):
     nick = sender_string.split("!")[0]

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from postmonkey import PostMonkey, MailChimpException
-from zerver.models import UserActivityInterval, get_user_profile_by_email, \
+from zerver.models import get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client
 from zerver.lib.context_managers import lockfile
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
@@ -18,7 +18,6 @@ from confirmation.models import Confirmation
 import os
 import sys
 import ujson
-import traceback
 from collections import defaultdict
 import time
 import datetime

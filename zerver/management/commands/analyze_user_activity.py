@@ -4,11 +4,9 @@ from zerver.lib.statistics import seconds_usage_between
 
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from zerver.models import get_user_profile_by_email, UserActivityInterval, \
-    UserProfile
-import sys
+from zerver.models import UserProfile
 import datetime
-from django.utils.timezone import utc, is_naive
+from django.utils.timezone import utc
 
 def analyze_activity(options):
     day_start = datetime.datetime.strptime(options["date"], "%Y-%m-%d").replace(tzinfo=utc)

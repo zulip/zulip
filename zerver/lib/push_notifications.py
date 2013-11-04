@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
-from zerver.models import UserProfile, AppleDeviceToken
+from zerver.models import AppleDeviceToken
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.decorator import statsd_increment
 
-from apnsclient import Session, Connection, Message, APNs
+from apnsclient import Session, Message, APNs
 
 from django.conf import settings
 

@@ -25,14 +25,8 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
 import base64
-import json
-import os
-import readline
 import struct
-import subprocess
-import sys
 
 # Some DER encoding stuff. Bleh. This is because the ccache contains a
 # DER-encoded krb5 Ticket structure, whereas Webathena deserializes

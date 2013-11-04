@@ -5,10 +5,10 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from zerver.models import UserProfile, get_client, MAX_SUBJECT_LENGTH, \
-      get_user_profile_by_email, Realm
+      get_user_profile_by_email
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import rate_limit_user, authenticated_api_view, REQ, \
+from zerver.decorator import authenticated_api_view, REQ, \
     has_request_variables, json_to_dict, authenticated_rest_api_view, \
     api_key_only_webhook_view
 from zerver.views import send_message_backend
@@ -20,7 +20,6 @@ import base64
 import logging
 import re
 import ujson
-import markdown.inlinepatterns
 from functools import wraps
 
 def github_generic_subject(noun, repository, blob):

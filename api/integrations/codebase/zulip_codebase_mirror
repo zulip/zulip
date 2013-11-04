@@ -31,7 +31,6 @@
 
 import requests
 import logging
-import calendar
 import time
 import sys
 import os

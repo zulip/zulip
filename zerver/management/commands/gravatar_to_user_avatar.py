@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 
-import sys
 import requests
 from zerver.models import get_user_profile_by_email, UserProfile
-from zerver.lib.avatar import gravatar_hash, user_avatar_hash
+from zerver.lib.avatar import gravatar_hash
 from zerver.lib.upload import upload_avatar_image
 from django.core.management.base import BaseCommand, CommandError
 from django.core.files.uploadedfile import SimpleUploadedFile

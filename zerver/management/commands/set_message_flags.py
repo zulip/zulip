@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib import utils
 from zerver.models import UserMessage, get_user_profile_by_email
-from django.db import transaction, models
+from django.db import models
 
 
 class Command(BaseCommand):

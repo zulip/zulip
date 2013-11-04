@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from zerver.models import RealmEmoji, Realm
+from zerver.models import Realm
 from zerver.lib.actions import do_add_realm_emoji, do_remove_realm_emoji
 import sys
 

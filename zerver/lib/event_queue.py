@@ -16,7 +16,6 @@ import tornado
 import random
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
-from zerver.models import get_client
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
