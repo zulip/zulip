@@ -75,7 +75,12 @@ class Command(BaseCommand):
         get_client("API")
 
         all_realm_bots = [(bot['name'], bot['email_template'] % (settings.ADMIN_DOMAIN,)) for bot in settings.REALM_BOTS]
-        # TODO: Set owners for these bots
+        create_users(realms, all_realm_bots, bot=True)
+        # Set the owners for these bots to the bots themselves
+        bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in all_realm_bots])
+        for bot in bots:
+            bot.bot_owner = bot
+            bot.save()
 
         self.stdout.write("Successfully populated test database.\n")
 
