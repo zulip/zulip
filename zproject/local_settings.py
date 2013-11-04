@@ -149,6 +149,11 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 # must be delivered to the Inbox of the EMAIL_GATEWAY_LOGIN account above
 EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
 
+SSO_APPEND_DOMAIN = None
+
+AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
+                           'zproject.backends.GoogleBackend')
+
 
 DROPBOX_APP_KEY = "xxxxxxxxxxxxxxx"
 

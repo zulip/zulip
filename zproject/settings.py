@@ -152,9 +152,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
-                           'zproject.backends.GoogleBackend',
-                           'guardian.backends.ObjectPermissionBackend')
+AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
 ANONYMOUS_USER_ID = None
 
 AUTH_USER_MODEL = "zerver.UserProfile"

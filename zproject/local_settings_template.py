@@ -37,6 +37,17 @@ TWITTER_CONSUMER_SECRET = ''
 TWITTER_ACCESS_TOKEN_KEY = ''
 TWITTER_ACCESS_TOKEN_SECRET = ''
 
+# When using SSO: If REMOTE_USER only provides a username, append this domain
+# to the returned value.
+SSO_APPEND_DOMAIN = None
+
+# Enable at least one of the following authentication backends.
+AUTHENTICATION_BACKENDS = (
+#                           'zproject.backends.EmailAuthBackend', # Email and password
+#                           'zerver.views.remote_user_sso', # Local SSO
+#                           'zproject.backends.GoogleBackend', # Google Apps
+    )
+
 # The following keys are automatically generated during the install process
 # PLEASE DO NOT EDIT THEM
 CAMO_KEY = ''

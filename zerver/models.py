@@ -141,6 +141,11 @@ def email_to_username(email):
 def email_to_domain(email):
     return email.split("@")[-1].lower()
 
+def remote_user_to_email(remote_user):
+    if settings.SSO_APPEND_DOMAIN is not None:
+        remote_user += "@" + SSO_APPEND_DOMAIN
+    return remote_user
+
 class RealmEmoji(models.Model):
     realm = models.ForeignKey(Realm)
     name = models.TextField()

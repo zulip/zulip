@@ -1,5 +1,8 @@
+from __future__ import absolute_import
+
+from django.contrib.auth.backends import RemoteUserBackend
 from zerver.models import UserProfile, get_user_profile_by_id, \
-    get_user_profile_by_email
+    get_user_profile_by_email, remote_user_to_email
 
 from openid.consumer.consumer import SUCCESS
 
@@ -53,3 +56,16 @@ class GoogleBackend(ZulipAuthMixin):
 
         return user_profile
 
+class ZulipRemoteUserBackend(RemoteUserBackend):
+    create_unknown_user = False
+
+    def authenticate(self, remote_user):
+        if not remote_user:
+            return
+
+        email = remote_user_to_email(remote_user)
+
+        try:
+            return get_user_profile_by_email(email)
+        except UserProfile.DoesNotExist:
+            return None

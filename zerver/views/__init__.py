@@ -472,6 +472,21 @@ def maybe_send_to_registration(request, email, full_name=''):
     else:
         return render_to_response('zerver/accounts_home.html', {'form': form})
 
+def remote_user_sso(request):
+    try:
+        remote_user = request.META["REMOTE_USER"]
+    except KeyError as e:
+        raise JsonableError("No REMOTE_USER set.")
+
+    user = authenticate(remote_user=remote_user)
+
+    if user is None:
+        # Since execution has reached here, REMOTE_USER is defined but no
+        # user account exists. Send them over to the PreregistrationUser flow.
+        return maybe_send_to_registration(request, remote_user_to_email(user))
+    else:
+        return HttpResponseRedirect(reverse('zerver.views.accounts_home'))
+
 def handle_openid_errors(request, issue, openid_response=None):
     if issue == "Unknown user":
         if openid_response is not None and openid_response.status == openid_SUCCESS:
