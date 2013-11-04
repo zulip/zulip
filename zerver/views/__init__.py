@@ -2389,7 +2389,7 @@ def get_activity(request, realm=REQ(default=None)):
 
     return render_to_response(
         'zerver/activity.html',
-        dict(data=data, realm=realm, title=title),
+        dict(data=data, realm=realm, title=title, is_home=True),
         context_instance=RequestContext(request)
     )
 
@@ -2684,7 +2684,6 @@ def get_realm_activity(request, realm):
     content = sent_messages_report(realm)
     data += [(page_title, dict(content=content))]
 
-    realm = None
     title = realm
     return render_to_response(
         'zerver/activity.html',

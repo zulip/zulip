@@ -18,11 +18,12 @@
 
 {% block content %}
 
-{% if realm %}
-<a class="show-all" href="?">Home</a>
-<h4>{{ realm}}</h4>
+{% if not is_home %}
+<a class="show-all" href="/activity">Home</a>
 <br />
 {% endif %}
+
+<h4>{{ title }}</h4>
 
 
 <ul class="nav nav-tabs">
