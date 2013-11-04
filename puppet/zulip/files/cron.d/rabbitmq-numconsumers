@@ -8,3 +8,6 @@ USER=root
 * * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file user_presence
 * * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file invites
 * * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file signups
+* * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file message_sender
+* * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file feedback_messages
+* * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file digest_emails
