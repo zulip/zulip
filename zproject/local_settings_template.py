@@ -3,6 +3,9 @@
 # This is the user-accessible Zulip hostname for this installation
 EXTERNAL_HOST = ''
 
+# This is the Zulip Administrator email address
+ZULIP_ADMINISTRATOR = ''
+
 # These credentials are for communication with the central Zulip deployment manager
 DEPLOYMENT_ROLE_NAME = ''
 DEPLOYMENT_ROLE_KEY = ''

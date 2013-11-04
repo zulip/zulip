@@ -159,3 +159,5 @@ NAGIOS_RECEIVE_BOT = 'othello@zulip.com'
 # Our internal deployment has nagios checks for both staging and prod
 NAGIOS_STAGING_SEND_BOT = 'iago@zulip.com'
 NAGIOS_STAGING_RECEIVE_BOT = 'cordelia@zulip.com'
+
+ZULIP_ADMINISTRATOR = 'support@zulip.com'

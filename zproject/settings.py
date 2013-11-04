@@ -245,7 +245,8 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ERROR_BOT': None,
                     'NEW_USER_BOT': None,
                     'NAGIOS_STAGING_SEND_BOT': None,
-                    'NAGIOS_STAGING_RECEIVE_BOT': None
+                    'NAGIOS_STAGING_RECEIVE_BOT': None,
+                    'ZULIP_ADMINISTRATOR': ''
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():

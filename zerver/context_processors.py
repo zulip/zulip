@@ -7,6 +7,7 @@ def add_settings(request):
     return {
         'full_navbar':   settings.FULL_NAVBAR,
         'local_server':  settings.LOCAL_SERVER,
+        'zulip_admin':   settings.ZULIP_ADMINISTRATOR,
     }
 
 def add_metrics(request):
