@@ -78,7 +78,8 @@ Socket.prototype = {
             // We can only authenticate after the DOM has loaded because we need
             // the CSRF token
             $(function () {
-                that._do_send('auth', {csrf_token: csrf_token},
+                that._do_send('auth', {csrf_token: csrf_token,
+                                       queue_id: page_params.event_queue_id},
                               function () {
                                   that._is_authenticated = true;
                                   that._connection_failures = 0;

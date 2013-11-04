@@ -16,6 +16,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.actions import check_send_message, extract_recipients
 from zerver.decorator import JsonableError
 from zerver.lib.utils import statsd
+from zerver.lib.event_queue import get_client_descriptor
 
 djsession_engine = import_module(settings.SESSION_ENGINE)
 def get_user_profile(session_id):
@@ -36,19 +37,16 @@ def get_user_profile(session_id):
         return None
 
 connections = dict()
-next_connection_seq = 0
 
 def get_connection(id):
     return connections.get(id)
 
-def register_connection(conn):
-    global next_connection_seq
-    conn.connection_id = "%s:%s" % (settings.SERVER_GENERATION, next_connection_seq)
-    next_connection_seq = next_connection_seq + 1
-    connections[conn.connection_id] = conn
+def register_connection(id, conn):
+    conn.client_id = id
+    connections[conn.client_id] = conn
 
 def deregister_connection(conn):
-    del connections[conn.connection_id]
+    del connections[conn.client_id]
 
 def fake_log_line(conn_info, time, ret_code, path, email):
     # These two functions are copied from our middleware.  At some
@@ -79,7 +77,6 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         ioloop = tornado.ioloop.IOLoop.instance()
         self.timeout_handle = ioloop.add_timeout(time.time() + 10, self.close)
 
-        register_connection(self)
         fake_log_line(info, 0, 200, 'Connection opened using %s' % (self.session.transport_name,), 'unknown')
 
     def authenticate_client(self, msg):
@@ -95,6 +92,19 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         if msg['request']['csrf_token'] != self.csrf_token:
             raise SocketAuthError('CSRF token does not match that in cookie')
+
+        if not 'queue_id' in msg['request']:
+            raise SocketAuthError("Missing 'queue_id' argument")
+
+        queue_id = msg['request']['queue_id']
+        client = get_client_descriptor(queue_id)
+        if client is None:
+            raise SocketAuthError('Bad event queue id: %s' % (queue_id,))
+
+        if user_profile.id != client.user_profile_id:
+            raise SocketAuthError("You are not the owner of the queue with id '%s'" % (queue_id,))
+
+        register_connection(queue_id, self)
 
         self.session.send_message({'client_meta': msg['client_meta'],
                                    'response': {'result': 'success', 'msg': ''}})
@@ -129,7 +139,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         req['client_name'] = req['client']
         queue_json_publish("message_sender", dict(request=req,
                                                   client_meta=msg['client_meta'],
-                                                  server_meta=dict(connection_id=self.connection_id,
+                                                  server_meta=dict(client_id=self.client_id,
                                                                    return_queue="tornado_return",
                                                                    start_time=start_time)),
                            fake_message_sender)
@@ -161,7 +171,7 @@ def fake_message_sender(event):
     respond_send_message(result)
 
 def respond_send_message(data):
-    connection = get_connection(data['server_meta']['connection_id'])
+    connection = get_connection(data['server_meta']['client_id'])
     if connection is not None:
         connection.session.send_message({'client_meta': data['client_meta'], 'response': data['response']})
 
