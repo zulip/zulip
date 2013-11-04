@@ -44,7 +44,6 @@ def api_github_landing(request, user_profile, event=REQ,
                        payload=REQ(converter=json_to_dict),
                        branches=REQ(default=''),
                        stream=REQ(default='')):
-    # TODO: this should all be moved to an external bot
     repository = payload['repository']
 
     # Special hook for capturing event data

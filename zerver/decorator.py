@@ -61,8 +61,6 @@ def update_user_activity(request, user_profile):
            'user_profile_id': user_profile.id,
            'time': datetime_to_timestamp(now()),
            'client': request.client.name}
-    # TODO: It's possible that this should call process_user_activity
-    # from zerver.lib.actions for maximal consistency.
     queue_json_publish("user_activity", event, lambda event: None)
 
 # I like the all-lowercase name better
