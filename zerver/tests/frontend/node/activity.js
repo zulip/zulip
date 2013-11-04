@@ -29,6 +29,9 @@ set_global('people_dict', new global.Dict.from({
     },
     'jill@zulip.com': {
         full_name: 'Jill Hill'
+    },
+    'mark@zulip.com': {
+        full_name: 'Marky Mark'
     }
 }));
 
@@ -101,6 +104,28 @@ var activity = require('js/activity.js');
     assert.equal(
         activity.full_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
         'Alice Smith, Fred Flintstone, Jill Hill'
+    );
+}());
+
+(function test_short_huddle_name() {
+    assert.equal(
+        activity.short_huddle_name('alice@zulip.com'),
+        'Alice Smith'
+    );
+
+    assert.equal(
+        activity.short_huddle_name('alice@zulip.com,jill@zulip.com'),
+        'Alice Smith, Jill Hill'
+    );
+
+    assert.equal(
+        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
+        'Alice Smith, Fred Flintstone, + 1 other'
+    );
+
+    assert.equal(
+        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
+        'Alice Smith, Fred Flintstone, + 2 others'
     );
 }());
 

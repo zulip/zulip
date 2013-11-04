@@ -74,6 +74,24 @@ exports.full_huddle_name = function (huddle) {
     return names.join(', ');
 };
 
+exports.short_huddle_name = function (huddle) {
+    var emails = huddle.split(',');
+
+    var names = _.map(emails.slice(0,2), function (email) {
+        var person = people_dict.get(email);
+        return person ? person.full_name : email;
+    });
+    var others = emails.length - 2;
+
+    if (others === 1) {
+        names.push("+ 1 other");
+    } else if (others >= 2) {
+        names.push("+ " + others + " others");
+    }
+
+    return names.join(', ');
+};
+
 exports.huddle_fraction_present = function (huddle, presence_info) {
     var emails = huddle.split(',');
 
