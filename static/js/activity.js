@@ -74,6 +74,22 @@ exports.full_huddle_name = function (huddle) {
     return names.join(', ');
 };
 
+exports.huddle_fraction_present = function (huddle, presence_info) {
+    var emails = huddle.split(',');
+
+    var num_present = 0;
+    _.each(emails, function (email) {
+        var status = presence_info[email];
+        if (status && (status !== 'offline')) {
+            ++num_present;
+        }
+    });
+
+    var ratio = num_present / emails.length;
+
+    return ratio.toFixed(2);
+};
+
 function sort_users(users, presence_info) {
     // TODO sort by unread count first, once we support that
     users.sort(function (a, b) {

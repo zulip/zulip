@@ -103,3 +103,20 @@ var activity = require('js/activity.js');
         'Alice Smith, Fred Flintstone, Jill Hill'
     );
 }());
+
+(function test_huddle_fraction_present() {
+    var huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
+
+    var presence_list = {
+        'alice@zulip.com': 'active',
+        'fred@zulip.com': 'idle', // counts as present
+        // jill not in list
+        'mark@zulip.com': 'offline' // does not count
+    };
+
+    assert.equal(
+        activity.huddle_fraction_present(huddle, presence_list),
+        '0.50'
+    );
+}());
+
