@@ -65,6 +65,10 @@ def fake_log_line(conn_info, time, ret_code, path, email):
                  (conn_info.ip, 'SOCKET', ret_code, format_timedelta(time),
                   path, email))
 
+class SocketAuthError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
 class SocketConnection(sockjs.tornado.SockJSConnection):
     def on_open(self, info):
         self.authenticated = False
@@ -86,19 +90,11 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         user_profile = get_user_profile(self.browser_session_id)
         if user_profile is None:
-            error_msg = 'Unknown or missing session'
-            fake_log_line(self.session.conn_info, 0, 403, error_msg, 'unknown')
-            self.session.send_message({'client_meta': msg['client_meta'],
-                                       'response': {'result': 'error', 'msg': error_msg}})
-            return
+            raise SocketAuthError('Unknown or missing session')
         self.session.user_profile = user_profile
 
         if msg['request']['csrf_token'] != self.csrf_token:
-            error_msg = 'CSRF token does not match that in cookie'
-            fake_log_line(self.session.conn_info, 0, 403, error_msg, 'unknown')
-            self.session.send_message({'client_meta': msg['client_meta'],
-                                       'response': {'result': 'error', 'msg': error_msg}})
-            return
+            raise SocketAuthError('CSRF token does not match that in cookie')
 
         self.session.send_message({'client_meta': msg['client_meta'],
                                    'response': {'result': 'success', 'msg': ''}})
@@ -113,7 +109,12 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         msg = ujson.loads(msg)
 
         if msg['type'] == 'auth':
-            self.authenticate_client(msg)
+            try:
+                self.authenticate_client(msg)
+            except SocketAuthError as e:
+                fake_log_line(self.session.conn_info, 0, 403, e.msg, 'unknown')
+                self.session.send_message({'client_meta': msg['client_meta'],
+                                           'response': {'result': 'error', 'msg': e.msg}})
             return
         else:
             if not self.authenticated:
