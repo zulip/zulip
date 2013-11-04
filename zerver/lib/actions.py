@@ -338,8 +338,8 @@ def do_send_messages(messages):
             if message['stream'].invite_only:
                 data['invite_only'] = True
         tornado_callbacks.send_notification(data)
-        if message['message'].recipient.type == Recipient.PERSONAL and \
-                message['recipients'][0].email == "feedback@zulip.com":
+        if (message['message'].recipient.type == Recipient.PERSONAL and
+            "feedback@zulip.com" in [up.email for up in message['recipients']]):
             queue_json_publish(
                     'feedback_messages',
                     message['message'].to_dict(apply_markdown=False),
