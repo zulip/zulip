@@ -32,7 +32,7 @@ certs
 """.split()
 
 exclude_files = """
-zerver/management/commands/test_messages.txt
+zilencer/management/commands/test_messages.txt
 tools/usability_testing/humbug_usability_test_data
 tools/jslint/jslint.js
 """.split()
