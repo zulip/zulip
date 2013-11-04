@@ -374,7 +374,7 @@ exports.received_messages = function (messages) {
 };
 
 exports.possibly_notify_new_messages_outside_viewport = function (messages) {
-    if (page_params.domain !== "zulip.com") {
+    if (!feature_flags.notify_on_send_not_in_view) {
         return;
     }
     _.each(messages, function (message) {
@@ -418,7 +418,7 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
 // for callback when we have to check with the server if a message should be in
 // the current_msg_list (!can_apply_locally; a.k.a. "a search").
 exports.notify_messages_outside_current_search = function (messages) {
-    if (page_params.domain !== "zulip.com") {
+    if (!feature_flags.notify_on_send_not_in_view) {
         return;
     }
     _.each(messages, function (message) {
