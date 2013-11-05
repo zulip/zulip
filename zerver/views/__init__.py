@@ -1822,72 +1822,6 @@ def json_fetch_api_key(request, user_profile, password=REQ):
         return json_error("Your username or password is incorrect.")
     return json_success({"api_key": user_profile.api_key})
 
-class ActivityTable(object):
-    def __init__(self, realm, client_name, queries):
-        self.realm = realm
-        self.summary_mode = realm is None
-        self.has_pointer = False
-        self.rows = {}
-
-        def do_url(query_name, url):
-            fields = [
-                'user_profile__realm__domain',
-                'user_profile__full_name',
-                'user_profile__email',
-                'count',
-                'last_visit'
-            ]
-
-            records = UserActivity.objects.filter(
-                    query=url,
-                    client__name__startswith=client_name,
-                    user_profile__realm__domain=realm
-            )
-            records = records.select_related().only(*fields)
-
-            count_field = query_name + '_count'
-            last_visit_field = query_name + '_last'
-
-            for record in records:
-                domain = record.user_profile.realm.domain
-                email = record.user_profile.email
-                full_name = record.user_profile.full_name
-                count = record.count
-                last_visit = record.last_visit
-
-                row = self.rows.setdefault(email,
-                                           {'realm': domain,
-                                            'full_name': full_name,
-                                            'email': email,
-                                            'type': 'user'})
-                row[count_field] = count
-                row[last_visit_field] = last_visit
-
-
-        for query_name, urls in queries:
-            if 'pointer' in query_name:
-                self.has_pointer = True
-            for url in urls:
-                do_url(query_name, url)
-
-        for row in self.rows.values():
-            # kind of a hack
-            last_action = max(v for v in row.values() if isinstance(v, datetime.datetime))
-            age = now() - last_action
-            if age < datetime.timedelta(minutes=10):
-                row['class'] = 'recently_active'
-            elif age >= datetime.timedelta(days=1):
-                row['class'] = 'long_inactive'
-            row['age'] = age
-
-    def sorted_rows(self):
-        keyfunc = lambda (k,r): (r['realm'], -1 * r.get('send_message_count', 0))
-        return sorted(self.rows.iteritems(), key=keyfunc)
-
-    def content(self):
-        return loader.render_to_string('zerver/activity_table.html', dict(table=self))
-
-
 def dictfetchall(cursor):
     "Returns all rows from a cursor as a dict"
     desc = cursor.description
@@ -2356,36 +2290,16 @@ def ad_hoc_queries():
 @zulip_internal
 @has_request_variables
 def get_activity(request, realm=REQ(default=None)):
-    web_queries = (
-        ("get_updates",    ["/json/get_updates", "/json/get_events"]),
-        ("send_message",   ["/json/send_message"]),
-        ("update_pointer", ["/json/update_pointer"]),
-    )
+    duration_content, realm_minutes = user_activity_intervals()
+    counts_content = realm_summary_table(realm_minutes)
+    data = [
+        ('Counts', counts_content),
+        ('Durations', duration_content),
+    ]
+    for page in ad_hoc_queries():
+        data.append((page['title'], page))
 
-    api_queries = (
-        ("get_updates",  ["/api/v1/get_messages", "/api/v1/messages/latest", "/api/v1/events"]),
-        ("send_message", ["/api/v1/send_message"]),
-    )
-
-    if realm is None:
-        duration_content, realm_minutes = user_activity_intervals()
-        counts_content = realm_summary_table(realm_minutes)
-        data = [
-            ('Counts', counts_content),
-            ('Durations', duration_content),
-        ]
-        for page in ad_hoc_queries():
-            data.append((page['title'], page))
-        title = 'Activity'
-    else:
-        data = [
-            ('Website',    ActivityTable(realm, 'website',       web_queries)),
-            ('Desktop',    ActivityTable(realm, 'desktop',       web_queries)),
-            ('API',        ActivityTable(realm, 'API',           api_queries)),
-            ('Android',    ActivityTable(realm, 'Android',       api_queries)),
-            ('History',    dict(content=sent_messages_report(realm))),
-        ]
-        title = '%s activity' % (realm,)
+    title = 'Activity'
 
     return render_to_response(
         'zerver/activity.html',
