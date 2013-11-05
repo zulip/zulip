@@ -334,7 +334,7 @@ def accounts_register(request):
              'company_name': domain,
              'email': email,
              'key': key,
-             'gafyd_name': request.POST.get('gafyd_name', False),
+             'full_name': request.POST.get('full_name', False),
             },
         context_instance=RequestContext(request))
 
@@ -465,7 +465,7 @@ def maybe_send_to_registration(request, email, full_name=''):
             "/",
             # Split this so we only get the part after the /
             Confirmation.objects.get_link_for_object(prereg_user).split("/", 3)[3],
-            '?gafyd_name=',
+            '?full_name=',
             # urllib does not handle Unicode, so coerece to encoded byte string
             # Explanation: http://stackoverflow.com/a/5605354/90777
             urllib.quote_plus(full_name.encode('utf8')))))
