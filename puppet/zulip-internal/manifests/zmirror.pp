@@ -31,7 +31,7 @@ class zulip-internal::zmirror {
     source => "puppet:///modules/zulip-internal/cron.d/zephyr-mirror",
   }
 
-  file { "/etc/defaults/zephyr-clients.debathena":
+  file { "/etc/default/zephyr-clients.debathena":
     ensure => file,
     owner  => "root",
     group  => "root",

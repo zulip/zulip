@@ -8,7 +8,7 @@ class zulip-internal::loadbalancer {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-orig/nginx/zulip-include/",
+    source => "puppet:///modules/zulip-internal/nginx/zulip-include/",
     notify => Service["nginx"],
   }
 
