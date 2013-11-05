@@ -107,7 +107,7 @@ exports.activate = function (operators, opts) {
     var filter = new Filter(operators);
     blueslip.debug("Narrowed", {operators: _.map(filter.operators(),
                                                  function (e) { return e[0]; }),
-                                trigger: opts.trigger,
+                                trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id(),
                                 previous_is_summarized: current_msg_list.is_summarized_message(
                                     current_msg_list.get(current_msg_list.selected_id()))});
