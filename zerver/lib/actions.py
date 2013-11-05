@@ -12,7 +12,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     email_to_domain, email_to_username, display_recipient_cache_key, \
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
-    UserActivityInterval, get_active_user_dicts_in_realm, RealmAlias
+    UserActivityInterval, get_active_user_dicts_in_realm, RealmAlias, \
+    ScheduledJob
 
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
@@ -2114,9 +2115,16 @@ def clear_followup_emails_queue(email, from_email=None, mail_client=None):
     `from_email` is a string representing the zulip email account used
     to send the email (for example `support@zulip.com` or `signups@zulip.com`)
     """
+    # Zulip Enterprise implementation
     if not mail_client:
+        items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
+        if from_email is not None:
+            items = [item for item in items
+                     if ujson.loads(item.data).get('from_email') == from_email]
+        items.delete()
         return
 
+    # Mandrill implementation
     for email in mail_client.messages.list_scheduled(to=email):
         if from_email is not None and email.get('from_email') != from_email:
             continue
@@ -2140,9 +2148,25 @@ def send_future_email(recipients, email_html, email_text, subject,
     #            "tags": ["signup-reminders"],
     #            "to": [{'email':"acrefoot@zulip.com", 'name': "thingamajig"}]
     #            }
+
+    # Zulip Enterprise implementation
     if not mail_client:
+        if sender is None:
+            sender = {'email': "noreply@%" % (settings.EXTERNAL_HOST,), 'name': 'Zulip'}
+        for recipient in recipients:
+            email_fields = {'email_html': email_html,
+                            'email_subject': subject,
+                            'email_text': email_text,
+                            'recipient_email': recipient.get('email'),
+                            'recipient_name': recipient.get('name'),
+                            'sender_email': sender['email'],
+                            'sender_name': sender['name']}
+            ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
+                                        data=ujson.dumps(email_fields),
+                                        scheduled_timestamp=datetime.datetime.utcnow() + delay)
         return
 
+    # Mandrill implementation
     if sender is None:
         sender = {'email': 'noreply@zulip.com', 'name': 'Zulip'}
 

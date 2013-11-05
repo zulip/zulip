@@ -681,6 +681,10 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ACCOUNT_ACTIVATION_DAYS=7
 
 DEFAULT_FROM_EMAIL = "Zulip <zulip@zulip.com>"
+# In some email setups, a single inbox may be setup to be a wildcard, so in that case allow
+# differing senders. Otherwise, *always* use the DEFAULT_FROM_EMAIL when not sending via
+# mandrill (i.e. in the localserver case)
+ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL = False
 
 LOGIN_REDIRECT_URL='/'
 OPENID_SSO_SERVER_URL = 'https://www.google.com/accounts/o8/id'

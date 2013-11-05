@@ -56,6 +56,7 @@ EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL = False
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 

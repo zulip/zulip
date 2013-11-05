@@ -4,7 +4,7 @@ from django.conf import settings
 MAIL_CLIENT = None
 
 def get_mandrill_client():
-    if settings.MANDRILL_API_KEY == '':
+    if settings.MANDRILL_API_KEY == '' or not settings.DEPLOYED or settings.ENTERPRISE:
         return None
 
     global MAIL_CLIENT

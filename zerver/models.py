@@ -998,3 +998,19 @@ class Referral(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     email = models.EmailField(blank=False, null=False)
     timestamp = models.DateTimeField(auto_now_add=True, null=False)
+
+# This table only gets used on Zulip Enterprise instances
+# For reasons of deliverability (and sending from multiple email addresses),
+# we will still send from mandrill when we send things from the (staging.)zulip.com install
+class ScheduledJob(models.Model):
+    scheduled_timestamp = models.DateTimeField(auto_now_add=False, null=False)
+    type = models.PositiveSmallIntegerField()
+    # Valid types are {email}
+    # for EMAIL, filter_string is recipient_email
+    EMAIL = 1
+
+    # JSON representation of the job's data. Be careful, as we are not relying on Django to do validation
+    data = models.TextField()
+    # Kind if like a ForeignKey, but table is determined by type.
+    filter_id = models.IntegerField(null=True)
+    filter_string = models.CharField(max_length=100)
