@@ -66,6 +66,7 @@ urlpatterns = patterns('',
 
     # Terms of service and privacy policy
     url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html')),
+    url(r'^terms-enterprise/$',  TemplateView.as_view(template_name='zerver/terms-enterprise.html')),
     url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html')),
 
     # Login/registration
