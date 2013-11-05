@@ -23,6 +23,7 @@ zilencer
 .gitignore
 templates/.gitignore
 puppet/zulip_internal
+zproject/local_settings.py
 EOF
 
 echo $GITID > version_id
