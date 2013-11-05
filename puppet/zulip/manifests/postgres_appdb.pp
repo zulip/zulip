@@ -3,7 +3,12 @@ class zulip::postgres_appdb {
   include zulip::supervisor
 
   $appdb_packages = [ "python-psycopg2",]
-  package { $appdb_packages: ensure => "installed" }
+  define safepackage ( $ensure = present ) {
+    if !defined(Package[$title]) {
+      package { $title: ensure => $ensure }
+    }
+  }
+  safepackage { $appdb_packages: ensure => "installed" }
 
   file { "/usr/local/bin/process_fts_updates":
     ensure => file,

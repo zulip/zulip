@@ -17,7 +17,12 @@ class zulip::app_frontend {
                     "redis-server", "python-redis", "python-django-guardian",
                     "python-diff-match-patch", "python-sourcemap", "python-mandrill",
                     "python-sockjs-tornado", "python-apns-client", "python-imaging"]
-  package { $web_packages: ensure => "installed" }
+  define safepackage ( $ensure = present ) {
+    if !defined(Package[$title]) {
+      package { $title: ensure => $ensure }
+    }
+  }
+  safepackage { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/zulip-include/":
     require => Package[nginx],
