@@ -13,6 +13,7 @@ from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation
     check_send_message, extract_recipients
 from zerver.lib.digest import handle_digest_email
 from zerver.decorator import JsonableError
+from zerver.lib.socket import req_redis_key
 from confirmation.models import Confirmation
 
 import os
@@ -23,6 +24,7 @@ import time
 import datetime
 import logging
 import simplejson
+import redis
 
 def assign_queue(queue_name, enabled=True):
     def decorate(clazz):
@@ -228,6 +230,10 @@ class SlowQueryWorker(QueueProcessingWorker):
 
 @assign_queue("message_sender")
 class MessageSenderWorker(QueueProcessingWorker):
+    def __init__(self):
+        super(MessageSenderWorker, self).__init__()
+        self.redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+
     def consume(self, event):
         req = event['request']
         try:
@@ -243,6 +249,11 @@ class MessageSenderWorker(QueueProcessingWorker):
 
         result = {'response': resp, 'req_id': event['req_id'],
                   'server_meta': event['server_meta']}
+
+        redis_key = req_redis_key(event['server_meta']['client_id'], event['req_id'])
+        self.redis_client.hmset(redis_key, {'status': 'complete',
+                                            'response': ujson.dumps(resp)});
+
         queue_json_publish(event['server_meta']['return_queue'], result, lambda e: None)
 
 @assign_queue('digest_emails')

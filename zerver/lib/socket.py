@@ -10,6 +10,7 @@ import tornado.ioloop
 import ujson
 import logging
 import time
+import redis
 
 from zerver.models import UserProfile, get_user_profile_by_id, get_client
 from zerver.lib.queue import queue_json_publish
@@ -62,6 +63,11 @@ def fake_log_line(conn_info, time, ret_code, path, email):
     logging.info('%-15s %-7s %3d %5s %s (%s)' %
                  (conn_info.ip, 'SOCKET', ret_code, format_timedelta(time),
                   path, email))
+
+redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+
+def req_redis_key(client_id, req_id):
+    return 'socket_req_status:%s:%s' % (client_id, req_id)
 
 class SocketAuthError(Exception):
     def __init__(self, msg):
@@ -137,6 +143,13 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         req = msg['request']
         req['sender_id'] = self.session.user_profile.id
         req['client_name'] = req['client']
+
+        redis_key = req_redis_key(self.client_id, msg['req_id'])
+        with redis_client.pipeline() as pipeline:
+            pipeline.hmset(redis_key, {'status': 'receieved'});
+            pipeline.expire(redis_key, 60 * 5)
+            pipeline.execute()
+
         queue_json_publish("message_sender", dict(request=req,
                                                   req_id=msg['req_id'],
                                                   server_meta=dict(client_id=self.client_id,
