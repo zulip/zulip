@@ -1,5 +1,5 @@
 class zulip-internal::mediawiki {
-  include zulip-internal::postgres-common
+  include zulip-internal::postgres_common
 
 
   $mediawiki_packages = [ "mediawiki", "mediawiki-extensions" ]

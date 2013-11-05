@@ -1,5 +1,5 @@
-class zulip-internal::postgres-common {
-  include zulip::postgres-common
+class zulip-internal::postgres_common {
+  include zulip::postgres_common
 
   exec {"pip_wal-e":
     command  => "/usr/bin/pip install git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",

@@ -1,6 +1,6 @@
-class zulip-internal::postgres-appdb {
-  include zulip-internal::postgres-common
-  include zulip::postgres-appdb
+class zulip-internal::postgres_appdb {
+  include zulip-internal::postgres_common
+  include zulip::postgres_appdb
 
   file { "/etc/postgresql/9.1/main/pg_hba.conf":
     require => Package["postgresql-9.1"],

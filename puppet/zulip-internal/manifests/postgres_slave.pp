@@ -1,6 +1,6 @@
-class zulip-internal::postgres-slave {
+class zulip-internal::postgres_slave {
   include zulip-internal::base
-  include zulip-internal::postgres-appdb
+  include zulip-internal::postgres_appdb
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
   file { '/etc/sysctl.d/30-postgresql-shm.conf':

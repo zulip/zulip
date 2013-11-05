@@ -1,4 +1,4 @@
-class zulip::postgres-common {
+class zulip::postgres_common {
   $postgres_packages = [ "postgresql-9.1", "pgtune",
                          "python-argparse", "python-gevent",
                          "lzop", "pv", "hunspell-en-us", "python-dateutil"]

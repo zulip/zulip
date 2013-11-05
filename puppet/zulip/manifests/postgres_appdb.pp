@@ -1,5 +1,5 @@
-class zulip::postgres-appdb {
-  include zulip::postgres-common
+class zulip::postgres_appdb {
+  include zulip::postgres_common
   include zulip::supervisor
 
   $appdb_packages = [ "python-psycopg2",]
