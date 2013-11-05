@@ -53,6 +53,10 @@ class zulip-internal::builder {
     distro => "debian",
     ensure => present,
   }
+  chroot { "unstable":
+    distro => "debian",
+    ensure => present,
+  }
 
 
 }
