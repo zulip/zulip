@@ -33,6 +33,7 @@ class zulip::local_server {
   }
 
   exec { 'pgtune':
+    require => Package[pgtune],
     command => 'pgtune -T Web -i /etc/postgresql/9.1/main/postgresql.conf.template -o /etc/postgresql/9.1/main/postgresql.conf',
     refreshonly => true,
     subscribe => File['/etc/postgresql/9.1/main/postgresql.conf.template']
