@@ -3,10 +3,6 @@ class zulip::local_server {
   include zulip::app_frontend
   include zulip::postgres_appdb
 
-  # This should be migrated over to app_frontend, once validated as functional
-  # on app servers.
-  package { "nodejs": ensure => installed }
-
   file { "/etc/nginx/sites-available/zulip-local":
     require => Package[nginx],
     ensure => file,

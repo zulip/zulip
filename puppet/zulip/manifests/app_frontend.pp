@@ -16,7 +16,8 @@ class zulip::app_frontend {
                     "python-postmonkey", "python-django-jstemplate",
                     "redis-server", "python-redis", "python-django-guardian",
                     "python-diff-match-patch", "python-sourcemap", "python-mandrill",
-                    "python-sockjs-tornado", "python-apns-client", "python-imaging"]
+                    "python-sockjs-tornado", "python-apns-client", "python-imaging",
+                    "nodejs"]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
       package { $title: ensure => $ensure }
