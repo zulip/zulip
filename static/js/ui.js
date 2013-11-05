@@ -1425,7 +1425,12 @@ $(function () {
     });
 
     $('#api_key_button').click(function (e) {
-        $("#get_api_key_box").show();
+        if (page_params.password_auth_enabled !== false) {
+            $("#get_api_key_box").show();
+        } else {
+            // Skip the password prompt step
+            $("#get_api_key_box form").submit();
+        }
         $("#api_key_button_box").hide();
     });
 

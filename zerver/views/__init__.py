@@ -1834,8 +1834,8 @@ def api_fetch_api_key(request, username=REQ, password=REQ):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_fetch_api_key(request, user_profile, password=REQ):
-    if not user_profile.check_password(password):
+def json_fetch_api_key(request, user_profile, password=REQ(default='')):
+    if password_auth_enabled() and not user_profile.check_password(password):
         return json_error("Your username or password is incorrect.")
     return json_success({"api_key": user_profile.api_key})
 
