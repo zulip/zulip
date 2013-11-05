@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec ssh zulip@staging.zulip.net 'rmdir deployments/lock'
