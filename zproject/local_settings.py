@@ -38,11 +38,12 @@ MANDRILL_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxx'
 # This should be synced with our camo installation
 CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
-EMAIL_USE_TLS = True
+# Leave EMAIL_HOST unset or empty if you do not wish for emails to be sent
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")

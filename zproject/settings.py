@@ -670,10 +670,16 @@ if DEPLOYED:
 else:
     FULL_NAVBAR    = True
 
+# If an email host is not specified, fail silently and gracefully
+if not EMAIL_HOST and DEPLOYED:
+    EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+elif not DEPLOYED:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 # For testing, you may want to have emails be printed to the console.
 if not DEPLOYED:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
     # Use fast password hashing for creating testing users when not
     # DEPLOYED
     PASSWORD_HASHERS = (

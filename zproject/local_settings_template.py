@@ -13,12 +13,13 @@ DEPLOYMENT_ROLE_KEY = ''
 # Configure the outgoing SMTP server below. For outgoing email
 # via a GMail SMTP server, EMAIL_USE_TLS must be True and the
 # outgoing port must be 587. The EMAIL_HOST is prepopulated
-# for GMail servers, change it for other hosts
-EMAIL_USE_TLS = True
+# for GMail servers, change it for other hosts, or leave it unset
+# or empty to skip sending email.
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 # By default uploaded files and avatars are stored directly on the Zulip server
 # If file storage to Amazon S3 is desired, please contact Zulip Support
