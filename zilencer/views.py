@@ -186,7 +186,7 @@ def realm_summary_table(realm_minutes):
     num_active_sites = len(filter(meets_goal, rows))
 
     content = loader.render_to_string(
-        'zerver/realm_summary_table.html',
+        'zilencer/realm_summary_table.html',
         dict(rows=rows, num_active_sites=num_active_sites)
     )
     return dict(content=content)
@@ -291,7 +291,7 @@ def sent_messages_report(realm):
     )
 
     content = loader.render_to_string(
-        'zerver/ad_hoc_query.html',
+        'zilencer/ad_hoc_query.html',
         dict(data=data)
     )
 
@@ -311,7 +311,7 @@ def ad_hoc_queries():
         )
 
         content = loader.render_to_string(
-            'zerver/ad_hoc_query.html',
+            'zilencer/ad_hoc_query.html',
             dict(data=data)
         )
 
@@ -550,7 +550,7 @@ def get_activity(request, realm=REQ(default=None)):
     title = 'Activity'
 
     return render_to_response(
-        'zerver/activity.html',
+        'zilencer/activity.html',
         dict(data=data, realm=realm, title=title, is_home=True),
         context_instance=RequestContext(request)
     )
@@ -616,7 +616,7 @@ def raw_user_activity_table(records):
     )
 
     content = loader.render_to_string(
-        'zerver/ad_hoc_query.html',
+        'zilencer/ad_hoc_query.html',
         dict(data=data)
     )
     return content
@@ -714,7 +714,7 @@ def realm_client_table(user_summaries):
     )
 
     content = loader.render_to_string(
-        'zerver/ad_hoc_query.html',
+        'zilencer/ad_hoc_query.html',
         dict(data=data)
     )
     return content
@@ -751,7 +751,7 @@ def user_activity_summary_table(user_summary):
     )
 
     content = loader.render_to_string(
-        'zerver/ad_hoc_query.html',
+        'zilencer/ad_hoc_query.html',
         dict(data=data)
     )
     return content
@@ -814,7 +814,7 @@ def realm_user_summary_table(all_records):
     )
 
     content = loader.render_to_string(
-        'zerver/ad_hoc_query.html',
+        'zilencer/ad_hoc_query.html',
         dict(data=data)
     )
 
@@ -848,7 +848,7 @@ def get_realm_activity(request, realm):
 
     title = realm
     return render_to_response(
-        'zerver/activity.html',
+        'zilencer/activity.html',
         dict(data=data, realm=realm, title=title),
         context_instance=RequestContext(request)
     )
@@ -871,7 +871,7 @@ def get_user_activity(request, email):
     realm = None
     title = email
     return render_to_response(
-        'zerver/activity.html',
+        'zilencer/activity.html',
         dict(data=data, realm=realm, title=title),
         context_instance=RequestContext(request)
     )
