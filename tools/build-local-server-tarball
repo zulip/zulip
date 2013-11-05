@@ -17,11 +17,13 @@ cd $DIR
 xargs rm -r <<EOF
 assets
 bots
+corporate
 static
 tools
 zilencer
 .gitignore
 templates/.gitignore
+templates/corporate
 puppet/zulip_internal
 zproject/local_settings.py
 EOF

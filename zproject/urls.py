@@ -80,10 +80,6 @@ urlpatterns = patterns('',
     url(r'^zephyr-mirror/$', TemplateView.as_view(template_name='zerver/zephyr-mirror.html')),
     url(r'^apps/$', TemplateView.as_view(template_name='zerver/apps.html')),
 
-    # Job postings
-    url(r'^jobs/$', TemplateView.as_view(template_name='zerver/jobs/index.html')),
-    url(r'^jobs/lead-designer/$', TemplateView.as_view(template_name='zerver/jobs/lead-designer.html')),
-
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
 )
 
@@ -230,6 +226,10 @@ if not settings.LOCAL_SERVER:
 
     urlpatterns += patterns('',
         url(r'^', include('zilencer.urls.reports')),
+    )
+
+    urlpatterns += patterns('',
+        url(r'^', include('corporate.urls')),
     )
 
 
