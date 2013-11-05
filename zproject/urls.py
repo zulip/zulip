@@ -38,11 +38,6 @@ urlpatterns = patterns('',
     url(r'^accounts/password/done/$', 'django.contrib.auth.views.password_reset_complete',
         {'template_name': 'zerver/reset_done.html'}),
 
-
-    url(r'^activity$', 'zerver.views.get_activity'),
-    url(r'^realm_activity/(?P<realm>[\S]+)/$', 'zerver.views.get_realm_activity'),
-    url(r'^user_activity/(?P<email>[\S]+)/$', 'zerver.views.get_user_activity'),
-
     # Registration views, require a confirmation ID.
     url(r'^accounts/home/', 'zerver.views.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
@@ -230,6 +225,10 @@ if not settings.LOCAL_SERVER:
     v1_api_and_json_patterns += patterns('',
         # Still scoped to api/v1/, but under a different project
         url(r'^deployments/', include('zilencer.urls.api')),
+    )
+
+    urlpatterns += patterns('',
+        url(r'^', include('zilencer.urls.reports')),
     )
 
 
