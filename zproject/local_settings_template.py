@@ -73,6 +73,12 @@ AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.GoogleBackend', # Google Apps
     )
 
+# Make session cookies expire when the browser closes
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Session cookie expiry in seconds after the last page load
+SESSION_COOKIE_AGE = 1209600 # 2 weeks
+
 # The following keys are automatically generated during the install process
 # PLEASE DO NOT EDIT THEM
 CAMO_KEY = ''
