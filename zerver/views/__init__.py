@@ -2673,6 +2673,7 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 def json_report_send_time(request, user_profile,
                           time=REQ(converter=to_non_negative_int)):
     logging.info("End-to-end send time: %dms (%s)" % (time, user_profile.email))
+    statsd.timing("endtoend.send_time", time)
     return json_success()
 
 @authenticated_json_post_view
