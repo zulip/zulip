@@ -43,7 +43,7 @@ class zulip::local_server {
     owner  => "postgres",
     group  => "postgres",
     mode   => 644,
-    source => "puppet:///modules/zulip/postgres/postgresql.conf.template"
+    source => "puppet:///modules/zulip/postgresql/postgresql.conf.template"
   }
 
   exec { 'pgtune':
