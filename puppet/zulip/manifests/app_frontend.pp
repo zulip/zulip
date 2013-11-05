@@ -72,4 +72,14 @@ class zulip::app_frontend {
     ensure     => running,
     subscribe  => File['/etc/memcached.conf'],
   }
+  file { '/home/zulip/logs':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+  }
+  file { '/home/zulip/deployments':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+  }
 }

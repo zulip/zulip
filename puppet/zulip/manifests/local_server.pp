@@ -19,16 +19,6 @@ class zulip::local_server {
     ensure => 'link',
     target => '/etc/nginx/sites-available/zulip-local',
   }
-  file { '/home/zulip/logs':
-    ensure => 'directory',
-    owner  => 'zulip',
-    group  => 'zulip',
-  }
-  file { '/home/zulip/deployments':
-    ensure => 'directory',
-    owner  => 'zulip',
-    group  => 'zulip',
-  }
   file { '/home/zulip/deployments/current':
     ensure => 'link',
     target => '/home/zulip/zulip',
