@@ -43,7 +43,7 @@ Socket.prototype = {
         this._next_req_id++;
         this._requests[req_id] = {success: success, error: error};
         // TODO: I think we might need to catch exceptions here for certain transports
-        this._sockjs.send(JSON.stringify({client_meta: {req_id: req_id},
+        this._sockjs.send(JSON.stringify({req_id: req_id,
                                           type: type, request: msg}));
     },
 
@@ -93,7 +93,7 @@ Socket.prototype = {
         };
 
         sockjs.onmessage = function Socket__sockjs_onmessage(event) {
-            var req_id = event.data.client_meta.req_id;
+            var req_id = event.data.req_id;
             var req_info = that._requests[req_id];
             if (req_info === undefined) {
                 blueslip.error("Got a response for an unknown request");

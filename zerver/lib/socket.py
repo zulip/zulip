@@ -81,7 +81,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
     def authenticate_client(self, msg):
         if self.authenticated:
-            self.session.send_message({'client_meta': msg['client_meta'],
+            self.session.send_message({'req_id': msg['req_id'],
                                        'response': {'result': 'error', 'msg': 'Already authenticated'}})
             return
 
@@ -106,7 +106,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         register_connection(queue_id, self)
 
-        self.session.send_message({'client_meta': msg['client_meta'],
+        self.session.send_message({'req_id': msg['req_id'],
                                    'response': {'result': 'success', 'msg': ''}})
         self.authenticated = True
         fake_log_line(self.session.conn_info, 0, 200, "Authenticated using %s" % (self.session.transport_name,),
@@ -123,14 +123,14 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                 self.authenticate_client(msg)
             except SocketAuthError as e:
                 fake_log_line(self.session.conn_info, 0, 403, e.msg, 'unknown')
-                self.session.send_message({'client_meta': msg['client_meta'],
+                self.session.send_message({'req_id': msg['req_id'],
                                            'response': {'result': 'error', 'msg': e.msg}})
             return
         else:
             if not self.authenticated:
                 error_msg = 'Not yet authenticated'
                 fake_log_line(self.session.conn_info, 0, 403, error_msg, 'unknown')
-                self.session.send_message({'client_meta': msg['client_meta'],
+                self.session.send_message({'req_id': msg['req_id'],
                                            'response': {'result': 'error', 'msg': error_msg}})
                 return
 
@@ -138,7 +138,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         req['sender_id'] = self.session.user_profile.id
         req['client_name'] = req['client']
         queue_json_publish("message_sender", dict(request=req,
-                                                  client_meta=msg['client_meta'],
+                                                  req_id=msg['req_id'],
                                                   server_meta=dict(client_id=self.client_id,
                                                                    return_queue="tornado_return",
                                                                    start_time=start_time)),
@@ -166,14 +166,14 @@ def fake_message_sender(event):
     except JsonableError as e:
         resp = {"result": "error", "msg": str(e)}
 
-    result = {'response': resp, 'client_meta': event['client_meta'],
+    result = {'response': resp, 'req_id': event['req_id'],
               'server_meta': event['server_meta']}
     respond_send_message(result)
 
 def respond_send_message(data):
     connection = get_connection(data['server_meta']['client_id'])
     if connection is not None:
-        connection.session.send_message({'client_meta': data['client_meta'], 'response': data['response']})
+        connection.session.send_message({'req_id': data['req_id'], 'response': data['response']})
 
         time_elapsed = time.time() - data['server_meta']['start_time']
         fake_log_line(connection.session.conn_info,

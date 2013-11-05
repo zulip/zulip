@@ -241,7 +241,7 @@ class MessageSenderWorker(QueueProcessingWorker):
         except JsonableError as e:
             resp = {"result": "error", "msg": str(e)}
 
-        result = {'response': resp, 'client_meta': event['client_meta'],
+        result = {'response': resp, 'req_id': event['req_id'],
                   'server_meta': event['server_meta']}
         queue_json_publish(event['server_meta']['return_queue'], result, lambda e: None)
 
