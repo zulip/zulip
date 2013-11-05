@@ -1495,7 +1495,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
 
-    # Update the message as stored in both the (deprecated) message
+    # Update the message as stored in the (deprecated) message
     # cache (for shunting the message over to Tornado in the old
     # get_messages API) and also the to_dict caches.
     items_for_memcached = {}

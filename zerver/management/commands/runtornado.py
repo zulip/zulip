@@ -86,10 +86,7 @@ class Command(BaseCommand):
                 queue_client.register_json_consumer('tornado_return', respond_send_message)
 
             try:
-                urls = (r"/json/get_updates",
-                        r"/api/v1/get_messages",
-                        r"/notify_tornado",
-                        r"/api/v1/messages/latest",
+                urls = (r"/notify_tornado",
                         r"/json/get_events",
                         r"/api/v1/events",
                         )

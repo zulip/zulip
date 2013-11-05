@@ -223,8 +223,6 @@ v1_api_and_json_patterns = patterns('zerver.views',
             {'POST': 'api_events_register'}),
 
 ) + patterns('zerver.tornadoviews',
-    url(r'^messages/latest$', 'rest_dispatch',
-        {'GET': 'get_updates_backend'}),
     url(r'^events$', 'rest_dispatch',
         {'GET': 'get_events_backend'}),
 )
@@ -237,8 +235,6 @@ if not settings.LOCAL_SERVER:
 
 urlpatterns += patterns('zerver.tornadoviews',
     # Tornado views
-    url(r'^api/v1/get_messages$',           'api_get_messages'),
-    url(r'^json/get_updates$',              'json_get_updates'),
     url(r'^json/get_events$',               'json_get_events'),
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'notify'),

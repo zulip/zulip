@@ -13,7 +13,6 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Subscription,
     get_display_recipient, Realm, Client, UserActivity, \
     PreregistrationUser, UserMessage, \
     get_user_profile_by_email, email_to_domain, get_realm, get_stream, get_client
-from zerver.tornadoviews import json_get_updates, api_get_messages
 from zerver.decorator import RespondAsynchronously, \
     RequestVariableConversionError, profiled, JsonableError
 from zerver.lib.initial_password import initial_password
@@ -2420,66 +2419,6 @@ class POSTRequestMock(object):
         self._tornado_handler = DummyHandler(assert_callback)
         self.session = DummySession()
         self.META = {'PATH_INFO': 'test'}
-
-class GetUpdatesTest(AuthedTestCase):
-
-    def common_test_get_updates(self, view_func, extra_post_data = {}):
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        message_content = 'tornado test message'
-        self.got_callback = False
-
-        def callback(response):
-            self.got_callback = True
-            msg = response['messages'][0]
-            if str(msg['content_type']) == 'text/html':
-                self.assertEqual('<p>%s</p>' % message_content, msg['content'])
-            else:
-                self.assertEqual(message_content, msg['content'])
-
-        post_data = {}
-        post_data.update(extra_post_data)
-        request = POSTRequestMock(post_data, user_profile, callback)
-        self.assertEqual(view_func(request), RespondAsynchronously)
-        self.send_message("hamlet@zulip.com", "hamlet@zulip.com",
-                Recipient.PERSONAL, message_content)
-        self.assertTrue(self.got_callback)
-
-
-    def test_json_get_updates(self):
-        """
-        json_get_updates returns messages with IDs greater than the
-        last_received ID.
-        """
-        self.login("hamlet@zulip.com")
-        self.common_test_get_updates(json_get_updates)
-
-    def test_api_get_messages(self):
-        """
-        Same as above, but for the API view
-        """
-        email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        self.common_test_get_updates(api_get_messages, {'email': email, 'api-key': api_key})
-
-    def test_missing_last_received(self):
-        """
-        Calling json_get_updates without any arguments should work
-        """
-        self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
-
-        request = POSTRequestMock({}, user_profile)
-        self.assertEqual(json_get_updates(request), RespondAsynchronously)
-
-    def test_bad_input(self):
-        """
-        Specifying a bad value for 'pointer' should return an error
-        """
-        self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
-
-        request = POSTRequestMock({'pointer': 'foo'}, user_profile)
-        self.assertRaises(RequestVariableConversionError, json_get_updates, request)
 
 class GetProfileTest(AuthedTestCase):
 

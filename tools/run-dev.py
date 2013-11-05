@@ -83,8 +83,7 @@ class Resource(resource.Resource):
     def getChild(self, name, request):
         request.requestHeaders.setRawHeaders('X-Forwarded-Host', [proxy_host])
 
-        if (request.uri in ['/json/get_updates', '/api/v1/get_messages', '/json/get_events'] or
-            request.uri.startswith('/api/v1/messages/latest') or
+        if (request.uri in ['/json/get_events'] or
             request.uri.startswith('/api/v1/events') or
             request.uri.startswith('/sockjs')):
             return proxy.ReverseProxyResource('localhost', tornado_port, '/'+name)
