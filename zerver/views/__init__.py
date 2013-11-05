@@ -23,7 +23,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     get_recipient, valid_stream_name, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
     email_to_domain, email_to_username, get_realm, completely_open, \
-    is_super_user, AppleDeviceToken, get_active_user_dicts_in_realm
+    is_super_user, AppleDeviceToken, get_active_user_dicts_in_realm, remote_user_to_email
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_password, create_mirror_user_if_needed, compute_irc_user_fullname, \
     compute_jabber_user_fullname, do_change_full_name, \
@@ -475,7 +475,7 @@ def maybe_send_to_registration(request, email, full_name=''):
 def remote_user_sso(request):
     try:
         remote_user = request.META["REMOTE_USER"]
-    except KeyError as e:
+    except KeyError:
         raise JsonableError("No REMOTE_USER set.")
 
     user = authenticate(remote_user=remote_user)

@@ -143,7 +143,7 @@ def email_to_domain(email):
 
 def remote_user_to_email(remote_user):
     if settings.SSO_APPEND_DOMAIN is not None:
-        remote_user += "@" + SSO_APPEND_DOMAIN
+        remote_user += "@" + settings.SSO_APPEND_DOMAIN
     return remote_user
 
 class RealmEmoji(models.Model):
