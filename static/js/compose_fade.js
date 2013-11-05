@@ -74,6 +74,7 @@ function _fade_messages() {
         var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
 
         if (current_msg_list !== expected_msg_list ||
+            !compose.composing() ||
             compose.recipient() !== expected_recipient) {
             return;
         }
