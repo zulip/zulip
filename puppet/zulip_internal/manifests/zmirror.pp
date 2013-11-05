@@ -1,5 +1,5 @@
-class zulip-internal::zmirror {
-  include zulip-internal::base
+class zulip_internal::zmirror {
+  include zulip_internal::base
   include zulip::supervisor
 
   $zmirror_packages = [ "cython", "libzephyr-dev", "comerr-dev", "python-dev", "libzephyr4-krb5", "zephyr-clients",
@@ -11,7 +11,7 @@ class zulip-internal::zmirror {
     mode       => 644,
     owner      => "root",
     group      => "root",
-    source     => 'puppet:///modules/zulip-internal/debathena.list',
+    source     => 'puppet:///modules/zulip_internal/debathena.list',
   }
   file { "/etc/supervisor/conf.d/zmirror.conf":
     require => Package[supervisor],
@@ -19,7 +19,7 @@ class zulip-internal::zmirror {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/supervisor/conf.d/zmirror.conf",
+    source => "puppet:///modules/zulip_internal/supervisor/conf.d/zmirror.conf",
     notify => Service["supervisor"],
   }
 
@@ -28,7 +28,7 @@ class zulip-internal::zmirror {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/cron.d/zephyr-mirror",
+    source => "puppet:///modules/zulip_internal/cron.d/zephyr-mirror",
   }
 
   file { "/etc/default/zephyr-clients.debathena":
@@ -36,7 +36,7 @@ class zulip-internal::zmirror {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/zephyr-clients.debathena",
+    source => "puppet:///modules/zulip_internal/zephyr-clients.debathena",
   }
 
   # TODO: Do the rest of our setup, which includes at least:

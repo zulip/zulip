@@ -1,6 +1,6 @@
-class zulip-internal::postgres_slave {
-  include zulip-internal::base
-  include zulip-internal::postgres_appdb
+class zulip_internal::postgres_slave {
+  include zulip_internal::base
+  include zulip_internal::postgres_appdb
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
   file { '/etc/sysctl.d/30-postgresql-shm.conf':
@@ -12,7 +12,7 @@ class zulip-internal::postgres_slave {
     owner  => 'root',
     group  => 'root',
     mode   => 644,
-    source   => 'puppet:///modules/zulip-internal/postgresql/40-postgresql.conf.slave',
+    source   => 'puppet:///modules/zulip_internal/postgresql/40-postgresql.conf.slave',
   }
 
   file { "/etc/postgresql/9.1/main/postgresql.conf":
@@ -21,6 +21,6 @@ class zulip-internal::postgres_slave {
     owner  => "postgres",
     group  => "postgres",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/postgresql/postgresql.conf.slave",
+    source => "puppet:///modules/zulip_internal/postgresql/postgresql.conf.slave",
   }
 }

@@ -1,6 +1,6 @@
-class zulip-internal::stats {
-  include zulip-internal::base
-  include zulip-internal::apache
+class zulip_internal::stats {
+  include zulip_internal::base
+  include zulip_internal::apache
   include zulip::supervisor
 
   $stats_packages = [ "libssl-dev", "zlib1g-dev", "python-twisted", "python-django", "python-django-tagging",
@@ -12,14 +12,14 @@ class zulip-internal::stats {
     owner  => 'root',
     group  => 'root',
     mode   => 744,
-    source => 'puppet:///modules/zulip-internal/graphite/setup_disks.sh',
+    source => 'puppet:///modules/zulip_internal/graphite/setup_disks.sh',
   }
   file { "/etc/cron.d/graphite_backup":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/cron.d/graphite_backup",
+    source => "puppet:///modules/zulip_internal/cron.d/graphite_backup",
   }
   exec { "setup_disks":
     command => "/root/setup_disks.sh",
@@ -32,7 +32,7 @@ class zulip-internal::stats {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "puppet:///modules/zulip-internal/certs/stats1.zulip.net.crt",
+    source => "puppet:///modules/zulip_internal/certs/stats1.zulip.net.crt",
   }
 
   file { "/opt/graphite/conf/carbon.conf":
@@ -40,42 +40,42 @@ class zulip-internal::stats {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/graphite/carbon.conf",
+    source => "puppet:///modules/zulip_internal/graphite/carbon.conf",
   }
   file { "/opt/graphite/conf/aggregation-rules.conf":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/graphite/aggregation-rules.conf",
+    source => "puppet:///modules/zulip_internal/graphite/aggregation-rules.conf",
   }
   file { "/opt/graphite/conf/storage-aggregation.conf":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/graphite/storage-aggregation.conf",
+    source => "puppet:///modules/zulip_internal/graphite/storage-aggregation.conf",
   }
   file { "/opt/graphite/conf/storage-schemas.conf":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/graphite/storage-schemas.conf",
+    source => "puppet:///modules/zulip_internal/graphite/storage-schemas.conf",
   }
   file { "/opt/graphite/webapp/graphite/local_settings.py":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/graphite/local_settings.py",
+    source => "puppet:///modules/zulip_internal/graphite/local_settings.py",
   }
   file { "/opt/graphite/conf/graphite.wsgi":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/graphite/graphite.wsgi",
+    source => "puppet:///modules/zulip_internal/graphite/graphite.wsgi",
   }
 
   file { "/home/zulip/graphiti/config/settings.yml":
@@ -83,7 +83,7 @@ class zulip-internal::stats {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/graphiti/settings.yml",
+    source => "puppet:///modules/zulip_internal/graphiti/settings.yml",
   }
 
   apache2site { 'graphite':
@@ -105,7 +105,7 @@ class zulip-internal::stats {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/statsd/redis.conf",
+    source => "puppet:///modules/zulip_internal/statsd/redis.conf",
   }
   service { 'redis-server':
     ensure     => running,
@@ -117,6 +117,6 @@ class zulip-internal::stats {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/supervisor/conf.d/stats.conf",
+    source => "puppet:///modules/zulip_internal/supervisor/conf.d/stats.conf",
   }
 }

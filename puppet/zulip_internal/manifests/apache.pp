@@ -1,4 +1,4 @@
-class zulip-internal::apache {
+class zulip_internal::apache {
   $apache_packages = [ "apache2", "libapache2-mod-wsgi", ]
   package { $apache_packages: ensure => "installed" }
 
@@ -21,7 +21,7 @@ class zulip-internal::apache {
     owner  => "www-data",
     group  => "www-data",
     mode => 600,
-    source => "puppet:///modules/zulip-internal/apache/users",
+    source => "puppet:///modules/zulip_internal/apache/users",
   }
 
   file { "/etc/apache2/certs/":
@@ -38,7 +38,7 @@ class zulip-internal::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "puppet:///modules/zulip-internal/apache/ports.conf",
+    source => "puppet:///modules/zulip_internal/apache/ports.conf",
   }
 
   file { "/etc/apache2/sites-available/":
@@ -47,7 +47,7 @@ class zulip-internal::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "puppet:///modules/zulip-internal/apache/sites/",
+    source => "puppet:///modules/zulip_internal/apache/sites/",
   }
 
   apache2site { 'humbug-default':

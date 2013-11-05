@@ -1,4 +1,4 @@
-class zulip-internal::base {
+class zulip_internal::base {
   include zulip::base
 
   $org_base_packages = [ "nagios-plugins-basic", "munin-node", "munin-plugins-extra" ]
@@ -10,7 +10,7 @@ class zulip-internal::base {
     mode       => 600,
     owner      => "zulip",
     group      => "zulip",
-    source     => 'puppet:///modules/zulip-internal/authorized_keys',
+    source     => 'puppet:///modules/zulip_internal/authorized_keys',
   }
   file { '/home/zulip/.ssh':
     ensure     => directory,
@@ -25,19 +25,19 @@ class zulip-internal::base {
     mode       => 600,
     owner      => "root",
     group      => "root",
-    source     => 'puppet:///modules/zulip-internal/root_authorized_keys',
+    source     => 'puppet:///modules/zulip_internal/root_authorized_keys',
   }
 
   file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
     ensure     => file,
     mode       => 755,
-    source     => 'puppet:///modules/zulip-internal/zulip-ec2-configure-interfaces',
+    source     => 'puppet:///modules/zulip_internal/zulip-ec2-configure-interfaces',
   }
 
   file { '/etc/network/if-up.d/zulip-ec2-configure-interfaces_if-up.d.sh':
     ensure     => file,
     mode       => 755,
-    source     => 'puppet:///modules/zulip-internal/zulip-ec2-configure-interfaces_if-up.d.sh',
+    source     => 'puppet:///modules/zulip_internal/zulip-ec2-configure-interfaces_if-up.d.sh',
   }
 
   group { 'nagios':
@@ -79,7 +79,7 @@ class zulip-internal::base {
     mode       => 600,
     owner      => "nagios",
     group      => "nagios",
-    source     => 'puppet:///modules/zulip-internal/nagios_authorized_keys',
+    source     => 'puppet:///modules/zulip_internal/nagios_authorized_keys',
   }
   file { '/home/nagios':
     ensure => absent,
@@ -93,6 +93,6 @@ class zulip-internal::base {
     owner => "root",
     group => "root",
     mode => 755,
-    source => "puppet:///modules/zulip-internal/nagios_plugins/",
+    source => "puppet:///modules/zulip_internal/nagios_plugins/",
   }
 }

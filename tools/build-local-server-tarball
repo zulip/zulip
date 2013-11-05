@@ -22,7 +22,7 @@ tools
 zilencer
 .gitignore
 templates/.gitignore
-puppet/zulip-internal
+puppet/zulip_internal
 EOF
 
 echo $GITID > version_id

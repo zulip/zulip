@@ -1,6 +1,6 @@
-class zulip-internal::postgres_master {
-  include zulip-internal::base
-  include zulip-internal::postgres_appdb
+class zulip_internal::postgres_master {
+  include zulip_internal::base
+  include zulip_internal::postgres_appdb
 
   $master_packages = [ "xfsprogs", "mdadm", ]
   package { $master_packages: ensure => "installed" }
@@ -15,7 +15,7 @@ class zulip-internal::postgres_master {
     owner  => 'root',
     group  => 'root',
     mode   => 644,
-    source   => 'puppet:///modules/zulip-internal/postgresql/40-postgresql.conf.master',
+    source   => 'puppet:///modules/zulip_internal/postgresql/40-postgresql.conf.master',
   }
 
   file { "/etc/postgresql/9.1/main/postgresql.conf":
@@ -24,7 +24,7 @@ class zulip-internal::postgres_master {
     owner  => "postgres",
     group  => "postgres",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/postgresql/postgresql.conf.master",
+    source => "puppet:///modules/zulip_internal/postgresql/postgresql.conf.master",
   }
 
   file { "/root/setup_disks.sh":
@@ -32,7 +32,7 @@ class zulip-internal::postgres_master {
     owner  => 'root',
     group  => 'root',
     mode   => 744,
-    source => 'puppet:///modules/zulip-internal/postgresql/setup_disks.sh',
+    source => 'puppet:///modules/zulip_internal/postgresql/setup_disks.sh',
   }
 
   exec { "setup_disks":

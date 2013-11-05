@@ -1,5 +1,5 @@
-class zulip-internal::builder {
-  include zulip-internal::base
+class zulip_internal::builder {
+  include zulip_internal::base
 
   $buildd_packages = [
     "apt-spy",
@@ -16,13 +16,13 @@ class zulip-internal::builder {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/builder/sbuildrc",
+    source => "puppet:///modules/zulip_internal/builder/sbuildrc",
   }
 
   file { "/usr/share/keyrings/ubuntu-archive-keyring.gpg":
     ensure => file,
     mode => 644,
-    source => "puppet:///modules/zulip-internal/builder/ubuntu-archive-keyring.gpg",
+    source => "puppet:///modules/zulip_internal/builder/ubuntu-archive-keyring.gpg",
   }
 
 

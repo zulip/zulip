@@ -1,4 +1,4 @@
-class zulip-internal::postgres_common {
+class zulip_internal::postgres_common {
   include zulip::postgres_common
 
   exec {"pip_wal-e":
@@ -13,7 +13,7 @@ class zulip-internal::postgres_common {
     owner => "root",
     group => "postgres",
     mode => 750,
-    source => "puppet:///modules/zulip-internal/postgresql/env-wal-e",
+    source => "puppet:///modules/zulip_internal/postgresql/env-wal-e",
   }
 
   file { "/usr/local/bin/pg_backup_and_purge.py":
@@ -21,7 +21,7 @@ class zulip-internal::postgres_common {
     owner => "root",
     group => "postgres",
     mode => 754,
-    source => "puppet:///modules/zulip-internal/postgresql/pg_backup_and_purge.py",
+    source => "puppet:///modules/zulip_internal/postgresql/pg_backup_and_purge.py",
     require => File["/usr/local/bin/env-wal-e"],
   }
 

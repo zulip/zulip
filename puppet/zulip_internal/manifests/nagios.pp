@@ -1,6 +1,6 @@
-class zulip-internal::nagios {
-  include zulip-internal::base
-  include zulip-internal::apache
+class zulip_internal::nagios {
+  include zulip_internal::base
+  include zulip_internal::apache
 
   $nagios_packages = [ "nagios3", "munin", "autossh" ]
   package { $nagios_packages: ensure => "installed" }
@@ -19,7 +19,7 @@ class zulip-internal::nagios {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/nagios3/",
+    source => "puppet:///modules/zulip_internal/nagios3/",
     notify => Service["nagios3"],
   }
 
@@ -32,7 +32,7 @@ class zulip-internal::nagios {
     mode       => 755,
     owner      => "root",
     group      => "root",
-    source     => 'puppet:///modules/zulip-internal/pagerduty_nagios.pl',
+    source     => 'puppet:///modules/zulip_internal/pagerduty_nagios.pl',
   }
 
   file { '/etc/nagios3/conf.d/zulip_nagios.cfg':
@@ -68,7 +68,7 @@ class zulip-internal::nagios {
     owner  => "nagios",
     group  => "crontab",
     mode => 600,
-    source => "puppet:///modules/zulip-internal/nagios_crontab",
+    source => "puppet:///modules/zulip_internal/nagios_crontab",
   }
 
   # TODO: Install our API

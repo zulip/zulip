@@ -1,5 +1,5 @@
-class zulip-internal::zmirror_personals {
-  include zulip-internal::base
+class zulip_internal::zmirror_personals {
+  include zulip_internal::base
   include zulip::supervisor
 
   $zmirror_packages = [ "cython", "libzephyr-dev", "comerr-dev", "python-dev", "libzephyr4-krb5", "zephyr-clients",
@@ -11,7 +11,7 @@ class zulip-internal::zmirror_personals {
     mode       => 644,
     owner      => "root",
     group      => "root",
-    source     => 'puppet:///modules/zulip-internal/debathena.list',
+    source     => 'puppet:///modules/zulip_internal/debathena.list',
   }
   file { ['/home/zulip/api-keys', '/home/zulip/zephyr_sessions', '/home/zulip/ccache',
           '/home/zulip/mirror_status']:
@@ -26,7 +26,7 @@ class zulip-internal::zmirror_personals {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip-internal/cron.d/test_zephyr_personal_mirrors",
+    source => "puppet:///modules/zulip_internal/cron.d/test_zephyr_personal_mirrors",
   }
 
   # TODO: Do the rest of our setup, which includes at least:

@@ -21,7 +21,7 @@ if ! [ -e "$amazon_key_file" ]; then
     exit 1
 fi
 
-server_private_key_file=$zulip_root/puppet/zulip-internal/files/id_rsa
+server_private_key_file=$zulip_root/puppet/zulip_internal/files/id_rsa
 if ! [ -e "$server_private_key_file" ]; then
     echo "You need a server ssh key at $server_private_key_file"
     exit 1
