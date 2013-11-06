@@ -5,13 +5,6 @@
       <description>Latest updates to Zulip's Desktop App</description>
       <language>en</language>
       <item>
-         <title>Version 0.3.9</title>
-         <sparkle:releaseNotesLink>
-             https://zulip.com/dist/apps/win/sparkle-changelog.html
-         </sparkle:releaseNotesLink>
-         <pubDate>Fri, 01 Nov 2013 12:44:52 </pubDate>
-         <enclosure sparkle:version="0.3.9" type="application/octet-stream" url="https://zulip.com/dist/apps/win/zulip-0.3.9.exe"/>
-      </item><item>
          <title>Version 0.3.7</title>
          <sparkle:releaseNotesLink>
              https://zulip.com/dist/apps/win/sparkle-changelog.html
