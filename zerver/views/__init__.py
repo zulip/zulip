@@ -64,7 +64,7 @@ from zerver.lib.response import json_success, json_error, json_response, json_me
 from zerver.lib.cache import generic_bulk_cached_fetch
 from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.utils import statsd, generate_random_token
+from zerver.lib.utils import statsd, generate_random_token, statsd_key
 from zerver import tornado_callbacks
 from django.db import connection
 
@@ -1881,7 +1881,7 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 def json_report_send_time(request, user_profile,
                           time=REQ(converter=to_non_negative_int)):
     logging.info("End-to-end send time: %dms (%s)" % (time, user_profile.email))
-    statsd.timing("endtoend.send_time", time)
+    statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain),), time)
     return json_success()
 
 @authenticated_json_post_view
