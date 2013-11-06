@@ -15,6 +15,7 @@ cd $DIR
 ./tools/update-prod-static
 
 xargs rm -r <<EOF
+analytics
 assets
 bots
 corporate
@@ -23,6 +24,7 @@ tools
 zilencer
 .gitignore
 templates/.gitignore
+templates/analytics
 templates/corporate
 puppet/zulip_internal
 zproject/local_settings.py

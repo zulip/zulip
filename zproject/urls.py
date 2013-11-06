@@ -212,7 +212,7 @@ if not settings.LOCAL_SERVER:
     )
 
     urlpatterns += patterns('',
-        url(r'^', include('zilencer.urls.reports')),
+        url(r'^', include('analytics.urls')),
     )
 
     urlpatterns += patterns('',
