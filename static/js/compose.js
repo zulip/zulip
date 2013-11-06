@@ -385,7 +385,8 @@ exports.send_times_log = [];
 exports.send_times_data = {};
 function maybe_report_send_times(message_id) {
     var data = exports.send_times_data[message_id];
-    if (data.send_finished === undefined || data.received === undefined) {
+    if (data.send_finished === undefined || data.received === undefined ||
+        data.displayed === undefined) {
         // We report the data once we have both the send and receive times
         return;
     }
