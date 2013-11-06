@@ -57,6 +57,8 @@ def realm_summary_table(realm_minutes):
                     )
                 AND
                     last_visit > now() - interval '1 day'
+                AND
+                    not is_bot
                 GROUP BY realm_id
             ) user_counts
             ON user_counts.realm_id = realm.id
