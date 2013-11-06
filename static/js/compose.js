@@ -379,7 +379,7 @@ function send_message_socket(request, success) {
     });
 }
 
-exports.send_times_data = [];
+exports.send_times_log = [];
 function send_message(request) {
     if (request === undefined) {
         request = create_message_object();
@@ -399,7 +399,7 @@ function send_message(request) {
             blueslip.log("send time: " + send_time);
         }
         if (feature_flags.collect_send_times) {
-            exports.send_times_data.push(send_time);
+            exports.send_times_log.push(send_time);
         }
         report_send_time(send_time.toString());
 
