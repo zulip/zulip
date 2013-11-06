@@ -280,7 +280,7 @@ STATIC_URL = '/static/'
 PIPELINE = not DEBUG
 
 # Use prod settings if exporting static files in build-local-server-tarball
-COLLECTSTATIC = 'manage.py' in sys.argv[0] and sys.argv[1] == 'collectstatic'
+COLLECTSTATIC = 'manage.py' in sys.argv[0] and (len(sys.argv) > 1 and sys.argv[1] == 'collectstatic')
 
 if DEBUG and not COLLECTSTATIC:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
