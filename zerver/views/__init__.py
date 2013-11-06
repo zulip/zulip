@@ -1883,11 +1883,11 @@ def json_report_send_time(request, user_profile,
                           received=REQ(converter=to_non_negative_int, default="(unknown)"),
                           displayed=REQ(converter=to_non_negative_int, default="(unknown)")):
     logging.info("End-to-end send time: %sms/%sms/%sms (%s)" % (time, received, displayed, user_profile.email))
-    statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain),), time)
+    statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), time)
     if received != "(unknown)":
-        statsd.timing("endtoend.receive_time.%s" % (statsd_key(user_profile.realm.domain),), received)
+        statsd.timing("endtoend.receive_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), received)
     if displayed != "(unknown)":
-        statsd.timing("endtoend.displayed_time.%s" % (statsd_key(user_profile.realm.domain),), displayed)
+        statsd.timing("endtoend.displayed_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), displayed)
     return json_success()
 
 @authenticated_json_post_view
