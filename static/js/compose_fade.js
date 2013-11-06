@@ -166,11 +166,7 @@ function _want_normal_display() {
         }
     }
 
-    if (focused_recipient.type === "private" && focused_recipient.reply_to === "") {
-        return true;
-    }
-
-    return false;
+    return focused_recipient.type === "private" && focused_recipient.reply_to === "";
 }
 
 function _update_faded_messages() {

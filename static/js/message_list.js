@@ -19,10 +19,8 @@ function MessageList(table_name, filter, opts) {
     if (this.filter === undefined) {
         this.filter = new Filter();
     }
-    this.narrowed = false;
-    if (this.table_name === "zfilt") {
-        this.narrowed = true;
-    }
+
+    this.narrowed = this.table_name === "zfilt";
 
     this.num_appends = 0;
     this.min_id_exempted_from_summaries = -1;

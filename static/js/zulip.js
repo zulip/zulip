@@ -588,11 +588,7 @@ function add_message_metadata(message) {
         involved_people = [{'full_name': message.sender_full_name,
                             'email': message.sender_email}];
 
-        if (message.subject === compose.empty_subject_placeholder()) {
-            message.empty_subject = true;
-        } else {
-            message.empty_subject = false;
-        }
+        message.empty_subject = message.subject === compose.empty_subject_placeholder();
         break;
 
     case 'private':
@@ -738,11 +734,7 @@ function update_messages(events) {
 
                 msg.subject = event.subject;
                 msg.subject_links = event.subject_links;
-                if (msg.subject === compose.empty_subject_placeholder()) {
-                    msg.empty_subject = true;
-                } else {
-                    msg.empty_subject = false;
-                }
+                msg.empty_subject = msg.subject === compose.empty_subject_placeholder();
                 // Add the recent subjects entry for the new subject; must
                 // be called after we update msg.subject
                 process_message_for_recent_subjects(msg);

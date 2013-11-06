@@ -620,11 +620,7 @@ function toggle_star(row_id) {
 
     mark_message_as_read(message);
 
-    if (message.starred === true) {
-        message.starred = false;
-    } else {
-        message.starred = true;
-    }
+    message.starred = message.starred !== true;
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
