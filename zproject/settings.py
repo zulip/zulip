@@ -164,7 +164,7 @@ ROOT_URLCONF = 'zproject.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'zproject.wsgi.application'
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.auth',
     'zproject.authhack',
     'django.contrib.contenttypes',
@@ -173,13 +173,17 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'south',
     'django_openid_auth',
-    'analytics',
     'confirmation',
     'guardian',
     'pipeline',
     'zerver',
-    'zilencer',
-)
+]
+
+if not LOCAL_SERVER:
+    INSTALLED_APPS += [
+        'analytics',
+        'zilencer',
+    ]
 
 LOCAL_STATSD = (False)
 USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED and not LOCAL_SERVER) or LOCAL_STATSD
@@ -199,7 +203,7 @@ if USING_STATSD:
     else:
         STATSD_HOST = 'stats.zulip.net'
 
-    INSTALLED_APPS = ('django_statsd',) + INSTALLED_APPS
+    INSTALLED_APPS += ['django_statsd']
     STATSD_PORT = 8125
     STATSD_CLIENT = 'django_statsd.clients.normal'
 
