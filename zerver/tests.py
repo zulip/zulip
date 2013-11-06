@@ -4112,7 +4112,12 @@ class RateLimitTests(AuthedTestCase):
         self.assert_json_success(result)
 
 class AlertWordTests(AuthedTestCase):
+    interesting_alert_word_list = ['alert', 'multi-word word', '☃'.decode("utf-8")]
+
     def test_default_no_words(self):
+        """
+        Users start out with no alert words.
+        """
         email = "cordelia@zulip.com"
         user = get_user_profile_by_email(email)
 
@@ -4121,29 +4126,47 @@ class AlertWordTests(AuthedTestCase):
         self.assertEqual(words, [])
 
     def test_add_word(self):
+        """
+        add_user_alert_words can add multiple alert words at once.
+        """
         email = "cordelia@zulip.com"
         user = get_user_profile_by_email(email)
 
-        add_user_alert_words(user, ['alert', 'word'])
-        words = user_alert_words(user)
+        # Add several words, including multi-word and non-ascii words.
+        add_user_alert_words(user, self.interesting_alert_word_list)
 
-        self.assertEqual(words, ['alert', 'word'])
+        words = user_alert_words(user)
+        self.assertEqual(words, self.interesting_alert_word_list)
 
     def test_remove_word(self):
+        """
+        Removing alert words works via remove_user_alert_words, even
+        for multi-word and non-ascii words.
+        """
         email = "cordelia@zulip.com"
         user = get_user_profile_by_email(email)
 
-        add_user_alert_words(user, ['alert', 'word'])
-        remove_user_alert_words(user, ['alert'])
-        words = user_alert_words(user)
+        add_user_alert_words(user, self.interesting_alert_word_list)
 
-        self.assertEqual(words, ['word'])
+        theoretical_remaining_alerts = self.interesting_alert_word_list[:]
+
+        for alert_word in self.interesting_alert_word_list:
+            remove_user_alert_words(user, alert_word)
+            theoretical_remaining_alerts.remove(alert_word)
+            actual_remaining_alerts = user_alert_words(user)
+            self.assertEqual(actual_remaining_alerts,
+                             theoretical_remaining_alerts)
 
     def test_realm_words(self):
+        """
+        We can gather alert words for an entire realm via
+        alert_words_in_realm. Alerts added for one user do not impact other
+        users.
+        """
         email = "cordelia@zulip.com"
         user1 = get_user_profile_by_email(email)
 
-        add_user_alert_words(user1, ['alert', 'word'])
+        add_user_alert_words(user1, self.interesting_alert_word_list)
 
         email = "othello@zulip.com"
         user2 = get_user_profile_by_email(email)
@@ -4152,7 +4175,8 @@ class AlertWordTests(AuthedTestCase):
         realm_words = alert_words_in_realm(user2.realm)
         self.assertEqual(len(realm_words), 2)
         self.assertEqual(realm_words.keys(), [user1.id, user2.id])
-        self.assertEqual(realm_words[user1.id], ['alert', 'word'])
+        self.assertEqual(realm_words[user1.id],
+                         self.interesting_alert_word_list)
         self.assertEqual(realm_words[user2.id], ['another'])
 
     def test_json_list_default(self):
@@ -4224,16 +4248,22 @@ class AlertWordTests(AuthedTestCase):
         data = ujson.loads(result.content)
         self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
 
-
+        # Alerts in the middle of messages work.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one time"))
+        # Alerts at the end of messages work.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one"))
+        # Alerts at the beginning of messages work.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "two normal alerts"))
+        # Alerts with surrounding punctuation work.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "This one? should alert"))
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "Definitely time for three."))
+        # Multiple alerts in a message work.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "One two three o'clock"))
+        # Alerts are case-insensitive.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "One o'clock"))
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "Case of ONE, won't stop me"))
 
+        # We don't cause alerts for matches in URLs.
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one/ urls"))
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one urls"))
 
