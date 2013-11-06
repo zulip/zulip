@@ -22,7 +22,7 @@ $(function () {
             dataType: 'json'});
     }
 
-    function add_alert_word(word) {
+    function add_alert_word(word, event) {
           if (word === '') {
             return;
         }
@@ -44,7 +44,7 @@ $(function () {
 
     $('#word-alerts').on('click', '.add-alert-word', function (event) {
         var word = $(event.target).siblings('input').val();
-        add_alert_word(word);
+        add_alert_word(word, event);
     });
 
     $('#word-alerts').on('click', '.remove-alert-word', function (event) {
