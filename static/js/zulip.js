@@ -636,6 +636,9 @@ function add_messages(messages, msg_list, messages_are_new) {
         _.each(messages, function (message) {
             if (message.sent_by_me) {
                 compose.mark_end_to_end_receive_time(message.id);
+                setTimeout(function () {
+                    compose.mark_end_to_end_display_time(message.id);
+                }, 0);
             }
         });
     }

@@ -356,13 +356,14 @@ function send_message_ajax(request, success) {
     });
 }
 
-function report_send_time(send_time, receive_time) {
+function report_send_time(send_time, receive_time, display_time) {
     $.ajax({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         url: '/json/report_send_time',
         type: 'POST',
-        data: {"time": send_time,
-               "received": receive_time}
+        data: {"time": send_time.toString(),
+               "received": receive_time.toString(),
+               "displayed": display_time.toString()}
     });
 }
 
@@ -389,7 +390,8 @@ function maybe_report_send_times(message_id) {
         return;
     }
     report_send_time(data.send_finished - data.start,
-                     data.received - data.start);
+                     data.received - data.start,
+                     data.displayed - data.start);
 }
 
 exports.mark_end_to_end_receive_time = function (message_id) {
@@ -397,6 +399,14 @@ exports.mark_end_to_end_receive_time = function (message_id) {
         exports.send_times_data[message_id] = {};
     }
     exports.send_times_data[message_id].received = new Date();
+    maybe_report_send_times(message_id);
+};
+
+exports.mark_end_to_end_display_time = function (message_id) {
+    if (exports.send_times_data[message_id] === undefined) {
+        exports.send_times_data[message_id] = {};
+    }
+    exports.send_times_data[message_id].displayed = new Date();
     maybe_report_send_times(message_id);
 };
 
