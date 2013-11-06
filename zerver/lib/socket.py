@@ -103,7 +103,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         self.session.send_message({'client_meta': msg['client_meta'],
                                    'response': {'result': 'success', 'msg': ''}})
         self.authenticated = True
-        fake_log_line(self.session.conn_info, 0, 200, "Authenticated", user_profile.email)
+        fake_log_line(self.session.conn_info, 0, 200, "Authenticated using %s" % (self.session.transport_name,),
+                      user_profile.email)
         ioloop = tornado.ioloop.IOLoop.instance()
         ioloop.remove_timeout(self.timeout_handle)
 
