@@ -51,7 +51,7 @@ Socket.prototype = {
         return this._is_open && this._is_authenticated;
     },
 
-    _drain_queue_send: function Socket__drain_queue_send() {
+    _drain_queue: function Socket__drain_queue() {
         var that = this;
         var queue = this._send_queue;
         this._send_queue = [];
@@ -60,13 +60,19 @@ Socket.prototype = {
         });
     },
 
-    _drain_queue_error: function Socket__drain_queue_error() {
-        var that = this;
-        var queue = this._send_queue;
-        this._send_queue = [];
-        _.each(queue, function (elem) {
-            elem.error('connection');
-        });
+    _process_response: function Socket__process_response(req_id, response) {
+        var req_info = this._requests[req_id];
+        if (req_info === undefined) {
+            blueslip.error("Got a response for an unknown request");
+            return;
+        }
+
+        if (response.result === 'success') {
+            req_info.success(response);
+        } else {
+            req_info.error('response', response);
+        }
+        delete this._requests[req_id];
     },
 
     _setup_sockjs_callbacks: function Socket__setup_sockjs_callbacks(sockjs) {
@@ -79,11 +85,21 @@ Socket.prototype = {
             // the CSRF token
             $(function () {
                 that._do_send('auth', {csrf_token: csrf_token,
-                                       queue_id: page_params.event_queue_id},
-                              function () {
+                                       queue_id: page_params.event_queue_id,
+                                       status_inquiries: _.keys(that._requests)},
+                              function (resp) {
                                   that._is_authenticated = true;
                                   that._connection_failures = 0;
-                                  that._drain_queue_send();
+                                  _.each(resp.status_inquiries, function (status, id) {
+                                      if (status.status === 'complete') {
+                                          that._process_response(id, status.response);
+                                      }
+                                      if (status.status === 'not_received') {
+                                          that._process_response(id, {result: 'error',
+                                                                      msg: 'Server has no record of request'});
+                                      }
+                                  });
+                                  that._drain_queue();
                               },
                               function (type, resp) {
                                   blueslip.info("Could not authenticate with server: " + resp.msg);
@@ -93,19 +109,7 @@ Socket.prototype = {
         };
 
         sockjs.onmessage = function Socket__sockjs_onmessage(event) {
-            var req_id = event.data.req_id;
-            var req_info = that._requests[req_id];
-            if (req_info === undefined) {
-                blueslip.error("Got a response for an unknown request");
-                return;
-            }
-
-            if (event.data.response.result === 'success') {
-                req_info.success(event.data.response);
-            } else {
-                req_info.error('response', event.data.response);
-            }
-            delete that._requests[req_id];
+            that._process_response(event.data.req_id, event.data.response);
         };
 
         sockjs.onclose = function Socket__sockjs_onclose() {
@@ -128,7 +132,6 @@ Socket.prototype = {
         this._is_open = false;
         this._is_authenticated = false;
         this._connection_failures++;
-        this._drain_queue_error();
 
         var wait_time;
         if (this._connection_failures === 1) {

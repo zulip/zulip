@@ -110,11 +110,24 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         if user_profile.id != client.user_profile_id:
             raise SocketAuthError("You are not the owner of the queue with id '%s'" % (queue_id,))
 
+        self.authenticated = True
         register_connection(queue_id, self)
 
-        self.session.send_message({'req_id': msg['req_id'],
-                                   'response': {'result': 'success', 'msg': ''}})
-        self.authenticated = True
+        response = {'req_id': msg['req_id'], 'response': {'result': 'success', 'msg': ''}}
+
+        status_inquiries = msg['request'].get('status_inquiries')
+        if status_inquiries is not None:
+            results = {}
+            for inquiry in status_inquiries:
+                status = redis_client.hgetall(req_redis_key(self.client_id, inquiry))
+                if len(status) == 0:
+                    status['status'] = 'not_received'
+                if 'response' in status:
+                    status['response'] = ujson.loads(status['response'])
+                results[str(inquiry)] = status
+            response['response']['status_inquiries'] = results
+
+        self.session.send_message(response)
         fake_log_line(self.session.conn_info, 0, 200, "Authenticated using %s" % (self.session.transport_name,),
                       user_profile.email)
         ioloop = tornado.ioloop.IOLoop.instance()
