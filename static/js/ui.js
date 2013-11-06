@@ -1494,7 +1494,7 @@ $(function () {
         e.stopPropagation();
         popovers.hide_all();
     });
-    $('body').on('click', '.edit_subject', function (e) {
+    $('body').on('click','.always_visible_topic_edit,.on_hover_topic_edit', function (e) {
         var recipient_row = $(this).closest(".recipient_row");
         message_edit.start_topic_edit(recipient_row);
         e.stopPropagation();

@@ -1421,9 +1421,18 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     edit_history_event = {}
     changed_messages = [message]
 
-    if message.sender != user_profile:
-        if not (message.subject == "(no topic)" and content is None):
-            raise JsonableError("Message was not sent by you")
+    # You can only edit a message if:
+    # 1. You sent it, OR:
+    # 2. This is a topic-only edit for a (no topic) message, OR:
+    # 3. This is a topic-only edit and you are an admin.
+    if message.sender == user_profile:
+        pass
+    elif (content is None) and \
+            ((message.subject == "(no topic)") or
+             (user_profile in user_profile.realm.get_admin_users())):
+        pass
+    else:
+        raise JsonableError("You don't have permission to edit this message")
 
     # Set first_rendered_content to be the oldest version of the
     # rendered content recorded; which is the current version if the

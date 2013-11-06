@@ -137,8 +137,12 @@
         </a>
 
         {{! edit subject pencil icon }}
-        {{#if empty_subject}}
-          <i class="icon-vector-pencil edit_subject"></i>
+        {{#if always_visible_topic_edit}}
+          <i class="icon-vector-pencil always_visible_topic_edit"></i>
+        {{else}}
+            {{#if on_hover_topic_edit}}
+              <i class="icon-vector-pencil on_hover_topic_edit"></i>
+            {{/if}}
         {{/if}}
 
         {{! exterior links (e.g. to a trac ticket) }}

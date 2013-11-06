@@ -549,6 +549,18 @@ function process_message_for_recent_subjects(message, remove_message) {
     recent_subjects.set(stream, recents);
 }
 
+function set_topic_edit_properties(message) {
+    message.always_visible_topic_edit = false;
+    message.on_hover_topic_edit = false;
+    // Messages with no topics should always have an edit icon visible
+    // to encourage updating them. Admins can also edit any topic.
+    if (message.subject === compose.empty_subject_placeholder()) {
+        message.always_visible_topic_edit = true;
+    } else if (page_params.show_admin) {
+        message.on_hover_topic_edit = true;
+    }
+}
+
 var msg_metadata_cache = {};
 function add_message_metadata(message) {
     var cached_msg = msg_metadata_cache[message.id];
@@ -587,8 +599,7 @@ function add_message_metadata(message) {
 
         involved_people = [{'full_name': message.sender_full_name,
                             'email': message.sender_email}];
-
-        message.empty_subject = message.subject === compose.empty_subject_placeholder();
+        set_topic_edit_properties(message);
         break;
 
     case 'private':
@@ -734,7 +745,7 @@ function update_messages(events) {
 
                 msg.subject = event.subject;
                 msg.subject_links = event.subject_links;
-                msg.empty_subject = msg.subject === compose.empty_subject_placeholder();
+                set_topic_edit_properties(msg);
                 // Add the recent subjects entry for the new subject; must
                 // be called after we update msg.subject
                 process_message_for_recent_subjects(msg);
