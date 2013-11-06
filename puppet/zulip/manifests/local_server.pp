@@ -25,8 +25,9 @@ class zulip::local_server {
     target => '/home/zulip/zulip',
   }
   file { '/home/zulip/prod-static':
-    ensure => 'link',
-    target => '/home/zulip/deployments/current/prod-static/serve',
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
   }
 
   file { '/etc/postgresql/9.1/main/postgresql.conf.template':
