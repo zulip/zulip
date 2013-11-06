@@ -2,7 +2,14 @@
 
 GITID=$(git rev-parse HEAD)
 
-TMPDIR=$(mktemp -d)
+if [ "$(uname)" = "Darwin" ]; then
+    TMPDIR=/tmp/local-server
+    rm -Rf $TMPDIR
+    mkdir -p $TMPDIR
+else
+    TMPDIR=$(mktemp -d)
+fi
+
 DIR=$TMPDIR/zulip-server/
 TARBALL=$TMPDIR/zulip-server.tar.gz
 
