@@ -56,11 +56,8 @@ $(function () {
 
     $('#word-alerts').on('keypress', '.edit-alert-word', function (event) {
         var key = event.which;
-        // Disallow spaces (key code 32)
-        // Handle enter as "add"
-        if (key === 32) {
-            event.preventDefault();
-        } else if (key === 13) {
+        // Handle enter (13) as "add".
+        if (key === 13) {
             event.preventDefault();
 
             var word = $(event.target).val();
