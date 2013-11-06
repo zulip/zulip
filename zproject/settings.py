@@ -173,6 +173,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'south',
     'django_openid_auth',
+    'analytics',
     'confirmation',
     'guardian',
     'pipeline',
