@@ -794,10 +794,11 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
     tornado_callbacks.send_notification(notice)
 
 def notify_for_streams_by_default(user_profile):
-    # For users in newer realms, generate notifications for stream
-    # messages by default.
-    return user_profile.realm.date_created > datetime.datetime(
-        2013, 9, 24, tzinfo=timezone.utc)
+    # For users in newer realms who are not CUSTOMER19, generate notifications for
+    # stream messages by default.
+    return (user_profile.realm.date_created > datetime.datetime(
+            2013, 9, 24, tzinfo=timezone.utc)) and \
+            (user_profile.realm.domain != "customer19.invalid")
 
 def bulk_add_subscriptions(streams, users):
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
