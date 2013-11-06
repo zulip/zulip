@@ -356,12 +356,13 @@ function send_message_ajax(request, success) {
     });
 }
 
-function report_send_time(time) {
+function report_send_time(send_time, receive_time) {
     $.ajax({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         url: '/json/report_send_time',
         type: 'POST',
-        data: {"time": time}
+        data: {"time": send_time,
+               "received": receive_time}
     });
 }
 
@@ -380,6 +381,42 @@ function send_message_socket(request, success) {
 }
 
 exports.send_times_log = [];
+exports.send_times_data = {};
+function maybe_report_send_times(message_id) {
+    var data = exports.send_times_data[message_id];
+    if (data.send_finished === undefined || data.received === undefined) {
+        // We report the data once we have both the send and receive times
+        return;
+    }
+    report_send_time(data.send_finished - data.start,
+                     data.received - data.start);
+}
+
+exports.mark_end_to_end_receive_time = function (message_id) {
+    if (exports.send_times_data[message_id] === undefined) {
+        exports.send_times_data[message_id] = {};
+    }
+    exports.send_times_data[message_id].received = new Date();
+    maybe_report_send_times(message_id);
+};
+
+function process_send_time(message_id, start_time) {
+    var send_finished = new Date();
+    var send_time = (send_finished - start_time);
+    if (feature_flags.log_send_times) {
+        blueslip.log("send time: " + send_time);
+    }
+    if (feature_flags.collect_send_times) {
+        exports.send_times_log.push(send_time);
+    }
+    if (exports.send_times_data[message_id] === undefined) {
+        exports.send_times_data[message_id] = {};
+    }
+    exports.send_times_data[message_id].start = start_time;
+    exports.send_times_data[message_id].send_finished = send_finished;
+    maybe_report_send_times(message_id);
+}
+
 function send_message(request) {
     if (request === undefined) {
         request = create_message_object();
@@ -393,15 +430,8 @@ function send_message(request) {
     }
 
     var start_time = new Date();
-    function success() {
-        var send_time = (new Date() - start_time);
-        if (feature_flags.log_send_times) {
-            blueslip.log("send time: " + send_time);
-        }
-        if (feature_flags.collect_send_times) {
-            exports.send_times_log.push(send_time);
-        }
-        report_send_time(send_time.toString());
+    function success(data) {
+        process_send_time(data.id, start_time);
 
         $("#new_message_content").val('').focus();
         autosize_textarea();

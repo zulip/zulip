@@ -1879,9 +1879,11 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 @authenticated_json_post_view
 @has_request_variables
 def json_report_send_time(request, user_profile,
-                          time=REQ(converter=to_non_negative_int)):
-    logging.info("End-to-end send time: %dms (%s)" % (time, user_profile.email))
+                          time=REQ(converter=to_non_negative_int),
+                          received=REQ(converter=to_non_negative_int, default="(unknown)")):
+    logging.info("End-to-end send time: %dms/%dms (%s)" % (time, received, user_profile.email))
     statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain),), time)
+    statsd.timing("endtoend.receive_time.%s" % (statsd_key(user_profile.realm.domain),), received)
     return json_success()
 
 @authenticated_json_post_view

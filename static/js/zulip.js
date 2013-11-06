@@ -631,6 +631,14 @@ function add_messages(messages, msg_list, messages_are_new) {
     util.destroy_first_run_message();
 
     msg_list.add_messages(messages, messages_are_new);
+
+    if (msg_list === home_msg_list && messages_are_new) {
+        _.each(messages, function (message) {
+            if (message.sent_by_me) {
+                compose.mark_end_to_end_receive_time(message.id);
+            }
+        });
+    }
 }
 
 function deduplicate_messages(messages) {
