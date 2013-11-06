@@ -367,7 +367,10 @@ function report_send_time(send_time, receive_time, display_time) {
     });
 }
 
-var socket = new Socket("/sockjs");
+var socket;
+if (feature_flags.use_socket) {
+    socket = new Socket("/sockjs");
+}
 // For debugging.  The socket will eventually move out of this file anyway.
 exports._socket = socket;
 
