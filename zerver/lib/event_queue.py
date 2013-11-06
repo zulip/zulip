@@ -14,6 +14,7 @@ import sys
 import signal
 import tornado
 import random
+import traceback
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 
@@ -72,7 +73,7 @@ class ClientDescriptor(object):
                                                   self.current_handler._request,
                                                   apply_markdown=self.apply_markdown)
             except socket.error:
-                pass
+                traceback.print_exc()
             self.disconnect_handler()
 
     def accepts_event_type(self, type):
