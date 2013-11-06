@@ -54,17 +54,7 @@ urlpatterns = patterns('',
     url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html')),
     url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html')),
 
-    # "About Zulip" information
-    url(r'^new-user/$', RedirectView.as_view(url='/hello')),
-    url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
-    url(r'^compare/$', TemplateView.as_view(template_name='zerver/compare.html')),
-
-    # Landing page, signup form, and nice register URL
-    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'),
-                                         name='landing-page'),
-    url(r'^signup/$', TemplateView.as_view(template_name='zerver/signup.html'),
-                                         name='signup'),
-    url(r'^signup/sign-me-up$', 'zerver.views.beta_signup_submission', name='beta-signup-submission'),
+    # Login/registration
     url(r'^register/$', 'zerver.views.accounts_home', name='register'),
     url(r'^login/$',  'zerver.views.login_page', {'template_name': 'zerver/login.html'}),
 
