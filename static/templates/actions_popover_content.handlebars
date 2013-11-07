@@ -1,5 +1,13 @@
 {{! Contents of the "message actions" popup }}
 <ul class="nav nav-list actions_popover pull-right">
+  {{#if can_edit_message}}
+  <li>
+    <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">
+      <i class="icon-vector-pencil"></i> Edit this message
+    </a>
+  </li>
+  {{/if}}
+
   <li>
     <a href="#" class="respond_button">
       <i class="icon-vector-share-alt"></i>
@@ -48,14 +56,6 @@
         <i class="icon-vector-link"></i> Narrow to just this message
       </a>
     </li>
-  {{/if}}
-
-  {{#if can_edit_message}}
-  <li>
-    <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">
-      <i class="icon-vector-pencil"></i> Edit this message
-    </a>
-  </li>
   {{/if}}
 
   <li>
