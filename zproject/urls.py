@@ -15,6 +15,10 @@ import zerver.forms
 
 urlpatterns = patterns('',
     url(r'^$', 'zerver.views.home'),
+    # We have a desktop-specific landing page in case we change our / to not log in in the future. We don't
+    # want to require a new desktop app build for everyone in that case
+    url(r'^desktop_home/$', 'zerver.views.home'),
+
     url(r'^accounts/login/openid/$', 'django_openid_auth.views.login_begin', name='openid-login'),
     url(r'^accounts/login/openid/done/$', 'zerver.views.process_openid_login', name='openid-complete'),
     url(r'^accounts/login/openid/done/$', 'django_openid_auth.views.login_complete', name='openid-complete'),
