@@ -114,28 +114,3 @@ var MessageList = require('js/message_list');
     assert.equal(list.nth_most_recent_id(3), 10);
     assert.equal(list.nth_most_recent_id(4), -1);
 }());
-
-(function test_message_counting() {
-    global.feature_flags.summarize_read_while_narrowed = true;
-    var list = new MessageList(undefined, {}, {summarize_read: 'home'});
-
-    var summarized_flags = ['summarize_in_home'];
-    var unsummarized_flags = [];
-
-    list.append([
-        {id: 10, flags: unsummarized_flags},
-        {id: 20, flags: unsummarized_flags},
-        {id: 30, flags: summarized_flags},
-        {id: 40, flags: summarized_flags},
-        {id: 50, flags: unsummarized_flags},
-        {id: 60, flags: summarized_flags}
-    ]);
-    list.min_id_exempted_from_summaries = 10000;
-
-    assert.equal(list.count_full_messages_between(1, 5), 2);
-    assert.equal(list.idx_full_messages_before(5, 2), 1);
-    assert.equal(list.idx_full_messages_before(5, 10), 0);
-    assert.equal(list.idx_full_messages_after(0, 3), 5);
-    assert.equal(list.idx_full_messages_after(0, 10), 6);
-
-}());

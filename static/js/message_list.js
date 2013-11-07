@@ -297,41 +297,6 @@ MessageList.prototype = {
         return null;
     },
 
-    // Counts the number of fully-displayed (not summarized, muted, or hidden)
-    // messages from array position idx1 to idx2
-    count_full_messages_between: function (idx1, idx2) {
-        var i;
-        var count = 0;
-        for (i = idx1; i < idx2; i++) {
-            if (this.summary_adjective(this._items[i]) === null) {
-                count += 1;
-            }
-        }
-        return count;
-    },
-
-    // Adjusts an array index backwards by `count` fully-displayed messages
-    idx_full_messages_before: function (idx, count) {
-        while (idx > 0 && count > 0){
-            idx -= 1;
-            if (this.summary_adjective(this._items[idx]) === null) {
-                count -= 1;
-            }
-        }
-        return idx;
-    },
-
-    // Advances an array index forward past `count` fully-displayed messages
-    idx_full_messages_after: function (idx, count) {
-        while (idx < this._items.length && count > 0){
-            if (this.summary_adjective(this._items[idx]) === null) {
-                count -= 1;
-            }
-            idx += 1;
-        }
-        return idx;
-    },
-
     selected_idx: function MessageList_selected_idx() {
         return util.lower_bound(this._items, this._selected_id,
                                 function (a, b) { return a.id < b; });
