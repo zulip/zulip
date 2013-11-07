@@ -1,5 +1,7 @@
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.views import login as django_login_page
+from django.http import HttpResponseRedirect
 
 from zerver.decorator import has_request_variables, REQ, json_to_dict
 from zerver.lib.actions import internal_send_message
@@ -49,15 +51,37 @@ def submit_feedback(request, deployment, message=REQ(converter=json_to_dict)):
 
     return HttpResponse(message['sender_email'])
 
+
+def realm_for_email(email):
+    try:
+        user = get_user_profile_by_email(email)
+        return user.realm
+    except UserProfile.DoesNotExist:
+        pass
+
+    return get_realm(email_to_domain(email))
+
 # Requests made to this endpoint are UNAUTHENTICATED
 @csrf_exempt
 @has_request_variables
 def lookup_endpoints_for_user(request, email=REQ()):
     try:
-        return json_response(get_user_profile_by_email(email).realm.deployment.endpoints)
-    except UserProfile.DoesNotExist:
-        try:
-            return json_response(get_realm(email_to_domain(email)).deployment.endpoints)
-        except AttributeError:
-            return json_error("Cannot determine endpoint for user.", status=404)
+        return json_response(realm_for_email(email).deployment.endpoints)
+    except AttributeError:
+        return json_error("Cannot determine endpoint for user.", status=404)
 
+def account_deployment_dispatch(request, **kwargs):
+    sso_unknown_email = False
+    if request.method == 'POST':
+        email = request.POST['username']
+        realm = realm_for_email(email)
+        try:
+            return HttpResponseRedirect(realm.deployment.base_site_url)
+        except AttributeError:
+            # No deployment found for this user/email
+            sso_unknown_email = True
+
+    template_response = django_login_page(request, **kwargs)
+    template_response.context_data['sso_only'] = True
+    template_response.context_data['sso_unknown_email'] = sso_unknown_email
+    return template_response

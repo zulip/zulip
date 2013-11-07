@@ -229,6 +229,10 @@ if not settings.LOCAL_SERVER:
     )
 
     urlpatterns += patterns('',
+        url(r'^', include('zilencer.urls.pages')),
+    )
+
+    urlpatterns += patterns('',
         url(r'^', include('analytics.urls')),
     )
 

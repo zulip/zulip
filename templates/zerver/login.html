@@ -25,11 +25,16 @@ autofocus('#id_username');
 
     <h3 class="login-page-header">You look familiar.</h3>
 
-{% if form.errors %}
+{% if form.errors or sso_unknown_email %}
 <div class="alert alert-error">
-    {% for error in form.errors.values %}
-    <div>{{ error | striptags }}</div>
-    {% endfor %}
+    {% if sso_unknown_email %}
+        Zulip is not currently available for your domain. <br />
+        <a href="https://zulip.com/signup">Sign up</a> to find out when Zulip is ready for you.
+    {% else %}
+        {% for error in form.errors.values %}
+        <div>{{ error | striptags }}</div>
+        {% endfor %}
+    {% endif %}
 </div>
 {% endif %}
 
@@ -40,7 +45,12 @@ autofocus('#id_username');
 {% endif %}
 
         <form name="login_form" id="login_form" method="post" class="login-form"
-              action="{% url 'django.contrib.auth.views.login' %}?next={{ next }}">
+            {% if sso_only %}
+              action="{% url 'zilencer.views.account_deployment_dispatch' %}"
+            {% else %}
+              action="{% url 'django.contrib.auth.views.login' %}?next={{ next }}"
+            {% endif %}
+        >
             {% csrf_token %}
             <div class="control-group">
                 <label for="id_username" class="control-label">Email</label>
@@ -48,25 +58,32 @@ autofocus('#id_username');
                     <input id="id_username" type="email" name="username" class="email required" value="{{ email }}" maxlength="72" />
                 </div>
             </div>
+
+            {% if not sso_only %}
             <div class="control-group">
                 <label for="id_password" class="control-label">Password</label>
                 <div class="controls">
                     <input id="id_password" name="password" class="required" type="password">
                 </div>
             </div>
+            {% endif %}
             <div class="control-group">
                 <div class="controls">
                     <input type="submit" class="btn btn-large btn-primary" value="Log in" />
+                    {% if not sso_only %}
                     <span class="login-forgot-password">
                       <a href="{% url 'django.contrib.auth.views.password_reset' %}">Forgot password?</a>
                     </span>
+                    {% endif %}
                 </div>
             </div>
         </form>
 
+    {% if not sso_only %}
     <div class="login-google">
     or <a href="/accounts/login/openid/" class="login-google-button zocial google">Sign in with Google</a>
     </div>
+    {% endif %}
 
 </div>
 <div class="footer-padder"></div>
