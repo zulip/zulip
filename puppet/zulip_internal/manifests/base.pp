@@ -1,7 +1,10 @@
 class zulip_internal::base {
   include zulip::base
 
-  $org_base_packages = [ "nagios-plugins-basic", "munin-node", "munin-plugins-extra" ]
+  $org_base_packages = [ "nagios-plugins-basic", "munin-node", "munin-plugins-extra" ,
+                         "mosh", "openssh-server", "iptables-persistent",
+                         "debian-goodies"
+                         ]
   package { $org_base_packages: ensure => "installed" }
 
   file { '/home/zulip/.ssh/authorized_keys':

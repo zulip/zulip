@@ -1,9 +1,8 @@
 class zulip::base {
   $base_packages = [ "screen", "strace", "vim", "emacs23-nox", "git", "python-tz",
-                     "ntp", "python-simplejson", "host",
-                     "openssh-server", "python-pip", "puppet-el", "mosh",
-                     "iptables-persistent", "postgresql-client-9.1", "molly-guard",
-		     "debian-goodies", "moreutils", "python-requests", "ipython",
+                     "ntp", "python-simplejson", "host", "python-pip", "puppet-el",
+                     "postgresql-client-9.1", "molly-guard", "python-requests",
+                     "moreutils", "ipython",
                      "python-boto", "python-netifaces" ]
   package { $base_packages: ensure => "installed" }
 
