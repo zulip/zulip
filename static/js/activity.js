@@ -220,6 +220,12 @@ exports.update_huddles = function () {
 
     var html = templates.render('group_pms', {group_pms: group_pms});
     $('#group-pms').expectOne().html(html);
+
+    _.each(huddles, function (huddle) {
+        var count = unread.num_unread_for_person(huddle);
+        stream_list.set_presence_list_count(huddle, count);
+    });
+
     section.show();
 };
 
