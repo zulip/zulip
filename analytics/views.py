@@ -142,7 +142,7 @@ def realm_summary_table(realm_minutes):
         'analytics/realm_summary_table.html',
         dict(rows=rows, num_active_sites=num_active_sites)
     )
-    return dict(content=content)
+    return content
 
 
 def user_activity_intervals():
@@ -193,7 +193,7 @@ def user_activity_intervals():
     output += "\nTotal Duration in minutes:           %s\n" % (total_duration.total_seconds() / 60.,)
     output += "Total Duration amortized to a month: %s" % (total_duration.total_seconds() * 30. / 60.,)
     content = mark_safe('<pre>' + output + '</pre>')
-    return dict(content=content), realm_minutes
+    return content, realm_minutes
 
 def sent_messages_report(realm):
     title = 'Recently sent messages for ' + realm
@@ -478,7 +478,7 @@ def get_activity(request, realm=REQ(default=None)):
         ('Durations', duration_content),
     ]
     for page in ad_hoc_queries():
-        data.append((page['title'], page))
+        data.append((page['title'], page['content']))
 
     title = 'Activity'
 
@@ -723,18 +723,16 @@ def get_realm_activity(request, realm):
         user_records, content = realm_user_summary_table(all_records)
         all_user_records.update(user_records)
 
-        user_content = dict(content=content)
-
-        data += [(page_title, user_content)]
+        data += [(page_title, content)]
 
     page_title = 'Clients'
     content = realm_client_table(all_user_records)
-    data += [(page_title, dict(content=content))]
+    data += [(page_title, content)]
 
 
     page_title = 'History'
     content = sent_messages_report(realm)
-    data += [(page_title, dict(content=content))]
+    data += [(page_title, content)]
 
     title = realm
     return render_to_response(
@@ -751,12 +749,10 @@ def get_user_activity(request, email):
     user_summary = get_user_activity_summary(records)
     content = user_activity_summary_table(user_summary)
 
-    user_content = dict(content=content)
-    data += [('Summary', user_content)]
+    data += [('Summary', content)]
 
     content = raw_user_activity_table(records)
-    user_content = dict(content=content)
-    data += [('Info', user_content)]
+    data += [('Info', content)]
 
     realm = None
     title = email

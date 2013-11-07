@@ -39,7 +39,7 @@
 {% for name, activity in data %}
 
     <div class="tab-pane {% if forloop.first %} active {% endif %}" id="{{ name|slugify }}">
-        {{ activity.content }}
+        {{ activity }}
     </div>
 
 {% endfor %}
