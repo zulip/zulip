@@ -65,6 +65,10 @@ class ClientDescriptor(object):
             async_request_restart(self.current_handler._request)
 
         self.event_queue.push(event)
+        logging.info("DEBUG: Added %s event to queue %s: handler is %s" % (
+                event.get("type"),
+                self.event_queue.id,
+                self.current_handler is not None))
         if self.current_handler is not None:
             try:
                 self.current_handler._request._extra_log_data = "[%s/1]" % (self.event_queue.id,)
@@ -73,7 +77,9 @@ class ClientDescriptor(object):
                                                        queue_id=self.event_queue.id),
                                                   self.current_handler._request,
                                                   apply_markdown=self.apply_markdown)
+                logging.info("DEBUG: Successfully called back on queue %s" % (self.event_queue.id))
             except socket.error:
+                logging.info("DEBUG: Got error adding event to queue %s" % (self.event_queue.id))
                 traceback.print_exc()
             self.disconnect_handler()
 
@@ -99,8 +105,11 @@ class ClientDescriptor(object):
         ioloop = tornado.ioloop.IOLoop.instance()
         heartbeat_time = time.time() + HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)
         self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
+        logging.info("DEBUG: connected handler for queue %s" % (self.event_queue.id,))
 
     def disconnect_handler(self):
+        if self.current_handler is not None:
+            logging.info("DEBUG: disconnected handler for queue %s" % (self.event_queue.id,))
         self.current_handler = None
         if self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()

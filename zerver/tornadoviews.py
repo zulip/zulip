@@ -13,6 +13,7 @@ from zerver.tornado_callbacks import process_notification
 from zerver.lib.event_queue import allocate_client_descriptor, get_client_descriptor
 
 import ujson
+import logging
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
@@ -49,6 +50,7 @@ def get_events_backend(request, user_profile, handler = None,
             queue_id = client.event_queue.id
         else:
             return json_error("Missing 'queue_id' argument")
+        logging.info("DEBUG: created queue %s" % (queue_id,))
     else:
         if last_event_id is None:
             return json_error("Missing 'last_event_id' argument")
