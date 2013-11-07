@@ -58,7 +58,7 @@ Logger.prototype = (function () {
                 this._memory_log.shift();
             }
 
-            if (console.hasOwnProperty(name)) {
+            if (console[name] !== undefined) {
                 return console[name].apply(console, arguments);
             }
             return undefined;
