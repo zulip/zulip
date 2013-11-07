@@ -11,6 +11,16 @@ import datetime
 import itertools
 import time
 
+def make_table(title, cols, rows):
+    data = dict(title=title, cols=cols, rows=rows)
+
+    content = loader.render_to_string(
+        'analytics/ad_hoc_query.html',
+        dict(data=data)
+    )
+
+    return content
+
 def dictfetchall(cursor):
     "Returns all rows from a cursor as a dict"
     desc = cursor.description
@@ -227,18 +237,7 @@ def sent_messages_report(realm):
     rows = cursor.fetchall()
     cursor.close()
 
-    data = dict(
-        rows=rows,
-        cols=cols,
-        title=title
-    )
-
-    content = loader.render_to_string(
-        'analytics/ad_hoc_query.html',
-        dict(data=data)
-    )
-
-    return content
+    return make_table(title, cols, rows)
 
 def ad_hoc_queries():
     def get_page(query, cols, title):
@@ -247,16 +246,7 @@ def ad_hoc_queries():
         rows = cursor.fetchall()
         cursor.close()
 
-        data = dict(
-            rows=rows,
-            cols=cols,
-            title=title
-        )
-
-        content = loader.render_to_string(
-            'analytics/ad_hoc_query.html',
-            dict(data=data)
-        )
+        content = make_table(title, cols, rows)
 
         return dict(
             content=content,
@@ -549,20 +539,8 @@ def raw_user_activity_table(records):
         ]
 
     rows = map(row, records)
-
     title = 'Raw Data'
-
-    data = dict(
-        rows=rows,
-        cols=cols,
-        title=title
-    )
-
-    content = loader.render_to_string(
-        'analytics/ad_hoc_query.html',
-        dict(data=data)
-    )
-    return content
+    return make_table(title, cols, rows)
 
 def get_user_activity_summary(records):
     summary = {}
@@ -650,17 +628,7 @@ def realm_client_table(user_summaries):
 
     title = 'Clients'
 
-    data = dict(
-        rows=rows,
-        cols=cols,
-        title=title
-    )
-
-    content = loader.render_to_string(
-        'analytics/ad_hoc_query.html',
-        dict(data=data)
-    )
-    return content
+    return make_table(title, cols, rows)
 
 def user_activity_summary_table(user_summary):
     rows = []
@@ -686,18 +654,7 @@ def user_activity_summary_table(user_summary):
     ]
 
     title = 'User Activity'
-
-    data = dict(
-        rows=rows,
-        cols=cols,
-        title=title
-    )
-
-    content = loader.render_to_string(
-        'analytics/ad_hoc_query.html',
-        dict(data=data)
-    )
-    return content
+    return make_table(title, cols, rows)
 
 def realm_user_summary_table(all_records):
     user_records = {}
@@ -750,17 +707,7 @@ def realm_user_summary_table(all_records):
 
     title = 'Summary'
 
-    data = dict(
-        rows=rows,
-        cols=cols,
-        title=title
-    )
-
-    content = loader.render_to_string(
-        'analytics/ad_hoc_query.html',
-        dict(data=data)
-    )
-
+    content = make_table(title, cols, rows)
     return user_records, content
 
 @zulip_internal
