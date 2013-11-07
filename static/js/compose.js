@@ -445,7 +445,8 @@ function send_message(request) {
 
     var start_time = new Date();
     function success(data) {
-        process_send_time(data.id, start_time);
+        var message_id = data.id;
+        process_send_time(message_id, start_time);
 
         $("#new_message_content").val('').focus();
         autosize_textarea();
@@ -454,6 +455,12 @@ function send_message(request) {
         clear_message_snapshot();
         $("#compose-send-button").removeAttr('disabled');
         $("#sending-indicator").hide();
+        setTimeout(function () {
+            if (exports.send_times_data[message_id].received === undefined) {
+                blueslip.debug("Restarting get_updates");
+                restart_get_updates();
+            }
+        }, 2000);
     }
 
     if (feature_flags.use_socket) {
