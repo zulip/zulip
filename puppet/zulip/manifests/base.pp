@@ -3,7 +3,7 @@ class zulip::base {
                      "ntp", "python-simplejson", "host", "puppet-el",
                      "postgresql-client-9.1", "molly-guard", "python-requests",
                      "moreutils", "ipython",
-                     "python-boto", "python-netifaces" ]
+                     "python-boto" ]
   package { $base_packages: ensure => "installed" }
 
   apt::key {"A529EF65":

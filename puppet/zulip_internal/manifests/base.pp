@@ -3,7 +3,7 @@ class zulip_internal::base {
 
   $org_base_packages = [ "nagios-plugins-basic", "munin-node", "munin-plugins-extra" ,
                          "mosh", "openssh-server", "iptables-persistent",
-                         "debian-goodies"
+                         "debian-goodies", "python-netifaces"
                          ]
   package { $org_base_packages: ensure => "installed" }
 
