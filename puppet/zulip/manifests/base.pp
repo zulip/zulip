@@ -1,6 +1,6 @@
 class zulip::base {
   $base_packages = [ "screen", "strace", "vim", "emacs23-nox", "git", "python-tz",
-                     "ntp", "python-simplejson", "host", "python-pip", "puppet-el",
+                     "ntp", "python-simplejson", "host", "puppet-el",
                      "postgresql-client-9.1", "molly-guard", "python-requests",
                      "moreutils", "ipython",
                      "python-boto", "python-netifaces" ]
