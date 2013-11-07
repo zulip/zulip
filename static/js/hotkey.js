@@ -285,9 +285,7 @@ function process_hotkey(e) {
     // Shortcuts that operate on a message
     switch (event_name) {
         case 'message_actions':
-            var id = current_msg_list.selected_id();
-            popovers.show_actions_popover($(".selected_message .actions_hover")[0], id);
-            return true;
+            return popovers.open_message_menu();
         case 'narrow_by_recipient':
             return do_narrow_action(narrow.by_recipient);
         case 'narrow_by_subject':

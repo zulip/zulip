@@ -88,8 +88,26 @@ exports.show_actions_popover = function (element, id) {
     }
 };
 
+function get_action_menu_menu_items() {
+    return $('li:not(.divider):visible a', current_actions_popover_elem.data('popover').$tip);
+}
+
+function focus_first_action_popover_item() {
+    // For now I recommend only calling this when the user opens the menu with a hotkey.
+    // Our popup menus act kind of funny when you mix keyboard and mouse.
+    var items = get_action_menu_menu_items();
+    items.eq(0).expectOne().focus();
+}
+
+exports.open_message_menu = function () {
+    var id = current_msg_list.selected_id();
+    popovers.show_actions_popover($(".selected_message .actions_hover")[0], id);
+    focus_first_action_popover_item();
+    return true;
+};
+
 exports.actions_menu_handle_keyboard = function (key) {
-    var items = $('li:not(.divider):visible a', current_actions_popover_elem.data('popover').$tip);
+    var items = get_action_menu_menu_items();
     var index = items.index(items.filter(':focus'));
 
     if (key === "enter" && index >= 0 && index < items.length) {
