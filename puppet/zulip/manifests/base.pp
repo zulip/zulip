@@ -57,20 +57,6 @@ class zulip::base {
     source     => 'puppet:///modules/zulip/apt/apt.conf.d/02periodic',
   }
 
-  file { '/etc/ssh/sshd_config':
-    require    => Package['openssh-server'],
-    ensure     => file,
-    source     => 'puppet:///modules/zulip/sshd_config',
-    owner      => 'root',
-    group      => 'root',
-    mode       => 644,
-  }
-
-  service { 'ssh':
-    ensure     => running,
-    subscribe  => File['/etc/ssh/sshd_config'],
-  }
-
   file { '/var/log/zulip':
     ensure => 'directory',
     owner  => 'zulip',

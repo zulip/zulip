@@ -20,6 +20,20 @@ class zulip_internal::base {
     mode       => 600,
   }
 
+  file { '/etc/ssh/sshd_config':
+    require    => Package['openssh-server'],
+    ensure     => file,
+    source     => 'puppet:///modules/zulip_internal/sshd_config',
+    owner      => 'root',
+    group      => 'root',
+    mode       => 644,
+  }
+
+  service { 'ssh':
+    ensure     => running,
+    subscribe  => File['/etc/ssh/sshd_config'],
+  }
+
   file { '/root/.ssh/authorized_keys':
     ensure     => file,
     mode       => 600,
