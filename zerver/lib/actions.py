@@ -12,7 +12,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     email_to_domain, email_to_username, display_recipient_cache_key, \
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
-    UserActivityInterval, get_active_user_dicts_in_realm
+    UserActivityInterval, get_active_user_dicts_in_realm, RealmAlias
 
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
@@ -1987,8 +1987,9 @@ def do_invite_users(user_profile, invitee_emails, streams):
             errors.append((email, "Invalid address."))
             continue
 
-        if user_profile.realm.restricted_to_domain and \
-                email_to_domain(email).lower() != user_profile.realm.domain.lower():
+        domains = [user_profile.realm.domain.lower()]
+        domains.extend(realm_aliases(user_profile.realm))
+        if user_profile.realm.restricted_to_domain and email_to_domain(email).lower() not in domains:
             errors.append((email, "Outside your domain."))
             continue
 
@@ -2181,3 +2182,11 @@ def send_local_email_template_with_delay(recipients, template_prefix,
                              sender=sender,
                              tags=tags)
 
+def realm_aliases(realm):
+    return [alias.domain for alias in realm.realmalias_set.all()]
+
+def alias_for_realm(domain):
+    try:
+        return RealmAlias.objects.get(domain=domain)
+    except RealmAlias.DoesNotExist:
+        return None

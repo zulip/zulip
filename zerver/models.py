@@ -128,6 +128,10 @@ class Realm(models.Model):
             ('administer', "Administer a realm"),
         )
 
+class RealmAlias(models.Model):
+    realm = models.ForeignKey(Realm, null=True)
+    domain = models.CharField(max_length=80, db_index=True, unique=True)
+
 # These functions should only be used on email addresses that have
 # been validated via django.core.validators.validate_email
 #

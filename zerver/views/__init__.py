@@ -39,7 +39,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     do_set_muted_topics, do_rename_stream, \
-    notify_for_streams_by_default, do_change_enable_offline_push_notifications
+    notify_for_streams_by_default, do_change_enable_offline_push_notifications, alias_for_realm
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
@@ -554,6 +554,10 @@ def create_preregistration_user(email, request):
     if email_to_domain(email) == "mit.edu" and not domain:
         prereg_user, created = MitUser.objects.get_or_create(email=email)
     else:
+        realm = alias_for_realm(email_to_domain(email))
+        if realm is not None:
+            domain = realm.domain
+
         prereg_user = PreregistrationUser(email=email, realm=get_realm(domain))
         prereg_user.save()
 
