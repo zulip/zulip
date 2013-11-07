@@ -593,7 +593,12 @@ MessageListView.prototype = {
         this._render_win_start += messages.length;
         this._render_win_end += messages.length;
 
-        this.maybe_rerender();
+        var cur_window_size = this._render_win_end - this._render_win_start;
+        if (cur_window_size < this._RENDER_WINDOW_SIZE) {
+            var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
+            this.render(slice_to_render, 'top', false);
+            this._render_win_start -= slice_to_render.length;
+        }
     },
 
     rerender_the_whole_thing: function MessageListView__rerender_the_whole_thing(messages) {
