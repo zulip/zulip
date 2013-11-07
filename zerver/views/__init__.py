@@ -711,6 +711,7 @@ def home(request):
         (not user_profile.email.lower().endswith("@customer4.invalid"))):
         show_invites = False
 
+    request._extra_log_data = "[%s]" % (register_ret["queue_id"],)
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
                                    'page_params' : page_params,
