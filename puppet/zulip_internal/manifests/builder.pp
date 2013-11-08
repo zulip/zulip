@@ -2,8 +2,10 @@ class zulip_internal::builder {
   include zulip_internal::base
 
   $buildd_packages = [
+    # Useful tools for packaging
     "apt-spy",
     "netselect-apt",
+    # Packages needed to do the builds
     "ubuntu-dev-tools",
     "schroot",
     "sbuild",

@@ -3,7 +3,9 @@ class zulip_internal::trac {
   include zulip_internal::apache
   include zulip_internal::mediawiki
 
-  $trac_packages = [ "trac", ]
+  $trac_packages = [# Packages needed to run trac
+                    "trac",
+                    ]
   package { $trac_packages: ensure => "installed" }
 
   apache2site { 'trac':

@@ -2,7 +2,10 @@ class zulip_internal::postgres_master {
   include zulip_internal::base
   include zulip_internal::postgres_appdb
 
-  $master_packages = [ "xfsprogs", "mdadm", ]
+  $master_packages = [# Packages needed for disk + RAID configuration
+                      "xfsprogs",
+                      "mdadm",
+                      ]
   package { $master_packages: ensure => "installed" }
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf

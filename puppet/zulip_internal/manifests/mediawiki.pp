@@ -2,7 +2,10 @@ class zulip_internal::mediawiki {
   include zulip_internal::postgres_common
 
 
-  $mediawiki_packages = [ "mediawiki", "mediawiki-extensions" ]
+  $mediawiki_packages = [# Packages needed for mediawiki
+                         "mediawiki",
+                         "mediawiki-extensions",
+                         ]
   package { $mediawiki_packages: ensure => "installed" }
 
   apache2site {'mediawiki':

@@ -2,7 +2,12 @@ class zulip_internal::nagios {
   include zulip_internal::base
   include zulip_internal::apache
 
-  $nagios_packages = [ "nagios3", "munin", "autossh" ]
+  $nagios_packages = [# Packages needed for Nagios
+                      "nagios3",
+                      "autossh",
+                      # Packages needed for munin
+                      "munin",
+                      ]
   package { $nagios_packages: ensure => "installed" }
 
   apache2site { 'nagios':
