@@ -1,5 +1,8 @@
 class zulip_internal::apache {
-  $apache_packages = [ "apache2", "libapache2-mod-wsgi", ]
+  $apache_packages = [# Needed to run Apache with WSGI
+                      "apache2",
+                      "libapache2-mod-wsgi",
+                      ]
   package { $apache_packages: ensure => "installed" }
 
   apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "auth_digest", "ssl" ]:

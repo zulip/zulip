@@ -1,5 +1,7 @@
 class zulip::supervisor {
-  $supervisor_packages = [ "supervisor",]
+  $supervisor_packages = [# Needed to run supervisor
+                          "supervisor",
+                          ]
   package { $supervisor_packages: ensure => "installed" }
 
   service { "supervisor":

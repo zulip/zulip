@@ -2,7 +2,9 @@ class zulip::postgres_appdb {
   include zulip::postgres_common
   include zulip::supervisor
 
-  $appdb_packages = [ "python-psycopg2",]
+  $appdb_packages = [# Needed to run process_fts_updates
+                     "python-psycopg2",
+                     ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
       package { $title: ensure => $ensure }

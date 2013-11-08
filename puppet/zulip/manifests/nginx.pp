@@ -1,5 +1,7 @@
 class zulip::nginx {
-  $web_packages = [ "nginx", ]
+  $web_packages = [# Needed to run nginx
+                   "nginx",
+                   ]
   package { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/nginx.conf":
