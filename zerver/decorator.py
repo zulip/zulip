@@ -3,8 +3,7 @@ from __future__ import absolute_import
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from django.http import QueryDict
+from django.http import QueryDict, HttpResponseNotAllowed
 from django.http.multipartparser import MultiPartParser
 from zerver.models import UserProfile, get_client, get_user_profile_by_email
 from zerver.lib.response import json_error, json_unauthorized
@@ -63,8 +62,22 @@ def update_user_activity(request, user_profile):
            'client': request.client.name}
     queue_json_publish("user_activity", event, lambda event: None)
 
-# I like the all-lowercase name better
-require_post = require_POST
+# Based on django.views.decorators.http.require_http_methods
+def require_post(func):
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        if (request.method != "POST"
+            and not (request.method == "SOCKET"
+                     and request.META['zulip.emulated_method'] == "POST")):
+            if request.method == "SOCKET":
+                err_method = "SOCKET/%s" % (request.META['zulip.emulated_method'],)
+            else:
+                err_method = request.method
+            logging.warning('Method Not Allowed (%s): %s', err_method, request.path,
+                            extra={'status_code': 405, 'request': request})
+            return HttpResponseNotAllowed(["POST"])
+        return func(request, *args, **kwargs)
+    return wrapper
 
 default_clients = {}
 

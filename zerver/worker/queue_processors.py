@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.core.handlers.wsgi import WSGIRequest
+from django.core.handlers.base import BaseHandler
 from postmonkey import PostMonkey, MailChimpException
 from zerver.models import get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client
@@ -25,6 +27,7 @@ import datetime
 import logging
 import simplejson
 import redis
+import StringIO
 
 def assign_queue(queue_name, enabled=True):
     def decorate(clazz):
@@ -233,28 +236,45 @@ class MessageSenderWorker(QueueProcessingWorker):
     def __init__(self):
         super(MessageSenderWorker, self).__init__()
         self.redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+        self.handler = BaseHandler()
+        self.handler.load_middleware()
 
     def consume(self, event):
-        req = event['request']
-        try:
-            sender = get_user_profile_by_id(req['sender_id'])
-            client = get_client(req['client_name'])
+        server_meta = event['server_meta']
 
-            msg_id = check_send_message(sender, client, req['type'],
-                                        extract_recipients(req['to']),
-                                        req['subject'], req['content'])
-            resp = {"result": "success", "msg": "", "id": msg_id}
-        except JsonableError as e:
-            resp = {"result": "error", "msg": str(e)}
+        environ = {'REQUEST_METHOD': 'SOCKET',
+                   'SCRIPT_NAME': '',
+                   'PATH_INFO': '/json/send_message',
+                   'SERVER_NAME': 'localhost',
+                   'SERVER_PORT': 9993,
+                   'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
+                   'wsgi.version': (1, 0),
+                   'wsgi.input': StringIO.StringIO(),
+                   'wsgi.errors': sys.stderr,
+                   'wsgi.multithread': False,
+                   'wsgi.multiprocess': True,
+                   'wsgi.run_once': False,
+                   'zulip.emulated_method': 'POST'}
+        # We're mostly using a WSGIRequest for convenience
+        environ.update(server_meta['request_environ'])
+        request = WSGIRequest(environ)
+        request._request = event['request']
+        request.csrf_processing_done = True
 
-        result = {'response': resp, 'req_id': event['req_id'],
-                  'server_meta': event['server_meta']}
+        user_profile = get_user_profile_by_id(server_meta['user_id'])
+        request._cached_user = user_profile
 
-        redis_key = req_redis_key(event['server_meta']['client_id'], event['req_id'])
+        resp = self.handler.get_response(request)
+        resp_content = resp.content
+
+        result = {'response': ujson.loads(resp_content), 'req_id': event['req_id'],
+                  'server_meta': server_meta}
+
+        redis_key = req_redis_key(server_meta['client_id'], event['req_id'])
         self.redis_client.hmset(redis_key, {'status': 'complete',
-                                            'response': ujson.dumps(resp)});
+                                            'response': resp_content});
 
-        queue_json_publish(event['server_meta']['return_queue'], result, lambda e: None)
+        queue_json_publish(server_meta['return_queue'], result, lambda e: None)
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):

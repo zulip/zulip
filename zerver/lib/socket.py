@@ -153,21 +153,20 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                            'response': {'result': 'error', 'msg': error_msg}})
                 return
 
-        req = msg['request']
-        req['sender_id'] = self.session.user_profile.id
-        req['client_name'] = req['client']
-
         redis_key = req_redis_key(self.client_id, msg['req_id'])
         with redis_client.pipeline() as pipeline:
             pipeline.hmset(redis_key, {'status': 'receieved'});
             pipeline.expire(redis_key, 60 * 5)
             pipeline.execute()
 
-        queue_json_publish("message_sender", dict(request=req,
-                                                  req_id=msg['req_id'],
-                                                  server_meta=dict(client_id=self.client_id,
-                                                                   return_queue="tornado_return",
-                                                                   start_time=start_time)),
+        queue_json_publish("message_sender",
+                           dict(request=msg['request'],
+                                req_id=msg['req_id'],
+                                server_meta=dict(user_id=self.session.user_profile.id,
+                                                 client_id=self.client_id,
+                                                 return_queue="tornado_return",
+                                                 start_time=start_time,
+                                                 request_environ=dict(REMOTE_ADDR=self.session.conn_info.ip))),
                            fake_message_sender)
 
     def on_close(self):
@@ -182,8 +181,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 def fake_message_sender(event):
     req = event['request']
     try:
-        sender = get_user_profile_by_id(req['sender_id'])
-        client = get_client(req['client_name'])
+        sender = get_user_profile_by_id(event['server_meta']['user_id'])
+        client = get_client(req['client'])
 
         msg_id = check_send_message(sender, client, req['type'],
                                     extract_recipients(req['to']),
@@ -205,9 +204,6 @@ def respond_send_message(data):
         fake_log_line(connection.session.conn_info,
                       time_elapsed,
                       200, 'send_message', connection.session.user_profile.email)
-        # Fake the old JSON send_message endpoint
-        statsd_prefix = "webreq.json.send_message.total"
-        statsd.timing(statsd_prefix, time_elapsed * 1000)
 
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.EXTERNAL_HOST,),
