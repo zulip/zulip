@@ -32,7 +32,7 @@ import os
 import sys
 import subprocess
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import check_output, ENDC, FAIL
+from zulip_tools import ENDC, FAIL
 
 def update_deployment(server, refname):
     return subprocess.call(["ssh", "-l", "zulip", server, "--", "env", "-u", "GIT_DIR",
@@ -69,7 +69,7 @@ for ln in sys.stdin:
                 # 0000000000000000000000000000000000000000 means we're deleting the ref
                 commits = ''
             else:
-                commits = check_output(["git", "log", "%s..%s" % (oldrev, newrev)])
+                commits = subprocess.check_output(["git", "log", "%s..%s" % (oldrev, newrev)])
 
             if '[schema]' in commits:
                 print

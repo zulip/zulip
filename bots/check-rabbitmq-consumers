@@ -5,9 +5,7 @@ import time
 import optparse
 from collections import defaultdict
 import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import check_output
+import subprocess
 
 states = {
     0: "OK",
@@ -35,7 +33,7 @@ parser.add_option('--min-threshold',
 
 (options, args) = parser.parse_args()
 
-output = check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'], shell=False)
+output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'], shell=False)
 
 consumers = defaultdict(int)
 

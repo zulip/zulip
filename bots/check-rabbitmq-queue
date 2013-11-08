@@ -4,9 +4,7 @@ import sys
 import re
 import time
 import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import check_output
+import subprocess
 
 WARN_THRESHOLD = 50
 CRIT_THRESHOLD = 100
@@ -19,7 +17,7 @@ states = {
 }
 
 re = re.compile(r'(\w+)\t(\d+)')
-output = check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], shell=False)
+output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], shell=False)
 
 status = 0
 max_count = 0

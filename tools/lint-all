@@ -8,9 +8,6 @@ import subprocess
 from os          import path
 from collections import defaultdict
 
-sys.path.append(path.join(path.dirname(__file__), '..'))
-from zulip_tools import check_output
-
 parser = optparse.OptionParser()
 parser.add_option('--full',
     action='store_true',
@@ -40,7 +37,7 @@ api/setup.py
 
 # Categorize by language all files known to Git
 
-git_files = map(str.strip, check_output(['git', 'ls-files']).split('\n'))
+git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
 by_lang   = defaultdict(list)
 
 for filepath in git_files:
