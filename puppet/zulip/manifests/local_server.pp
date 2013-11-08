@@ -2,6 +2,7 @@ class zulip::local_server {
   include zulip::base
   include zulip::app_frontend
   include zulip::postgres_appdb
+  include zulip::camo
 
   file { "/etc/nginx/sites-available/zulip-local":
     require => Package[nginx],
