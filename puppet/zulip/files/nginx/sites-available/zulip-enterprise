@@ -24,4 +24,5 @@ server {
     }
 
     include /etc/nginx/zulip-include/app;
+    include /etc/nginx/zulip-include/app.d/*.conf;
 }
