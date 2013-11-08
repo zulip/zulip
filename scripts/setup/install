@@ -29,6 +29,10 @@ if [ -e "/etc/init.d/apache2" ]; then
     service apache2 restart
 fi
 
+/root/zulip/scripts/setup/generate_localserver_secrets.py
+mv /root/zulip/zproject/local_settings_generated.py /etc/zulip/settings.py
+ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
+
 deploy_path=$($(dirname $(dirname $0))/unpack-zulip "$tarball")
 ln -nsf "$deploy_path" /home/zulip/deployments/current
 chown -R zulip:zulip /home/zulip/deployments
