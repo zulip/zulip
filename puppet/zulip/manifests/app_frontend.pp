@@ -31,9 +31,6 @@ class zulip::app_frontend {
                     "postgresql-client-9.1",
                     "python-psycopg2",
                     "hunspell-en-us",
-                    # Not required; for building things
-                    "build-essential",
-                    "libssl-dev",
                     # Needed for integrations
                     "python-twitter",
                     "python-embedly",
