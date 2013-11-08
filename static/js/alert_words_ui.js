@@ -61,7 +61,7 @@ $(function () {
             event.preventDefault();
 
             var word = $(event.target).val();
-            add_alert_word(word);
+            add_alert_word(word, event);
         }
     });
 });
