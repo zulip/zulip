@@ -66,7 +66,7 @@ def get_events_backend(request, user_profile, handler = None,
         ret = {'events': client.event_queue.contents()}
         if orig_queue_id is None:
             ret['queue_id'] = queue_id
-        request._extra_log_data = "[%s/%s]" % (queue_id, len(ret["events"]))
+        request._log_data['extra'] = "[%s/%s]" % (queue_id, len(ret["events"]))
         return json_success(ret)
 
     handler._request = request

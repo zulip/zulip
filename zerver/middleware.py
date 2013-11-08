@@ -16,26 +16,27 @@ import time
 logger = logging.getLogger('zulip.requests')
 
 def async_request_stop(request):
-    request._time_stopped = time.time()
-    request._memcached_time_stopped = get_memcached_time()
-    request._memcached_requests_stopped = get_memcached_requests()
-    request._bugdown_time_stopped = get_bugdown_time()
-    request._bugdown_requests_stopped = get_bugdown_requests()
+    request._log_data['time_stopped'] = time.time()
+    request._log_data['memcached_time_stopped'] = get_memcached_time()
+    request._log_data['memcached_requests_stopped'] = get_memcached_requests()
+    request._log_data['bugdown_time_stopped'] = get_bugdown_time()
+    request._log_data['bugdown_requests_stopped'] = get_bugdown_requests()
 
 def async_request_restart(request):
-    request._time_restarted = time.time()
-    request._memcached_time_restarted = get_memcached_time()
-    request._memcached_requests_restarted = get_memcached_requests()
-    request._bugdown_time_restarted = get_bugdown_time()
-    request._bugdown_requests_restarted = get_bugdown_requests()
+    request._log_data['time_restarted'] = time.time()
+    request._log_data['memcached_time_restarted'] = get_memcached_time()
+    request._log_data['memcached_requests_restarted'] = get_memcached_requests()
+    request._log_data['bugdown_time_restarted'] = get_bugdown_time()
+    request._log_data['bugdown_requests_restarted'] = get_bugdown_requests()
 
 class LogRequests(object):
     def process_request(self, request):
-        request._time_started = time.time()
-        request._memcached_time_start = get_memcached_time()
-        request._memcached_requests_start = get_memcached_requests()
-        request._bugdown_time_start = get_bugdown_time()
-        request._bugdown_requests_start = get_bugdown_requests()
+        request._log_data = dict()
+        request._log_data['time_started'] = time.time()
+        request._log_data['memcached_time_start'] = get_memcached_time()
+        request._log_data['memcached_requests_start'] = get_memcached_requests()
+        request._log_data['bugdown_time_start'] = get_bugdown_time()
+        request._log_data['bugdown_requests_start'] = get_bugdown_requests()
         connection.queries = []
 
     def process_response(self, request, response):
@@ -74,23 +75,23 @@ class LogRequests(object):
         # A time duration of -1 means the StartLogRequests middleware
         # didn't run for some reason
         optional_orig_delta = ""
-        if hasattr(request, '_time_started'):
-            time_delta = time.time() - request._time_started
-        if hasattr(request, "_time_stopped"):
+        if 'time_started' in request._log_data:
+            time_delta = time.time() - request._log_data['time_started']
+        if 'time_stopped' in request._log_data:
             orig_time_delta = time_delta
-            time_delta = ((request._time_stopped - request._time_started) +
-                          (time.time() - request._time_restarted))
+            time_delta = ((request._log_data['time_stopped'] - request._log_data['time_started']) +
+                          (time.time() - request._log_data['time_restarted']))
             optional_orig_delta = " (lp: %s)" % (format_timedelta(orig_time_delta),)
         memcached_output = ""
-        if hasattr(request, '_memcached_time_start'):
-            memcached_time_delta = get_memcached_time() - request._memcached_time_start
-            memcached_count_delta = get_memcached_requests() - request._memcached_requests_start
-            if hasattr(request, "_memcached_requests_stopped"):
+        if 'memcached_time_start' in request._log_data:
+            memcached_time_delta = get_memcached_time() - request._log_data['memcached_time_start']
+            memcached_count_delta = get_memcached_requests() - request._log_data['memcached_requests_start']
+            if 'memcached_requests_stopped' in request._log_data:
                 # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
-                memcached_time_delta += (request._memcached_time_stopped -
-                                         request._memcached_time_restarted)
-                memcached_count_delta += (request._memcached_requests_stopped -
-                                          request._memcached_requests_restarted)
+                memcached_time_delta += (request._log_data['memcached_time_stopped'] -
+                                         request._log_data['memcached_time_restarted'])
+                memcached_count_delta += (request._log_data['memcached_requests_stopped'] -
+                                          request._log_data['memcached_requests_restarted'])
 
             if (memcached_time_delta > 0.005):
                 memcached_output = " (mem: %s/%s)" % (format_timedelta(memcached_time_delta),
@@ -101,15 +102,15 @@ class LogRequests(object):
                 statsd.incr("%s.memcached.querycount" % (statsd_path,), memcached_count_delta)
 
         bugdown_output = ""
-        if hasattr(request, '_bugdown_time_start'):
-            bugdown_time_delta = get_bugdown_time() - request._bugdown_time_start
-            bugdown_count_delta = get_bugdown_requests() - request._bugdown_requests_start
-            if hasattr(request, "_bugdown_requests_stopped"):
+        if 'bugdown_time_start' in request._log_data:
+            bugdown_time_delta = get_bugdown_time() - request._log_data['bugdown_time_start']
+            bugdown_count_delta = get_bugdown_requests() - request._log_data['bugdown_requests_start']
+            if 'bugdown_requests_stopped' in request._log_data:
                 # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
-                bugdown_time_delta += (request._bugdown_time_stopped -
-                                       request._bugdown_time_restarted)
-                bugdown_count_delta += (request._bugdown_requests_stopped -
-                                        request._bugdown_requests_restarted)
+                bugdown_time_delta += (request._log_data['bugdown_time_stopped'] -
+                                       request._log_data['bugdown_time_restarted'])
+                bugdown_count_delta += (request._log_data['bugdown_requests_stopped'] -
+                                        request._log_data['bugdown_requests_restarted'])
 
             if (bugdown_time_delta > 0.005):
                 bugdown_output = " (md: %s/%s)" % (format_timedelta(bugdown_time_delta),
@@ -142,9 +143,9 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
-        try:
-            extra_request_data = " %s" % (request._extra_log_data,)
-        except Exception:
+        if 'extra' in request._log_data:
+            extra_request_data = " %s" % (request._log_data['extra'],)
+        else:
             extra_request_data = ""
         logger_client = "(%s via %s)" % (email, client)
         logger_timing = '%5s%s%s%s%s %s' % \
