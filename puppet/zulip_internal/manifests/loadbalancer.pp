@@ -35,7 +35,10 @@ class zulip_internal::loadbalancer {
   }
 
   # Config for Camo
-  $camo_packages = [ "camo",]
+  $camo_packages = [# Packages needed to run camo
+                    "camo",
+                    "nodejs",
+                    ]
   package { $camo_packages: ensure => "installed" }
 
   file { "/etc/default/camo":
