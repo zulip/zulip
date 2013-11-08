@@ -1,9 +1,22 @@
 class zulip::base {
-  $base_packages = [ "screen", "strace", "vim", "emacs23-nox", "git", "python-tz",
-                     "ntp", "python-simplejson", "host", "puppet-el",
-                     "postgresql-client-9.1", "molly-guard", "python-requests",
-                     "moreutils", "ipython",
-                     "python-boto" ]
+  $base_packages = [ # Basic requirements for effective operation of a server
+                     "ntp",
+                     # This is just good practice
+                     "molly-guard",
+                     # Dependencies of our API
+                     "python-requests",
+                     "python-simplejson",
+                     # For development/debugging convenience
+                     "ipython",
+                     "screen",
+                     "strace",
+                     "vim",
+                     "moreutils",
+                     "emacs23-nox",
+                     "git",
+                     "puppet-el",
+                     "host",
+                     ]
   package { $base_packages: ensure => "installed" }
 
   apt::key {"A529EF65":

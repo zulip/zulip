@@ -13,11 +13,12 @@ class zulip::app_frontend {
                     "python-django-south", "python-mock", "python-pika",
                     "python-django-pipeline", "hunspell-en-us",
                     "python-django-bitfield", "python-embedly",
+                    "python-tz", "postgresql-client-9.1",
                     "python-postmonkey", "python-django-jstemplate",
                     "redis-server", "python-redis", "python-django-guardian",
                     "python-diff-match-patch", "python-sourcemap", "python-mandrill",
                     "python-sockjs-tornado", "python-apns-client", "python-imaging",
-                    "nodejs"]
+                    "nodejs", "python-boto" ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
       package { $title: ensure => $ensure }
