@@ -36,6 +36,7 @@ class zulip::app_frontend {
                     "python-defusedxml",
                     # Needed for the email mirror
                     "python-twisted",
+                    "python-html2text",
                     # Needed to access rabbitmq
                     "python-pika",
                     # Needed for timezone work

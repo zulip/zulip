@@ -2,9 +2,6 @@ class zulip_internal::staging_app_frontend {
   include zulip_internal::base
   include zulip::app_frontend
 
-  $packages = [ "python-html2text" ]
-  package { $packages: ensure => "installed" }
-
   file { "/etc/nginx/sites-available/zulip-staging":
     require => Package[nginx],
     ensure => file,
