@@ -171,7 +171,6 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                            fake_message_sender)
 
     def on_close(self):
-        deregister_connection(self)
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
         record_request_start_data(log_data)
         if self.session.user_profile is None:
@@ -180,6 +179,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                            client_name='?', status_code=408,
                            error_content='Timeout while waiting for authentication')
         else:
+            deregister_connection(self)
             write_log_line(log_data, path='/socket/close', method='SOCKET',
                            remote_ip=self.session.conn_info.ip, email='unknown',
                            client_name='?')
