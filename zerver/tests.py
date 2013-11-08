@@ -4044,6 +4044,73 @@ class StashHookTests(AuthedTestCase):
 
 * `f259e90`: Updating poms ...""")
 
+class FreshdeskHookTests(AuthedTestCase):
+    def generate_webhook_response(self, fixture):
+        """
+        Helper function to handle the webhook boilerplate.
+        """
+        email = "hamlet@zulip.com"
+        return self.send_json_payload(
+            email, "/api/v1/external/freshdesk?stream=freshdesk",
+            self.fixture_data("freshdesk", fixture, file_type="json"),
+            stream_name="freshdesk",
+            content_type="application/x-www-form-urlencoded",
+            **self.api_auth(email))
+
+    def test_ticket_creation(self):
+        """
+        Messages are generated on ticket creation through Freshdesk's
+        "Dispatch'r" service.
+        """
+        msg = self.generate_webhook_response("ticket_created")
+        self.assertEqual(msg.subject, u"#11: Test ticket subject")
+        self.assertEqual(msg.content, """Requester Bob <requester-bob@example.com> created [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
+
+~~~ quote
+Test ticket description.
+~~~
+
+Type: **Incident**
+Priority: **High**
+Status: **Pending**""")
+
+    def test_status_change(self):
+        """
+        Messages are generated when a ticket's status changes through
+        Freshdesk's "Observer" service.
+        """
+        msg = self.generate_webhook_response("status_changed")
+        self.assertEqual(msg.subject, u"#11: Test ticket subject")
+        self.assertEqual(msg.content, """Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
+
+Status: **Resolved** => **Waiting on Customer**""")
+
+    def test_priority_change(self):
+        """
+        Messages are generated when a ticket's priority changes through
+        Freshdesk's "Observer" service.
+        """
+        msg = self.generate_webhook_response("priority_changed")
+        self.assertEqual(msg.subject, u"#11: Test ticket subject")
+        self.assertEqual(msg.content, """Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
+
+Priority: **High** => **Low**""")
+
+    def note_change(self, fixture, note_type):
+        """
+        Messages are generated when a note gets added to a ticket through
+        Freshdesk's "Observer" service.
+        """
+        msg = self.generate_webhook_response(fixture)
+        self.assertEqual(msg.subject, u"#11: Test ticket subject")
+        self.assertEqual(msg.content, """Requester Bob <requester-bob@example.com> added a %s note to [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11).""" % (note_type,))
+
+    def test_private_note_change(self):
+        self.note_change("private_note", "private")
+
+    def test_public_note_change(self):
+        self.note_change("public_note", "public")
+
 class RateLimitTests(AuthedTestCase):
 
     def setUp(self):

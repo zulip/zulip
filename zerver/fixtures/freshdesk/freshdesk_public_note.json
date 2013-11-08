@@ -1,0 +1,14 @@
+{"freshdesk_webhook":
+    {
+    "triggered_event":"{note_type:public}",
+    "ticket_id":"11",
+        "ticket_url":"http://test1234zzz.freshdesk.com/helpdesk/tickets/11",
+    "ticket_type":"Incident",
+        "ticket_subject":"Test ticket subject",
+        "ticket_description":"<div>Test ticket description.</div>",
+        "ticket_status":"Open",
+        "ticket_priority":"Medium",
+    "requester_name":"Requester Bob",
+        "requester_email":"requester-bob@example.com",
+    }
+}
