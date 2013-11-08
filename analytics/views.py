@@ -10,6 +10,8 @@ from zerver.lib.timestamp import timestamp_to_datetime
 import datetime
 import itertools
 import time
+import pytz
+eastern_tz = pytz.timezone('US/Eastern')
 
 def make_table(title, cols, rows):
     data = dict(title=title, cols=cols, rows=rows)
@@ -581,7 +583,7 @@ def get_user_activity_summary(records):
 
 def format_date_for_activity_reports(date):
     if date:
-        return date.strftime('%Y-%m-%d %H:%M')
+        return date.astimezone(eastern_tz).strftime('%Y-%m-%d %H:%M')
     else:
         return ''
 
@@ -667,7 +669,7 @@ def realm_user_summary_table(all_records):
 
     def get_last_visit(user_summary, k):
         if k in user_summary:
-            return user_summary[k]['last_visit'].strftime('%Y-%m-%d %H:%M')
+            return user_summary[k]['last_visit'].astimezone(eastern_tz).strftime('%Y-%m-%d %H:%M')
         else:
             return ''
 
