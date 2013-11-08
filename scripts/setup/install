@@ -1,6 +1,11 @@
 #!/bin/bash -xe
 
 # Assumes we've already been untarred
+if [ -z "$1" ]; then
+    echo "Usage: install <ZULIP_TARBALL>"
+    exit 1
+fi
+tarball="$1"
 
 # First, install any updates from the apt repo that may be needed
 cat >/etc/apt/sources.list.d/zulip.list <<EOF
@@ -15,9 +20,6 @@ mkdir /etc/zulip
 echo -e "[machine]\npuppet_classes = zulip::local_server" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
 
-cp -a /root/zulip /home/zulip/zulip
-chown -R zulip:zulip /home/zulip/zulip
-
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
 if [ -e "/etc/init.d/nginx" ]; then
@@ -27,7 +29,9 @@ if [ -e "/etc/init.d/apache2" ]; then
     service apache2 restart
 fi
 
-EOF
+deploy_path=$($(dirname $(dirname $0))/unpack-zulip "$tarball")
+ln -nsf "$deploy_path" /home/zulip/deployments/current
+chown -R zulip:zulip /home/zulip/deployments
 
 set +x
 cat <<EOF
