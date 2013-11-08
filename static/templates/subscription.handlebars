@@ -1,18 +1,20 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
 {{#with this}}
-<tr class="subscription_row" id="subscription_{{id}}">
-  <td>
-    <div class="subscription_table_elem subscription_header" data-toggle="collapse" data-target="#subscription_settings_{{id}}">
-      <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
+<div class="subscription_row" id="subscription_{{id}}">
+    <div class="subscription_table_elem subscription_header collapsed" data-toggle="collapse" data-target="#subscription_settings_{{id}}">
+      {{#if invite_only}}
+           <span class="subscription_lock"><i class="icon-vector-lock" style="color: {{color}}"></i></span>
+      {{else}}
+         <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
+      {{/if}}
       <span class="subscription_block">
-      <span class="subscription_name">{{name}}</span>
-      {{#if invite_only}}<span class="subscription_lock">&nbsp;&nbsp;<i class="icon-vector-lock"></i></span>{{/if}}
+      <span class="subscription_name subscription-name-row">{{name}}</span>
       </span>
       <span class="sub_arrow"><i class="icon-vector-chevron-down"></i></span>
-      <button class="btn sub_unsub_button {{^subscribed}}btn-primary{{/subscribed}}"
+      <button class="zulip-button sub_unsub_button {{^subscribed}}gray-button{{/subscribed}}{{#subscribed}} green-button subscribed-button{{/subscribed}}"
               type="button" name="subscription">
         {{#subscribed}}
-        Unsubscribe
+        Subscribed
         {{/subscribed}}
         {{^subscribed}}
         Subscribe
@@ -22,36 +24,40 @@
 
     <div id="subscription_settings_{{id}}" class="collapse subscription_settings">
       <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
-          <p>This is
-          {{#if invite_only}}an <span class="icon-vector-lock"></span> <b>invite-only stream</b>. Only people who have been invited can access its content, but any member of the stream can invite others.
+        <div class="subscription-type">
+          This is
+          {{#if invite_only}}an <span class="icon-vector-lock"></span> <b>invite-only stream</b>. Only people who have been invited can access its content, but&nbsp;any&nbsp;member&nbsp;of&nbsp;the&nbsp;stream can&nbsp;invite&nbsp;others.
           {{else}}a <span class="icon-vector-globe"></span> <b>public stream</b>. Anybody in your organization can join.{{/if}}
-          </p>
-        <span class="sub_settings_title">Settings</span>
+        </div>
+        <div class="subscription-config">
         <ul>
           <li>
             <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox">
-              <input class="sub_setting_control" type="checkbox" {{#unless in_home_view}}checked{{/unless}} />
-              Mute stream
+              <input id="mutestream-{{id}}" class="sub_setting_control" type="checkbox" {{#unless in_home_view}}checked{{/unless}} />
+              <label class="subscription-control-label">Mute stream</label>
             </div>
           </li>
           <li>
             <div id="sub_setting_notifications" class="sub_setting_checkbox">
-              <input class="sub_setting_control" type="checkbox" {{#if notifications}}checked{{/if}} />
-              Show desktop notifications for traffic on this stream
+              <input id="notifystream-{{id}}" class="sub_setting_control" type="checkbox" {{#if notifications}}checked{{/if}} />
+              <label class="subscription-control-label">Show desktop notifications<br/>for traffic on this stream</label>
             </div>
           </li>
           <li>
             <span class="sub_setting_control">
-              <input stream_name="{{name}}" class="colorpicker" type="text" value="{{color}}" />
+              <input stream_name="{{name}}" class="colorpicker" id="streamcolor" type="text" value="{{color}}" />
             </span>
-            Stream color
+            <label for="streamcolor" class="subscription-control-label">Stream color</label>
           </li>
         </ul>
+        </div>
       </div>
       {{#if_and subscribed email_address}}
-      <div>
-          <p><b>Email address</b> <span class="email-address">{{email_address}}
-             <i class="icon-vector-question-sign" id="email-address-hint-{{id}}"></i></span></p>
+      <div class="stream-email-box">
+          <span class="sub_settings_title">Email address <i class="icon-vector-question-sign stream-email-hint" id="email-address-hint-{{id}}"></i></span>
+      <div class="stream-email">
+          <span class="email-address">{{email_address}}</span>
+      </div>
       </div>
       {{/if_and}}
 
@@ -59,31 +65,32 @@
         <div class="rename-stream">
         <span class="sub_settings_title">Administrator settings</span>
           <form class="form-inline">
-            <input type="text" name="new-name" value="" class="input-block" />
-            <input type="submit" name="rename" value="Rename stream" class="btn btn-danger" />
+            <input type="text" name="new-name" value="" class="input-block new-stream-name" />
+            <input type="submit" name="rename" value="Rename stream" class="zulip-button red-button stream-rename-button" />
           </form>
         </div>
       {{/if}}
 
       {{#render_subscribers}}
       <div class="subscriber_list_settings">
-        <span class="sub_settings_title">Members</span>
+        <span class="sub_settings_title">Stream membership</span>
         <div class="subscriber_list_add">
           <form class="form-inline">
             <input type="text" name="principal" placeholder="Email address" value="" class="input-block" />
-            <input type="submit" name="add_subscriber" value="Add" class="btn btn-primary" />
+            <input type="submit" name="add_subscriber" value="Add" class="zulip-button blue-button add-subscriber-button" />
           </form>
         </div>
       </div>
-      <div class="subscriber_list_container">
-        <div class="subscriber_list_loading_indicator"></div>
-        <div class="alert alert-error hide"></div>
-        <div class="alert alert-warning hide"></div>
-        <ul>
-        </ul>
+      <div class="subscriber-list-box">
+        <div class="subscriber_list_container">
+          <div class="subscriber_list_loading_indicator"></div>
+          <div class="alert alert-error hide"></div>
+          <div class="alert alert-warning hide"></div>
+          <table class="subscriber-list">
+          </table>
+        </div>
       </div>
       {{/render_subscribers}}
     </div>
-  </td>
-</tr>
+</div>
 {{/with}}

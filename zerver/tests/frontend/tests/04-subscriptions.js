@@ -9,12 +9,12 @@ casper.then(function () {
     casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
     // subscriptions need to load; if they have *any* subs,
     // the word "Unsubscribe" will appear
-    casper.waitForText('Unsubscribe');
+    casper.waitForText('Subscribed');
 });
 casper.then(function () {
-    casper.test.assertTextExists('Unsubscribe', 'Initial subscriptions loaded');
+    casper.test.assertTextExists('Subscribed', 'Initial subscriptions loaded');
     casper.fill('form#add_new_subscription', {stream_name: 'Waseemio'});
-    casper.click('form#add_new_subscription input.btn.btn-primary');
+    casper.click('form#add_new_subscription input.zulip-button');
     casper.waitForText('Waseemio');
 });
 casper.then(function () {
@@ -29,13 +29,13 @@ casper.then(function () {
 casper.then(function () {
     casper.test.assertSelectorHasText('.subscription_name', 'Waseemio', 'Subscribing to a stream');
     casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
-    casper.click('form#add_new_subscription input.btn.btn-primary');
+    casper.click('form#add_new_subscription input.zulip-button');
     casper.waitForText('Already subscribed');
 });
 casper.then(function () {
     casper.test.assertTextExists('Already subscribed', "Can't subscribe twice to a stream");
     casper.fill('form#add_new_subscription', {stream_name: '  '});
-    casper.click('form#add_new_subscription input.btn.btn-primary');
+    casper.click('form#add_new_subscription input.zulip-button');
     casper.waitForText('Error adding subscription');
 });
 casper.then(function () {

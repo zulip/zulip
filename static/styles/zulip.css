@@ -2061,38 +2061,34 @@ table.floating_recipient {
     table-layout: fixed;
 }
 
-.subscription_table_elem {
-    padding: 2px;
-    line-height: 25px;
-}
-
 .subscription-email-hint-image {
     float: right;
     width: 80px;
     padding-right: 60px;
 }
 
-.subscription_header.active {
-    border-color: rgba(82, 168, 236, 0.8);
-    cursor: pointer;
+.subscription_header.collapsed {
+    background-color: inherit;
+}
 
-  -webkit-box-shadow: inset 0 0 0 1px rgba(82, 168, 236, 0.8), 0 0 8px rgba(82, 168, 236, 0.6);
-     -moz-box-shadow: inset 0 0 0 1px rgba(82, 168, 236, 0.8), 0 0 8px rgba(82, 168, 236, 0.6);
-          box-shadow: inset 0 0 0 1px rgba(82, 168, 236, 0.8), 0 0 8px rgba(82, 168, 236, 0.6);
+.subscription_settings,
+.subscription_header,
+.subscription_header.active {
+    background-color: #fefefe;
 }
 
 .color_swatch {
     display: inline-block;
-    height: 1em;
-    width: 1em;
-    border: 1px #666 solid;
+    height: 18px;
+    width: 18px;
+    border-radius: 36px;
     padding: 0;
-    margin: 0 0 0 5px;
+    margin: 0 0 0 10px;
     vertical-align: middle;
 }
 
 .subscriptions {
-    margin-top: 45px;
+    margin-top: 55px;
     padding-left: 15px;
 }
 
@@ -2100,8 +2096,6 @@ table.floating_recipient {
     padding-left: 0.5em;
     vertical-align: middle;
     display: inline-block;
-    line-height: 14px;
-    height: 16px;
 }
 
 #stream_filters .subscription_block {
@@ -2122,6 +2116,15 @@ table.floating_recipient {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.subscription-name-row {
+    line-height: 67px;
+    height: 60px;
+}
+
+#add_new_subscription {
+    text-align: center;
 }
 
 .subject-name {
@@ -2149,34 +2152,90 @@ table.floating_recipient {
 }
 
 .subscription_header .subscription_lock {
-    font-size: 12px;
+    font-size: 23px;
     display: inline-block;
-    vertical-align: top;
+    vertical-align: middle;
+    margin-left: 12px;
+    margin-right: 1px;
 }
 
 .subscription_settings {
-    margin-left: 35px;
-    margin-right: 35px;
-    clear: right;
+    width: 100%;
+    position: relative;
+    top: -1px;
 }
 
 .subscription_settings form {
-    margin: 0;
+    text-align: center;
 }
 
 .subscription_settings ul {
     list-style-type: none;
 }
 
-.subscriber_list_settings {
-    margin-top: 10px;
+.subscription-type {
+    text-align: center;
+    padding: 5px;
+    width: 80%;
+    margin: auto;
+    font-weight: 300;
 }
 
-.email-address {
-    width: 100%;
-    display: inline-block;
-    vertical-align: top;
+.stream-email {
+    width: 80%;
+    margin: auto;
+    margin-top: 5px;
+    text-align: center;
+    padding: 5px;
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
 
+
+.subscription-control-label {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 18px;
+    padding: 5px;
+}
+
+.sp-replacer,
+.sp-preview,
+.sp-preview-inner {
+    border-radius: 20px;
+}
+
+.sp-preview {
+    width: 20px;
+    border: none;
+    box-shadow: 0px 0px 1px rgba(0,0,0,1);
+}
+
+.sp-replacer {
+    margin-right: 12px;
+    border: none;
+    box-shadow: 0px 0px 2px rgba(0,0,0,0.8);
+}
+
+.subscription-config {
+    width: 270px;
+    margin: auto;
+    margin-top: 25px;
+}
+
+.stream-email-box,
+.subscriber_list_settings,
+.rename-stream {
+    margin: 20px 15px 20px 15px;
+}
+
+.subscription_row {
+    border-top: 1px solid #ddd;
+}
+
+.stream-email .email-address {
+    width: 90%;
+    display: block;
+    margin: auto;
     white-space: -moz-pre-wrap !important;
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
@@ -2210,14 +2269,57 @@ table.floating_recipient {
     margin-right: 10px;
 }
 
+.zulip-button {
+    background-image: -moz-linear-gradient(top, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.05)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
+    background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.05) 0%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
+    background-image: -o-linear-gradient(top, rgba(0,0,0,0.05) 0%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
+    background-image: -ms-linear-gradient(top, rgba(0,0,0,0.05) 0%,rgba(0,0,0,0) 100%); /* IE10+ */
+    background-image: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%,rgba(0,0,0,0) 100%); /* W3C */
+    background-color: #ddd;
+    color: #000;
+    border: 1px solid #fff;
+    border-radius: 3px;
+    line-height: 20px;
+    padding: 5px 8px 5px 8px;
+    outline: none;
+}
+
+.zulip-button:hover {
+    background-image: -moz-linear-gradient(top, rgba(0,0,0,0.09) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.09)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
+    background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.09) 0%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
+    background-image: -o-linear-gradient(top, rgba(0,0,0,0.09) 0%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
+    background-image: -ms-linear-gradient(top, rgba(0,0,0,0.09) 0%,rgba(0,0,0,0) 100%); /* IE10+ */
+    background-image: linear-gradient(to bottom, rgba(0,0,0,0.09) 0%,rgba(0,0,0,0) 100%); /* W3C */
+}
+
 .sub_unsub_button {
     min-width: 140px;
     float: right;
+    margin-top: 18px;
+    margin-right: 10px;
+}
+
+.green-button {
+    background-color: #006e2e; /* Old browsers */
+    color: #fff;
+}
+
+.red-button {
+    background-color: #cc0000;
+    color: #ffffff;
+}
+
+.blue-button {
+    background-color: #0000cc;
+    color: #ffffff;
 }
 
 .sub_arrow {
     float: right;
-    padding: 0 5px 0 10px;
+    line-height: 67px;
+    padding: 0 15px 0 0;
 }
 
 #create_stream_row td {
@@ -2227,34 +2329,80 @@ table.floating_recipient {
 }
 
 #create_stream_name {
-    margin-left: 25px;
     width: 220px;
+    margin-top: 10px;
 }
 
 #create_stream_button {
     min-width: 140px;
-    float: right;
+    margin-left: 15px;
+    margin-top: 10px;
 }
 
 .sub_settings_title {
     line-height: 30px;
     margin: 10px 0;
-    font-weight: bold;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+.new-stream-name,
+.stream-rename-button {
+    margin-top: 10px;
 }
 
 .settings_committed {
     margin: 10px;
 }
 
+.subscriber-list-box {
+    text-align: center;
+}
+
 .subscriber_list_container {
-    max-height: 200px;
-    overflow: auto;
     margin-top: 10px;
-    clear: right;
+    display: inline-block;
+    margin: auto;
+    max-height: 300px;
+    overflow: auto;
+    text-align: left;
+}
+
+.subscriber-list {
+    width: auto;
+    margin: auto;
+    margin-bottom: 20px;
+    background: #efefef;
+    border-radius: 6px;
+}
+
+.subscriber-list tr:nth-child(even) {
+   background: #fafafa;
+}
+
+
+.subscriber-name,
+.subscriber-email {
+    padding: 5px;
+}
+
+.subscriber-name {
+    padding-left: 8px;
+}
+
+.subscriber-email {
+    margin-left: 20px;
+    padding-right: 8px;
 }
 
 .subscriber_list_add {
-    float: right;
+    margin: auto;
+    text-align: center;
+}
+
+.add-subscriber-button,
+.stream-rename-button {
+    margin-left: 5px;
 }
 
 .modal {
@@ -3036,12 +3184,14 @@ div.edit_bot {
     margin-right: 8px;
 }
 
-#settings h1 {
+#settings h1,
+#subscriptions h1 {
     font-size: 25px;
     font-weight: 300;
 }
 
-#settings .settings-icon {
+#settings .settings-icon,
+#subscriptions .streams-icon {
     margin-right: 10px;
     font-size: 20px;
 }
@@ -3442,6 +3592,13 @@ div.edit_bot {
     .compose_private_button_label {
         display: none;
     }
+
+    .subscription_name {
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 @media (max-width: 350px) {
@@ -3449,68 +3606,3 @@ div.edit_bot {
         overflow-x: hidden;
     }
 }
-
-/*
-
-@media (max-width: 480px) {
-    body {
-        padding-right: 5px;
-        padding-left: 5px;
-    }
-}
-
-@media (max-width: 480px) {
-    #create_stream_name {
-        width: 130px;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 979px) {
-    #create_stream_name {
-        width: 140px;
-    }
-}
-
-@media (max-width: 767px) {
-
-    #search_query {
-        width: 100%;
-        margin-left: 40px;
-    }
-
-    #navbar-middle {
-        padding-right: 75px;
-    }
-
-    #searchbox .input-append .icon-vector-search {
-        left: 46px;
-    }
-
-    #searchbox .search_button,
-    #searchbox .search_button[disabled]:hover {
-        right: -35px;
-    }
-
-}
-
-@media (max-width: 480px) {
-    .message_content {
-        margin-right: 5px;
-    }
-}
-
-@media (max-width: 767px) {
-    .sidebar-nav {
-        padding: 0.5em;
-        margin: 0px;
-        border: 1px solid black;
-    }
-}
-
- @media (max-width: 979px) {
-    .header-main .logo {
-        margin-left: -20px;
-    }
-}
-
-*/

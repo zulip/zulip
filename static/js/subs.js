@@ -10,6 +10,23 @@ function get_color() {
     return color;
 }
 
+function selectText(element) {
+  var range, sel;
+    if (window.getSelection) {
+        sel = window.getSelection();
+        range = document.createRange();
+        range.selectNodeContents(element);
+
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+    else if (document.body.createTextRange) {
+        range = document.body.createTextRange();
+        range.moveToElementText(element);
+        range.select();
+    }
+}
+
 function should_list_all_streams() {
     return page_params.domain !== 'mit.edu';
 }
@@ -217,11 +234,15 @@ function add_sub_to_table(sub) {
 }
 
 function format_member_list_elem(name, email) {
-    return name + (email ? ' <' + email + '>' : '');
+    return "<tr><td class='subscriber-name'>" + name + "</td><td class='subscriber-email'>" + (email || '') + "</td></tr>";
 }
 
-function add_to_member_list(ul, name, email) {
-    $('<li>').prependTo(ul).text(format_member_list_elem(name, email));
+function add_element_to_member_list (tb, elem) {
+    tb.prepend(elem);
+}
+
+function add_to_member_list(tb, name, email) {
+    tb.prepend(format_member_list_elem(name, email));
 }
 
 function mark_subscribed(stream_name, attrs) {
@@ -240,11 +261,11 @@ function mark_subscribed(stream_name, attrs) {
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
-            button.text("Unsubscribe").removeClass("btn-primary");
+            button.text("Subscribed").addClass("subscribed-button").addClass("green-button");
             // Add the user to the member list if they're currently
             // viewing the members of this stream
             if (sub.render_subscribers && settings.hasClass('in')) {
-                var members = settings.find(".subscriber_list_container ul");
+                var members = settings.find(".subscriber_list_container .subscriber-list");
                 add_to_member_list(members, page_params.fullname, page_params.email);
             }
         } else {
@@ -280,7 +301,7 @@ function mark_unsubscribed(stream_name) {
     } else if (sub.subscribed) {
         stream_list.remove_narrow_filter(stream_name, 'stream');
         sub.subscribed = false;
-        button_for_sub(sub).text("Subscribe").addClass("btn-primary");
+        button_for_sub(sub).removeClass("subscribed-button").removeClass("green-button").removeClass("red-button").text("Subscribe");
         var settings = settings_for_sub(sub);
         if (settings.hasClass('in')) {
             settings.collapse('hide');
@@ -669,6 +690,16 @@ $(function () {
             );
     });
 
+    $("body").on("mouseover", ".subscribed-button", function (e) {
+        $(e.target).addClass("red-button").text("Unsubscribe");
+    }).on("mouseout", ".subscribed-button", function (e) {
+        $(e.target).removeClass("red-button").text("Subscribed");
+    });
+
+    $("#subscriptions_table").on("click", ".email-address", function (e) {
+        selectText(this);
+    });
+
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -727,7 +758,7 @@ $(function () {
         // TODO: clean up this error handling
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
-        var list = sub_row.find('.subscriber_list_container ul');
+        var list = sub_row.find('.subscriber_list_container .subscriber-list');
 
         function invite_success(data) {
             text_box.val('');
@@ -797,7 +828,7 @@ $(function () {
         var stream = sub_row.find('.subscription_name').text();
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
-        var list = sub_row.find('.subscriber_list_container ul');
+        var list = sub_row.find('.subscriber_list_container .subscriber-list');
         var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
 
         if (!stream_data.get_sub(stream).render_subscribers) {
@@ -825,10 +856,10 @@ $(function () {
                     return format_member_list_elem(people_dict.get(elem).full_name, elem);
                 });
                 _.each(subscribers.sort().reverse(), function (elem) {
-                    // add_to_member_list *prepends* the element,
+                    // add_element_to_member_list *prepends* the element,
                     // so we need to sort in reverse order for it to
                     // appear in alphabetical order.
-                    add_to_member_list(list, elem);
+                    add_element_to_member_list(list, elem);
                 });
             },
             error: function (xhr) {
