@@ -156,6 +156,7 @@ MIDDLEWARE_CLASSES = (
     'zerver.middleware.LogRequests',
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
+    'zerver.middleware.FlushDisplayRecipientCache',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

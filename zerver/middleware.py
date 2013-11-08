@@ -48,11 +48,6 @@ class LogRequests(object):
                 return "%.1fs" % (timedelta)
             return "%.0fms" % (timedelta_ms(timedelta),)
 
-        # We flush the recipient cache after every request, so it is
-        # not shared at all between requests. We do this so all users
-        # have a consistent view of stream name changes.
-        flush_per_process_display_recipient_cache()
-
         # For statsd timer name
         if request.path == '/':
             statsd_path = 'webreq'
@@ -216,3 +211,11 @@ class RateLimitMiddleware(object):
         if type(exception) == RateLimited:
             resp = json_error("API usage exceeded rate limit, try again in %s secs" % (request._ratelimit_secs_to_freedom,), status=403)
             return resp
+
+class FlushDisplayRecipientCache(object):
+    def process_response(self, request, response):
+        # We flush the recipient cache after every request, so it is
+        # not shared at all between requests. We do this so all users
+        # have a consistent view of stream name changes.
+        flush_per_process_display_recipient_cache()
+        return response
