@@ -486,6 +486,7 @@ def remote_user_sso(request):
         # user account exists. Send them over to the PreregistrationUser flow.
         return maybe_send_to_registration(request, remote_user_to_email(user))
     else:
+        login(request, user)
         return HttpResponseRedirect(reverse('zerver.views.accounts_home'))
 
 def handle_openid_errors(request, issue, openid_response=None):
