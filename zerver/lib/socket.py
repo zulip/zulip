@@ -18,6 +18,8 @@ from zerver.lib.actions import check_send_message, extract_recipients
 from zerver.decorator import JsonableError
 from zerver.lib.utils import statsd
 from zerver.lib.event_queue import get_client_descriptor
+from zerver.middleware import record_request_start_data, record_request_stop_data, \
+    record_request_restart_data, write_log_line, format_timedelta
 
 djsession_engine = import_module(settings.SESSION_ENGINE)
 def get_user_profile(session_id):
@@ -49,21 +51,6 @@ def register_connection(id, conn):
 def deregister_connection(conn):
     del connections[conn.client_id]
 
-def fake_log_line(conn_info, time, ret_code, path, email):
-    # These two functions are copied from our middleware.  At some
-    # point we will just run the middleware directly.
-    def timedelta_ms(timedelta):
-        return timedelta * 1000
-
-    def format_timedelta(timedelta):
-        if (timedelta >= 1):
-            return "%.1fs" % (timedelta)
-        return "%.0fms" % (timedelta_ms(timedelta),)
-
-    logging.info('%-15s %-7s %3d %5s %s (%s)' %
-                 (conn_info.ip, 'SOCKET', ret_code, format_timedelta(time),
-                  path, email))
-
 redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 def req_redis_key(client_id, req_id):
@@ -75,6 +62,9 @@ class SocketAuthError(Exception):
 
 class SocketConnection(sockjs.tornado.SockJSConnection):
     def on_open(self, info):
+        log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
+        record_request_start_data(log_data)
+
         self.authenticated = False
         self.session.user_profile = None
         self.browser_session_id = info.get_cookie(settings.SESSION_COOKIE_NAME).value
@@ -82,8 +72,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         ioloop = tornado.ioloop.IOLoop.instance()
         self.timeout_handle = ioloop.add_timeout(time.time() + 10, self.close)
-
-        fake_log_line(info, 0, 200, 'Connection opened using %s' % (self.session.transport_name,), 'unknown')
+        write_log_line(log_data, path='/socket/open', method='SOCKET',
+                       remote_ip=info.ip, email='unknown', client_name='?')
 
     def authenticate_client(self, msg):
         if self.authenticated:
@@ -128,29 +118,39 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             response['response']['status_inquiries'] = results
 
         self.session.send_message(response)
-        fake_log_line(self.session.conn_info, 0, 200, "Authenticated using %s" % (self.session.transport_name,),
-                      user_profile.email)
         ioloop = tornado.ioloop.IOLoop.instance()
         ioloop.remove_timeout(self.timeout_handle)
 
     def on_message(self, msg):
-        start_time = time.time()
+        log_data = dict(extra='[transport=%s' % (self.session.transport_name,))
+        record_request_start_data(log_data)
         msg = ujson.loads(msg)
 
         if msg['type'] == 'auth':
+            log_data['extra'] += ']'
             try:
                 self.authenticate_client(msg)
+                # TODO: Fill in the correct client
+                write_log_line(log_data, path='/socket/auth', method='SOCKET',
+                               remote_ip=self.session.conn_info.ip,
+                               email=self.session.user_profile.email,
+                               client_name='?')
             except SocketAuthError as e:
-                fake_log_line(self.session.conn_info, 0, 403, e.msg, 'unknown')
-                self.session.send_message({'req_id': msg['req_id'],
-                                           'response': {'result': 'error', 'msg': e.msg}})
+                response = {'result': 'error', 'msg': e.msg}
+                self.session.send_message({'req_id': msg['req_id'], 'response': response})
+                write_log_line(log_data, path='/socket/auth', method='SOCKET',
+                               remote_ip=self.session.conn_info.ip,
+                               email='unknown', client_name='?',
+                               status_code=403, error_contents=ujson.dumps(response))
             return
         else:
             if not self.authenticated:
-                error_msg = 'Not yet authenticated'
-                fake_log_line(self.session.conn_info, 0, 403, error_msg, 'unknown')
-                self.session.send_message({'req_id': msg['req_id'],
-                                           'response': {'result': 'error', 'msg': error_msg}})
+                response = {'result': 'error', 'msg': "Not yet authenticated"}
+                self.session.send_message({'req_id': msg['req_id'], 'response': response})
+                write_log_line(log_data, path='/socket/auth', method='SOCKET',
+                               remote_ip=self.session.conn_info.ip,
+                               email='unknown', client_name='?',
+                               status_code=403, error_contents=ujson.dumps(response))
                 return
 
         redis_key = req_redis_key(self.client_id, msg['req_id'])
@@ -159,24 +159,30 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             pipeline.expire(redis_key, 60 * 5)
             pipeline.execute()
 
+        record_request_stop_data(log_data)
         queue_json_publish("message_sender",
                            dict(request=msg['request'],
                                 req_id=msg['req_id'],
                                 server_meta=dict(user_id=self.session.user_profile.id,
                                                  client_id=self.client_id,
                                                  return_queue="tornado_return",
-                                                 start_time=start_time,
+                                                 log_data=log_data,
                                                  request_environ=dict(REMOTE_ADDR=self.session.conn_info.ip))),
                            fake_message_sender)
 
     def on_close(self):
         deregister_connection(self)
+        log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
+        record_request_start_data(log_data)
         if self.session.user_profile is None:
-            fake_log_line(self.session.conn_info, 0, 408,
-                          'Timeout while waiting for authentication', 'unknown')
+            write_log_line(log_data, path='/socket/close', method='SOCKET',
+                           remote_ip=self.session.conn_info.ip, email='unknown',
+                           client_name='?', status_code=408,
+                           error_content='Timeout while waiting for authentication')
         else:
-            fake_log_line(self.session.conn_info, 0, 200,
-                          'Connection closed', 'unknown')
+            write_log_line(log_data, path='/socket/close', method='SOCKET',
+                           remote_ip=self.session.conn_info.ip, email='unknown',
+                           client_name='?')
 
 def fake_message_sender(event):
     req = event['request']
@@ -196,14 +202,26 @@ def fake_message_sender(event):
     respond_send_message(result)
 
 def respond_send_message(data):
+    log_data = data['server_meta']['log_data']
+    record_request_restart_data(log_data)
+
+    worker_log_data = data['server_meta']['worker_log_data']
+    forward_queue_delay = worker_log_data['time_started'] - log_data['time_stopped']
+    return_queue_delay = log_data['time_restarted'] - data['server_meta']['time_request_finished']
+    service_time = data['server_meta']['time_request_finished'] - worker_log_data['time_started']
+    log_data['extra'] += ', queue_delay: %s/%s, service_time: %s]' % (
+        format_timedelta(forward_queue_delay), format_timedelta(return_queue_delay),
+        format_timedelta(service_time))
+
     connection = get_connection(data['server_meta']['client_id'])
     if connection is not None:
         connection.session.send_message({'req_id': data['req_id'], 'response': data['response']})
 
-        time_elapsed = time.time() - data['server_meta']['start_time']
-        fake_log_line(connection.session.conn_info,
-                      time_elapsed,
-                      200, 'send_message', connection.session.user_profile.email)
+        # TODO: Fill in client name
+        # TODO: Maybe fill in the status code correctly
+        write_log_line(log_data, path='/socket/service_request', method='SOCKET',
+                       remote_ip=connection.session.conn_info.ip,
+                       email=connection.session.user_profile.email, client_name='?')
 
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.EXTERNAL_HOST,),

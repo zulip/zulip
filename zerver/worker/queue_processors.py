@@ -265,8 +265,10 @@ class MessageSenderWorker(QueueProcessingWorker):
         request._cached_user = user_profile
 
         resp = self.handler.get_response(request)
-        resp_content = resp.content
+        server_meta['time_request_finished'] = time.time()
+        server_meta['worker_log_data'] = request._log_data
 
+        resp_content = resp.content
         result = {'response': ujson.loads(resp_content), 'req_id': event['req_id'],
                   'server_meta': server_meta}
 

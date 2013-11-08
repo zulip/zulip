@@ -42,16 +42,16 @@ def record_request_start_data(log_data):
     log_data['bugdown_time_start'] = get_bugdown_time()
     log_data['bugdown_requests_start'] = get_bugdown_requests()
 
+def timedelta_ms(timedelta):
+    return timedelta * 1000
+
+def format_timedelta(timedelta):
+    if (timedelta >= 1):
+        return "%.1fs" % (timedelta)
+    return "%.0fms" % (timedelta_ms(timedelta),)
+
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=''):
-    def timedelta_ms(timedelta):
-        return timedelta * 1000
-
-    def format_timedelta(timedelta):
-        if (timedelta >= 1):
-            return "%.1fs" % (timedelta)
-        return "%.0fms" % (timedelta_ms(timedelta),)
-
     # For statsd timer name
     if path == '/':
         statsd_path = 'webreq'
