@@ -60,6 +60,7 @@ DATABASES = {"default": {
     'PASSWORD': '', # Authentication done via certificates
     'HOST': 'postgres.zulip.net',
     'SCHEMA': 'zulip',
+    'CONN_MAX_AGE': 600,
     'OPTIONS': {
         'sslmode': 'verify-full',
         'autocommit': True,

@@ -41,6 +41,7 @@ CACHES['database'] = {
     'BACKEND':  'django.core.cache.backends.dummy.DummyCache',
     'LOCATION': 'zulip-database-test-cache',
     'TIMEOUT':  3600,
+    'CONN_MAX_AGE': 600,
     'OPTIONS': {
         'MAX_ENTRIES': 100000
     }
