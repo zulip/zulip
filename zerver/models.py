@@ -521,7 +521,17 @@ class Message(models.Model):
             # Use slightly customized Markdown processor for content
             # delivered via zephyr_mirror
             domain = "mit.edu/zephyr_mirror"
-        return bugdown.convert(content, domain, self)
+        rendered_content = bugdown.convert(content, domain, self)
+
+        # For /me syntax, we pass back the raw content.  The JS can detect /me
+        # (no paragraph tag) and do special rendering.  We might eventually
+        # want to handle this with a flag, but it's a bit tough to deliver the
+        # flag through all code paths, given the current code structure.
+        if content.startswith('/me ') and len(content) < 80 and \
+                rendered_content == '<p>%s</p>' % (content,):
+            return content
+
+        return rendered_content
 
     def set_rendered_content(self, rendered_content, save = False):
         """Set the content on the message.

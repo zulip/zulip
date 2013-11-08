@@ -1077,6 +1077,12 @@ just a temporary hack.
     top: -2px;
 }
 
+.sender_name.sender-status {
+    top: 3px;
+    height: 20px;
+    padding-bottom: 20px;
+}
+
 .sender_name_hovered .sender_name {
     color: #0088CC;
 }

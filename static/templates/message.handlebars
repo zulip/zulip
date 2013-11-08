@@ -179,7 +179,12 @@
             {{! See ../js/notifications.js for another user of avatar_url. }}
             <div class="inline_profile_picture"
                  style="background-image: url('{{small_avatar_url}}');"/>
-            <span class="sender_name">{{sender_full_name}}</span>
+            <span class="sender_name{{#status_message}} sender-status{{/status_message}}">
+              {{sender_full_name}}
+              {{#if status_message}}
+                {{{ status_message }}}
+              {{/if}}
+            </span>
         </span>
         {{/include_sender}}
         <span class="message_time">{{timestr}}</span>
@@ -193,7 +198,11 @@
           </div>
         </div>
         </div>
-        <div class="message_content">{{#if ../../../use_match_properties}}{{{match_content}}}{{else}}{{{content}}}{{/if}}</div>
+        <div class="message_content">
+          {{#unless status_message}}
+            {{#if ../../../use_match_properties}}{{{match_content}}}{{else}}{{{content}}}{{/if}}
+          {{/unless}}
+        </div>
         <div class="message_edit">
             <div class="message_edit_form" id="{{id}}"></div>
         </div>

@@ -248,6 +248,7 @@ MessageListView.prototype = {
 
             message.include_sender = true;
             if (!message.include_recipient &&
+                !prev.status_message &&
                 util.same_sender(prev, message)) {
                 message.include_sender = false;
                 ids_where_next_is_same_sender[prev.id] = true;
@@ -269,6 +270,14 @@ MessageListView.prototype = {
 
             message.contains_mention = notifications.speaking_at_me(message);
             message.unread = unread.message_unread(message);
+
+            if (message.content.slice(0, 4) === "/me ") {
+                message.status_message = message.content.slice(4);
+                message.include_sender = true;
+            }
+            else {
+                message.status_message = false;
+            }
 
             messages_to_render.push(message);
             prev = message;

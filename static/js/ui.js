@@ -261,7 +261,7 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
-    if (message && message.sent_by_me) {
+    if (message && message.sent_by_me && !message.status_message) {
         message_row.find('.message_content').find('p:last').append(edit_content_button);
     }
     current_message_hover = message_row;
