@@ -211,6 +211,9 @@ v1_api_and_json_patterns = patterns('zerver.views',
     url(r'^register$', 'rest_dispatch',
             {'POST': 'api_events_register'}),
 
+    # Returns a 204, used by desktop app to verify connectivity status
+    url(r'generate_204$', 'generate_204'),
+
 ) + patterns('zerver.tornadoviews',
     url(r'^events$', 'rest_dispatch',
         {'GET': 'get_events_backend'}),

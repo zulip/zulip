@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
 from django.utils.timezone import now
@@ -2179,3 +2179,6 @@ def remove_apns_device_token(request, user_profile, token=REQ):
         return json_error("APNS token does not exist")
 
     return json_success()
+
+def generate_204(request):
+    return HttpResponse(content=None, status=204)
