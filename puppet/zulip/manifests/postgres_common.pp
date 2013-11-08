@@ -1,8 +1,20 @@
 class zulip::postgres_common {
-  $postgres_packages = [ "postgresql-9.1", "pgtune",
-                         "python-argparse", "python-gevent",
-                         "python-tz",
-                         "lzop", "pv", "hunspell-en-us", "python-dateutil"]
+  $postgres_packages = [# The database itself
+                        "postgresql-9.1",
+                        # tools for database setup
+                        "pgtune",
+                        # Python modules used in our monitoring/worker threads
+                        "python-argparse",
+                        "python-gevent",
+                        "python-tz",
+                        "python-dateutil",
+                        # dependencies for our wal-e backup system
+                        "python-boto",
+                        "lzop",
+                        "pv",
+                        # our dictionary
+                        "hunspell-en-us",
+                        ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
       package { $title: ensure => $ensure }
