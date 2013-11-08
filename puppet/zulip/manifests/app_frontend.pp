@@ -3,22 +3,67 @@ class zulip::app_frontend {
   include zulip::nginx
   include zulip::supervisor
 
-  $web_packages = [ "memcached", "python-pylibmc", "python-tornado", "python-django",
-                    "python-pygments", "python-flup", "python-psycopg2",
-                    "yui-compressor", "python-django-auth-openid",
-                    "python-django-statsd-mozilla", "python-dns",
-                    "build-essential", "libssl-dev", "python-ujson",
-                    "python-defusedxml", "python-twitter",
-                    "python-twisted", "python-markdown",
-                    "python-django-south", "python-mock", "python-pika",
-                    "python-django-pipeline", "hunspell-en-us",
-                    "python-django-bitfield", "python-embedly",
-                    "python-tz", "postgresql-client-9.1",
-                    "python-postmonkey", "python-django-jstemplate",
-                    "redis-server", "python-redis", "python-django-guardian",
-                    "python-diff-match-patch", "python-sourcemap", "python-mandrill",
-                    "python-sockjs-tornado", "python-apns-client", "python-imaging",
-                    "nodejs", "python-boto" ]
+  $web_packages = [ # Needed for memcached usage
+                    "memcached",
+                    "python-pylibmc",
+                    # Fast JSON parser
+                    "python-ujson",
+                    # Django dependencies
+                    "python-django",
+                    "python-django-jstemplate",
+                    "python-django-guardian",
+                    "python-django-auth-openid",
+                    "python-django-statsd-mozilla",
+                    "python-django-south",
+                    "python-django-pipeline",
+                    "python-django-bitfield",
+                    # Tornado dependencies
+                    "python-tornado",
+                    "python-sockjs-tornado",
+                    # Needed for our fastcgi setup
+                    "python-flup",
+                    # Needed for markdown processing
+                    "python-markdown",
+                    "python-pygments",
+                    # Not sure why we need this
+                    "python-dns",
+                    # Needed to access our database
+                    "postgresql-client-9.1",
+                    "python-psycopg2",
+                    "hunspell-en-us",
+                    # Not required; for building things
+                    "build-essential",
+                    "libssl-dev",
+                    # Needed for integrations
+                    "python-twitter",
+                    "python-embedly",
+                    "python-defusedxml",
+                    # Needed for the email mirror
+                    "python-twisted",
+                    # Needed to access rabbitmq
+                    "python-pika",
+                    # Needed for timezone work
+                    "python-tz",
+                    # Needed for minify-js
+                    "yui-compressor",
+                    "nodejs",
+                    # Needed to parse source maps for error reporting
+                    "python-sourcemap",
+                    # Needed for redis
+                    "redis-server",
+                    "python-redis",
+                    # Needed for S3 file uploads
+                    "python-boto",
+                    # Needed to send email
+                    "python-postmonkey",
+                    "python-mandrill",
+                    # Needed to generate diffs for edits
+                    "python-diff-match-patch",
+                    # Needed for iOS
+                    "python-apns-client",
+                    # Needed for avatar image resizing
+                    "python-imaging",
+                    ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
       package { $title: ensure => $ensure }
