@@ -73,7 +73,7 @@ def realm_summary_table(realm_minutes):
             ) user_counts
             ON user_counts.realm_id = realm.id
         WHERE
-            realm.domain not in ('zulip.com', 'customer4.invalid')
+            realm.domain not in ('zulip.com', 'customer4.invalid', 'wdaher.com')
         AND EXISTS (
                 SELECT *
                 FROM zerver_useractivity ua
