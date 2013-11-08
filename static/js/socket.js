@@ -63,7 +63,18 @@ Socket.prototype = {
     _process_response: function Socket__process_response(req_id, response) {
         var req_info = this._requests[req_id];
         if (req_info === undefined) {
-            blueslip.error("Got a response for an unknown request");
+            if (req_id >= this._next_req_id) {
+                blueslip.error("Got a response for an unknown request",
+                               {request_id: req_id, next_id: this._next_req_id,
+                                outstanding_ids: _.keys(this._requests)});
+            }
+            // There is a small race where we might start reauthenticating
+            // before one of our requests has finished but then have the request
+            // finish and thus receive the finish notification both from the
+            // status inquiry and from the normal response.  Therefore, we might
+            // be processing the response for a request where we already got the
+            // response from a status inquiry.  In that case, don't process the
+            // response twice.
             return;
         }
 
