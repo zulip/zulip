@@ -17,6 +17,11 @@ import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
 
+# Because import_module does not correctly handle safe circular imports we
+# need to import zerver.models first before the middleware tries to import it.
+
+import zerver.models
+
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
