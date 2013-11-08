@@ -487,7 +487,7 @@ def remote_user_sso(request):
         return maybe_send_to_registration(request, remote_user_to_email(user))
     else:
         login(request, user)
-        return HttpResponseRedirect(reverse('zerver.views.accounts_home'))
+        return HttpResponseRedirect(reverse('zerver.views.home'))
 
 def handle_openid_errors(request, issue, openid_response=None):
     if issue == "Unknown user":
