@@ -1,9 +1,19 @@
 class zulip_internal::base {
   include zulip::base
 
-  $org_base_packages = [ "nagios-plugins-basic", "munin-node", "munin-plugins-extra" ,
-                         "mosh", "openssh-server", "iptables-persistent",
-                         "debian-goodies", "python-netifaces"
+  $org_base_packages = [# Management for our systems
+                        "openssh-server",
+                        "mosh",
+                        # Monitoring
+                        "nagios-plugins-basic",
+                        "munin-node",
+                        "munin-plugins-extra" ,
+                        # Security
+                        "iptables-persistent",
+                        # For managing our current Debian packages
+                        "debian-goodies",
+                        # For our EC2 network setup script
+                        "python-netifaces",
                          ]
   package { $org_base_packages: ensure => "installed" }
 
