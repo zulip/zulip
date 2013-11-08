@@ -6,7 +6,6 @@ import logging
 import datetime
 import shutil
 import time
-import tempfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, WARNING, ENDC
@@ -19,8 +18,6 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 tarball_path = sys.argv[1]
-
-subprocess.check_call(["mkdir", '-p', DEPLOYMENTS_DIR, '/home/zulip/logs'])
 
 start_time = time.time()
 got_lock = False
@@ -46,14 +43,12 @@ timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
 deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
 
 logging.info("Unpacking the tarball")
-extract_path = tempfile.mkdtemp()
-subprocess.check_call(["tar", "-xf", tarball_path, "-C", extract_path])
-subprocess.check_call(["mv", os.path.join(extract_path, "zulip-server"), deploy_path])
-subprocess.check_call(["rmdir", extract_path])
-os.chdir(deploy_path)
+deploy_path = subprocess.check_output([os.path.join(os.path.dirname(__file__), 'unpack-zulip'),
+                                       tarball_path])
+os.chdir(deploy_path.strip())
 
 logging.info("Restarting server...")
-subprocess.check_call(["./scripts/restart-server"])
+subprocess.check_output(["./scripts/restart-server"])
 
 logging.info("Deployment complete")
 shutil.rmtree(LOCK_DIR)

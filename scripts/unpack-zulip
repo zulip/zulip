@@ -1,0 +1,26 @@
+#!/usr/bin/python -u
+import os
+import sys
+import subprocess
+import datetime
+import tempfile
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from zulip_tools import DEPLOYMENTS_DIR, TIMESTAMP_FORMAT, FAIL, ENDC
+
+if len(sys.argv) != 2:
+    print FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC
+    sys.exit(1)
+
+tarball_path = sys.argv[1]
+
+timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
+deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
+
+extract_path = tempfile.mkdtemp()
+subprocess.check_call(["tar", "-xf", tarball_path, "-C", extract_path])
+subprocess.check_call(["mv", os.path.join(extract_path, "zulip-server"), deploy_path])
+subprocess.check_call(["rmdir", extract_path])
+
+print deploy_path
+sys.exit(0)
