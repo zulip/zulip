@@ -8,10 +8,6 @@ class zulip::postgres_common {
                         "python-gevent",
                         "python-tz",
                         "python-dateutil",
-                        # dependencies for our wal-e backup system
-                        "python-boto",
-                        "lzop",
-                        "pv",
                         # our dictionary
                         "hunspell-en-us",
                         ]

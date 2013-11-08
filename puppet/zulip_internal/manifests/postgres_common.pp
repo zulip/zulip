@@ -1,6 +1,13 @@
 class zulip_internal::postgres_common {
   include zulip::postgres_common
 
+  $internal_postgres_packages = [# dependencies for our wal-e backup system
+                                 "python-boto",
+                                 "lzop",
+                                 "pv",
+                                 ]
+  package { $internal_postgres_packages: ensure => "installed" }
+
   exec {"pip_wal-e":
     command  => "/usr/bin/pip install git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",
     creates  => "/usr/local/bin/wal-e",
