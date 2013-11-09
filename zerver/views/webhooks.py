@@ -646,8 +646,18 @@ def format_freshdesk_property_change_message(ticket, event_info):
 
 def format_freshdesk_ticket_creation_message(ticket):
     # They send us the description as HTML.
+    html2text.BODY_WIDTH = 0 # Do not try to wrap the text for us.
     converter = html2text.HTML2Text()
+    converter.ignore_links = False
+    converter.ignore_images = False
     cleaned_description = converter.handle(ticket.description).strip()
+    # We want images to get linked and inline previewed, but html2text will turn
+    # them into links of the form `![](http://foo.com/image.png)`, which is
+    # ugly. Run a regex over the resulting description, turning links of the
+    # form `![](http://foo.com/image.png?12345)` into
+    # `[image.png](http://foo.com/image.png)`.
+    cleaned_description = re.sub(r"!\[\]\((\S*)/(\S*)\?(\S*)\)", r"[\2](\1/\2)",
+                                 cleaned_description)
 
     content = "%s <%s> created [ticket #%s](%s):\n\n" % (
         ticket.requester_name, ticket.requester_email, ticket.id, ticket.url)

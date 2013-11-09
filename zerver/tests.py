@@ -4111,6 +4111,16 @@ Priority: **High** => **Low**""")
     def test_public_note_change(self):
         self.note_change("public_note", "public")
 
+    def test_inline_image(self):
+        """
+        Freshdesk sends us descriptions as HTML, so we have to make the
+        descriptions Zulip markdown-friendly while still doing our best to
+        preserve links and images.
+        """
+        msg = self.generate_webhook_response("inline_images")
+        self.assertEqual(msg.subject, u"#12: Not enough guinea pigs")
+        self.assertIn("[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)", msg.content)
+
 class RateLimitTests(AuthedTestCase):
 
     def setUp(self):
