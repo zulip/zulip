@@ -68,7 +68,14 @@ DATABASES = {"default": {
     },
 }
 
-if not DEPLOYED or LOCAL_SERVER:
+if LOCAL_SERVER:
+    DATABASES["default"].update({
+            'HOST': 'localhost',
+            'OPTIONS': {
+                'autocommit': True,
+            }
+            })
+elif not DEPLOYED:
     DATABASES["default"].update({
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost',
