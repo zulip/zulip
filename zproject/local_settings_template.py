@@ -5,6 +5,7 @@ EXTERNAL_HOST = ''
 
 # This is the Zulip Administrator email address
 ZULIP_ADMINISTRATOR = ''
+ADMIN_DOMAIN = ''
 
 # These credentials are for communication with the central Zulip deployment manager
 DEPLOYMENT_ROLE_NAME = ''
