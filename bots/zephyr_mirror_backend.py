@@ -807,8 +807,8 @@ def add_zulip_subscriptions(verbose):
         elif cls.lower() == "mail" and instance.lower() == "inbox":
             # We forward mail zephyrs, so no need to log a warning.
             continue
-        elif len(cls) > 30:
-            skipped.add((cls, instance, recipient, "Class longer than 30 characters"))
+        elif len(cls) > 60:
+            skipped.add((cls, instance, recipient, "Class longer than 60 characters"))
             continue
         elif instance != "*":
             skipped.add((cls, instance, recipient, "Unsupported non-* instance"))
