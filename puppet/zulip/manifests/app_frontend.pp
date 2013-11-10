@@ -13,7 +13,6 @@ class zulip::app_frontend {
                     "python-django-jstemplate",
                     "python-django-guardian",
                     "python-django-auth-openid",
-                    "python-django-statsd-mozilla",
                     "python-django-south",
                     "python-django-pipeline",
                     "python-django-bitfield",
@@ -41,9 +40,6 @@ class zulip::app_frontend {
                     "python-pika",
                     # Needed for timezone work
                     "python-tz",
-                    # Needed for minify-js
-                    "yui-compressor",
-                    "nodejs",
                     # Needed to parse source maps for error reporting
                     "python-sourcemap",
                     # Needed for redis

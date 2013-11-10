@@ -1,6 +1,6 @@
 class zulip_internal::staging_app_frontend {
   include zulip_internal::base
-  include zulip::app_frontend
+  include zulip_internal::app_frontend
 
   file { "/etc/nginx/sites-available/zulip-staging":
     require => Package[nginx],
