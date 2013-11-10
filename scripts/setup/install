@@ -16,7 +16,7 @@ apt-get -y dist-upgrade
 apt-get install -y puppet git
 cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
-mkdir /etc/zulip
+mkdir -p /etc/zulip
 echo -e "[machine]\npuppet_classes = zulip::local_server" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
 
