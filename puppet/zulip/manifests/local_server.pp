@@ -4,6 +4,10 @@ class zulip::local_server {
   include zulip::postgres_appdb
   include zulip::camo
 
+  apt::key {"A529EF65":
+    source  =>  "http://apt.zulip.com/enterprise.asc",
+  }
+
   file { "/etc/nginx/sites-available/zulip-local":
     require => Package[nginx],
     ensure => file,

@@ -8,9 +8,12 @@ fi
 tarball="$1"
 
 # First, install any updates from the apt repo that may be needed
+wget -O /root/enterprise.asc https://apt.zulip.com/enterprise.asc
+apt-key add /root/enterprise.asc
 cat >/etc/apt/sources.list.d/zulip.list <<EOF
 deb http://apt.zulip.com/enterprise precise v1
 EOF
+
 apt-get update
 apt-get -y dist-upgrade
 apt-get install -y puppet git
