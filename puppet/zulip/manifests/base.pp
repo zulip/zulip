@@ -19,15 +19,6 @@ class zulip::base {
                      ]
   package { $base_packages: ensure => "installed" }
 
-  apt::key {"A529EF65":
-    source  =>  "http://apt.zulip.com/ops.asc",
-  }
-
-  apt::sources_list {"zulip":
-    ensure  => present,
-    content => 'deb http://apt.zulip.com/ops wheezy main',
-  }
-
   group { 'zulip':
     ensure     => present,
     gid        => '1000',
@@ -61,12 +52,6 @@ class zulip::base {
     owner      => "root",
     group      => "root",
     source     => 'puppet:///modules/zulip/limits.conf',
-  }
-
-  file { '/etc/apt/apt.conf.d/02periodic':
-    ensure     => file,
-    mode       => 644,
-    source     => 'puppet:///modules/zulip/apt/apt.conf.d/02periodic',
   }
 
   file { '/var/log/zulip':

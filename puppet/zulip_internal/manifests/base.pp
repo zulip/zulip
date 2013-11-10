@@ -17,6 +17,21 @@ class zulip_internal::base {
                          ]
   package { $org_base_packages: ensure => "installed" }
 
+  apt::key {"A529EF65":
+    source  =>  "http://apt.zulip.com/ops.asc",
+  }
+
+  apt::sources_list {"zulip":
+    ensure  => present,
+    content => 'deb http://apt.zulip.com/ops wheezy main',
+  }
+
+  file { '/etc/apt/apt.conf.d/02periodic':
+    ensure     => file,
+    mode       => 644,
+    source     => 'puppet:///modules/zulip_internal/apt/apt.conf.d/02periodic',
+  }
+
   file { '/home/zulip/.ssh/authorized_keys':
     ensure     => file,
     require    => File['/home/zulip/.ssh'],
