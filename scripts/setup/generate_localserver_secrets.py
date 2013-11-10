@@ -11,7 +11,7 @@ from zerver.lib.utils import generate_random_token
 
 SETTINGS_FILENAME = "zproject/local_settings_template.py"
 OUTPUT_SETTINGS_FILENAME = "zproject/local_settings_generated.py"
-CAMO_CONFIG_FILENAME = '/etc/defaults/camo'
+CAMO_CONFIG_FILENAME = '/etc/default/camo'
 
 if not os.path.exists(SETTINGS_FILENAME):
     print "Unable to find settings file at %s" % (SETTINGS_FILENAME,)
