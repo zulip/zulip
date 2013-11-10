@@ -31,7 +31,6 @@ class zulip::app_frontend {
                     "python-psycopg2",
                     # Needed for integrations
                     "python-twitter",
-                    "python-embedly",
                     "python-defusedxml",
                     # Needed for the email mirror
                     "python-twisted",

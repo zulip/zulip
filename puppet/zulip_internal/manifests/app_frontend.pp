@@ -5,6 +5,8 @@ class zulip_internal::app_frontend {
                    "nodejs",
                    # Needed for statsd reporting
                    "python-django-statsd-mozilla",
+                   # Needed only for a disabled integration
+                   "python-embedly",
                    ]
   package { $app_packages: ensure => "installed" }
 
