@@ -245,6 +245,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'NEW_USER_BOT': None,
                     'NAGIOS_STAGING_SEND_BOT': None,
                     'NAGIOS_STAGING_RECEIVE_BOT': None,
+                    'APNS_CERT_FILE': None,
                     'ZULIP_ADMINISTRATOR': ''
                     }
 

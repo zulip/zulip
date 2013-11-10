@@ -14,7 +14,7 @@ import base64, binascii, logging, os
 # for each request
 session = Session()
 connection = None
-if os.path.exists(settings.APNS_CERT_FILE):
+if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):
     connection = session.get_connection(settings.APNS_SANDBOX, cert_file=settings.APNS_CERT_FILE)
 
 def num_push_devices_for_user(user_profile):
