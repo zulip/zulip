@@ -83,7 +83,7 @@ class Command(BaseCommand):
             bot.bot_owner = bot
             bot.save()
 
-        self.stdout.write("Successfully populated test database.\n")
+        self.stdout.write("Successfully populated database with initial data.\n")
 
     site = Site.objects.get_current()
     site.domain = 'zulip.com'
