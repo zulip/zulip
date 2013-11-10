@@ -25,7 +25,7 @@ class zulip::app_frontend {
                     # Needed for markdown processing
                     "python-markdown",
                     "python-pygments",
-                    # Not sure why we need this
+                    # Used for Hesiod lookups, etc.
                     "python-dns",
                     # Needed to access our database
                     "postgresql-client-9.1",
