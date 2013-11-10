@@ -20,7 +20,7 @@ apt-get install -y puppet git
 cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
 mkdir -p /etc/zulip
-echo -e "[machine]\npuppet_classes = zulip::local_server" > /etc/zulip/zulip.conf
+echo -e "[machine]\npuppet_classes = zulip::local_server\ndeploy_type = local" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
 
 # These server restarting bits should be moveable into puppet-land, ideally
