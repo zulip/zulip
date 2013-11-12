@@ -497,14 +497,16 @@
           <img class="screenshot" src="/static/images/integrations/freshdesk/002.png">
         </li>
         <li>
+
           <p>In the <b>"Action"</b> section, add a new action of
           type <b>"Trigger Webhook"</b>. Set the <b>"Request Type"</b>
           to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
-          the bot email address, bot API key, and Zulip stream with the
-          appropriate information. <b>Note:</b> the <code>@</code>-sign in the
-          bot e-mail address must be escaped to <code>%40</code>:</p>
+          the Zulip stream with your desired stream:</p>
 
-          <p><code>https://<font color="#00A26F">freshdesk-bot%40example.com</font>:<font color="#00A26F">api_key</font>@api.zulip.com/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
+          <p><code>https://api.zulip.com/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
+
+          <p>Check the <b>"Requires Authentication"</b> box, and supply the bot
+          e-mail address and API key.</p>
 
           <p>The Action section should look like this so far:</p>
 
@@ -591,11 +593,12 @@
           <p>Under <b>"Perform These Actions"</b>, add a new action of
           type <b>"Trigger Webhook"</b>. Set the <b>"Request Type"</b>
           to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
-          the bot email address, bot API key, and Zulip stream with the
-          appropriate information. <b>Note:</b> the <code>@</code>-sign in the
-          bot e-mail address must be escaped to <code>%40</code>:</p>
+          the Zulip stream with your desired stream:</p>
 
-          <p><code>https://<font color="#00A26F">freshdesk-bot%40example.com</font>:<font color="#00A26F">api_key</font>@api.zulip.com/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
+          <p><code>https://api.zulip.com/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
+
+          <p>Check the <b>"Requires Authentication"</b> box, and supply the bot
+          e-mail address and API key.</p>
 
           <p>The Action section should look like this so far:</p>
 
