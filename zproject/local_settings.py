@@ -172,3 +172,7 @@ NAGIOS_STAGING_SEND_BOT = 'iago@zulip.com'
 NAGIOS_STAGING_RECEIVE_BOT = 'cordelia@zulip.com'
 
 ZULIP_ADMINISTRATOR = 'support@zulip.com'
+
+# TODO: Store this info in the database
+API_SUPER_USERS = set(["tabbott/extra@mit.edu", "emailgateway@zulip.com",
+                       "irc-bot@zulip.com", "bot1@customer35.invalid"])

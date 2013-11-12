@@ -261,7 +261,8 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'INITIAL_PASSWORD_SALT': None,
                     'FEEDBACK_BOT': 'feedback@zulip.com',
                     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
-                    'ENABLE_FEEDBACK': True
+                    'API_SUPER_USERS': set(),
+                    'ENABLE_FEEDBACK': True,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
