@@ -1079,6 +1079,13 @@ just a temporary hack.
 
 .sender_name.sender-status {
     top: 3px;
+}
+
+.sender-status {
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    top: 3px;
     height: 20px;
     padding-bottom: 20px;
 }
