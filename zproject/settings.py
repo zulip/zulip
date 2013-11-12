@@ -288,6 +288,9 @@ for bot in REALM_BOTS:
         bot_email = bot['email_template'] % (ADMIN_DOMAIN,)
         vars()[bot['var_name'] ] = bot_email
 
+if EMAIL_GATEWAY_BOT not in API_SUPER_USERS:
+    API_SUPER_USERS.add(EMAIL_GATEWAY_BOT)
+
 # Static files and minification
 
 STATIC_URL = '/static/'
