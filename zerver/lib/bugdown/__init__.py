@@ -343,8 +343,7 @@ class Gravatar(markdown.inlinepatterns.Pattern):
         img = markdown.util.etree.Element('img')
         email_address = match.group('email')
         img.set('class', 'message_body_gravatar')
-        img.set('src', 'https://secure.gravatar.com/avatar/%s?d=identicon&s=30'
-            % (gravatar_hash(email_address),))
+        img.set('src', '/avatar/%s?s=30' % (email_address,))
         img.set('title', email_address)
         img.set('alt', email_address)
         return img
