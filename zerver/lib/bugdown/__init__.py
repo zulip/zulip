@@ -658,7 +658,10 @@ class Bugdown(markdown.Extension):
 
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
 
+        # Note that !gravatar syntax should be deprecated long term.
+        md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
+
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
