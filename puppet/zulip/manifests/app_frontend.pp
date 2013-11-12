@@ -16,6 +16,8 @@ class zulip::app_frontend {
                     "python-django-south",
                     "python-django-pipeline",
                     "python-django-bitfield",
+                    # Needed for mock objects in decorators
+                    "python-mock",
                     # Tornado dependencies
                     "python-tornado",
                     "python-sockjs-tornado",
