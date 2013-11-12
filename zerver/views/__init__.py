@@ -729,6 +729,10 @@ def home(request):
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 
+@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+def desktop_home(request):
+    return HttpResponseRedirect(reverse('zerver.views.home'))
+
 def is_buggy_ua(agent):
     """Discrimiate CSS served to clients based on User Agent
 
