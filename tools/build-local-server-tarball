@@ -20,6 +20,16 @@ git archive -o $TARBALL --prefix=zulip-server/ HEAD
 git checkout-index -f -a --prefix $TMP_CHECKOUT
 cd $TMP_CHECKOUT
 
+# Use default settings so there is no chance of leaking secrets
+cp zproject/local_settings_template.py zproject/local_settings.py
+
+# Some settings need values for it to work
+cat >> zproject/local_settings.py <<EOF
+DEBUG = False
+LOCAL_DATABASE_PASSWORD = ''
+SECRET_KEY = 'not_used_here'
+EOF
+
 # update-prod-static generates the prod-static directory.
 # See COLLECTSTATIC in settings.py
 ./tools/update-prod-static

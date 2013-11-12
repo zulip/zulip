@@ -28,8 +28,10 @@ from local_settings import *
 
 SERVER_GENERATION = int(time.time())
 
-# Uncomment end of next line to test JS/CSS minification.
-DEBUG = not DEPLOYED # and platform.node() != 'your-machine'
+if not 'DEBUG' in globals():
+    # Uncomment end of next line to test JS/CSS minification.
+    DEBUG = not DEPLOYED # and platform.node() != 'your-machine'
+
 TEMPLATE_DEBUG = DEBUG
 TEST_SUITE = False
 
@@ -297,10 +299,7 @@ STATIC_URL = '/static/'
 # here so that urls.py can read it.
 PIPELINE = not DEBUG
 
-# Use prod settings if exporting static files in build-local-server-tarball
-COLLECTSTATIC = 'manage.py' in sys.argv[0] and (len(sys.argv) > 1 and sys.argv[1] == 'collectstatic')
-
-if DEBUG and not COLLECTSTATIC:
+if DEBUG:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
