@@ -31,6 +31,7 @@ class zulip::local_server {
   }
 
   file { '/etc/postgresql/9.1/main/postgresql.conf.template':
+    require => Package[postgres],
     ensure => file,
     owner  => "postgres",
     group  => "postgres",
