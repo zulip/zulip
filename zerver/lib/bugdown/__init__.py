@@ -338,7 +338,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if settings.USING_EMBEDLY:
             self.do_embedly(root, embedly_urls)
 
-class Gravatar(markdown.inlinepatterns.Pattern):
+class Avatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
         img = markdown.util.etree.Element('img')
         email_address = match.group('email')
@@ -658,7 +658,7 @@ class Bugdown(markdown.Extension):
 
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
 
-        md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
+        md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
