@@ -119,7 +119,7 @@ class Command(BaseCommand):
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
 
-            if not settings.LOCAL_SERVER:
+            if not settings.ENTERPRISE:
                 # Associate initial deployment with Realm
                 dep = Deployment.objects.all()[0]
                 dep.realms = [realms["zulip.com"]]

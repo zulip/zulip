@@ -57,7 +57,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             print >>sys.stderr, "\033[1;31mExternal deployments cannot be open realms.\033[0m\n"
             self.print_help("python manage.py", "create_realm")
             exit(1)
-        if options["deployment_id"] is not None and settings.LOCAL_SERVER:
+        if options["deployment_id"] is not None and settings.ENTERPRISE:
             print >>sys.stderr, "\033[1;31mExternal deployments are not supported on local server deployments.\033[0m\n"
             exit(1)
 
@@ -75,7 +75,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                 deployment.realms.add(realm)
                 deployment.save()
                 print "Added to deployment", str(deployment.id)
-            elif not settings.LOCAL_SERVER:
+            elif not settings.ENTERPRISE:
                 deployment = Deployment.objects.get(base_site_url="https://zulip.com/")
                 deployment.realms.add(realm)
                 deployment.save()

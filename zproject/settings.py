@@ -14,13 +14,13 @@ config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether we're running in a production environment. Note that DEPLOYED does
-# **not** mean hosted by us; customer sites are DEPLOYED and LOCAL_SERVER
+# **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
 # and as such should not for example assume they are the main Zulip site.
 DEPLOYED = config_file.has_option('machine', 'deploy_type')
 STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
 TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
 
-LOCAL_SERVER = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
+ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
 
 # Import variables like secrets from the local_settings file
 # Import local_settings after determining the deployment/machine type
@@ -37,8 +37,8 @@ TEST_SUITE = False
 
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
-if TESTING_DEPLOYED or LOCAL_SERVER:
-    # XXX we should probably tighten this for LOCAL_SERVER
+if TESTING_DEPLOYED or ENTERPRISE:
+    # XXX we should probably tighten this for ENTERPRISE
     # Allow any hosts for our test instances, to reduce 500 spam
     ALLOWED_HOSTS = ['*']
 elif DEPLOYED:
@@ -70,7 +70,7 @@ DATABASES = {"default": {
     },
 }
 
-if LOCAL_SERVER:
+if ENTERPRISE:
     DATABASES["default"].update({
             'HOST': 'localhost',
             'OPTIONS': {
@@ -192,14 +192,14 @@ INSTALLED_APPS = [
     'zerver',
 ]
 
-if not LOCAL_SERVER:
+if not ENTERPRISE:
     INSTALLED_APPS += [
         'analytics',
         'zilencer',
     ]
 
 LOCAL_STATSD = (False)
-USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED and not LOCAL_SERVER) or LOCAL_STATSD
+USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED and not ENTERPRISE) or LOCAL_STATSD
 
 # These must be named STATSD_PREFIX for the statsd module
 # to pick them up
@@ -251,7 +251,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'MAILCHIMP_API_KEY': '',
                     'LOCAL_UPLOADS_DIR': None,
                     'DROPBOX_APP_KEY': '',
-                    # The following bots only exist in non-LOCAL_SERVER installs
+                    # The following bots only exist in non-ENTERPRISE installs
                     'ERROR_BOT': None,
                     'NEW_USER_BOT': None,
                     'NAGIOS_STAGING_SEND_BOT': None,
@@ -313,7 +313,7 @@ else:
     STATICFILES_FINDERS = (
         'zerver.finders.ZulipFinder',
     )
-    if DEPLOYED or LOCAL_SERVER:
+    if DEPLOYED or ENTERPRISE:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
         STATIC_ROOT = 'prod-static/serve'
@@ -545,7 +545,7 @@ CACHES = {
 if DEPLOYED:
     SERVER_LOG_PATH = "/var/log/zulip/server.log"
     WORKER_LOG_PATH = "/var/log/zulip/workers.log"
-    if LOCAL_SERVER:
+    if ENTERPRISE:
         EVENT_LOG_DIR = None
     else:
         EVENT_LOG_DIR = '/home/zulip/logs/event_log'

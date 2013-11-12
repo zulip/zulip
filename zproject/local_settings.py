@@ -49,13 +49,13 @@ config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether we're running in a production environment. Note that DEPLOYED does
-# **not** mean hosted by us; customer sites are DEPLOYED and LOCAL_SERVER
+# **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
 # and as such should not for example assume they are the main Zulip site.
 DEPLOYED = config_file.has_option('machine', 'deploy_type')
 STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
 TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
 
-LOCAL_SERVER = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
+ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
@@ -79,8 +79,8 @@ if DEPLOYED:
 else:
     FEEDBACK_TARGET="http://localhost:9991/api"
 
-# For now, LOCAL_SERVER is only testing, so write to our test buckets
-if DEPLOYED and not LOCAL_SERVER:
+# For now, ENTERPRISE is only testing, so write to our test buckets
+if DEPLOYED and not ENTERPRISE:
     S3_KEY="xxxxxxxxxxxxxxxxxxxx"
     S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     S3_BUCKET="humbug-user-uploads"
@@ -105,7 +105,7 @@ if STAGING_DEPLOYED or TESTING_DEPLOYED:
     TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-elif DEPLOYED and not LOCAL_SERVER:
+elif DEPLOYED and not ENTERPRISE:
     # This is the real set of API credentials used by our real server,
     # and we probably shouldn't test with it just so we don't waste its requests
     # Application: "Humbug HQ - Production"

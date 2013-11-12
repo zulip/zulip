@@ -7,7 +7,7 @@ from zproject.backends import password_auth_enabled
 def add_settings(request):
     return {
         'full_navbar':   settings.FULL_NAVBAR,
-        'local_server':  settings.LOCAL_SERVER,
+        'enterprise':    settings.ENTERPRISE,
         'zulip_admin':   settings.ZULIP_ADMINISTRATOR,
         'password_auth_enabled': password_auth_enabled(),
     }

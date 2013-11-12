@@ -24,7 +24,7 @@ class Migration(SchemaMigration):
         ))
         db.create_unique(u'zilencer_deployment_realms', ['deployment_id', 'realm_id'])
 
-        if not settings.LOCAL_SERVER:
+        if not settings.ENTERPRISE:
             try:
                 dep = orm['zilencer.Deployment']()
                 dep.api_key = settings.DEPLOYMENT_ROLE_KEY
