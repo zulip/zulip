@@ -39,8 +39,25 @@ class zulip::enterprise {
     source => "puppet:///modules/zulip/postgresql/postgresql.conf.template"
   }
 
+  # We can't use the built-in $memorysize fact because it's a string with human-readable units
   $total_memory = regsubst(file('/proc/meminfo'), '^.*MemTotal:\s*(\d+) kB.*$', '\1', 'M') * 1024
   $half_memory = $total_memory / 2
+  $half_memory_pages = $half_memory / 4096
+
+  file {'/etc/sysctl.d/40-postgresql.conf':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => 644,
+    content =>
+"kernel.shmall = $half_memory_pages
+kernel.shmmax = $half_memory
+
+# These are the defaults on newer kernels
+vm.dirty_ratio = 10
+vm.dirty_background_ratio = 5
+"
+    }
 
   exec { 'pgtune':
     require => Package[pgtune],
@@ -52,6 +69,6 @@ class zulip::enterprise {
 
   exec { 'pg_ctlcluster 9.1 main restart':
     refreshonly => true,
-    subscribe => Exec['pgtune']
+    subscribe => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
   }
 }
