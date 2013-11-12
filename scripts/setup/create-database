@@ -8,4 +8,4 @@ echo "DROP SCHEMA zulip CASCADE; CREATE SCHEMA zulip;" | python manage.py dbshel
 python manage.py syncdb --noinput
 python manage.py migrate
 python manage.py createcachetable third_party_api_results
-python manage.py initialize_local_server_db
+python manage.py initialize_enterprise_db
