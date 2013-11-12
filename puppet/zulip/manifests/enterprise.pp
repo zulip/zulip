@@ -1,4 +1,4 @@
-class zulip::local_server {
+class zulip::enterprise {
   include zulip::base
   include zulip::app_frontend
   include zulip::postgres_appdb

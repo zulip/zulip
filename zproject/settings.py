@@ -20,7 +20,7 @@ DEPLOYED = config_file.has_option('machine', 'deploy_type')
 STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
 TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
 
-ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'local'
+ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 # Import variables like secrets from the local_settings file
 # Import local_settings after determining the deployment/machine type
