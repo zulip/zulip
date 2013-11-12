@@ -23,6 +23,15 @@ TARBALL=$TMPDIR/$prefix.tar
 # .gitattributes lists the files that are not exported
 git archive -o $TARBALL --prefix=$prefix/ HEAD
 
+
+if tar -tf $TARBALL | grep -q -e zilencer -e zproject/local_settings.py -e puppet/zulip_internal; then
+	echo "Excluded files remain in tarball!";
+	echo "Versions of git 1.8.1.1 - 1.8.1.6 have broken .gitattributes syntax";
+	exit 1;
+else
+	echo "Check for excluded files passed";
+fi
+
 # Check out a temporary full copy of the index to generate static files
 git checkout-index -f -a --prefix $TMP_CHECKOUT
 cd $TMP_CHECKOUT
