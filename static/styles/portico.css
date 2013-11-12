@@ -126,6 +126,16 @@ img.screenshot{
     max-width: 100%;
 }
 
+.android-screenshot {
+    margin-top: -30px;
+    width: 221px;
+}
+
+.iphone-screenshot {
+    width: 184px;
+    margin: 0 32px;
+}
+
 .full-width-screenshot {
     width: 100%;
 }
