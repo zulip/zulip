@@ -10,38 +10,27 @@ else
     TMPDIR=$(mktemp -d)
 fi
 
-DIR=$TMPDIR/zulip-server/
-TARBALL=$TMPDIR/zulip-server.tar.gz
+TMP_CHECKOUT=$TMPDIR/zulip-server/
+TARBALL=$TMPDIR/zulip-server.tar
 
-git checkout-index -f -a --prefix $DIR
+# .gitattributes lists the files that are not exported
+git archive -o $TARBALL --prefix=zulip-server/ HEAD
 
-cd $DIR
+# Check out a temporary full copy of the index to generate static files
+git checkout-index -f -a --prefix $TMP_CHECKOUT
+cd $TMP_CHECKOUT
 
 # update-prod-static generates the prod-static directory.
 # See COLLECTSTATIC in settings.py
 ./tools/update-prod-static
-
-xargs rm -r <<EOF
-analytics
-assets
-bots
-corporate
-static
-tools
-zilencer
-.gitignore
-templates/.gitignore
-templates/analytics
-templates/corporate
-puppet/zulip_internal
-zproject/local_settings.py
-EOF
-
 echo $GITID > version_id
 mv update-prod-static.log ..
 
-cd ..
-tar -czf $TARBALL zulip-server
+cd $TMPDIR
+
+tar --append -f $TARBALL zulip-server/prod-static zulip-server/version_id
 
 rm -r zulip-server
-echo "Generated $TARBALL"
+
+gzip $TARBALL
+echo "Generated $TARBALL.gz"
