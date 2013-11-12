@@ -38,6 +38,8 @@ ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 
 /root/zulip/scripts/setup/configure-rabbitmq
 
+chown zulip:zulip /var/run/supervisor.sock
+
 deploy_path=$($(dirname $(dirname $0))/unpack-zulip "$tarball")
 ln -nsf "$deploy_path" /home/zulip/deployments/current
 chown -R zulip:zulip /home/zulip/deployments
