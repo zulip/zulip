@@ -185,6 +185,9 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                            client_name='?')
 
 def fake_message_sender(event):
+    log_data = dict()
+    record_request_start_data(log_data)
+
     req = event['request']
     try:
         sender = get_user_profile_by_id(event['server_meta']['user_id'])
@@ -197,8 +200,11 @@ def fake_message_sender(event):
     except JsonableError as e:
         resp = {"result": "error", "msg": str(e)}
 
+    server_meta = event['server_meta']
+    server_meta.update({'worker_log_data': log_data,
+                        'time_request_finished': time.time()})
     result = {'response': resp, 'req_id': event['req_id'],
-              'server_meta': event['server_meta']}
+              'server_meta': server_meta}
     respond_send_message(result)
 
 def respond_send_message(data):
