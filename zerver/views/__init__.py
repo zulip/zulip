@@ -57,7 +57,7 @@ from zerver.decorator import require_post, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, get_user_profile_by_email, process_as_post, REQ
 from zerver.lib.query import last_n
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
     get_signed_upload_url
 from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
@@ -1989,6 +1989,20 @@ def deactivate_user_backend(request, user_profile, email):
 
     do_deactivate(target)
     return json_success({})
+
+def avatar(request, email):
+    try:
+        user_profile = get_user_profile_by_email(email)
+        avatar_source = user_profile.avatar_source
+    except UserProfile.DoesNotExist:
+        avatar_source = 'G'
+    url = get_avatar_url(avatar_source, email)
+    if '?' in url:
+        sep = '&'
+    else:
+        sep = '?'
+    url += sep + request.META['QUERY_STRING']
+    return redirect(url)
 
 @has_request_variables
 def patch_bot_backend(request, user_profile, email, full_name=REQ):

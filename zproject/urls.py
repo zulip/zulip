@@ -53,6 +53,9 @@ urlpatterns = patterns('',
     url(r'^accounts/password/done/$', 'django.contrib.auth.views.password_reset_complete',
         {'template_name': 'zerver/reset_done.html'}),
 
+    # Avatar
+    url(r'^avatar/(?P<email>[\S]+)?', 'zerver.views.avatar'),
+
     # Registration views, require a confirmation ID.
     url(r'^accounts/home/', 'zerver.views.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
