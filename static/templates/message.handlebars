@@ -175,18 +175,18 @@
         <div class="message_top_line">
         <div class="unread_marker"></div>
         {{#include_sender}}
-        <span class="message_sender sender_info_hover">
+        <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}}">
             {{! See ../js/notifications.js for another user of avatar_url. }}
-            <div class="inline_profile_picture"
+            <div class="inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}"
                  style="background-image: url('{{small_avatar_url}}');"/>
-            <span class="sender_name {{#if status_message}}sender-status{{/if}}">
-              {{sender_full_name}}
-            </span>
-            {{#if status_message}}
-            <span class="sender-status">
+            <span class="{{^status_message}}sender_name{{/status_message}}{{#status_message}}sender-status{{/status_message}}">
+              {{#unless status_message}}
+                 {{sender_full_name}}
+              {{else}}
+                 <span class="sender_name sender_info_hover">{{sender_full_name}}</span>
                 {{{ status_message }}}
+              {{/unless}}
             </span>
-            {{/if}}
         </span>
         {{/include_sender}}
         <span class="message_time">{{timestr}}</span>

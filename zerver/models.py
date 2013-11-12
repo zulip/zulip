@@ -530,8 +530,7 @@ class Message(models.Model):
         # (no paragraph tag) and do special rendering.  We might eventually
         # want to handle this with a flag, but it's a bit tough to deliver the
         # flag through all code paths, given the current code structure.
-        if content.startswith('/me ') and len(content) < 80 and \
-                rendered_content == '<p>%s</p>' % (content,):
+        if content.startswith('/me ') and rendered_content == '<p>%s</p>' % (content,):
             return content
 
         return rendered_content

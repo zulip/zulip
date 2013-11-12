@@ -1077,17 +1077,16 @@ just a temporary hack.
     top: -2px;
 }
 
-.sender_name.sender-status {
-    top: 3px;
+.sender-status {
+    display: block;
+    margin-left: 35px;
+    margin-top: -24px;
+    padding-bottom: 20px;
 }
 
-.sender-status {
-    display: inline-block;
-    vertical-align: top;
-    position: relative;
-    top: 3px;
-    height: 20px;
-    padding-bottom: 20px;
+.sender-status .sender_name {
+    font-weight: bold;
+    position: static;
 }
 
 .sender_name_hovered .sender_name {
