@@ -3,7 +3,7 @@ import os
 
 DATABASES["default"] = {"NAME": "zulip_test",
                         "USER": "zulip_test",
-                        "PASSWORD": "xxxxxxxxxxxx",
+                        "PASSWORD": LOCAL_DATABASE_PASSWORD,
                         "HOST": "localhost",
                         "SCHEMA": "zulip",
                         "ENGINE": "django.db.backends.postgresql_psycopg2",
