@@ -1,6 +1,6 @@
-This file documents how to install the Zulip local server:
+This file documents how to install Zulip Enterprise:
 
-(0) Install certificates to /etc/ssl/private/zulip-local-server.key and /etc/ssl/certs/zulip-local-server.combined-chain.crt
+(0) Install certificates to /etc/ssl/private/zulip-enterprise.key and /etc/ssl/certs/zulip-enterprise.combined-chain.crt
 
 (1) download zulip-server.tar.gz
 

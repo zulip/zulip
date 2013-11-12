@@ -6,8 +6,8 @@ server {
     listen 443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/zulip-local-server.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/zulip-local-server.key;
+    ssl_certificate /etc/ssl/certs/zulip-enterprise.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/zulip-enterprise.key;
 
     add_header X-Frame-Options DENY;
 
