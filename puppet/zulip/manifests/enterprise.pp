@@ -39,9 +39,13 @@ class zulip::enterprise {
     source => "puppet:///modules/zulip/postgresql/postgresql.conf.template"
   }
 
+  $total_memory = regsubst(file('/proc/meminfo'), '^.*MemTotal:\s*(\d+) kB.*$', '\1', 'M') * 1024
+  $half_memory = $total_memory / 2
+
   exec { 'pgtune':
     require => Package[pgtune],
-    command => 'pgtune -T Web -i /etc/postgresql/9.1/main/postgresql.conf.template -o /etc/postgresql/9.1/main/postgresql.conf',
+    # Let Postgres use half the memory on the machine
+    command => "pgtune -T Web -M $half_memory -i /etc/postgresql/9.1/main/postgresql.conf.template -o /etc/postgresql/9.1/main/postgresql.conf",
     refreshonly => true,
     subscribe => File['/etc/postgresql/9.1/main/postgresql.conf.template']
   }
