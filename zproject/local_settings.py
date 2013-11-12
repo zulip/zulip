@@ -1,7 +1,18 @@
 # Secret Django settings for the Zulip project
-import os
 import platform
 import ConfigParser
+
+config_file = ConfigParser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+
+# Whether we're running in a production environment. Note that DEPLOYED does
+# **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
+# and as such should not for example assume they are the main Zulip site.
+DEPLOYED = config_file.has_option('machine', 'deploy_type')
+STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
+TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
+
+ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
@@ -17,7 +28,8 @@ HASH_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 AVATAR_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # Used just for generating initial passwords (only used in testing environments).
-INITIAL_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+if not DEPLOYED:
+    INITIAL_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # A shared secret, used to authenticate different parts of the app to each other.
 # FIXME: store this password more securely
@@ -44,18 +56,6 @@ EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
-config_file = ConfigParser.RawConfigParser()
-config_file.read("/etc/zulip/zulip.conf")
-
-# Whether we're running in a production environment. Note that DEPLOYED does
-# **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
-# and as such should not for example assume they are the main Zulip site.
-DEPLOYED = config_file.has_option('machine', 'deploy_type')
-STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
-TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
-
-ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 

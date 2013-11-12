@@ -30,9 +30,9 @@ def create_user_profile(realm, email, password, active, bot, full_name, short_na
                                onboarding_steps=ujson.dumps([]))
 
     if bot or not active:
-        user_profile.set_unusable_password()
-    else:
-        user_profile.set_password(password)
+        password = None
+
+    user_profile.set_password(password)
 
     user_profile.api_key = random_api_key()
     return user_profile
