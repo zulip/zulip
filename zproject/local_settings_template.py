@@ -39,6 +39,29 @@ TWITTER_CONSUMER_SECRET = ''
 TWITTER_ACCESS_TOKEN_KEY = ''
 TWITTER_ACCESS_TOKEN_SECRET = ''
 
+# The email gateway provides an email address that you can use to post to a stream
+# Emails received at the per-stream email address will be converted into a Zulip
+# message
+
+# The email address pattern to use for auto-generated stream emails
+# The %s will be replaced with a unique token, and the resulting email
+# must be delivered to the EMAIL_GATEWAY_IMAP_FOLDER of the EMAIL_GATEWAY_LOGIN account below
+EMAIL_GATEWAY_PATTERN = ""
+
+# The Zulip username of the bot that the email pattern should post as
+EMAIL_GATEWAY_BOT = ""
+
+# Configuration of the email mirror mailbox
+# The IMAP login and password
+EMAIL_GATEWAY_LOGIN = ""
+EMAIL_GATEWAY_PASSWORD = ""
+# The IMAP server & port to connect to
+EMAIL_GATEWAY_IMAP_SERVER = ""
+EMAIL_GATEWAY_IMAP_PORT = 993
+# The IMAP folder name to check for emails. All emails sent to EMAIL_GATEWAY_PATTERN above
+# must be delivered to this folder
+EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
+
 # When using SSO: If REMOTE_USER only provides a username, append this domain
 # to the returned value.
 SSO_APPEND_DOMAIN = None

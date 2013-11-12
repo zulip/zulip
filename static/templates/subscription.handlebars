@@ -48,12 +48,12 @@
           </li>
         </ul>
       </div>
-      {{#if subscribed}}
+      {{#if_and subscribed email_address}}
       <div>
           <p><b>Email address</b> <span class="email-address">{{email_address}}
              <i class="icon-vector-question-sign" id="email-address-hint-{{id}}"></i></span></p>
       </div>
-      {{/if}}
+      {{/if_and}}
 
       {{#if allow_rename}}
         <div class="rename-stream">

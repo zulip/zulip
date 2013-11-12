@@ -1518,6 +1518,10 @@ def encode_email_address(stream):
     return encode_email_address_helper(stream.name, stream.email_token)
 
 def encode_email_address_helper(name, email_token):
+    # Some deployments may not use the email gateway
+    if settings.EMAIL_GATEWAY_PATTERN == '':
+        return ''
+
     # Given the fact that we have almost no restrictions on stream names and
     # that what characters are allowed in e-mail addresses is complicated and
     # dependent on context in the address, we opt for a very simple scheme:
