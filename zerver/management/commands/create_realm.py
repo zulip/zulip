@@ -4,7 +4,9 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_realm
-from zilencer.models import Deployment
+
+if not settings.ENTERPRISE:
+    from zilencer.models import Deployment
 
 import re
 import sys

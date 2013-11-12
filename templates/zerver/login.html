@@ -46,6 +46,7 @@ autofocus('#id_username');
 
         <form name="login_form" id="login_form" method="post" class="login-form"
             {% if sso_only %}
+            {# sso_only is only set when this template is invoked by zilencer.views #}
               action="{% url 'zilencer.views.account_deployment_dispatch' %}"
             {% else %}
               action="{% url 'django.contrib.auth.views.login' %}?next={{ next }}"

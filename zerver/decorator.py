@@ -18,12 +18,19 @@ from zerver.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
      api_calls_left
 
-from zilencer.models import get_deployment_by_domain, Deployment
 from functools import wraps
 import base64
 import logging
 import cProfile
 from zerver.lib.mandrill_client import get_mandrill_client
+
+
+if not settings.ENTERPRISE:
+    from zilencer.models import get_deployment_by_domain, Deployment
+else:
+    from mock import Mock
+    get_deployment_by_domain = Mock()
+    Deployment = Mock()
 
 def get_deployment_or_userprofile(role):
     return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)
