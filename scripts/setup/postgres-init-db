@@ -9,7 +9,7 @@ fi
 
 if [[ $# == 0 ]]; then
     USERNAME=zulip
-    PASSWORD=xxxxxxxxxxxx
+    PASSWORD=$($(dirname $0)/../../bin/get-django-setting LOCAL_DATABASE_PASSWORD)
     DBNAME=zulip
     SEARCH_PATH="$USERNAME",public
 elif [[ $# == 4 ]]; then
