@@ -291,6 +291,11 @@ for bot in REALM_BOTS:
 if EMAIL_GATEWAY_BOT not in API_SUPER_USERS:
     API_SUPER_USERS.add(EMAIL_GATEWAY_BOT)
 
+if DEPLOYED:
+    FEEDBACK_TARGET="https://staging.zulip.com/api"
+else:
+    FEEDBACK_TARGET="http://localhost:9991/api"
+
 # Static files and minification
 
 STATIC_URL = '/static/'
