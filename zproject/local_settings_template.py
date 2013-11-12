@@ -1,4 +1,4 @@
-# Template for Django settings for the Zulip local servers
+# Template for Django settings for Zulip Enterprise
 
 # This is the user-accessible Zulip hostname for this installation
 EXTERNAL_HOST = ''

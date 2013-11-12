@@ -85,7 +85,7 @@ urlpatterns = patterns('',
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
 )
 
-# These are used for localserver development. On a real localserver instance,
+# These are used for enterprise development. On a real enterprise instance,
 # these files would be served by nginx.
 if not settings.DEPLOYED and settings.LOCAL_UPLOADS_DIR is not None:
     urlpatterns += patterns('',

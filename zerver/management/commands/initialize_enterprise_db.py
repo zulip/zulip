@@ -26,7 +26,7 @@ def create_streams(realms, realm, stream_list):
     bulk_create_streams(realms, stream_set)
 
 class Command(BaseCommand):
-    help = "Populate a local server database"
+    help = "Populate an initial database for Zulip Enterprise"
 
     option_list = BaseCommand.option_list + (
         make_option('--extra-users',
