@@ -545,7 +545,10 @@ CACHES = {
 if DEPLOYED:
     SERVER_LOG_PATH = "/var/log/zulip/server.log"
     WORKER_LOG_PATH = "/var/log/zulip/workers.log"
-    EVENT_LOG_DIR = '/home/zulip/logs/event_log'
+    if LOCAL_SERVER:
+        EVENT_LOG_DIR = None
+    else:
+        EVENT_LOG_DIR = '/home/zulip/logs/event_log'
     STATS_DIR = '/home/zulip/stats'
     PERSISTENT_QUEUE_FILENAME = "/home/zulip/tornado/event_queues.pickle"
     EMAIL_LOG_PATH = "/var/log/zulip/email-mirror.log"

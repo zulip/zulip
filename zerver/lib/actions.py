@@ -61,6 +61,9 @@ import urllib
 
 # Store an event in the log for re-importing messages
 def log_event(event):
+    if settings.EVENT_LOG_DIR is None:
+        return
+
     if "timestamp" not in event:
         event["timestamp"] = time.time()
 
