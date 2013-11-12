@@ -12,6 +12,11 @@ class zulip::postgres_appdb {
   }
   safepackage { $appdb_packages: ensure => "installed" }
 
+  # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
+  file { '/etc/sysctl.d/30-postgresql-shm.conf':
+    ensure => absent,
+  }
+
   file { "/usr/local/bin/process_fts_updates":
     ensure => file,
     owner => "root",
