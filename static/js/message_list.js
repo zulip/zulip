@@ -218,6 +218,11 @@ MessageList.prototype = {
 
         if (closest === items.length
             || (closest !== 0
+                // We have the index at which a message with the
+                // given id would be inserted, but that isn't
+                // necessarily the index of the message that has an
+                // id that is closest to the query; it could be the
+                // previous message in the list.
                 && (id - items[closest - 1].id <
                     items[closest].id - id)))
         {
