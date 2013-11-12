@@ -32,7 +32,7 @@ if [ -e "/etc/init.d/apache2" ]; then
     service apache2 restart
 fi
 
-/root/zulip/scripts/setup/generate_localserver_secrets.py
+/root/zulip/scripts/setup/generate_enterprise_secrets.py
 mv /root/zulip/zproject/local_settings_generated.py /etc/zulip/settings.py
 ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 

@@ -3,7 +3,7 @@
 GITID=$(git rev-parse HEAD)
 
 if [ "$(uname)" = "Darwin" ]; then
-    TMPDIR=/tmp/local-server
+    TMPDIR=/tmp/enterprise-build
     rm -Rf $TMPDIR
     mkdir -p $TMPDIR
 else
