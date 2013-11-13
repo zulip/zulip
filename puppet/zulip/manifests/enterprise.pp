@@ -59,6 +59,12 @@ vm.dirty_background_ratio = 5
 "
     }
 
+  exec { "sysctl_p":
+    command   => "/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf",
+    subscribe => File['/etc/sysctl.d/40-postgresql.conf'],
+    refreshonly => true,
+  }
+
   exec { 'pgtune':
     require => Package[pgtune],
     # Let Postgres use half the memory on the machine
@@ -68,6 +74,7 @@ vm.dirty_background_ratio = 5
   }
 
   exec { 'pg_ctlcluster 9.1 main restart':
+    require => Exec["sysctl_p"],
     refreshonly => true,
     subscribe => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
   }
