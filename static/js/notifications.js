@@ -193,16 +193,14 @@ function in_browser_notify(message, title, content) {
     }).show();
 }
 
-exports.notify_above_composebox = function (title, content, link_class, link_msg_id, link_text) {
-    var notification_html = $(templates.render('compose-notification', {title: title,
-                                                                        content: content,
+exports.notify_above_composebox = function (note, link_class, link_msg_id, link_text) {
+    var notification_html = $(templates.render('compose_notification', {note: note,
                                                                         link_class: link_class,
                                                                         link_msg_id: link_msg_id,
                                                                         link_text: link_text}));
-    $('#compose-notifications').notify({
-        message: {html: notification_html},
-        fadeOut: {enabled: true, delay: 8000}
-    }).show();
+    exports.clear_compose_notifications();
+    $('#out-of-view-notification').append(notification_html);
+    $('#out-of-view-notification').show();
 };
 
 function process_notification(notification) {
@@ -373,6 +371,19 @@ exports.received_messages = function (messages) {
     });
 };
 
+function get_message_header(message) {
+    if (message.type === "stream") {
+        return message.stream + ">" + message.subject;
+    }
+    if (message.display_recipient.length > 2) {
+        return "group PM with " + message.display_reply_to;
+    }
+    if (message.display_recipient.length === 1) {
+        return "PM with yourself";
+    }
+    return "PM with " + message.display_reply_to;
+}
+
 exports.possibly_notify_new_messages_outside_viewport = function (messages) {
     if (!feature_flags.notify_on_send_not_in_view) {
         return;
@@ -384,6 +395,7 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
         // queue up offscreen because of narrowed, or (secondarily) offscreen
         // because it doesn't fit in the currently visible viewport
         var msg_text = $(message.content).text();
+
         var note;
         var link_class;
         var link_msg_id = message.id;
@@ -394,24 +406,22 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
             // offscreen because it is outside narrow
             // we can only look for these on non-search (can_apply_locally) messages
             // see also: exports.notify_messages_outside_current_search
-            note = "is outside the current narrow.";
+            note = "You sent a message outside the current narrow.";
             link_class = "compose_notification_narrow_by_subject";
-            link_text = "narrow to that conversation";
+            link_text = "Narrow to " + get_message_header(message);
         }
-        else if (viewport.is_below_visible_bottom(row.offset().top + row.height()) && !narrow.narrowed_by_reply()){
+        else if (viewport.is_below_visible_bottom(row.offset().top) && !narrow.narrowed_by_reply()){
             // offscreen because it's too far down.
             // offer scroll to message link.
-            note = "is further down.";
-            if (!narrow.active()) {
-                // in the home view, let's offer to take them to it.
-                link_class = "compose_notification_narrow_by_time_travel";
-                link_text = "show in context";
-            }
+            note = "Your recently sent message is";
+            link_class = "compose_notification_scroll_to_message";
+            link_text = "further down";
+
         } else {
             // return with _.each is like continue for normal for loops.
             return;
         }
-        exports.notify_above_composebox(msg_text, note, link_class, link_msg_id, link_text);
+        exports.notify_above_composebox(note, link_class, link_msg_id, link_text);
     });
 };
 
@@ -425,16 +435,17 @@ exports.notify_messages_outside_current_search = function (messages) {
         if (message.sender_email !== page_params.email) {
             return;
         }
-        exports.notify_above_composebox($(message.content).text(),
-                                        "is outside the current search.",
+        exports.notify_above_composebox("Your recent message is outside the current search.",
                                         "compose_notification_narrow_by_subject",
                                         message.id,
-                                        "narrow to it");
+                                        "Narrow to " + get_message_header(message));
     });
 };
 
 exports.clear_compose_notifications = function () {
-    $("#compose-notifications").children().remove();
+    $('#out-of-view-notification').empty();
+    $('#out-of-view-notification').stop(true, true);
+    $('#out-of-view-notification').hide();
 };
 
 $(function () {
@@ -446,16 +457,21 @@ $(function () {
 });
 
 exports.register_click_handlers = function () {
-    $('body').on('click', '.compose_notification_narrow_by_subject', function (e) {
+    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_subject', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         narrow.by_subject(msgid, {trigger: 'compose_notification'});
         e.stopPropagation();
         e.preventDefault();
     });
-    $('body').on('click', '.compose_notification_narrow_by_time_travel', function (e) {
+    $('#out-of-view-notification').on('click', '.compose_notification_scroll_to_message', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        narrow.by_time_travel(msgid, {trigger: 'compose_notification'});
-	scroll_to_selected();
+        current_msg_list.select_id(msgid);
+        scroll_to_selected();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('#out-of-view-notification').on('click', '.out-of-view-notification-close', function (e) {
+        exports.clear_compose_notifications();
         e.stopPropagation();
         e.preventDefault();
     });

@@ -199,7 +199,7 @@ exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
         return;
     }
-
+    notifications.clear_compose_notifications();
     $("#compose_close").show();
     $("#compose_controls").hide();
     $('.message_comp').show();
@@ -248,6 +248,7 @@ function abort_xhr () {
 exports.cancel = function () {
     $("#compose_close").hide();
     clear_box();
+    notifications.clear_compose_notifications();
     hide_box();
     abort_xhr();
     is_composing_message = false;

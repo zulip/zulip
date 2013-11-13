@@ -1415,6 +1415,21 @@ blockquote p {
     filter:  alpha(opacity=40);
 }
 
+#out-of-view-notification {
+    /* Don't overlap into the compose_close × */
+    margin-right: 10px;
+}
+
+.out-of-view-notification-close {
+    font-size:   17px;
+    font-weight: bold;
+    color:       black;
+    text-shadow: 0 1px 0 white;
+    opacity:     .2;
+    filter:      alpha(opacity=20);
+    float:       right;
+}
+
 .home-error-bar {
     margin-top: 5px;
     display: none;
@@ -3561,3 +3576,4 @@ div.edit_bot {
 .inactive_user_row {
     text-decoration: line-through;
 }
+

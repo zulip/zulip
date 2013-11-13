@@ -43,7 +43,7 @@ exports.left_side_userlist = page_params.staging ||
 // Still very beta:
 exports.fade_users_when_composing = page_params.staging || is_customer4;
 exports.use_socket = page_params.staging;
-exports.notify_on_send_not_in_view = false;
+exports.notify_on_send_not_in_view = page_params.staging;
 exports.show_huddles = page_params.staging || is_customer4;
 
 // Still burning in...
