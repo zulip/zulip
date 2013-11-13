@@ -31,7 +31,7 @@ class zulip::enterprise {
   }
 
   file { '/etc/postgresql/9.1/main/postgresql.conf.template':
-    require => Package[postgres],
+    require => Package["postgresql-9.1"],
     ensure => file,
     owner  => "postgres",
     group  => "postgres",
@@ -66,7 +66,7 @@ vm.dirty_background_ratio = 5
   }
 
   exec { 'pgtune':
-    require => Package[pgtune],
+    require => Package["pgtune"],
     # Let Postgres use half the memory on the machine
     command => "pgtune -T Web -M $half_memory -i /etc/postgresql/9.1/main/postgresql.conf.template -o /etc/postgresql/9.1/main/postgresql.conf",
     refreshonly => true,
