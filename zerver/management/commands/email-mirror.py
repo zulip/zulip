@@ -62,8 +62,8 @@ except UserProfile.DoesNotExist:
 
 
 if settings.DEPLOYED:
-    staging_api_client = zulip.Client(
-            site="https://staging.zulip.com",
+    prod_api_client = zulip.Client(
+            site="https://zulip.com",
             email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 
@@ -73,7 +73,7 @@ if settings.DEPLOYED:
             email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 else:
-    api_client = staging_api_client = zulip.Client(
+    api_client = prod_api_client = zulip.Client(
             site=settings.EXTERNAL_HOST,
             email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
@@ -114,8 +114,8 @@ class ZulipEmailForwardError(Exception):
 def send_zulip(stream, topic, content):
     # TODO: restrictions on who can send? Consider: cross-realm
     # messages, private streams.
-    if stream.realm.domain == 'zulip.com':
-        client = staging_api_client
+    if stream.realm.domain != 'zulip.com' and not settings.ENTERPRISE:
+        client = prod_api_client
     else:
         client = api_client
 
