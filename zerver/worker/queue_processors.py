@@ -188,16 +188,19 @@ class MissedMessageWorker(QueueProcessingWorker):
             # of messages
             time.sleep(2 * 60)
 
+def make_feedback_client():
+    sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
+    import zulip
+    return zulip.Client(
+        email=settings.DEPLOYMENT_ROLE_NAME,
+        api_key=settings.DEPLOYMENT_ROLE_KEY,
+        verbose=True,
+        site=settings.FEEDBACK_TARGET)
+
 @assign_queue('feedback_messages')
 class FeedbackBot(QueueProcessingWorker):
     def start(self):
-        sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
-        import zulip
-        self.staging_client = zulip.Client(
-            email=settings.DEPLOYMENT_ROLE_NAME,
-            api_key=settings.DEPLOYMENT_ROLE_KEY,
-            verbose=True,
-            site=settings.FEEDBACK_TARGET)
+        self.staging_client = make_feedback_client()
         self.staging_client._register(
                 'forward_feedback',
                 method='POST',
@@ -208,6 +211,21 @@ class FeedbackBot(QueueProcessingWorker):
 
     def consume(self, event):
         self.staging_client.forward_feedback(event)
+
+@assign_queue('error_reports')
+class ErrorReporter(QueueProcessingWorker):
+    def start(self):
+        self.staging_client = make_feedback_client()
+        self.staging_client._register(
+                'forward_error',
+                method='POST',
+                url='deployments/report_error',
+                make_request=(lambda type, report: {'type': type, 'report': simplejson.dumps(report)}),
+        )
+        QueueProcessingWorker.start(self)
+
+    def consume(self, event):
+        self.staging_client.forward_error(event['type'], event['report'])
 
 @assign_queue('slow_queries')
 class SlowQueryWorker(QueueProcessingWorker):

@@ -1930,34 +1930,32 @@ def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
                       ui_message=REQ(converter=json_to_bool), user_agent=REQ,
                       href=REQ, log=REQ,
                       more_info=REQ(converter=json_to_dict, default=None)):
-    subject = "error for %s" % (user_profile.email,)
-    if ui_message:
-        subject = "User-visible browser " + subject
-    else:
-        subject = "Browser " + subject
 
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
-    body = ("Message:\n%s\n\nStacktrace:\n%s\n\nUser agent: %s\nhref: %s\n"
-            "User saw error in UI: %s\n"
-            % (message, stacktrace, user_agent, href, ui_message))
-
-    body += "Server path: %s\n" % (settings.DEPLOY_ROOT,)
     try:
-        body += "Deployed version: %s" % (
-            subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"]),)
+        version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"])
     except Exception:
-        body += "Could not determine current git commit ID.\n"
+        version = None
 
-    if more_info is not None:
-        body += "\nAdditional information:"
-        for (key, value) in more_info.iteritems():
-            body += "\n  %s: %s" % (key, value)
+    queue_json_publish('error_reports', dict(
+        type = "browser",
+        report = dict(
+            user_email = user_profile.email,
+            user_full_name = user_profile.full_name,
+            user_visible = ui_message,
+            server_path = settings.DEPLOY_ROOT,
+            version = version,
+            user_agent = user_agent,
+            href = href,
+            message = message,
+            stacktrace = stacktrace,
+            log = log,
+            more_info = more_info,
+        )
+    ), lambda x: None)
 
-    body += "\n\nLog:\n%s" % (log,)
-
-    mail_admins(subject, body)
     return json_success()
 
 @authenticated_json_post_view
