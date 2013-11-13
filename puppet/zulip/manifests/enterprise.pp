@@ -25,10 +25,7 @@ class zulip::enterprise {
     ensure => 'link',
     target => '/etc/nginx/sites-available/zulip-enterprise',
   }
-  file { '/home/zulip/deployments/current':
-    ensure => 'link',
-    target => '/home/zulip/zulip',
-  }
+
   file { '/home/zulip/prod-static':
     ensure => 'directory',
     owner  => 'zulip',
