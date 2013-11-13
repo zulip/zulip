@@ -802,7 +802,7 @@ def notify_for_streams_by_default(user_profile):
     # stream messages by default.
     return (user_profile.realm.date_created > datetime.datetime(
             2013, 9, 24, tzinfo=timezone.utc)) and \
-            (user_profile.realm.domain != "customer19.invalid")
+            (user_profile.realm.domain not in ["customer19.invalid", "customer25.invalid"])
 
 def bulk_add_subscriptions(streams, users):
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
