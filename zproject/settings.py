@@ -709,6 +709,7 @@ USING_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKEN
 if (len(AUTHENTICATION_BACKENDS) == 1 and
     AUTHENTICATION_BACKENDS[0] == "zproject.backends.ZulipRemoteUserBackend"):
     HOME_NOT_LOGGED_IN = "/accounts/login/sso"
+    ONLY_SSO = True
 else:
     HOME_NOT_LOGGED_IN = '/login'
 AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
