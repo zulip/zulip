@@ -17,7 +17,8 @@ class zulip_internal::prod_app_frontend {
 
   file { [ "/srv/www/", "/srv/www/dist/", "/srv/www/dist/api",
            "/srv/www/dist/apps/", "/srv/www/dist/apps/mac/",
-           "/srv/www/dist/apps/win/" ]:
+           "/srv/www/dist/apps/win/", "/srv/www/enterprise/",
+           "/srv/www/enterprise/download/" ]:
     ensure => "directory",
     owner      => "zulip",
     group      => "zulip",

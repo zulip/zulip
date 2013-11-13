@@ -52,6 +52,18 @@ server {
         alias /srv/www/dist/;
     }
 
+    # Enterprise downloads
+    location /enterprise/ {
+        alias /srv/www/enterprise/;
+        autoindex on;
+
+        location /enterprise/download {
+            alias /srv/www/enterprise/download;
+            auth_basic "Password needed";
+            auth_basic_user_file /srv/www/enterprise/download/.htpasswd;
+        }
+    }
+
     include /etc/nginx/zulip-include/app;
 }
 
