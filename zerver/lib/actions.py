@@ -2226,8 +2226,9 @@ def convert_html_to_markdown(html):
         try:
             # A body width of 0 means do not try to wrap the text for us.
             p = subprocess.Popen(
-                ["html2text", "--body-width=0"], stdout=subprocess.PIPE,
+                [command, "--body-width=0"], stdout=subprocess.PIPE,
                 stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+            break
         except OSError:
             continue
 
