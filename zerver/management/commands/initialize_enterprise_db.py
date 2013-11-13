@@ -44,7 +44,7 @@ class Command(BaseCommand):
             realms[realm.domain] = realm
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
-        create_users(realms, names)
+        create_users(realms, names, bot=True)
 
         get_client("website")
         get_client("API")

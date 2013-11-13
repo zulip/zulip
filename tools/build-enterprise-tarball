@@ -2,6 +2,13 @@
 
 GITID=$(git rev-parse HEAD)
 
+if [ -z "$1" ]; then
+    echo "Usage: $0 <ZULIP_VERSION>"
+    exit 1
+fi
+version="$1"
+prefix="zulip-server-$version"
+
 if [ "$(uname)" = "Darwin" ]; then
     TMPDIR=/tmp/enterprise-build
     rm -Rf $TMPDIR
@@ -10,11 +17,11 @@ else
     TMPDIR=$(mktemp -d)
 fi
 
-TMP_CHECKOUT=$TMPDIR/zulip-server/
-TARBALL=$TMPDIR/zulip-server.tar
+TMP_CHECKOUT=$TMPDIR/$prefix/
+TARBALL=$TMPDIR/$prefix.tar
 
 # .gitattributes lists the files that are not exported
-git archive -o $TARBALL --prefix=zulip-server/ HEAD
+git archive -o $TARBALL --prefix=$prefix/ HEAD
 
 # Check out a temporary full copy of the index to generate static files
 git checkout-index -f -a --prefix $TMP_CHECKOUT
@@ -33,14 +40,15 @@ EOF
 # update-prod-static generates the prod-static directory.
 # See COLLECTSTATIC in settings.py
 ./tools/update-prod-static
-echo $GITID > version_id
+echo $GITID > build_id
+echo $version > version
 mv update-prod-static.log ..
 
 cd $TMPDIR
 
-tar --append -f $TARBALL zulip-server/prod-static zulip-server/version_id
+tar --append -f $TARBALL $prefix/prod-static $prefix/build_id $prefix/version
 
-rm -r zulip-server
+rm -r $prefix
 
 gzip $TARBALL
 echo "Generated $TARBALL.gz"
