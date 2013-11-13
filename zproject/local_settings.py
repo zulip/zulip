@@ -173,3 +173,7 @@ ZULIP_ADMINISTRATOR = 'support@zulip.com'
 API_SUPER_USERS = set(["tabbott/extra@mit.edu",
                        "irc-bot@zulip.com",
                        "bot1@customer35.invalid"])
+
+ADMINS = (
+    ('Zulip Error Reports', 'errors@zulip.com'),
+)

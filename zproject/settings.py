@@ -49,12 +49,6 @@ elif DEPLOYED:
 else:
     ALLOWED_HOSTS = ['localhost']
 
-ADMINS = (
-    ('Zulip Error Reports', 'errors@zulip.com'),
-)
-
-MANAGERS = ADMINS
-
 DATABASES = {"default": {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
     'NAME': 'zulip',
@@ -262,12 +256,17 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'FEEDBACK_BOT': 'feedback@zulip.com',
                     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
                     'API_SUPER_USERS': set(),
+                    'ADMINS': '',
                     'ENABLE_FEEDBACK': True,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
     if not setting_name in vars():
         vars()[setting_name] = setting_val
+
+if ADMINS == "":
+    ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
+MANAGERS = ADMINS
 
 # These are the settings that manage.py checkconfig will check that
 # user has filled in before starting the app.  It consists of a series
