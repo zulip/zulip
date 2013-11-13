@@ -668,10 +668,11 @@ def home(request):
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = simplejson.encoder.JSONEncoderForHTML().encode(dict(
-        enterprise          = settings.ENTERPRISE,
+        enterprise            = settings.ENTERPRISE,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
+        login_page            = settings.HOME_NOT_LOGGED_IN,
         password_auth_enabled = password_auth_enabled(),
         have_initial_messages = user_has_messages,
         stream_list           = register_ret['subscriptions'],
