@@ -39,11 +39,13 @@ ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 /root/zulip/scripts/setup/configure-rabbitmq
 
 /root/zulip/scripts/setup/postgres-init-db
-/root/zulip/scripts/setup/create-database
 
 deploy_path=$($(dirname $(dirname $0))/unpack-zulip "$tarball")
 ln -nsf "$deploy_path" /home/zulip/deployments/current
 chown -R zulip:zulip /home/zulip/deployments
+
+cd /home/zulip/deployments/current
+su zulip -c /home/zulip/deployments/current/scripts/setup/create-database
 
 chown zulip:zulip /var/run/supervisor.sock
 supervisorctl restart all
