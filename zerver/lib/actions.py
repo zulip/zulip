@@ -2120,13 +2120,13 @@ def clear_followup_emails_queue(email, from_email=None, mail_client=None):
         items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
         if from_email is not None:
             items = [item for item in items
-                     if ujson.loads(item.data).get('from_email') == from_email]
+                     if ujson.loads(item.data).get('from_email').lower() == from_email.lower()]
         items.delete()
         return
 
     # Mandrill implementation
     for email in mail_client.messages.list_scheduled(to=email):
-        if from_email is not None and email.get('from_email') != from_email:
+        if from_email is not None and email.get('from_email').lower() != from_email.lower():
             continue
         result = mail_client.messages.cancel_scheduled(id=email["_id"])
         if result.get("status") == "error":
