@@ -4,7 +4,6 @@ class zulip::postgres_common {
                         # tools for database setup
                         "pgtune",
                         # Python modules used in our monitoring/worker threads
-                        "python-argparse",
                         "python-gevent",
                         "python-tz",
                         "python-dateutil",
