@@ -13,17 +13,17 @@ class zulip::enterprise {
     content => 'deb http://apt.zulip.com/enterprise precise v1',
   }
 
-  file { "/etc/nginx/sites-available/zulip-local":
+  file { "/etc/nginx/sites-available/zulip-enterprise":
     require => Package[nginx],
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/nginx/sites-available/zulip-local",
+    source => "puppet:///modules/zulip/nginx/sites-available/zulip-enterprise",
   }
-  file { '/etc/nginx/sites-enabled/zulip-local':
+  file { '/etc/nginx/sites-enabled/zulip-enterprise':
     ensure => 'link',
-    target => '/etc/nginx/sites-available/zulip-local',
+    target => '/etc/nginx/sites-available/zulip-enterprise',
   }
   file { '/home/zulip/deployments/current':
     ensure => 'link',
