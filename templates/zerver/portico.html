@@ -23,7 +23,7 @@ hence the name.
   </div>
 
   <div class="column-right top-links">
-          <a href="/accounts/login/?next=/">Log in</a>
+          <a href="{{login_url}}">Log in</a>
           {% if enterprise %}
           <a href="{% url 'register' %}">Sign up</a>
           {% else %}
@@ -48,7 +48,7 @@ hence the name.
       <li><span class="little-bullet">·</span></li>
       <li><a href="/terms">Legal</a></li>
       <li><span class="little-bullet">·</span></li>
-      <li><a href="/accounts/login/?next=/">Log in</a></li>
+      <li><a href="{{login_url}}">Log in</a></li>
       <li><span class="little-bullet">·</span></li>
       <li>
           {% if enterprise %}

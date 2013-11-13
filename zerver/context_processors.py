@@ -10,6 +10,7 @@ def add_settings(request):
         'enterprise':    settings.ENTERPRISE,
         'zulip_admin':   settings.ZULIP_ADMINISTRATOR,
         'password_auth_enabled': password_auth_enabled(),
+        'login_url':     settings.HOME_NOT_LOGGED_IN,
     }
 
 def add_metrics(request):
