@@ -140,7 +140,11 @@ EMAIL_GATEWAY_LOGIN = "emailgateway@zulip.com"
 EMAIL_GATEWAY_PASSWORD = "xxxxxxxxxxxxxxxx"
 EMAIL_GATEWAY_IMAP_SERVER = "imap.gmail.com"
 EMAIL_GATEWAY_IMAP_PORT = 993
-EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
+if DEPLOYED:
+    EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
+else:
+    # For local testing, only try to process messages in the Test folder.
+    EMAIL_GATEWAY_IMAP_FOLDER = "Test"
 
 # The email address pattern to use for auto-generated stream emails
 # The %s will be replaced with a unique token, and the resulting email
