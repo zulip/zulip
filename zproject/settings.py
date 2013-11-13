@@ -645,16 +645,6 @@ LOGGING = {
             'interval':    7,
             'backupCount': 100000000,
         },
-        # Django has some hardcoded code to add the
-        # require_debug_false filter to the mail_admins handler if no
-        # filters are specified.  So for testing, one is recommended
-        # to replace the list of filters for mail_admins with 'nop'.
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'zerver.handlers.ZulipAdminEmailHandler',
-            # For testing the handler replace the filters list with just 'nop'
-            'filters': ['EmailLimiter', 'require_debug_false', 'require_really_deployed'],
-        },
     },
     'loggers': {
         '': {
@@ -663,7 +653,7 @@ LOGGING = {
             'propagate': False,
         },
         'django': {
-            'handlers': ['zulip_admins', 'console', 'file', 'mail_admins'],
+            'handlers': ['zulip_admins', 'console', 'file'],
             'level':    'INFO',
             'propagate': False,
         },
