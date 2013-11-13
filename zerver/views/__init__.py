@@ -484,7 +484,7 @@ def remote_user_sso(request):
     if user is None:
         # Since execution has reached here, REMOTE_USER is defined but no
         # user account exists. Send them over to the PreregistrationUser flow.
-        return maybe_send_to_registration(request, remote_user_to_email(user))
+        return maybe_send_to_registration(request, remote_user_to_email(remote_user))
     else:
         login(request, user)
         return HttpResponseRedirect(reverse('zerver.views.home'))
