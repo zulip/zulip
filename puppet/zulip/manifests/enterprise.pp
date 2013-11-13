@@ -32,6 +32,14 @@ class zulip::enterprise {
     group  => 'zulip',
   }
 
+  file { "/etc/cron.d/restart-zulip":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/restart-zulip",
+  }
+
   file { '/etc/postgresql/9.1/main/postgresql.conf.template':
     require => Package["postgresql-9.1"],
     ensure => file,
