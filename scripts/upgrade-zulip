@@ -8,7 +8,7 @@ import shutil
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, WARNING, ENDC
+from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, FAIL, WARNING, ENDC
 
 logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
                     level=logging.INFO)
@@ -38,9 +38,6 @@ if not got_lock:
                + "if the previous deployment crashed." \
                + ENDC
     sys.exit(1)
-
-timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
-deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
 
 logging.info("Unpacking the tarball")
 deploy_path = subprocess.check_output([os.path.join(os.path.dirname(__file__), 'unpack-zulip'),
