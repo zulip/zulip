@@ -8,6 +8,11 @@ class zulip::enterprise {
     source  =>  "http://apt.zulip.com/enterprise.asc",
   }
 
+  apt::sources_list {"zulip":
+    ensure  => present,
+    content => 'deb http://apt.zulip.com/enterprise precise v1',
+  }
+
   file { "/etc/nginx/sites-available/zulip-local":
     require => Package[nginx],
     ensure => file,
