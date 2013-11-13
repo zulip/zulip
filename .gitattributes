@@ -11,3 +11,9 @@
 /templates/corporate export-ignore
 /puppet/zulip_internal export-ignore
 /zproject/local_settings.py export-ignore
+/zproject/test_settings.py export-ignore
+/zerver/fixtures export-ignore
+/zerver/tests.py export-ignore
+/zerver/tests export-ignore
+/node_modules export-ignore
+/humbug export-ignore
