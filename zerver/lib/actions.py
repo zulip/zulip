@@ -58,6 +58,7 @@ import platform
 import logging
 from collections import defaultdict
 import urllib
+import subprocess
 
 # Store an event in the log for re-importing messages
 def log_event(event):
@@ -2190,3 +2191,26 @@ def alias_for_realm(domain):
         return RealmAlias.objects.get(domain=domain)
     except RealmAlias.DoesNotExist:
         return None
+
+def convert_html_to_markdown(html):
+    # On Linux, the tool installs as html2markdown, and there's a command called
+    # html2text that does something totally different. On OSX, the tool installs
+    # as html2text.
+    commands = ["html2markdown", "html2text"]
+
+    for command in commands:
+        try:
+            # A body width of 0 means do not try to wrap the text for us.
+            p = subprocess.Popen(
+                ["html2text", "--body-width=0"], stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+        except OSError:
+            continue
+
+    markdown = p.communicate(input=html)[0].strip()
+    # We want images to get linked and inline previewed, but html2text will turn
+    # them into links of the form `![](http://foo.com/image.png)`, which is
+    # ugly. Run a regex over the resulting description, turning links of the
+    # form `![](http://foo.com/image.png?12345)` into
+    # `[image.png](http://foo.com/image.png)`.
+    return re.sub(r"!\[\]\((\S*)/(\S*)\?(\S*)\)", r"[\2](\1/\2)", markdown)

@@ -27,14 +27,12 @@ import sys
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import decode_email_address
+from zerver.lib.actions import decode_email_address, convert_html_to_markdown
 from zerver.lib.upload import upload_message_image
 from zerver.models import Stream, get_user_profile_by_email, UserProfile
 
 from twisted.internet import protocol, reactor, ssl
 from twisted.mail import imap4
-
-import html2text
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../api"))
 import zulip
@@ -159,10 +157,7 @@ def extract_body(message):
     # If we only have an HTML version, try to make that look nice.
     html_content = get_message_part_by_type(message, "text/html")
     if html_content:
-        converter = html2text.HTML2Text()
-        converter.ignore_links = True
-        converter.ignore_images = True
-        return converter.handle(html_content)
+        return convert_html_to_markdown(html_content)
 
     raise ZulipEmailForwardError("Unable to find plaintext or HTML message body")
 
