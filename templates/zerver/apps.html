@@ -56,10 +56,10 @@
         download <a href="https://zulip.com/dist/apps/mac/Zulip-0.3.8%20NoUpdate.dmg">this version</a> instead.</p></em>
 
         <p style="text-align: center">
-        {% if enterprise %}
-          <a href="https://zulip.com/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
-        {% else %}
+        {% if not_enterprise %}
           <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
+        {% else %}
+          <a href="https://zulip.com/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
         {% endif %}
         </p>
 
@@ -83,10 +83,10 @@ sudo apt-get install zulip-desktop
 
 
         <h3>Other</h3>
-        {% if enterprise %}
-          <p>We provide a <a href="https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.
-        {% else %}
+        {% if not_enterprise %}
           <p>We provide a <a href="https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.
+        {% else %}
+          <p>We provide a <a href="https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.
         {% endif %}
         </p>
       </div>
@@ -100,10 +100,10 @@ sudo apt-get install zulip-desktop
         Solitaire, obviously.)</p>
 
         <p style="text-align: center">
-          {% if enterprise %}
-            <a href="https://zulip.com/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Windows</a>
-          {% else %}
+          {% if not_enterprise %}
             <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Windows</a>
+          {% else %}
+            <a href="https://zulip.com/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Windows</a>
           {% endif %}
         </p>
 

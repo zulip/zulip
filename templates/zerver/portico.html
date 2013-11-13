@@ -24,7 +24,7 @@ hence the name.
 
   <div class="column-right top-links">
           <a href="{{login_url}}">Log in</a>
-          {% if enterprise %}
+          {% if not_enterprise %}
           <a href="{% url 'register' %}">Sign up</a>
           {% else %}
           <a href="{% url 'signup' %}">Sign up</a>
@@ -51,10 +51,10 @@ hence the name.
       <li><a href="{{login_url}}">Log in</a></li>
       <li><span class="little-bullet">·</span></li>
       <li>
-          {% if enterprise %}
-          <a href="{% url 'register' %}">Sign up</a>
-          {% else %}
+          {% if not_enterprise %}
           <a href="{% url 'signup' %}">Sign up</a>
+          {% else %}
+          <a href="{% url 'register' %}">Sign up</a>
           {% endif %}
       </li>
       {# We only want the mixpanel badge on the front page #}

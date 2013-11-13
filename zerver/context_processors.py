@@ -7,7 +7,10 @@ from zproject.backends import password_auth_enabled
 def add_settings(request):
     return {
         'full_navbar':   settings.FULL_NAVBAR,
-        'enterprise':    settings.ENTERPRISE,
+        # We use the not_enterprise variable name so that templates
+        # will render even if the appropriate context is not provided
+        # to the template
+        'not_enterprise':    not settings.ENTERPRISE,
         'zulip_admin':   settings.ZULIP_ADMINISTRATOR,
         'password_auth_enabled': password_auth_enabled(),
         'login_url':     settings.HOME_NOT_LOGGED_IN,
