@@ -704,6 +704,8 @@ POLL_TIMEOUT = 90 * 1000
 # client tests.
 TUTORIAL_ENABLED = True
 
+USING_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
+
 if (len(AUTHENTICATION_BACKENDS) == 1 and
     AUTHENTICATION_BACKENDS[0] == "zproject.backends.ZulipRemoteUserBackend"):
     HOME_NOT_LOGGED_IN = "/accounts/login/sso"
