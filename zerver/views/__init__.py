@@ -255,7 +255,11 @@ def accounts_register(request):
     else:
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            password   = form.cleaned_data['password']
+            if password_auth_enabled():
+                password = form.cleaned_data['password']
+            else:
+                # SSO users don't need no passwords
+                password = None
             full_name  = form.cleaned_data['full_name']
             short_name = email_to_username(email)
             (realm, _) = Realm.objects.get_or_create(domain=domain)
@@ -323,7 +327,10 @@ def accounts_register(request):
                     },
                     lambda event: None)
 
-            login(request, authenticate(username=email, password=password))
+            if settings.ONLY_SSO:
+                login(request, authenticate(remote_user=short_name if settings.SSO_APPEND_DOMAIN else email))
+            else:
+                login(request, authenticate(username=email, password=password))
 
             if first_in_realm:
                 return HttpResponseRedirect(reverse('zerver.views.initial_invite_page'))
