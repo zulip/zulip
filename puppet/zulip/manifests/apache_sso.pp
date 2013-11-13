@@ -1,4 +1,4 @@
-class zulip_internal::apache_sso {
+class zulip::apache_sso {
   include zulip::localhost_sso
 
   $apache_packages = [ "apache2", "libapache2-mod-wsgi", ]
