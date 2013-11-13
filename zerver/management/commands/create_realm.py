@@ -4,6 +4,7 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_realm
+from zerver.models import RealmAlias
 
 if not settings.ENTERPRISE:
     from zilencer.models import Deployment
@@ -48,6 +49,9 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
         # to have valid looking emails.
         if len(domain.split(".")) < 2:
             raise ValueError("Domains must contain a '.'")
+
+        if RealmAlias.objects.filter(domain=domain).count() > 0:
+            raise ValueError("Cannot create a new realm that is already an alias for an existing realm")
 
     def handle(self, *args, **options):
         if options["domain"] is None or options["name"] is None:
