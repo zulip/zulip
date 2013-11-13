@@ -74,28 +74,31 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         </div>
     </div>
 
-    <div class="control-group">
-        <div class="controls">
-            <label class="checkbox">
-                {% comment %}
-                This is somewhat subtle.
-                Checkboxes have a name and value, and when the checkbox is ticked, the form posts
-                with name=value. If the checkbox is unticked, the field just isn't present at all.
 
-                This is distinct from 'checked', which determines whether the checkbox appears
-                at all. (So, it's not symmetric to the code above.)
-                {% endcomment %}
-                <input id="id_terms" class="required" type="checkbox" name="terms"
-                       {% if form.terms.value %}checked="checked"{% endif %} />
-                I agree to the <a href="/terms" target="_blank">Terms of Service</a>.
-            </label>
-            {% if form.terms.errors %}
-                {% for error in form.terms.errors %}
-                    <div class="alert alert-error">{{ error }}</div>
-                {% endfor %}
-            {% endif %}
+    {% if not enterprise %}
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    {% comment %}
+                    This is somewhat subtle.
+                    Checkboxes have a name and value, and when the checkbox is ticked, the form posts
+                    with name=value. If the checkbox is unticked, the field just isn't present at all.
+
+                    This is distinct from 'checked', which determines whether the checkbox appears
+                    at all. (So, it's not symmetric to the code above.)
+                    {% endcomment %}
+                    <input id="id_terms" class="required" type="checkbox" name="terms"
+                           {% if form.terms.value %}checked="checked"{% endif %} />
+                    I agree to the <a href="/terms" target="_blank">Terms of Service</a>.
+                </label>
+                {% if form.terms.errors %}
+                    {% for error in form.terms.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
         </div>
-    </div>
+    {% endif %}
     <div class="control-group">
         <div class="controls">
             <input type="submit" class="btn btn-large btn-primary" value="Register" /><br />

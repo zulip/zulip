@@ -4,6 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 from django.contrib.auth.forms import SetPasswordForm
+from django.conf import settings
 
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     completely_open, email_to_domain, get_realm
@@ -40,7 +41,8 @@ def not_mit_mailing_list(value):
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput, max_length=100)
-    terms = forms.BooleanField(required=True)
+    if not settings.ENTERPRISE:
+        terms = forms.BooleanField(required=True)
 
 class ToSForm(forms.Form):
     full_name = forms.CharField(max_length=100)
