@@ -2,16 +2,9 @@
 
 su postgres -c psql <<EOF
 CREATE USER zulip;
-ALTER USER zulip CREATEDB;
 ALTER ROLE zulip SET search_path TO zulip,public;
-EOF
-
-su postgres -c psql <<EOF
 DROP DATABASE IF EXISTS zulip;
 CREATE DATABASE zulip OWNER=zulip;
-EOF
-
-su postgres -c psql <<EOF
 DROP SCHEMA public CASCADE;
 EOF
 
