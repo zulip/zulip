@@ -42,7 +42,7 @@ ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 
 deploy_path=$($(dirname $(dirname $0))/unpack-zulip "$tarball")
 ln -nsf "$deploy_path" /home/zulip/deployments/current
-chown -R zulip:zulip /home/zulip/deployments /var/log/zulip
+chown -R zulip:zulip /home/zulip/deployments /var/log/zulip /etc/zulip/settings.py
 chown zulip:zulip /var/run/supervisor.sock
 
 cd /home/zulip/deployments/current
