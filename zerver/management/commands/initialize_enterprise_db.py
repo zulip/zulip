@@ -43,16 +43,9 @@ class Command(BaseCommand):
         for realm in Realm.objects.all():
             realms[realm.domain] = realm
 
-        # Create test Users (UserProfiles are automatically created,
-        # as are subscriptions to the ability to receive personals).
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
-        for i in xrange(options["extra_users"]):
-            names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
         create_users(realms, names)
 
-        # Create the "website" and "API" clients; if we don't, the
-        # default values in zerver/decorators.py will not work
-        # with the Django test suite.
         get_client("website")
         get_client("API")
 
@@ -67,5 +60,5 @@ class Command(BaseCommand):
         self.stdout.write("Successfully populated database with initial data.\n")
 
     site = Site.objects.get_current()
-    site.domain = 'zulip.com'
+    site.domain = settings.EXTERNAL_HOST
     site.save()
