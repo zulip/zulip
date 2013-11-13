@@ -110,8 +110,6 @@ class ZulipEmailForwardError(Exception):
     pass
 
 def send_zulip(stream, topic, content):
-    # TODO: restrictions on who can send? Consider: cross-realm
-    # messages, private streams.
     if stream.realm.domain != 'zulip.com' and not settings.ENTERPRISE:
         client = prod_api_client
     else:
@@ -119,7 +117,6 @@ def send_zulip(stream, topic, content):
 
     message_data = {
         "type": "stream",
-        # TODO: handle rich formatting.
         "content": content[:2000],
         "subject": topic[:60],
         "to": stream.name,
