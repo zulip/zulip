@@ -896,9 +896,14 @@ $(function () {
     $('.modal-body, .scrolling_list, input, textarea').mousewheel(function (e, delta) {
         var self = $(this);
         var scroll = self.scrollTop();
+
+        // The -1 fudge factor is important here due to rounding errors.  Better
+        // to err on the side of not scrolling.
+        var max_scroll = this.scrollHeight - self.innerHeight() - 1;
+
         e.stopPropagation();
         if (   ((delta > 0) && (scroll <= 0))
-            || ((delta < 0) && (scroll >= (this.scrollHeight - self.innerHeight())))) {
+            || ((delta < 0) && (scroll >= max_scroll))) {
             e.preventDefault();
         }
     });
