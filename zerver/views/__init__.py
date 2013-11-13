@@ -1931,6 +1931,9 @@ def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
                       href=REQ, log=REQ,
                       more_info=REQ(converter=json_to_dict, default=None)):
 
+    if not settings.ERROR_REPORTING:
+        return json_success()
+
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 

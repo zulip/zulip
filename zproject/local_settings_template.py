@@ -45,6 +45,10 @@ EMAIL_USE_TLS = True
 # which can be used to send feedback directly to Zulip
 ENABLE_FEEDBACK = True
 
+# Control whether or not error reports are sent to Zulip. Error reports
+# do not include message content.
+ERROR_REPORTING = True
+
 # By default uploaded files and avatars are stored directly on the Zulip server
 # If file storage to Amazon S3 is desired, please contact Zulip Support
 # (support@zulip.com) for further instructions on setting up S3 integration

@@ -245,6 +245,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'MAILCHIMP_API_KEY': '',
                     'LOCAL_UPLOADS_DIR': None,
                     'DROPBOX_APP_KEY': '',
+                    'ERROR_REPORTING': True,
                     # The following bots only exist in non-ENTERPRISE installs
                     'ERROR_BOT': None,
                     'NEW_USER_BOT': None,
@@ -653,7 +654,8 @@ LOGGING = {
             'propagate': False,
         },
         'django': {
-            'handlers': ['zulip_admins', 'console', 'file'],
+            'handlers': (['zulip_admins'] if ERROR_REPORTING else [])
+                        + ['console', 'file'],
             'level':    'INFO',
             'propagate': False,
         },
