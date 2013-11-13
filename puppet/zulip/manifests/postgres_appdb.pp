@@ -35,6 +35,14 @@ class zulip::postgres_appdb {
     notify => Service[supervisor],
   }
 
+  file { '/usr/share/postgresql/9.1/tsearch_data/en_us.dict':
+    ensure => 'link',
+    target => '/var/cache/postgresql/dicts/en_us.dict',
+  }
+  file { '/usr/share/postgresql/9.1/tsearch_data/en_us.affix':
+    ensure => 'link',
+    target => '/var/cache/postgresql/dicts/en_us.affix',
+  }
   file { "/usr/share/postgresql/9.1/tsearch_data/zulip_english.stop":
     require => Package["postgresql-9.1"],
     ensure => file,

@@ -1,8 +1,5 @@
 #!/bin/sh -xe
 
-ln -s /var/cache/postgresql/dicts/en_us.dict /usr/share/postgresql/9.1/tsearch_data/en_us.dict
-ln -s /var/cache/postgresql/dicts/en_us.affix /usr/share/postgresql/9.1/tsearch_data/en_us.affix
-
 echo "DROP SCHEMA zulip CASCADE; CREATE SCHEMA zulip;" | python manage.py dbshell
 
 python manage.py syncdb --noinput
