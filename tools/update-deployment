@@ -8,7 +8,7 @@ import shutil
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, WARNING, ENDC
+from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, FAIL, WARNING, ENDC, make_deploy_path
 
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
                     level=logging.INFO)
@@ -40,8 +40,7 @@ if not got_lock:
                + "manually when the current deployment finishes." + ENDC
     sys.exit(1)
 
-timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
-deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
+deploy_path = make_deploy_path()
 
 logging.info("Cloning the repository")
 subprocess.check_call(["git", "clone", "-q", "-b", refname,
