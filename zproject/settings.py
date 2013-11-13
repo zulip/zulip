@@ -270,6 +270,21 @@ for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
     if not setting_name in vars():
         vars()[setting_name] = setting_val
 
+# These are the settings that manage.py checkconfig will check that
+# user has filled in before starting the app.  It consists of a series
+# of pairs of (setting name, default value that it must be changed from)
+REQUIRED_SETTINGS = [("EXTERNAL_HOST", ""),
+                     ("ZULIP_ADMINISTRATOR", ""),
+                     ("ADMIN_DOMAIN", ""),
+                     ("DEPLOYMENT_ROLE_NAME", ""),
+                     ("DEPLOYMENT_ROLE_KEY", ""),
+                     # SECRET_KEY doesn't really need to be here, in
+                     # that we set it automatically, but just in
+                     # case, it seems worth having in this list
+                     ("SECRET_KEY", ""),
+                     ("AUTHENTICATION_BACKENDS", ()),
+                     ]
+
 REALM_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
                 'email_template': 'notification-bot@%s',
                 'name': 'Notification Bot'},

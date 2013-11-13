@@ -1,8 +1,15 @@
-#!/bin/sh -xe
+#!/bin/bash -xe
+
+# Change to root directory of the checkout that we're running from
+cd $(dirname $0)/../..
 
 echo "DROP SCHEMA zulip CASCADE; CREATE SCHEMA zulip;" | python manage.py dbshell
+
+python manage.py checkconfig
 
 python manage.py syncdb --noinput
 python manage.py migrate
 python manage.py createcachetable third_party_api_results
 python manage.py initialize_enterprise_db
+
+supervisorctl restart all

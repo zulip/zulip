@@ -43,16 +43,19 @@ ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 deploy_path=$($(dirname $(dirname $0))/unpack-zulip "$tarball")
 ln -nsf "$deploy_path" /home/zulip/deployments/current
 chown -R zulip:zulip /home/zulip/deployments /var/log/zulip
+chown zulip:zulip /var/run/supervisor.sock
 
 cd /home/zulip/deployments/current
-su zulip -c /home/zulip/deployments/current/scripts/setup/create-database
-
-chown zulip:zulip /var/run/supervisor.sock
-supervisorctl restart all
 
 set +x
 cat <<EOF
 
- Done.
+ Installation complete!
+
+ Now edit /etc/zulip/settings.py and fill in the mandatory values.
+
+ Once you've done that, please run:
+
+ su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 
 EOF
