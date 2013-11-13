@@ -5,13 +5,14 @@ class zulip_internal::postgres_common {
                                  "python-boto",
                                  "lzop",
                                  "pv",
+                                 "python-pip",
                                  ]
   package { $internal_postgres_packages: ensure => "installed" }
 
   exec {"pip_wal-e":
     command  => "/usr/bin/pip install git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",
     creates  => "/usr/local/bin/wal-e",
-    require  => Package['python-pip', 'python-boto', 'python-argparse',
+    require  => Package['python-pip', 'python-boto',
                         'python-gevent', 'lzop', 'pv'],
   }
 
