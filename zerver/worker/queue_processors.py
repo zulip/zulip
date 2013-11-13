@@ -209,7 +209,7 @@ class FeedbackBot(QueueProcessingWorker):
     def consume(self, event):
         self.staging_client.forward_feedback(event)
 
-@assign_queue('slow_queries', enabled=settings.ERROR_BOT is not None)
+@assign_queue('slow_queries')
 class SlowQueryWorker(QueueProcessingWorker):
     def start(self):
         while True:
