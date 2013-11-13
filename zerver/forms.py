@@ -46,6 +46,11 @@ class ToSForm(forms.Form):
     full_name = forms.CharField(max_length=100)
     terms = forms.BooleanField(required=True)
 
+class EnterpriseToSForm(forms.Form):
+    full_name = forms.CharField(max_length=100)
+    company = forms.CharField(max_length=100)
+    terms = forms.BooleanField(required=True)
+
 class HomepageForm(forms.Form):
     # This form is important because it determines whether users can
     # register for our product. Be careful when modifying the

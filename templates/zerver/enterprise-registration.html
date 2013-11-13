@@ -1,0 +1,60 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
+
+<h2>Zuip Enterprise Edition</h2>
+
+<form method="post" class="form-horizontal" id="registration"
+      action="{% url 'zerver.views.enterprise_registration' %}">
+{% csrf_token %}
+    <div class="control-group">
+        <label for="id_full_name" class="control-label">Name</label>
+        <div class="controls">
+            <input id="id_full_name" class="required" type="text" name="full_name"
+                   value="{% if form.full_name.value %}{{ form.full_name.value }}{% elif full_name %}{{ full_name }}{% endif %}"
+                   maxlength="100" />
+            {% if form.full_name.errors %}
+                {% for error in form.full_name.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label for="id_company" class="control-label">Company</label>
+        <div class="controls">
+            <input id="id_company" class="required" type="text" name="company"
+                   value="{% if form.company.value %}{{ form.company.value }}{% elif company %}{{ company }}{% endif %}"
+                   maxlength="100" />
+            {% if form.company.errors %}
+                {% for error in form.company.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="controls">
+            <label class="checkbox">
+                <input id="id_terms" class="required" type="checkbox" name="terms"
+                       {% if form.terms.value %}checked="checked"{% endif %} />
+                I agree to the <a href="/terms-enterprise" target="_blank">Enterprise Terms of Service</a>.
+            </label>
+            {% if form.terms.errors %}
+                {% for error in form.terms.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" class="btn btn-large btn-primary" value="Download Zulip Enterprise Edition" /><br />
+            <input type="hidden" name="next" value="{{ next }}" />
+        </div>
+    </div>
+</form>
+
+{% endblock %}

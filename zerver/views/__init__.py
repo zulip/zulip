@@ -42,8 +42,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, alias_for_realm
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
-from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
-    is_inactive
+from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
+    EnterpriseToSForm, CreateBotForm, is_inactive
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
@@ -362,6 +362,25 @@ def accounts_accept_terms(request):
         form = ToSForm()
     return render_to_response('zerver/accounts_accept_terms.html',
         { 'form': form, 'company_name': domain, 'email': email },
+        context_instance=RequestContext(request))
+
+def enterprise_registration(request):
+    if request.method == "POST":
+        form = EnterpriseToSForm(request.POST)
+        if form.is_valid():
+            company = form.cleaned_data["company"]
+            name = form.cleaned_data["full_name"]
+            subject = "Enterprise terms acceptance for " + company
+            body = loader.render_to_string(
+                "zerver/enterprise_tos_accept_body.txt",
+                {"name": name, "company": company})
+            send_mail(subject, body, settings.EMAIL_HOST_USER,
+                      ["support@zulip.com"])
+            return redirect("https://zulip.com/enterprise/download")
+    else:
+        form = EnterpriseToSForm()
+    return render_to_response(
+        "zerver/enterprise-registration.html", {"form": form},
         context_instance=RequestContext(request))
 
 from zerver.lib.ccache import make_ccache
