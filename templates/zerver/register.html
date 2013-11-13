@@ -49,31 +49,33 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
         </div>
     </div>
-    <div class="control-group">
-        <label for="id_password" class="control-label">Password</label>
-        <div class="controls">
-            <input id="id_password" class="required" type="password" name="password"
-                   value="{% if form.password.value %}{{ form.password.value }}{% endif %}"
-                   maxlength="100" />
-            {% if full_name %}
-            <span class="help-inline">This is used for mobile applications and other tools that don't support Google Apps authentication.</span>
-            {% endif %}
-            {% if form.password.errors %}
-                {% for error in form.password.errors %}
-                    <div class="alert alert-error">{{ error }}</div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </div>
-    <div class="control-group">
-        <label class="control-label">Password strength</label>
-        <div class="controls">
-            <div class="progress" id="pw_strength">
-                <div class="bar bar-danger" style="width: 10%;"></div>
+    {% if password_auth_enabled %}
+        <div class="control-group">
+            <label for="id_password" class="control-label">Password</label>
+            <div class="controls">
+                <input id="id_password" class="required" type="password" name="password"
+                       value="{% if form.password.value %}{{ form.password.value }}{% endif %}"
+                       maxlength="100" />
+                {% if full_name %}
+                <span class="help-inline">This is used for mobile applications and other tools that don't support Google Apps authentication.</span>
+                {% endif %}
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
-    </div>
+        <div class="control-group">
+            <label class="control-label">Password strength</label>
+            <div class="controls">
+                <div class="progress" id="pw_strength">
+                    <div class="bar bar-danger" style="width: 10%;"></div>
+                </div>
+            </div>
+        </div>
 
+    {% endif %}
 
     {% if not enterprise %}
         <div class="control-group">

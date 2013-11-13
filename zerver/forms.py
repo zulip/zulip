@@ -9,6 +9,7 @@ from django.conf import settings
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     completely_open, email_to_domain, get_realm
 from zerver.lib.actions import do_change_password, alias_for_realm
+from zproject.backends import password_auth_enabled
 import DNS
 
 def is_inactive(value):
@@ -40,7 +41,8 @@ def not_mit_mailing_list(value):
 
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=100)
-    password = forms.CharField(widget=forms.PasswordInput, max_length=100)
+    if password_auth_enabled():
+        password = forms.CharField(widget=forms.PasswordInput, max_length=100)
     if not settings.ENTERPRISE:
         terms = forms.BooleanField(required=True)
 
