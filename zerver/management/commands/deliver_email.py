@@ -69,7 +69,7 @@ Run this command under supervisor. We use Mandrill for our deploy; this is for Z
 Usage: python manage.py deliver_email
 """
 
-    def handle(self):
+    def handle(self, *args, **options):
         # TODO: this only acquires a lock on the system, not on the DB:
         # be careful not to run this on multiple systems.
         with lockfile("/tmp/zulip_email_deliver.lockfile"):

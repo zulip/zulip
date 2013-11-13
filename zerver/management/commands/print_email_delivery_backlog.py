@@ -23,7 +23,7 @@ Please note that this is only currently useful for Zulip Enterprise deploys.
 Usage: python manage.py print_email_delivery_backlog
 """
 
-    def handle(self):
+    def handle(self, *args, **options):
         print len(ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
                                                   scheduled_timestamp__lte=datetime.utcnow()-timedelta(minutes=1)))
         return
