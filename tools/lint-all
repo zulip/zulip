@@ -121,6 +121,7 @@ def check_pyflakes():
         for ln in pipe:
             if options.full or not \
                     ('imported but unused' in ln or
+                     'redefinition of unused' in ln or
                      ("zephyr_mirror_backend.py:" in ln and
                       "redefinition of unused 'simplejson' from line" in ln)):
                 sys.stdout.write(ln)
