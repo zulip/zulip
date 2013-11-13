@@ -25,7 +25,10 @@ def cache_get_message(message_id):
     return Message.objects.select_related().get(id=message_id)
 
 def message_fetch_objects():
-    max_id = Message.objects.only('id').order_by("-id")[0].id
+    try:
+        max_id = Message.objects.only('id').order_by("-id")[0].id
+    except IndexError:
+        return []
     return Message.objects.select_related().filter(~Q(sender__email='tabbott/extra@mit.edu'),
                                                     id__gt=max_id - MESSAGE_CACHE_SIZE)
 
