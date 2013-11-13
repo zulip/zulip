@@ -166,7 +166,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
 ANONYMOUS_USER_ID = None
 
 AUTH_USER_MODEL = "zerver.UserProfile"
@@ -708,7 +707,13 @@ POLL_TIMEOUT = 90 * 1000
 # client tests.
 TUTORIAL_ENABLED = True
 
-HOME_NOT_LOGGED_IN = '/login'
+if (len(AUTHENTICATION_BACKENDS) == 1 and
+    AUTHENTICATION_BACKENDS[0] == "zproject.backends.ZulipRemoteUserBackend"):
+    HOME_NOT_LOGGED_IN = "/accounts/login/sso"
+else:
+    HOME_NOT_LOGGED_IN = '/login'
+AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
+
 if DEPLOYED:
     FULL_NAVBAR    = False
 else:
