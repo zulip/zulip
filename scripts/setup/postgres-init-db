@@ -8,7 +8,7 @@ EOF
 
 su postgres -c psql <<EOF
 DROP DATABASE IF EXISTS zulip;
-CREATE DATABASE zulip;
+CREATE DATABASE zulip OWNER=zulip;
 EOF
 
 su postgres -c psql <<EOF
