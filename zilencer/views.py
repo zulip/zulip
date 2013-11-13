@@ -27,7 +27,7 @@ def get_ticket_number():
 def submit_feedback(request, deployment, message=REQ(converter=json_to_dict)):
     domainish = message["sender_domain"]
     if get_realm("zulip.com") not in deployment.realms.all():
-        domainish += " via " + deployment.realms.get(0).domain
+        domainish += " via " + deployment.name
     subject = "feedback: %s (%s)" % (message["sender_email"], domainish)
 
     if len(subject) > 60:

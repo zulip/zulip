@@ -18,3 +18,11 @@ class Deployment(models.Model):
     @property
     def endpoints(self):
         return {'base_api_url': self.base_api_url, 'base_site_url': self.base_site_url}
+
+    @property
+    def name(self):
+        # TODO: This only does the right thing for prod because prod authenticates to
+        # staging with the zulip.com deployment key, while staging is technically the
+        # deployment for the zulip.com realm.
+        # This also doesn't necessarily handle other multi-realm deployments correctly.
+        return self.realms.order_by('pk')[0].domain
