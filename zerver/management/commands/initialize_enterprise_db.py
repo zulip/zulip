@@ -37,7 +37,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, **options):
-        zulip_realm = Realm.objects.create(domain="zulip.com")
+        Realm.objects.create(domain="zulip.com")
         Realm.objects.create(domain=settings.ADMIN_DOMAIN)
         realms = {}
         for realm in Realm.objects.all():
@@ -45,29 +45,10 @@ class Command(BaseCommand):
 
         # Create test Users (UserProfiles are automatically created,
         # as are subscriptions to the ability to receive personals).
-        names = [("Othello, the Moor of Venice", "othello@zulip.com"), ("Iago", "iago@zulip.com"),
-                 ("Prospero from The Tempest", "prospero@zulip.com"),
-                 ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com")]
+        names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
         for i in xrange(options["extra_users"]):
             names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
         create_users(realms, names)
-        # Create public streams.
-        stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
-        create_streams(realms, zulip_realm, stream_list)
-        recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list]
-
-        # Create subscriptions to streams
-        # TODO: Replace this with something nonrandom
-        subscriptions_to_add = []
-        profiles = UserProfile.objects.select_related().all()
-        for i, profile in enumerate(profiles):
-            # Subscribe to some streams.
-            for type_id in recipient_streams[:int(len(recipient_streams) *
-                                                  float(i)/len(profiles)) + 1]:
-                r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
-                s = Subscription(recipient=r, user_profile=profile)
-                subscriptions_to_add.append(s)
-        Subscription.objects.bulk_create(subscriptions_to_add)
 
         # Create the "website" and "API" clients; if we don't, the
         # default values in zerver/decorators.py will not work

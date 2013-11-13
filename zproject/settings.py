@@ -258,7 +258,10 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'NAGIOS_STAGING_RECEIVE_BOT': None,
                     'APNS_CERT_FILE': None,
                     'ZULIP_ADMINISTRATOR': '',
-                    'INITIAL_PASSWORD_SALT': None
+                    'INITIAL_PASSWORD_SALT': None,
+                    'FEEDBACK_BOT': 'feedback@zulip.com',
+                    'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
+                    'ENABLE_FEEDBACK': True
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
