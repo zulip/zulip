@@ -213,23 +213,24 @@ class FeedbackBot(QueueProcessingWorker):
 class SlowQueryWorker(QueueProcessingWorker):
     def start(self):
         while True:
-            if settings.ERROR_BOT is None:
-                time.sleep(1 * 60)
-                continue
-
-            slow_queries = self.q.drain_queue("slow_queries", json=True)
-
-            if len(slow_queries) > 0:
-                topic = "%s: slow queries" % (settings.STATSD_PREFIX,)
-
-                content = ""
-                for query in slow_queries:
-                    content += "    %s\n" % (query,)
-
-                internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
-
+            self.process_one_batch()
             # Aggregate all slow query messages in 1-minute chunks to avoid message spam
             time.sleep(1 * 60)
+
+    def process_one_batch(self):
+        if settings.ERROR_BOT is None:
+            return
+
+        slow_queries = self.q.drain_queue("slow_queries", json=True)
+
+        if len(slow_queries) > 0:
+            topic = "%s: slow queries" % (settings.STATSD_PREFIX,)
+
+            content = ""
+            for query in slow_queries:
+                content += "    %s\n" % (query,)
+
+            internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
 
 @assign_queue("message_sender")
 class MessageSenderWorker(QueueProcessingWorker):
