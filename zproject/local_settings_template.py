@@ -5,11 +5,30 @@ EXTERNAL_HOST = ''
 
 # This is the Zulip Administrator email address
 ZULIP_ADMINISTRATOR = ''
+
+# This is the domain for your organization
 ADMIN_DOMAIN = ''
 
 # These credentials are for communication with the central Zulip deployment manager
 DEPLOYMENT_ROLE_NAME = ''
 DEPLOYMENT_ROLE_KEY = ''
+
+# Enable at least one of the following authentication backends.
+AUTHENTICATION_BACKENDS = (
+#                           'zproject.backends.EmailAuthBackend', # Email and password
+#                           'zerver.views.remote_user_sso', # Local SSO
+#                           'zproject.backends.GoogleBackend', # Google Apps
+    )
+
+# When using SSO: If REMOTE_USER only provides a username, append this domain
+# to the returned value.
+SSO_APPEND_DOMAIN = None
+
+# Make session cookies expire when the browser closes
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Session cookie expiry in seconds after the last page load
+SESSION_COOKIE_AGE = 1209600 # 2 weeks
 
 # Configure the outgoing SMTP server below. For outgoing email
 # via a GMail SMTP server, EMAIL_USE_TLS must be True and the
@@ -65,23 +84,6 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 # The IMAP folder name to check for emails. All emails sent to EMAIL_GATEWAY_PATTERN above
 # must be delivered to this folder
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
-
-# When using SSO: If REMOTE_USER only provides a username, append this domain
-# to the returned value.
-SSO_APPEND_DOMAIN = None
-
-# Enable at least one of the following authentication backends.
-AUTHENTICATION_BACKENDS = (
-#                           'zproject.backends.EmailAuthBackend', # Email and password
-#                           'zerver.views.remote_user_sso', # Local SSO
-#                           'zproject.backends.GoogleBackend', # Google Apps
-    )
-
-# Make session cookies expire when the browser closes
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-
-# Session cookie expiry in seconds after the last page load
-SESSION_COOKIE_AGE = 1209600 # 2 weeks
 
 # The following keys are automatically generated during the install process
 # PLEASE DO NOT EDIT THEM
