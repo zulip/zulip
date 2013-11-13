@@ -1,0 +1,50 @@
+#/bin/sh -xe
+
+ROOT_POSTGRES="sudo -u postgres psql"
+DEFAULT_DB=""
+if [ "$(uname)" = "Darwin" ]; then
+   ROOT_POSTGRES="psql"
+   DEFAULT_DB="postgres"
+fi
+
+if [[ $# == 0 ]]; then
+    USERNAME=zulip
+    PASSWORD=$($(dirname $0)/../../bin/get-django-setting LOCAL_DATABASE_PASSWORD)
+    DBNAME=zulip
+    SEARCH_PATH="$USERNAME",public
+elif [[ $# == 4 ]]; then
+    USERNAME=$1
+    PASSWORD=$2
+    DBNAME=$3
+    SEARCH_PATH=$4
+else
+    echo "Usage Instructions"
+    echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
+    echo "or specify <db-username> <password> <db-name> <user-schema-search-path>"
+    exit
+fi
+
+
+$ROOT_POSTGRES $DEFAULT_DB << EOF
+CREATE USER $USERNAME WITH PASSWORD '$PASSWORD';
+ALTER USER $USERNAME CREATEDB;
+ALTER ROLE $USERNAME SET search_path TO $SEARCH_PATH;
+EOF
+
+umask go-rw
+echo "*:*:*:$USERNAME:$PASSWORD" >> ~/.pgpass
+chmod go-rw ~/.pgpass
+
+psql -h localhost postgres $USERNAME <<EOF
+DROP DATABASE IF EXISTS $DBNAME;
+CREATE DATABASE $DBNAME;
+EOF
+
+DEFAULT_DB=$DBNAME
+
+$ROOT_POSTGRES $DEFAULT_DB << EOF
+DROP SCHEMA public CASCADE;
+EOF
+
+echo "Database created"
+
