@@ -218,10 +218,10 @@ class SlowQueryWorker(QueueProcessingWorker):
             time.sleep(1 * 60)
 
     def process_one_batch(self):
+        slow_queries = self.q.drain_queue("slow_queries", json=True)
+
         if settings.ERROR_BOT is None:
             return
-
-        slow_queries = self.q.drain_queue("slow_queries", json=True)
 
         if len(slow_queries) > 0:
             topic = "%s: slow queries" % (settings.STATSD_PREFIX,)
