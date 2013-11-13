@@ -429,18 +429,22 @@ exports.resize_page_components = function () {
     tab_bar_under.width(desired_width);
 
     var h;
+    var sidebar;
 
     if (viewport.width() < 975 && feature_flags.left_side_userlist && !narrow_window) {
         narrow_window = true;
         popovers.set_userlist_placement("left");
-        $(".bottom_sidebar").append($("#user-list")).append($("#share-the-love"));
+        sidebar = $(".bottom_sidebar").expectOne();
+        sidebar.append($("#user-list").expectOne());
+        sidebar.append($("#share-the-love").expectOne());
         $("#user_presences").css("margin", "0px");
         $("#userlist-toggle").css("display", "none");
     }
     else if (viewport.width() > 975 && feature_flags.left_side_userlist && narrow_window) {
         narrow_window = false;
         popovers.set_userlist_placement("right");
-        $("#right-sidebar").append($("#user-list"));
+        sidebar = $("#right-sidebar").expectOne();
+        sidebar.append($("#user-list").expectOne());
         $("#user_presences").css("margin", '');
         $("#userlist-toggle").css("display", '');
     }
