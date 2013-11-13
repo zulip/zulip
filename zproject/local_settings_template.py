@@ -16,7 +16,7 @@ DEPLOYMENT_ROLE_KEY = ''
 # Enable at least one of the following authentication backends.
 AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.EmailAuthBackend', # Email and password
-#                           'zerver.views.remote_user_sso', # Local SSO
+#                           'zproject.backends.ZulipRemoteUserBackend', # Local SSO
 #                           'zproject.backends.GoogleBackend', # Google Apps
     )
 
