@@ -72,7 +72,8 @@ DATABASES = {"default": {
 
 if ENTERPRISE:
     DATABASES["default"].update({
-            'HOST': 'localhost',
+            # Host = '' => connect through a local socket
+            'HOST': '',
             'OPTIONS': {
                 'autocommit': True,
             }
