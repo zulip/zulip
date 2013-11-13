@@ -471,7 +471,8 @@ def maybe_send_to_registration(request, email, full_name=''):
             # Explanation: http://stackoverflow.com/a/5605354/90777
             urllib.quote_plus(full_name.encode('utf8')))))
     else:
-        return render_to_response('zerver/accounts_home.html', {'form': form})
+        return render_to_response('zerver/accounts_home.html', {'form': form},
+                                  context_instance=RequestContext(request))
 
 def remote_user_sso(request):
     try:
