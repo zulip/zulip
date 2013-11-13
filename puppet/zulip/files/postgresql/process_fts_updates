@@ -27,7 +27,7 @@ logger.setLevel(logging.DEBUG)
 
 logger.info("process_fts_updates starting")
 
-conn = psycopg2.connect("host=localhost user=zulip")
+conn = psycopg2.connect("user=zulip")
 cursor = conn.cursor()
 
 conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
