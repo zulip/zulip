@@ -346,11 +346,52 @@ function get_new_heights() {
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(40, res.stream_filters_max_height);
 
-    res.user_presences_max_height = res.right_sidebar_height
-                                    - $("#feedback_section").outerHeight(true)
-                                    - parseInt($("#user_presences").css("marginTop"),10)
-                                    - parseInt($("#user_presences").css("marginBottom"), 10)
-                                    - invite_user_link_height;
+    // RIGHT SIDEBAR
+    var user_presences = $('#user_presences').expectOne();
+    var group_pms = $('#group-pms').expectOne();
+
+    var usable_height =
+        res.right_sidebar_height
+        - $("#feedback_section").outerHeight(true)
+        - parseInt(user_presences.css("marginTop"),10)
+        - parseInt(user_presences.css("marginBottom"), 10)
+        - $("#userlist-header").outerHeight(true)
+        - invite_user_link_height
+        - parseInt(group_pms.css("marginTop"),10)
+        - parseInt(group_pms.css("marginBottom"), 10)
+        - $("#group-pm-header").outerHeight(true);
+
+    var blocks = [
+        {
+            real_height: user_presences.prop('scrollHeight')
+        },
+        {
+            real_height: group_pms.prop('scrollHeight')
+        }
+    ];
+
+    var sum_height = blocks[0].real_height + blocks[1].real_height;
+    if (sum_height < usable_height) {
+        blocks[0].max_height = blocks[0].real_height;
+        blocks[1].max_height = blocks[1].real_height;
+    } else {
+        var ratio = (blocks[0].real_height) / sum_height;
+        ratio = Math.max(0.2, ratio);
+        ratio = Math.min(0.8, ratio);
+        blocks[0].max_height = Math.max(40, usable_height * ratio);
+        blocks[0].max_height = Math.min(blocks[0].real_height, blocks[0].max_height);
+
+        blocks[1].max_height = usable_height - blocks[0].max_height;
+
+        var wasted_space = blocks[1].max_height - blocks[1].real_height;
+        if (wasted_space > 0) {
+            blocks[0].max_height += wasted_space;
+            blocks[1].max_height -= wasted_space;
+        }
+    }
+
+    res.user_presences_max_height = blocks[0].max_height;
+    res.group_pms_max_height = blocks[1].max_height;
 
     return res;
 }
@@ -411,6 +452,8 @@ function left_userlist_get_new_heights() {
     res.viewport_height = viewport_height;
     res.viewport_width = viewport_width;
 
+    res.group_pms_max_height = 0;
+
     return res;
 }
 
@@ -459,6 +502,7 @@ exports.resize_page_components = function () {
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
     $("#stream_filters").css('max-height', h.stream_filters_max_height);
     $("#user_presences").css('max-height', h.user_presences_max_height);
+    $("#group-pms").css('max-height', h.group_pms_max_height);
 };
 
 function resizehandler(e) {
