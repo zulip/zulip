@@ -22,6 +22,10 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
+# Control whether or not there is a feedback button in the UI,
+# which can be used to send feedback directly to Zulip
+ENABLE_FEEDBACK = True
+
 # By default uploaded files and avatars are stored directly on the Zulip server
 # If file storage to Amazon S3 is desired, please contact Zulip Support
 # (support@zulip.com) for further instructions on setting up S3 integration

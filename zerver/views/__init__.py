@@ -725,6 +725,7 @@ def home(request):
                                    'show_invites': show_invites,
                                    'show_admin': user_profile.show_admin,
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
+                                   'enable_feedback': settings.ENABLE_FEEDBACK
                                    },
                                   context_instance=RequestContext(request))
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
