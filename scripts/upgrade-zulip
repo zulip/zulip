@@ -6,10 +6,10 @@ import logging
 import datetime
 import shutil
 import time
-import pwd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, FAIL, WARNING, ENDC
+from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, FAIL, WARNING, ENDC, \
+    su_to_zulip
 
 logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
                     level=logging.INFO)
@@ -43,11 +43,6 @@ if not got_lock:
                + "if the previous deployment crashed." \
                + ENDC
     sys.exit(1)
-
-def su_to_zulip():
-    pwent = pwd.getpwnam("zulip")
-    os.setgid(pwent.pw_gid)
-    os.setuid(pwent.pw_uid)
 
 logging.info("Unpacking the tarball")
 deploy_path = subprocess.check_output([os.path.join(os.path.dirname(__file__), 'unpack-zulip'),

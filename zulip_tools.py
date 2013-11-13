@@ -2,6 +2,7 @@
 import os
 import sys
 import datetime
+import pwd
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -13,6 +14,11 @@ OKGREEN = '\033[92m'
 WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
+
+def su_to_zulip():
+    pwent = pwd.getpwnam("zulip")
+    os.setgid(pwent.pw_gid)
+    os.setuid(pwent.pw_uid)
 
 def make_deploy_path():
     timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
