@@ -981,7 +981,10 @@ function get_updates(options) {
                 reload.initiate({immediate: true});
             }
 
-            if (error_type === 'timeout') {
+            if (error_type === 'abort') {
+                // Don't restart if we explicitly aborted
+                return;
+            } else if (error_type === 'timeout') {
                 // Retry indefinitely on timeout.
                 get_updates_failures = 0;
                 $('#connection-error').hide();
