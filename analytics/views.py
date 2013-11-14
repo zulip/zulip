@@ -114,6 +114,10 @@ def realm_summary_table(realm_minutes):
         except:
             pass
 
+    # formatting
+    for row in rows:
+        row['domain'] = realm_activity_link(row['domain'])
+
     # create totals
     total_active_user_count = 0
     total_user_profile_count = 0
