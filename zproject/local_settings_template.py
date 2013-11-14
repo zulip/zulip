@@ -20,8 +20,10 @@ AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.GoogleBackend', # Google Apps
     )
 
-# When using SSO: If REMOTE_USER only provides a username, append this domain
-# to the returned value.
+# If you are using the zproject.backends.ZulipRemoteUserBackend
+# authentication backend, set this to example.com if REMOTE_USER is
+# "username" and the corresponding email address is
+# "username@example.com".
 SSO_APPEND_DOMAIN = None
 
 # Make session cookies expire when the browser closes
