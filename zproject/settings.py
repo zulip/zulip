@@ -285,23 +285,25 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", ""),
                      ("AUTHENTICATION_BACKENDS", ()),
                      ]
 
-REALM_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
-                'email_template': 'notification-bot@%s',
-                'name': 'Notification Bot'},
-               {'var_name': 'EMAIL_GATEWAY_BOT',
-                'email_template': 'emailgateway@%s',
-                'name': 'Email Gateway'},
-               {'var_name': 'NAGIOS_SEND_BOT',
-                'email_template': 'nagios-send-bot@%s',
-                'name': 'Nagios Send Bot'},
-               {'var_name': 'NAGIOS_RECEIVE_BOT',
-                'email_template': 'nagios-receive-bot@%s',
-                'name': 'Nagios Receive Bot'} ]
+INTERNAL_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
+                   'email_template': 'notification-bot@%s',
+                   'name': 'Notification Bot'},
+                  {'var_name': 'EMAIL_GATEWAY_BOT',
+                   'email_template': 'emailgateway@%s',
+                   'name': 'Email Gateway'},
+                  {'var_name': 'NAGIOS_SEND_BOT',
+                   'email_template': 'nagios-send-bot@%s',
+                   'name': 'Nagios Send Bot'},
+                  {'var_name': 'NAGIOS_RECEIVE_BOT',
+                   'email_template': 'nagios-receive-bot@%s',
+                   'name': 'Nagios Receive Bot'} ]
+
+INTERNAL_BOT_DOMAIN = "zulip.com"
 
 # Set the realm-specific bot names
-for bot in REALM_BOTS:
+for bot in INTERNAL_BOTS:
     if not bot['var_name'] in vars():
-        bot_email = bot['email_template'] % (ADMIN_DOMAIN,)
+        bot_email = bot['email_template'] % (INTERNAL_BOT_DOMAIN,)
         vars()[bot['var_name'] ] = bot_email
 
 if EMAIL_GATEWAY_BOT not in API_SUPER_USERS:

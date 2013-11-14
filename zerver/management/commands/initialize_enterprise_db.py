@@ -6,25 +6,23 @@ from django.contrib.sites.models import Site
 from zerver.models import UserProfile, Stream, Recipient, \
     Subscription, Realm, get_client, email_to_username
 from django.conf import settings
-from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
+from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.actions import set_default_streams, do_create_realm
 
 from optparse import make_option
 
 settings.TORNADO_SERVER = None
 
-def create_users(realms, name_list, bot=False):
+def create_users(name_list, bot=False):
+    realms = {}
+    for realm in Realm.objects.all():
+        realms[realm.domain] = realm
+
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
     bulk_create_users(realms, user_set, bot)
-
-def create_streams(realms, realm, stream_list):
-    stream_set = set()
-    for stream_name in stream_list:
-        stream_set.add((realm.domain, stream_name))
-    bulk_create_streams(realms, stream_set)
 
 class Command(BaseCommand):
     help = "Populate an initial database for Zulip Enterprise"
@@ -39,25 +37,24 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         Realm.objects.create(domain="zulip.com")
-        (admin_realm, _) = do_create_realm(settings.ADMIN_DOMAIN,
-                                           settings.ADMIN_DOMAIN, True)
-        realms = {}
-        for realm in Realm.objects.all():
-            realms[realm.domain] = realm
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
-        create_users(realms, names, bot=True)
+        create_users(names, bot=True)
 
         get_client("website")
         get_client("API")
 
-        all_realm_bots = [(bot['name'], bot['email_template'] % (settings.ADMIN_DOMAIN,)) for bot in settings.REALM_BOTS]
-        create_users(realms, all_realm_bots, bot=True)
+        internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+                         for bot in settings.INTERNAL_BOTS]
+        create_users(internal_bots, bot=True)
         # Set the owners for these bots to the bots themselves
-        bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in all_realm_bots])
+        bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_bots])
         for bot in bots:
             bot.bot_owner = bot
             bot.save()
+
+        (admin_realm, _) = do_create_realm(settings.ADMIN_DOMAIN,
+                                           settings.ADMIN_DOMAIN, True)
 
         set_default_streams(admin_realm, ["social", "engineering"])
 

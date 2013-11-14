@@ -206,7 +206,8 @@ class Command(BaseCommand):
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
-            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.ADMIN_DOMAIN,)) for bot in settings.REALM_BOTS]
+            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+                              for bot in settings.INTERNAL_BOTS]
             zulip_realm_bots = [
                 ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
