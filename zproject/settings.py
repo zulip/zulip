@@ -258,6 +258,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
                     'API_SUPER_USERS': set(),
                     'ADMINS': '',
+                    'INLINE_IMAGE_PREVIEW': True,
                     'ENABLE_FEEDBACK': True,
                     }
 

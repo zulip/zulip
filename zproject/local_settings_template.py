@@ -61,6 +61,10 @@ ENABLE_FEEDBACK = True
 # questions.
 ERROR_REPORTING = True
 
+# Controls whether or not Zulip will provide inline image preview when
+# a link to an image is referenced in a message.
+INLINE_IMAGE_PREVIEW = True
+
 # By default, files uploaded by users and user avatars are stored
 # directly on the Zulip server.  If file storage in Amazon S3 (or
 # elsewhere, e.g. your corporate fileshare) is desired, please contact

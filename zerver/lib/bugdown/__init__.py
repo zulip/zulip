@@ -158,6 +158,8 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url):
+        if not settings.INLINE_IMAGE_PREVIEW:
+            return False
         parsed_url = urlparse.urlparse(url)
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
@@ -175,6 +177,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def youtube_image(self, url):
+        if not settings.INLINE_IMAGE_PREVIEW:
+            return None
         # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
         # If it matches, match.group(2) is the video id.
         youtube_re = r'^((?:https?://)?(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=)))?([0-9A-Za-z_-]+)(?(1).+)?$'
@@ -328,8 +332,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if embedly_client.is_supported(url):
                     embedly_urls.append(url)
                     continue
-            # NOTE: The youtube code below is inactive at least on
-            # staging because embedy.ly is currently handling those
+            # NOTE: settings.USING_EMBEDLY will prevent the below from running
             youtube = self.youtube_image(url)
             if youtube is not None:
                 add_a(root, youtube, url)
