@@ -487,7 +487,15 @@ def maybe_send_to_registration(request, email, full_name=''):
     if form.is_valid():
         # Construct a PreregistrationUser object and send the user over to
         # the confirmation view.
-        prereg_user = create_preregistration_user(email, request)
+        prereg_user = None
+        if settings.ONLY_SSO:
+            try:
+                prereg_user = PreregistrationUser.objects.filter(email__iexact=email).latest("invited_at")
+            except PreregistrationUser.DoesNotExist:
+                prereg_user = create_preregistration_user(email, request)
+        else:
+            prereg_user = create_preregistration_user(email, request)
+
         return redirect("".join((
             "/",
             # Split this so we only get the part after the /
