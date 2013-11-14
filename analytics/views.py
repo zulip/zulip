@@ -2,6 +2,7 @@ from django.db import connection
 from django.template import RequestContext, loader
 from django.utils.html import mark_safe
 from django.shortcuts import render_to_response
+from django.core import urlresolvers
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
 from zerver.models import get_realm, UserActivity, UserActivityInterval
@@ -587,6 +588,12 @@ def format_date_for_activity_reports(date):
     else:
         return ''
 
+def user_activity_link(email):
+    url_name = 'analytics.views.get_user_activity'
+    url = urlresolvers.reverse(url_name, kwargs=dict(email=email))
+    email_link = '<a href="%s">%s</a>' % (url, email)
+    return mark_safe(email_link)
+
 def realm_client_table(user_summaries):
     exclude_keys = [
             'internal',
@@ -600,8 +607,7 @@ def realm_client_table(user_summaries):
 
     rows = []
     for email, user_summary in user_summaries.items():
-        email_link = '<a href="/user_activity/%s/">%s</a>' % (email, email)
-        email_link = mark_safe(email_link)
+        email_link = user_activity_link(email)
         name = user_summary['name']
         for k, v in user_summary.items():
             if k in exclude_keys:
@@ -681,8 +687,7 @@ def realm_user_summary_table(all_records):
 
     rows = []
     for email, user_summary in user_records.items():
-        email_link = '<a href="/user_activity/%s/">%s</a>' % (email, email)
-        email_link = mark_safe(email_link)
+        email_link = user_activity_link(email)
         sent_count = get_count(user_summary, 'send')
         row = [user_summary['name'], email_link, sent_count]
         for field in ['use', 'send', 'pointer', 'desktop', 'iPhone', 'Android']:
