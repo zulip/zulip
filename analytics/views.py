@@ -247,7 +247,16 @@ def ad_hoc_queries():
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
+        rows = map(list, rows)
         cursor.close()
+
+        def fix_rows(i, fixup_func):
+            for row in rows:
+                row[i] = fixup_func(row[i])
+
+        for i, col in enumerate(cols):
+            if col == 'Domain':
+                fix_rows(i, realm_activity_link)
 
         content = make_table(title, cols, rows)
 
@@ -593,6 +602,12 @@ def user_activity_link(email):
     url = urlresolvers.reverse(url_name, kwargs=dict(email=email))
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
+
+def realm_activity_link(realm):
+    url_name = 'analytics.views.get_realm_activity'
+    url = urlresolvers.reverse(url_name, kwargs=dict(realm=realm))
+    realm_link = '<a href="%s">%s</a>' % (url, realm)
+    return mark_safe(realm_link)
 
 def realm_client_table(user_summaries):
     exclude_keys = [
