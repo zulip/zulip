@@ -91,11 +91,13 @@
                     </a>
                   </li>
                   {% endif %}
+                  {% if enable_feedback %}
                   <li title="Feedback">
                     <a href="#feedback" class="feedback">
                       <i class="icon-vector-comment"></i> Feedback
                     </a>
                   </li>
+                  {% endif %}  
                   <li class="divider"></li>
                   {% if show_webathena %}
                   <li title="Grant Zulip the Kerberos tickets needed to run your Zephyr
