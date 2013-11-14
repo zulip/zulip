@@ -68,6 +68,7 @@ from zerver.lib.utils import statsd, generate_random_token, statsd_key
 from zerver import tornado_callbacks
 from zproject.backends import password_auth_enabled
 from django.db import connection
+from guardian.shortcuts import assign_perm
 
 from confirmation.models import Confirmation
 
@@ -263,7 +264,7 @@ def accounts_register(request):
             full_name  = form.cleaned_data['full_name']
             short_name = email_to_username(email)
             (realm, _) = Realm.objects.get_or_create(domain=domain)
-            first_in_realm = len(UserProfile.objects.filter(realm=realm)) == 0
+            first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
 
             # FIXME: sanitize email addresses and fullname
             if mit_beta_user:
@@ -333,6 +334,7 @@ def accounts_register(request):
                 login(request, authenticate(username=email, password=password))
 
             if first_in_realm:
+                assign_perm("administer", user_profile, user_profile.realm)
                 return HttpResponseRedirect(reverse('zerver.views.initial_invite_page'))
             else:
                 return HttpResponseRedirect(reverse('zerver.views.home'))
