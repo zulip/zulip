@@ -2,6 +2,8 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.views import login as django_login_page
 from django.http import HttpResponseRedirect
+from django.shortcuts import render_to_response, redirect
+from django.template import RequestContext, loader
 
 from zerver.decorator import has_request_variables, REQ, json_to_dict
 from zerver.lib.actions import internal_send_message
@@ -9,7 +11,10 @@ from zerver.lib.response import json_success, json_error, json_response, json_me
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.models import get_realm, get_user_profile_by_email, email_to_domain, \
         UserProfile
+from zilencer.forms import EnterpriseToSForm
 from error_notify import notify_server_error, notify_browser_error
+from django.core.mail import send_mail
+from django.conf import settings
 
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
@@ -95,3 +100,22 @@ def account_deployment_dispatch(request, **kwargs):
     template_response.context_data['desktop_sso_dispatch'] = True
     template_response.context_data['desktop_sso_unknown_email'] = sso_unknown_email
     return template_response
+
+def enterprise_registration(request):
+    if request.method == "POST":
+        form = EnterpriseToSForm(request.POST)
+        if form.is_valid():
+            company = form.cleaned_data["company"]
+            name = form.cleaned_data["full_name"]
+            subject = "Enterprise terms acceptance for " + company
+            body = loader.render_to_string(
+                "zilencer/enterprise_tos_accept_body.txt",
+                {"name": name, "company": company})
+            send_mail(subject, body, settings.EMAIL_HOST_USER,
+                      ["support@zulip.com"])
+            return redirect("https://zulip.com/enterprise/download")
+    else:
+        form = EnterpriseToSForm()
+    return render_to_response(
+        "zilencer/enterprise-registration.html", {"form": form},
+        context_instance=RequestContext(request))

@@ -72,10 +72,6 @@ urlpatterns = patterns('',
     url(r'^terms-enterprise/$',  TemplateView.as_view(template_name='zerver/terms-enterprise.html')),
     url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html')),
 
-    # Enterprise terms registration, which redirects to a password-protected
-    # software download page.
-    url(r'^enterprise-registration/$',  'zerver.views.enterprise_registration'),
-
     # Login/registration
     url(r'^register/$', 'zerver.views.accounts_home', name='register'),
     url(r'^login/$',  'zerver.views.login_page', {'template_name': 'zerver/login.html'}),

@@ -6,4 +6,8 @@ urlpatterns = patterns('zilencer.views',
     # and then redirects the user to the proper deployment
     # SSO-login page
     url(r'^accounts/deployment_dispatch$', 'account_deployment_dispatch', {'template_name': 'zerver/login.html'}),
+
+    # Enterprise terms registration, which redirects to a password-protected
+    # software download page.
+    url(r'^enterprise-registration/$',  'enterprise_registration'),
 )
