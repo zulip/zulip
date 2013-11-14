@@ -351,10 +351,16 @@ class Avatar(markdown.inlinepatterns.Pattern):
         img.set('alt', email_address)
         return img
 
-path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                             # This should be the root
-                             'static', 'third', 'gemoji', 'images', 'emoji', '*.png')
+if settings.ENTERPRISE:
+    path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                                 'prod-static', 'serve', 'third', 'gemoji', 'images', 'emoji', '*.png')
+else:
+    path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                                 # This should be the root
+                                 'static', 'third', 'gemoji', 'images', 'emoji', '*.png')
+
 emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_emoji)]
+
 
 def make_emoji(emoji_name, src, display_string):
     elt = markdown.util.etree.Element('img')
