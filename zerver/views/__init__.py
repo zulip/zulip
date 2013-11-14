@@ -297,9 +297,9 @@ def accounts_register(request):
 
                     UserMessage.objects.bulk_create(ums_to_create)
 
-                if prereg_user.referred_by is not None and settings.NEW_USER_BOT is not None:
+                if prereg_user.referred_by is not None and settings.NOTIFICATION_BOT is not None:
                     # This is a cross-realm private message.
-                    internal_send_message(settings.NEW_USER_BOT,
+                    internal_send_message(settings.NOTIFICATION_BOT,
                             "private", prereg_user.referred_by.email, user_profile.realm.domain,
                             "%s <`%s`> accepted your invitation to join Zulip!" % (
                                 user_profile.full_name,
