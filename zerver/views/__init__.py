@@ -1608,6 +1608,7 @@ def add_subscriptions_backend(request, user_profile,
         result["already_subscribed"][subscriber.email].append(stream.name)
 
     private_streams = dict((stream.name, stream.invite_only) for stream in streams)
+    bots = dict((subscriber.email, subscriber.is_bot) for subscriber in subscribers)
 
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
@@ -1616,6 +1617,9 @@ def add_subscriptions_backend(request, user_profile,
         for email, subscriptions in result["subscribed"].iteritems():
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
+                continue
+            if bots[email]:
+                # Don't send invitation Zulips to bots
                 continue
 
             if len(subscriptions) == 1:
