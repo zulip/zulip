@@ -25,6 +25,16 @@ autofocus('#id_username');
 
     <h3 class="login-page-header">You look familiar.</h3>
 
+{% if only_sso %}
+    {% comment %}SSO users don't have a password.{% endcomment %}
+
+    <div class="login-sso">
+      <a href="/accounts/login/sso" class="btn btn-large btn-primary">Sign in with SSO</a>
+    </div>
+
+{% else %}
+{% comment %}Non-SSO users.{% endcomment %}
+
 {% if form.errors or sso_unknown_email %}
 <div class="alert alert-error">
     {% if sso_unknown_email %}
@@ -38,11 +48,11 @@ autofocus('#id_username');
 </div>
 {% endif %}
 
-{% if email %}
-<div class="alert">
-    You've already registered with this email address. Please log in below.
-</div>
-{% endif %}
+    {% if email %}
+    <div class="alert">
+        You've already registered with this email address. Please log in below.
+    </div>
+    {% endif %}
 
         <form name="login_form" id="login_form" method="post" class="login-form"
             {% if sso_only %}
@@ -85,6 +95,8 @@ autofocus('#id_username');
     or <a href="/accounts/login/openid/" class="login-google-button zocial google">Sign in with Google</a>
     </div>
     {% endif %}
+
+{% endif %}
 
 </div>
 <div class="footer-padder"></div>

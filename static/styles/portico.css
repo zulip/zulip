@@ -864,7 +864,7 @@ a.bottom-signup-button {
     font-weight: 300;
 }
 
-.login-google, .register-google {
+.login-google, .register-google, .login-sso {
     width: 300px;
     margin: auto;
     text-align: center;

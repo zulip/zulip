@@ -14,6 +14,7 @@ def add_settings(request):
         'zulip_admin':   settings.ZULIP_ADMINISTRATOR,
         'password_auth_enabled': password_auth_enabled(),
         'login_url':     settings.HOME_NOT_LOGGED_IN,
+        'only_sso':     settings.ONLY_SSO,
     }
 
 def add_metrics(request):
