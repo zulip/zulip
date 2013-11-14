@@ -43,6 +43,8 @@ class zulip::base {
   file { '/etc/puppet/puppet.conf':
     ensure     => file,
     mode       => 640,
+    owner      => "root",
+    group      => "root",
     source     => 'puppet:///modules/zulip/puppet.conf',
   }
 
