@@ -2104,7 +2104,7 @@ def get_emails_from_user_ids(user_ids):
     return UserProfile.emails_from_ids(user_ids)
 
 @uses_mandrill
-def clear_followup_emails_queue(email, from_email=None, mail_client=None):
+def clear_followup_emails_queue(email, mail_client=None):
     """
     Clear out queued emails (from Mandrill's queue) that would otherwise
     be sent to a specific email address. Optionally specify which sender
@@ -2118,16 +2118,11 @@ def clear_followup_emails_queue(email, from_email=None, mail_client=None):
     # Zulip Enterprise implementation
     if not mail_client:
         items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
-        if from_email is not None:
-            items = [item for item in items
-                     if ujson.loads(item.data).get('from_email').lower() == from_email.lower()]
         items.delete()
         return
 
     # Mandrill implementation
     for email in mail_client.messages.list_scheduled(to=email):
-        if from_email is not None and email.get('from_email').lower() != from_email.lower():
-            continue
         result = mail_client.messages.cancel_scheduled(id=email["_id"])
         if result.get("status") == "error":
             print result.get("name"), result.get("error")

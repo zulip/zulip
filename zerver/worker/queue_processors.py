@@ -88,7 +88,7 @@ class SignupWorker(QueueProcessingWorker):
     def consume(self, data):
         merge_vars=data['merge_vars']
         # This should clear out any invitation reminder emails
-        clear_followup_emails_queue(data["EMAIL"], from_email="zulip@zulip.com")
+        clear_followup_emails_queue(data["EMAIL"])
         if settings.MAILCHIMP_API_KEY != '' and settings.DEPLOYED:
             try:
                 self.pm.listSubscribe(
