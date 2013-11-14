@@ -53,7 +53,7 @@ class Command(BaseCommand):
             old_dep.save()
         dep.realms = [realm]
         dep.base_api_url = options["api"]
-        dep.base_web_url = options["web"]
+        dep.base_site_url = options["web"]
         dep.save()
         print "Deployment %s created." % (dep.id,)
         print "DEPLOYMENT_ROLE_NAME = %s" % (dep.name,)
