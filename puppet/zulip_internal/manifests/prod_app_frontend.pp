@@ -57,6 +57,39 @@ class zulip_internal::prod_app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip_internal/sparkle/win/sparkle-changelog.html",
   }
+
+  file { "/srv/www/dist/apps/sso/mac/sparkle.xml":
+    ensure => file,
+    require    => File['/srv/www/dist/apps/sso/mac/'],
+    owner  => "zulip",
+    group  => "zulip",
+    mode => 644,
+    source => "puppet:///modules/zulip_internal/sparkle/sso/mac/sparkle.xml",
+  }
+  file { "/srv/www/dist/apps/sso/mac/sparkle-changelog.html":
+    ensure => file,
+    require    => File['/srv/www/dist/apps/sso/mac/'],
+    owner  => "zulip",
+    group  => "zulip",
+    mode => 644,
+    source => "puppet:///modules/zulip_internal/sparkle/sso/mac/sparkle-changelog.html",
+  }
+  file { "/srv/www/dist/apps/sso/win/sparkle.xml":
+    ensure => file,
+    require    => File['/srv/www/dist/apps/sso/win/'],
+    owner  => "zulip",
+    group  => "zulip",
+    mode => 644,
+    source => "puppet:///modules/zulip_internal/sparkle/sso/win/sparkle.xml",
+  }
+  file { "/srv/www/dist/apps/sso/win/sparkle-changelog.html":
+    ensure => file,
+    require    => File['/srv/www/dist/apps/sso/win/'],
+    owner  => "zulip",
+    group  => "zulip",
+    mode => 644,
+    source => "puppet:///modules/zulip_internal/sparkle/sso/win/sparkle-changelog.html",
+  }
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem
 }

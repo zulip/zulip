@@ -1,0 +1,16 @@
+<?xml version="1.0" ?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+   <channel>
+      <title>Zulip Changelog</title>
+      <link>https://zulip.com/dist/apps/sso/mac/sparkle.xml</link>
+      <description>Latest updates to Zulip's Desktop Application</description>
+      <language>en</language>
+      <item>
+         <title>Version 0.3.11</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.com/dist/apps/sso/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Thu, 14 Nov 2013 09:57:07 </pubDate>
+         <enclosure length="8835310" sparkle:dsaSignature="MCwCFH+m2i53YLv33BAElEFBiGE7OZCwAhRhM42psyPDsjV8oVAthjE70en8nQ==" sparkle:version="0.3.11" type="application/octet-stream" url="https://zulip.com/dist/apps/sso/mac/Zulip-0.3.11.tar.bz2"/>
+      </item>
+   </channel>
+</rss>
