@@ -1,0 +1,61 @@
+#!/bin/bash -xe
+
+# Assumes we've already been untarred
+
+# First, install any updates from the apt repo that may be needed
+wget -O /root/enterprise.asc https://apt.zulip.com/enterprise.asc
+apt-key add /root/enterprise.asc
+cat >/etc/apt/sources.list.d/zulip.list <<EOF
+deb http://apt.zulip.com/enterprise precise v1
+EOF
+
+apt-get update
+apt-get -y dist-upgrade
+apt-get install -y puppet git
+cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
+
+mkdir -p /etc/zulip
+echo -e "[machine]\npuppet_classes = zulip::enterprise\ndeploy_type = enterprise" > /etc/zulip/zulip.conf
+/root/zulip/scripts/zulip-puppet-apply -f
+
+# These server restarting bits should be moveable into puppet-land, ideally
+apt-get -y upgrade
+if [ -e "/etc/init.d/nginx" ]; then
+    service nginx restart
+fi
+if [ -e "/etc/init.d/apache2" ]; then
+    service apache2 restart
+fi
+
+/root/zulip/scripts/setup/generate_enterprise_secrets.py
+mv /root/zulip/zproject/local_settings_generated.py /etc/zulip/settings.py
+ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
+
+/root/zulip/scripts/setup/configure-rabbitmq
+
+/root/zulip/scripts/setup/postgres-init-db
+
+deploy_path=$(/root/zulip/zulip_tools.py make_deploy_path)
+mv /root/zulip "$deploy_path"
+ln -nsf /home/zulip/deployments/next /root/zulip
+ln -nsf "$deploy_path" /home/zulip/deployments/next
+ln -nsf "$deploy_path" /home/zulip/deployments/current
+ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/local_settings.py
+cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
+chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
+chown zulip:zulip /var/run/supervisor.sock
+
+cd /home/zulip/deployments/current
+
+set +x
+cat <<EOF
+
+ Installation complete!
+
+ Now edit /etc/zulip/settings.py and fill in the mandatory values.
+
+ Once you've done that, please run:
+
+ su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
+
+EOF

@@ -1,0 +1,56 @@
+#!/usr/bin/python -u
+import os
+import sys
+import subprocess
+import logging
+import shutil
+import time
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, FAIL, WARNING, ENDC, \
+    su_to_zulip
+
+logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
+                    level=logging.INFO)
+
+if os.getuid() != 0:
+    logging.error("Must be run as root.")
+    sys.exit(1)
+
+if len(sys.argv) != 2:
+    print FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC
+    sys.exit(1)
+
+tarball_path = sys.argv[1]
+
+start_time = time.time()
+got_lock = False
+while time.time() - start_time < 300:
+    try:
+        os.mkdir(LOCK_DIR)
+        got_lock = True
+        break
+    except OSError:
+        print WARNING + "Another deployment in progress; waiting for lock..." + ENDC
+        time.sleep(10)
+
+if not got_lock:
+    print FAIL + "Deployment already in progress.  Please run\n" \
+               + "  %s/current/scripts/upgrade-zulip %s\n" % (DEPLOYMENTS_DIR, tarball_path) \
+               + "manually when the previous deployment finishes, or run\n" \
+               + "  rmdir %s\n"  % (LOCK_DIR,) \
+               + "if the previous deployment crashed." \
+               + ENDC
+    sys.exit(1)
+
+logging.info("Unpacking the tarball")
+deploy_path = subprocess.check_output([os.path.join(os.path.dirname(__file__),
+                                                    '..', 'unpack-zulip'),
+                                       tarball_path], preexec_fn=su_to_zulip)
+deploy_path = deploy_path.strip()
+os.chdir(deploy_path)
+
+subprocess.check_call(["./scripts/upgrade-zulip-stage-2", deploy_path])
+
+logging.info("Deployment complete")
+shutil.rmtree(LOCK_DIR)
