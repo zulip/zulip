@@ -9,6 +9,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.utils.crypto import get_random_string
 from zerver.lib.utils import generate_random_token
 
+os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
+
 SETTINGS_FILENAME = "zproject/local_settings_template.py"
 OUTPUT_SETTINGS_FILENAME = "zproject/local_settings_generated.py"
 CAMO_CONFIG_FILENAME = '/etc/default/camo'
