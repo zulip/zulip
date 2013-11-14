@@ -25,9 +25,9 @@ hence the name.
   <div class="column-right top-links">
           <a href="{{login_url}}">Log in</a>
           {% if not_enterprise %}
-          <a href="{% url 'register' %}">Sign up</a>
-          {% else %}
           <a href="{% url 'signup' %}">Sign up</a>
+          {% else %}
+          <a href="{% url 'register' %}">Sign up</a>
           {% endif %}
   </div>
 </div>
