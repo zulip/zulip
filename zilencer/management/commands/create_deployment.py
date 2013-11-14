@@ -55,5 +55,6 @@ class Command(BaseCommand):
         dep.base_api_url = options["api"]
         dep.base_web_url = options["web"]
         dep.save()
-        print "Deployment %s created." % dep.id
-
+        print "Deployment %s created." % (dep.id,)
+        print "DEPLOYMENT_ROLE_NAME = %s" % (dep.name,)
+        print "DEPLOYMENT_ROLE_KEY = %s" % (dep.api_key,)
