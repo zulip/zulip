@@ -7,7 +7,7 @@ from zerver.models import UserProfile, Stream, Recipient, \
     Subscription, Realm, get_client, email_to_username
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
-from zerver.lib.actions import set_default_streams
+from zerver.lib.actions import set_default_streams, do_create_realm
 
 from optparse import make_option
 
@@ -39,7 +39,8 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         Realm.objects.create(domain="zulip.com")
-        admin_realm = Realm.objects.create(domain=settings.ADMIN_DOMAIN)
+        (admin_realm, _) = do_create_realm(settings.ADMIN_DOMAIN,
+                                           settings.ADMIN_DOMAIN, True)
         realms = {}
         for realm in Realm.objects.all():
             realms[realm.domain] = realm
