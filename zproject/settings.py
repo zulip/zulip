@@ -716,6 +716,7 @@ if (len(AUTHENTICATION_BACKENDS) == 1 and
     ONLY_SSO = True
 else:
     HOME_NOT_LOGGED_IN = '/login'
+    ONLY_SSO = False
 AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
 
 if DEPLOYED:
