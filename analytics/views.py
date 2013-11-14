@@ -37,6 +37,7 @@ def realm_summary_table(realm_minutes):
         SELECT
             realm.domain,
             coalesce(user_counts.active_user_count, 0) active_user_count,
+            coalesce(at_risk_counts.at_risk_count, 0) at_risk_count,
             (
                 SELECT
                     count(*)
@@ -75,6 +76,36 @@ def realm_summary_table(realm_minutes):
                 GROUP BY realm_id
             ) user_counts
             ON user_counts.realm_id = realm.id
+        LEFT OUTER JOIN
+            (
+                SELECT
+                    realm_id,
+                    count(*) at_risk_count
+                FROM (
+                    SELECT
+                        realm.id as realm_id,
+                        up.email
+                    FROM zerver_useractivity ua
+                    JOIN zerver_userprofile up
+                        ON up.id = ua.user_profile_id
+                    JOIN zerver_realm realm
+                        ON realm.id = up.realm_id
+                    WHERE up.is_active
+                    AND (not up.is_bot)
+                    AND
+                        ua.query in (
+                            '/json/send_message',
+                            'send_message_backend',
+                            '/json/update_pointer'
+                        )
+                    GROUP by realm.id, up.email
+                    HAVING max(last_visit) between
+                        now() - interval '7 day' and
+                        now() - interval '1 day'
+                ) as at_risk_users
+                GROUP BY realm_id
+            ) at_risk_counts
+            ON at_risk_counts.realm_id = realm.id
         WHERE
             realm.domain not in ('zulip.com', 'customer4.invalid', 'wdaher.com')
         AND EXISTS (

@@ -6,6 +6,7 @@
     <tr>
         <th>Domain</th>
         <th>Active users</th>
+        <th>At-risk users</th>
         <th>Total users</th>
         <th>Bots</th>
         <th>Hours per user</th>
@@ -25,6 +26,11 @@
             {# Active users #}
             <td class="number">
                 {{ row.active_user_count }}
+            </td>
+
+            {# At risk users #}
+            <td class="number">
+                {{ row.at_risk_count }}
             </td>
 
             {# Total users #}
