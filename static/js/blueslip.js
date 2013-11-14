@@ -29,17 +29,25 @@ function Logger() {
 }
 
 Logger.prototype = (function () {
+    function pad(num, width) {
+        var ret = num.toString();
+        while (ret.length < width) {
+            ret = "0" + ret;
+        }
+        return ret;
+    }
+
     function make_logger_func(name) {
         return function Logger_func() {
             var now = new Date();
             var date_str =
                 now.getUTCFullYear() + '-' +
-                (now.getUTCMonth() + 1) + '-' +
-                now.getUTCDate() + ' ' +
-                now.getUTCHours() + ':' +
-                now.getUTCMinutes() + ':' +
-                now.getUTCSeconds() + '.' +
-                now.getUTCMilliseconds() + ' UTC';
+                pad(now.getUTCMonth() + 1, 2) + '-' +
+                pad(now.getUTCDate(), 2) + ' ' +
+                pad(now.getUTCHours(), 2) + ':' +
+                pad(now.getUTCMinutes(), 2) + ':' +
+                pad(now.getUTCSeconds(), 2) + '.' +
+                pad(now.getUTCMilliseconds(), 3) + ' UTC';
 
             var str_args = _.map(arguments, function (x) {
                 if (typeof(x) === 'object') {
