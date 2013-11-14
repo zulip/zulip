@@ -1276,6 +1276,13 @@ function main() {
 
     // get the initial message list
     function load_more(messages) {
+
+        // After our initial batch of messages, we have enough info to do basic sizing of
+        // sidebars.  In particular, this allows GROUP PMs to become visible.  This line of
+        // code doesn't have to be precisely here, but it seemed like a good place to put it.
+        // Basically, we want to simulate a resize event shortly after reload.
+        ui.resize_page_components();
+
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         //
