@@ -257,6 +257,8 @@ def ad_hoc_queries():
         for i, col in enumerate(cols):
             if col == 'Domain':
                 fix_rows(i, realm_activity_link)
+            elif col in ['Last time', 'Last visit']:
+                fix_rows(i, format_date_for_activity_reports)
 
         content = make_table(title, cols, rows)
 
