@@ -92,6 +92,6 @@ def account_deployment_dispatch(request, **kwargs):
             sso_unknown_email = True
 
     template_response = django_login_page(request, **kwargs)
-    template_response.context_data['sso_only'] = True
-    template_response.context_data['sso_unknown_email'] = sso_unknown_email
+    template_response.context_data['desktop_sso_dispatch'] = True
+    template_response.context_data['desktop_sso_unknown_email'] = sso_unknown_email
     return template_response
