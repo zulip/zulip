@@ -2119,8 +2119,8 @@ table.floating_recipient {
 }
 
 .subscription-name-row {
-    line-height: 67px;
-    height: 60px;
+    line-height: 47px;
+    height: 40px;
 }
 
 #add_new_subscription {
@@ -2297,7 +2297,7 @@ table.floating_recipient {
 .sub_unsub_button {
     min-width: 140px;
     float: right;
-    margin-top: 18px;
+    margin-top: 9px;
     margin-right: 10px;
 }
 
@@ -2318,7 +2318,7 @@ table.floating_recipient {
 
 .sub_arrow {
     float: right;
-    line-height: 67px;
+    line-height: 47px;
     padding: 0 15px 0 0;
 }
 
