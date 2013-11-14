@@ -1,4 +1,6 @@
-# Template for Django settings for Zulip Enterprise
+# Settings for Zulip Enterprise
+
+### MANDATORY SETTINGS
 
 # This is the user-accessible Zulip hostname for this installation
 EXTERNAL_HOST = ''
@@ -26,12 +28,6 @@ AUTHENTICATION_BACKENDS = (
 # "username@example.com".
 SSO_APPEND_DOMAIN = None
 
-# Make session cookies expire when the browser closes
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-
-# Session cookie expiry in seconds after the last page load
-SESSION_COOKIE_AGE = 1209600 # 2 weeks
-
 # Configure the outgoing SMTP server below. For outgoing email
 # via a GMail SMTP server, EMAIL_USE_TLS must be True and the
 # outgoing port must be 587. The EMAIL_HOST is prepopulated
@@ -42,6 +38,14 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+### SETTINGS BELOW HERE ARE OPTIONAL
+
+# Make session cookies expire when the browser closes
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Session cookie expiry in seconds after the last page load
+SESSION_COOKIE_AGE = 1209600 # 2 weeks
 
 # Control whether or not there is a feedback button in the UI,
 # which can be used to send feedback directly to Zulip
