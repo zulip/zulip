@@ -7,6 +7,7 @@ from zerver.models import UserProfile, Stream, Recipient, \
     Subscription, Realm, get_client, email_to_username
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
+from zerver.lib.actions import set_default_streams
 
 from optparse import make_option
 
@@ -38,7 +39,7 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         Realm.objects.create(domain="zulip.com")
-        Realm.objects.create(domain=settings.ADMIN_DOMAIN)
+        admin_realm = Realm.objects.create(domain=settings.ADMIN_DOMAIN)
         realms = {}
         for realm in Realm.objects.all():
             realms[realm.domain] = realm
@@ -56,6 +57,8 @@ class Command(BaseCommand):
         for bot in bots:
             bot.bot_owner = bot
             bot.save()
+
+        set_default_streams(admin_realm, ["social", "engineering"])
 
         self.stdout.write("Successfully populated database with initial data.\n")
 
