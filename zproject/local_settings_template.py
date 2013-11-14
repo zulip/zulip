@@ -2,16 +2,20 @@
 
 ### MANDATORY SETTINGS
 
-# This is the user-accessible Zulip hostname for this installation
+# The user-accessible Zulip hostname for this installation, e.g.
+# zulip.example.com
 EXTERNAL_HOST = ''
 
-# This is the Zulip Administrator email address
+# The email address for the person or team who maintain the Zulip
+# Enterprise installation.
 ZULIP_ADMINISTRATOR = ''
 
-# This is the domain for your organization
+# The domain for your organization, e.g. example.com
 ADMIN_DOMAIN = ''
 
-# These credentials are for communication with the central Zulip deployment manager
+# These credentials are for communication with the central Zulip
+# deployment manager.  You should have been provided with them by
+# Zulip support.
 DEPLOYMENT_ROLE_NAME = ''
 DEPLOYMENT_ROLE_KEY = ''
 
@@ -22,10 +26,10 @@ AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.GoogleBackend', # Google Apps
     )
 
-# If you are using the zproject.backends.ZulipRemoteUserBackend
-# authentication backend, set this to example.com if REMOTE_USER is
-# "username" and the corresponding email address is
-# "username@example.com".
+# If you are using the ZulipRemoteUserBackend authentication backend,
+# set this to your domain (e.g. if REMOTE_USER is "username" and the
+# corresponding email address is "username@example.com", set
+# SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None
 
 # Configure the outgoing SMTP server below. For outgoing email
@@ -39,30 +43,38 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-### SETTINGS BELOW HERE ARE OPTIONAL
+### OPTIONAL SETTINGS
 
-# Make session cookies expire when the browser closes
+# Controls whether session cookies expire when the browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # Session cookie expiry in seconds after the last page load
-SESSION_COOKIE_AGE = 1209600 # 2 weeks
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2 # 2 weeks
 
-# Control whether or not there is a feedback button in the UI,
-# which can be used to send feedback directly to Zulip
+# Controls whether or not there is a feedback button in the UI, which
+# can be used to send feedback directly to the Zulip developers.
 ENABLE_FEEDBACK = True
 
-# Control whether or not error reports are sent to Zulip. Error reports
-# do not include message content.
+# Controls whether or not error reports are sent to Zulip.  Error
+# reports are used to improve the quality of the product and do not
+# include message contents; please contact Zulip support with any
+# questions.
 ERROR_REPORTING = True
 
-# By default uploaded files and avatars are stored directly on the Zulip server
-# If file storage to Amazon S3 is desired, please contact Zulip Support
-# (support@zulip.com) for further instructions on setting up S3 integration
+# By default, files uploaded by users and user avatars are stored
+# directly on the Zulip server.  If file storage in Amazon S3 (or
+# elsewhere, e.g. your corporate fileshare) is desired, please contact
+# Zulip Support (support@zulip.com) for further instructions on
+# setting up the appropriate integration.
 LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 
-# In order to show Tweet previews inline in messages, Zulip must have access
-# to the Twitter API via OAuth. To fetch the various access tokens needed below,
-# you must register a new application under your Twitter account by doing the following:
+### TWITTER INTEGRATION
+
+# Zulip supports showing inline Tweet previews when a tweet is linked
+# to in a message.  To support this, Zulip must have access to the
+# Twitter API via OAuth.  To obtain the various access tokens needed
+# below, you must register a new application under your Twitter
+# account by doing the following:
 #
 # 1. Log in to http://dev.twitter.com.
 # 2. In the menu under your username, click My Applications. From this page, create a new application.
@@ -72,16 +84,23 @@ TWITTER_CONSUMER_SECRET = ''
 TWITTER_ACCESS_TOKEN_KEY = ''
 TWITTER_ACCESS_TOKEN_SECRET = ''
 
-# The email gateway provides an email address that you can use to post to a stream
-# Emails received at the per-stream email address will be converted into a Zulip
-# message
+### EMAIL GATEWAY INTEGRATION
+
+# The email gateway provides, for each stream, an email address that
+# you can send email to in order to have the email's content be posted
+# to that stream.  Emails received at the per-stream email address
+# will be converted into a Zulip message
 
 # The email address pattern to use for auto-generated stream emails
 # The %s will be replaced with a unique token, and the resulting email
-# must be delivered to the EMAIL_GATEWAY_IMAP_FOLDER of the EMAIL_GATEWAY_LOGIN account below
+# must be delivered to the EMAIL_GATEWAY_IMAP_FOLDER of the
+# EMAIL_GATEWAY_LOGIN account below.
+#
+# Example: zulip+%s@example.com
 EMAIL_GATEWAY_PATTERN = ""
 
-# The Zulip username of the bot that the email pattern should post as
+# The Zulip username of the bot that the email pattern should post as.
+# Example: emailgateway@example.com
 EMAIL_GATEWAY_BOT = ""
 
 # Configuration of the email mirror mailbox
@@ -95,8 +114,11 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 # must be delivered to this folder
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
-# The following keys are automatically generated during the install process
-# PLEASE DO NOT EDIT THEM
+# The following secrets are randomly generated during the install
+# process, are used for security purposes, and should not be shared
+# with anyone.
+#
+# PLEASE DO NOT CHANGE THEM WITHOUT INSTRUCTIONS FROM ZULIP SUPPORT
 CAMO_KEY = ''
 SECRET_KEY = ''
 HASH_SALT = ''
