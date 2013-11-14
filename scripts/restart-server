@@ -31,5 +31,10 @@ subprocess.check_call(["supervisorctl", "stop", "zulip-workers:* zulip-django zu
 subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "current")])
 subprocess.check_call(["supervisorctl", "start", "zulip-tornado zulip-django zulip-workers:*"])
 
+using_sso = subprocess.check_output(['./bin/get-django-setting', 'USING_SSO'])
+if using_sso.strip() == 'True':
+    logging.info("Restarting Apache WSGI process...")
+    subprocess.check_call(["pkill", "-f", "apache2", "-u", "zulip"])
+
 logging.info("Done!")
 print OKGREEN + "Application restarted successfully!" + ENDC
