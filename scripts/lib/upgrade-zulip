@@ -45,12 +45,12 @@ if not got_lock:
 
 logging.info("Unpacking the tarball")
 deploy_path = subprocess.check_output([os.path.join(os.path.dirname(__file__),
-                                                    '..', 'unpack-zulip'),
+                                                    'unpack-zulip'),
                                        tarball_path], preexec_fn=su_to_zulip)
 deploy_path = deploy_path.strip()
 os.chdir(deploy_path)
 
-subprocess.check_call(["./scripts/upgrade-zulip-stage-2", deploy_path])
+subprocess.check_call(["./scripts/lib/upgrade-zulip-stage-2", deploy_path])
 
 logging.info("Deployment complete")
 shutil.rmtree(LOCK_DIR)
