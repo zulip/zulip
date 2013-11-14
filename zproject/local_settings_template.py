@@ -13,10 +13,9 @@ ZULIP_ADMINISTRATOR = ''
 # The domain for your organization, e.g. example.com
 ADMIN_DOMAIN = ''
 
-# These credentials are for communication with the central Zulip
-# deployment manager.  You should have been provided with them by
-# Zulip support.
-DEPLOYMENT_ROLE_NAME = ''
+# The deployment key is used by your server to authenticate any
+# communication with Zulip.  You can obtain your key from
+# https://zulip.com/enterprise/download/deployment-key
 DEPLOYMENT_ROLE_KEY = ''
 
 # Enable at least one of the following authentication backends.
