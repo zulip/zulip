@@ -66,7 +66,7 @@ class zulip::app_frontend {
   safepackage { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/zulip-include/":
-    require => Package[nginx],
+    require => Package["nginx-full"],
     recurse => true,
     owner  => "root",
     group  => "root",

@@ -3,7 +3,7 @@ class zulip_internal::prod_app_frontend {
   include zulip_internal::app_frontend
 
   file { "/etc/nginx/sites-available/zulip":
-    require => Package[nginx],
+    require => Package["nginx-full"],
     ensure => file,
     owner  => "root",
     group  => "root",

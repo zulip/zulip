@@ -1,11 +1,11 @@
 class zulip::nginx {
-  $web_packages = [# Needed to run nginx
-                   "nginx",
+  $web_packages = [# Needed to run nginx with the modules we use
+                   "nginx-full",
                    ]
   package { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/nginx.conf":
-    require => Package[nginx],
+    require => Package["nginx-full"],
     ensure => file,
     owner  => "root",
     group  => "root",
@@ -15,7 +15,7 @@ class zulip::nginx {
   }
 
   file { "/etc/nginx/fastcgi_params":
-    require => Package[nginx],
+    require => Package["nginx-full"],
     ensure => file,
     owner  => "root",
     group  => "root",

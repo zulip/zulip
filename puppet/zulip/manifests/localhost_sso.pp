@@ -1,6 +1,6 @@
 class zulip::localhost_sso {
   file { "/etc/nginx/zulip-include/app.d/external-sso.conf":
-    require => Package[nginx],
+    require => Package["nginx-full"],
     ensure => file,
     owner  => "root",
     group  => "root",

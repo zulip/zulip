@@ -4,7 +4,7 @@ class zulip_internal::loadbalancer {
   include zulip::camo
 
   file { "/etc/nginx/zulip-include/":
-    require => Package[nginx],
+    require => Package["nginx-full"],
     recurse => true,
     owner  => "root",
     group  => "root",
@@ -14,7 +14,7 @@ class zulip_internal::loadbalancer {
   }
 
   file { "/etc/nginx/sites-available/loadbalancer":
-    require => Package[nginx],
+    require => Package["nginx-full"],
     ensure => file,
     owner  => "root",
     group  => "root",

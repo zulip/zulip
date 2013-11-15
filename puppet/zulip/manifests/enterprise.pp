@@ -13,7 +13,7 @@ class zulip::enterprise {
   }
 
   file { "/etc/nginx/sites-available/zulip-enterprise":
-    require => Package[nginx],
+    require => Package["nginx-full"],
     ensure => file,
     owner  => "root",
     group  => "root",
