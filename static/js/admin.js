@@ -6,10 +6,24 @@ function populate_users () {
     var tb = $("#admin_users_table");
     tb.empty();
 
-    realm_people_dict.each(function (person, key) {
-        if (!person.is_bot) {
-            tb.append(templates.render("admin_user_list", {person: person}));
+    var humans = [];
+    var bots = [];
+
+    realm_people_dict.each(function (user) {
+        if (user.is_bot) {
+            bots.push(user);
+        } else {
+            humans.push(user);
         }
+    });
+
+    humans = _.sortBy(humans, 'full_name');
+    bots = _.sortBy(bots, 'full_name');
+
+    var users = humans.concat(bots);
+
+    _.each(users, function (user) {
+        tb.append(templates.render("admin_user_list", {user: user}));
     });
 }
 
