@@ -4,7 +4,7 @@ class zulip::apache_sso {
   $apache_packages = [ "apache2", "libapache2-mod-wsgi", ]
   package { $apache_packages: ensure => "installed" }
 
-  apache2mod { [ "headers", "proxy", "proxy_http", "rewrite" ]:
+  apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "ssl", ]:
     ensure  => present,
     require => Package['apache2'],
   }
