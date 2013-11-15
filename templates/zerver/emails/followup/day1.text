@@ -20,7 +20,7 @@ https://zulip.com/hello has a nice overview of what we're up to, but here are a 
 4. Got automation? Check out https://zulip.com/integrations and https://zulip.com/api for easy integration with services like GitHub, Jenkins, Nagios, and Trac. They're super-easy to set up and make things a lot more useful.
 
 5. Emoji. Because :ramen:
-
+{% if enterprise is False %}
 Zulip is under active development, and we have a team of engineers standing by to respond to your feedback, so please report bugs and let us know what you think! There's a feedback tab under the gear icon in the upper-right corner, or you can e-mail us at feedback@zulip.com.
-
+{% endif %}
 -Waseem, for the Zulip team

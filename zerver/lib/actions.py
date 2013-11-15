@@ -1757,13 +1757,16 @@ def do_send_confirmation_email(invitee, referrer):
     """
     subject_template_path = 'confirmation/invite_email_subject.txt'
     body_template_path = 'confirmation/invite_email_body.txt'
+    context = {'referrer': referrer,
+               'support_email': settings.ZULIP_ADMINISTRATOR,
+               'enterprise': settings.ENTERPRISE}
 
     if referrer.realm.domain == 'mit.edu':
         subject_template_path = 'confirmation/mituser_invite_email_subject.txt'
         body_template_path = 'confirmation/mituser_invite_email_body.txt'
 
     Confirmation.objects.send_confirmation(
-        invitee, invitee.email, additional_context={'referrer': referrer},
+        invitee, invitee.email, additional_context=context,
         subject_template_path=subject_template_path,
         body_template_path=body_template_path)
 
@@ -1775,15 +1778,15 @@ def hashchange_encode(string):
 
 def pm_narrow_url(participants):
     participants.sort()
-    base_url = "https://zulip.com/#narrow/pm-with/"
+    base_url = "https://%s/#narrow/pm-with/" % (settings.EXTERNAL_HOST,)
     return base_url + hashchange_encode(",".join(participants))
 
 def stream_narrow_url(stream):
-    base_url = "https://zulip.com/#narrow/stream/"
+    base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
     return base_url + hashchange_encode(stream)
 
 def topic_narrow_url(stream, topic):
-    base_url = "https://zulip.com/#narrow/stream/"
+    base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
     return "%s%s/topic/%s" % (base_url, hashchange_encode(stream),
                               hashchange_encode(topic))
 
@@ -1895,8 +1898,9 @@ def do_send_missedmessage_events(user_profile, missed_messages):
         template_payload = {'name': user_profile.full_name,
                             'messages': build_message_list(user_profile, missed_messages),
                             'message_count': len(missed_messages),
-                            'url': 'https://zulip.com',
-                            'reply_warning': False}
+                            'url': 'https://%s' % (settings.EXTERNAL_URL,),
+                            'reply_warning': False,
+                            'externl_host': settings.EXTERNAL_URL}
         headers = {}
         if all(msg.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL)
                 for msg in missed_messages):
@@ -1917,10 +1921,10 @@ def do_send_missedmessage_events(user_profile, missed_messages):
             # There are some @-mentions mixed in with personals
             template_payload['mention'] = True
             template_payload['reply_warning'] = True
-            headers['Reply-To'] = "Nobody <noreply@zulip.com>"
+            headers['Reply-To'] = "Nobody <%>" % (settings.NOREPLY_EMAIL_ADDRESS,)
 
         subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
-        from_email = "%s (via Zulip) <noreply@zulip.com>" % (sender_str)
+        from_email = "%s (via Zulip) <%>" % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
 
         text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
         html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
@@ -2147,7 +2151,8 @@ def send_future_email(recipients, email_html, email_text, subject,
     # Zulip Enterprise implementation
     if not mail_client:
         if sender is None:
-            sender = {'email': "noreply@%" % (settings.EXTERNAL_HOST,), 'name': 'Zulip'}
+            # This may likely overridden by settings.DEFAULT_FROM_EMAIL
+            sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
         for recipient in recipients:
             email_fields = {'email_html': email_html,
                             'email_subject': subject,
@@ -2163,7 +2168,7 @@ def send_future_email(recipients, email_html, email_text, subject,
 
     # Mandrill implementation
     if sender is None:
-        sender = {'email': 'noreply@zulip.com', 'name': 'Zulip'}
+        sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
 
     message = {'from_email': sender['email'],
                'from_name': sender['name'],
@@ -2189,7 +2194,7 @@ def send_future_email(recipients, email_html, email_text, subject,
 
 def send_local_email_template_with_delay(recipients, template_prefix,
                                          template_payload, delay,
-                                         tags=[], sender={'email': 'noreply@zulip.com', 'name': 'Zulip'}):
+                                         tags=[], sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}):
     html_content = loader.render_to_string(template_prefix + ".html", template_payload)
     text_content = loader.render_to_string(template_prefix + ".text", template_payload)
     subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()

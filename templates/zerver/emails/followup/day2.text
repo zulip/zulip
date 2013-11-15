@@ -16,6 +16,6 @@ Some tips:
 
 * Bad topics: "What do people think of this?" "Where should we go to lunch?"
 
-Try it out now! https://zulip.com
+Try it out now! https://{{ external_host }}
 
 -Waseem, for the Zulip team

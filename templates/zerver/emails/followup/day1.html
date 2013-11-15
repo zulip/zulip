@@ -7,7 +7,7 @@
 <body>
 <table width="80%" style="align:center; max-width:800px" align="center">
 <tr><td>
-<a href="https://zulip.com/"><img style="max-height:75px; height:75px;"  height="75px" alt="Zulip" title="Zulip" src="https://zulip.com/static/images/landing-page/zulip-header.png" /></a>
+<a href="https://{{ external_host }}/"><img style="max-height:75px; height:75px;"  height="75px" alt="Zulip" title="Zulip" src="https://{{ external_host }}/static/images/landing-page/zulip-header.png" /></a>
 
 <h3 style="font-family:Arial; font-size:30px; margin: 5px 0px; color:#555">we love our users</h3>
 </td></tr>
@@ -17,10 +17,10 @@
 
 <p>Welcome to Zulip!</p>
 
-<p><a href="https://zulip.com/hello" style="color:#08c">zulip.com/hello</a> has a nice overview of what we're up to, but here are a few tips that'll help you get the most out of it:</p>
+<p><a href="https://{{ external_host }}/hello" style="color:#08c">{{ external_host }}/hello</a> has a nice overview of what we're up to, but here are a few tips that'll help you get the most out of it:</p>
 
 <ol>
-    <li>Zulip works best when it's always open, so <a href="https://zulip.com/apps" style="color:#08c">grab our apps</a>! (Mac, Windows, Linux, Android, iOS)</li>
+    <li>Zulip works best when it's always open, so <a href="https://{{ external_host }}/apps" style="color:#08c">grab our apps</a>! (Mac, Windows, Linux, Android, iOS)</li>
 
     <li>Keyboard shortcuts: learn about them in the Keyboard Shortcuts tab under the gear icon. (Or press '?')</li>
 
@@ -34,12 +34,14 @@ def fn(arg):
     <pre style="padding:9.5px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace"><span style="color:#008000; font-weight:bold">def</span> <span style="color:#00f">fn</span>(arg):
     <span style="color:#008000; font-weight:bold">print</span> <span style="color:#ba2121">"Hello"</span></pre>
     </li>
-<li>Got automation? Check out <a href="https://zulip.com/integrations" style="color:#08c">our integrations</a> and <a href="https://zulip.com/api" style="color:#08c">API</a> for easy integration with services like GitHub, Jenkins, Nagios, and Trac. They're super-easy to set up and make things a lot more useful.</li>
+<li>Got automation? Check out <a href="https://{{ external_host }}/integrations" style="color:#08c">our integrations</a> and <a href="https://{{ external_host }}/api" style="color:#08c">API</a> for easy integration with services like GitHub, Jenkins, Nagios, and Trac. They're super-easy to set up and make things a lot more useful.</li>
 
-<li>Emoji. Because <pre style="display:inline; color:#D14; padding:2px 4px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace">:ramen:</pre> means <img src="https://zulip.com/static/third/gemoji/images/emoji/ramen.png" style="max-height:20px; height:20px;" height="20px" />.</li>
+<li>Emoji. Because <pre style="display:inline; color:#D14; padding:2px 4px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace">:ramen:</pre> means <img src="https://{{ external_host }}/static/third/gemoji/images/emoji/ramen.png" style="max-height:20px; height:20px;" height="20px" />.</li>
 </ol>
 
+{% if enterprise is False %}
 <p>Zulip is under active development, and we have a team of engineers standing by to respond to your feedback, so please report bugs and let us know what you think! There's a feedback tab under the gear icon in the upper-right corner, or you can e-mail us at <a href="mailto:feedback@zulip.com" style="color:#08c">feedback@zulip.com</a>.</p>
+{% endif %}
 
 </p>-Waseem, for the Zulip team</p>
 </td></tr>

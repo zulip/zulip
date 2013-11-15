@@ -5,6 +5,7 @@ import datetime
 
 from django.db.models import Q
 from django.template import loader
+from django.conf import settings
 
 from zerver.lib.actions import build_message_list, hashchange_encode, \
     send_future_email
@@ -84,7 +85,7 @@ def gather_new_streams(user_profile, threshold):
     new_streams = list(Stream.objects.filter(
             realm=user_profile.realm, date_created__gt=threshold))
 
-    base_url = "https://zulip.com/#narrow/stream/"
+    base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
 
     streams_html = []
     streams_plain = []
@@ -117,7 +118,7 @@ def handle_digest_email(user_profile_id, cutoff):
         message__pub_date__gt=cutoff).order_by("message__pub_date")
 
     # Start building email template data.
-    template_payload = {'name': user_profile.full_name}
+    template_payload = {'name': user_profile.full_name, 'external_host': settings.EXTERNAL_HOST}
 
     # Gather recent missed PMs, re-using the missed PM email logic.
     pms = all_messages.filter(~Q(message__recipient__type=Recipient.STREAM))
@@ -159,7 +160,7 @@ def handle_digest_email(user_profile_id, cutoff):
 
     recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
     subject = "While you've been gone: the Zulip Digest"
-    sender = {'email': 'support@zulip.com', 'name': 'Zulip Support'}
+    sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip Support'}
 
     # We don't want to send emails containing almost no information.
     if enough_traffic(template_payload["unread_pms"],

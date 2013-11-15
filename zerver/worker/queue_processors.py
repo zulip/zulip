@@ -134,10 +134,14 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         link = Confirmation.objects.get_link_for_object(invitee)
         send_local_email_template_with_delay([{'email': data["email"], 'name': ""}],
                                              "zerver/emails/invitation/invitation_reminder_email",
-                                             {'activate_url': link, 'referrer': referrer},
+                                             {'activate_url': link,
+                                              'referrer': referrer,
+                                              'enterprise': settings.ENTERPRISE,
+                                              'external_host': settings.EXTERNAL_HOST,
+                                              'support_email': settings.ZULIP_ADMINISTRATOR},
                                              datetime.timedelta(days=2),
                                              tags=["invitation-reminders"],
-                                             sender={'email': 'zulip@zulip.com', 'name': 'Zulip'})
+                                             sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
