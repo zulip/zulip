@@ -2,7 +2,6 @@ class zulip::enterprise {
   include zulip::base
   include zulip::app_frontend
   include zulip::postgres_appdb
-  include zulip::camo
 
   apt::key {"A529EF65":
     source  =>  "http://apt.zulip.com/enterprise.asc",

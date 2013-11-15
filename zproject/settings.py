@@ -261,6 +261,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'API_SUPER_USERS': set(),
                     'ADMINS': '',
                     'INLINE_IMAGE_PREVIEW': True,
+                    'CAMO_URI': None,
                     'ENABLE_FEEDBACK': True,
                     }
 

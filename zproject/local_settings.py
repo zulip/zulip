@@ -49,6 +49,8 @@ MANDRILL_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxx'
 
 # This should be synced with our camo installation
 CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+CAMO_URI = 'https://external-content.zulipcdn.net/'
+
 
 # Leave EMAIL_HOST unset or empty if you do not wish for emails to be sent
 EMAIL_HOST = 'smtp.gmail.com'

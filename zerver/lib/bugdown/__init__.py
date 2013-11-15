@@ -154,7 +154,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             digest = hmac.new(settings.CAMO_KEY, url, hashlib.sha1).hexdigest()
             encoded_url = url.encode("hex")
-            img.set("src", "https://external-content.zulipcdn.net/%s/%s" % (digest, encoded_url))
+            img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, encoded_url))
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url):
@@ -714,7 +714,9 @@ class Bugdown(markdown.Extension):
                                  "_begin")
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
-        md.treeprocessors.add("rewrite_to_https", InlineHttpsProcessor(md), "_end")
+
+        if settings.CAMO_URI:
+            md.treeprocessors.add("rewrite_to_https", InlineHttpsProcessor(md), "_end")
 
         if self.getConfig("realm") == "mit.edu/zephyr_mirror":
             # Disable almost all inline patterns for mit.edu users' traffic that is mirrored
