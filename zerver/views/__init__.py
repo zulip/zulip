@@ -725,6 +725,7 @@ def home(request):
         muted_topics          = register_ret['muted_topics'],
         show_admin            = user_profile.show_admin,
         notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
+        name_changes_disabled = settings.NAME_CHANGES_DISABLED,
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0
     ))
 
@@ -1745,11 +1746,15 @@ def json_change_settings(request, user_profile,
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":
-        if user_profile.realm.domain == "users.customer4.invalid":
+        if settings.NAME_CHANGES_DISABLED or \
+           user_profile.realm.domain == "users.customer4.invalid":
             # At the request of the facilitators, CUSTOMER4
             # students can't change their names. Failingly silently is
             # fine -- they can't do it through the UI, so they'd have
             # to be trying to break the rules.
+            #
+            # Additionally, if this install has disabled name changes altogether,
+            # ignore name changes as well
             pass
         else:
             new_full_name = full_name.strip()

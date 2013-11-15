@@ -246,6 +246,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'LOCAL_UPLOADS_DIR': None,
                     'DROPBOX_APP_KEY': '',
                     'ERROR_REPORTING': True,
+                    'NAME_CHANGES_DISABLED': False,
                     'DEPLOYMENT_ROLE_NAME': ADMIN_DOMAIN,
                     # The following bots only exist in non-ENTERPRISE installs
                     'ERROR_BOT': None,

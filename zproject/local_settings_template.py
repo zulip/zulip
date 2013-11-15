@@ -71,6 +71,10 @@ INLINE_IMAGE_PREVIEW = True
 # setting up the appropriate integration.
 LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 
+# Controls whether name changes are completely disabled for this installation
+# This is useful in settings where you're syncing names from an integrated LDAP/Active Directory
+NAME_CHANGES_DISABLED = False
+
 ### TWITTER INTEGRATION
 
 # Zulip supports showing inline Tweet previews when a tweet is linked

@@ -55,12 +55,16 @@ $(function () {
 
     avatar.build_user_avatar_widget(upload_avatar);
 
-    if (page_params.domain === "users.customer4.invalid") {
+    if (page_params.domain === "users.customer4.invalid" ||
+        page_params.name_changes_disabled) {
         // At the request of the facilitators, CUSTOMER4 users
         // can't change their names, so don't show that as a settings
         // option. This is also disabled through the JSON UI. Once we
         // have the infrastructure for administrative policies, we can
         // handle this more gracefully.
+        //
+        // Additionally, if this install has disabled name changes, hide the
+        // container
         $("#name_change_container").hide();
     }
 
