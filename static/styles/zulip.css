@@ -213,21 +213,6 @@ li,
     border-radius: 50px;
  }
 
-.header-main .gravatar-profile {
-    width: 25px;
-    height: 25px;
-    background-size: 25px 25px;
-    background-repeat: none;
-    border-radius: 25px;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
-    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
-    -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
-    position: absolute;
-    left: 5px;
-    top: 7px;
-}
-
-
 /* Classes for hiding and showing controls */
 
 .notdisplayed {
@@ -309,30 +294,6 @@ a:hover code {
 
 #left-sidebar .brand {
     display: table-row;
-}
-
-#left-sidebar .gravatar-profile {
-    width: 35px;
-    height: 35px;
-    background-size: 35px 35px;
-    background-repeat: none;
-    border-radius: 35px;
-    border: 1px solid #CCC;
-    cursor: pointer;
-}
-
-#my_information {
-    display: table-cell;
-    vertical-align: middle;
-    padding-left: 0.5em;
-    cursor: pointer;
-}
-
-#my_information .my_fullname {
-    font-weight: bold;
-    display: block;
-    word-wrap: break-word;
-    width: 150px;
 }
 
 .edit-profile {
@@ -3272,11 +3233,6 @@ div.edit_bot {
 #home .alert-bar .close-alert-icon:hover{
     opacity: 0.7;
     cursor: pointer;
-}
-
-#settings-change-box .gravatar-profile {
-    width: 60px;
-    height: 60px;
 }
 
 #notification-settings .control-group {

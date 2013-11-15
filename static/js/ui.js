@@ -325,9 +325,7 @@ function get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.bottom_sidebar_height = viewport_height - top_navbar_height
-        - $(".upper_sidebar").outerHeight(true)
-        - 40;
+    res.bottom_sidebar_height = viewport_height - top_navbar_height - 40;
 
     res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
 
@@ -414,7 +412,6 @@ function left_userlist_get_new_heights() {
 
     res.bottom_sidebar_height = viewport_height
                                 - parseInt($("#left-sidebar").css("marginTop"),10)
-                                - $(".upper_sidebar").outerHeight(true)
                                 - parseInt($(".bottom_sidebar").css("marginTop"),10);
 
 
@@ -525,11 +522,6 @@ function resizehandler(e) {
     var res = unread.get_counts();
     notifications_bar.update(res.home_unread_messages);
 }
-
-$(function () {
-    // When the user's profile picture loads this can change the height of the sidebar
-    $("img.gravatar-profile").bind('load', resizehandler);
-});
 
 var is_floating_recipient_bar_showing = false;
 
@@ -1026,10 +1018,6 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             var message = "Updated settings!";
             var result = $.parseJSON(xhr.responseText);
-
-            if (result.full_name !== undefined) {
-                $(".my_fullname").text(result.full_name);
-            }
 
             settings_status.removeClass(status_classes)
                 .addClass('alert-success')

@@ -45,7 +45,6 @@ $(function () {
             success: function (data) {
                 util.destroy_loading_indicator($("#upload_avatar_spinner"));
                 var url = data.avatar_url + '&stamp=' + avatar_stamp;
-                $(".gravatar-profile").expectOne().css("background-image", "url('" + url + "')");
                 $("#user-settings-avatar").expectOne().attr("src", url);
                 avatar_stamp += 1;
             }

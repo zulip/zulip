@@ -96,7 +96,6 @@ function update_person(person) {
     }
     if (person.email === page_params.email) {
         page_params.fullname = person.full_name;
-        $("#my_information .my_fullname").text(person.full_name);
     }
     activity.set_user_statuses([]);
 
