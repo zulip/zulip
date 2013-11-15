@@ -9,6 +9,7 @@ function Socket(url) {
     this._requests = {};
     this._connection_failures = 0;
     this._reconnect_timeout_id = null;
+    this._heartbeat_timeout_id = null;
 
     this._is_unloading = false;
     $(window).on("unload", function () {
@@ -125,6 +126,18 @@ Socket.prototype = {
             that._process_response(event.data.req_id, event.data.response);
         };
 
+        sockjs.onheartbeat = function Socket__socjks_onheartbeat() {
+            if (that._heartbeat_timeout_id !== null) {
+                clearTimeout(that._heartbeat_timeout_id);
+                that._heartbeat_timeout_id = null;
+            }
+            that._heartbeat_timeout_id = setTimeout(function () {
+                that._heartbeat_timeout_id = null;
+                blueslip.info("Missed too many hearbeats");
+                that._try_to_reconnect();
+            }, 60000);
+        };
+
         sockjs.onclose = function Socket__sockjs_onclose() {
             if (that._is_unloading) {
                 return;
@@ -161,6 +174,11 @@ Socket.prototype = {
         if (this._reconnect_timeout_id !== null) {
             clearTimeout(this._reconnect_timeout_id);
             this._reconnect_timeout_id = null;
+        }
+
+        if (this._heartbeat_timeout_id !== null) {
+            clearTimeout(that._heartbeat_timeout_id);
+            this._heartbeat_timeout_id = null;
         }
 
         this._is_open = false;
