@@ -55,7 +55,9 @@ exports.summarize_read_while_narrowed = false;
 exports.collapsible = false;
 
 
-exports.single_message_narrowing = page_params.staging || ('customer12.invalid' === page_params.domain);
+exports.single_message_narrowing = page_params.staging ||
+  _.contains(['customer12.invalid', 'customer10.invalid'], page_params.domain);
+
 return exports;
 
 }());
