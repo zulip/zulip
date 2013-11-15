@@ -19,7 +19,8 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
-    set_default_streams, get_emails_from_user_ids
+    set_default_streams, get_emails_from_user_ids, \
+    do_deactivate, do_reactivate
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -836,6 +837,14 @@ class UserChangesTest(AuthedTestCase):
         self.assertNotEqual(old_api_key, new_api_key)
         user = get_user_profile_by_email(email)
         self.assertEqual(new_api_key, user.api_key)
+
+class ActivateTest(TestCase):
+    def test_basics(self):
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        do_deactivate(user)
+        self.assertFalse(user.is_active)
+        do_reactivate(user)
+        self.assertTrue(user.is_active)
 
 class BotTest(AuthedTestCase):
     def assert_num_bots_equal(self, count):

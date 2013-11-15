@@ -1055,6 +1055,19 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
 
     notify_created_user(user_profile)
 
+def do_reactivate(user_profile):
+    # Unlike do_activate_user, this is meant for re-activating existing users,
+    # so it doesn't reset their password, etc.
+    user_profile.is_active = True
+    user_profile.save(update_fields=["is_active"])
+
+    domain = user_profile.realm.domain
+    log_event({'type': 'user_reactivated',
+               'user': user_profile.email,
+               'domain': domain})
+
+    notify_created_user(user_profile)
+
 def do_change_password(user_profile, password, log=True, commit=True,
                        hashed_password=False):
     if hashed_password:
