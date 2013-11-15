@@ -35,7 +35,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     recipient_for_emails, extract_recipients, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_message, internal_prep_message, \
-    do_send_messages, get_default_subs, do_deactivate, \
+    do_send_messages, get_default_subs, do_deactivate, do_reactivate, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     do_set_muted_topics, do_rename_stream, \
@@ -2023,6 +2023,18 @@ def deactivate_user_backend(request, user_profile, email):
         return json_error('Insufficient permission')
 
     do_deactivate(target)
+    return json_success({})
+
+def reactivate_user_backend(request, user_profile, email):
+    try:
+        target = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        return json_error('No such user')
+
+    if not user_profile.can_admin_user(target):
+        return json_error('Insufficient permission')
+
+    do_reactivate(target)
     return json_success({})
 
 def avatar(request, email):

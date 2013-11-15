@@ -838,12 +838,30 @@ class UserChangesTest(AuthedTestCase):
         user = get_user_profile_by_email(email)
         self.assertEqual(new_api_key, user.api_key)
 
-class ActivateTest(TestCase):
+class ActivateTest(AuthedTestCase):
     def test_basics(self):
         user = get_user_profile_by_email('hamlet@zulip.com')
         do_deactivate(user)
         self.assertFalse(user.is_active)
         do_reactivate(user)
+        self.assertTrue(user.is_active)
+
+    def test_api(self):
+        admin = get_user_profile_by_email('othello@zulip.com')
+        assign_perm('administer', admin, admin.realm)
+        self.login('othello@zulip.com')
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertTrue(user.is_active)
+
+        result = self.client.delete('/json/users/hamlet@zulip.com')
+        self.assert_json_success(result)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertFalse(user.is_active)
+
+        result = self.client.post('/json/users/hamlet@zulip.com/reactivate')
+        self.assert_json_success(result)
+        user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.is_active)
 
 class BotTest(AuthedTestCase):
