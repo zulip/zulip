@@ -30,7 +30,7 @@ function populate_users () {
 exports.setup_page = function () {
     populate_users();
 
-    $("#admin_users_table").on("click", ".activation_toggle_button", function (e) {
+    $("#admin_users_table").on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 

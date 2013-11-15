@@ -7,15 +7,8 @@
       <span class="email">{{email}}</span>
   </td>
   <td>
-      <button class="btn activation_toggle_button btn-danger"
-	      {{#inactive}}disabled{{/inactive}}
-              type="button" name="activation_toggle">
-        {{#inactive}}
-        Reactivate
-        {{/inactive}}
-        {{^inactive}}
+      <button class="btn deactivate btn-danger">
         Deactivate
-        {{/inactive}}
       </button>
   </td>
 </tr>
