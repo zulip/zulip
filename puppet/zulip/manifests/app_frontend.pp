@@ -74,6 +74,12 @@ class zulip::app_frontend {
     source => "puppet:///modules/zulip/nginx/zulip-include/",
     notify => Service["nginx"],
   }
+  file { "/etc/nginx/zulip-include/app.d/":
+    ensure => directory,
+    owner => "root",
+    group => "root",
+    mode => 755,
+  }
   file { "/etc/memcached.conf":
     require => Package[memcached],
     ensure => file,
