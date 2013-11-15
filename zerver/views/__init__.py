@@ -480,7 +480,8 @@ def maybe_send_to_registration(request, email, full_name=''):
             prereg_user = create_preregistration_user(email, request)
 
         return redirect("".join((
-            "/",
+            "https://",
+            settings.EXTERNAL_HOST,
             # Split this so we only get the part after the /
             Confirmation.objects.get_link_for_object(prereg_user).split("/", 3)[3],
             '?full_name=',
