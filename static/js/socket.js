@@ -6,7 +6,7 @@ function Socket(url) {
     this._next_req_id = 0;
     this._requests = {};
     this._connection_failures = 0;
-    this._timeout_id = null;
+    this._reconnect_timeout_id = null;
 
     this._is_unloading = false;
     $(window).on("unload", function () {
@@ -28,8 +28,8 @@ Socket.prototype = {
     send: function Socket_send(msg, success, error) {
         if (! this._can_send()) {
             this._send_queue.push({msg: msg, success: success, error: error});
-            if (this._timeout_id !== null) {
-                clearTimeout(this._timeout_id);
+            if (this._reconnect_timeout_id !== null) {
+                clearTimeout(this._reconnect_timeout_id);
             }
             this._do_reconnect();
             return;
@@ -153,8 +153,8 @@ Socket.prototype = {
             wait_time = Math.min(90, Math.exp(this._connection_failures/2)) * 1000;
         }
 
-        this._timeout_id = setTimeout(function () {
-            that._timeout_id = null;
+        this._reconnect_timeout_id = setTimeout(function () {
+            that._reconnect_timeout_id = null;
             that._do_reconnect();
         }, wait_time);
     }
