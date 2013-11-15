@@ -4058,11 +4058,11 @@ class FreshdeskHookTests(AuthedTestCase):
         "Dispatch'r" service.
         """
         msg = self.generate_webhook_response("ticket_created")
-        self.assertEqual(msg.subject, u"#11: Test ticket subject")
-        self.assertEqual(msg.content, """Requester Bob <requester-bob@example.com> created [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
+        self.assertEqual(msg.subject, u"#11: Test ticket subject ☃")
+        self.assertEqual(msg.content, u"""Requester ☃ Bob <requester-bob@example.com> created [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
 ~~~ quote
-Test ticket description.
+Test ticket description ☃.
 ~~~
 
 Type: **Incident**
@@ -4075,7 +4075,7 @@ Status: **Pending**""")
         Freshdesk's "Observer" service.
         """
         msg = self.generate_webhook_response("status_changed")
-        self.assertEqual(msg.subject, u"#11: Test ticket subject")
+        self.assertEqual(msg.subject, u"#11: Test ticket subject ☃")
         self.assertEqual(msg.content, """Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
 Status: **Resolved** => **Waiting on Customer**""")
@@ -4113,7 +4113,7 @@ Priority: **High** => **Low**""")
         preserve links and images.
         """
         msg = self.generate_webhook_response("inline_images")
-        self.assertEqual(msg.subject, u"#12: Not enough guinea pigs")
+        self.assertEqual(msg.subject, u"#12: Not enough ☃ guinea pigs")
         self.assertIn("[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)", msg.content)
 
 class RateLimitTests(AuthedTestCase):
