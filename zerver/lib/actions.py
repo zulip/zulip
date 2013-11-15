@@ -2227,10 +2227,11 @@ def convert_html_to_markdown(html):
         except OSError:
             continue
 
-    markdown = p.communicate(input=html)[0].strip()
+    markdown = p.communicate(input=html.encode("utf-8"))[0].strip()
     # We want images to get linked and inline previewed, but html2text will turn
     # them into links of the form `![](http://foo.com/image.png)`, which is
     # ugly. Run a regex over the resulting description, turning links of the
     # form `![](http://foo.com/image.png?12345)` into
     # `[image.png](http://foo.com/image.png)`.
-    return re.sub(r"!\[\]\((\S*)/(\S*)\?(\S*)\)", r"[\2](\1/\2)", markdown)
+    return re.sub(r"!\[\]\((\S*)/(\S*)\?(\S*)\)",
+                  r"[\2](\1/\2)", markdown).decode("utf-8")
