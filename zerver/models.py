@@ -526,12 +526,14 @@ class Message(models.Model):
             domain = "mit.edu/zephyr_mirror"
         rendered_content = bugdown.convert(content, domain, self)
 
-        # For /me syntax, we pass back the raw content.  The JS can detect /me
+        # For /me syntax, we pass back a /me prefix.  The JS can detect /me
         # (no paragraph tag) and do special rendering.  We might eventually
         # want to handle this with a flag, but it's a bit tough to deliver the
         # flag through all code paths, given the current code structure.
-        if content.startswith('/me ') and rendered_content == '<p>%s</p>' % (content,):
-            return content
+        if content.startswith('/me ') and '\n' not in content:
+            if rendered_content.startswith('<p>') and rendered_content.endswith('</p>'):
+                rendered_content = rendered_content[3:-4]
+                return rendered_content
 
         return rendered_content
 
