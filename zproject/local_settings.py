@@ -51,14 +51,17 @@ MANDRILL_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxx'
 CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 CAMO_URI = 'https://external-content.zulipcdn.net/'
 
-
 # Leave EMAIL_HOST unset or empty if you do not wish for emails to be sent
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL = False
+
+# We use mandrill, so this doesn't actually get used on our hosted deployment
+DEFAULT_FROM_EMAIL = "Zulip <zulip@zulip.com>"
+# The noreply address to be used as Reply-To for certain generated emails.
+NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
@@ -173,6 +176,7 @@ NAGIOS_RECEIVE_BOT = 'othello@zulip.com'
 NAGIOS_STAGING_SEND_BOT = 'iago@zulip.com'
 NAGIOS_STAGING_RECEIVE_BOT = 'cordelia@zulip.com'
 
+# Also used for support email in emails templates
 ZULIP_ADMINISTRATOR = 'support@zulip.com'
 
 # TODO: Store this info in the database

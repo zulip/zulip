@@ -257,7 +257,6 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'NAGIOS_STAGING_SEND_BOT': None,
                     'NAGIOS_STAGING_RECEIVE_BOT': None,
                     'APNS_CERT_FILE': None,
-                    'ZULIP_ADMINISTRATOR': '',
                     'INITIAL_PASSWORD_SALT': None,
                     'FEEDBACK_BOT': 'feedback@zulip.com',
                     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
@@ -266,6 +265,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'INLINE_IMAGE_PREVIEW': True,
                     'CAMO_URI': None,
                     'ENABLE_FEEDBACK': True,
+                    'ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL': False,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
@@ -288,6 +288,8 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", ""),
                      # case, it seems worth having in this list
                      ("SECRET_KEY", ""),
                      ("AUTHENTICATION_BACKENDS", ()),
+                     ("NOREPLY_EMAIL_ADDRESS", ""),
+                     ("DEFAULT_FROM_EMAIL", ""),
                      ]
 
 INTERNAL_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
@@ -693,12 +695,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 ACCOUNT_ACTIVATION_DAYS=7
-
-DEFAULT_FROM_EMAIL = "Zulip <%s>" % (EMAIL_HOST_USER,)
-# In some email setups, a single inbox may be setup to be a wildcard, so in that case allow
-# differing senders. Otherwise, *always* use the DEFAULT_FROM_EMAIL when not sending via
-# mandrill (i.e. in the localserver case)
-ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL = False
 
 LOGIN_REDIRECT_URL='/'
 OPENID_SSO_SERVER_URL = 'https://www.google.com/accounts/o8/id'

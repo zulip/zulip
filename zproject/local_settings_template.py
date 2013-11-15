@@ -7,7 +7,7 @@
 EXTERNAL_HOST = ''
 
 # The email address for the person or team who maintain the Zulip
-# Enterprise installation.
+# Enterprise installation. Will also get support emails. (e.g. zulip-admin@example.com)
 ZULIP_ADMINISTRATOR = ''
 
 # The domain for your organization, e.g. example.com
@@ -42,6 +42,15 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
+# The email From address to be used for automatically generated emails
+DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
+# The noreply address to be used as Reply-To for certain generated emails.
+# Messages sent to this address should not be delivered anywhere.
+# It is specified as the From address in some cases, but will be clobbered in
+# Zulip Enterprise installs by DEFAULT_FROM_EMAIL, unless you have
+# ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL set to True
+NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
+
 ### OPTIONAL SETTINGS
 
 # Controls whether session cookies expire when the browser closes
@@ -74,6 +83,11 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # Controls whether name changes are completely disabled for this installation
 # This is useful in settings where you're syncing names from an integrated LDAP/Active Directory
 NAME_CHANGES_DISABLED = False
+
+# In some email setups, a single inbox may be setup to be a wildcard (*@example.com),
+# so in that case allow differing senders. Otherwise, *always* use the DEFAULT_FROM_EMAIL
+# when sending in Zulip Enterprise deploys
+ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL = False
 
 ### TWITTER INTEGRATION
 
