@@ -265,6 +265,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'INLINE_IMAGE_PREVIEW': True,
                     'CAMO_URI': None,
                     'ENABLE_FEEDBACK': True,
+                    'ENABLE_GRAVATAR': True,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():

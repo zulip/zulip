@@ -36,6 +36,8 @@ def get_avatar_url(avatar_source, email):
         else:
             bucket = settings.S3_AVATAR_BUCKET
             return "https://%s.s3.amazonaws.com/%s?x=x" % (bucket, hash_key)
-    else:
+    elif settings.ENABLE_GRAVATAR:
         hash_key = gravatar_hash(email)
         return "https://secure.gravatar.com/avatar/%s?d=identicon" % (hash_key,)
+    else:
+        return '/static/images/default-avatar.png?x=x'
