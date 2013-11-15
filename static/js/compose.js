@@ -768,6 +768,92 @@ $(function () {
         Dropbox.choose(options);
     });
 
+    function uploadStarted(i, file, len) {
+        $("#compose-send-button").attr("disabled", "");
+        $("#send-status").addClass("alert-info")
+                         .show();
+        $(".send-status-close").one('click', abort_xhr);
+        $("#error-msg").html(
+            $("<p>").text("Uploading…")
+                    .after('<div class="progress progress-striped active">' +
+                           '<div class="bar" id="upload-bar" style="width: 00%;"></div>' +
+                           '</div>'));
+    }
+
+    function progressUpdated(i, file, progress) {
+        $("#upload-bar").width(progress + "%");
+    }
+
+    function uploadError(err, file) {
+        var msg;
+        $("#send-status").addClass("alert-error")
+                        .removeClass("alert-info");
+        $("#compose-send-button").removeAttr("disabled");
+        switch(err) {
+            case 'BrowserNotSupported':
+                msg = "File upload is not yet available for your browser.";
+                break;
+            case 'TooManyFiles':
+                msg = "Unable to upload that many files at once.";
+                break;
+            case 'FileTooLarge':
+                // sanitizatio not needed as the file name is not potentially parsed as HTML, etc.
+                msg = "\"" + file.name + "\" was too large; the maximum file size is 25MiB.";
+                break;
+            case 'REQUEST ENTITY TOO LARGE':
+                msg = "Sorry, the file was too large.";
+                break;
+            default:
+                msg = "An unknown error occured.";
+                break;
+        }
+        $("#error-msg").text(msg);
+    }
+
+    function uploadFinished(i, file, response, time) {
+        if (response.uri === undefined) {
+            return;
+        }
+        var textbox = $("#new_message_content"),
+            split_uri = response.uri.split("/"),
+            filename = split_uri[split_uri.length - 1];
+        // Urgh, yet another hack to make sure we're "composing"
+        // when text gets added into the composebox.
+        if (!compose.composing()) {
+            compose.start('stream');
+        }
+
+        var uri = make_upload_absolute(response.uri);
+
+        if (i === -1) {
+            // This is a paste, so there's no filename. Show the image directly
+            textbox.val(textbox.val() + "[pasted image](" + uri + ") ");
+        } else {
+            // This is a dropped file, so make the filename a link to the image
+            textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
+        }
+        autosize_textarea();
+        $("#compose-send-button").removeAttr("disabled");
+        $("#send-status").removeClass("alert-info")
+                         .hide();
+
+        // In order to upload the same file twice in a row, we need to clear out
+        // the #file_input element, so that the next time we use the file dialog,
+        // an actual change event is fired.  This is extracted to a function
+        // to abstract away some IE hacks.
+        clear_out_file_list($("#file_input"));
+    }
+
+    // Expose the internal file upload functions to the desktop app,
+    // since the linux/windows QtWebkit based apps upload images
+    // directly to the server
+    if (window.bridge) {
+        exports.uploadStarted = uploadStarted;
+        exports.progressUpdated = progressUpdated;
+        exports.uploadError = uploadError;
+        exports.uploadFinished = uploadFinished;
+    }
+
     $("#compose").filedrop({
         url: "json/upload_file",
         fallback_id: "file_input",
@@ -778,78 +864,10 @@ $(function () {
             csrfmiddlewaretoken: csrf_token
         },
         raw_droppable: ['text/uri-list', 'text/plain'],
-        drop: function (i, file, len) {
-            $("#compose-send-button").attr("disabled", "");
-            $("#send-status").addClass("alert-info")
-                             .show();
-            $(".send-status-close").one('click', abort_xhr);
-            $("#error-msg").html(
-                $("<p>").text("Uploading…")
-                        .after('<div class="progress progress-striped active">' +
-                               '<div class="bar" id="upload-bar" style="width: 00%;"></div>' +
-                               '</div>'));
-        },
-        progressUpdated: function (i, file, progress) {
-            $("#upload-bar").width(progress + "%");
-        },
-        error: function (err, file) {
-            var msg;
-            $("#send-status").addClass("alert-error")
-                            .removeClass("alert-info");
-            $("#compose-send-button").removeAttr("disabled");
-            switch(err) {
-                case 'BrowserNotSupported':
-                    msg = "File upload is not yet available for your browser.";
-                    break;
-                case 'TooManyFiles':
-                    msg = "Unable to upload that many files at once.";
-                    break;
-                case 'FileTooLarge':
-                    // sanitizatio not needed as the file name is not potentially parsed as HTML, etc.
-                    msg = "\"" + file.name + "\" was too large; the maximum file size is 25MiB.";
-                    break;
-                case 'REQUEST ENTITY TOO LARGE':
-                    msg = "Sorry, the file was too large.";
-                    break;
-                default:
-                    msg = "An unknown error occured.";
-                    break;
-            }
-            $("#error-msg").text(msg);
-        },
-        uploadFinished: function (i, file, response, time) {
-            if (response.uri === undefined) {
-                return;
-            }
-            var textbox = $("#new_message_content"),
-                split_uri = response.uri.split("/"),
-                filename = split_uri[split_uri.length - 1];
-            // Urgh, yet another hack to make sure we're "composing"
-            // when text gets added into the composebox.
-            if (!compose.composing()) {
-                compose.start('stream');
-            }
-
-            var uri = make_upload_absolute(response.uri);
-
-            if (i === -1) {
-                // This is a paste, so there's no filename. Show the image directly
-                textbox.val(textbox.val() + "[pasted image](" + uri + ") ");
-            } else {
-                // This is a dropped file, so make the filename a link to the image
-                textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
-            }
-            autosize_textarea();
-            $("#compose-send-button").removeAttr("disabled");
-            $("#send-status").removeClass("alert-info")
-                             .hide();
-
-            // In order to upload the same file twice in a row, we need to clear out
-            // the #file_input element, so that the next time we use the file dialog,
-            // an actual change event is fired.  This is extracted to a function
-            // to abstract away some IE hacks.
-            clear_out_file_list($("#file_input"));
-        },
+        drop: uploadStarted,
+        progressUpdated: progressUpdated,
+        error: uploadError,
+        uploadFinished: uploadFinished,
         rawDrop: function (contents) {
             var textbox = $("#new_message_content");
             if (!compose.composing()) {
