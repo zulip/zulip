@@ -594,14 +594,19 @@ class TicketDict(dict):
             return self.get("ticket_" + field)
 
 def property_name(property, index):
+    # The Freshdesk API is currently pretty broken: statuses are customizable
+    # but the API will only tell you the number associated with the status, not
+    # the name. While we engage the Freshdesk developers about exposing this
+    # information through the API, since only FlightCar uses this integration,
+    # hardcode their statuses.
     statuses = ["", "", "Open", "Pending", "Resolved", "Closed",
-                "Waiting on Customer", "Waiting on Third Party"]
+                "Waiting on Customer", "Job Application", "Monthly"]
     priorities = ["", "Low", "Medium", "High", "Urgent"]
 
     if property == "status":
-        return statuses[index]
+        return statuses[index] if index < len(statuses) else str(index)
     elif property == "priority":
-        return priorities[index]
+        return priorities[index] if index < len(priorities) else str(index)
     else:
         raise ValueError("Unknown property")
 
