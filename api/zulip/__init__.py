@@ -100,13 +100,15 @@ class Client(object):
         if site is not None:
             if not site.startswith("http"):
                 site = "https://" + site
+            # Remove trailing "/"s from site to simplify the below logic for adding "/api"
+            site = site.rstrip("/")
             self.base_url = site
         else:
             self.base_url = "https://api.zulip.com"
+
         if self.base_url != "https://api.zulip.com" and not self.base_url.endswith("/api"):
             self.base_url += "/api"
-        if not self.base_url.endswith("/"):
-            self.base_url += "/"
+        self.base_url += "/"
         self.retry_on_errors = retry_on_errors
         self.client_name = client
 
