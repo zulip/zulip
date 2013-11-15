@@ -5,9 +5,6 @@ var exports = {};
 function populate_users () {
     var tb = $("#admin_users_table");
     tb.empty();
-    page_params.people_list.sort(function (a, b) {
-        return a.full_name.toLowerCase().localeCompare(b.full_name.toLowerCase());
-    });
 
     realm_people_dict.each(function (person, key) {
         if (!person.is_bot) {
