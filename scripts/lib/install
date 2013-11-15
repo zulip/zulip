@@ -23,9 +23,6 @@ apt-get -y upgrade
 if [ -e "/etc/init.d/nginx" ]; then
     service nginx restart
 fi
-if [ -e "/etc/init.d/apache2" ]; then
-    service apache2 restart
-fi
 
 /root/zulip/scripts/setup/generate_enterprise_secrets.py
 mv /root/zulip/zproject/local_settings_generated.py /etc/zulip/settings.py
