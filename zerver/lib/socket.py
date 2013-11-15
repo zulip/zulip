@@ -60,18 +60,37 @@ class SocketAuthError(Exception):
     def __init__(self, msg):
         self.msg = msg
 
+class CloseErrorInfo(object):
+    def __init__(self, status_code, err_msg):
+        self.status_code = status_code
+        self.err_msg = err_msg
+
 class SocketConnection(sockjs.tornado.SockJSConnection):
     def on_open(self, info):
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
         record_request_start_data(log_data)
 
+        ioloop = tornado.ioloop.IOLoop.instance()
+
         self.authenticated = False
         self.session.user_profile = None
-        self.browser_session_id = info.get_cookie(settings.SESSION_COOKIE_NAME).value
-        self.csrf_token = info.get_cookie(settings.CSRF_COOKIE_NAME).value
+        self.close_info = None
+        try:
+            self.browser_session_id = info.get_cookie(settings.SESSION_COOKIE_NAME).value
+            self.csrf_token = info.get_cookie(settings.CSRF_COOKIE_NAME).value
+        except AttributeError:
+            # The request didn't contain the necessary cookie values.  We can't
+            # close immediately because sockjs-tornado doesn't expect a close
+            # inside on_open(), so do it on the next tick.
+            self.close_info = CloseErrorInfo(403, "Initial cookie lacked required values")
+            ioloop.add_callback(self.close)
+            return
 
-        ioloop = tornado.ioloop.IOLoop.instance()
-        self.timeout_handle = ioloop.add_timeout(time.time() + 10, self.close)
+        def auth_timeout():
+            self.close_info = CloseErrorInfo(408, "Timeout while waiting for authentication")
+            self.close()
+
+        self.timeout_handle = ioloop.add_timeout(time.time() + 10, auth_timeout)
         write_log_line(log_data, path='/socket/open', method='SOCKET',
                        remote_ip=info.ip, email='unknown', client_name='?')
 
@@ -173,11 +192,11 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
     def on_close(self):
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
         record_request_start_data(log_data)
-        if self.session.user_profile is None:
+        if self.close_info is not None:
             write_log_line(log_data, path='/socket/close', method='SOCKET',
                            remote_ip=self.session.conn_info.ip, email='unknown',
-                           client_name='?', status_code=408,
-                           error_content='Timeout while waiting for authentication')
+                           client_name='?', status_code=self.close_info.status_code,
+                           error_content=self.close_info.err_msg)
         else:
             deregister_connection(self)
             write_log_line(log_data, path='/socket/close', method='SOCKET',
