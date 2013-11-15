@@ -251,7 +251,7 @@ def update_user_profile_cache(sender, **kwargs):
     # Invalidate our active_users_in_realm info dict if any user has changed
     # name or email
     if kwargs['update_fields'] is None or \
-        len(set(['full_name', 'short_name', 'email']) & set(kwargs['update_fields'])) > 0:
+        len(set(['full_name', 'short_name', 'email', 'is_active']) & set(kwargs['update_fields'])) > 0:
         cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm))
 
     # Invalidate realm-wide alert words cache if any user in the realm has changed
