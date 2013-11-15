@@ -12,9 +12,12 @@
 # to the app (served by the primary web server). You should configure your
 # authentication module below.
 
+NameVirtualHost 127.0.0.1:8888
+Listen 127.0.0.1:8888
+
 <VirtualHost 127.0.0.1:8888>
 	# As an example, we've configured this service to use HTTP basic auth.
-	# Season to taste.
+	# Insert the configuration for your SSO authentication module here:
 	<Location />
 		AuthType basic
 		AuthName "zulip.example.com"
@@ -25,6 +28,7 @@
 	ServerAdmin webmaster@localhost
 
 	ServerSignature Off
+
 	# You shouldn't need to edit anything below this line.
 
 	WSGIScriptAlias / /home/zulip/deployments/current/zproject/wsgi.py
