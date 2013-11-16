@@ -3561,3 +3561,7 @@ div.edit_bot {
         overflow-x: hidden;
     }
 }
+
+.inactive_user_row {
+    text-decoration: line-through;
+}

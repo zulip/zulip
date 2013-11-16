@@ -47,6 +47,39 @@ exports.setup_page = function () {
         $("#deactivation_modal").modal("show");
     });
 
+    $("#admin_users_table").on("click", ".reactivate", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Go up the tree until we find the user row, then grab the email element
+        $(e.target).closest(".user_row").addClass("active_user_row");
+
+        var email = $(".active_user_row").find('.email').text();
+        $.ajax({
+            type: 'POST',
+            url: '/json/users/' + $(".active_user_row").find('.email').text() + "/reactivate",
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    $(".active_user_row button").closest("td").html(
+                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                    );
+                } else {
+                     $(".active_user_row button").text("Failed!");
+                }
+            },
+            success: function () {
+                var row = $(".active_user_row");
+                var button = $(".active_user_row button");
+                button.addClass("btn-danger");
+                button.removeClass("btn-warning");
+                button.addClass("deactivate");
+                button.removeClass("reactivate");
+                button.text("Deactivate");
+                row.removeClass("inactive_user_row");
+            }
+        });
+    });
+
     $("#do_deactivate_button").click(function (e) {
         if ($("#deactivation_modal .email").html() !== $(".active_user_row").find('.email').text()) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
@@ -68,8 +101,15 @@ exports.setup_page = function () {
                 }
             },
             success: function () {
-                $(".active_user_row button").removeClass("btn-danger").text("Deactivated");
-                $(".active_user_row span").wrap("<strike>");
+                var row = $(".active_user_row");
+                var button = $(".active_user_row button");
+                button.prop("disabled", false);
+                button.addClass("btn-warning");
+                button.removeClass("btn-danger");
+                button.addClass("reactivate");
+                button.removeClass("deactivate");
+                button.text("Reactivate");
+                row.addClass("inactive_user_row");
             }
         });
     });
