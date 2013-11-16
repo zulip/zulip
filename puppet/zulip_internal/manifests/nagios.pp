@@ -7,6 +7,8 @@ class zulip_internal::nagios {
                       "autossh",
                       # Packages needed for munin
                       "munin",
+                      # Needed for check_website_response
+                      "netcat",
                       ]
   package { $nagios_packages: ensure => "installed" }
 
