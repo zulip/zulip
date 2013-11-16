@@ -110,10 +110,14 @@ class SignupWorker(QueueProcessingWorker):
         if settings.ENTERPRISE:
             sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
 
+        template_payload = {'name': name,
+                            'not_enterprise': not settings.ENTERPRISE,
+                            'external_host': settings.EXTERNAL_HOST}
+
         #Send day 1 email
         send_local_email_template_with_delay([{'email': email, 'name': name}],
                                              "zerver/emails/followup/day1",
-                                             {'name': name},
+                                             template_payload,
                                              datetime.timedelta(hours=1),
                                              tags=["followup-emails"],
                                              sender=sender)
@@ -124,7 +128,7 @@ class SignupWorker(QueueProcessingWorker):
         assert(datetime.datetime.utcnow() < tomorrow_morning)
         send_local_email_template_with_delay([{'email': email, 'name': name}],
                                              "zerver/emails/followup/day2",
-                                             {'name': name},
+                                             template_payload,
                                              tomorrow_morning - datetime.datetime.utcnow(),
                                              tags=["followup-emails"],
                                              sender=sender)

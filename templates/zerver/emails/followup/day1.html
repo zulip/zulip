@@ -39,7 +39,7 @@ def fn(arg):
 <li>Emoji. Because <pre style="display:inline; color:#D14; padding:2px 4px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace">:ramen:</pre> means <img src="https://{{ external_host }}/static/third/gemoji/images/emoji/ramen.png" style="max-height:20px; height:20px;" height="20px" />.</li>
 </ol>
 
-{% if enterprise is False %}
+{% if not_enterprise %}
 <p>Zulip is under active development, and we have a team of engineers standing by to respond to your feedback, so please report bugs and let us know what you think! There's a feedback tab under the gear icon in the upper-right corner, or you can e-mail us at <a href="mailto:feedback@zulip.com" style="color:#08c">feedback@zulip.com</a>.</p>
 {% endif %}
 
