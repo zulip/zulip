@@ -107,8 +107,7 @@ $(function () {
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
-            util.make_loading_indicator($('#create_bot_spinner'), {text: 'Adding bot'});
-            $('#create_bot_button').hide();
+            $('#create_bot_button').val('Adding bot...').prop('disabled', true);
             $.ajax({
                 url: '/json/create_bot',
                 type: 'POST',
@@ -117,7 +116,6 @@ $(function () {
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    util.destroy_loading_indicator($("#create_bot_spinner"));
                     $('#bot_table_error').hide();
                     $('#create_bot_name').val('');
                     $('#create_bot_short_name').val('');
@@ -132,9 +130,10 @@ $(function () {
                     );
                 },
                 error: function (xhr, error_type, exn) {
-                    util.destroy_loading_indicator($("#create_bot_spinner"));
-                    $('#create_bot_button').show();
                     $('#bot_table_error').text(JSON.parse(xhr.responseText).msg).show();
+                },
+                complete: function (xhr, status) {
+                    $('#create_bot_button').val('Create bot').prop('disabled', false);
                 }
             });
         }
