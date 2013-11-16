@@ -7,9 +7,15 @@
       <span class="email">{{email}}</span>
   </td>
   <td>
+  {{#if is_active}}
       <button class="btn deactivate btn-danger">
         Deactivate
       </button>
+  {{else}}
+      <button class="btn reactivate btn-warning">
+        Reactivate
+      </button>
+  {{/if}}
   </td>
 </tr>
 {{/with}}
