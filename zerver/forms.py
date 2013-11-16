@@ -22,7 +22,13 @@ def is_inactive(value):
 SIGNUP_STRING = '<a href="https://zulip.com/signup">Sign up</a> to find out when Zulip is ready for you.'
 
 def has_valid_realm(value):
-    return Realm.objects.filter(domain=email_to_domain(value)).exists()
+    try:
+        realm = Realm.objects.get(domain=email_to_domain(value))
+    except Realm.DoesNotExist:
+        return False
+    if settings.ENTERPRISE:
+        return True
+    return realm.deployment.name in ["mit.edu", "zulip.com"]
 
 def not_mit_mailing_list(value):
     # I don't want ec-discuss signed up for Zulip
