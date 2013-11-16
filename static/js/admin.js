@@ -6,9 +6,10 @@ function populate_users (realm_people_data) {
     var users_table = $("#admin_users_table");
     var deactivated_users_table = $("#admin_deactivated_users_table");
     var bots_table = $("#admin_bots_table");
-    users_table.empty();
-    deactivated_users_table.empty();
-    bots_table.empty();
+    // Clear table rows, but not the table headers
+    users_table.find("tr.user_row").remove();
+    deactivated_users_table.find("tr.user_row").remove();
+    bots_table.find("tr.user_row").remove();
 
     var active_users = [];
     var deactivated_users = [];
