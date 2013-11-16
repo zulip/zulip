@@ -104,13 +104,19 @@ class SignupWorker(QueueProcessingWorker):
                     raise e
         email = data.get("EMAIL")
         name = merge_vars.get("NAME")
+
+
+        sender = {'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'}
+        if settings.ENTERPRISE:
+            sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
+
         #Send day 1 email
         send_local_email_template_with_delay([{'email': email, 'name': name}],
                                              "zerver/emails/followup/day1",
                                              {'name': name},
                                              datetime.timedelta(hours=1),
                                              tags=["followup-emails"],
-                                             sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'})
+                                             sender=sender)
         #Send day 2 email
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         # 11 AM EDT
@@ -121,7 +127,7 @@ class SignupWorker(QueueProcessingWorker):
                                              {'name': name},
                                              tomorrow_morning - datetime.datetime.utcnow(),
                                              tags=["followup-emails"],
-                                             sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'})
+                                             sender=sender)
 
 @assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):

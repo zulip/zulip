@@ -42,11 +42,10 @@ def get_recipient_as_string(dictionary):
     return format_html(u"\"{0}\" <{1}>", dictionary["recipient_name"], dictionary["recipient_email"])
 
 def get_sender_as_string(dictionary):
-    if settings.ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL:
-        if dictionary["sender_email"]:
-            return dictionary["sender_email"] if not dictionary["sender_name"] else format_html(u"\"{0}\" <{1}>",
-                                                                              dictionary["sender_name"],
-                                                                              dictionary["sender_email"])
+    if dictionary["sender_email"]:
+        return dictionary["sender_email"] if not dictionary["sender_name"] else format_html(u"\"{0}\" <{1}>",
+                                                                                            dictionary["sender_name"],
+                                                                                            dictionary["sender_email"])
     return settings.DEFAULT_FROM_EMAIL
 
 def send_email_job(job):

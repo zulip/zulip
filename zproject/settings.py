@@ -265,7 +265,6 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'INLINE_IMAGE_PREVIEW': True,
                     'CAMO_URI': None,
                     'ENABLE_FEEDBACK': True,
-                    'ALLOW_ARBITRARY_SENDERS_LOCAL_EMAIL': False,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():

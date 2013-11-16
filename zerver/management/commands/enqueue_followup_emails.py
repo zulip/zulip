@@ -4,6 +4,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import send_local_email_template_with_delay, clear_followup_emails_queue
 from datetime import timedelta
+from django.conf import settings
 
 def dequeue(email):
     return clear_followup_emails_queue(email)
@@ -16,13 +17,16 @@ def queue(email, name, instant=False):
     if instant:
         delay1 = delay2 = timedelta(0)
 
+    sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'}
+    if settings.ENTERPRISE:
+        sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
     #Send day 1 email
     send_local_email_template_with_delay([{'email': email, 'name': name}],
                                          "zerver/emails/followup/day1",
                                          {'name': name},
                                          delay1,
                                          tags=["followup-emails"],
-                                         sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'})
+                                         sender=sender)
 
     #Send day 2 email
     send_local_email_template_with_delay([{'email': email, 'name': name}],
@@ -30,7 +34,7 @@ def queue(email, name, instant=False):
                                          {'name': name},
                                          delay2,
                                          tags=["followup-emails"],
-                                         sender={'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'})
+                                         sender=sender)
 
 
 class Command(BaseCommand):
