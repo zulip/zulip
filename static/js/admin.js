@@ -3,8 +3,10 @@ var admin = (function () {
 var exports = {};
 
 function populate_users () {
-    var tb = $("#admin_users_table");
-    tb.empty();
+    var users_table = $("#admin_users_table");
+    var bots_table = $("#admin_bots_table");
+    users_table.empty();
+    bots_table.empty();
 
     var humans = [];
     var bots = [];
@@ -20,17 +22,18 @@ function populate_users () {
     humans = _.sortBy(humans, 'full_name');
     bots = _.sortBy(bots, 'full_name');
 
-    var users = humans.concat(bots);
-
-    _.each(users, function (user) {
-        tb.append(templates.render("admin_user_list", {user: user}));
+    _.each(bots, function (user) {
+        bots_table.append(templates.render("admin_user_list", {user: user}));
+    });
+    _.each(humans, function (user) {
+        users_table.append(templates.render("admin_user_list", {user: user}));
     });
 }
 
 exports.setup_page = function () {
     populate_users();
 
-    $("#admin_users_table").on("click", ".deactivate", function (e) {
+    $(".admin_user_table").on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -47,7 +50,7 @@ exports.setup_page = function () {
         $("#deactivation_modal").modal("show");
     });
 
-    $("#admin_users_table").on("click", ".reactivate", function (e) {
+    $(".admin_user_table").on("click", ".reactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
