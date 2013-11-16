@@ -9,7 +9,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
     email_to_domain, email_to_username
 from zerver.lib.actions import do_send_message, set_default_streams, \
-    do_activate_user, do_deactivate, do_change_password
+    do_activate_user, do_deactivate_user, do_change_password
 from zerver.lib.parallel import run_parallel
 from django.db.models import Count
 from django.conf import settings
@@ -560,7 +560,7 @@ def restore_saved_messages():
             continue
         elif message_type == "user_deactivated":
             user_profile = users[old_message["user"]]
-            do_deactivate(user_profile, log=False)
+            do_deactivate_user(user_profile, log=False)
             continue
         elif message_type == "user_change_password":
             # Just handle these the slow way

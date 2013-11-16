@@ -135,7 +135,7 @@ def delete_all_user_sessions():
     for session in Session.objects.all():
         delete_session(session)
 
-def do_deactivate(user_profile, log=True, _cascade=True):
+def do_deactivate_user(user_profile, log=True, _cascade=True):
     if not user_profile.is_active:
         return
 
@@ -160,7 +160,7 @@ def do_deactivate(user_profile, log=True, _cascade=True):
         bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                                   bot_owner=user_profile)
         for profile in bot_profiles:
-            do_deactivate(profile, _cascade=False)
+            do_deactivate_user(profile, _cascade=False)
 
 def do_change_user_email(user_profile, new_email):
     old_email = user_profile.email
@@ -1055,7 +1055,7 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
 
     notify_created_user(user_profile)
 
-def do_reactivate(user_profile):
+def do_reactivate_user(user_profile):
     # Unlike do_activate_user, this is meant for re-activating existing users,
     # so it doesn't reset their password, etc.
     user_profile.is_active = True

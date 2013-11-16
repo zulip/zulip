@@ -4,7 +4,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import do_deactivate, user_sessions
+from zerver.lib.actions import do_deactivate_user, user_sessions
 from zerver.models import get_user_profile_by_email, UserProfile
 
 class Command(BaseCommand):
@@ -43,5 +43,5 @@ class Command(BaseCommand):
             print "This was a dry run. Pass -f to actually deactivate."
             exit(1)
 
-        do_deactivate(user_profile)
+        do_deactivate_user(user_profile)
         print "Sessions deleted, user deactivated."
