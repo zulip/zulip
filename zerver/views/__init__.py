@@ -1681,9 +1681,15 @@ def json_get_members(request, user_profile):
     return get_members_backend(request, user_profile)
 
 def get_members_backend(request, user_profile):
-    members = [{"full_name": profile.full_name,
-                "email": profile.email} for profile in \
-                   UserProfile.objects.select_related().filter(realm=user_profile.realm)]
+    members = []
+    for profile in UserProfile.objects.select_related().filter(realm=user_profile.realm):
+        member = {"full_name": profile.full_name,
+                  "is_bot": profile.is_bot,
+                  "is_active": profile.is_active,
+                  "email": profile.email}
+        if profile.is_bot and profile.bot_owner is not None:
+            member["bot_owner"] = profile.bot_owner.email
+        members.append(member)
     return json_success({'members': members})
 
 @authenticated_api_view
