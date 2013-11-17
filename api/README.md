@@ -1,6 +1,7 @@
 #### Dependencies
 
-The Zulip API Python bindings require the following Python libraries:
+The [Zulip API](https://zulip.com/api) Python bindings require the
+following Python libraries:
 
 * simplejson
 * requests (version >= 0.12.1)
