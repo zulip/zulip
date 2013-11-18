@@ -141,7 +141,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                 write_log_line(log_data, path='/socket/auth', method='SOCKET',
                                remote_ip=self.session.conn_info.ip,
                                email='unknown', client_name='?',
-                               status_code=403, error_contents=ujson.dumps(response))
+                               status_code=403, error_content=ujson.dumps(response))
             return
         else:
             if not self.authenticated:
@@ -150,7 +150,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                 write_log_line(log_data, path='/socket/auth', method='SOCKET',
                                remote_ip=self.session.conn_info.ip,
                                email='unknown', client_name='?',
-                               status_code=403, error_contents=ujson.dumps(response))
+                               status_code=403, error_content=ujson.dumps(response))
                 return
 
         redis_key = req_redis_key(self.client_id, msg['req_id'])
