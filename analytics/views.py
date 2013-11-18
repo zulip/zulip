@@ -8,7 +8,7 @@ from zerver.decorator import has_request_variables, REQ, zulip_internal
 from zerver.models import get_realm, UserActivity, UserActivityInterval
 from zerver.lib.timestamp import timestamp_to_datetime
 
-import datetime
+from datetime import datetime, timedelta
 import itertools
 import time
 import pytz
@@ -191,10 +191,10 @@ def realm_summary_table(realm_minutes):
 
 def user_activity_intervals():
     day_end = timestamp_to_datetime(time.time())
-    day_start = day_end - datetime.timedelta(hours=24)
+    day_start = day_end - timedelta(hours=24)
 
     output = "Per-user online duration for the last 24 hours:\n"
-    total_duration = datetime.timedelta(0)
+    total_duration = timedelta(0)
 
     all_intervals = UserActivityInterval.objects.filter(
         end__gte=day_start,
@@ -218,10 +218,10 @@ def user_activity_intervals():
     realm_minutes = {}
 
     for domain, realm_intervals in itertools.groupby(all_intervals, by_domain):
-        realm_duration = datetime.timedelta(0)
+        realm_duration = timedelta(0)
         output += '<hr>%s\n' % (domain,)
         for email, intervals in itertools.groupby(realm_intervals, by_email):
-            duration = datetime.timedelta(0)
+            duration = timedelta(0)
             for interval in intervals:
                 start = max(day_start, interval.start)
                 end = min(day_end, interval.end)
@@ -728,7 +728,7 @@ def realm_user_summary_table(all_records):
             return ''
 
     def is_recent(val):
-        age = datetime.datetime.now(val.tzinfo) - val
+        age = datetime.now(val.tzinfo) - val
         return age.total_seconds() < 5 * 60
 
     rows = []
