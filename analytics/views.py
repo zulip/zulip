@@ -717,9 +717,9 @@ def realm_user_summary_table(all_records):
 
     def get_last_visit(user_summary, k):
         if k in user_summary:
-            return user_summary[k]['last_visit'].astimezone(eastern_tz).strftime('%Y-%m-%d %H:%M')
+            return user_summary[k]['last_visit']
         else:
-            return ''
+            return None
 
     def get_count(user_summary, k):
         if k in user_summary:
@@ -734,6 +734,7 @@ def realm_user_summary_table(all_records):
         row = [user_summary['name'], email_link, sent_count]
         for field in ['use', 'send', 'pointer', 'desktop', 'iPhone', 'Android']:
             val = get_last_visit(user_summary, field)
+            val = format_date_for_activity_reports(val)
             row.append(val)
         rows.append(row)
 
