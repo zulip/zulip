@@ -17,6 +17,12 @@
     </div>
 
     <div class="integration-lozenges">
+       <div class="integration-lozenge integration-asana">
+         <a class="integration-link integration-asana" href="#asana">
+            <img class="integration-logo" src="/static/images/integrations/logos/asana.png">
+            <span class="integration-label">Asana</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-basecamp">
          <a class="integration-link integration-basecamp" href="#basecamp">
             <img class="integration-logo" src="/static/images/integrations/logos/basecamp.png">
@@ -173,8 +179,63 @@
     </div>
 
 <div id="integration-instructions-group">
-<div id="basecamp" class="integration-instructions">
 
+<div id="asana" class="integration-instructions">
+
+    <p>Get Zulip notifications for your Asana tasks!</p>
+
+    <p>First, create the stream you'd like to use for Asana notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>asana</code>.</p>
+
+    <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
+    page</a>, create an Asana bot. Please note the bot name and API key.</p>
+
+    <p>Then:</p>
+    <ol>
+      <li>
+        <p>Download and install our <a href="/api">Python bindings</a> on the
+          server where the Asana mirroring script will live. The Asana
+          integration will be installed to a location
+          like <code>/usr/local/share/zulip/integrations/asana/</code>.</p>
+      </li>
+      <li>
+        <p>Visit your <a href="https://app.asana.com/-/account_api">Asana
+        account settings page</a> and retrieve your API key.</p>
+
+        <p>Edit <code>asana/zulip_asana_config.py</code> and set
+        the <code>ASANA_API_KEY</code>, <code>ZULIP_USER</code>,
+        and <code>ZULIP_API_KEY</code> configuration options to your
+        credentials.</p>
+
+        <p>If you are using a stream other than <code>asana</code>,
+        set <code>ZULIP_STREAM_NAME</code> to the chosen stream name.</p>
+      </li>
+      <li>
+        <p>Test your configuration by running the mirror with <code>python
+        asana/zulip_asana_mirror</code>. It will print some informational
+        messages and process any recently created or completed tasks.</p>
+      </li>
+      <li>
+        <p>This mirror is intended to be a long-running processing and should be
+        hooked into your infrastructure for keeping services running (for
+        example, auto-restarting through <code>supervisord</code>).</p>
+
+        <p>Please
+        contact <a href="mailto:support@zulip.com?subject=Asana%20integration%20question">support@zulip.com</a>
+        if you'd like assistance with maintaining this integration.
+        </p>
+      </li>
+    </ol>
+
+    <p><b>Congratulations! You're done!</b><br /> When team members create and
+    complete tasks in Asana, you'll get a Zulip notification that looks like
+    this:</p>
+
+    <img class="screenshot" src="/static/images/integrations/asana/001.png">
+</div>
+
+<div id="basecamp" class="integration-instructions">
       <p>First, create the stream you'd like to use for Basecamp notifications,
       and subscribe all interested parties to this stream. We recommend the
       name <code>basecamp</code>.</p>
