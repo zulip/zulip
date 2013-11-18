@@ -727,19 +727,29 @@ def realm_user_summary_table(all_records):
         else:
             return ''
 
+    def is_recent(val):
+        age = datetime.datetime.now(val.tzinfo) - val
+        return age.total_seconds() < 5 * 60
+
     rows = []
     for email, user_summary in user_records.items():
         email_link = user_activity_link(email)
         sent_count = get_count(user_summary, 'send')
-        row = [user_summary['name'], email_link, sent_count]
+        cells = [user_summary['name'], email_link, sent_count]
         for field in ['use', 'send', 'pointer', 'desktop', 'iPhone', 'Android']:
             val = get_last_visit(user_summary, field)
+            if field == 'use':
+                if val and is_recent(val):
+                    row_class = 'recently_active'
+                else:
+                    row_class = None
             val = format_date_for_activity_reports(val)
-            row.append(val)
+            cells.append(val)
+        row = dict(cells=cells, row_class=row_class)
         rows.append(row)
 
     def by_used_time(row):
-        return row[3]
+        return row['cells'][3]
 
     rows = sorted(rows, key=by_used_time, reverse=True)
 
@@ -757,7 +767,7 @@ def realm_user_summary_table(all_records):
 
     title = 'Summary'
 
-    content = make_table(title, cols, rows)
+    content = make_table(title, cols, rows, has_row_class=True)
     return user_records, content
 
 @zulip_internal
