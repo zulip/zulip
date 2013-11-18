@@ -2,6 +2,8 @@ function Socket(url) {
     this.url = url;
     this._is_open = false;
     this._is_authenticated = false;
+    this._is_reconnecting = false;
+    this._reconnect_initiation_time = null;
     this._send_queue = [];
     this._next_req_id = 0;
     this._requests = {};
@@ -28,10 +30,7 @@ Socket.prototype = {
     send: function Socket_send(msg, success, error) {
         if (! this._can_send()) {
             this._send_queue.push({msg: msg, success: success, error: error});
-            if (this._reconnect_timeout_id !== null) {
-                clearTimeout(this._reconnect_timeout_id);
-            }
-            this._do_reconnect();
+            this._try_to_reconnect();
             return;
         }
 
@@ -100,6 +99,8 @@ Socket.prototype = {
                                        status_inquiries: _.keys(that._requests)},
                               function (resp) {
                                   that._is_authenticated = true;
+                                  that._is_reconnecting = false;
+                                  that._reconnect_initiation_time = null;
                                   that._connection_failures = 0;
                                   _.each(resp.status_inquiries, function (status, id) {
                                       if (status.status === 'complete') {
@@ -114,7 +115,8 @@ Socket.prototype = {
                               },
                               function (type, resp) {
                                   blueslip.info("Could not authenticate with server: " + resp.msg);
-                                  that._try_to_reconnect();
+                                  that._connection_failures++;
+                                  that._try_to_reconnect(that._reconnect_wait_time());
                               });
             });
         };
@@ -128,34 +130,49 @@ Socket.prototype = {
                 return;
             }
             blueslip.info("SockJS connection lost.  Attempting to reconnect soon.");
-            that._try_to_reconnect();
+            that._connection_failures++;
+            that._is_reconnecting = false;
+            that._try_to_reconnect(that._reconnect_wait_time());
         };
     },
 
-    _do_reconnect: _.throttle(function Socket__do_reconnect() {
-        blueslip.info("Attempting socket reconnect.");
-        this._sockjs = new SockJS(this.url, null, {protocols_whitelist: this._supported_protocols});
-        this._setup_sockjs_callbacks(this._sockjs);
-    }, 1000),
-
-    _try_to_reconnect: function Socket__try_to_reconnect() {
-        var that = this;
-        this._is_open = false;
-        this._is_authenticated = false;
-        this._connection_failures++;
-
-        var wait_time;
+    _reconnect_wait_time: function Socket__reconnect_wait_time() {
         if (this._connection_failures === 1) {
             // We specify a non-zero timeout here so that we don't try to
             // immediately reconnect when the page is refreshing
-            wait_time = 30;
+            return 30;
         } else {
-            wait_time = Math.min(90, Math.exp(this._connection_failures/2)) * 1000;
+            return Math.min(90, Math.exp(this._connection_failures/2)) * 1000;
         }
+    },
+
+    _try_to_reconnect: function Socket__try_to_reconnect(wait_time) {
+        if (wait_time === undefined) {
+            wait_time = 0;
+        }
+        var that = this;
+
+        var now = (new Date()).getTime();
+        if (this._is_reconnecting && now - this._reconnect_initiation_time < 1000) {
+            // Only try to reconnect once a second
+            return;
+        }
+
+        if (this._reconnect_timeout_id !== null) {
+            clearTimeout(this._reconnect_timeout_id);
+            this._reconnect_timeout_id = null;
+        }
+
+        this._is_open = false;
+        this._is_authenticated = false;
+        this._is_reconnecting = true;
+        this._reconnect_initiation_time = now;
 
         this._reconnect_timeout_id = setTimeout(function () {
             that._reconnect_timeout_id = null;
-            that._do_reconnect();
+            blueslip.info("Attempting socket reconnect.");
+            that._sockjs = new SockJS(that.url, null, {protocols_whitelist: that._supported_protocols});
+            that._setup_sockjs_callbacks(that._sockjs);
         }, wait_time);
     }
 };
