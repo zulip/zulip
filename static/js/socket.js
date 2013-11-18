@@ -44,8 +44,14 @@ Socket.prototype = {
 
     _do_send: function Socket__do_send(type, msg, success, error) {
         var req_id = this._next_req_id;
+        var that = this;
         this._next_req_id++;
         this._requests[req_id] = {success: success, error: error};
+        this._requests[req_id].ack_timeout_id = setTimeout(function () {
+            blueslip.info("Timeout on ACK for request " + req_id);
+            that._try_to_reconnect();
+        }, 2000);
+
         // TODO: I think we might need to catch exceptions here for certain transports
         this._sockjs.send(JSON.stringify({req_id: req_id,
                                           type: type, request: msg}));
@@ -90,6 +96,21 @@ Socket.prototype = {
         delete this._requests[req_id];
     },
 
+    _process_ack: function Socket__process_ack(req_id) {
+        var req_info = this._requests[req_id];
+        if (req_info === undefined) {
+            blueslip.error("Got an ACK for an unknown request",
+                           {request_id: req_id, next_id: this._next_req_id,
+                            outstanding_ids: _.keys(this._requests)});
+            return;
+        }
+
+        if (req_info.ack_timeout_id !== null) {
+            clearTimeout(req_info.ack_timeout_id);
+            req_info.ack_timeout_id = null;
+        }
+    },
+
     _setup_sockjs_callbacks: function Socket__setup_sockjs_callbacks(sockjs) {
         var that = this;
         sockjs.onopen = function Socket__sockjs_onopen() {
@@ -127,7 +148,9 @@ Socket.prototype = {
         };
 
         sockjs.onmessage = function Socket__sockjs_onmessage(event) {
-            if (event.data.type === 'resposne') {
+            if (event.data.type === 'ack') {
+                that._process_ack(event.data.req_id);
+            } else {
                 that._process_response(event.data.req_id, event.data.response);
             }
         };
