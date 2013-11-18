@@ -127,7 +127,9 @@ Socket.prototype = {
         };
 
         sockjs.onmessage = function Socket__sockjs_onmessage(event) {
-            that._process_response(event.data.req_id, event.data.response);
+            if (event.data.type === 'resposne') {
+                that._process_response(event.data.req_id, event.data.response);
+            }
         };
 
         sockjs.onheartbeat = function Socket__socjks_onheartbeat() {

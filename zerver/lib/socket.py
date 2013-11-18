@@ -96,7 +96,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
     def authenticate_client(self, msg):
         if self.authenticated:
-            self.session.send_message({'req_id': msg['req_id'],
+            self.session.send_message({'req_id': msg['req_id'], 'type': 'response',
                                        'response': {'result': 'error', 'msg': 'Already authenticated'}})
             return
 
@@ -122,7 +122,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         self.authenticated = True
         register_connection(queue_id, self)
 
-        response = {'req_id': msg['req_id'], 'response': {'result': 'success', 'msg': ''}}
+        response = {'req_id': msg['req_id'], 'type': 'response',
+                    'response': {'result': 'success', 'msg': ''}}
 
         status_inquiries = msg['request'].get('status_inquiries')
         if status_inquiries is not None:
@@ -145,6 +146,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         record_request_start_data(log_data)
         msg = ujson.loads(msg)
 
+        self.session.send_message({'req_id': msg['req_id'], 'type': 'ack'});
+
         if msg['type'] == 'auth':
             log_data['extra'] += ']'
             try:
@@ -156,7 +159,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                client_name='?')
             except SocketAuthError as e:
                 response = {'result': 'error', 'msg': e.msg}
-                self.session.send_message({'req_id': msg['req_id'], 'response': response})
+                self.session.send_message({'req_id': msg['req_id'], 'type': 'response',
+                                           'response': response})
                 write_log_line(log_data, path='/socket/auth', method='SOCKET',
                                remote_ip=self.session.conn_info.ip,
                                email='unknown', client_name='?',
@@ -165,7 +169,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         else:
             if not self.authenticated:
                 response = {'result': 'error', 'msg': "Not yet authenticated"}
-                self.session.send_message({'req_id': msg['req_id'], 'response': response})
+                self.session.send_message({'req_id': msg['req_id'], 'type': 'response',
+                                           'response': response})
                 write_log_line(log_data, path='/socket/service_request', method='SOCKET',
                                remote_ip=self.session.conn_info.ip,
                                email='unknown', client_name='?',
@@ -240,7 +245,8 @@ def respond_send_message(data):
 
     connection = get_connection(data['server_meta']['client_id'])
     if connection is not None:
-        connection.session.send_message({'req_id': data['req_id'], 'response': data['response']})
+        connection.session.send_message({'req_id': data['req_id'], 'type': 'response',
+                                         'response': data['response']})
 
         # TODO: Fill in client name
         # TODO: Maybe fill in the status code correctly
