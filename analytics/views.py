@@ -11,6 +11,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from datetime import datetime, timedelta
 import itertools
 import time
+import re
 import pytz
 eastern_tz = pytz.timezone('US/Eastern')
 
@@ -604,6 +605,12 @@ def get_user_activity_summary(records):
         query = record.query
 
         update('use', record)
+
+        if client == 'API':
+            m = re.match('/api/.*/external/(.*)', query)
+            if m:
+                client = m.group(1)
+                update(client, record)
 
         if client.startswith('desktop'):
             update('desktop', record)
