@@ -1038,7 +1038,7 @@ SockJS.prototype._didClose = function(code, reason, force) {
     if (that.readyState !== SockJS.CONNECTING &&
         that.readyState !== SockJS.OPEN &&
         that.readyState !== SockJS.CLOSING)
-            throw new Error('INVALID_STATE_ERR');
+            return;
     if (that._ir) {
         that._ir.nuke();
         that._ir = null;
