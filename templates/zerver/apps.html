@@ -77,7 +77,11 @@
 cat user.asc | sudo apt-key add -
 sudo apt-add-repository http://apt.zulip.com/user/
 sudo apt-get update
+{% if not_enterprise %}
 sudo apt-get install zulip-desktop
+{% else %}
+sudo apt-get install zulip-desktop-sso
+{% endif %}
 </pre></div>
 
 
