@@ -32,3 +32,9 @@ td.number {
     width: auto;
     margin: 0px auto;
 }
+
+tr.admin td:first-child {
+    font-weight: bold;
+    color: blue;
+    font-size: 110%;
+}

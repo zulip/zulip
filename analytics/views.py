@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response
 from django.core import urlresolvers
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
-from zerver.models import get_realm, UserActivity, UserActivityInterval
+from zerver.models import get_realm, UserActivity, UserActivityInterval, Realm
 from zerver.lib.timestamp import timestamp_to_datetime
 
 from datetime import datetime, timedelta
@@ -713,7 +713,7 @@ def user_activity_summary_table(user_summary):
     title = 'User Activity'
     return make_table(title, cols, rows)
 
-def realm_user_summary_table(all_records):
+def realm_user_summary_table(all_records, admin_emails):
     user_records = {}
 
     def by_email(record):
@@ -743,13 +743,14 @@ def realm_user_summary_table(all_records):
         email_link = user_activity_link(email)
         sent_count = get_count(user_summary, 'send')
         cells = [user_summary['name'], email_link, sent_count]
+        row_class = ''
         for field in ['use', 'send', 'pointer', 'desktop', 'iPhone', 'Android']:
             val = get_last_visit(user_summary, field)
             if field == 'use':
                 if val and is_recent(val):
-                    row_class = 'recently_active'
-                else:
-                    row_class = None
+                    row_class += ' recently_active'
+                if email in admin_emails:
+                    row_class += ' admin'
             val = format_date_for_activity_reports(val)
             cells.append(val)
         row = dict(cells=cells, row_class=row_class)
@@ -783,11 +784,14 @@ def get_realm_activity(request, realm):
     all_records = {}
     all_user_records = {}
 
+    admins = Realm.objects.get(domain=realm).get_admin_users()
+    admin_emails = {admin.email for admin in admins}
+
     for is_bot, page_title in [(False,  'Humans'), (True, 'Bots')]:
         all_records = get_user_activity_records_for_realm(realm, is_bot)
         all_records = list(all_records)
 
-        user_records, content = realm_user_summary_table(all_records)
+        user_records, content = realm_user_summary_table(all_records, admin_emails)
         all_user_records.update(user_records)
 
         data += [(page_title, content)]
