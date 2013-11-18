@@ -135,7 +135,8 @@ def strip_tags(html):
 
 def compute_entry_hash(entry):
     entry_time = entry.get("published", entry.get("updated"))
-    return hashlib.md5(entry.id + entry_time).hexdigest()
+    entry_id = entry.get("id", entry.get("link"))
+    return hashlib.md5(entry_id + entry_time).hexdigest()
 
 def send_zulip(entry, feed_name):
     content = "**[%s](%s)**\n%s\n%s" % (entry.title,
