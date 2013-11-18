@@ -261,7 +261,8 @@ def load_event_queues():
 def send_restart_events():
     event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
     for client in clients.itervalues():
-        # All clients get restart events
+        if not client.accepts_event_type('restart'):
+            continue
         client.add_event(event.copy())
 
 def setup_event_queue():
