@@ -1165,14 +1165,20 @@ var watchdog_time = $.now();
 setInterval(function () {
     var new_time = $.now();
     if ((new_time - watchdog_time) > 20000) { // 20 seconds.
-        // Our app's JS wasn't running (the machine was probably
-        // asleep). Now that we're running again, immediately poll for
-        // new updates.
-        get_updates_failures = 0;
-        restart_get_updates({dont_block: true});
+        // Our app's JS wasn't running, which probably means the machine was
+        // asleep.
+        $(document).trigger($.Event('unsuspend'));
     }
     watchdog_time = new_time;
 }, 5000);
+
+$(function () {
+    $(document).on('unsuspend', function () {
+        // Immediately poll for new updates on unsuspend
+        get_updates_failures = 0;
+        restart_get_updates({dont_block: true});
+    });
+});
 
 function fast_forward_pointer() {
     $.ajax({
