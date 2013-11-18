@@ -12,8 +12,8 @@
     </thead>
     <tbody>
         {% for row in data.rows %}
-            <tr>
-                {% for field in row %}
+            <tr {% if row.row_class %}class="{{ row.row_class }}"{% endif %}>
+                {% for field in row.cells %}
                     <td sortable>{{ field }}</td>
                 {% endfor %}
             </tr>

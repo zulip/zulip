@@ -14,7 +14,13 @@ import time
 import pytz
 eastern_tz = pytz.timezone('US/Eastern')
 
-def make_table(title, cols, rows):
+def make_table(title, cols, rows, has_row_class=False):
+
+    if not has_row_class:
+        def fix_row(row):
+            return dict(cells=row, row_class=None)
+        rows = map(fix_row, rows)
+
     data = dict(title=title, cols=cols, rows=rows)
 
     content = loader.render_to_string(
