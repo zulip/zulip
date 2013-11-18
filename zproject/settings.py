@@ -587,6 +587,7 @@ CACHES = {
 
 if DEPLOYED:
     SERVER_LOG_PATH = "/var/log/zulip/server.log"
+    MANAGEMENT_LOG_PATH = "/var/log/zulip/manage.log"
     WORKER_LOG_PATH = "/var/log/zulip/workers.log"
     if ENTERPRISE:
         EVENT_LOG_DIR = None
@@ -601,6 +602,7 @@ if DEPLOYED:
 else:
     EVENT_LOG_DIR = 'event_log'
     SERVER_LOG_PATH = "server.log"
+    MANAGEMENT_LOG_PATH = "manage.log"
     WORKER_LOG_PATH = "workers.log"
     STATS_DIR = 'stats'
     PERSISTENT_QUEUE_FILENAME = "event_queues.pickle"
@@ -680,6 +682,11 @@ LOGGING = {
         },
         'zulip.requests': {
             'handlers': ['console', 'file'],
+            'level':    'INFO',
+            'propagate': False,
+        },
+        'zulip.management': {
+            'handlers': ['file'],
             'level':    'INFO',
             'propagate': False,
         },
