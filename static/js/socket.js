@@ -46,7 +46,8 @@ Socket.prototype = {
         var req_id = this._next_req_id;
         var that = this;
         this._next_req_id++;
-        this._requests[req_id] = {success: success, error: error};
+        this._requests[req_id] = {type: type, request: msg, success: success,
+                                  error: error};
         this._requests[req_id].ack_timeout_id = setTimeout(function () {
             blueslip.info("Timeout on ACK for request " + req_id);
             that._try_to_reconnect();
@@ -59,6 +60,22 @@ Socket.prototype = {
 
     _can_send: function Socket__can_send() {
         return this._is_open && this._is_authenticated;
+    },
+
+    _resend: function Socket__resend(req_id) {
+        var req_info = this._requests[req_id];
+        if (req_info.ack_timeout_id !== null) {
+            clearTimeout(req_info.ack_timeout_id);
+            req_info.ack_timeout_id = null;
+        }
+        delete this._requests[req_id];
+
+        if (req_info.type !== 'request') {
+            blueslip.error("Cannot resend message of type: " + req_info.type);
+            return;
+        }
+
+        this.send(req_info.request, req_info.success, req_info.error);
     },
 
     _drain_queue: function Socket__drain_queue() {
@@ -133,8 +150,7 @@ Socket.prototype = {
                                           that._process_response(id, status.response);
                                       }
                                       if (status.status === 'not_received') {
-                                          that._process_response(id, {result: 'error',
-                                                                      msg: 'Server has no record of request'});
+                                          that._resend(id);
                                       }
                                   });
                                   that._drain_queue();
