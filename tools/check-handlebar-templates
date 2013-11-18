@@ -6,13 +6,19 @@ import subprocess
 class Record:
     pass
 
-def validate(fn):
+def validate(fn, check_indent=True):
     text = open(fn).read()
 
     state = Record()
 
     def NoStartTag(end_tag):
-        raise Exception('No start tag for %s' % end_tag)
+        raise Exception('''
+            No start tag
+            fn: %s
+            end tag:
+                %s
+                line %d, col %d
+            ''' % (fn, end_tag, state.line, state.col))
 
     def start_tag_matcher(s):
         start_line = state.line
@@ -25,7 +31,7 @@ def validate(fn):
             problem = None
             if start_tag != end_tag[2:-1]:
                 problem = 'Mismatched tag.'
-            elif state.line > start_line + 1 and state.col != start_col:
+            elif check_indent and state.line > start_line + 1 and state.col != start_col:
                 problem = 'Bad indentation.'
             if problem:
                 raise Exception('''
@@ -40,7 +46,7 @@ def validate(fn):
                     ''' % (fn, problem, s, start_line, start_col, end_tag, state.line, state.col))
             state.matcher = old_matcher
             state.depth -= 1
-        return f
+        state.matcher = f
 
     state.depth = 0
     state.i = 0
@@ -71,24 +77,37 @@ def validate(fn):
             if s.startswith('</'):
                 state.matcher(s)
             else:
-                if not s.endswith('/>'):
-                    state.matcher = start_tag_matcher(s)
+                tag = s[1:-1].split()[0]
+                ignore = s.startswith('<!--') or s.endswith('/>') or tag in ['img', 'meta', 'br', 'input']
+                if not ignore:
+                    start_tag_matcher(s)
             advance(len(s))
             continue
         advance(1)
 
-    assert state.depth == 0
+    if state.depth != 0:
+        return state.matcher("(NO TAG)")
 
 git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
 
 # Check all our handlebars templates.
 templates = [fn for fn in git_files if fn.endswith('.handlebars')]
 assert len(templates) >= 10 # sanity check that we are actually doing work
-
-# Django templates are pretty messy now, so we whitelist them for now.
-templates += [
-    'templates/zerver/settings.html'
-]
-
 for fn in templates:
     validate(fn)
+
+# Django templates are pretty messy now, so we do minimal checking.
+templates = sorted([fn for fn in git_files if fn.endswith('.html') and 'templates' in fn])
+
+def ok(fn):
+    if 'api.html' in fn: return False
+    if 'base.html' in fn: return False
+    if 'emails/' in fn: return False
+    return True
+
+templates = filter(ok, templates)
+
+
+assert len(templates) >= 10 # sanity check that we are actually doing work
+for fn in templates:
+    validate(fn, check_indent=False)

@@ -185,7 +185,7 @@
       <p>You will need your Basecamp account ID. You can find it as a sequence of numbers in the URL when you log in:</p>
       <img class="screenshot" src="/static/images/integrations/basecamp/001.png">
       <p>Edit the Basecamp and Zulip credentials in <code>integrations/basecamp/zulip_basecamp_config.py</code> using
-      your favorite editor:
+      your favorite editor:</p>
 
 
       <div class="codehilite">
@@ -210,7 +210,7 @@
 
       <p><b>Congratulations! You're done!</b><br /> Whenever you create a new project,
       calendar event, comment, message, or more, you'll get a notification in your selected stream
-      with the project or calendar as the topic.
+      with the project or calendar as the topic.</p>
       <img class="screenshot" src="/static/images/integrations/basecamp/002.png">
     </div>
 
@@ -792,9 +792,10 @@ following, to the stream <code>commits</code> with a subject that matches the re
         <ul>
           <li>Did you set up a post-build action for your project?</li>
           <li>Does the stream you picked (e.g. <code>jenkins</code>) already exist? If not, add yourself to it and try again.</li>
-          <li>Are your access key and email address correct? Test them using <a href="/api">our curl API</a>.
+          <li>Are your access key and email address correct? Test them using <a href="/api">our curl API</a>.</li>
           <li>Still stuck? Email <a href="mailto:support@zulip.com?subject=Jenkins">support@zulip.com</a>.</li>
         </ul>
+      </p>
     </div>
 
    <div id="jira" class="integration-instructions">
@@ -872,6 +873,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <p>In the Administrators page, navigate to <code>Plugins > Other > Script Listeners</code>. In the <code>Add Listener</code> section, click on
         the <code>Custom Listener</code> option. Select the events you wish the Zulip integration to fire for, and the projects you wish Zulip to be notified for.
         In the <code>Name of groovy class</code> field, enter <code>org.zulip.jira.ZulipListener</code>.
+      </p>
 
       <p>Click <code>Add Listener</code>, and JIRA will now notify your Zulip of changes to your issues!</p>
 
@@ -911,6 +913,7 @@ key=NAGIOS_BOT_API_KEY
       GROUPS</code> section
       of <code>/etc/nagios3/conf.d/contacts.cfg</code>, doing
       something like:
+      </p>
 
 <div class="codehilite"><pre>define contactgroup{
         contactgroup_name       admins
@@ -958,6 +961,7 @@ key=NAGIOS_BOT_API_KEY
            https://github.com/zulip/phabricator-to-zulip
           </a>
         to get it set up.
+      </p>
 
     </div>
 
