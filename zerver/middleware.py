@@ -104,6 +104,10 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
             statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(memcached_time_delta))
             statsd.incr("%s.memcached.querycount" % (statsd_path,), memcached_count_delta)
 
+    startup_output = ""
+    if 'startup_time_delta' in log_data and log_data["startup_time_delta"] > 0.005:
+        startup_output = " (+start: %s)" % (format_timedelta(log_data["startup_time_delta"]))
+
     bugdown_output = ""
     if 'bugdown_time_start' in log_data:
         bugdown_time_delta = get_bugdown_time() - log_data['bugdown_time_start']
@@ -141,10 +145,10 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     else:
         extra_request_data = ""
     logger_client = "(%s via %s)" % (email, client_name)
-    logger_timing = '%5s%s%s%s%s %s' % \
+    logger_timing = '%5s%s%s%s%s%s %s' % \
                      (format_timedelta(time_delta), optional_orig_delta,
                       memcached_output, bugdown_output,
-                      db_time_output, path)
+                      db_time_output, startup_output, path)
     logger_line = '%-15s %-7s %3d %s%s %s' % \
                     (remote_ip, method, status_code,
                      logger_timing, extra_request_data, logger_client)
@@ -165,8 +169,22 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_content, email))
 
 class LogRequests(object):
+    # We primarily are doing logging using the process_view hook, but
+    # for some views, process_view isn't run, so we call the start
+    # method here too
     def process_request(self, request):
         request._log_data = dict()
+        record_request_start_data(request._log_data)
+        connection.queries = []
+
+    def process_view(self, request, view_func, args, kwargs):
+        # process_request was already run; we save the initialization
+        # time (i.e. the time between receiving the request and
+        # figuring out which view function to call, which is primarily
+        # importing modules on the first start)
+        request._log_data["startup_time_delta"] = time.time() - request._log_data["time_started"]
+        # And then completely reset our tracking to only cover work
+        # done as part of this request
         record_request_start_data(request._log_data)
         connection.queries = []
 
