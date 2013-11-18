@@ -16,6 +16,10 @@ function Socket(url) {
         this._is_unloading = true;
     });
 
+    $(document).on("unsuspend", function () {
+        this._try_to_reconnect();
+    });
+
     this._supported_protocols = ['websocket', 'xdr-streaming', 'xhr-streaming',
                                  'xdr-polling', 'xhr-polling', 'jsonp-polling'];
     if (page_params.test_suite) {
