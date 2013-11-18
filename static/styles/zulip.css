@@ -2764,7 +2764,7 @@ input.edit-alert-word::-webkit-input-placeholder {
 }
 
 .bot_info .field {
-    width: 4em;
+    width: 6em;
     font-weight: 300;
     position: absolute;
 }
@@ -2814,7 +2814,7 @@ div.edit_bot {
 #bots_list .email .value,
 #bots_list .api_key .api-key-value-and-button {
     display: inline-block;
-    margin-left: 4em;
+    margin-left: 6em;
     white-space: -moz-pre-wrap !important;
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
