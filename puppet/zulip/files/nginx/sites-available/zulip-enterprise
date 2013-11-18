@@ -23,5 +23,9 @@ server {
         alias /home/zulip/uploads/avatars;
     }
 
+    location /local-static {
+        alias /home/zulip/local-static;
+    }
+
     include /etc/nginx/zulip-include/app;
 }
