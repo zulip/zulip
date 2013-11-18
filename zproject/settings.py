@@ -760,3 +760,6 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 # for running the tests, or you will need to ensure that embedly_client.is_supported()
 # gets called before the tests run.
 USING_EMBEDLY = False
+
+# This is a debugging option only
+PROFILE_ALL_REQUESTS = False

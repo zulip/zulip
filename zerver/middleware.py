@@ -12,6 +12,7 @@ from zerver.exceptions import RateLimited
 
 import logging
 import time
+import cProfile
 
 logger = logging.getLogger('zulip.requests')
 
@@ -21,11 +22,15 @@ def record_request_stop_data(log_data):
     log_data['memcached_requests_stopped'] = get_memcached_requests()
     log_data['bugdown_time_stopped'] = get_bugdown_time()
     log_data['bugdown_requests_stopped'] = get_bugdown_requests()
+    if settings.PROFILE_ALL_REQUESTS:
+        log_data["prof"].disable()
 
 def async_request_stop(request):
     record_request_stop_data(request._log_data)
 
 def record_request_restart_data(log_data):
+    if settings.PROFILE_ALL_REQUESTS:
+        log_data["prof"].enable()
     log_data['time_restarted'] = time.time()
     log_data['memcached_time_restarted'] = get_memcached_time()
     log_data['memcached_requests_restarted'] = get_memcached_requests()
@@ -36,6 +41,10 @@ def async_request_restart(request):
     record_request_restart_data(request._log_data)
 
 def record_request_start_data(log_data):
+    if settings.PROFILE_ALL_REQUESTS:
+        log_data["prof"] = cProfile.Profile()
+        log_data["prof"].enable()
+
     log_data['time_started'] = time.time()
     log_data['memcached_time_start'] = get_memcached_time()
     log_data['memcached_requests_start'] = get_memcached_requests()
@@ -143,6 +152,11 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
     if time_delta >= 1:
         queue_json_publish("slow_queries", "%s (%s)" % (logger_timing, email), lambda e: None)
+
+    if settings.PROFILE_ALL_REQUESTS:
+        log_data["prof"].disable()
+        profile_path = "/tmp/profile.data.%s.%s" % (path.split("/")[-1], int(time_delta * 1000),)
+        log_data["prof"].dump_stats(profile_path)
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
