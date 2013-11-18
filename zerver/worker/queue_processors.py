@@ -13,7 +13,7 @@ from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, send_local_email_template_with_delay, clear_followup_emails_queue, \
     check_send_message, extract_recipients, one_click_unsubscribe_link, \
-    enqueue_welcome_emails
+    enqueue_welcome_emails, handle_push_notification
 from zerver.lib.digest import handle_digest_email
 from zerver.decorator import JsonableError
 from zerver.lib.socket import req_redis_key
@@ -178,6 +178,11 @@ class MissedMessageWorker(QueueProcessingWorker):
             # Aggregate all messages received every 2 minutes to let someone finish sending a batch
             # of messages
             time.sleep(2 * 60)
+
+@assign_queue('missedmessage_mobile_notifications')
+class PushNotificationsWorker(QueueProcessingWorker):
+    def consume(self, data):
+        handle_push_notification(data['user_profile_id'], data)
 
 def make_feedback_client():
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))

@@ -69,6 +69,7 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
     for msg_id in message_ids:
         event = build_offline_notification_event(user_profile_id, msg_id)
         queue_json_publish("missedmessage_emails", event, lambda event: None)
+        queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
 
 def cache_load_message_data(message_id, users):
     # Get everything that we'll need out of memcached in one fetch, to save round-trip times:
@@ -169,7 +170,6 @@ def process_new_message(data):
         received_pm = message.recipient.type in (Recipient.PERSONAL, Recipient.HUDDLE) and \
                         user_profile_id != message.sender.id
         mentioned = 'mentioned' in flags
-
         if (received_pm or mentioned) and receiver_is_idle(user_profile, realm_presences):
             if receives_offline_notifications(user_profile):
                 event = build_offline_notification_event(user_profile_id, message.id)
@@ -177,6 +177,7 @@ def process_new_message(data):
                 # We require RabbitMQ to do this, as we can't call the email handler
                 # from the Tornado process. So if there's no rabbitmq support do nothing
                 queue_json_publish("missedmessage_emails", event, lambda event: None)
+                queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
 
     for client, flags in send_to_clients.itervalues():
         if not client.accepts_event_type('message'):

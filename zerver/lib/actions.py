@@ -1994,25 +1994,32 @@ def do_send_missedmessage_events(user_profile, missed_messages):
         user_profile.last_reminder = datetime.datetime.now()
         user_profile.save(update_fields=['last_reminder'])
 
-    if user_profile.enable_offline_push_notifications:
-        if num_push_devices_for_user(user_profile) == 0:
-            return
+    return
 
-        badge_count = len(missed_messages)
+@statsd_increment("push_notifications")
+def handle_push_notification(user_profile_id, missed_message):
+    user_profile = get_user_profile_by_id(user_profile_id)
+    message = UserMessage.objects.get(user_profile=user_profile,
+                                      message__id=missed_message['message_id'],
+                                      flags=~UserMessage.flags.read).message
+    sender_str = message.sender.full_name
 
+    if user_profile.enable_offline_push_notifications and num_push_devices_for_user(user_profile):
+        #TODO: set badge count in a better way
         # Determine what alert string to display based on the missed messages
-        if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages):
-            alert = "New private group message%s from %s" % (plural_messages, sender_str)
-        elif all(msg.recipient.type == Recipient.PERSONAL for msg in missed_messages):
-            alert = "New private message%s from %s" % (plural_messages, sender_str)
-        elif all(msg.recipient.type == Recipient.STREAM for msg in missed_messages):
-            alert = "New mention%s from %s" % (plural_messages, sender_str)
+        if message.recipient.type == Recipient.HUDDLE:
+            alert = "New private group message from %s" % (sender_str,)
+        elif message.recipient.type == Recipient.PERSONAL:
+            alert = "New private message from %s" % (sender_str,)
+        elif message.recipient.type == Recipient.STREAM:
+            alert = "New mention from %s" % (sender_str,)
         else:
             alert = "New Zulip mentions and private messages from %s" % (sender_str,)
+        extra_data = {'message_ids': [message.id]}
 
-        extra_data = {'message_ids': [amsg.id for amsg in missed_messages]}
-
-        send_apple_push_notification(user_profile, alert, badge=badge_count, zulip=extra_data)
+        logging.info("sending push notification %r, %r" % (user_profile, alert))
+        send_apple_push_notification(user_profile, alert, badge=1, zulip=extra_data)
+    return
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     message_ids = [event.get('message_id') for event in missed_email_events]
