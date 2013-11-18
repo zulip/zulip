@@ -147,7 +147,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             if not self.authenticated:
                 response = {'result': 'error', 'msg': "Not yet authenticated"}
                 self.session.send_message({'req_id': msg['req_id'], 'response': response})
-                write_log_line(log_data, path='/socket/auth', method='SOCKET',
+                write_log_line(log_data, path='/socket/service_request', method='SOCKET',
                                remote_ip=self.session.conn_info.ip,
                                email='unknown', client_name='?',
                                status_code=403, error_content=ujson.dumps(response))
