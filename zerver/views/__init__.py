@@ -1931,7 +1931,7 @@ def json_report_send_time(request, user_profile,
                           time=REQ(converter=to_non_negative_int),
                           received=REQ(converter=to_non_negative_int, default="(unknown)"),
                           displayed=REQ(converter=to_non_negative_int, default="(unknown)")):
-    logging.info("End-to-end send time: %sms/%sms/%sms (%s)" % (time, received, displayed, user_profile.email))
+    request._log_data["extra"] = "[%sms/%sms/%sms]" % (time, received, displayed)
     statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), time)
     if received != "(unknown)":
         statsd.timing("endtoend.receive_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), received)
