@@ -98,13 +98,16 @@ class ClientDescriptor(object):
     def connect_handler(self, handler):
         self.current_handler = handler
         self.last_connection_time = time.time()
-        def timeout_callback():
-            self._timeout_handle = None
-            # All clients get heartbeat events
-            self.add_event(dict(type='heartbeat'))
-        ioloop = tornado.ioloop.IOLoop.instance()
-        heartbeat_time = time.time() + HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)
-        self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
+
+        if self.accepts_event_type('heartbeat'):
+            def timeout_callback():
+                self._timeout_handle = None
+                # We already checked whether the client accepts heartbeats
+                self.add_event(dict(type='heartbeat'))
+            ioloop = tornado.ioloop.IOLoop.instance()
+            heartbeat_time = time.time() + HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)
+            self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
+
         logging.info("DEBUG: connected handler for queue %s" % (self.event_queue.id,))
 
     def disconnect_handler(self):
