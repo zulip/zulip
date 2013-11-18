@@ -40,4 +40,4 @@ def get_avatar_url(avatar_source, email):
         hash_key = gravatar_hash(email)
         return "https://secure.gravatar.com/avatar/%s?d=identicon" % (hash_key,)
     else:
-        return '/static/images/default-avatar.png?x=x'
+        return settings.DEFAULT_AVATAR_URI+'?x=x'

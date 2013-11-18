@@ -266,6 +266,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'CAMO_URI': None,
                     'ENABLE_FEEDBACK': True,
                     'ENABLE_GRAVATAR': True,
+                    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():

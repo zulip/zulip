@@ -85,6 +85,11 @@ NAME_CHANGES_DISABLED = False
 # from gravatar.com.
 ENABLE_GRAVATAR = True
 
+# To override the default avatar image if ENABLE_GRAVATAR is False, place your
+# custom default avatar image at /home/zulip/local-static/default-avatar.png
+# and uncomment the following line.
+#DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
+
 ### TWITTER INTEGRATION
 
 # Zulip supports showing inline Tweet previews when a tweet is linked
