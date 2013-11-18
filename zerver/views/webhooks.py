@@ -143,6 +143,11 @@ def api_github_landing(request, user_profile, event=REQ,
 
     subject = elide_subject(subject)
 
+    # customer14.invalid has a stream per GitHub project and wants the topic to
+    # always be 'GitHub'.
+    if user_profile.realm.domain == "customer14.invalid":
+        subject = "GitHub"
+
     request.client = get_client("github_bot")
     return send_message_backend(request, user_profile,
                                 message_type_name="stream",
