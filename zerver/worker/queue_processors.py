@@ -17,6 +17,7 @@ from zerver.lib.digest import handle_digest_email
 from zerver.decorator import JsonableError
 from zerver.lib.socket import req_redis_key
 from confirmation.models import Confirmation
+from django.db import reset_queries
 
 import os
 import sys
@@ -65,6 +66,7 @@ class QueueProcessingWorker(object):
             with lockfile(lock_fn):
                 with open(fn, 'a') as f:
                     f.write(line)
+        reset_queries()
 
     def _log_problem(self):
         logging.exception("Problem handling data on queue %s" % (self.queue_name,))
@@ -193,6 +195,7 @@ class MissedMessageWorker(QueueProcessingWorker):
             for user_profile_id, events in by_recipient.items():
                 handle_missedmessage_emails(user_profile_id, events)
 
+            reset_queries()
             # Aggregate all messages received every 2 minutes to let someone finish sending a batch
             # of messages
             time.sleep(2 * 60)
@@ -258,6 +261,8 @@ class SlowQueryWorker(QueueProcessingWorker):
                 content += "    %s\n" % (query,)
 
             internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
+
+        reset_queries()
 
 @assign_queue("message_sender")
 class MessageSenderWorker(QueueProcessingWorker):
