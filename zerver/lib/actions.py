@@ -1427,9 +1427,8 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     # 3. This is a topic-only edit and you are an admin.
     if message.sender == user_profile:
         pass
-    elif (content is None) and \
-            ((message.subject == "(no topic)") or
-             (user_profile in user_profile.realm.get_admin_users())):
+    elif (content is None) and ((message.subject == "(no topic)") or
+                                user_profile.is_admin()):
         pass
     else:
         raise JsonableError("You don't have permission to edit this message")
