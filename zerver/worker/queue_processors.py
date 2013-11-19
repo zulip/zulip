@@ -164,6 +164,11 @@ class UserActivityWorker(QueueProcessingWorker):
         query = event["query"]
         do_update_user_activity(user_profile, client, query, log_time)
 
+@assign_queue('user_activity_test')
+class UserActivityTestWorker(QueueProcessingWorker):
+    def consume(self, event):
+        pass
+
 @assign_queue('user_activity_interval')
 class UserActivityIntervalWorker(QueueProcessingWorker):
     def consume(self, event):
