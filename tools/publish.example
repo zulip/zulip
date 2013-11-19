@@ -1,0 +1,21 @@
+#!/bin/bash
+# publish -- rsync to a remote host
+#
+# Copyright © 2013 Zulip, Inc. All rights reserved.
+# This is an unpublished work of Zulip, Inc.
+#
+
+USER=""
+HOST="apt.zulip.net"
+PATH="/var/www/apt/user"
+
+set -e
+
+if [ "$1" == "-f" ]; then
+    rsync -avz --delete . $USER@$HOST:$PATH
+else
+    echo "SIMULATED SYNC"
+    echo
+    rsync --dry-run -avz --delete . $USER@$HOST:$PATH
+    echo "This was a dry run. Pass -f to actually perform."
+fi
