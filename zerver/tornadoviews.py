@@ -23,6 +23,17 @@ def notify(request):
     process_notification(ujson.loads(request.POST['data']))
     return json_success()
 
+@has_request_variables
+def cleanup_event_queue(request, user_profile, queue_id=REQ()):
+    client = get_client_descriptor(queue_id)
+    if client is None:
+        return json_error("Bad event queue id: %s" % (queue_id,))
+    if user_profile.id != client.user_profile_id:
+        return json_error("You are not authorized to access this queue")
+    request._log_data['extra'] = "[%s]" % (queue_id,)
+    client.cleanup()
+    return json_success()
+
 @authenticated_json_post_view
 def json_get_events(request, user_profile):
     return get_events_backend(request, user_profile, apply_markdown=True)

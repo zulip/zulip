@@ -219,7 +219,8 @@ v1_api_and_json_patterns = patterns('zerver.views',
 
 ) + patterns('zerver.tornadoviews',
     url(r'^events$', 'rest_dispatch',
-        {'GET': 'get_events_backend'}),
+        {'GET': 'get_events_backend',
+         'DELETE': 'cleanup_event_queue'}),
 )
 if not settings.ENTERPRISE:
     v1_api_and_json_patterns += patterns('',

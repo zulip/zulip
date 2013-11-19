@@ -84,6 +84,7 @@ class Resource(resource.Resource):
         request.requestHeaders.setRawHeaders('X-Forwarded-Host', [proxy_host])
 
         if (request.uri in ['/json/get_events'] or
+            request.uri.startswith('/json/events') or
             request.uri.startswith('/api/v1/events') or
             request.uri.startswith('/sockjs')):
             return proxy.ReverseProxyResource('localhost', tornado_port, '/'+name)

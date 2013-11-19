@@ -88,6 +88,7 @@ class Command(BaseCommand):
             try:
                 urls = (r"/notify_tornado",
                         r"/json/get_events",
+                        r"/json/events",
                         r"/api/v1/events",
                         )
 
@@ -176,6 +177,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.get()
 
     def post(self):
+        self.get()
+
+    def delete(self):
         self.get()
 
     # Based on django.core.handlers.base: get_response

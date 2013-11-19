@@ -141,6 +141,10 @@ class ClientDescriptor(object):
             ioloop.remove_timeout(self._timeout_handle)
             self._timeout_handle = None
 
+    def cleanup(self):
+        do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
+                           [self.realm_id])
+
 class EventQueue(object):
     def __init__(self, id):
         self.queue = deque()
@@ -217,17 +221,7 @@ def allocate_client_descriptor(user_profile_id, realm_id, event_types, client_ty
         realm_clients_all_streams.setdefault(realm_id, []).append(client)
     return client
 
-def gc_event_queues():
-    start = time.time()
-    to_remove = set()
-    affected_users = set()
-    affected_realms = set()
-    for (id, client) in clients.iteritems():
-        if client.idle(start):
-            to_remove.add(id)
-            affected_users.add(client.user_profile_id)
-            affected_realms.add(client.realm_id)
-
+def do_gc_event_queues(to_remove, affected_users, affected_realms):
     def filter_client_dict(client_dict, key):
         if key not in client_dict:
             return
@@ -249,6 +243,19 @@ def gc_event_queues():
         for cb in gc_hooks:
             cb(clients[id].user_profile_id, clients[id], clients[id].user_profile_id not in user_clients)
         del clients[id]
+
+def gc_event_queues():
+    start = time.time()
+    to_remove = set()
+    affected_users = set()
+    affected_realms = set()
+    for (id, client) in clients.iteritems():
+        if client.idle(start):
+            to_remove.add(id)
+            affected_users.add(client.user_profile_id)
+            affected_realms.add(client.realm_id)
+
+    do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
                   + '  Now %d active queues')
