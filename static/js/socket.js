@@ -11,13 +11,14 @@ function Socket(url) {
     this._reconnect_timeout_id = null;
     this._heartbeat_timeout_id = null;
 
+    var that = this;
     this._is_unloading = false;
     $(window).on("unload", function () {
-        this._is_unloading = true;
+        that._is_unloading = true;
     });
 
     $(document).on("unsuspend", function () {
-        this._try_to_reconnect();
+        that._try_to_reconnect();
     });
 
     this._supported_protocols = ['websocket', 'xdr-streaming', 'xhr-streaming',
