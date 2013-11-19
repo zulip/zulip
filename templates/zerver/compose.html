@@ -19,13 +19,15 @@
           </div>
     </div>
     <div class="message_comp compose-content">
-      <button type="button" class="close" id='compose_close'>×</button>
       <div class="alert" id="send-status">
         <span class="send-status-close">&times;</span>
         <span id="error-msg"></span>
       </div>
       <div  id="compose_invite_users" class="alert"></div>
-      <div  id="out-of-view-notification" class="alert"></div>
+      <div  id="out-of-view-notification" class="notification-alert">
+     </div>
+     <div class="composition-area">
+      <button type="button" class="close" id='compose_close'>×</button>
       <form id="send_message_form" action="/json/send_message" method="post">
         {% csrf_token %}
         <table class="compose_table">
@@ -88,6 +90,7 @@
           </tbody>
         </table>
       </form>
+     </div>
     </div>
   </div>
 </div>

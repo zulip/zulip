@@ -1360,8 +1360,8 @@ blockquote p {
 #compose_close {
     display: none;
     position: absolute;
-    right: 8px;
-    top: 7px;
+    right: -4px;
+    top: 5px;
 }
 
 #compose_invite_users {
@@ -1421,18 +1421,41 @@ blockquote p {
 }
 
 #out-of-view-notification {
-    /* Don't overlap into the compose_close × */
-    margin-right: 10px;
+    background: #9bff8b;
+    background: rgba(163,211,147,0.95);
+    border-bottom: 1px solid #ffffff;
+    border-right: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-radius: 0px 0px 2px 2px;
+    font-weight: 400;
+    font-size: 12px;
+    display: inline-block;
+    box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.5);
+    position: relative;
+    top: -8px;
+    width: 100%;
+    padding-right: 5px;
 }
 
-.out-of-view-notification-close {
+.compose-notifications-content {
+    padding: 4px 10px 4px 10px;
+    text-align: center;
+}
+
+.composition-area {
+    position: relative;
+}
+
+#out-of-view-notification .close {
+    position: absolute;
+    right: 5px;
+    top: 5px;
     font-size:   17px;
     font-weight: bold;
     color:       black;
     text-shadow: 0 1px 0 white;
     opacity:     .2;
     filter:      alpha(opacity=20);
-    float:       right;
 }
 
 .home-error-bar {
