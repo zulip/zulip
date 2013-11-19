@@ -409,14 +409,6 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
             note = "You sent a message outside the current narrow.";
             link_class = "compose_notification_narrow_by_subject";
             link_text = "Narrow to " + get_message_header(message);
-        }
-        else if (viewport.is_below_visible_bottom(row.offset().top) && !narrow.narrowed_by_reply()){
-            // offscreen because it's too far down.
-            // offer scroll to message link.
-            note = "Your recently sent message is";
-            link_class = "compose_notification_scroll_to_message";
-            link_text = "further down";
-
         } else {
             // return with _.each is like continue for normal for loops.
             return;
