@@ -2261,6 +2261,10 @@ table.floating_recipient {
     outline: none;
 }
 
+.zulip-button:focus {
+    box-shadow: inset 0px 100px 0px 0px rgba(255,255,255,0.2), 0px 0px 0px 1px rgba(0,0,0,0.2);
+}
+
 .zulip-button:hover {
     background-image: -moz-linear-gradient(top, rgba(0,0,0,0.09) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
     background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.09)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
