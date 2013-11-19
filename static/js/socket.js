@@ -144,6 +144,9 @@ Socket.prototype = {
             blueslip.info("Socket connected.");
             that._is_open = true;
 
+            // Notify listeners that we've finished the websocket handshake
+            $(document).trigger($.Event('websocket_postopen.zulip', {}));
+
             // We can only authenticate after the DOM has loaded because we need
             // the CSRF token
             $(function () {
@@ -197,6 +200,9 @@ Socket.prototype = {
             if (that._is_unloading) {
                 return;
             }
+            // We've failed to handshake, but notify that the attempt finished
+            $(document).trigger($.Event('websocket_postopen.zulip', {}));
+
             blueslip.info("SockJS connection lost.  Attempting to reconnect soon.");
             that._connection_failures++;
             that._is_reconnecting = false;

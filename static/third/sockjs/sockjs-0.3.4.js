@@ -1211,6 +1211,10 @@ var WebSocketTransport = SockJS.websocket = function(ri, trans_url) {
     that.url = url;
     var Constructor = _window.WebSocket || _window.MozWebSocket;
 
+    // Zulip Addition: Notify that we're about to start the
+    // WebSocket handshake
+    $(document).trigger($.Event('websocket_preopen.zulip', {}));
+
     that.ws = new Constructor(that.url);
     that.ws.onmessage = function(e) {
         that.ri._didMessage(e.data);
