@@ -20,9 +20,11 @@ function is_local_part(value, element) {
     return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
 }
 
+// Choose avatar stamp fairly randomly, to help get old avatars out of cache.
+exports.avatar_stamp = Math.floor(Math.random()*100);
+
 $(function () {
 
-    var avatar_stamp = 1;
 
     function upload_avatar(file_input) {
         var form_data = new FormData();
@@ -44,9 +46,9 @@ $(function () {
             contentType: false,
             success: function (data) {
                 util.destroy_loading_indicator($("#upload_avatar_spinner"));
-                var url = data.avatar_url + '&stamp=' + avatar_stamp;
+                var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
                 $("#user-settings-avatar").expectOne().attr("src", url);
-                avatar_stamp += 1;
+                exports.avatar_stamp += 1;
             }
         });
 
@@ -274,4 +276,5 @@ $(function () {
 
 });
 
+return exports;
 }());

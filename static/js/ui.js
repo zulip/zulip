@@ -25,7 +25,6 @@ exports.home_tab_obscured = function () {
 // scrollbar when we switch to a new tab (and restore it
 // when we switch back.)
 var scroll_positions = {};
-var gravatar_stamp = 1;
 
 exports.change_tab_to = function (tabname) {
     $('#gear-menu a[href="' + tabname + '"]').tab('show');
@@ -690,7 +689,7 @@ function toggle_star(row_id) {
 
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
-    // gravatar images, so that the browser can help
+    // avatar images, so that the browser can help
     // us avoid unnecessary network trips.  (For user-uploaded avatars,
     // the s=25 parameter is essentially ignored, but it's harmless.)
     //
@@ -699,7 +698,7 @@ exports.small_avatar_url = function (message) {
     if (message.avatar_url) {
         var url = message.avatar_url + "&s=50";
         if (message.sent_by_me) {
-            url += "&stamp=" + gravatar_stamp;
+            url += "&stamp=" + settings.avatar_stamp;
         }
         return url;
     } else {
