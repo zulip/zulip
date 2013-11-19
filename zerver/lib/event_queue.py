@@ -246,13 +246,7 @@ def load_event_queues():
         pass
 
     for client in clients.itervalues():
-        # The following block can be dropped once we've
-        # cleared out all our old event queues
-        if not hasattr(client, 'realm_id') or not hasattr(client, 'all_public_streams'):
-            from zerver.models import get_user_profile_by_id
-            client.realm_id = get_user_profile_by_id(client.user_profile_id).realm.id
-            client.all_public_streams = False
-            logging.info("Tornado updated a queue")
+        # Put code for migrations due to event queue data format changes here
 
         user_clients.setdefault(client.user_profile_id, []).append(client)
         if client.all_public_streams:
