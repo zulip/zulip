@@ -1044,6 +1044,7 @@ just a temporary hack.
 .sender-status .sender_name {
     font-weight: bold;
     position: static;
+    vertical-align: bottom;
 }
 
 .sender_name_hovered .sender_name {
