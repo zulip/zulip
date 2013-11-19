@@ -144,11 +144,13 @@ while msg_to_send not in msg_content:
 
     msg_content = [m['content'] for m in messages]
 
-    if options.nagios:
-        if time_diff.seconds > 3:
-            report('WARNING', time_diff)
-        if time_diff.seconds > 6:
-            report('CRITICAL', time_diff)
+print zulip_recipient.deregister(queue_id)
+
+if options.nagios:
+    if time_diff.seconds > 3:
+        report('WARNING', time_diff)
+    if time_diff.seconds > 6:
+        report('CRITICAL', time_diff)
 
 if options.munin:
     print "sendreceive.value %s" % total_seconds(time_diff)

@@ -350,4 +350,5 @@ if h_missing_z:
         logger.error("zulip: This suggests we have a zephyr=>zulip mirroring problem.")
         logger.error("zulip: aka the global class mirroring script has issues.")
 
+zulip_client.deregister(queue_id)
 print_status_and_exit(1)

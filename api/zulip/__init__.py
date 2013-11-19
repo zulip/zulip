@@ -288,6 +288,9 @@ def _mk_subs(streams, **kwargs):
 def _mk_rm_subs(streams):
     return {'delete': streams}
 
+def _mk_deregister(queue_id):
+    return {'queue_id': queue_id}
+
 def _mk_events(event_types=None):
     if event_types is None:
         return dict()
@@ -322,6 +325,7 @@ Client._register('update_message', method='PATCH', url='messages', make_request=
 Client._register('get_messages', method='GET', url='messages/latest', longpolling=True)
 Client._register('get_events', url='events', method='GET', longpolling=True, make_request=(lambda **kwargs: kwargs))
 Client._register('register', make_request=_mk_events)
+Client._register('deregister', url="events", method="DELETE", make_request=_mk_deregister)
 Client._register('get_profile', method='GET', url='users/me')
 Client._register('get_streams', method='GET', url='streams', make_request=_kwargs_to_dict)
 Client._register('get_members', method='GET', url='users')
