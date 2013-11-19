@@ -115,9 +115,7 @@ function process_hotkey(e) {
         }
     }
 
-    // Disable hotkeys on settings page etc., and when a modal pop-up
-    // is visible.
-    if (ui.home_tab_obscured()) {
+    if (ui.home_tab_obscured() && event_name !== 'search') {
         return false;
     }
 
