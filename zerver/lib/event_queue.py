@@ -275,7 +275,7 @@ def setup_event_queue():
     signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
 
     try:
-        os.remove(settings.PERSISTENT_QUEUE_FILENAME)
+        os.rename(settings.PERSISTENT_QUEUE_FILENAME, "/var/tmp/event_queues.pickle.last")
     except OSError:
         pass
 
