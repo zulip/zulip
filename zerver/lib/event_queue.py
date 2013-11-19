@@ -36,7 +36,7 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor(object):
-    def __init__(self, user_profile_id, realm_id, id, event_types, client_type,
+    def __init__(self, user_profile_id, realm_id, event_queue, event_types, client_type,
                  apply_markdown=True, all_public_streams=False, lifespan_secs=0):
         # These objects are pickled on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
@@ -44,7 +44,7 @@ class ClientDescriptor(object):
         self.user_profile_id = user_profile_id
         self.realm_id = realm_id
         self.current_handler = None
-        self.event_queue = EventQueue(id)
+        self.event_queue = event_queue
         self.queue_timeout = lifespan_secs
         self.event_types = event_types
         self.last_connection_time = time.time()
@@ -176,7 +176,7 @@ def allocate_client_descriptor(user_profile_id, realm_id, event_types, client_ty
     global next_queue_id
     id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
     next_queue_id += 1
-    client = ClientDescriptor(user_profile_id, realm_id, id, event_types, client_type,
+    client = ClientDescriptor(user_profile_id, realm_id, EventQueue(id), event_types, client_type,
                               apply_markdown, all_public_streams, lifespan_secs)
     clients[id] = client
     user_clients.setdefault(user_profile_id, []).append(client)
