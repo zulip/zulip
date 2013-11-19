@@ -869,22 +869,23 @@ $(function () {
         });
 
         sub_row.find('input[name="principal"]').typeahead({
-            source: typeahead_helper.private_message_typeahead_list,
-            items: 4,
+            source: page_params.people_list,
+            items: 5,
             highlighter: function (item) {
-                var query = this.query;
-                return typeahead_helper.highlight_with_escaping(query, item);
+                var item_formatted = typeahead_helper.render_person(item);
+                return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
             },
             matcher: function (item) {
                 var query = $.trim(this.query);
-                if (query === '') {
+                if (query === '' || query === item.email) {
                     return false;
                 }
                 // Case-insensitive.
-                return (item.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+                return (item.email.toLowerCase().indexOf(query.toLowerCase()) !== -1);
             },
+            sorter: typeahead_helper.sort_recipientbox_typeahead,
             updater: function (item) {
-                return typeahead_helper.private_message_mapped[item].email;
+                return item.email;
             }
         });
     });
