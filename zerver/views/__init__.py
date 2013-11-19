@@ -725,7 +725,7 @@ def home(request):
         staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
         alert_words           = register_ret['alert_words'],
         muted_topics          = register_ret['muted_topics'],
-        show_admin            = user_profile.show_admin,
+        is_admin              = user_profile.is_admin(),
         notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
         name_changes_disabled = settings.NAME_CHANGES_DISABLED,
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0
@@ -749,7 +749,7 @@ def home(request):
                                    'show_debug':
                                        settings.DEBUG and ('show_debug' in request.GET),
                                    'show_invites': show_invites,
-                                   'show_admin': user_profile.show_admin,
+                                   'is_admin': user_profile.is_admin(),
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK
                                    },

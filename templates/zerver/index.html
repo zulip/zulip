@@ -53,7 +53,7 @@ var page_params = {{ page_params }};
             <div class="tab-pane" id="subscriptions">
                 {% include "zerver/subscriptions.html" %}
             </div>
-            {% if show_admin %}
+            {% if is_admin %}
             <div class="tab-pane" id="administration">
                 {% include "zerver/administration.html" %}
             </div>

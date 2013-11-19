@@ -556,7 +556,7 @@ function set_topic_edit_properties(message) {
     // to encourage updating them. Admins can also edit any topic.
     if (message.subject === compose.empty_subject_placeholder()) {
         message.always_visible_topic_edit = true;
-    } else if (page_params.show_admin) {
+    } else if (page_params.is_admin) {
         message.on_hover_topic_edit = true;
     }
 }

@@ -254,13 +254,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         else:
             return False
 
-    @property
-    def show_admin(self):
-        # Logic to determine if the user should see the administration tools.
-        # Do NOT use this to check if a user is authorized to perform a specific action!
-        return 0 < self.userobjectpermission_set.filter(
-                content_type__name="realm",
-                permission__codename="administer").count()
+    def is_admin(self):
+        return self.has_perm('administer', self.realm)
 
     @property
     def public_streams_disabled(self):

@@ -228,7 +228,7 @@ function add_email_hint(row) {
 function add_sub_to_table(sub) {
     $('#create_stream_row').after(templates.render(
         'subscription',
-        _.extend(sub, {'allow_rename': page_params.show_admin})));
+        _.extend(sub, {'allow_rename': page_params.is_admin})));
     settings_for_sub(sub).collapse('show');
     add_email_hint(sub);
 }
@@ -408,7 +408,7 @@ exports.setup_page = function () {
         // Add in admin options.
         var sub_rows = [];
         _.each(all_subs, function (sub) {
-            sub = _.extend(sub, {'allow_rename': page_params.show_admin});
+            sub = _.extend(sub, {'allow_rename': page_params.is_admin});
             sub_rows.push(sub);
         });
 
