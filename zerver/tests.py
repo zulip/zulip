@@ -2846,7 +2846,7 @@ class FencedBlockPreprocessorTest(TestCase):
 
         # Simulate code formatting.
         processor.format_code = lambda lang, code: lang + ':' + code
-        processor.placeholder = lambda s: '(' + s + ')'
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'
 
         markdown = [
             '``` .py',
@@ -2861,13 +2861,11 @@ class FencedBlockPreprocessorTest(TestCase):
         ]
         expected = [
             '',
-            '(py:hello()',
-            ')',
+            '**py:hello()**',
             '',
             '',
             '',
-            '(py:goodbye()',
-            ')',
+            '**py:goodbye()**',
             '',
             '',
             ''
@@ -2880,7 +2878,7 @@ class FencedBlockPreprocessorTest(TestCase):
 
         # Simulate code formatting.
         processor.format_code = lambda lang, code: lang + ':' + code
-        processor.placeholder = lambda s: '(' + s + ')'
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'
 
         markdown = [
             '~~~ quote',
@@ -2895,10 +2893,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '',
             '> hi',
             '',
-            '> (py:hello()',
-            '> )',
-            '',
-            '',
+            '> **py:hello()**',
             '',
             '',
             ''
@@ -3046,6 +3041,70 @@ Thou canst not then be false to any man.</p>
 </blockquote>"""
 
         self.common_bugdown_test(fenced_quote, expected_convert)
+
+    def test_complexly_nested_quote(self):
+        fenced_quote = \
+"""I heard about this second hand...
+
+~~~ quote
+
+He said:
+~~~ quote
+The customer is complaining.
+
+They looked at this code:
+``` .py
+def hello(): print 'hello
+```
+They would prefer:
+~~~ .rb
+def hello()
+  puts 'hello'
+end
+~~~
+
+Please advise.
+~~~
+
+She said:
+~~~ quote
+Just send them this:
+``` .sh
+echo "hello\n"
+```
+~~~"""
+        expected = \
+"""<p>I heard about this second hand...</p>
+<blockquote>
+<p>He said:</p>
+<blockquote>
+<p>The customer is complaining.</p>
+<p>They looked at this code:</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">hello</span><span class="p">():</span> <span class="k">print</span> <span class="s">&#39;hello</span>
+</pre></div>
+
+
+<p>They would prefer:</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">hello</span><span class="p">()</span>
+  <span class="nb">puts</span> <span class="s1">&#39;hello&#39;</span>
+<span class="k">end</span>
+</pre></div>
+
+
+<p>Please advise.</p>
+</blockquote>
+<p>She said:</p>
+<blockquote>
+<p>Just send them this:</p>
+<div class="codehilite"><pre><span class="nb">echo</span> <span class="s2">&quot;hello</span>
+<span class="s2">&quot;</span>
+</pre></div>
+
+
+</blockquote>
+</blockquote>"""
+
+        self.common_bugdown_test(fenced_quote, expected)
 
     def test_dangerous_block(self):
         fenced_code = u'xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\

@@ -68,11 +68,25 @@ import markdown
 from zerver.lib.bugdown.codehilite import CodeHilite, CodeHiliteExtension
 
 # Global vars
-FENCE_RE = re.compile(r'(?P<fence>^(?:~{3,}|`{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*)\}?)$', re.MULTILINE|re.DOTALL)
-FENCED_BLOCK_RE = re.compile( \
-    r'(?P<fence>^(?:~{3,}|`{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*)\}?)?[ ]*\n(?P<code>.*?)(?<=\n)(?P=fence)[ ]*$',
-    re.MULTILINE|re.DOTALL
+FENCE_RE = re.compile(r"""
+    # ~~~ or ```
+    (?P<fence>
+        ^(?:~{3,}|`{3,})
     )
+
+    [ ]* # spaces
+
+    (
+        \{?\.?
+        (?P<lang>
+            [a-zA-Z0-9_+-]*
+        ) # "py" or "javascript"
+        \}?
+    ) # language, like ".py" or "{javascript}"
+    $
+    """, re.VERBOSE)
+
+
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
@@ -100,6 +114,109 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         self.checked_for_codehilite = False
         self.codehilite_conf = {}
+
+    def run(self, lines):
+        """ Match and store Fenced Code Blocks in the HtmlStash. """
+
+        output = []
+
+        class Record:
+            pass
+
+        processor = self
+        handlers = []
+
+        def push(handler):
+            handlers.append(handler)
+
+        def pop():
+            handlers.pop()
+
+        class OuterHandler:
+            def __init__(self, output):
+                self.output = output
+
+            def handle_line(self, line):
+                check_for_new_fence(self.output, line)
+
+            def done(self):
+                pop()
+
+        def check_for_new_fence(output, line):
+            m = FENCE_RE.match(line)
+            if m:
+                fence = m.group('fence')
+                lang = m.group('lang')
+                handler = generic_handler(output, fence, lang)
+                push(handler)
+            else:
+                output.append(line)
+
+        def generic_handler(output, fence, lang):
+            if lang in ('quote', 'quoted'):
+                return QuoteHandler(output, fence)
+            else:
+                return CodeHandler(output, fence, lang)
+
+        class QuoteHandler:
+            def __init__(self, output, fence):
+                self.output = output
+                self.fence = fence
+                self.lines = []
+
+            def handle_line(self, line):
+                if line.rstrip() == self.fence:
+                    self.done()
+                else:
+                    check_for_new_fence(self.lines, line)
+
+            def done(self):
+                text = '\n'.join(self.lines)
+                text = processor.format_quote(text)
+                processed_lines = text.split('\n')
+                self.output.append('')
+                self.output.extend(processed_lines)
+                self.output.append('')
+                pop()
+
+        class CodeHandler:
+            def __init__(self, output, fence, lang):
+                self.output = output
+                self.fence = fence
+                self.lang = lang
+                self.lines = []
+
+            def handle_line(self, line):
+                if line.rstrip() == self.fence:
+                    self.done()
+                else:
+                    self.lines.append(line)
+
+            def done(self):
+                text = '\n'.join(self.lines)
+                text = processor.format_code(self.lang, text)
+                text = processor.placeholder(text)
+                processed_lines = text.split('\n')
+                self.output.append('')
+                self.output.extend(processed_lines)
+                self.output.append('')
+                pop()
+
+        handler = OuterHandler(output)
+        push(handler)
+
+        for line in lines:
+            handlers[-1].handle_line(line)
+
+        while handlers:
+            handlers[-1].done()
+
+        # This fiddly handling of new lines at the end of our output was done to make
+        # existing tests pass.  Bugdown is just kind of funny when it comes to new lines,
+        # but we could probably remove this hack.
+        if len(output) > 2 and output[-2] != '':
+            output.append('')
+        return output
 
     def format_code(self, lang, text):
         langclass = ''
@@ -142,49 +259,6 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
     def placeholder(self, code):
         return self.markdown.htmlStash.store(code, safe=True)
-
-    def format_fence(self, lang, text):
-        if lang in ('quote', 'quoted'):
-            replacement = self.format_quote(text)
-            return replacement
-        else:
-            code = self.format_code(lang, text)
-            return self.placeholder(code)
-
-    def process_fence(self, m, text):
-        lang = m.group('lang')
-        code = m.group('code')
-        fence_text = self.format_fence(lang, code)
-        before_text = text[:m.start()]
-        end_text = text[m.end():]
-        return '%s\n%s\n%s'% (before_text, fence_text, end_text)
-
-    def run(self, lines):
-        """ Match and store Fenced Code Blocks in the HtmlStash. """
-
-        text = "\n".join(lines)
-        while 1:
-            m = FENCED_BLOCK_RE.search(text)
-            if m:
-                text = self.process_fence(m, text)
-            else:
-                break
-
-
-        fence = FENCE_RE.search(text)
-        if fence:
-            # If we found a starting fence but no ending fence,
-            # then we add a closing fence before the two newlines that
-            # markdown automatically inserts
-            if text[-2:] == '\n\n':
-                text = text[:-2] + '\n' + fence.group('fence') + text[-2:]
-            else:
-                text += fence.group('fence')
-            m = FENCED_BLOCK_RE.search(text)
-            if m:
-                text = self.process_fence(m, text)
-
-        return text.split("\n")
 
     def _escape(self, txt):
         """ basic html escaping """
