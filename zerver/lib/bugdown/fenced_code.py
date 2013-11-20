@@ -140,13 +140,14 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         langclass = ''
         if lang:
             langclass = LANG_TAG % (lang,)
-            if lang in ('quote', 'quoted'):
-                replacement = self.format_quote(text)
-                return replacement
 
-        code = self.format_code(langclass, lang, text)
-        placeholder = self.markdown.htmlStash.store(code, safe=True)
-        return placeholder
+        if lang in ('quote', 'quoted'):
+            replacement = self.format_quote(text)
+            return replacement
+        else:
+            code = self.format_code(langclass, lang, text)
+            placeholder = self.markdown.htmlStash.store(code, safe=True)
+            return placeholder
 
     def process_fence(self, m, text):
         lang = m.group('lang')
