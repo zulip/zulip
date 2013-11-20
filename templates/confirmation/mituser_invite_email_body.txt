@@ -5,7 +5,11 @@ Hi there,
 To get started, visit the link below:
     <{{ activate_url }}>
 
+{% if enterprise %}
+If you are having issues, please contact your Zulip administrator at <{{ support_email }}>.
+{% else %}
 Feel free to give us a shout at <{{ support_email }}> if you have any questions.
+{% endif %}
 
 Cheers,
 
