@@ -101,6 +101,32 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         self.checked_for_codehilite = False
         self.codehilite_conf = {}
 
+    def format_code(self, langclass, lang, text):
+        # Check for code hilite extension
+        if not self.checked_for_codehilite:
+            for ext in self.markdown.registeredExtensions:
+                if isinstance(ext, CodeHiliteExtension):
+                    self.codehilite_conf = ext.config
+                    break
+
+            self.checked_for_codehilite = True
+
+        # If config is not empty, then the codehighlite extension
+        # is enabled, so we call it to highlite the code
+        if self.codehilite_conf:
+            highliter = CodeHilite(text,
+                    force_linenos=self.codehilite_conf['force_linenos'][0],
+                    guess_lang=self.codehilite_conf['guess_lang'][0],
+                    css_class=self.codehilite_conf['css_class'][0],
+                    style=self.codehilite_conf['pygments_style'][0],
+                    lang=(lang or None),
+                    noclasses=self.codehilite_conf['noclasses'][0])
+
+            code = highliter.hilite()
+        else:
+            code = CODE_WRAP % (langclass, self._escape(text))
+
+        return code
 
     def process_fence(self, m, text):
         langclass = ''
@@ -116,35 +142,13 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 replacement = "\n\n".join(quoted_paragraphs)
                 return '%s\n%s\n%s'% (text[:m.start()], replacement, text[m.end():])
 
-        # If config is not empty, then the codehighlite extension
-        # is enabled, so we call it to highlite the code
-        if self.codehilite_conf:
-            highliter = CodeHilite(m.group('code'),
-                    force_linenos=self.codehilite_conf['force_linenos'][0],
-                    guess_lang=self.codehilite_conf['guess_lang'][0],
-                    css_class=self.codehilite_conf['css_class'][0],
-                    style=self.codehilite_conf['pygments_style'][0],
-                    lang=(m.group('lang') or None),
-                    noclasses=self.codehilite_conf['noclasses'][0])
-
-            code = highliter.hilite()
-        else:
-            code = CODE_WRAP % (langclass, self._escape(m.group('code')))
+        code = self.format_code(langclass, m.group('lang'), m.group('code'))
 
         placeholder = self.markdown.htmlStash.store(code, safe=True)
         return '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
 
     def run(self, lines):
         """ Match and store Fenced Code Blocks in the HtmlStash. """
-
-        # Check for code hilite extension
-        if not self.checked_for_codehilite:
-            for ext in self.markdown.registeredExtensions:
-                if isinstance(ext, CodeHiliteExtension):
-                    self.codehilite_conf = ext.config
-                    break
-
-            self.checked_for_codehilite = True
 
         text = "\n".join(lines)
         while 1:
