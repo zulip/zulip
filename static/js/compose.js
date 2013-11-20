@@ -333,7 +333,9 @@ function compose_error(error_text, bad_input) {
     $('#error-msg').html(error_text);
     $("#compose-send-button").removeAttr('disabled');
     $("#sending-indicator").hide();
-    bad_input.focus().select();
+    if (bad_input !== undefined) {
+        bad_input.focus().select();
+    }
 }
 
 var send_options;
@@ -646,6 +648,11 @@ exports.validate = function () {
 
     if (/^\s*$/.test(exports.message_content())) {
         compose_error("You have nothing to send!", $("#new_message_content"));
+        return false;
+    }
+
+    if ($("#zephyr-mirror-error").is(":visible")) {
+        compose_error("You need to link with Webathena before you can send messages!");
         return false;
     }
 
