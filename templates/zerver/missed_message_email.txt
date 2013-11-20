@@ -30,4 +30,4 @@ The Zulip Team
 
 Note: click here to open your Zulip Settings page and disable future email notifications:
 
-https://{{ external_url }}/#settings
+https://{{ external_host }}/#settings

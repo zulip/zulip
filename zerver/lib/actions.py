@@ -1919,9 +1919,9 @@ def do_send_missedmessage_events(user_profile, missed_messages):
         template_payload = {'name': user_profile.full_name,
                             'messages': build_message_list(user_profile, missed_messages),
                             'message_count': len(missed_messages),
-                            'url': 'https://%s' % (settings.EXTERNAL_URL,),
+                            'url': 'https://%s' % (settings.EXTERNAL_HOST,),
                             'reply_warning': False,
-                            'externl_host': settings.EXTERNAL_URL}
+                            'external_host': settings.EXTERNAL_HOST}
         headers = {}
         if all(msg.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL)
                 for msg in missed_messages):
@@ -1942,10 +1942,10 @@ def do_send_missedmessage_events(user_profile, missed_messages):
             # There are some @-mentions mixed in with personals
             template_payload['mention'] = True
             template_payload['reply_warning'] = True
-            headers['Reply-To'] = "Nobody <%>" % (settings.NOREPLY_EMAIL_ADDRESS,)
+            headers['Reply-To'] = "Nobody <%s>" % (settings.NOREPLY_EMAIL_ADDRESS,)
 
         subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
-        from_email = "%s (via Zulip) <%>" % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
+        from_email = "%s (via Zulip) <%s>" % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
 
         text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
         html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
