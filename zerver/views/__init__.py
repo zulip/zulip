@@ -603,7 +603,10 @@ def accounts_home(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             prereg_user = create_preregistration_user(email, request)
-            Confirmation.objects.send_confirmation(prereg_user, email)
+            context = {'support_email': settings.ZULIP_ADMINISTRATOR,
+                       'enterprise': settings.ENTERPRISE}
+            Confirmation.objects.send_confirmation(prereg_user, email,
+                                                   additional_context=context)
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
             email = request.POST['email']
