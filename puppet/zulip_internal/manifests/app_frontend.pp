@@ -19,4 +19,11 @@ class zulip_internal::app_frontend {
     notify => Service["nginx"],
   }
 
+  file { "/etc/cron.d/restart-workers":
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip_internal/cron.d/restart-workers",
+  }
+
 }
