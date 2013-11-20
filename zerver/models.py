@@ -389,11 +389,18 @@ class Recipient(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
+get_client_cache = {}
+def get_client(name):
+    if name not in get_client_cache:
+        result = get_client_memcached(name)
+        get_client_cache[name] = result
+    return get_client_cache[name]
+
 def get_client_cache_key(name):
     return 'get_client:%s' % (make_safe_digest(name),)
 
 @cache_with_key(get_client_cache_key, timeout=3600*24*7)
-def get_client(name):
+def get_client_memcached(name):
     (client, _) = Client.objects.get_or_create(name=name)
     return client
 
