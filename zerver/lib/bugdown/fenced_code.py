@@ -101,7 +101,11 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         self.checked_for_codehilite = False
         self.codehilite_conf = {}
 
-    def format_code(self, langclass, lang, text):
+    def format_code(self, lang, text):
+        langclass = ''
+        if lang:
+            langclass = LANG_TAG % (lang,)
+
         # Check for code hilite extension
         if not self.checked_for_codehilite:
             for ext in self.markdown.registeredExtensions:
@@ -137,15 +141,11 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return "\n\n".join(quoted_paragraphs)
 
     def format_fence(self, lang, text):
-        langclass = ''
-        if lang:
-            langclass = LANG_TAG % (lang,)
-
         if lang in ('quote', 'quoted'):
             replacement = self.format_quote(text)
             return replacement
         else:
-            code = self.format_code(langclass, lang, text)
+            code = self.format_code(lang, text)
             placeholder = self.markdown.htmlStash.store(code, safe=True)
             return placeholder
 
