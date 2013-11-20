@@ -136,21 +136,22 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
         return "\n\n".join(quoted_paragraphs)
 
-    def format_fence(self, m, lang):
+    def format_fence(self, lang, text):
         langclass = ''
         if lang:
             langclass = LANG_TAG % (lang,)
             if lang in ('quote', 'quoted'):
-                replacement = self.format_quote(m.group('code'))
+                replacement = self.format_quote(text)
                 return replacement
 
-        code = self.format_code(langclass, lang, m.group('code'))
+        code = self.format_code(langclass, lang, text)
         placeholder = self.markdown.htmlStash.store(code, safe=True)
         return placeholder
 
     def process_fence(self, m, text):
         lang = m.group('lang')
-        fence_text = self.format_fence(m, lang)
+        code = m.group('code')
+        fence_text = self.format_fence(lang, code)
         return '%s\n%s\n%s'% (text[:m.start()], fence_text, text[m.end():])
 
     def run(self, lines):
