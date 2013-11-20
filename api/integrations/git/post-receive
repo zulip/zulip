@@ -77,7 +77,7 @@ def git_commit_range(oldrev, newrev):
         if hasattr(config, "format_commit_message"):
             commits += config.format_commit_message(author_email, subject, commit_id)
         else:
-            commits += '!gravatar(%s) %s\n' % (author_email, subject)
+            commits += '!avatar(%s) %s\n' % (author_email, subject)
     return commits
 
 def send_bot_message(oldrev, newrev, refname):

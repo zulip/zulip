@@ -34,9 +34,9 @@ def commit_notice_destination(repo, branch, commit):
 # common customization is to include a link to the commit in your
 # graphical repository viewer, e.g.
 #
-# return '!gravatar(%s) [%s](https://example.com/commits/%s)\n' % (author, subject, commit_id)
+# return '!avatar(%s) [%s](https://example.com/commits/%s)\n' % (author, subject, commit_id)
 def format_commit_message(author, subject, commit_id):
-    return '!gravatar(%s) [%s](https://git.zulip.net/eng/zulip/commit/%s)\n' % (author, subject, commit_id)
+    return '!avatar(%s) [%s](https://git.zulip.net/eng/zulip/commit/%s)\n' % (author, subject, commit_id)
 
 ZULIP_API_PATH = "/home/zulip/zulip/api"
 ZULIP_SITE = "https://staging.zulip.com"
