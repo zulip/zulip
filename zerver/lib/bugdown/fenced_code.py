@@ -153,7 +153,9 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         lang = m.group('lang')
         code = m.group('code')
         fence_text = self.format_fence(lang, code)
-        return '%s\n%s\n%s'% (text[:m.start()], fence_text, text[m.end():])
+        before_text = text[:m.start()]
+        end_text = text[m.end():]
+        return '%s\n%s\n%s'% (before_text, fence_text, end_text)
 
     def run(self, lines):
         """ Match and store Fenced Code Blocks in the HtmlStash. """
