@@ -1019,6 +1019,20 @@ function force_get_updates() {
     get_updates_timeout = setTimeout(get_updates, 0);
 }
 
+function cleanup_event_queue() {
+    // Submit a request to the server to cleanup our event queue
+    $.ajax({
+        type:     'DELETE',
+        url:      '/json/events',
+        data:     {queue_id: get_updates_params.queue_id},
+        dataType: 'json'
+    });
+}
+
+window.addEventListener("beforeunload", function (event) {
+    cleanup_event_queue();
+});
+
 function process_result(messages, opts) {
     $('#get_old_messages_error').hide();
 
