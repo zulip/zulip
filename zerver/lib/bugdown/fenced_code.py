@@ -136,21 +136,21 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
         return "\n\n".join(quoted_paragraphs)
 
-    def process_fence(self, m, text):
+    def format_fence(self, m):
         langclass = ''
         if m.group('lang'):
             langclass = LANG_TAG % m.group('lang')
-
             if m.group('lang') in ('quote', 'quoted'):
-
                 replacement = self.format_quote(m.group('code'))
-
-                return '%s\n%s\n%s'% (text[:m.start()], replacement, text[m.end():])
+                return replacement
 
         code = self.format_code(langclass, m.group('lang'), m.group('code'))
-
         placeholder = self.markdown.htmlStash.store(code, safe=True)
-        return '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
+        return placeholder
+
+    def process_fence(self, m, text):
+        fence_text = self.format_fence(m)
+        return '%s\n%s\n%s'% (text[:m.start()], fence_text, text[m.end():])
 
     def run(self, lines):
         """ Match and store Fenced Code Blocks in the HtmlStash. """
