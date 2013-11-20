@@ -2794,6 +2794,118 @@ class GetSubscribersTest(AuthedTestCase):
         self.assert_json_error(result,
                                "Unable to retrieve subscribers for invite-only stream")
 
+class FencedBlockPreprocessorTest(TestCase):
+    def test_simple_quoting(self):
+        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        markdown = [
+            '~~~ quote',
+            'hi',
+            'bye',
+            '',
+            ''
+        ]
+        expected = [
+            '',
+            '> hi',
+            '> bye',
+            '',
+            '',
+            ''
+        ]
+        lines = processor.run(markdown)
+        self.assertEqual(lines, expected)
+
+    def test_serial_quoting(self):
+        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        markdown = [
+            '~~~ quote',
+            'hi',
+            '~~~',
+            '',
+            '~~~ quote',
+            'bye',
+            '',
+            ''
+        ]
+        expected = [
+            '',
+            '> hi',
+            '',
+            '',
+            '',
+            '> bye',
+            '',
+            '',
+            ''
+        ]
+        lines = processor.run(markdown)
+        self.assertEqual(lines, expected)
+
+    def test_serial_code(self):
+        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+
+        # Simulate code formatting.
+        processor.format_code = lambda lang, code: lang + ':' + code
+        processor.placeholder = lambda s: '(' + s + ')'
+
+        markdown = [
+            '``` .py',
+            'hello()',
+            '```',
+            '',
+            '``` .py',
+            'goodbye()',
+            '```',
+            '',
+            ''
+        ]
+        expected = [
+            '',
+            '(py:hello()',
+            ')',
+            '',
+            '',
+            '',
+            '(py:goodbye()',
+            ')',
+            '',
+            '',
+            ''
+        ]
+        lines = processor.run(markdown)
+        self.assertEqual(lines, expected)
+
+    def test_nested_code(self):
+        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+
+        # Simulate code formatting.
+        processor.format_code = lambda lang, code: lang + ':' + code
+        processor.placeholder = lambda s: '(' + s + ')'
+
+        markdown = [
+            '~~~ quote',
+            'hi',
+            '``` .py',
+            'hello()',
+            '```',
+            '',
+            ''
+        ]
+        expected = [
+            '',
+            '> hi',
+            '',
+            '> (py:hello()',
+            '> )',
+            '',
+            '',
+            '',
+            '',
+            ''
+        ]
+        lines = processor.run(markdown)
+        self.assertEqual(lines, expected)
+
 def bugdown_convert(text):
     return bugdown.convert(text, "zulip.com")
 
