@@ -133,7 +133,12 @@ exports.start_topic_edit = function (recipient_row) {
     var form = $(templates.render('topic_edit_form'));
     current_msg_list.show_edit_topic(recipient_row, form);
     form.keydown(handle_edit_keydown);
-    form.find(".message_edit_topic").focus();
+    var message = current_msg_list.get(rows.id(recipient_row));
+    var topic = message.subject;
+    if (topic === compose.empty_subject_placeholder()) {
+        topic = '';
+    }
+    form.find(".message_edit_topic").val(topic).select().focus();
 };
 
 exports.is_editing = function (id) {
