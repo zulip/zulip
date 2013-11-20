@@ -128,18 +128,23 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         return code
 
+    def format_quote(self, text):
+        paragraphs = text.split("\n\n")
+        quoted_paragraphs = []
+        for paragraph in paragraphs:
+            lines = paragraph.split("\n")
+            quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
+        return "\n\n".join(quoted_paragraphs)
+
     def process_fence(self, m, text):
         langclass = ''
         if m.group('lang'):
             langclass = LANG_TAG % m.group('lang')
 
             if m.group('lang') in ('quote', 'quoted'):
-                paragraphs = m.group('code').split("\n\n")
-                quoted_paragraphs = []
-                for paragraph in paragraphs:
-                    lines = paragraph.split("\n")
-                    quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
-                replacement = "\n\n".join(quoted_paragraphs)
+
+                replacement = self.format_quote(m.group('code'))
+
                 return '%s\n%s\n%s'% (text[:m.start()], replacement, text[m.end():])
 
         code = self.format_code(langclass, m.group('lang'), m.group('code'))
