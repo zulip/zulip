@@ -625,12 +625,19 @@ def approximate_unread_count(user_profile):
                                        Subscription.objects.filter(
             user_profile=user_profile, in_home_view=False)]
 
-    # Don't include messages that aren't in your home view, as they might never
-    # be read.
+    muted_topics = ujson.loads(user_profile.muted_topics)
+    # If muted_topics is empty, it looks like []. If it is non-empty, it look
+    # like [[u'devel', u'test']]. We should switch to a consistent envelope, but
+    # until we do we still have both in the database.
+    if muted_topics:
+        muted_topics = muted_topics[0]
+
     return UserMessage.objects.filter(
         user_profile=user_profile, message_id__gt=user_profile.pointer).exclude(
         message__recipient__type=Recipient.STREAM,
-        message__recipient__id__in=not_in_home_view_recipients).count()
+        message__recipient__id__in=not_in_home_view_recipients).exclude(
+        message__subject__in=muted_topics).exclude(
+        flags=UserMessage.flags.read).count()
 
 def sent_time_in_epoch_seconds(user_message):
     # user_message is a UserMessage object.
