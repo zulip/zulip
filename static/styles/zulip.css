@@ -3611,3 +3611,7 @@ div.edit_bot {
     text-decoration: line-through;
 }
 
+.administration {
+    margin-top: 55px;
+    padding-left: 15px;
+}
