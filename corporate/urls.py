@@ -12,13 +12,8 @@ urlpatterns = patterns('',
     url(r'^zephyr-mirror/$', TemplateView.as_view(template_name='corporate/zephyr-mirror.html')),
 
     # Marketing
-    # Landing page, features pages, signup form, etc.
-    url(r'^hello/$', TemplateView.as_view(template_name='corporate/hello.html'),
-                                         name='landing-page'),
-    url(r'^new-user/$', RedirectView.as_view(url='/hello')),
-    url(r'^features/$', TemplateView.as_view(template_name='corporate/features.html')),
     url(r'^compare/$', TemplateView.as_view(template_name='corporate/compare.html')),
-
+    # signup form
     url(r'^signup/$', TemplateView.as_view(template_name='corporate/signup.html'),
                                          name='signup'),
     # TODO: The beta signup view should probably be moved to corporate.

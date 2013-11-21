@@ -10,7 +10,11 @@
         Finally, workplace chat that actually improves your productivity.*
       </span>
       <span class="footnote">* It's also great for sharing cat pictures.</span>
-      <a href="{% url 'signup' %}" class="main-signup-button btn btn-large btn-info">Sign up now, for free!</a>
+      {% if not_enterprise %}
+        <a href="{% url 'signup' %}" class="main-signup-button btn btn-large btn-info">Sign up now, for free!</a>
+      {% else %}
+        <a href="{% url 'register' %}" class="main-signup-button btn btn-large btn-info">Register now!</a>
+      {% endif %}
     </div>
     <img src="/static/images/landing-page/laptop-screenshot.png" class="main-image">
   </div>
@@ -170,7 +174,11 @@
 
 <div class="app feature-line dark">
   <div class="app-main feature-line-container centered-content">
-        <a href="{% url 'signup' %}" class="bottom-signup-button btn btn-large btn-info">Sign up now</a>
+    {% if not_enterprise %}
+      <a href="{% url 'signup' %}" class="bottom-signup-button btn btn-large btn-info">Sign up now</a>
+    {% else %}
+      <a href="{% url 'register' %}" class="bottom-signup-button btn btn-large btn-info">Register now</a>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
