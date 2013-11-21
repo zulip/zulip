@@ -25,6 +25,18 @@ class ZulipAuthMixin(object):
         except UserProfile.DoesNotExist:
             return None
 
+class ZulipDummyBackend(ZulipAuthMixin):
+    """
+    Used when we want to log you in but we don't know which backend to use.
+    """
+    def authenticate(self, username=None, use_dummy_backend=False):
+        if use_dummy_backend:
+            try:
+                return get_user_profile_by_email(username)
+            except UserProfile.DoesNotExist:
+                pass
+        return None
+
 class EmailAuthBackend(ZulipAuthMixin):
     """
     Email Authentication Backend

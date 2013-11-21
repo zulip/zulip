@@ -733,6 +733,7 @@ else:
     HOME_NOT_LOGGED_IN = '/login'
     ONLY_SSO = False
 AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
+AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_BIND_DN)
 

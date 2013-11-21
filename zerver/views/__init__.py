@@ -247,116 +247,146 @@ def accounts_register(request):
     except ValidationError:
         return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
 
+    name_validated = False
+    full_name = None
+
     if request.POST.get('from_confirmation'):
+        try:
+            del request.session['authenticated_full_name']
+        except KeyError:
+            pass
         if domain == "mit.edu":
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
                     initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
+            name_validated = True
         elif settings.POPULATE_PROFILE_VIA_LDAP:
             for backend in get_backends():
                 if isinstance(backend, LDAPBackend):
                     ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
-                    # TODO: check if ldap_attributes are none
-                    form = RegistrationForm(
-                            initial={'full_name': ldap_attrs[
-                                settings.AUTH_LDAP_USER_ATTR_MAP['full_name']
-                                ][0]})
-                    break
+                    try:
+                        request.session['authenticated_full_name'] = ldap_attrs[settings.AUTH_LDAP_USER_ATTR_MAP['full_name']][0]
+                        name_validated = True
+                        # We don't use initial= here, because if the form is
+                        # complete (that is, no additional fields need to be
+                        # filled out by the user) we want the form to validate,
+                        # so they can be directly registered without having to
+                        # go through this interstitial.
+                        form = RegistrationForm(
+                            {'full_name': request.session['authenticated_full_name']})
+                        # FIXME: This will result in the user getting
+                        # validation errors if they have to enter a password.
+                        # Not relevant for ONLY_SSO, though.
+                        break
+                    except TypeError:
+                        # Let the user fill out a name and/or try another backend
+                        form = RegistrationForm()
         else:
             form = RegistrationForm()
-
     else:
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            if password_auth_enabled():
-                password = form.cleaned_data['password']
-            else:
-                # SSO users don't need no passwords
-                password = None
-            full_name  = form.cleaned_data['full_name']
-            short_name = email_to_username(email)
-            (realm, _) = Realm.objects.get_or_create(domain=domain)
-            first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
+        postdata = request.POST.copy()
+        if settings.NAME_CHANGES_DISABLED:
+            # If we populate profile information via LDAP and we have a
+            # verified name from you on file, use that. Otherwise, fall
+            # back to the full name in the request.
+            try:
+                postdata.update({'full_name': request.session['authenticated_full_name']})
+                name_validated = True
+            except KeyError:
+                pass
+        form = RegistrationForm(postdata)
 
-            # FIXME: sanitize email addresses and fullname
-            if mit_beta_user:
-                try:
-                    user_profile = get_user_profile_by_email(email)
-                except UserProfile.DoesNotExist:
-                    user_profile = do_create_user(email, password, realm, full_name, short_name)
-                do_activate_user(user_profile)
-                do_change_password(user_profile, password)
-                do_change_full_name(user_profile, full_name)
-            else:
+    if form.is_valid():
+        if password_auth_enabled():
+            password = form.cleaned_data['password']
+        else:
+            # SSO users don't need no passwords
+            password = None
+
+        full_name = form.cleaned_data['full_name']
+        short_name = email_to_username(email)
+        (realm, _) = Realm.objects.get_or_create(domain=domain)
+        first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
+
+        # FIXME: sanitize email addresses and fullname
+        if mit_beta_user:
+            try:
+                user_profile = get_user_profile_by_email(email)
+            except UserProfile.DoesNotExist:
                 user_profile = do_create_user(email, password, realm, full_name, short_name)
-                # We want to add the default subs list iff there were no subs
-                # specified when the user was invited.
-                streams = prereg_user.streams.all()
-                if len(streams) == 0:
-                    streams = get_default_subs(user_profile)
-                bulk_add_subscriptions(streams, [user_profile])
+            do_activate_user(user_profile)
+            do_change_password(user_profile, password)
+            do_change_full_name(user_profile, full_name)
+        else:
+            user_profile = do_create_user(email, password, realm, full_name, short_name)
+            # We want to add the default subs list iff there were no subs
+            # specified when the user was invited.
+            streams = prereg_user.streams.all()
+            if len(streams) == 0:
+                streams = get_default_subs(user_profile)
+            bulk_add_subscriptions(streams, [user_profile])
 
-                # Give you the last 100 messages on your streams, so you have
-                # something to look at in your home view once you finish the
-                # tutorial.
-                one_week_ago = now() - datetime.timedelta(weeks=1)
-                recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                                      type_id__in=[stream.id for stream in streams])
-                messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
-                if len(messages) > 0:
-                    ums_to_create = [UserMessage(user_profile=user_profile, message=message,
-                                                 flags=UserMessage.flags.read)
-                                     for message in messages]
+            # Give you the last 100 messages on your streams, so you have
+            # something to look at in your home view once you finish the
+            # tutorial.
+            one_week_ago = now() - datetime.timedelta(weeks=1)
+            recipients = Recipient.objects.filter(type=Recipient.STREAM,
+                                                  type_id__in=[stream.id for stream in streams])
+            messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
+            if len(messages) > 0:
+                ums_to_create = [UserMessage(user_profile=user_profile, message=message,
+                                             flags=UserMessage.flags.read)
+                                 for message in messages]
 
-                    UserMessage.objects.bulk_create(ums_to_create)
+                UserMessage.objects.bulk_create(ums_to_create)
 
-                if prereg_user.referred_by is not None and settings.NOTIFICATION_BOT is not None:
-                    # This is a cross-realm private message.
-                    internal_send_message(settings.NOTIFICATION_BOT,
-                            "private", prereg_user.referred_by.email, user_profile.realm.domain,
-                            "%s <`%s`> accepted your invitation to join Zulip!" % (
-                                user_profile.full_name,
-                                user_profile.email,
-                                )
+            if prereg_user.referred_by is not None and settings.NOTIFICATION_BOT is not None:
+                # This is a cross-realm private message.
+                internal_send_message(settings.NOTIFICATION_BOT,
+                        "private", prereg_user.referred_by.email, user_profile.realm.domain,
+                        "%s <`%s`> accepted your invitation to join Zulip!" % (
+                            user_profile.full_name,
+                            user_profile.email,
                             )
-            # Mark any other PreregistrationUsers that are STATUS_ACTIVE as inactive
-            # so we can find the PreregistrationUser that we are actually working
-            # with here
-            PreregistrationUser.objects.filter(email=email)             \
-                                       .exclude(id=prereg_user.id)      \
-                                       .update(status=0)
+                        )
+        # Mark any other PreregistrationUsers that are STATUS_ACTIVE as inactive
+        # so we can find the PreregistrationUser that we are actually working
+        # with here
+        PreregistrationUser.objects.filter(email=email)             \
+                                   .exclude(id=prereg_user.id)      \
+                                   .update(status=0)
 
-            notify_new_user(user_profile)
-            queue_json_publish(
-                    "signups",
-                    {
-                        'EMAIL': email,
-                        'merge_vars': {
-                            'NAME': full_name,
-                            'REALM': domain,
-                            'OPTIN_IP': request.META['REMOTE_ADDR'],
-                            'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
-                        },
+        notify_new_user(user_profile)
+        queue_json_publish(
+                "signups",
+                {
+                    'EMAIL': email,
+                    'merge_vars': {
+                        'NAME': full_name,
+                        'REALM': domain,
+                        'OPTIN_IP': request.META['REMOTE_ADDR'],
+                        'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
                     },
-                    lambda event: None)
+                },
+                lambda event: None)
 
-            if settings.ONLY_SSO:
-                login(request, authenticate(remote_user=short_name if settings.SSO_APPEND_DOMAIN else email))
-            else:
-                login(request, authenticate(username=email, password=password))
+        # This logs you in using the ZulipDummyBackend, since honestly nothing
+        # more fancy than this is required.
+        login(request, authenticate(username=email, use_dummy_backend=True))
 
-            if first_in_realm:
-                assign_perm("administer", user_profile, user_profile.realm)
-                return HttpResponseRedirect(reverse('zerver.views.initial_invite_page'))
-            else:
-                return HttpResponseRedirect(reverse('zerver.views.home'))
+        if first_in_realm:
+            assign_perm("administer", user_profile, user_profile.realm)
+            return HttpResponseRedirect(reverse('zerver.views.initial_invite_page'))
+        else:
+            return HttpResponseRedirect(reverse('zerver.views.home'))
 
     return render_to_response('zerver/register.html',
             {'form': form,
              'company_name': domain,
              'email': email,
              'key': key,
-             'full_name': request.POST.get('full_name', False),
+             'full_name': request.session.get('authenticated_full_name', None),
+             'lock_name': name_validated and settings.NAME_CHANGES_DISABLED
             },
         context_instance=RequestContext(request))
 
