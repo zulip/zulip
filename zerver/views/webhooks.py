@@ -694,7 +694,7 @@ def api_freshdesk_webhook(request, user_profile, stream=REQ(default='')):
 
     ticket = TicketDict(ticket_data)
 
-    subject = "#%s: %s" % (ticket.id, ticket.subject)
+    subject = elide_subject("#%s: %s" % (ticket.id, ticket.subject))
 
     try:
         event_info = parse_freshdesk_event(ticket.triggered_event)
