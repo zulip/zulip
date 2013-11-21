@@ -19,7 +19,7 @@ class zulip_internal::prod_app_frontend {
            "/srv/www/dist/apps/", "/srv/www/dist/apps/mac/",
            "/srv/www/dist/apps/win/", "/srv/www/enterprise/",
            "/srv/www/enterprise/download/", "/srv/www/dist/apps/sso/",
-           "/srv/www/dist/apps/sso/win/", "/srv/www/dist/apps/sso/win/" ]:
+           "/srv/www/dist/apps/sso/mac/", "/srv/www/dist/apps/sso/win/" ]:
     ensure => "directory",
     owner      => "zulip",
     group      => "zulip",
