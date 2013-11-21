@@ -652,7 +652,7 @@ exports.validate = function () {
     }
 
     if ($("#zephyr-mirror-error").is(":visible")) {
-        compose_error("You need to link with Webathena before you can send messages!");
+        compose_error("You need to be running Zephyr mirroring in order to send messages!");
         return false;
     }
 
