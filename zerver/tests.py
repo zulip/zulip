@@ -3126,7 +3126,13 @@ xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>"""
 
 ~~~~
 x = 1"""
-        expected_convert = '<p><code>one</code></p>\n<p><code>two</code></p>\n<div class="codehilite"><pre>x = 1\n</pre></div>'
+
+        expected_convert = """\
+<p><code>one</code></p>
+<p><code>two</code></p>
+<div class="codehilite"><pre>x = 1
+</pre></div>"""
+
         self.common_bugdown_test(fenced_code, expected_convert)
 
     def test_ulist_standard(self):
