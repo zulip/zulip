@@ -19,7 +19,7 @@ function stringify_time(time) {
     if (feature_flags.twenty_four_hour_time) {
         return time.toString('HH:mm');
     }
-    return time.toString('h:mmtt');
+    return time.toString('h:mm TT');
 }
 
 function add_display_time(message, prev) {

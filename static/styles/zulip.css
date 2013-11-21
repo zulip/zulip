@@ -652,21 +652,24 @@ td.pointer {
 }
 
 .message_time {
-    position: absolute;
-    right: -40px;
-    top: 7px;
     display: inline-block;
     font-weight: normal;
-    font-size: 75%;
-    line-height: 100%;
-    color: #999;
+    font-size: 11px;
+    color: #aaa;
+    vertical-align: middle;
+    padding: 0px 2px 3px 2px;
+    font-weight: 300;
 }
 
 .message_controls {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -80px;
+    right: -78px;
+}
+
+.include-sender .message_controls {
+    top: -2px;
 }
 
 .message_data {
@@ -675,10 +678,6 @@ td.pointer {
     padding: 0px;
     background-color: #fff;
     position: relative;
-}
-
-.include-sender .message_time {
-    top: 7px;
 }
 
 .ztable_layout_row {
@@ -1078,7 +1077,7 @@ a.message_label_clickable:hover {
 }
 
 .edit_content {
-    opacity: .5;
+    opacity: .4;
     width: 0px;
     height: 0px;
     display: inline-block;
@@ -1093,7 +1092,7 @@ a.message_label_clickable:hover {
     left: 0.4em;
     border-radius: 1px;
     padding: 1px 2px;
-    border: 1px solid #eee;
+    border: 1px dotted #ccc;
 }
 
 .edit_content:hover {
@@ -1133,7 +1132,8 @@ a.message_label_clickable:hover {
     cursor: pointer;
 }
 
-.message_hovered .info {
+.message_hovered .info,
+.message_hovered .empty-star {
     visibility: visible;
 }
 
@@ -2556,12 +2556,13 @@ li.expanded_subject {
 .star {
     display: inline-block;
     opacity: 1;
-    font-size: 16px;
+    font-size: 14px;
     color: #2c8211;
 }
 
 .empty-star {
-    color: #CCC;
+    color: #bbb;
+    visibility: hidden;
 }
 
 .empty-star:hover {
@@ -2571,8 +2572,9 @@ li.expanded_subject {
 
 .info {
     display: inline-block;
-    font-size: 16px;
-    color: #CCC;
+    font-size: 15px;
+    color: #bbb;
+    visibility: hidden;
 }
 
 .star:hover {

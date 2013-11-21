@@ -678,7 +678,7 @@ function toggle_star(row_id) {
             return;
         }
         var favorite_image = row.find(".message_star");
-        favorite_image.toggleClass("empty-star");
+        favorite_image.toggleClass("icon-vector-star").toggleClass("icon-vector-star-empty").toggleClass("empty-star");
         var title_state = message.starred ? "Unstar" : "Star";
         favorite_image.attr("title", title_state + " this message");
     });
