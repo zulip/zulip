@@ -359,7 +359,8 @@ def api_jira_webhook(request, user_profile):
 
     subject = elide_subject(subject)
 
-    check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
+    check_send_message(user_profile, get_client("JIRA webhook"), "stream",
+                       [stream], subject, content)
     return json_success()
 
 @api_key_only_webhook_view
@@ -428,7 +429,8 @@ def api_pivotal_webhook(request, user_profile):
 
     subject = elide_subject(subject)
 
-    check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
+    check_send_message(user_profile, get_client("Pivotal webhook"), "stream",
+                       [stream], subject, content)
     return json_success()
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
@@ -477,7 +479,8 @@ def api_beanstalk_webhook(request, user_profile,
 
     subject = elide_subject(subject)
 
-    check_send_message(user_profile, get_client("API"), "stream", ["commits"], subject, content)
+    check_send_message(user_profile, get_client("Beanstalk webhook"), "stream",
+                       ["commits"], subject, content)
     return json_success()
 
 # Desk.com's integrations all make the user supply a template, where it fills
@@ -491,7 +494,8 @@ def api_beanstalk_webhook(request, user_profile,
 def api_deskdotcom_webhook(request, user_profile, data=REQ(),
                            topic=REQ(default="Desk.com notification"),
                            stream=REQ(default="desk.com")):
-    check_send_message(user_profile, get_client("API"), "stream", [stream], topic, data)
+    check_send_message(user_profile, get_client("Desk webhook"), "stream",
+                       [stream], topic, data)
     return json_success()
 
 @api_key_only_webhook_view
@@ -519,7 +523,8 @@ def api_newrelic_webhook(request, user_profile, alert=REQ(converter=json_to_dict
         return json_error("Unknown webhook request")
 
     subject = elide_subject(subject)
-    check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
+    check_send_message(user_profile, get_client("NewRelic webhook"), "stream",
+                       [stream], subject, content)
     return json_success()
 
 @authenticated_rest_api_view
@@ -546,7 +551,8 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_d
         subject += '/%s' % (branch,)
 
     subject = elide_subject(subject)
-    check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
+    check_send_message(user_profile, get_client("BitBucket webhook"), "stream",
+                       [stream], subject, content)
     return json_success()
 
 @csrf_exempt
@@ -583,8 +589,8 @@ def api_stash_webhook(request, user_profile, stream=REQ(default='')):
     content += "\n".join("* `%s`: %s" % (
             commit[0], commit[1]) for commit in commits)
 
-    check_send_message(user_profile, get_client("Stash"), "stream", [stream],
-                       subject, content)
+    check_send_message(user_profile, get_client("Stash webhook"), "stream",
+                       [stream], subject, content)
     return json_success()
 
 class TicketDict(dict):
@@ -711,6 +717,6 @@ def api_freshdesk_webhook(request, user_profile, stream=REQ(default='')):
         # Not an event we know handle; do nothing.
         return json_success()
 
-    check_send_message(user_profile, get_client("Freshdesk"), "stream",
+    check_send_message(user_profile, get_client("Freshdesk webhook"), "stream",
                        [stream], subject, content)
     return json_success()
