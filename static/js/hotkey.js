@@ -158,6 +158,21 @@ function process_hotkey(e) {
             return true;
         }
     }
+    if (event_name === "shift_tab") {
+        // Shift-tabbing from the edit message cancel button takes you to save.
+        if ($(".message_edit_cancel").filter(":focus").length > 0) {
+            $(".message_edit_save").focus();
+            return true;
+        }
+
+        // Shift-tabbing from the edit message save button takes you to the content.
+        focused_message_edit_save = $(".message_edit_save").filter(":focus");
+        if (focused_message_edit_save.length > 0) {
+            focused_message_edit_save.closest(".message_edit_form")
+                                     .find(".message_edit_content").focus();
+            return true;
+        }
+    }
 
     // Process hotkeys specially when in an input, textarea, or send button
     if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {
