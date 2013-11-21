@@ -267,6 +267,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ENABLE_FEEDBACK': True,
                     'ENABLE_GRAVATAR': True,
                     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
+                    'AUTH_LDAP_BIND_DN': "",
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
@@ -732,6 +733,14 @@ else:
     HOME_NOT_LOGGED_IN = '/login'
     ONLY_SSO = False
 AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
+
+POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_BIND_DN)
+
+if POPULATE_PROFILE_VIA_LDAP and \
+       not 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS:
+    AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPUserPopulator',)
+else:
+    POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
 
 if DEPLOYED:
     FULL_NAVBAR    = False

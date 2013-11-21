@@ -1,10 +1,13 @@
 from __future__ import absolute_import
 
 from django.contrib.auth.backends import RemoteUserBackend
+from django.conf import settings
 import django.contrib.auth
 
+from django_auth_ldap.backend import LDAPBackend
+
 from zerver.models import UserProfile, get_user_profile_by_id, \
-    get_user_profile_by_email, remote_user_to_email
+    get_user_profile_by_email, remote_user_to_email, email_to_username
 
 from openid.consumer.consumer import SUCCESS
 
@@ -77,3 +80,26 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
             return get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
             return None
+
+class ZulipLDAPAuthBackend(ZulipAuthMixin, LDAPBackend):
+    def django_to_ldap_username(self, username):
+        if settings.LDAP_APPEND_DOMAIN is not None:
+            return email_to_username(username)
+        return username
+
+    def ldap_to_django_username(self, username):
+        if settings.LDAP_APPEND_DOMAIN is not None:
+            return username + settings.LDAP_APPEND_DOMAIN
+        return username
+
+    def get_or_create_user(self, username, ldap_user):
+        try:
+            return get_user_profile_by_email(username), False
+        except UserProfile.DoesNotExist:
+            return UserProfile(), False
+
+class ZulipLDAPUserPopulator(ZulipLDAPAuthBackend):
+    # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
+
+    def authenticate(self, username, password):
+        return None

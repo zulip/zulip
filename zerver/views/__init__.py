@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_backends
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
@@ -46,6 +46,7 @@ from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
     CreateBotForm, is_inactive
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
 from zerver.lib import bugdown
@@ -251,8 +252,19 @@ def accounts_register(request):
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
                     initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
+        elif settings.POPULATE_PROFILE_VIA_LDAP:
+            for backend in get_backends():
+                if isinstance(backend, LDAPBackend):
+                    ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
+                    # TODO: check if ldap_attributes are none
+                    form = RegistrationForm(
+                            initial={'full_name': ldap_attrs[
+                                settings.AUTH_LDAP_USER_ATTR_MAP['full_name']
+                                ][0]})
+                    break
         else:
             form = RegistrationForm()
+
     else:
         form = RegistrationForm(request.POST)
         if form.is_valid():

@@ -22,6 +22,7 @@ DEPLOYMENT_ROLE_KEY = ''
 AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.EmailAuthBackend', # Email and password
 #                           'zproject.backends.ZulipRemoteUserBackend', # Local SSO
+#                           'zproject.backends.ZulipLDAPAuthBackend', # LDAP authentication
 #                           'zproject.backends.GoogleBackend', # Google Apps
     )
 
@@ -135,6 +136,36 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 # The IMAP folder name to check for emails. All emails sent to EMAIL_GATEWAY_PATTERN above
 # must be delivered to this folder
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
+
+### LDAP integration configuration
+# Zulip supports retrieving information about users via LDAP, and optionally
+# using LDAP as an authentication mechanism.
+
+import ldap
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+
+# URI of your LDAP server. If set, LDAP is used to prepopulate a user's name in
+# Zulip. Example: "ldaps://ldap.example.com"
+AUTH_LDAP_SERVER_URI = ""
+
+# This DN and password will be used to bind to your server. If unset, anonymous
+# binds are performed.
+AUTH_LDAP_BIND_DN = ""
+AUTH_LDAP_BIND_PASSWORD = ""
+
+# Specify the search base and the property to filter on that corrisponds to the
+# username.
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+
+# If the value of a user's "uid" (or similar) property is not their email
+# address, specify the domain to append here.
+LDAP_APPEND_DOMAIN = SSO_APPEND_DOMAIN
+
+AUTH_LDAP_USER_ATTR_MAP = {
+# Populate the Django user's name from the LDAP directory.
+    "full_name": "cn",
+}
 
 # The following secrets are randomly generated during the install
 # process, are used for security purposes, and should not be shared

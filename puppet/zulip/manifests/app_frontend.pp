@@ -57,6 +57,8 @@ class zulip::app_frontend {
                     "python-apns-client",
                     # Needed for avatar image resizing
                     "python-imaging",
+		    # Needed for LDAP support
+		    "python-django-auth-ldap",
                     ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
