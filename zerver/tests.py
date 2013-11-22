@@ -2507,17 +2507,22 @@ class EventQueueTest(TestCase):
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
         queue.push({"type": "unknown"})
+        queue.push({"type": "restart", "server_generation": "1"})
         for pointer_val in xrange(11, 20):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
+        queue.push({"type": "restart", "server_generation": "2"})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
                            "id": 9,},
-                          {'id': 18,
+                          {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,
-                           "timestamp": "19"}])
+                           "timestamp": "19"},
+                          {"id": 20,
+                           "type": "restart",
+                           "server_generation": "2"}])
         for pointer_val in xrange(21, 23):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
@@ -2525,14 +2530,18 @@ class EventQueueTest(TestCase):
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
                            "id": 9,},
-                          {'id': 18,
+                          {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,
                            "timestamp": "19"},
-                          {'id': 20,
+                          {"id": 20,
+                           "type": "restart",
+                           "server_generation": "2"},
+                          {'id': 22,
                            'type': 'pointer',
                            "pointer": 22,
-                           "timestamp": "22"},])
+                           "timestamp": "22"},
+                          ])
 
     def test_flag_collapsing(self):
         queue = EventQueue("1")
