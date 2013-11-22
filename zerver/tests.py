@@ -11,7 +11,7 @@ from guardian.shortcuts import assign_perm, remove_perm
 
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, UserActivity, \
-    PreregistrationUser, UserMessage, \
+    PreregistrationUser, UserMessage, MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH, \
     get_user_profile_by_email, email_to_domain, get_realm, get_stream, get_client
 from zerver.decorator import RespondAsynchronously, \
     RequestVariableConversionError, profiled, JsonableError
@@ -1208,6 +1208,38 @@ class MessagePOSTTest(AuthedTestCase):
         result2 = self.client.post("/json/send_message", msg)
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
+
+    def test_long_message(self):
+        """
+        Sending a message longer than the maximum message length succeeds but is
+        truncated.
+        """
+        self.login("hamlet@zulip.com")
+        long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
+        post_data = {"type": "stream", "to": "Verona", "client": "test suite",
+                     "content": long_message, "subject": "Test subject"}
+        result = self.client.post("/json/send_message", post_data)
+        self.assert_json_success(result)
+
+        sent_message = Message.objects.all().order_by('-id')[0]
+        self.assertEquals(sent_message.content,
+                          "A" * (MAX_MESSAGE_LENGTH - 3) + "...")
+
+    def test_long_topic(self):
+        """
+        Sending a message with a topic longer than the maximum topic length
+        succeeds, but the topic is truncated.
+        """
+        self.login("hamlet@zulip.com")
+        long_topic = "A" * (MAX_SUBJECT_LENGTH + 1)
+        post_data = {"type": "stream", "to": "Verona", "client": "test suite",
+                     "content": "test content", "subject": long_topic}
+        result = self.client.post("/json/send_message", post_data)
+        self.assert_json_success(result)
+
+        sent_message = Message.objects.all().order_by('-id')[0]
+        self.assertEquals(sent_message.subject,
+                          "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
 
 class SubscriptionPropertiesTest(AuthedTestCase):
 
