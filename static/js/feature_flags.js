@@ -48,13 +48,10 @@ exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.summarize_read_while_narrowed = false;
 exports.show_huddles = true;
+exports.single_message_narrowing = true;
 
 // Ready for deprecation.
 exports.collapsible = false;
-
-
-exports.single_message_narrowing = page_params.staging ||
-  _.contains(['customer12.invalid', 'customer10.invalid'], page_params.domain);
 
 return exports;
 
