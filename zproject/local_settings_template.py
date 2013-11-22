@@ -22,7 +22,6 @@ DEPLOYMENT_ROLE_KEY = ''
 AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.EmailAuthBackend', # Email and password
 #                           'zproject.backends.ZulipRemoteUserBackend', # Local SSO
-#                           'zproject.backends.ZulipLDAPAuthBackend', # LDAP authentication
 #                           'zproject.backends.GoogleBackend', # Google Apps
     )
 
@@ -153,15 +152,16 @@ AUTH_LDAP_SERVER_URI = ""
 AUTH_LDAP_BIND_DN = ""
 AUTH_LDAP_BIND_PASSWORD = ""
 
-# Specify the search base and the property to filter on that corrisponds to the
+# Specify the search base and the property to filter on that corresponds to the
 # username.
 AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
     ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 
 # If the value of a user's "uid" (or similar) property is not their email
 # address, specify the domain to append here.
-LDAP_APPEND_DOMAIN = SSO_APPEND_DOMAIN
+LDAP_APPEND_DOMAIN = ADMIN_DOMAIN
 
+# This map defines how to populate attributes of a Zulip user from LDAP.
 AUTH_LDAP_USER_ATTR_MAP = {
 # Populate the Django user's name from the LDAP directory.
     "full_name": "cn",
