@@ -57,7 +57,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                        value="{% if form.password.value %}{{ form.password.value }}{% endif %}"
                        maxlength="100" />
                 {% if full_name %}
-                <span class="help-inline">This is used for mobile applications and other tools that don't support Google Apps authentication.</span>
+                <span class="help-inline">This is used for mobile applications and other tools that require a password.</span>
                 {% endif %}
                 {% if form.password.errors %}
                     {% for error in form.password.errors %}
