@@ -511,8 +511,7 @@ def check_message(sender, client, message_type_name, message_to,
         subject = subject_name.strip()
         if subject == "":
             raise JsonableError("Topic can't be empty")
-        if len(subject) > MAX_SUBJECT_LENGTH:
-            raise JsonableError("Topic too long")
+        subject = truncate_topic(subject)
         ## FIXME: Commented out temporarily while we figure out what we want
         # if not valid_stream_name(subject):
         #     return json_error("Invalid subject name")
@@ -1483,9 +1482,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
         subject = subject.strip()
         if subject == "":
             raise JsonableError("Topic can't be empty")
-
-        if len(subject) > MAX_SUBJECT_LENGTH:
-            raise JsonableError("Topic too long")
+        subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
         message.subject = subject
         event["subject"] = subject

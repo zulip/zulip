@@ -8,15 +8,9 @@ from zerver.lib.actions import internal_send_message
 
 def format_subject(subject):
     """
-    Escape CR and LF characters, and limit length to MAX_SUBJECT_LENGTH.
+    Escape CR and LF characters.
     """
-    from zerver.models import MAX_SUBJECT_LENGTH
-    subject = subject.replace('\n', '\\n').replace('\r', '\\r')
-
-    if len(subject) > MAX_SUBJECT_LENGTH:
-        subject = subject[:MAX_SUBJECT_LENGTH-3].rstrip() + "..."
-
-    return subject
+    return subject.replace('\n', '\\n').replace('\r', '\\r')
 
 def user_info_str(report):
     if report['user_full_name'] and report['user_email']:

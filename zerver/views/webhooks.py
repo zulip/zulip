@@ -4,8 +4,7 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from zerver.models import UserProfile, get_client, MAX_SUBJECT_LENGTH, \
-      get_user_profile_by_email
+from zerver.models import UserProfile, get_client, get_user_profile_by_email
 from zerver.lib.actions import check_send_message, convert_html_to_markdown
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import authenticated_api_view, REQ, \
@@ -141,8 +140,6 @@ def api_github_landing(request, user_profile, event=REQ,
         # about them
         return json_success()
 
-    subject = elide_subject(subject)
-
     # customer14.invalid has a stream per GitHub project and wants the topic to
     # always be 'GitHub'.
     if user_profile.realm.domain == "customer14.invalid":
@@ -195,11 +192,6 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
         content = build_commit_list_content(commits, short_ref, url, pusher)
 
     return (subject, content)
-
-def elide_subject(subject):
-    if len(subject) > MAX_SUBJECT_LENGTH:
-        subject = subject[:MAX_SUBJECT_LENGTH - 3].rstrip() + '...'
-    return subject
 
 def guess_zulip_user_from_jira(jira_username, realm):
     try:
@@ -357,8 +349,6 @@ def api_jira_webhook(request, user_profile):
             logging.warning("Got JIRA event type we don't understand: %s" % (event,))
         return json_error("Unknown JIRA event type")
 
-    subject = elide_subject(subject)
-
     check_send_message(user_profile, get_client("JIRA webhook"), "stream",
                        [stream], subject, content)
     return json_success()
@@ -427,8 +417,6 @@ def api_pivotal_webhook(request, user_profile):
     except AttributeError:
         return json_error("Failed to extract data from Pivotal XML response")
 
-    subject = elide_subject(subject)
-
     check_send_message(user_profile, get_client("Pivotal webhook"), "stream",
                        [stream], subject, content)
     return json_success()
@@ -477,8 +465,6 @@ def api_beanstalk_webhook(request, user_profile,
         subject = "svn r%s" % (revision,)
         content = "%s pushed [revision %s](%s):\n\n> %s" % (author, revision, url, short_commit_msg)
 
-    subject = elide_subject(subject)
-
     check_send_message(user_profile, get_client("Beanstalk webhook"), "stream",
                        ["commits"], subject, content)
     return json_success()
@@ -522,7 +508,6 @@ def api_newrelic_webhook(request, user_profile, alert=REQ(converter=json_to_dict
     else:
         return json_error("Unknown webhook request")
 
-    subject = elide_subject(subject)
     check_send_message(user_profile, get_client("NewRelic webhook"), "stream",
                        [stream], subject, content)
     return json_success()
@@ -550,7 +535,6 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_d
         content = build_commit_list_content(commits, branch, None, payload['user'])
         subject += '/%s' % (branch,)
 
-    subject = elide_subject(subject)
     check_send_message(user_profile, get_client("BitBucket webhook"), "stream",
                        [stream], subject, content)
     return json_success()
@@ -700,7 +684,7 @@ def api_freshdesk_webhook(request, user_profile, stream=REQ(default='')):
 
     ticket = TicketDict(ticket_data)
 
-    subject = elide_subject("#%s: %s" % (ticket.id, ticket.subject))
+    subject = "#%s: %s" % (ticket.id, ticket.subject)
 
     try:
         event_info = parse_freshdesk_event(ticket.triggered_event)
