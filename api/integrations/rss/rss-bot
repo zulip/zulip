@@ -138,6 +138,12 @@ def compute_entry_hash(entry):
     entry_id = entry.get("id", entry.get("link"))
     return hashlib.md5(entry_id + entry_time).hexdigest()
 
+def elide_subject(subject):
+    MAX_TOPIC_LENGTH = 60
+    if len(subject) > MAX_TOPIC_LENGTH:
+        subject = subject[:MAX_TOPIC_LENGTH - 3].rstrip() + '...'
+    return subject
+
 def send_zulip(entry, feed_name):
     content = "**[%s](%s)**\n%s\n%s" % (entry.title,
                                   entry.link,
@@ -146,7 +152,7 @@ def send_zulip(entry, feed_name):
     message = {"type": "stream",
                "sender": opts.email,
                "to": opts.stream,
-               "subject": feed_name,
+               "subject": elide_subject(feed_name),
                "content": content,
                }
     return client.send_message(message)
@@ -190,7 +196,9 @@ for feed_url in feed_urls:
             # entries in reverse chronological order.
             break
 
-        response = send_zulip(entry, data.feed.title)
+        feed_name = data.feed.title or feed_url
+
+        response = send_zulip(entry, feed_name)
         if response["result"] != "success":
             logger.error("Error processing %s" % (feed_url,))
             logger.error(response)
