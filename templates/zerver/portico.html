@@ -23,11 +23,16 @@ hence the name.
   </div>
 
   <div class="column-right top-links">
+          {% if not only_sso %}
           <a href="{{login_url}}">Log in</a>
+          {% endif %}
+
           {% if not_enterprise %}
           <a href="{% url 'signup' %}">Sign up</a>
+          {% elif only_sso %}
+          <a href="{% url 'login-sso' %}">Log In</a>
           {% else %}
-          <a href="{% url 'register' %}">Sign up</a>
+          <a href="{% url 'register' %}">Register</a>
           {% endif %}
   </div>
 </div>
