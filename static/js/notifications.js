@@ -268,6 +268,9 @@ function process_notification(notification) {
         notification_object = notice_memory[key].obj;
         notification_object.onclick = function () {
             notification_object.cancel();
+            if (feature_flags.clicking_notification_causes_narrow) {
+                narrow.by_subject(message.id, {trigger: 'notification'});
+            }
             window.focus();
         };
         notification_object.onclose = function () {
