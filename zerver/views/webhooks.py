@@ -198,7 +198,7 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
 
 def elide_subject(subject):
     if len(subject) > MAX_SUBJECT_LENGTH:
-        subject = subject[:57].rstrip() + '...'
+        subject = subject[:MAX_SUBJECT_LENGTH - 3].rstrip() + '...'
     return subject
 
 def guess_zulip_user_from_jira(jira_username, realm):
