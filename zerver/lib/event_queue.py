@@ -18,6 +18,7 @@ import traceback
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 from zerver.models import get_client
+import copy
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -59,6 +60,9 @@ class ClientDescriptor(object):
         self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS, min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
 
     def to_dict(self):
+        # If you add a new key to this dict, make sure you add appropriate
+        # migration code in from_dict or load_event_queues to account for
+        # loading event queues that lack that key.
         return dict(user_profile_id=self.user_profile_id,
                     realm_id=self.realm_id,
                     event_queue=self.event_queue.to_dict(),
@@ -143,27 +147,60 @@ class ClientDescriptor(object):
         do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
                            [self.realm_id])
 
+def compute_full_event_type(event):
+    if event["type"] == "update_message_flags":
+        if event["all"]:
+            # Put the "all" case in its own category
+            return "%s/%s/all" % (event["flag"], event["operation"])
+        return "%s/%s" % (event["flag"], event["operation"])
+    return event["type"]
+
+# Virtual events are a mechanism for storing pointer changes and other
+# easily collapsed event types efficiently.
+VIRTUAL_EVENT_TYPES = ["pointer", "read/add"]
 class EventQueue(object):
     def __init__(self, id):
         self.queue = deque()
         self.next_event_id = 0
         self.id = id
+        self.virtual_events = {}
 
     def to_dict(self):
-        return dict(id=self.id, next_event_id=self.next_event_id,
-                    queue=list(self.queue))
+        # If you add a new key to this dict, make sure you add appropriate
+        # migration code in from_dict or load_event_queues to account for
+        # loading event queues that lack that key.
+        return dict(id=self.id,
+                    next_event_id=self.next_event_id,
+                    queue=list(self.queue),
+                    virtual_events=self.virtual_events)
 
     @classmethod
     def from_dict(cls, d):
         ret = cls(d['id'])
         ret.next_event_id = d['next_event_id']
         ret.queue = deque(d['queue'])
+        ret.virtual_events = d.get("virtual_events", {})
         return ret
 
     def push(self, event):
         event['id'] = self.next_event_id
         self.next_event_id += 1
-        self.queue.append(event)
+        full_event_type = compute_full_event_type(event)
+        if full_event_type in VIRTUAL_EVENT_TYPES:
+            if full_event_type not in self.virtual_events:
+                self.virtual_events[full_event_type] = copy.deepcopy(event)
+                return
+            # Update the virtual event with the values from the event
+            virtual_event = self.virtual_events[full_event_type]
+            virtual_event["id"] = event["id"]
+            if "timestamp" in event:
+                virtual_event["timestamp"] = event["timestamp"]
+            if full_event_type == "pointer":
+                virtual_event["pointer"] = event["pointer"]
+            elif full_event_type == "read/add":
+                virtual_event["messages"] += event["messages"]
+        else:
+            self.queue.append(event)
 
     def pop(self):
         return self.queue.popleft()
@@ -176,7 +213,27 @@ class EventQueue(object):
             self.pop()
 
     def contents(self):
-        return list(self.queue)
+        contents = []
+        virtual_id_map = {}
+        for event_type in self.virtual_events:
+            virtual_id_map[self.virtual_events[event_type]["id"]] = self.virtual_events[event_type]
+        virtual_ids = sorted(list(virtual_id_map.keys()))
+
+        # Merge the virtual events into their final place in the queue
+        index = 0
+        length = len(virtual_ids)
+        for event in self.queue:
+            while index < length and virtual_ids[index] < event["id"]:
+                contents.append(virtual_id_map[virtual_ids[index]])
+                index += 1
+            contents.append(event)
+        while index < length:
+            contents.append(virtual_id_map[virtual_ids[index]])
+            index += 1
+
+        self.virtual_events = {}
+        self.queue = deque(contents)
+        return contents
 
 # maps queue ids to client descriptors
 clients = {}
