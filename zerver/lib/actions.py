@@ -492,10 +492,9 @@ def check_message(sender, client, message_type_name, message_to,
     stream = None
     if len(message_to) == 0:
         raise JsonableError("Message must have recipients")
-    if len(message_content) > MAX_MESSAGE_LENGTH:
-        raise JsonableError("Message too long")
     if len(message_content.strip()) == 0:
         raise JsonableError("Message must not be empty")
+    message_content = truncate_body(message_content)
 
     if realm is None:
         realm = sender.realm
@@ -1409,6 +1408,17 @@ def subscribed_to_stream(user_profile, stream):
     except Subscription.DoesNotExist:
         return False
 
+def truncate_content(content, max_length, truncation_message):
+    if len(content) > max_length:
+        content = content[:max_length - len(truncation_message)] + truncation_message
+    return content
+
+def truncate_body(body):
+    return truncate_content(body, MAX_MESSAGE_LENGTH, "...")
+
+def truncate_topic(topic):
+    return truncate_content(topic, MAX_SUBJECT_LENGTH, "...")
+
 def do_update_message(user_profile, message_id, subject, propagate_mode, content):
     try:
         message = Message.objects.select_related().get(id=message_id)
@@ -1448,8 +1458,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     if content is not None:
         if len(content.strip()) == 0:
             content = "(deleted)"
-        if len(content) > MAX_MESSAGE_LENGTH:
-            raise JsonableError("Message too long")
+        content = truncate_body(content)
         rendered_content = message.render_markdown(content)
         if not rendered_content:
             raise JsonableError("We were unable to render your updated message")
