@@ -67,17 +67,6 @@
            </div>
            {% endif %}
 
-
-           <div class="control-group">
-             <div class="controls">
-               <input type="submit" name="change_settings"
-                      value="Save changes" class="btn btn-big btn-primary" />
-             </div>
-           </div>
-
-          </form>
-
-
           <div id="user_avatar_file_input_error" class="text-error"></div>
 
           <div class="control-group">
@@ -88,17 +77,22 @@
                 <p>
                     <img id="user-settings-avatar" src="{{ avatar_url }}" />
                 </p>
+                <div id="upload_avatar_spinner"></div>
             </div>
           </div>
 
-          <div id="upload_avatar_spinner"></div>
+           <div class="control-group">
+             <div class="controls">
+               <input type="submit" name="change_settings"
+                      value="Save changes" class="btn btn-big btn-primary" />
+             </div>
+           </div>
 
+          </form>
 
         </div>
     </div>
 
-
-    <div class="alert" id="notify-settings-status"></div>
 
 
     <form action="/json/notify_settings/change" method="post"
@@ -106,6 +100,7 @@
 
     <div id="notification-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>Notifications <i class="tiny icon-vector-question-sign" id="notification-docs"></i></div>
+        <div class="alert" id="notify-settings-status"></div>
     <div class="notification-settings-form">
         <div class="control-group">
           <div class="controls">

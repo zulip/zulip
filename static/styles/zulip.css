@@ -1964,6 +1964,23 @@ table.floating_recipient {
     line-height: 38px;
 }
 
+.settings-section .loading_indicator_text {
+    font-size: 12px;
+    font-weight: 400;
+    vertical-align: middle;
+    line-height: 20px;
+    display: inline-block;
+    float: none;
+}
+
+.settings-section .loading_indicator_spinner {
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+
 .message_inline_image {
     margin-bottom: 5px;
     margin-left: 5px;
@@ -2841,6 +2858,10 @@ div.edit_bot {
     margin-right: 20px;
 }
 
+.upload_avatar_spinner {
+    font-size: 14px;
+}
+
 .edit_bot_avatar_clear_button,
 #user_avatar_clear_button,
 #bot_avatar_clear_button {
@@ -2956,6 +2977,14 @@ div.edit_bot {
     padding: 45px 0px 15px 0px;
     margin-right: 5px;
     position: relative;
+}
+
+#settings #notify-settings-status {
+    width: 80%;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 #settings .settings-section .account-settings-form,
