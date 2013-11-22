@@ -138,7 +138,7 @@ class zulip_internal::base {
     source => "puppet:///modules/zulip_internal/nagios_plugins/",
   }
 
-  file { '/etc/iptables/rules':
+  file { '/etc/iptables/rules.v4':
     ensure     => file,
     mode       => 600,
     source     => 'puppet:///modules/zulip_internal/iptables/rules',
@@ -159,6 +159,6 @@ class zulip_internal::base {
     # Puppet to fall back to stop/start, which does work.
     hasrestart => false,
 
-    subscribe  => File['/etc/iptables/rules'],
+    subscribe  => File['/etc/iptables/rules.v4'],
   }
 }
