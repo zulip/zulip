@@ -8,8 +8,10 @@
 
     <h3 class="apps-instructions-header">Installation instructions</h3>
     <ul class="nav nav-tabs" id="apps-tabs">
+    {% if not_enterprise %}
       <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
       <li><a href="#iphone" data-toggle="tab">iPhone</a></li>
+    {% endif %}
       <li><a href="#mac" data-toggle="tab">Mac</a></li>
       <li><a href="#linux" data-toggle="tab">Linux</a></li>
       <li><a href="#windows" data-toggle="tab">Windows</a></li>
@@ -17,7 +19,7 @@
     </ul>
 
     <div class="tab-content">
-
+    {% if not_enterprise %}
       <div class="tab-pane active" id="android">
         <img class="screenshot android-screenshot pull-left" src="/static/images/app-screenshots/zulip-android.png">
 
@@ -44,7 +46,7 @@
         </a>
 
       </div>
-
+      {% endif %}
       <div class="tab-pane" id="mac">
         <p>You love your Mac. And you love Zulip. So what could be
         better than a Zulip app for Mac? Enjoy notifications for
