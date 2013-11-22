@@ -188,12 +188,7 @@ function remove_expanded_subjects() {
     $("ul.expanded_subjects").remove();
 }
 
-function rebuild_recent_subjects(stream, active_topic) {
-    // TODO: Call rebuild_recent_subjects less, not on every new
-    // message.
-    remove_expanded_subjects();
-    var max_subjects = 5;
-    var stream_li = get_filter_li('stream', stream);
+function build_subject_list(stream, active_topic, max_subjects) {
     var subjects = recent_subjects.get(stream) || [];
 
     if (active_topic) {
@@ -219,9 +214,22 @@ function rebuild_recent_subjects(stream, active_topic) {
         }
     });
 
-    stream_li.append(templates.render('sidebar_subject_list',
+    var topic_dom = templates.render('sidebar_subject_list',
                                       {subjects: display_subjects,
-                                       stream: stream}));
+                                       stream: stream});
+
+    return topic_dom;
+}
+
+function rebuild_recent_subjects(stream, active_topic) {
+    // TODO: Call rebuild_recent_subjects less, not on every new
+    // message.
+    remove_expanded_subjects();
+    var max_subjects = 5;
+    var stream_li = get_filter_li('stream', stream);
+
+    var topic_dom = build_subject_list(stream, active_topic, max_subjects);
+    stream_li.append(topic_dom);
 
     if (active_topic) {
         get_subject_filter_li(stream, active_topic).addClass('active-subject-filter');
