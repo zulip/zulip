@@ -39,7 +39,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     do_set_muted_topics, do_rename_stream, \
-    notify_for_streams_by_default, do_change_enable_offline_push_notifications, alias_for_realm
+    notify_for_streams_by_default, do_change_enable_offline_push_notifications, alias_for_realm, \
+    do_deactivate_stream
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
@@ -2093,6 +2094,21 @@ def reactivate_user_backend(request, user_profile, email):
         return json_error('Insufficient permission')
 
     do_reactivate_user(target)
+    return json_success({})
+
+def deactivate_stream_backend(request, user_profile, stream_name):
+    try:
+        target = get_stream(stream_name, user_profile.realm)
+    except Stream.DoesNotExist:
+        return json_error('No such stream name')
+
+    if not user_profile.is_admin():
+        return json_error('Insufficient permission')
+
+    if target.invite_only:
+        return json_error('Cannot administer invite-only streams this way')
+
+    do_deactivate_stream(target)
     return json_success({})
 
 def avatar(request, email):

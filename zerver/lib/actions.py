@@ -162,6 +162,12 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
         for profile in bot_profiles:
             do_deactivate_user(profile, _cascade=False)
 
+def do_deactivate_stream(stream, log=True):
+    user_profiles = UserProfile.objects.filter(realm=stream.realm)
+    for user_profile in user_profiles:
+            do_remove_subscription(user_profile, stream)
+    return
+
 def do_change_user_email(user_profile, new_email):
     old_email = user_profile.email
     user_profile.email = new_email

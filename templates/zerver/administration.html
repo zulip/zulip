@@ -2,7 +2,8 @@
 
 <div class="row-fluid">
   <div class="span12">
-    <div class="administration">
+      <div class="administration">
+      <div class="alert" id="administration-status"></div>
       <h1>Administration</h1>
       <h2>Users</h2>
       <table class="table table-condensed table-striped">
@@ -12,6 +13,7 @@
           <th>Actions</th>
         </tbody>
       </table>
+      <div id="admin_page_users_loading_indicator"></div>
       <h2>Bots</h2>
       <table class="table table-condensed table-striped">
         <tbody id="admin_bots_table" class="admin_user_table">
@@ -21,6 +23,15 @@
           <th>Actions</th>
         </tbody>
       </table>
+      <div id="admin_page_bots_loading_indicator"></div>
+      <h2>Streams</h2>
+      <table class="table table-condensed table-striped">
+        <tbody id="admin_streams_table" class="admin_stream_table">
+          <th>Name</th>
+          <th>Actions</th>
+        </tbody>
+      </table>
+      <div id="admin_page_streams_loading_indicator"></div>
       <h2>Deactivated Users</h2>
       <table class="table table-condensed table-striped">
         <tbody id="admin_deactivated_users_table" class="admin_user_table">
@@ -29,10 +40,11 @@
           <th>Actions</th>
         </tbody>
       </table>
-      <div id="deactivation_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_modal_label" aria-hidden="true">
+      <div id="admin_page_deactivated_users_loading_indicator"></div>
+      <div id="deactivation_user_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_user_modal_label" aria-hidden="true">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="deactivation_modal_label">Deactivate <span class="email"></span></h3>
+          <h3 id="deactivation_user_modal_label">Deactivate <span class="email"></span></h3>
         </div>
         <div class="modal-body">
           <p>By deactivating <strong><span class="user_name"></span></strong> &lt;<span class="email"></span>&gt;, they will be logged out of Zulip immediately.</p>
@@ -40,7 +52,21 @@
         </div>
         <div class="modal-footer">
           <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-          <button class="btn btn-danger" id="do_deactivate_button">Deactivate now</button>
+          <button class="btn btn-danger" id="do_deactivate_user_button">Deactivate now</button>
+        </div>
+      </div>
+      <div id="deactivation_stream_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_stream_modal_label" aria-hidden="true">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="deactivation_stream_modal_label">Unsubscribe all from <span class="stream_name"></span></h3>
+        </div>
+        <div class="modal-body">
+          <p>Unsubscribing everyone from this stream will also remove the stream from the streams list.</p>
+          <p>Unlike user deactivation, this cannot be undone, so please exercise <strong>extreme caution</strong>.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-danger" id="do_deactivate_stream_button">I have read the above, unsubscribe everyone</button>
         </div>
       </div>
     </div>
