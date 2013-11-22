@@ -147,13 +147,10 @@ def compute_full_event_type(event):
     if event["type"] == "update_message_flags":
         if event["all"]:
             # Put the "all" case in its own category
-            return "%s/%s/all" % (event["flag"], event["operation"])
-        return "%s/%s" % (event["flag"], event["operation"])
+            return "all_flags/%s/%s" % (event["flag"], event["operation"])
+        return "flags/%s/%s" % (event["operation"], event["flag"])
     return event["type"]
 
-# Virtual events are a mechanism for storing pointer changes and other
-# easily collapsed event types efficiently.
-VIRTUAL_EVENT_TYPES = ["pointer", "read/add", "restart"]
 class EventQueue(object):
     def __init__(self, id):
         self.queue = deque()
@@ -179,7 +176,8 @@ class EventQueue(object):
         event['id'] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
-        if full_event_type in VIRTUAL_EVENT_TYPES:
+        if (full_event_type in ["pointer", "restart"] or
+            full_event_type.startswith("flags/")):
             if full_event_type not in self.virtual_events:
                 self.virtual_events[full_event_type] = copy.deepcopy(event)
                 return
@@ -190,10 +188,10 @@ class EventQueue(object):
                 virtual_event["timestamp"] = event["timestamp"]
             if full_event_type == "pointer":
                 virtual_event["pointer"] = event["pointer"]
-            elif full_event_type == "read/add":
-                virtual_event["messages"] += event["messages"]
             elif full_event_type == "restart":
                 virtual_event["server_generation"] = event["server_generation"]
+            elif full_event_type.startswith("flags/"):
+                virtual_event["messages"] += event["messages"]
         else:
             self.queue.append(event)
 

@@ -2542,7 +2542,7 @@ class EventQueueTest(TestCase):
                            "timestamp": "22"},
                           ])
 
-    def test_flag_collapsing(self):
+    def test_flag_add_collapsing(self):
         queue = EventQueue("1")
         queue.push({"type": "update_message_flags",
                     "flag": "read",
@@ -2562,6 +2562,29 @@ class EventQueueTest(TestCase):
                            "all": False,
                            "flag": "read",
                            "operation": "add",
+                           "messages": [1,2,3,4,5,6],
+                           "timestamp": "1"}])
+
+    def test_flag_remove_collapsing(self):
+        queue = EventQueue("1")
+        queue.push({"type": "update_message_flags",
+                    "flag": "collapsed",
+                    "operation": "remove",
+                    "all": False,
+                    "messages": [1, 2, 3, 4],
+                    "timestamp": "1"})
+        queue.push({"type": "update_message_flags",
+                    "flag": "collapsed",
+                    "all": False,
+                    "operation": "remove",
+                    "messages": [5, 6],
+                    "timestamp": "1"})
+        self.assertEqual(queue.contents(),
+                         [{'id': 1,
+                           'type': 'update_message_flags',
+                           "all": False,
+                           "flag": "collapsed",
+                           "operation": "remove",
                            "messages": [1,2,3,4,5,6],
                            "timestamp": "1"}])
 
