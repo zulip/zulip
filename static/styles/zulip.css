@@ -2162,6 +2162,10 @@ table.floating_recipient {
     font-size: 12px;
 }
 
+.subscription_header {
+    min-height: 47px;
+}
+
 .subscription_header .subscription_name {
     display: inline-block;
     width: auto;
