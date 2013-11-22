@@ -6,13 +6,14 @@ var last_private_message_count = 0;
 var last_mention_count = 0;
 var previous_sort_order;
 
-exports.sort_narrow_list = function () {
+exports.build_stream_list = function () {
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
     }
 
     var sort_recent = (streams.length > 40);
+
 
     streams.sort(function (a, b) {
         if (sort_recent) {
@@ -237,7 +238,7 @@ function rebuild_recent_subjects(stream, active_topic) {
 }
 
 exports.update_streams_sidebar = function () {
-    exports.sort_narrow_list();
+    exports.build_stream_list();
 
     if (! narrow.active()) {
         return;
@@ -324,7 +325,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
 exports.rename_stream = function (sub) {
     sub.sidebar_li = build_narrow_filter(sub.name, "stream");
-    exports.sort_narrow_list(); // big hammer
+    exports.build_stream_list(); // big hammer
 };
 
 $(function () {
@@ -386,7 +387,7 @@ $(function () {
         if (li) {
             event.sub.sidebar_li = li;
         }
-        exports.sort_narrow_list();
+        exports.build_stream_list();
     });
 
     $(document).on('subscription_remove_done.zulip', function (event) {

@@ -361,7 +361,7 @@ function populate_subscriptions(subs, subscribed) {
         sub_rows.push(sub);
     });
 
-    stream_list.sort_narrow_list();
+    stream_list.build_stream_list();
     return sub_rows;
 }
 
