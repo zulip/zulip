@@ -989,6 +989,7 @@ function get_updates(options) {
             if ((xhr.status === 400) &&
                 ($.parseJSON(xhr.responseText).msg.indexOf("too old") !== -1 ||
                  $.parseJSON(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
+                page_params.event_queue_expired = true;
                 reload.initiate({immediate: true});
             }
 
@@ -1021,10 +1022,13 @@ function force_get_updates() {
 
 function cleanup_event_queue() {
     // Submit a request to the server to cleanup our event queue
+    if (page_params.event_queue_expired === true) {
+        return;
+    }
     $.ajax({
         type:     'DELETE',
         url:      '/json/events',
-        data:     {queue_id: get_updates_params.queue_id},
+        data:     {queue_id: page_params.event_queue_id},
         dataType: 'json'
     });
 }
