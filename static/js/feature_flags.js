@@ -42,12 +42,12 @@ exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domai
 // Still very beta:
 exports.fade_users_when_composing = page_params.staging || is_customer4;
 exports.use_socket = false;
-exports.show_huddles = page_params.staging || is_customer4;
 
 // Still burning in...
 exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.summarize_read_while_narrowed = false;
+exports.show_huddles = true;
 
 // Ready for deprecation.
 exports.collapsible = false;
