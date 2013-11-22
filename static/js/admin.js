@@ -93,7 +93,6 @@ exports.setup_page = function () {
 
         $(".active_user_row").removeClass("active_user_row");
 
-        // Go up the tree until we find the user row, then grab the email element
         $(e.target).closest(".user_row").addClass("active_user_row");
 
         var user_name = $(".active_user_row").find('.user_name').text();
