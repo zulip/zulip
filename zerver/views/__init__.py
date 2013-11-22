@@ -22,7 +22,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
-    email_to_domain, email_to_username, get_realm, completely_open, \
+    split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, completely_open, \
     is_super_user, AppleDeviceToken, get_active_user_dicts_in_realm, remote_user_to_email
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_password, create_mirror_user_if_needed, compute_irc_user_fullname, \
@@ -39,7 +39,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     do_set_muted_topics, do_rename_stream, \
-    notify_for_streams_by_default, do_change_enable_offline_push_notifications, alias_for_realm, \
+    notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -236,7 +236,7 @@ def accounts_register(request):
         # realm.
         domain = prereg_user.realm.domain
     else:
-        domain = email_to_domain(email)
+        domain = resolve_email_to_domain(email)
 
     try:
         if mit_beta_user:
@@ -394,7 +394,7 @@ def accounts_register(request):
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def accounts_accept_terms(request):
     email = request.user.email
-    domain = email_to_domain(email)
+    domain = resolve_email_to_domain(email)
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
@@ -614,12 +614,10 @@ def create_preregistration_user(email, request):
     # MIT users who are not explicitly signing up for an open realm
     # require special handling (They may already have an (inactive)
     # account, for example)
-    if email_to_domain(email) == "mit.edu" and not domain:
+    if split_email_to_domain(email) == "mit.edu" and not domain:
         prereg_user, created = MitUser.objects.get_or_create(email=email)
     else:
-        realm = alias_for_realm(email_to_domain(email))
-        if realm is not None:
-            domain = realm.domain
+        domain = resolve_email_to_domain(email)
 
         prereg_user = PreregistrationUser(email=email, realm=get_realm(domain))
         prereg_user.save()
@@ -1291,7 +1289,7 @@ def mit_to_mit(user_profile, email):
     except ValidationError:
         return False
 
-    domain = email_to_domain(email)
+    domain = resolve_email_to_domain(email)
 
     return user_profile.realm.domain == "mit.edu" and domain == "mit.edu"
 
@@ -1304,7 +1302,7 @@ def same_realm_irc_user(user_profile, email):
     except ValidationError:
         return False
 
-    domain = email_to_domain(email)
+    domain = resolve_email_to_domain(email)
 
     return user_profile.realm.domain == domain.replace("irc.", "")
 
@@ -1314,7 +1312,7 @@ def same_realm_user(user_profile, email):
     except ValidationError:
         return False
 
-    domain = email_to_domain(email)
+    domain = resolve_email_to_domain(email)
 
     return user_profile.realm.domain == domain
 

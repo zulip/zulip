@@ -9,7 +9,7 @@ from zerver.decorator import has_request_variables, REQ, json_to_dict
 from zerver.lib.actions import internal_send_message
 from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
-from zerver.models import get_realm, get_user_profile_by_email, email_to_domain, \
+from zerver.models import get_realm, get_user_profile_by_email, resolve_email_to_domain, \
         UserProfile
 from zilencer.forms import EnterpriseToSForm
 from error_notify import notify_server_error, notify_browser_error
@@ -74,7 +74,7 @@ def realm_for_email(email):
     except UserProfile.DoesNotExist:
         pass
 
-    return get_realm(email_to_domain(email))
+    return get_realm(resolve_email_to_domain(email))
 
 # Requests made to this endpoint are UNAUTHENTICATED
 @csrf_exempt

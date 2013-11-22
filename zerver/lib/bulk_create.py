@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, Huddle, \
-    Subscription, Recipient, Client, get_huddle_hash, email_to_domain
+    Subscription, Recipient, Client, get_huddle_hash, resolve_email_to_domain
 from zerver.lib.create_user import create_user_profile
 
 def bulk_create_realms(realm_list):
@@ -31,7 +31,7 @@ def bulk_create_users(realms, users_raw, bot=False):
     # Now create user_profiles
     profiles_to_create = []
     for (email, full_name, short_name, active) in users:
-        domain = email_to_domain(email)
+        domain = resolve_email_to_domain(email)
         profile = create_user_profile(realms[domain], email,
                                       initial_password(email), active, bot,
                                       full_name, short_name, None)

@@ -12,7 +12,8 @@ from guardian.shortcuts import assign_perm, remove_perm
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, UserActivity, \
     PreregistrationUser, UserMessage, MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH, \
-    get_user_profile_by_email, email_to_domain, get_realm, get_stream, get_client
+    get_user_profile_by_email, split_email_to_domain, resolve_email_to_domain, get_realm, \
+    get_stream, get_client
 from zerver.decorator import RespondAsynchronously, \
     RequestVariableConversionError, profiled, JsonableError
 from zerver.lib.initial_password import initial_password
@@ -312,7 +313,7 @@ class AuthedTestCase(TestCase):
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
-        realm = Realm.objects.get(domain=email_to_domain(email))
+        realm = Realm.objects.get(domain=resolve_email_to_domain(email))
         stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
         do_add_subscription(user_profile, stream, no_log=True)
@@ -3753,7 +3754,7 @@ class UserPresenceTests(AuthedTestCase):
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         # We only want @zulip.com emails
         for email in json['presences'].keys():
-            self.assertEqual(email_to_domain(email), 'zulip.com')
+            self.assertEqual(split_email_to_domain(email), 'zulip.com')
 
 class UnreadCountTests(AuthedTestCase):
     def setUp(self):

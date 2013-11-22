@@ -10,7 +10,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
-    email_to_domain, email_to_username, display_recipient_cache_key, \
+    resolve_email_to_domain, email_to_username, display_recipient_cache_key, \
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
     UserActivityInterval, get_active_user_dicts_in_realm, RealmAlias, \
     ScheduledJob
@@ -2050,9 +2050,7 @@ def do_invite_users(user_profile, invitee_emails, streams):
             errors.append((email, "Invalid address."))
             continue
 
-        domains = [user_profile.realm.domain.lower()]
-        domains.extend(realm_aliases(user_profile.realm))
-        if user_profile.realm.restricted_to_domain and email_to_domain(email).lower() not in domains:
+        if user_profile.realm.restricted_to_domain and resolve_email_to_domain(email) != user_profile.realm.domain.lower():
             errors.append((email, "Outside your domain."))
             continue
 
@@ -2266,12 +2264,6 @@ def send_local_email_template_with_delay(recipients, template_prefix,
 
 def realm_aliases(realm):
     return [alias.domain for alias in realm.realmalias_set.all()]
-
-def alias_for_realm(domain):
-    try:
-        return RealmAlias.objects.get(domain=domain)
-    except RealmAlias.DoesNotExist:
-        return None
 
 def convert_html_to_markdown(html):
     # On Linux, the tool installs as html2markdown, and there's a command called

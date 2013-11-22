@@ -7,8 +7,8 @@ from django.contrib.auth.forms import SetPasswordForm
 from django.conf import settings
 
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    completely_open, email_to_domain, get_realm
-from zerver.lib.actions import do_change_password, alias_for_realm
+    completely_open, resolve_email_to_domain, get_realm
+from zerver.lib.actions import do_change_password
 from zproject.backends import password_auth_enabled
 import DNS
 
@@ -23,7 +23,7 @@ SIGNUP_STRING = '<a href="https://zulip.com/signup">Sign up</a> to find out when
 
 def has_valid_realm(value):
     try:
-        realm = Realm.objects.get(domain=email_to_domain(value))
+        realm = Realm.objects.get(domain=resolve_email_to_domain(value))
     except Realm.DoesNotExist:
         return False
     if settings.ENTERPRISE:
@@ -71,8 +71,6 @@ class HomepageForm(forms.Form):
     def clean_email(self):
         data = self.cleaned_data['email']
         if completely_open(self.domain) or has_valid_realm(data) and not_mit_mailing_list(data):
-            return data
-        if alias_for_realm(email_to_domain(data)) is not None:
             return data
         raise ValidationError(mark_safe(
                 u'Registration is not currently available for your domain. ' \

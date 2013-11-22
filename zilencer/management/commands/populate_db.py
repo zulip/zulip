@@ -7,7 +7,7 @@ from django.contrib.sites.models import Site
 from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
-    email_to_domain, email_to_username
+    split_email_to_domain, email_to_username
 from zerver.lib.actions import do_send_message, set_default_streams, \
     do_activate_user, do_deactivate_user, do_change_password
 from zerver.lib.parallel import run_parallel
@@ -351,7 +351,7 @@ def restore_saved_messages():
 
         sender_email = old_message["sender_email"]
 
-        domain = email_to_domain(sender_email)
+        domain = split_email_to_domain(sender_email)
         realm_set.add(domain)
 
         if old_message["sender_email"] not in email_set:
@@ -462,7 +462,7 @@ def restore_saved_messages():
         message = Message()
 
         sender_email = old_message["sender_email"]
-        domain = email_to_domain(sender_email)
+        domain = split_email_to_domain(sender_email)
         realm = realms[domain]
 
         message.sender = users[sender_email]

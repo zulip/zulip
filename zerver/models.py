@@ -141,8 +141,24 @@ class RealmAlias(models.Model):
 def email_to_username(email):
     return "@".join(email.split("@")[:-1]).lower()
 
-def email_to_domain(email):
+# Returns the raw domain portion of the desired email address
+def split_email_to_domain(email):
     return email.split("@")[-1].lower()
+
+# Returns the domain, potentually de-aliased, for the realm
+# that this user's email is in
+def resolve_email_to_domain(email):
+    domain = split_email_to_domain(email)
+    alias = alias_for_realm(domain)
+    if alias is not None:
+        domain = alias.realm.domain
+    return domain
+
+def alias_for_realm(domain):
+    try:
+        return RealmAlias.objects.get(domain=domain)
+    except RealmAlias.DoesNotExist:
+        return None
 
 def remote_user_to_email(remote_user):
     if settings.SSO_APPEND_DOMAIN is not None:
