@@ -2721,7 +2721,15 @@ li.expanded_subject {
     display: none;
 }
 
-#streams_header, #userlist-header, #sharethelove-header, #group-pm-header {
+#topics_header {
+    display: none;
+}
+
+#streams_header,
+#topics_header,
+#userlist-header,
+#sharethelove-header,
+#group-pm-header {
     border-top: 1px solid #ddd;
     margin-top: 5px;
     margin-right: 10px;

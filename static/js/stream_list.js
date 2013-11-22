@@ -2,14 +2,60 @@ var stream_list = (function () {
 
 var exports = {};
 
+var zoomed_to_topics = false;
 var last_private_message_count = 0;
 var last_mention_count = 0;
 var previous_sort_order;
+
+function zoom_in() {
+    popovers.hide_all();
+    zoomed_to_topics = true;
+    $("#streams_header").expectOne().hide();
+    $("#topics_header").expectOne().show();
+    exports.update_streams_sidebar();
+}
+
+function zoom_out() {
+    popovers.hide_all();
+    zoomed_to_topics = false;
+    $("#streams_header").expectOne().show();
+    $("#topics_header").expectOne().hide();
+    exports.update_streams_sidebar();
+}
+
+function toggle_zoom() {
+    if (zoomed_to_topics) {
+        zoom_out();
+    }
+    else {
+        zoom_in();
+    }
+}
+
+function active_stream_name() {
+    if (narrow.active()) {
+        var op_streams = narrow.filter().operands('stream');
+        if (op_streams) {
+            return op_streams[0];
+        }
+    }
+    return false;
+}
 
 exports.build_stream_list = function () {
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
+    }
+
+    if (zoomed_to_topics) {
+        var stream_name = active_stream_name();
+        if (stream_name) {
+            streams = [stream_name];
+        }
+        else {
+            zoom_out();
+        }
     }
 
     var sort_recent = (streams.length > 40);
@@ -226,7 +272,7 @@ function rebuild_recent_subjects(stream, active_topic) {
     // TODO: Call rebuild_recent_subjects less, not on every new
     // message.
     remove_expanded_subjects();
-    var max_subjects = 5;
+    var max_subjects = zoomed_to_topics ? 30: 5;
     var stream_li = get_filter_li('stream', stream);
 
     var topic_dom = build_subject_list(stream, active_topic, max_subjects);
@@ -405,6 +451,7 @@ $(function () {
             ui.change_tab_to('#home');
         }
         var stream = $(e.target).parents('li').attr('data-name');
+
         narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar'});
 
         e.preventDefault();
