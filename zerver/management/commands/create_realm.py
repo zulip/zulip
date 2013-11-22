@@ -3,7 +3,7 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from zerver.lib.actions import do_create_realm
+from zerver.lib.actions import do_create_realm, set_default_streams
 from zerver.models import RealmAlias
 
 if not settings.ENTERPRISE:
@@ -85,6 +85,8 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                 deployment = Deployment.objects.get(base_site_url="https://zulip.com/")
                 deployment.realms.add(realm)
                 deployment.save()
-            print "\033[1;36mDon't forget to run set_default_streams!\033[0m"
+            set_default_streams(realm, ["social", "engineering"])
+
+            print "\033[1;36mDefault streams set to social,engineering,zulip!\033[0m"
         else:
             print domain, "already exists."

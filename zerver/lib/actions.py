@@ -1237,6 +1237,10 @@ def set_default_streams(realm, stream_names):
     notifications_stream, _ = create_stream_if_needed(realm, Realm.NOTIFICATION_STREAM_NAME)
     DefaultStream.objects.create(stream=notifications_stream, realm=realm)
 
+    log_event({'type': 'default_streams',
+               'domain': realm.domain,
+               'streams': stream_names})
+
 def get_default_subs(user_profile):
     return [default.stream for default in
             DefaultStream.objects.select_related("stream", "stream__realm").filter(realm=user_profile.realm)]

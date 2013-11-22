@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.core.management.base import BaseCommand
 
 from zerver.models import Realm
-from zerver.lib.actions import set_default_streams, log_event
+from zerver.lib.actions import set_default_streams
 
 from optparse import make_option
 import sys
@@ -43,7 +43,3 @@ set of streams (which can be empty, with `--streams=`)."
         stream_names = [stream.strip() for stream in options["streams"].split(",")]
         realm = Realm.objects.get(domain=options["domain"])
         set_default_streams(realm, stream_names)
-
-        log_event({'type': 'default_streams',
-                   'domain': realm.domain,
-                   'streams': stream_names})
