@@ -1380,7 +1380,7 @@ $(function () {
         e.preventDefault();
     });
 
-    $('#stream_filters li').on('click', '.subscription_block', function (e) {
+    $('#stream_filters').on('click', 'li .subscription_block', function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
