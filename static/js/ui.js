@@ -1380,40 +1380,8 @@ $(function () {
         e.preventDefault();
     });
 
-    $('#stream_filters').on('click', 'li .subscription_block', function (e) {
-        if (e.metaKey || e.ctrlKey) {
-            return;
-        }
-        if (exports.home_tab_obscured()) {
-            ui.change_tab_to('#home');
-        }
-        var stream = $(e.target).parents('li').attr('data-name');
-        narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar'});
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
     popovers.register_click_handlers();
     notifications.register_click_handlers();
-
-    $('#stream_filters').on('click', '.subject_box', function (e) {
-        if (e.metaKey || e.ctrlKey) {
-            return;
-        }
-        if (exports.home_tab_obscured()) {
-            ui.change_tab_to('#home');
-        }
-
-        var stream = $(e.target).parents('ul').attr('data-stream');
-        var subject = $(e.target).parents('li').attr('data-name');
-
-        narrow.activate([['stream',  stream],
-                         ['topic', subject]],
-                        {select_first_unread: true, trigger: 'sidebar'});
-
-        e.preventDefault();
-    });
 
     $('.compose_stream_button').click(function (e) {
         compose.start('stream');

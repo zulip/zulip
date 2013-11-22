@@ -396,6 +396,39 @@ $(function () {
         // We need to make sure we resort if the removed sub gets added again
         previous_sort_order = undefined;
     });
+
+    $('#stream_filters').on('click', 'li .subscription_block', function (e) {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+        if (ui.home_tab_obscured()) {
+            ui.change_tab_to('#home');
+        }
+        var stream = $(e.target).parents('li').attr('data-name');
+        narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar'});
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $('#stream_filters').on('click', '.subject_box', function (e) {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+        if (ui.home_tab_obscured()) {
+            ui.change_tab_to('#home');
+        }
+
+        var stream = $(e.target).parents('ul').attr('data-stream');
+        var subject = $(e.target).parents('li').attr('data-name');
+
+        narrow.activate([['stream',  stream],
+                         ['topic', subject]],
+                        {select_first_unread: true, trigger: 'sidebar'});
+
+        e.preventDefault();
+    });
+
 });
 
 return exports;
