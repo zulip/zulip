@@ -1415,14 +1415,6 @@ $(function () {
         e.preventDefault();
     });
 
-    $('#stream_filters').on('click', '.streamlist_expand', function (e) {
-        var stream_li = $(e.target).parents('li');
-
-        $('ul.expanded_subjects', stream_li).toggleClass('hidden');
-
-        return false;
-    });
-
     $('.compose_stream_button').click(function (e) {
         compose.start('stream');
     });
