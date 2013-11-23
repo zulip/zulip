@@ -34,7 +34,7 @@ SSH_OPTS="-o HostKeyAlgorithms=ssh-rsa"
 
 set +e
 
-ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -ladmin <<EOF
+ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -ladmin -o "ControlMaster=no" <<EOF
 sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
 sudo mkdir ~root/.ssh && sudo cp .ssh/authorized_keys ~root/.ssh/authorized_keys
 sudo service ssh restart
