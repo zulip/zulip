@@ -540,6 +540,7 @@ def get_user_activity_records_for_realm(realm, is_bot):
 
     records = UserActivity.objects.filter(
             user_profile__realm__domain=realm,
+            user_profile__is_active=True,
             user_profile__is_bot=is_bot
     )
     records = records.order_by("user_profile__email", "-last_visit")
