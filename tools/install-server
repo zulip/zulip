@@ -3,14 +3,19 @@
 server=$1
 type=$2
 hostname=$3
+branch=$4
 if [ -z "$hostname" ]; then
-    echo "USAGE: $0 server type hostname"
+    echo "USAGE: $0 server type hostname [branch]"
     exit 1
 fi
 if ! $(echo "$hostname" | grep -q zulip); then
-    echo "USAGE: $0 server type hostname"
+    echo "USAGE: $0 server type hostname [branch]"
     echo "Hostname must have zulip in it."
     exit 1
+fi
+
+if [ -z "$branch" ]; then
+    branch=master
 fi
 
 zulip_root=${ZULIP_ROOT:-$HOME/zulip}
@@ -75,7 +80,7 @@ cd /root
 rm -rf /root/zulip
 git clone git@git.zulip.net:eng/zulip.git
 cd /root/zulip
-git checkout master
+git checkout $branch
 EOF
 
 ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
