@@ -19,7 +19,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
-    set_default_streams, get_emails_from_user_ids, \
+    set_default_streams, get_emails_from_user_ids, one_click_unsubscribe_link, \
     do_deactivate_user, do_reactivate_user
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
@@ -44,6 +44,7 @@ import time
 import ujson
 import urllib
 import urllib2
+from urlparse import urlparse
 from StringIO import StringIO
 
 from boto.s3.connection import S3Connection
@@ -4709,6 +4710,26 @@ def run_test(test):
     enforce_timely_test_completion(test_method, test_name, delay)
 
     test._post_teardown()
+
+class EmailUnsubscribeTests(AuthedTestCase):
+    def test_missedmessage_unsubscribe(self):
+        """
+        We provide one-click unsubscribe links in missed message
+        e-mails that you can click even when logged out to update your
+        email notification settings.
+        """
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile.enable_offline_email_notifications = True
+        user_profile.save()
+
+        unsubscribe_link = one_click_unsubscribe_link(user_profile,
+                                                      "missed_messages")
+        result = self.client.get(urlparse(unsubscribe_link).path)
+
+        self.assertEqual(result.status_code, 200)
+        # Circumvent user_profile caching.
+        user_profile = UserProfile.objects.get(email="hamlet@zulip.com")
+        self.assertFalse(user_profile.enable_offline_email_notifications)
 
 class Runner(DjangoTestSuiteRunner):
     option_list = ()
