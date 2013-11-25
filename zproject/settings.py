@@ -587,34 +587,29 @@ CACHES = {
     },
 }
 
-if DEPLOYED:
-    SERVER_LOG_PATH = "/var/log/zulip/server.log"
-    MANAGEMENT_LOG_PATH = "/var/log/zulip/manage.log"
-    WORKER_LOG_PATH = "/var/log/zulip/workers.log"
-    if ENTERPRISE:
-        EVENT_LOG_DIR = None
-    else:
-        EVENT_LOG_DIR = '/home/zulip/logs/event_log'
-    STATS_DIR = '/home/zulip/stats'
-    PERSISTENT_QUEUE_FILENAME = "/home/zulip/tornado/event_queues.pickle"
-    JSON_PERSISTENT_QUEUE_FILENAME = "/home/zulip/tornado/event_queues.json"
-    EMAIL_MIRROR_LOG_PATH = "/var/log/zulip/email-mirror.log"
-    EMAIL_DELIVERER_LOG_PATH = "/var/log/zulip/email-deliverer.log"
-    LDAP_SYNC_LOG_PATH = "/var/log/zulip/sync_ldap_user_data.log"
-    QUEUE_ERROR_DIR = '/var/log/zulip/queue_error'
-else:
-    EVENT_LOG_DIR = 'event_log'
-    SERVER_LOG_PATH = "server.log"
-    MANAGEMENT_LOG_PATH = "manage.log"
-    WORKER_LOG_PATH = "workers.log"
-    STATS_DIR = 'stats'
-    PERSISTENT_QUEUE_FILENAME = "event_queues.pickle"
-    JSON_PERSISTENT_QUEUE_FILENAME = "event_queues.json"
-    EMAIL_MIRROR_LOG_PATH = "email-mirror.log"
-    EMAIL_DELIVERER_LOG_PATH = "email-deliverer.log"
-    LDAP_SYNC_LOG_PATH = "sync_ldap_user_data.log"
-    QUEUE_ERROR_DIR = 'queue_error'
+ZULIP_PATHS = [
+    ("SERVER_LOG_PATH", "/var/log/zulip/server.log"),
+    ("MANAGEMENT_LOG_PATH", "/var/log/zulip/manage.log"),
+    ("WORKER_LOG_PATH", "/var/log/zulip/workers.log"),
+    ("PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.pickle"),
+    ("JSON_PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.json"),
+    ("EMAIL_MIRROR_LOG_PATH", "/var/log/zulip/email-mirror.log"),
+    ("EMAIL_DELIVERER_LOG_PATH", "/var/log/zulip/email-deliverer.log"),
+    ("LDAP_SYNC_LOG_PATH", "/var/log/zulip/sync_ldap_user_data.log"),
+    ("QUEUE_ERROR_DIR", "/var/log/zulip/queue_error"),
+    ("STATS_DIR", "/home/zulip/stats"),
+    ]
 
+if ENTERPRISE:
+    EVENT_LOG_DIR = None
+else:
+    ZULIP_PATHS.append(("EVENT_LOG_DIR", "/home/zulip/logs/event_log"))
+
+for (var, path) in ZULIP_PATHS:
+    if not DEPLOYED:
+        # if not DEPLOYED, store these files in the Zulip checkout
+        path = os.path.basename(path)
+    vars()[var] = path
 
 ZULIP_WORKER_TEST_FILE = '/tmp/zulip-worker-test-file'
 
