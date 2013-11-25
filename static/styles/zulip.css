@@ -2030,8 +2030,11 @@ table.floating_recipient {
 }
 
 .hotkeys_table .hotkey {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
     text-align: right;
     font-weight: bold;
+    font-size: 90%;
+    white-space: nowrap;
 }
 
 #loading_more_messages_indicator {
