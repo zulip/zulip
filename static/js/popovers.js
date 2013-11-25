@@ -27,6 +27,8 @@ function show_message_info_popover(element, id) {
         var args = {
             message:  message,
             can_edit_message: can_edit,
+            pm_with_uri: narrow.pm_with_uri(message.sender_email),
+            sent_by_uri: narrow.by_sender_uri(message.sender_email),
             narrowed: narrow.active()
         };
 
@@ -73,6 +75,10 @@ exports.toggle_actions_popover = function (element, id) {
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
             single_message_narrowing: feature_flags.single_message_narrowing,
+            pm_with_uri: narrow.pm_with_uri(message.sender_email),
+            stream_subject_uri: narrow.by_stream_subject_uri(message.stream, message.subject),
+            near_time_uri: narrow.by_near_uri(message.id),
+            single_message_uri: narrow.by_message_uri(message.id),
             narrowed: narrow.active()
         };
 

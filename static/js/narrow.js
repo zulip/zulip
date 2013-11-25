@@ -455,6 +455,10 @@ exports.pm_with_uri = function (reply_to) {
     return "#narrow/pm-with/" + hashchange.encodeHashComponent(reply_to);
 };
 
+exports.by_sender_uri = function (reply_to) {
+    return "#narrow/sender/" + hashchange.encodeHashComponent(reply_to);
+};
+
 exports.by_stream_uri = function (stream) {
     return "#narrow/stream/" + hashchange.encodeHashComponent(stream);
 };
@@ -462,6 +466,14 @@ exports.by_stream_uri = function (stream) {
 exports.by_stream_subject_uri = function (stream, subject) {
     return "#narrow/stream/" + hashchange.encodeHashComponent(stream) +
            "/subject/" + hashchange.encodeHashComponent(subject);
+};
+
+exports.by_message_uri = function (message_id) {
+    return "#narrow/id/" + hashchange.encodeHashComponent(message_id);
+};
+
+exports.by_near_uri = function (message_id) {
+    return "#narrow/near/" + hashchange.encodeHashComponent(message_id);
 };
 
 // Are we narrowed to PMs: all PMs or PMs with particular people.

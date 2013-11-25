@@ -20,7 +20,7 @@
   </li>
   {{#unless message.is_private}}
   <li>
-    <a href="#" class="respond_personal_button">
+    <a href="" class="respond_personal_button">
       <i class="icon-vector-user"></i> Reply to <b>{{message.sender_full_name}}</b> only
     </a>
   </li>
@@ -28,14 +28,14 @@
 
   {{#if message.is_stream}}
     <li>
-      <a href="#" class="popover_narrow_by_subject_button" data-msgid="{{message.id}}">
+      <a href="{{ stream_subject_uri }}" class="popover_narrow_by_subject_button" data-msgid="{{message.id}}">
         <i class="icon-vector-bullhorn"></i>
         Narrow to this topic on stream <b>{{message.stream}}</b>
       </a>
     </li>
   {{else}}
     <li>
-      <a href="#" class="popover_narrow_by_recipient_button" data-msgid="{{message.id}}">
+      <a href="{{ pm_with_uri }}" class="popover_narrow_by_recipient_button" data-msgid="{{message.id}}">
         <i class="icon-vector-user"></i>
         Narrow to this private message conversation
       </a>
@@ -44,7 +44,7 @@
 
   {{#if narrowed}}
   <li>
-    <a href="#" class="popover_narrow_by_time_travel_button" data-msgid="{{message.id}}">
+    <a href="{{ near_time_uri }}" class="popover_narrow_by_time_travel_button" data-msgid="{{message.id}}">
       <i class="icon-vector-time"></i> Narrow to messages around this time
     </a>
   </li>
@@ -52,7 +52,7 @@
 
   {{#if single_message_narrowing}}
     <li>
-      <a href="#" class="popover_narrow_by_id" data-msgid="{{message.id}}">
+      <a href="{{ single_message_uri }}" class="popover_narrow_by_id" data-msgid="{{message.id}}">
         <i class="icon-vector-link"></i> Narrow to just this message
       </a>
     </li>
