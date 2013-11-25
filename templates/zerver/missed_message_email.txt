@@ -28,6 +28,10 @@ Please do not reply to this automated message. To respond to the missed messages
 Cheers,
 The Zulip Team
 
-Note: click here to open your Zulip Settings page and disable future email notifications:
+Manage email preferences:
 
 https://{{ external_host }}/#settings
+
+Unsubscribe from missed message emails:
+
+{{ unsubscribe_link }}

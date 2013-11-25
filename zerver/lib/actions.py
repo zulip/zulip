@@ -1920,6 +1920,21 @@ def build_message_list(user_profile, messages):
 
     return messages_to_render
 
+def unsubscribe_token(user_profile):
+    # Leverage the Django confirmations framework to generate and track unique
+    # unsubscription tokens.
+    return Confirmation.objects.get_link_for_object(user_profile).split("/")[-1]
+
+def one_click_unsubscribe_link(user_profile, endpoint):
+    """
+    Generate a unique link that a logged-out user can visit to unsubscribe from
+    Zulip e-mails without having to first log in.
+    """
+    token = unsubscribe_token(user_profile)
+    base_url = "https://" + settings.EXTERNAL_HOST
+    resource_path = "accounts/unsubscribe/%s/%s" % (endpoint, token)
+    return "%s/%s" % (base_url.rstrip("/"), resource_path)
+
 @statsd_increment("missed_message_reminders")
 def do_send_missedmessage_events(user_profile, missed_messages):
     """
@@ -1959,6 +1974,11 @@ def do_send_missedmessage_events(user_profile, missed_messages):
             template_payload['mention'] = True
             template_payload['reply_warning'] = True
             headers['Reply-To'] = "Nobody <%s>" % (settings.NOREPLY_EMAIL_ADDRESS,)
+
+        # Give users a one-click unsubscribe link they can use to stop getting
+        # missed message emails without having to log in first.
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
+        template_payload["unsubscribe_link"] = unsubscribe_link
 
         subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
         from_email = "%s (via Zulip) <%s>" % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)

@@ -56,6 +56,11 @@ urlpatterns = patterns('',
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
     url(r'^invite/$', 'zerver.views.initial_invite_page', name='initial-invite-users'),
 
+    # Unsubscription endpoint. Used for various types of e-mails (day 1 & 2,
+    # missed PMs, etc.)
+    url(r'^accounts/unsubscribe/(?P<type>[\w]+)/(?P<token>[\w]+)',
+        'zerver.views.email_unsubscribe'),
+
     # Portico-styled page used to provide email confirmation of terms acceptance.
     url(r'^accounts/accept_terms/$', 'zerver.views.accounts_accept_terms'),
 

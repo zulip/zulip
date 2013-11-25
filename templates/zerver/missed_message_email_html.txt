@@ -37,4 +37,4 @@ While you were away you received {{ message_count }} new message{{ message_count
 <br>
 The Zulip Team</p>
 
-<p>Note: click <a href="https://{{ external_host }}/#settings">here</a> to open your Zulip Settings page and disable future email notifications</p>
+<p><a href="https://{{ external_host }}/#settings">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from missed message emails</a></p>

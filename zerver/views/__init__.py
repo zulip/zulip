@@ -2325,3 +2325,23 @@ def remove_apns_device_token(request, user_profile, token=REQ):
 
 def generate_204(request):
     return HttpResponse(content=None, status=204)
+
+def process_missedmessages_unsubscribe(token):
+    try:
+        confirmation = Confirmation.objects.get(confirmation_key=token)
+    except Confirmation.DoesNotExist:
+        return render_to_response('zerver/unsubscribe_link_error.html')
+
+    user_profile = confirmation.content_object
+    do_change_enable_offline_email_notifications(user_profile, False)
+    return render_to_response('zerver/unsubscribe_success.html',
+                              {"subscription_type": "missed messages",
+                               "external_host": settings.EXTERNAL_HOST})
+
+# Login NOT required. These are for one-click unsubscribes.
+def email_unsubscribe(request, type, token):
+    if type == "missed_messages":
+        return process_missedmessages_unsubscribe(token)
+
+    return render_to_response('zerver/unsubscribe_link_error.html', {},
+                              context_instance=RequestContext(request))
