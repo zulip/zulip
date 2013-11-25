@@ -324,13 +324,13 @@ function get_topic_suggestions(query_operators) {
         return topic.subject; // "subject" is just the name of the topic
     });
 
-    topics = topics.slice(0, 10);
-
     if (guess !== '') {
         topics = _.filter(topics, function (topic) {
             return phrase_match(topic, guess);
         });
     }
+
+    topics = topics.slice(0, 10);
 
     // Just use alphabetical order.  While recency and read/unreadness of
     // subjects do matter in some contexts, you can get that from the left sidebar,
