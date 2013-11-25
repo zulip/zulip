@@ -227,6 +227,10 @@ Filter.prototype = {
         return function (message) {
             var operand, i, index;
             for (i = 0; i < operators.length; i++) {
+                // Inside this loop, the correct protocol for a test is to
+                // * "return false" if the value does not match
+                // * "break" if there is a match
+                // If you "return true", you circumvent all future operators
                 operand = operators[i][1];
                 switch (operators[i][0]) {
                 case 'is':
@@ -255,12 +259,12 @@ Filter.prototype = {
                         return message_in_home(message);
                     }
                     else if (operand === 'all') {
-                        return true;
+                        break;
                     }
                     break;
 
                 case 'near':
-                    return true;
+                    break;
 
                 case 'id':
                     return message.id.toString() === operand;
