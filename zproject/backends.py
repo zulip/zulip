@@ -101,7 +101,7 @@ class ZulipLDAPAuthBackend(ZulipAuthMixin, LDAPBackend):
 
     def ldap_to_django_username(self, username):
         if settings.LDAP_APPEND_DOMAIN is not None:
-            return username + settings.LDAP_APPEND_DOMAIN
+            return "@".join((username, settings.LDAP_APPEND_DOMAIN))
         return username
 
     def get_or_create_user(self, username, ldap_user):
