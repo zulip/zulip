@@ -8,6 +8,7 @@ from django.db.models import Q
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, REQ, JsonableError, json_to_list, json_to_bool, \
     to_non_negative_int, to_non_negative_float
+from django.utils.html import escape as escape_html
 from django.views.decorators.csrf import csrf_exempt
 from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
@@ -191,13 +192,11 @@ class NarrowBuilder(object):
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
             tsquery = "plainto_tsquery('zulip.english_us_search', %s)"
             where = "search_tsvector @@ " + tsquery
-            match_content = "ts_headline('zulip.english_us_search', rendered_content, " \
-                + tsquery + ", 'StartSel=\"<span class=\"\"highlight\"\">\", StopSel=</span>, " \
-                "HighlightAll=TRUE')"
+            content_matches = "ts_match_locs_array('zulip.english_us_search', rendered_content, " \
+                + tsquery + ")"
             # We HTML-escape the subject in Postgres to avoid doing a server round-trip
-            match_subject = "ts_headline('zulip.english_us_search', escape_html(subject), " \
-                + tsquery + ", 'StartSel=\"<span class=\"\"highlight\"\">\", StopSel=</span>, " \
-                "HighlightAll=TRUE')"
+            subject_matches = "ts_match_locs_array('zulip.english_us_search', escape_html(subject), " \
+                + tsquery + ")"
 
             # Do quoted string matching.  We really want phrase
             # search here so we can ignore punctuation and do
@@ -209,8 +208,8 @@ class NarrowBuilder(object):
                     query = query.filter(self.pQ(content__icontains=term) |
                                          self.pQ(subject__icontains=term))
 
-            return query.extra(select={'match_content': match_content,
-                                       'match_subject': match_subject},
+            return query.extra(select={'content_matches': content_matches,
+                                       'subject_matches': subject_matches},
                                where=[where],
                                select_params=[operand, operand], params=[operand])
         else:
@@ -219,6 +218,26 @@ class NarrowBuilder(object):
                                      self.pQ(subject__icontains=word))
             return query
 
+def highlight_string(string, locs):
+    highlight_start = '<span class="highlight">'
+    highlight_stop = '</span>'
+    pos = 0
+    result = ''
+    for loc in locs:
+        (offset, length) = loc
+        result += string[pos:offset]
+        result += highlight_start
+        result += string[offset:offset + length]
+        result += highlight_stop
+        pos = offset + length
+    result += string[pos:]
+    return result
+
+def get_search_fields(msg, matches_container):
+    return dict(match_content=highlight_string(msg.rendered_content,
+                                               matches_container.content_matches),
+                match_subject=highlight_string(escape_html(msg.subject),
+                                               matches_container.subject_matches))
 
 def narrow_parameter(json):
     # FIXME: A hack to support old mobile clients
@@ -267,7 +286,8 @@ def get_old_messages_backend(request, user_profile,
 
     if include_history:
         prefix = ""
-        query = Message.objects.only("id").order_by('id')
+        wanted_fields = ["id"]
+        query = Message.objects.only(*wanted_fields).order_by('id')
     else:
         prefix = "message__"
         # Conceptually this query should be
@@ -279,7 +299,8 @@ def get_old_messages_backend(request, user_profile,
         # actually fetching all the rows from the message table (since
         # doing so would cause Django to consume a lot of resources
         # rendering them).  The following achieves these objectives.
-        query = UserMessage.objects.select_related("message").only("flags", "id", "message__id") \
+        wanted_fields = ["flags", "id", "message__id"]
+        query = UserMessage.objects.select_related("message").only(*wanted_fields) \
             .filter(user_profile=user_profile).order_by('message')
 
     # Add some metadata to our logging data for narrows
@@ -302,7 +323,9 @@ def get_old_messages_backend(request, user_profile,
         num_extra_messages = 0
         build = NarrowBuilder(user_profile, prefix)
         for operator, operand in narrow:
-            if operator == 'search':
+            if operator == 'search' and not is_search:
+                wanted_fields += [prefix + "subject", prefix + "rendered_content"]
+                query = query.only(*wanted_fields)
                 is_search = True
             query = build(query, operator, operand)
 
@@ -374,8 +397,7 @@ def get_old_messages_backend(request, user_profile,
             if user_message_flags.get(message.id) is None:
                 user_message_flags[message.id] = ["read", "historical"]
             if is_search:
-                search_fields[message.id] = dict([('match_subject', message.match_subject),
-                                                  ('match_content', message.match_content)])
+                search_fields[message.id] = get_search_fields(message, message)
     else:
         user_message_flags = dict((user_message.message_id, user_message.flags_list())
                                   for user_message in query_result)
@@ -383,8 +405,7 @@ def get_old_messages_backend(request, user_profile,
             message_ids.append(user_message.message_id)
             if is_search:
                 search_fields[user_message.message_id] = \
-                    dict([('match_subject', user_message.match_subject),
-                          ('match_content', user_message.match_content)])
+                    get_search_fields(user_message.message, user_message)
 
     cache_transformer = lambda row: Message.build_dict_from_raw_db_row(row, apply_markdown)
     id_fetcher = lambda row: row['id']
@@ -626,6 +647,5 @@ def messages_in_narrow_backend(request, user_profile,
         query = build(query, operator, operand)
 
     return json_success({"messages": dict((msg.message.id,
-                                           {'match_subject': msg.match_subject,
-                                            'match_content': msg.match_content})
+                                           get_search_fields(msg.message, msg))
                                           for msg in query.iterator())})
