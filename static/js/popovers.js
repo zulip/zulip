@@ -74,11 +74,9 @@ exports.toggle_actions_popover = function (element, id) {
             can_edit_message: can_edit,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
-            single_message_narrowing: feature_flags.single_message_narrowing,
             pm_with_uri: narrow.pm_with_uri(message.sender_email),
             stream_subject_uri: narrow.by_stream_subject_uri(message.stream, message.subject),
             near_time_uri: narrow.by_near_uri(message.id),
-            single_message_uri: narrow.by_message_uri(message.id),
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),
             narrowed: narrow.active()
         };
