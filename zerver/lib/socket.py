@@ -254,6 +254,9 @@ def respond_send_message(data):
                        remote_ip=connection.session.conn_info.ip,
                        email=connection.session.user_profile.email, client_name='?')
 
+# We disable the eventsource and htmlfile transports because they cannot
+# securely send us the zulip.com cookie, which we use as part of our
+# authentication scheme.
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.EXTERNAL_HOST,),
                                              'disabled_transports': ['eventsource', 'htmlfile']})
