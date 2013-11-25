@@ -2549,6 +2549,7 @@ ul.expanded_subjects {
     margin-left: 0px;
 }
 
+li.show-more-topics,
 li.expanded_subject {
     position: relative;
 }
@@ -3659,3 +3660,9 @@ div.edit_bot {
     margin-top: 55px;
     padding-left: 15px;
 }
+
+li.show-more-topics a {
+    font-size: 75%;
+    color: #0000cc;
+}
+
