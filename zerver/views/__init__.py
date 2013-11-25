@@ -1701,15 +1701,9 @@ def add_subscriptions_backend(request, user_profile,
         if notifications_stream is not None:
             if len(created_streams) > 1:
                 stream_msg = "the following streams: %s" % \
-                    (", ".join('[%s](%s)' % (
-                        s.name,
-                        stream_link(s.name),
-                    ) for s in created_streams),)
+                              (", ".join('`%s`' % (s.name,) for s in created_streams),)
             else:
-                stream_msg = "a new stream [%s](%s)" % (
-                    created_streams[0].name,
-                    stream_link(created_streams[0].name)
-                )
+                stream_msg = "a new stream `%s`" % (created_streams[0].name)
             msg = ("%s just created %s. To join, visit your [Streams page](#subscriptions)."
                   % (user_profile.full_name, stream_msg))
             notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
