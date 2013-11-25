@@ -18,6 +18,7 @@ from zerver.decorator import JsonableError
 from zerver.lib.socket import req_redis_key
 from confirmation.models import Confirmation
 from django.db import reset_queries
+from django.core.mail import EmailMessage
 
 import os
 import sys
@@ -217,16 +218,27 @@ def make_feedback_client():
 @assign_queue('feedback_messages')
 class FeedbackBot(QueueProcessingWorker):
     def start(self):
-        self.staging_client = make_feedback_client()
-        self.staging_client._register(
+        if settings.FEEDBACK_EMAIL is None:
+            self.staging_client = make_feedback_client()
+            self.staging_client._register(
                 'forward_feedback',
                 method='POST',
                 url='deployments/feedback',
                 make_request=(lambda request: {'message': simplejson.dumps(request)}),
-        )
+            )
         QueueProcessingWorker.start(self)
 
     def consume(self, event):
+        if settings.FEEDBACK_EMAIL is not None:
+            to_email = settings.FEEDBACK_EMAIL
+            subject = "Zulip feedback from %s" % (event["sender_email"],)
+            content = event["content"]
+            from_email = '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])
+            headers = {'Reply-To' : '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
+            msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
+            msg.send()
+            return
+
         self.staging_client.forward_feedback(event)
 
 @assign_queue('error_reports')

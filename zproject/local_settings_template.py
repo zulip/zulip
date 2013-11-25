@@ -56,9 +56,14 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Session cookie expiry in seconds after the last page load
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2 # 2 weeks
 
-# Controls whether or not there is a feedback button in the UI, which
-# can be used to send feedback directly to the Zulip developers.
+# Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = True
+
+# By default, the feedback button will submit feedback to the Zulip
+# developers.  If you set FEEDBACK_EMAIL to be an email address
+# (e.g. ZULIP_ADMINISTRATOR), feedback sent by your users will instead
+# be sent to that email address.
+# FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 
 # Controls whether or not error reports are sent to Zulip.  Error
 # reports are used to improve the quality of the product and do not
