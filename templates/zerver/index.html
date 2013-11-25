@@ -17,6 +17,19 @@ var page_params = {{ page_params }};
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style type="text/css">
+
+#css-loading {
+    background: white;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    padding: 0px;
+    top: 0px;
+    left: 0px;
+}
+
+</style>
 
 {% if nofontface %}
 {# We can't use @font-face on qtwebkit, so use differently minified CSS #}
@@ -32,6 +45,11 @@ var page_params = {{ page_params }};
 
 {% endblock %}
 {% block content %}
+<div id="css-loading">
+    <h3>Loading CSS...</h3>
+    <p>If this message does not go away, please wait a couple seconds and reload the page.</p>
+</div>
+
 <div id="top-screen" class="screen"></div>
 <div id="bottom-screen" class="screen"></div>
 <div id="left-screen" class="screen"></div>

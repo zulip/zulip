@@ -4,6 +4,10 @@ html {
     overflow-x: hidden;
 }
 
+#css-loading {
+    display: none !important; /* We are now loaded, by definition. */
+}
+
 body {
     font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     overflow-y: auto;
