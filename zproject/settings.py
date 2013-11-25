@@ -738,7 +738,7 @@ else:
 AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 
-POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_BIND_DN)
+POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 
 if POPULATE_PROFILE_VIA_LDAP and \
        not 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS:
