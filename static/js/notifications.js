@@ -394,7 +394,6 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
         }
         // queue up offscreen because of narrowed, or (secondarily) offscreen
         // because it doesn't fit in the currently visible viewport
-        var msg_text = $(message.content).text();
 
         var note;
         var link_class;
