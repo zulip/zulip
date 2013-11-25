@@ -923,8 +923,7 @@ function focus_on_narrowed_stream() {
 }
 
 exports.show_and_focus_on_narrow = function () {
-    $("#gear-menu a[href='#subscriptions']").one('shown',
-                                                 focus_on_narrowed_stream);
+    $(document).one('subs_page_loaded.zulip', focus_on_narrowed_stream);
     ui.change_tab_to("#subscriptions");
 };
 
