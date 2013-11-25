@@ -545,7 +545,7 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
         el.set('href', href)
-        fixup_link(el)
+        fixup_link(el, target_blank = (href[:1] != '#'))
         return el
 
 def prepare_realm_pattern(source):

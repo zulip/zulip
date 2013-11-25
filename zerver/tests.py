@@ -3403,6 +3403,7 @@ NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></
                 ('[YOLO](http://en.wikipedia.org/wiki/YOLO_(motto))',
                  '<p><a href="http://en.wikipedia.org/wiki/YOLO_(motto)" target="_blank" title="http://en.wikipedia.org/wiki/YOLO_(motto)"\
 >YOLO</a></p>'),
+                ('[Streams](#subscriptions)', '<p><a href="#subscriptions" title="#subscriptions">Streams</a></p>'),
                 ('Sent to http_something_real@zulip.com', '<p>Sent to <a href="mailto:http_something_real@zulip.com" \
 title="mailto:http_something_real@zulip.com">http_something_real@zulip.com</a></p>'),
                 ('Sent to othello@zulip.com', '<p>Sent to <a href="mailto:othello@zulip.com" title="mailto:othello@zulip.com">\
