@@ -600,7 +600,7 @@ if DEPLOYED:
     JSON_PERSISTENT_QUEUE_FILENAME = "/home/zulip/tornado/event_queues.json"
     EMAIL_MIRROR_LOG_PATH = "/var/log/zulip/email-mirror.log"
     EMAIL_DELIVERER_LOG_PATH = "/var/log/zulip/email-deliverer.log"
-    LDAP_SYNC_LOG_PATH = "/var/log/zulip/sync_names_from_ldap.log"
+    LDAP_SYNC_LOG_PATH = "/var/log/zulip/sync_ldap_user_data.log"
     QUEUE_ERROR_DIR = '/var/log/zulip/queue_error'
 else:
     EVENT_LOG_DIR = 'event_log'
@@ -612,7 +612,7 @@ else:
     JSON_PERSISTENT_QUEUE_FILENAME = "event_queues.json"
     EMAIL_MIRROR_LOG_PATH = "email-mirror.log"
     EMAIL_DELIVERER_LOG_PATH = "email-deliverer.log"
-    LDAP_SYNC_LOG_PATH = "sync_names_from_ldap.log"
+    LDAP_SYNC_LOG_PATH = "sync_ldap_user_data.log"
     QUEUE_ERROR_DIR = 'queue_error'
 
 
