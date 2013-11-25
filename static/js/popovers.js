@@ -79,6 +79,7 @@ exports.toggle_actions_popover = function (element, id) {
             stream_subject_uri: narrow.by_stream_subject_uri(message.stream, message.subject),
             near_time_uri: narrow.by_near_uri(message.id),
             single_message_uri: narrow.by_message_uri(message.id),
+            conversation_time_uri: narrow.by_conversation_and_time_uri(message),
             narrowed: narrow.active()
         };
 
@@ -478,6 +479,13 @@ exports.register_click_handlers = function () {
         var msgid = $(e.currentTarget).data('msgid');
         popovers.hide_actions_popover();
         narrow.by_id(msgid, {trigger: 'popover'});
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('body').on('click', '.popover_narrow_by_conversation_and_time', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        popovers.hide_actions_popover();
+        narrow.by_conversation_and_time(msgid, {trigger: 'popover'});
         e.stopPropagation();
         e.preventDefault();
     });

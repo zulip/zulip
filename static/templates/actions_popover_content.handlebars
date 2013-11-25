@@ -52,6 +52,11 @@
 
   {{#if single_message_narrowing}}
     <li>
+      <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-msgid="{{message.id}}">
+        <i class="icon-vector-link"></i> Narrow to this conversation and time
+      </a>
+    </li>
+    <li>
       <a href="{{ single_message_uri }}" class="popover_narrow_by_id" data-msgid="{{message.id}}">
         <i class="icon-vector-link"></i> Narrow to just this message
       </a>

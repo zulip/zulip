@@ -330,6 +330,20 @@ exports.by_id = function (target_id, opts) {
     narrow.activate([["id", target_id]], opts);
 };
 
+exports.by_conversation_and_time = function (target_id, opts) {
+    var args = [["near", target_id]];
+    var original = msg_metadata_cache[target_id];
+    opts = _.defaults({}, opts, {then_select_id: target_id});
+
+    if (original.type !== 'stream') {
+        args.push(["pm-with", original.reply_to]);
+    } else {
+        args.push(['stream',  original.stream]);
+        args.push(['topic',  original.subject]);
+    }
+    narrow.activate(args, opts);
+};
+
 exports.deactivate = function () {
     if (current_filter === undefined) {
         return;
@@ -474,6 +488,17 @@ exports.by_message_uri = function (message_id) {
 
 exports.by_near_uri = function (message_id) {
     return "#narrow/near/" + hashchange.encodeHashComponent(message_id);
+};
+
+exports.by_conversation_and_time_uri = function (message) {
+    if (message.type === "stream") {
+        return "#narrow/stream/" + hashchange.encodeHashComponent(message.stream) +
+            "/subject/" + hashchange.encodeHashComponent(message.subject) +
+            "/near/" + hashchange.encodeHashComponent(message.id);
+    } else {
+        return "#narrow/pm-with/" + hashchange.encodeHashComponent(message.reply_to) +
+            "/near/" + hashchange.encodeHashComponent(message.id);
+    }
 };
 
 // Are we narrowed to PMs: all PMs or PMs with particular people.
