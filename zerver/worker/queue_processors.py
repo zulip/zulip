@@ -12,7 +12,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, send_local_email_template_with_delay, clear_followup_emails_queue, \
-    check_send_message, extract_recipients
+    check_send_message, extract_recipients, one_click_unsubscribe_link
 from zerver.lib.digest import handle_digest_email
 from zerver.decorator import JsonableError
 from zerver.lib.socket import req_redis_key
@@ -113,9 +113,13 @@ class SignupWorker(QueueProcessingWorker):
         if settings.ENTERPRISE:
             sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
 
+        user_profile = get_user_profile_by_email(email)
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
+
         template_payload = {'name': name,
                             'not_enterprise': not settings.ENTERPRISE,
-                            'external_host': settings.EXTERNAL_HOST}
+                            'external_host': settings.EXTERNAL_HOST,
+                            'unsubscribe_link': unsubscribe_link}
 
         #Send day 1 email
         send_local_email_template_with_delay([{'email': email, 'name': name}],

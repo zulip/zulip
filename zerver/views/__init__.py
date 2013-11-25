@@ -38,7 +38,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_send_messages, get_default_subs, do_deactivate_user, do_reactivate_user, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
-    do_set_muted_topics, do_rename_stream, \
+    do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream
 from zerver.lib.create_user import random_api_key
@@ -2331,22 +2331,34 @@ def remove_apns_device_token(request, user_profile, token=REQ):
 def generate_204(request):
     return HttpResponse(content=None, status=204)
 
-def process_missedmessages_unsubscribe(token):
+def process_unsubscribe(token, type, unsubscribe_function):
     try:
         confirmation = Confirmation.objects.get(confirmation_key=token)
     except Confirmation.DoesNotExist:
         return render_to_response('zerver/unsubscribe_link_error.html')
 
     user_profile = confirmation.content_object
-    do_change_enable_offline_email_notifications(user_profile, False)
+    unsubscribe_function(user_profile)
     return render_to_response('zerver/unsubscribe_success.html',
-                              {"subscription_type": "missed messages",
+                              {"subscription_type": type,
                                "external_host": settings.EXTERNAL_HOST})
+
+# Email unsubscribe functions. All have the function signature
+# processor(user_profile).
+
+def do_missedmessage_unsubscribe(user_profile):
+    do_change_enable_offline_email_notifications(user_profile, False)
+
+def do_welcome_unsubscribe(user_profile):
+    clear_followup_emails_queue(user_profile.email)
+
+email_unsubscribers = {"missed_messages": do_missedmessage_unsubscribe,
+                       "welcome": do_welcome_unsubscribe}
 
 # Login NOT required. These are for one-click unsubscribes.
 def email_unsubscribe(request, type, token):
-    if type == "missed_messages":
-        return process_missedmessages_unsubscribe(token)
+    if type in email_unsubscribers:
+        return process_unsubscribe(token, type, email_unsubscribers[type])
 
     return render_to_response('zerver/unsubscribe_link_error.html', {},
                               context_instance=RequestContext(request))

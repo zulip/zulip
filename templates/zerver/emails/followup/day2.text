@@ -19,3 +19,12 @@ Some tips:
 Try it out now! https://{{ external_host }}
 
 -Waseem, for the Zulip team
+
+--
+Manage email preferences:
+
+https://{{ external_host }}/#settings
+
+Unsubscribe from welcome emails:
+
+{{ unsubscribe_link }}

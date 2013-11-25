@@ -24,3 +24,12 @@ https://{{ external_host }}/hello has a nice overview of what we're up to, but h
 Zulip is under active development, and we have a team of engineers standing by to respond to your feedback, so please report bugs and let us know what you think! There's a feedback tab under the gear icon in the upper-right corner, or you can e-mail us at feedback@zulip.com.
 {% endif %}
 -Waseem, for the Zulip team
+
+--
+Manage email preferences:
+
+https://{{ external_host }}/#settings
+
+Unsubscribe from welcome emails:
+
+{{ unsubscribe_link }}
