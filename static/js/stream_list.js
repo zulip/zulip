@@ -443,6 +443,12 @@ $(function () {
         previous_sort_order = undefined;
     });
 
+    $('.show-all-streams').on('click', function (e) {
+        toggle_zoom();
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
     $('#stream_filters').on('dblclick', 'li .subscription_block', function (e) {
         if (!feature_flags.topic_zooming) {
             return;
