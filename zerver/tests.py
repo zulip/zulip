@@ -1489,10 +1489,10 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(msg.sender_id,
                 get_user_profile_by_email("notification-bot@zulip.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
-                        "subscribed you to the %sstream '%s'"
+                        "subscribed you to the %sstream [%s](#narrow/stream/%s)."
                         % (self.user_profile.full_name,
                            '**invite-only** ' if invite_only else '',
-                           streams[0]))
+                           streams[0], urllib.quote(streams[0].encode('utf-8'))))
 
         if not Stream.objects.get(name=streams[0]).invite_only:
             expected_msg += ("\nYou can see historical content on a "
