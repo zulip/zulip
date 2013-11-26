@@ -472,21 +472,6 @@ $(function () {
         e.stopPropagation();
     });
 
-    $('#stream_filters').on('dblclick', 'li .subscription_block', function (e) {
-        if (!feature_flags.topic_zooming) {
-            return;
-        }
-
-        var stream = $(e.target).parents('li').attr('data-name');
-
-        if (stream === active_stream_name()) {
-            toggle_zoom();
-        }
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
     $('#stream_filters').on('click', 'li .subscription_block', function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
