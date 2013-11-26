@@ -419,6 +419,9 @@ $(function () {
     });
 
     $(document).on('narrow_deactivated.zulip', function (event) {
+        if (zoomed_to_topics) {
+            zoom_out();
+        }
         $("ul.filters li").removeClass('active-filter active-subject-filter');
         remove_expanded_subjects();
         $("#global_filters li[data-name='home']").addClass('active-filter');
