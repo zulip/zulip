@@ -1,5 +1,6 @@
 var fs = require('fs');
 var _ = require('third/underscore/underscore.js');
+var Handlebars = require('handlebars');
 
 // Run all the JS scripts in our test directory.  Tests do NOT run
 // in isolation.
@@ -24,6 +25,15 @@ global.add_dependencies = function (dct) {
         var obj = require(fn);
         set_global(name, obj);
     });
+};
+
+global.use_template = function (name) {
+    if (Handlebars.templates === undefined) {
+        Handlebars.templates = {};
+    }
+    var template_dir = __dirname+'/../../../../static/templates/';
+    var data = fs.readFileSync(template_dir + name + '.handlebars').toString();
+    Handlebars.templates[name] = Handlebars.compile(data);
 };
 
 tests.forEach(function (filename) {

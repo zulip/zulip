@@ -58,3 +58,6 @@ Handlebars.registerHelper('if_and', function () {
 
 return exports;
 }());
+if (typeof module !== 'undefined') {
+    module.exports = templates;
+}

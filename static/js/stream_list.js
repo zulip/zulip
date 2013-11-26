@@ -226,7 +226,7 @@ function remove_expanded_subjects() {
     $("ul.expanded_subjects").remove();
 }
 
-function build_subject_list(stream, active_topic, max_subjects) {
+exports._build_subject_list = function (stream, active_topic, max_subjects) {
     var subjects = recent_subjects.get(stream) || [];
 
     if (active_topic) {
@@ -265,7 +265,7 @@ function build_subject_list(stream, active_topic, max_subjects) {
                                        stream: stream});
 
     return topic_dom;
-}
+};
 
 function rebuild_recent_subjects(stream, active_topic) {
     // TODO: Call rebuild_recent_subjects less, not on every new
@@ -274,7 +274,7 @@ function rebuild_recent_subjects(stream, active_topic) {
     var max_subjects = 5;
     var stream_li = get_filter_li('stream', stream);
 
-    var topic_dom = build_subject_list(stream, active_topic, max_subjects);
+    var topic_dom = exports._build_subject_list(stream, active_topic, max_subjects);
     stream_li.append(topic_dom);
 
     if (active_topic) {
@@ -501,3 +501,6 @@ $(function () {
 
 return exports;
 }());
+if (typeof module !== 'undefined') {
+    module.exports = stream_list;
+}
