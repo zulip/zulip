@@ -34,7 +34,7 @@ from ConfigParser import SafeConfigParser
 import logging
 
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
