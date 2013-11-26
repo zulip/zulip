@@ -3,34 +3,10 @@ var stream_list = (function () {
 var exports = {};
 
 var zoomed_to_topics = false;
+var zoomed_stream = '';
 var last_private_message_count = 0;
 var last_mention_count = 0;
 var previous_sort_order;
-
-function zoom_in() {
-    popovers.hide_all();
-    zoomed_to_topics = true;
-    $("#streams_header").expectOne().hide();
-    $("#topics_header").expectOne().show();
-    exports.update_streams_sidebar();
-}
-
-function zoom_out() {
-    popovers.hide_all();
-    zoomed_to_topics = false;
-    $("#streams_header").expectOne().show();
-    $("#topics_header").expectOne().hide();
-    exports.update_streams_sidebar();
-}
-
-function toggle_zoom() {
-    if (zoomed_to_topics) {
-        zoom_out();
-    }
-    else {
-        zoom_in();
-    }
-}
 
 function active_stream_name() {
     if (narrow.active()) {
@@ -48,18 +24,7 @@ exports.build_stream_list = function () {
         return;
     }
 
-    if (zoomed_to_topics) {
-        var stream_name = active_stream_name();
-        if (stream_name) {
-            streams = [stream_name];
-        }
-        else {
-            zoom_out();
-        }
-    }
-
     var sort_recent = (streams.length > 40);
-
 
     streams.sort(function (a, b) {
         if (sort_recent) {
@@ -120,9 +85,35 @@ function get_filter_li(type, name) {
     return iterate_to_find("#" + type + "_filters > li", name);
 }
 
+function zoom_in() {
+    popovers.hide_all();
+    zoomed_to_topics = true;
+    $("#streams_list").expectOne().removeClass("zoom-out");
+    $("#streams_list").expectOne().addClass("zoom-in");
+    zoomed_stream = active_stream_name();
+
+    $("#stream_filters li.narrow-filter").each(function () {
+        var elt = $(this);
+
+        if (elt.attr('data-name') === zoomed_stream) {
+            elt.show();
+        } else {
+            elt.hide();
+        }
+    });
+}
+
+function zoom_out() {
+    popovers.hide_all();
+    zoomed_to_topics = false;
+    $("#streams_list").expectOne().removeClass("zoom-in");
+    $("#streams_list").expectOne().addClass("zoom-out");
+    $("#stream_filters li.narrow-filter").show();
+}
+
 function get_subject_filter_li(stream, subject) {
     var stream_li = get_filter_li('stream', stream);
-    return iterate_to_find(".expanded_subjects li", subject, stream_li);
+    return iterate_to_find(".expanded_subjects li.expanded_subject", subject, stream_li);
 }
 
 exports.set_in_home_view = function (stream, in_home) {
@@ -250,23 +241,24 @@ function build_subject_list(stream, active_topic, max_subjects) {
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
 
         // Show the most recent subjects, as well as any with unread messages
-        if ((idx < max_subjects) || (num_unread > 0) || (active_topic === topic_name)) {
-            var display_subject = {
-                topic_name: topic_name,
-                unread: num_unread,
-                is_zero: num_unread === 0,
-                is_muted: muting.is_topic_muted(stream, topic_name),
-                url: narrow.by_stream_subject_uri(stream, topic_name)
-            };
-            display_subjects.push(display_subject);
-        }
-        else {
+        var always_visible = (idx < max_subjects) || (num_unread > 0) || (active_topic === topic_name);
+
+        if (!always_visible) {
             hiding_topics = true;
         }
+
+        var display_subject = {
+            topic_name: topic_name,
+            unread: num_unread,
+            is_zero: num_unread === 0,
+            is_muted: muting.is_topic_muted(stream, topic_name),
+            zoom_out_hide: !always_visible,
+            url: narrow.by_stream_subject_uri(stream, topic_name)
+        };
+        display_subjects.push(display_subject);
     });
 
-    var want_show_more_topics_links = hiding_topics && !zoomed_to_topics && feature_flags.topic_zooming;
-
+    var want_show_more_topics_links = hiding_topics && feature_flags.topic_zooming;
     var topic_dom = templates.render('sidebar_subject_list',
                                       {subjects: display_subjects,
                                        want_show_more_topics_links: want_show_more_topics_links,
@@ -279,7 +271,7 @@ function rebuild_recent_subjects(stream, active_topic) {
     // TODO: Call rebuild_recent_subjects less, not on every new
     // message.
     remove_expanded_subjects();
-    var max_subjects = zoomed_to_topics ? 30: 5;
+    var max_subjects = 5;
     var stream_li = get_filter_li('stream', stream);
 
     var topic_dom = build_subject_list(stream, active_topic, max_subjects);
@@ -383,7 +375,7 @@ exports.rename_stream = function (sub) {
 
 $(function () {
     $(document).on('narrow_activated.zulip', function (event) {
-        if (zoomed_to_topics && !active_stream_name()) {
+        if (zoomed_to_topics && (active_stream_name() !== zoomed_stream)) {
             zoom_out();
         }
 
@@ -458,7 +450,7 @@ $(function () {
     });
 
     $('.show-all-streams').on('click', function (e) {
-        toggle_zoom();
+        zoom_out();
         e.preventDefault();
         e.stopPropagation();
     });
@@ -466,7 +458,7 @@ $(function () {
     $('#stream_filters').on('click', '.show-more-topics', function (e) {
         var stream = $(e.target).parents('.show-more-topics').attr('data-name');
 
-        toggle_zoom();
+        zoom_in();
 
         e.preventDefault();
         e.stopPropagation();

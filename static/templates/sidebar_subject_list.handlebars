@@ -1,6 +1,6 @@
 <ul class='expanded_subjects' data-stream='{{stream}}'>
     {{#each subjects}}
-    <li class='{{#if is_zero}}zero-subject-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}}  expanded_subject' data-name='{{topic_name}}'>
+    <li class='{{#if is_zero}}zero-subject-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}} {{#if zoom_out_hide}} zoom-out-hide{{/if}} expanded_subject' data-name='{{topic_name}}'>
       <span class='subject_box'>
         <a href='{{url}}' class="subject-name">
           {{topic_name}}
