@@ -171,7 +171,36 @@ exports.visible_messages = function (require_fully_visible) {
 };
 
 exports.scrollTop = function viewport_scrollTop () {
-    return jwindow.scrollTop.apply(jwindow, arguments);
+    var orig_scrollTop = jwindow.scrollTop();
+    if (arguments.length === 0) {
+        return orig_scrollTop;
+    }
+    if (arguments.length > 1) {
+        blueslip.error("viewport.scrollTop called with invalid arguments list!");
+    }
+    var target_scrollTop = arguments[0];
+    var ret = jwindow.scrollTop(target_scrollTop);
+    var new_scrollTop = jwindow.scrollTop();
+    var space_to_scroll = $("#bottom_whitespace").offset().top - viewport.height();
+
+    // Check whether our scrollTop didn't move even though one could have scrolled down
+    if (space_to_scroll > 0 && orig_scrollTop === 0 && new_scrollTop === 0) {
+        // Chrome has a bug where sometimes calling
+        // window.scrollTop(x) has no effect, resulting in the browser
+        // staying at 0 -- and afterwards if you call
+        // window.scrollTop(x) again, it will still do nothing.  To
+        // fix this, we need to first scroll to some other place.
+        blueslip.info("ScrollTop did nothing when scrolling to " + target_scrollTop + ", fixing...");
+        // First scroll to 1 in order to clear the stuck state
+        jwindow.scrollTop(1);
+        // And then scroll where we intended to scroll to
+        ret = jwindow.scrollTop(target_scrollTop);
+        if (jwindow.scrollTop() === 0) {
+            blueslip.error("ScrollTop fix did not work when scrolling to " + target_scrollTop +
+                           "!  space_to_scroll was " + space_to_scroll);
+        }
+    }
+    return ret
 };
 
 function make_dimen_wrapper(dimen_name, dimen_func) {
