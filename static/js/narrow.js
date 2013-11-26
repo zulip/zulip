@@ -69,19 +69,10 @@ function collect_single(operators) {
 exports.set_compose_defaults = function (opts) {
     var single = collect_single(exports.operators());
 
-    // Set the stream, subject, and/or PM recipient if they are
-    // uniquely specified in the narrow view.
+    // Set the stream if it is uniquely specified in the narrow view.
 
     if (single.has('stream')) {
         opts.stream = stream_data.get_name(single.get('stream'));
-    }
-
-    if (single.has('topic')) {
-        opts.subject = single.get('topic');
-    }
-
-    if (single.has('pm-with')) {
-        opts.private_message_recipient = single.get('pm-with');
     }
 };
 
