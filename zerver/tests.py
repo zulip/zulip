@@ -10,7 +10,7 @@ from django.db.backends.util import CursorDebugWrapper
 from guardian.shortcuts import assign_perm, remove_perm
 
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
-    get_display_recipient, Realm, Client, UserActivity, \
+    get_display_recipient, Realm, Client, UserActivity, ScheduledJob, \
     PreregistrationUser, UserMessage, MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH, \
     get_user_profile_by_email, split_email_to_domain, resolve_email_to_domain, get_realm, \
     get_stream, get_client
@@ -21,7 +21,7 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
     set_default_streams, get_emails_from_user_ids, one_click_unsubscribe_link, \
-    do_deactivate_user, do_reactivate_user
+    do_deactivate_user, do_reactivate_user, enqueue_welcome_emails
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -4845,6 +4845,28 @@ class EmailUnsubscribeTests(AuthedTestCase):
         # Circumvent user_profile caching.
         user_profile = UserProfile.objects.get(email="hamlet@zulip.com")
         self.assertFalse(user_profile.enable_offline_email_notifications)
+
+    def test_welcome_unsubscribe(self):
+        """
+        We provide one-click unsubscribe links in welcome e-mails that you can
+        click even when logged out to stop receiving them.
+        """
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+
+        # Simulate a new user signing up, which enqueues 2 welcome e-mails.
+        enqueue_welcome_emails(email, "King Hamlet")
+        self.assertEqual(2, len(ScheduledJob.objects.filter(
+                type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+
+        # Simulate unsubscribing from the welcome e-mails.
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
+        result = self.client.get(urlparse(unsubscribe_link).path)
+
+        # The welcome email jobs are no longer scheduled.
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(0, len(ScheduledJob.objects.filter(
+                type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
 class Runner(DjangoTestSuiteRunner):
     option_list = ()
