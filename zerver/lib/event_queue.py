@@ -169,7 +169,7 @@ class EventQueue(object):
         ret = cls(d['id'])
         ret.next_event_id = d['next_event_id']
         ret.queue = deque(d['queue'])
-        ret.virtual_events = d["virtual_events"]
+        ret.virtual_events = d.get("virtual_events", {})
         return ret
 
     def push(self, event):
