@@ -93,10 +93,6 @@ MessageList.prototype = {
         return this._hash[id];
     },
 
-    get_messages: function MessageList_get_mesages() {
-        return this._items;
-    },
-
     num_items: function MessageList_num_items() {
         return this._items.length;
     },
