@@ -2017,7 +2017,6 @@ def handle_push_notification(user_profile_id, missed_message):
             alert = "New Zulip mentions and private messages from %s" % (sender_str,)
         extra_data = {'message_ids': [message.id]}
 
-        logging.info("sending push notification %r, %r" % (user_profile, alert))
         send_apple_push_notification(user_profile, alert, badge=1, zulip=extra_data)
     return
 
