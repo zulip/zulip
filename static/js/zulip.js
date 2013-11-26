@@ -44,6 +44,7 @@ var last_viewport_movement_direction = 1;
 
 var furthest_read = -1;
 var server_furthest_read = -1;
+var unread_messages_read_in_narrow = false;
 var pointer_update_in_flight = false;
 var suppress_unread_counts = true;
 
@@ -378,6 +379,9 @@ function mark_messages_as_read(messages, options) {
         if (!unread.message_unread(message)) {
             // Don't do anything if the message is already read.
             return;
+        }
+        if (current_msg_list === narrowed_msg_list) {
+            unread_messages_read_in_narrow = true;
         }
 
         send_read(message);
@@ -1290,12 +1294,10 @@ function main() {
 
     $(document).on('message_selected.zulip', function (event) {
 
-        // Narrowing is a temporary view on top of the home view and
-        // doesn't affect your pointer in the home view.
-        if (event.msg_list === home_msg_list
-            && event.id > furthest_read)
-        {
-            furthest_read = event.id;
+        if ((event.msg_list === home_msg_list) || (event.msg_list === all_msg_list)) {
+            if (event.id > furthest_read) {
+                furthest_read = event.id;
+            }
         }
 
         if (event.mark_read && event.previously_selected !== -1) {

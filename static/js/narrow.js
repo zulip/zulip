@@ -172,6 +172,11 @@ exports.activate = function (operators, opts) {
     var was_narrowed_already = exports.active();
     var then_select_id = opts.then_select_id;
     var then_select_offset;
+
+    if (!was_narrowed_already) {
+        unread_messages_read_in_narrow = false;
+    }
+
     if (!opts.select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
         then_select_offset = current_msg_list.get_row(then_select_id).offset().top -
             viewport.scrollTop();
@@ -414,12 +419,28 @@ exports.deactivate = function () {
             current_msg_list.rerender();
         }
 
-        // We fall back to the closest selected id, if the user has removed a stream from the home
-        // view since leaving it the old selected id might no longer be there
-        current_msg_list.select_id(current_msg_list.selected_id(), {
-            then_scroll: !preserve_pre_narrowing_screen_position,
-            use_closest: true
-        });
+        if (unread_messages_read_in_narrow) {
+            // We read some unread messages in a narrow. Instead of going back to
+            // where we were before the narrow, go to our first unread message (or
+            // the bottom of the feed, if there are no unread messages).
+            var first_unread = _.find(current_msg_list.all(), unread.message_unread);
+            if (first_unread) {
+                current_msg_list.select_id(first_unread.id, {use_closest: true});
+            } else {
+                current_msg_list.select_id(current_msg_list.last().id);
+            }
+        } else {
+            // We narrowed, but only backwards in time (ie no unread were read). Try
+            // to go back to exactly where we were before narrowing.
+
+            // We fall back to the closest selected id, if the user has removed a
+            // stream from the home view since leaving it the old selected id might
+            // no longer be there
+            current_msg_list.select_id(current_msg_list.selected_id(), {
+                then_scroll: !preserve_pre_narrowing_screen_position,
+                use_closest: true
+            });
+        }
 
         if (preserve_pre_narrowing_screen_position) {
             // We scroll the user back to exactly the offset from the selected
