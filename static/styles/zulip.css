@@ -259,6 +259,9 @@ pre {
     white-space: pre;
     overflow-x: auto;
     word-wrap: normal;
+    /* Bootstrap's default here is top: 0px, bottom: 10px */
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 pre code {
