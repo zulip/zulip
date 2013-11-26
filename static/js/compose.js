@@ -61,7 +61,6 @@ function show_box(tabname, focus_area, opts) {
     }
     $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
-    autosize_textarea();
     $(".new_message_textarea").css("min-height", "3em");
 
     if (focus_area !== undefined &&
@@ -97,6 +96,7 @@ function clear_box() {
     exports.snapshot_message();
     clear_invites();
     $("#compose").find('input[type=text], textarea').val('');
+    autosize_textarea();
     $("#send-status").hide(0);
 }
 
@@ -206,7 +206,7 @@ exports.start = function (msg_type, opts) {
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
 
-    if (!same_recipient_as_before(msg_type, opts)) {
+    if (compose.composing() && !same_recipient_as_before(msg_type, opts)) {
         // Clear the compose box if the existing message is to a different recipient
         clear_box();
     }
@@ -882,6 +882,7 @@ $(function () {
                 compose.start('stream');
             }
             textbox.val(textbox.val() + contents);
+            autosize_textarea();
         }
     });
 });
