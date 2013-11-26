@@ -2352,13 +2352,20 @@ def do_missedmessage_unsubscribe(user_profile):
 def do_welcome_unsubscribe(user_profile):
     clear_followup_emails_queue(user_profile.email)
 
-email_unsubscribers = {"missed_messages": do_missedmessage_unsubscribe,
-                       "welcome": do_welcome_unsubscribe}
+# The keys are part of the URL for the unsubscribe link and must be valid
+# without encoding.
+# The values are a tuple of (display name, unsubscribe function), where the
+# display name is what we call this class of email in user-visible text.
+email_unsubscribers = {
+    "missed_messages": ("missed messages", do_missedmessage_unsubscribe),
+    "welcome": ("welcome", do_welcome_unsubscribe)
+    }
 
 # Login NOT required. These are for one-click unsubscribes.
 def email_unsubscribe(request, type, token):
     if type in email_unsubscribers:
-        return process_unsubscribe(token, type, email_unsubscribers[type])
+        display_name, unsubscribe_function = email_unsubscribers[type]
+        return process_unsubscribe(token, display_name, unsubscribe_function)
 
     return render_to_response('zerver/unsubscribe_link_error.html', {},
                               context_instance=RequestContext(request))
