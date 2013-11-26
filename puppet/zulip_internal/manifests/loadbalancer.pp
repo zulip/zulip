@@ -13,6 +13,15 @@ class zulip_internal::loadbalancer {
     notify => Service["nginx"],
   }
 
+  file { "/etc/nginx/zulip-include/location-sockjs":
+    require => Package["nginx-full"],
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/nginx/zulip-include/location-sockjs",
+    notify => Service["nginx"],
+  }
+
   file { "/etc/nginx/sites-available/loadbalancer":
     require => Package["nginx-full"],
     ensure => file,
