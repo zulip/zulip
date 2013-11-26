@@ -13,3 +13,4 @@ USER=root
 * * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file error_reports
 * * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file digest_emails
 * * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file user_activity_test
+* * * * * root /home/zulip/deployments/current/bin/write-rabbitmq-consumers-state-file missedmessage_mobile_notifications
