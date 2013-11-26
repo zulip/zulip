@@ -177,10 +177,6 @@ exports.activate = function (operators, opts) {
             viewport.scrollTop();
     }
 
-    if (!was_narrowed_already) {
-        message_tour.start_tour(current_msg_list.selected_id());
-    }
-
     // For legacy reasons, we need to set current_filter before calling
     // muting_enabled.
     current_filter = filter;
@@ -404,10 +400,6 @@ exports.deactivate = function () {
 
     $('#search_query').val('');
     reset_load_more_status();
-
-    var visited_messages = message_tour.get_tour();
-    home_msg_list.advance_past_messages(visited_messages);
-    message_tour.finish_tour();
 
     current_msg_list = home_msg_list;
     if (current_msg_list.selected_id() !== -1) {

@@ -1307,9 +1307,6 @@ function main() {
                 messages = message_range(event.msg_list, event.previously_selected, event.id);
             }
             mark_messages_as_read(messages, {from: 'pointer'});
-            _.each(messages, function (message) {
-                message_tour.visit(message.id);
-            });
         }
     });
 
