@@ -50,10 +50,13 @@ hence the name.
   <div class="footer-main">
     <ul class="footer-navigation">
       <li>© 2013 Zulip, Inc.</li>
+      {% if not_enterpise %}
       <li><span class="little-bullet">·</span></li>
       <li><a href="/terms">Legal</a></li>
+      {% endif %}
       <li><span class="little-bullet">·</span></li>
       <li><a href="{{login_url}}">Log in</a></li>
+      {% if not only_sso %}
       <li><span class="little-bullet">·</span></li>
       <li>
           {% if not_enterprise %}
@@ -62,6 +65,7 @@ hence the name.
           <a href="{% url 'register' %}">Sign up</a>
           {% endif %}
       </li>
+      {% endif %}
       {# We only want the mixpanel badge on the front page #}
       {% block mixpanel_badge %}
       {% endblock %}
