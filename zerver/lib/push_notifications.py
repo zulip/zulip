@@ -32,6 +32,8 @@ def hex_to_b64(data):
 # mobile app
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user, alert, **extra_data):
+    if not connection:
+        logging.error("Attempting to send push notification, but no connection was found. This may be because we could not find the APNS Certificate file.")
     # Sends a push notifications to all the PushClients
     # Only Apple Push Notifications clients are supported at the moment
     tokens = [b64_to_hex(device.token) for device in AppleDeviceToken.objects.filter(user=user)]
