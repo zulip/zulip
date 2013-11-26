@@ -383,6 +383,10 @@ exports.rename_stream = function (sub) {
 
 $(function () {
     $(document).on('narrow_activated.zulip', function (event) {
+        if (zoomed_to_topics && !active_stream_name()) {
+            zoom_out();
+        }
+
         $("ul.filters li").removeClass('active-filter active-subject-filter');
         remove_expanded_subjects();
 
