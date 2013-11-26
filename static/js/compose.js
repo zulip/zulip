@@ -246,10 +246,10 @@ function abort_xhr () {
 }
 
 exports.cancel = function () {
+    hide_box();
     $("#compose_close").hide();
     clear_box();
     notifications.clear_compose_notifications();
-    hide_box();
     abort_xhr();
     is_composing_message = false;
     if (message_snapshot !== undefined) {
