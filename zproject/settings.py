@@ -268,7 +268,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'FEEDBACK_EMAIL': None,
                     'ENABLE_GRAVATAR': True,
                     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
-                    'AUTH_LDAP_BIND_DN': "",
+                    'AUTH_LDAP_SERVER_URI': "",
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
