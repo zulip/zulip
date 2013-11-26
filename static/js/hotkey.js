@@ -245,10 +245,10 @@ function process_hotkey(e) {
             }
             return true;
         case 'compose': // 'c': compose
-            compose.start('stream');
+            compose.start('stream', {trigger: "compose_hotkey"});
             return true;
         case 'compose_private_message':
-            compose.start('private');
+            compose.start('private', {trigger: "compose_hotkey"});
             return true;
         case 'search':
             search.initiate_search();

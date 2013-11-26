@@ -205,6 +205,12 @@ exports.start = function (msg_type, opts) {
     $('.message_comp').show();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+    // If we are invoked by a compose hotkey (c or C), do not assume that we know
+    // what the message's topic or PM recipient should be.
+    if (opts.trigger === "compose_hotkey") {
+        opts.subject = '';
+        opts.private_message_recipient = '';
+    }
 
     if (compose.composing() && !same_recipient_as_before(msg_type, opts)) {
         // Clear the compose box if the existing message is to a different recipient
