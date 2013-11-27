@@ -2557,6 +2557,15 @@ li.expanded_subject {
     position: relative;
 }
 
+.show-all-streams a {
+    color: #333;
+}
+
+.all-streams-padding {
+    padding-top: 5px;
+    margin-bottom: -5px;
+}
+
 .expanded_subject .subject_box {
     display: block;
     margin-right: 38px;
