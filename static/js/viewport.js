@@ -170,15 +170,11 @@ exports.visible_messages = function (require_fully_visible) {
     return visible_messages;
 };
 
-exports.scrollTop = function viewport_scrollTop () {
+exports.scrollTop = function viewport_scrollTop (target_scrollTop) {
     var orig_scrollTop = jwindow.scrollTop();
-    if (arguments.length === 0) {
+    if (target_scrollTop === undefined) {
         return orig_scrollTop;
     }
-    if (arguments.length > 1) {
-        blueslip.error("viewport.scrollTop called with invalid arguments list!");
-    }
-    var target_scrollTop = arguments[0];
     var ret = jwindow.scrollTop(target_scrollTop);
     var new_scrollTop = jwindow.scrollTop();
     var space_to_scroll = $("#bottom_whitespace").offset().top - viewport.height();
@@ -201,7 +197,7 @@ exports.scrollTop = function viewport_scrollTop () {
                            "!  space_to_scroll was " + space_to_scroll);
         }
     }
-    return ret
+    return ret;
 };
 
 function make_dimen_wrapper(dimen_name, dimen_func) {
