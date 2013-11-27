@@ -85,6 +85,7 @@ function set_filter(operators) {
     var opts = {};
     narrow.set_compose_defaults(opts);
     assert.equal(opts.stream, 'Foo');
+    assert.equal(opts.subject, 'Bar');
 
     stream_data.add_sub('ROME', {name: 'ROME'});
     set_filter([['stream', 'rome']]);
