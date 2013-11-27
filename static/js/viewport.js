@@ -184,7 +184,8 @@ exports.scrollTop = function viewport_scrollTop () {
     var space_to_scroll = $("#bottom_whitespace").offset().top - viewport.height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
-    if (space_to_scroll > 0 && orig_scrollTop === 0 && new_scrollTop === 0) {
+    if (space_to_scroll > 0 && target_scrollTop > 0 &&
+        orig_scrollTop === 0 && new_scrollTop === 0) {
         // Chrome has a bug where sometimes calling
         // window.scrollTop(x) has no effect, resulting in the browser
         // staying at 0 -- and afterwards if you call
