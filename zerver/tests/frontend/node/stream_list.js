@@ -32,5 +32,5 @@ global.use_template('sidebar_subject_list');
     };
 
     var topic_html = stream_list._build_subject_list(stream, active_topic, max_topics);
-
+    global.write_test_output("test_build_subject_list", topic_html);
 }());

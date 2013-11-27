@@ -19,3 +19,4 @@ memcached_prefix
 coverage/
 /queue_error
 /workers.log
+.test-js-with-node.html

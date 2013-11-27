@@ -36,6 +36,27 @@ global.use_template = function (name) {
     Handlebars.templates[name] = Handlebars.compile(data);
 };
 
+var output_fn = '.test-js-with-node.html';
+
+(function () {
+    var data = '';
+
+    data += '<link href="./static/styles/zulip.css" rel="stylesheet">\n';
+    data += '<link href="./static/third/bootstrap/css/bootstrap.css" rel="stylesheet">\n';
+    data += '<h1>Output of node unit tests</h1>\n';
+    fs.writeFileSync(output_fn, data);
+}());
+
+global.write_test_output = function (label, output) {
+    var data = '';
+
+    data += '<hr>';
+    data += '<h3>' + label + '</h3>';
+    data += output;
+    data += '\n';
+    fs.appendFileSync(output_fn, data);
+};
+
 tests.forEach(function (filename) {
     if (filename === 'index') {
         return;
@@ -48,3 +69,5 @@ tests.forEach(function (filename) {
     });
     dependencies = [];
 });
+
+console.info("To see more output, open " + output_fn);
