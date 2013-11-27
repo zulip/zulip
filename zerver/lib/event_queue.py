@@ -130,7 +130,8 @@ class ClientDescriptor(object):
             self.add_event(dict(type='heartbeat'))
         ioloop = tornado.ioloop.IOLoop.instance()
         heartbeat_time = time.time() + HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)
-        self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
+        if self.client_type.name != 'API: heartbeat test':
+            self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
         logging.info("DEBUG: connected handler for queue %s" % (self.event_queue.id,))
 
     def disconnect_handler(self):
