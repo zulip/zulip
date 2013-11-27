@@ -35,12 +35,16 @@ api/setup.py
 """.split()
 
 
-# Categorize by language all files known to Git
+if args:
+    files = args
+else:
+    # If no files are specified on the command line, use the entire git checkout
+    files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
 
-git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
+# Categorize by language all files we want to check
 by_lang   = defaultdict(list)
 
-for filepath in git_files:
+for filepath in files:
     if (not filepath or not path.isfile(filepath)
         or (filepath in exclude_files)
         or any(filepath.startswith(d+'/') for d in exclude_trees)):
@@ -111,6 +115,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
 
 def check_pyflakes():
+    if not by_lang['.py']:
+        return False
     failed = False
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
         stdout = subprocess.PIPE,
@@ -187,6 +193,8 @@ try:
 
     @lint
     def puppet():
+        if not by_lang['.pp']:
+            return 0
         result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['.pp'])
         return result
 
