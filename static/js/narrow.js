@@ -117,6 +117,9 @@ exports.activate = function (operators, opts) {
     if (!had_message_content) {
         compose.cancel();
     }
+    else {
+        compose_fade.update_message_list();
+    }
 
     opts = _.defaults({}, opts, {
         then_select_id: home_msg_list.selected_id(),
@@ -272,8 +275,6 @@ exports.activate = function (operators, opts) {
             compose.start('private');
         }
     }
-
-    compose_fade.update_message_list();
 
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: narrowed_msg_list,
                                                             filter: current_filter,
