@@ -12,6 +12,9 @@ parser = optparse.OptionParser()
 parser.add_option('--full',
     action='store_true',
     help='Check some things we typically ignore')
+parser.add_option('--modified', '-m',
+    action='store_true',
+    help='Only check modified files')
 (options, args) = parser.parse_args()
 
 os.chdir(path.join(path.dirname(__file__), '..'))
@@ -34,12 +37,23 @@ tools/jslint/jslint.js
 api/setup.py
 """.split()
 
-
-if args:
-    files = args
+if options.modified:
+    # If the user specifies, use `git ls-files -m` to only check modified, non-staged
+    # files in the current checkout.  This makes things fun faster.
+    files = map(str.strip, subprocess.check_output(['git', 'ls-files', '-m']).split('\n'))
 else:
+    files = []
+
+files += args
+
+if not files and not options.modified:
     # If no files are specified on the command line, use the entire git checkout
     files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
+
+files = filter(bool, files) # remove empty file caused by trailing \n
+
+if not files:
+    raise Exception('There are no files to check!')
 
 # Categorize by language all files we want to check
 by_lang   = defaultdict(list)
