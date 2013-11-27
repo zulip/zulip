@@ -16,6 +16,8 @@ set_global('$', function () {});
 
 var stream_list = require('js/stream_list.js');
 
+global.$ = require('jquery');
+
 global.use_template('sidebar_subject_list');
 
 (function test_build_subject_list() {
@@ -33,4 +35,7 @@ global.use_template('sidebar_subject_list');
 
     var topic_html = stream_list._build_subject_list(stream, active_topic, max_topics);
     global.write_test_output("test_build_subject_list", topic_html);
+
+    var topic = $(topic_html).find('a').text().trim();
+    assert.equal(topic, 'coding');
 }());
