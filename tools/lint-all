@@ -145,68 +145,62 @@ def check_custom_checks():
 
     return failed
 
-try:
+lint_functions = {}
+
+def run_parallel():
+    pids = []
+    for name, func in lint_functions.items():
+        pid = os.fork()
+        if pid == 0:
+            logging.info("start " + name)
+            result = func()
+            logging.info("finish " + name)
+            os._exit(result)
+        pids.append(pid)
     failed = False
 
+    for pid in pids:
+        (_, status) = os.waitpid(pid, 0)
+        if status != 0:
+            failed = True
+    return failed
+
+def lint(func):
+    lint_functions[func.__name__] = func
+    return func
+
+try:
     # Make the lint output bright red
     sys.stdout.write('\x1B[1;31m')
     sys.stdout.flush()
 
-    check_handlebar_templates_pid = os.fork()
-    if check_handlebar_templates_pid == 0:
-        logging.info("start check-handlebar-templates")
+    @lint
+    def templates():
         result = subprocess.call(['tools/check-handlebar-templates'])
-        logging.info("finish check-handlebar-templates")
-        os._exit(result)
+        return result
 
-    jslint_pid = os.fork()
-    if jslint_pid == 0:
-        logging.info("start jslint")
+    @lint
+    def jslint():
         result = subprocess.call(['tools/node', 'tools/jslint/check-all.js']
                                  + by_lang['.js'])
-        logging.info("finish jslint")
-        os._exit(result)
+        return result
 
-    puppet_pid = os.fork()
-    if puppet_pid == 0:
-        logging.info("start puppet")
+    @lint
+    def puppet():
         result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['.pp'])
-        logging.info("finish puppet")
-        os._exit(result)
+        return result
 
-    custom_pid = os.fork()
-    if custom_pid == 0:
-        logging.info("start custom")
+    @lint
+    def custom():
         failed = check_custom_checks()
-        logging.info("finish custom")
-        os._exit(1 if failed else 0)
+        return 1 if failed else 0
 
-    pyflakes_pid = os.fork()
-    if pyflakes_pid == 0:
-        logging.info("start pyflakes")
+    @lint
+    def pyflakes():
         failed = check_pyflakes()
-        logging.info("finish pyflakes")
-        os._exit(1 if failed else 0)
+        return 1 if failed else 0
 
-    (_, status) = os.waitpid(check_handlebar_templates_pid, 0)
-    if status != 0:
-        failed = True
-
-    (_, status) = os.waitpid(custom_pid, 0)
-    if status != 0:
-        failed = True
-
-    (_, status) = os.waitpid(jslint_pid, 0)
-    if status != 0:
-        failed = True
-
-    (_, status) = os.waitpid(pyflakes_pid, 0)
-    if status != 0:
-        failed = True
-
-    (_, status) = os.waitpid(puppet_pid, 0)
-    if status != 0:
-        failed = True
+    failed = run_parallel()
 
     sys.exit(1 if failed else 0)
 
