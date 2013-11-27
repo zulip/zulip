@@ -15,22 +15,24 @@
 <tr><td style="font-size:16px; font-family:Helvetica;">
 <p>Hey,</p>
 
-<p>We wanted to share one last thing with you: a few tips about <b>streams</b>
-and <b>topics</b>.</p>
-<p>While they take a little getting used to, once you get the hang of them, they're really powerful.</p>
-<p>Some tips:</p>
+<p>I wanted to share one last thing with you: a few tips about topics, since mastering topics is a key part of being a Zulip power user.</p>
+
+<p>Topics are like email subject lines. The big difference, though, is that they're really short and lightweight. One or two words will do it. Don't overthink 'em&mdash;you can always edit the message later!</p>
 
 <ul>
-    <li>Would you make a mailing list for something? If so, it should probably be a stream.</li>
-    <li>Topics, on the other hand, are a lot more like subject lines - or conversations in Gmail</li>
-    <li>The big difference: keep topics super-short and lightweight. One or two words will do it.</li>
-    <li>Good topics: jQuery, Bug 345, lunch, zulip</li>
-    <li>Bad topics: "What do people think of this?" "Where should we go to lunch?"</li>
+    <li>Bad topics: "What do people think of this new screenshot?", "I'm looking at Bug 345",  "Where should we go to lunch?"</li>
+    <li>Good topics: screenshot, Bug 345, lunch</li>
 </ul>
 
-<p><a href="https://{{ external_host }}">Try it out now!</a></p>
+<p>Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away&mdash;read the topics that are relevant to you, and ignore the ones that don't!</p>
 
-<p>-Waseem, for the Zulip team</p>
+<p><a href="https://{{ external_host }}">Take it for a spin now.</a></p>
+
+{% if not_enterprise %}
+<p>- Waseem, for the Zulip team</p>
+{% else %}
+<p>Thanks,<br />Zulip</p>
+{% endif %}
 </td></tr>
 
 </table>

@@ -1,30 +1,26 @@
 Hey,
 
-We wanted to share one last thing with you: a few tips about "streams" and "topics".
+I wanted to share one last thing with you: a few tips about topics, since mastering topics is a key part of being a Zulip power user.
 
-While they take a little getting used to, once you get the hang of them, they're really powerful.
+Topics are like email subject lines. The big difference, though, is that they're really short and lightweight. One or two words will do it. Don't overthink 'em -- you can always edit the message later!
 
-Some tips:
+* Bad topics: "What do people think of this new screenshot?", "I'm looking at Bug 345",  "Where should we go to lunch?"
 
-* Would you make a mailing list for something? If so, it should probably be a stream.
+* Good topics: screenshot, Bug 345, lunch
 
-* Topics, on the other hand, are a lot more like subject lines - or conversations in Gmail
+Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away -- read the topics that are relevant to you, and ignore the ones that don't!
 
-* The big difference: keep topics super-short and lightweight. One or two words will do it.
-
-* Good topics: jQuery, Bug 345, lunch, zulip
-
-* Bad topics: "What do people think of this?" "Where should we go to lunch?"
-
-Try it out now! https://{{ external_host }}
-
--Waseem, for the Zulip team
-
---
+Take it for a spin now:
+https://{{ external_host }}
+{% if not_enterprise %}
+- Waseem, for the Zulip team
+{% else %}
+Thanks,
+Zulip
+{% endif %}
+----
 Manage email preferences:
-
 https://{{ external_host }}/#settings
 
 Unsubscribe from welcome emails:
-
 {{ unsubscribe_link }}
