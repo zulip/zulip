@@ -60,9 +60,6 @@ class ClientDescriptor(object):
         self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS, min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
 
     def to_dict(self):
-        # If you add a new key to this dict, make sure you add appropriate
-        # migration code in from_dict or load_event_queues to account for
-        # loading event queues that lack that key.
         return dict(user_profile_id=self.user_profile_id,
                     realm_id=self.realm_id,
                     event_queue=self.event_queue.to_dict(),
@@ -163,9 +160,6 @@ class EventQueue(object):
         self.virtual_events = {}
 
     def to_dict(self):
-        # If you add a new key to this dict, make sure you add appropriate
-        # migration code in from_dict or load_event_queues to account for
-        # loading event queues that lack that key.
         return dict(id=self.id,
                     next_event_id=self.next_event_id,
                     queue=list(self.queue),
