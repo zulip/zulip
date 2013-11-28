@@ -1582,6 +1582,12 @@ $(function () {
                .text("Bringing you to your latest messages…"));
     });
 
+    // Some MIT-specific customizations
+    if (page_params.domain === 'mit.edu') {
+        $("#user-list").hide();
+        $("#group-pm-list").hide();
+    }
+
     // initialize other stuff
     composebox_typeahead.initialize();
     search.initialize();

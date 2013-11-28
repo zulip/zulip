@@ -200,6 +200,10 @@ function update_users() {
 }
 
 exports.update_huddles = function () {
+    if (page_params.domain === 'mit.edu') {
+        return;  // MIT realm doesn't have a presence list
+    }
+
     var section = $('#group-pm-list').expectOne();
 
     var huddles = exports.get_huddles().slice(0, 10);
