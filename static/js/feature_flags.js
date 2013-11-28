@@ -47,6 +47,7 @@ exports.clicking_notification_causes_narrow = page_params.staging || _.contains(
 var zoom_realms = [
     'customer10.invalid',
     'upworthy.com',
+    'mit.edu',
     'cmtelematics.com'
 ];
 exports.topic_zooming = page_params.staging || _.contains(zoom_realms, page_params.domain);
