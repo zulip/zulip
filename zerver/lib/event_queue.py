@@ -154,7 +154,7 @@ def compute_full_event_type(event):
 
 # Virtual events are a mechanism for storing pointer changes and other
 # easily collapsed event types efficiently.
-VIRTUAL_EVENT_TYPES = ["pointer", "read/add", "restart"]
+VIRTUAL_EVENT_TYPES = ["pointer", "read/add"]
 class EventQueue(object):
     def __init__(self, id):
         self.queue = deque()
@@ -193,8 +193,6 @@ class EventQueue(object):
                 virtual_event["pointer"] = event["pointer"]
             elif full_event_type == "read/add":
                 virtual_event["messages"] += event["messages"]
-            elif full_event_type == "restart":
-                virtual_event["server_generation"] = event["server_generation"]
         else:
             self.queue.append(event)
 
