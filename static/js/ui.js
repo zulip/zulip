@@ -260,7 +260,7 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
-    if (message && message.sent_by_me && !message.status_message) {
+    if (message && message.sent_by_me && !message.status_message && !feature_flags.disable_message_editing) {
         message_row.find('.message_content').find('p:last').append(edit_content_button);
     }
     current_message_hover = message_row;
@@ -1581,6 +1581,10 @@ $(function () {
         $(this).after($("<div>").addClass("alert alert-info settings_committed")
                .text("Bringing you to your latest messages…"));
     });
+
+    if (feature_flags.disable_message_editing) {
+        $("#edit-message-hotkey-help").hide();
+    }
 
     // Some MIT-specific customizations
     if (page_params.domain === 'mit.edu') {

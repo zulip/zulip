@@ -25,6 +25,7 @@ exports.log_send_times = false;
 exports.collect_send_times = false;
 
 // Permanent realm-specific stuff:
+exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
 
 exports.twenty_four_hour_time = internal_24_hour_people || iceland;
 

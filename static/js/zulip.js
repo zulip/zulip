@@ -552,6 +552,10 @@ function process_message_for_recent_subjects(message, remove_message) {
 function set_topic_edit_properties(message) {
     message.always_visible_topic_edit = false;
     message.on_hover_topic_edit = false;
+    if (feature_flags.disable_message_editing) {
+        return;
+    }
+
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.
     if (message.subject === compose.empty_subject_placeholder()) {

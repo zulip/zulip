@@ -23,10 +23,8 @@ function show_message_info_popover(element, id) {
                                      elt.closest(".message_row").find(".message_time"));
 
         var message = current_msg_list.get(id);
-        var can_edit = message.sent_by_me;
         var args = {
             message:  message,
-            can_edit_message: can_edit,
             pm_with_uri: narrow.pm_with_uri(message.sender_email),
             sent_by_uri: narrow.by_sender_uri(message.sender_email),
             narrowed: narrow.active()
@@ -58,7 +56,7 @@ exports.toggle_actions_popover = function (element, id) {
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         var message = current_msg_list.get(id);
-        var can_edit = message.sent_by_me;
+        var can_edit = message.sent_by_me && !feature_flags.disable_message_editing;
         var can_mute_topic =
                 message.stream &&
                 message.subject &&
