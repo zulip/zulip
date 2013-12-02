@@ -768,6 +768,7 @@ def home(request):
             user_profile.enable_offline_email_notifications,
         enable_offline_push_notifications =
             user_profile.enable_offline_push_notifications,
+        enable_digest_emails  = user_profile.enable_digest_emails,
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
         max_message_id        = register_ret['max_message_id'],
@@ -1843,7 +1844,9 @@ def json_change_notify_settings(request, user_profile,
                                 enable_offline_email_notifications=REQ(converter=lambda x: x == "on",
                                                                     default=False),
                                 enable_offline_push_notifications=REQ(converter=lambda x: x == "on",
-                                                                    default=False)):
+                                                                    default=False),
+                                enable_digest_emails=REQ(converter=lambda x: x == "on",
+                                                         default=False)):
 
     result = {}
 
@@ -1862,6 +1865,10 @@ def json_change_notify_settings(request, user_profile,
     if user_profile.enable_offline_push_notifications != enable_offline_push_notifications:
         do_change_enable_offline_push_notifications(user_profile, enable_offline_push_notifications)
         result['enable_offline_push_notifications'] = enable_offline_push_notifications
+
+    if user_profile.enable_digest_emails != enable_digest_emails:
+        do_change_enable_digest_emails(user_profile, enable_digest_emails)
+        result['enable_digest_emails'] = enable_digest_emails
 
     return json_success(result)
 

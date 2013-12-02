@@ -150,6 +150,18 @@
           </label>
         </div>
 
+        <div class="control-group">
+          <div class="controls">
+            <input type="checkbox" name="enable_digest_emails" id="enable_digest_emails"
+              {% if user_profile.enable_digest_emails %}
+              checked="yes"
+              {% endif %} />
+          </div>
+          <label for="enable_digest_emails" class="control-label">
+            Digest emails when I'm away
+          </label>
+        </div>
+
         <p class="notification-settings-note">Change notification settings for individual streams on your <a href="/#subscriptions">Streams page</a>.</p>
 
         <div class="control-group">

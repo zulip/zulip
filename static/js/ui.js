@@ -1060,6 +1060,10 @@ $(function () {
                 page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
             }
 
+            if (result.enable_digest_emails !== undefined) {
+                page_params.enable_digest_emails = result.enable_digest_emails;
+            }
+
             notify_settings_status.removeClass(status_classes)
                 .addClass('alert-success')
                 .text(message).stop(true).fadeTo(0,1);
