@@ -2040,6 +2040,14 @@ table.floating_recipient {
     white-space: nowrap;
 }
 
+.operator_value {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    color: red;
+}
+.operator {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
 #loading_more_messages_indicator {
     margin: 10px;
 }
