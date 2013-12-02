@@ -44,6 +44,7 @@ exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domai
 exports.fade_users_when_composing = page_params.staging || is_customer4;
 exports.use_socket = false;
 exports.clicking_notification_causes_narrow = page_params.staging || _.contains(['customer25.invalid'], page_params.domain);
+exports.show_digest_email_setting = page_params.staging;
 
 var zoom_realms = [
     'customer10.invalid',

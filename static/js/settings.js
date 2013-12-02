@@ -25,6 +25,9 @@ exports.avatar_stamp = Math.floor(Math.random()*100);
 
 $(function () {
 
+    if (!feature_flags.show_digest_email_setting) {
+        $("#digest_container").hide();
+    }
 
     function upload_avatar(file_input) {
         var form_data = new FormData();
