@@ -239,7 +239,12 @@ exports.compose_content_begins_typeahead = function (query) {
         pm_recipient_count: Infinity,
         full_name: "all"
     };
-    return page_params.people_list.concat([all_item]);
+    var everyone_item = {
+        special_item_text: "everyone (Notify everyone)",
+        email: "everyone",
+        full_name: "everyone"
+    };
+    return page_params.people_list.concat([all_item, everyone_item]);
 };
 
 exports.content_highlighter = function (item) {
@@ -269,7 +274,7 @@ exports.content_typeahead_selected = function (item) {
 
         // We insert a special `all` item to the autocompleter above
         // Don't consider it a user mention
-        if (item.email !== 'all') {
+        if (item.email !== 'all' && item.email !== "everyone") {
             $(document).trigger('usermention_completed.zulip', {mentioned: item});
         }
     }
