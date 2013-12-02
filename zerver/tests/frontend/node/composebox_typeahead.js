@@ -44,8 +44,9 @@ set_global('emoji', {emojis: emoji_list});
     assert_typeahead_equals("test no@o", false);
     assert_typeahead_equals("test :-P", false);
 
-    var all_item = { special_item_text: 'all (Notify everyone)', email: 'all', pm_recipient_count: Infinity, full_name: 'all' };
-    var people_with_all = people_in_realm.concat([all_item]);
+    var all_items = [{ special_item_text: 'all (Notify everyone)', email: 'all', pm_recipient_count: Infinity, full_name: 'all' },
+                     { special_item_text: 'everyone (Notify everyone)', email: 'everyone', full_name: 'everyone' }];
+    var people_with_all = people_in_realm.concat(all_items);
 
     assert_typeahead_equals("test @o", people_with_all);
     assert_typeahead_equals("test @z", people_with_all);
