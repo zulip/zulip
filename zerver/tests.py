@@ -29,6 +29,7 @@ from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.rate_limiter import clear_user_history
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
+from zerver.lib.digest import send_digest_email
 from zerver.forms import not_mit_mailing_list
 
 from zerver.worker import queue_processors
@@ -4752,6 +4753,35 @@ class EmailUnsubscribeTests(AuthedTestCase):
 
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
+        self.assertEqual(0, len(ScheduledJob.objects.filter(
+                type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+
+    def test_digest_unsubscribe(self):
+        """
+        We provide one-click unsubscribe links in digest e-mails that you can
+        click even when logged out to stop receiving them.
+
+        Unsubscribing from these emails also dequeues any digest email jobs that
+        have been queued.
+        """
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.assertTrue(user_profile.enable_digest_emails)
+
+        # Enqueue a fake digest email.
+        send_digest_email(user_profile, "", "")
+        self.assertEqual(1, len(ScheduledJob.objects.filter(
+                    type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+
+        # Simulate unsubscribing from digest e-mails.
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
+        result = self.client.get(urlparse(unsubscribe_link).path)
+
+        # The setting is toggled off, and scheduled jobs have been removed.
+        self.assertEqual(result.status_code, 200)
+        # Circumvent user_profile caching.
+        user_profile = UserProfile.objects.get(email="hamlet@zulip.com")
+        self.assertFalse(user_profile.enable_digest_emails)
         self.assertEqual(0, len(ScheduledJob.objects.filter(
                 type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
