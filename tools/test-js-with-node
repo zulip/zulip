@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"/..
 
-export NODE_PATH=static
+export NODE_PATH=/usr/lib/nodejs:static
 
 INDEX_JS=zerver/tests/frontend/node/index.js
 NODEJS=$(which nodejs || which node)
