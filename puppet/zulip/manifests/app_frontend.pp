@@ -10,7 +10,6 @@ class zulip::app_frontend {
                     "python-ujson",
                     # Django dependencies
                     "python-django",
-                    "python-django-jstemplate",
                     "python-django-guardian",
                     "python-django-auth-openid",
                     "python-django-south",
