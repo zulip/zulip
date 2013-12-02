@@ -1,1 +1,1 @@
-./tools/lint-all || true
+./tools/lint-all $(git diff --cached --name-only --diff-filter=ACM) || true
