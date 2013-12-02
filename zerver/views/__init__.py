@@ -34,7 +34,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     update_user_presence, bulk_add_subscriptions, do_update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
-    do_update_message, internal_prep_message, \
+    do_change_enable_digest_emails, do_update_message, internal_prep_message, \
     do_send_messages, get_default_subs, do_deactivate_user, do_reactivate_user, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
@@ -2352,13 +2352,17 @@ def do_missedmessage_unsubscribe(user_profile):
 def do_welcome_unsubscribe(user_profile):
     clear_followup_emails_queue(user_profile.email)
 
+def do_digest_unsubscribe(user_profile):
+    do_change_enable_digest_emails(user_profile, False)
+
 # The keys are part of the URL for the unsubscribe link and must be valid
 # without encoding.
 # The values are a tuple of (display name, unsubscribe function), where the
 # display name is what we call this class of email in user-visible text.
 email_unsubscribers = {
     "missed_messages": ("missed messages", do_missedmessage_unsubscribe),
-    "welcome": ("welcome", do_welcome_unsubscribe)
+    "welcome": ("welcome", do_welcome_unsubscribe),
+    "digest": ("digest", do_digest_unsubscribe)
     }
 
 # Login NOT required. These are for one-click unsubscribes.

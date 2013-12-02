@@ -8,7 +8,7 @@ from django.template import loader
 from django.conf import settings
 
 from zerver.lib.actions import build_message_list, hashchange_encode, \
-    send_future_email
+    send_future_email, one_click_unsubscribe_link
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription
 
@@ -118,7 +118,11 @@ def handle_digest_email(user_profile_id, cutoff):
         message__pub_date__gt=cutoff).order_by("message__pub_date")
 
     # Start building email template data.
-    template_payload = {'name': user_profile.full_name, 'external_host': settings.EXTERNAL_HOST}
+    template_payload = {
+        'name': user_profile.full_name,
+        'external_host': settings.EXTERNAL_HOST,
+        'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
+        }
 
     # Gather recent missed PMs, re-using the missed PM email logic.
     pms = all_messages.filter(~Q(message__recipient__type=Recipient.STREAM))

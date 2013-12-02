@@ -52,4 +52,11 @@ Click here to log in to Zulip and catch up: https://{{ external_host }}.
 Cheers,
 The Zulip Team
 
-To disable future email notifications, please visit https://{{ external_host }}/#settings.
+--
+Manage email preferences:
+
+https://{{ external_host }}/#settings
+
+Unsubscribe from digest emails:
+
+{{ unsubscribe_link }}

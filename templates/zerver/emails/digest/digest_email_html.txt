@@ -95,5 +95,7 @@ Here are some of the hot conversations that have happened while you've been gone
 <br>
 The Zulip Team</p>
 
-<p>To disable future email notifications, please visit your <a
-href="https://{{ external_host }}/#settings">Zulip Settings page</a>.</p>
+<p>
+  <a href="https://{{ external_host }}/#settings">Manage email preferences</a> |
+  <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
+</p>

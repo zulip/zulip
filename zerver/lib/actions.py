@@ -1223,6 +1223,19 @@ def do_change_enable_offline_push_notifications(user_profile, offline_push_notif
                    'user': user_profile.email,
                    'enable_offline_push_notifications': offline_push_notifications})
 
+def do_change_enable_digest_emails(user_profile, enable_digest_emails, log=True):
+    user_profile.enable_digest_emails = enable_digest_emails
+    user_profile.save(update_fields=["enable_digest_emails"])
+
+    if not enable_digest_emails:
+        # Remove any digest emails that have been enqueued.
+        clear_followup_emails_queue(user_profile.email)
+
+    if log:
+        log_event({'type': 'enable_digest_emails',
+                   'user': user_profile.email,
+                   'enable_digest_emails': enable_digest_emails})
+
 def do_change_enter_sends(user_profile, enter_sends):
     user_profile.enter_sends = enter_sends
     user_profile.save(update_fields=["enter_sends"])
