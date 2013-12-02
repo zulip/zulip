@@ -378,29 +378,31 @@ exports.deactivate = function () {
     message_tour.finish_tour();
 
     current_msg_list = home_msg_list;
-    var preserve_pre_narrowing_screen_position =
-        (current_msg_list.selected_row().length > 0) &&
-        (current_msg_list.pre_narrow_offset !== undefined);
+    if (current_msg_list.selected_id() !== -1) {
+        var preserve_pre_narrowing_screen_position =
+            (current_msg_list.selected_row().length > 0) &&
+            (current_msg_list.pre_narrow_offset !== undefined);
 
-    if (feature_flags.summarize_read_while_narrowed) {
-        // TODO: avoid a full re-render
-        // Necessary to replace messages read in the narrow with summary blocks
-        current_msg_list.start_summary_exemption();
-        current_msg_list.rerender();
-    }
+        if (feature_flags.summarize_read_while_narrowed) {
+            // TODO: avoid a full re-render
+            // Necessary to replace messages read in the narrow with summary blocks
+            current_msg_list.start_summary_exemption();
+            current_msg_list.rerender();
+        }
 
-    // We fall back to the closest selected id, if the user has removed a stream from the home
-    // view since leaving it the old selected id might no longer be there
-    current_msg_list.select_id(current_msg_list.selected_id(), {
-        then_scroll: !preserve_pre_narrowing_screen_position,
-        use_closest: true
-    });
+        // We fall back to the closest selected id, if the user has removed a stream from the home
+        // view since leaving it the old selected id might no longer be there
+        current_msg_list.select_id(current_msg_list.selected_id(), {
+            then_scroll: !preserve_pre_narrowing_screen_position,
+            use_closest: true
+        });
 
-    if (preserve_pre_narrowing_screen_position) {
-        // We scroll the user back to exactly the offset from the selected
-        // message that he was at the time that he narrowed.
-        // TODO: Make this correctly handle the case of resizing while narrowed.
-        viewport.scrollTop(current_msg_list.selected_row().offset().top - current_msg_list.pre_narrow_offset);
+        if (preserve_pre_narrowing_screen_position) {
+            // We scroll the user back to exactly the offset from the selected
+            // message that he was at the time that he narrowed.
+            // TODO: Make this correctly handle the case of resizing while narrowed.
+            viewport.scrollTop(current_msg_list.selected_row().offset().top - current_msg_list.pre_narrow_offset);
+        }
     }
 
     hashchange.save_narrow();
