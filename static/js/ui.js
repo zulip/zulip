@@ -1347,7 +1347,7 @@ $(function () {
 
     $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
         var email = $(e.target).parents('li').attr('data-email');
-        narrow.by('pm-with', email, {trigger: 'sidebar'});
+        narrow.by('pm-with', email, {select_first_unread: true, trigger: 'sidebar'});
         // The preventDefault is necessary so that clicking the
         // link doesn't jump us to the top of the page.
         e.preventDefault();
@@ -1365,7 +1365,7 @@ $(function () {
 
     $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
         var emails = $(e.target).parents('li').attr('data-emails');
-        narrow.by('pm-with', emails, {trigger: 'sidebar'});
+        narrow.by('pm-with', emails, {select_first_unread: true, trigger: 'sidebar'});
         e.preventDefault();
         e.stopPropagation();
         popovers.hide_all();
