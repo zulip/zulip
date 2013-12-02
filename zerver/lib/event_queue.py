@@ -95,7 +95,7 @@ class ClientDescriptor(object):
             try:
                 self.current_handler._request._log_data['extra'] = "[%s/1]" % (self.event_queue.id,)
                 self.current_handler.zulip_finish(dict(result='success', msg='',
-                                                       events=[event],
+                                                       events=self.event_queue.contents(),
                                                        queue_id=self.event_queue.id),
                                                   self.current_handler._request,
                                                   apply_markdown=self.apply_markdown)
