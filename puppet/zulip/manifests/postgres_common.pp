@@ -3,6 +3,8 @@ class zulip::postgres_common {
                         "postgresql-9.1",
                         # tools for database setup
                         "pgtune",
+                        # tools for database monitoring
+                        "ptop",
                         # Python modules used in our monitoring/worker threads
                         "python-gevent",
                         "python-tz",
