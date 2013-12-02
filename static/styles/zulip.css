@@ -3683,7 +3683,7 @@ div.edit_bot {
 
 li.show-more-topics a {
     font-size: 75%;
-    font-style: italic;
+    color: blue;
 }
 
 .zoom-in .show-more-topics {
