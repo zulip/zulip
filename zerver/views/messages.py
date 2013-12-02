@@ -189,34 +189,28 @@ class NarrowBuilder(object):
                     (self.pQ(sender=self.user_profile) & self.pQ(recipient=narrow_recipient)))
 
     def do_search(self, query, operand):
-        if "postgres" in settings.DATABASES["default"]["ENGINE"]:
-            tsquery = "plainto_tsquery('zulip.english_us_search', %s)"
-            where = "search_tsvector @@ " + tsquery
-            content_matches = "ts_match_locs_array('zulip.english_us_search', rendered_content, " \
-                + tsquery + ")"
-            # We HTML-escape the subject in Postgres to avoid doing a server round-trip
-            subject_matches = "ts_match_locs_array('zulip.english_us_search', escape_html(subject), " \
-                + tsquery + ")"
+        tsquery = "plainto_tsquery('zulip.english_us_search', %s)"
+        where = "search_tsvector @@ " + tsquery
+        content_matches = "ts_match_locs_array('zulip.english_us_search', rendered_content, " \
+            + tsquery + ")"
+        # We HTML-escape the subject in Postgres to avoid doing a server round-trip
+        subject_matches = "ts_match_locs_array('zulip.english_us_search', escape_html(subject), " \
+            + tsquery + ")"
 
-            # Do quoted string matching.  We really want phrase
-            # search here so we can ignore punctuation and do
-            # stemming, but there isn't a standard phrase search
-            # mechanism in Postgres
-            for term in re.findall('"[^"]+"|\S+', operand):
-                if term[0] == '"' and term[-1] == '"':
-                    term = term[1:-1]
-                    query = query.filter(self.pQ(content__icontains=term) |
-                                         self.pQ(subject__icontains=term))
+        # Do quoted string matching.  We really want phrase
+        # search here so we can ignore punctuation and do
+        # stemming, but there isn't a standard phrase search
+        # mechanism in Postgres
+        for term in re.findall('"[^"]+"|\S+', operand):
+            if term[0] == '"' and term[-1] == '"':
+                term = term[1:-1]
+                query = query.filter(self.pQ(content__icontains=term) |
+                                     self.pQ(subject__icontains=term))
 
-            return query.extra(select={'content_matches': content_matches,
-                                       'subject_matches': subject_matches},
-                               where=[where],
-                               select_params=[operand, operand], params=[operand])
-        else:
-            for word in operand.split():
-                query = query.filter(self.pQ(content__icontains=word) |
-                                     self.pQ(subject__icontains=word))
-            return query
+        return query.extra(select={'content_matches': content_matches,
+                                   'subject_matches': subject_matches},
+                           where=[where],
+                           select_params=[operand, operand], params=[operand])
 
 def highlight_string(string, locs):
     highlight_start = '<span class="highlight">'
