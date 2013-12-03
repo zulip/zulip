@@ -851,6 +851,7 @@ def update_pointer_backend(request, user_profile,
     prev_pointer = user_profile.pointer
     user_profile.pointer = pointer
     user_profile.save(update_fields=["pointer"])
+    request._log_data["extra"] = "[%s]" % (pointer,)
 
     if request.client.name.lower() in ['android']:
         # Until we handle the new read counts in the Android app
