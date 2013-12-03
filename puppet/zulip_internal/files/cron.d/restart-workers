@@ -1,5 +1,0 @@
-MAILTO=root
-
-# Restart all of our Django workers at 7:37AM every day
-# This is to handle the fact that we have memory leaks.
-37 7 * * *   zulip supervisorctl restart zulip-workers:*
