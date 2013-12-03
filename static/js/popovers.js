@@ -221,36 +221,6 @@ exports.register_click_handlers = function () {
         show_message_info_popover(this, rows.id(row));
     });
 
-    $('#user_presences').on('click', 'span.arrow', function (e) {
-        var elt = e.target;
-
-        if (user_sidebar_popped() && current_user_sidebar_elem === elt) {
-            // If the popover is already shown, clicking again should toggle it.
-            popovers.hide_user_sidebar_popover();
-            e.stopPropagation();
-            return;
-        }
-
-        popovers.hide_all();
-        if (userlist_placement === "right") {
-            popovers.show_userlist_sidebar();
-        }
-        var target = $(elt).closest('li');
-        var email = target.find('a').attr('data-email');
-        var name = target.find('a').attr('data-name');
-
-        target.popover({
-            content:   templates.render('user_sidebar_actions', {'email': email,
-                                                                 'name': name}),
-            placement: userlist_placement === "left" ? "right" : "left",
-            trigger:   "manual",
-            fixed: true
-        });
-        target.popover("show");
-        current_user_sidebar_elem = elt;
-        e.stopPropagation();
-    });
-
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
         var email = $(e.target).parents('ul').attr('data-email');
         popovers.hide_user_sidebar_popover();
@@ -288,6 +258,35 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $('#user_presences').on('click', 'span.arrow', function (e) {
+        var elt = e.target;
+
+        if (user_sidebar_popped() && current_user_sidebar_elem === elt) {
+            // If the popover is already shown, clicking again should toggle it.
+            popovers.hide_user_sidebar_popover();
+            e.stopPropagation();
+            return;
+        }
+
+        popovers.hide_all();
+        if (userlist_placement === "right") {
+            popovers.show_userlist_sidebar();
+        }
+        var target = $(elt).closest('li');
+        var email = target.find('a').attr('data-email');
+        var name = target.find('a').attr('data-name');
+
+        target.popover({
+            content:   templates.render('user_sidebar_actions', {'email': email,
+                                                                 'name': name}),
+            placement: userlist_placement === "left" ? "right" : "left",
+            trigger:   "manual",
+            fixed: true
+        });
+        target.popover("show");
+        current_user_sidebar_elem = elt;
+        e.stopPropagation();
+    });
 
     $('#stream_filters').on('click', '.topic-sidebar-arrow', function (e) {
         var elt = e.target;
