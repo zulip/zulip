@@ -27,6 +27,12 @@ server {
         proxy_pass https://staging;
         include /etc/nginx/zulip-include/location-sockjs;
     }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://staging/;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
 }
 
 server {
@@ -46,6 +52,12 @@ server {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/location-sockjs;
     }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://prod/;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
 }
 
 server {
@@ -63,6 +75,12 @@ server {
     location /sockjs {
         proxy_pass https://staging;
         include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://prod/;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+        proxy_set_header X-Forwarded-For $remote_addr;
     }
 }
 
@@ -83,6 +101,12 @@ server {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/location-sockjs;
     }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://prod/;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
 }
 
 server {
@@ -100,6 +124,12 @@ server {
     location /sockjs {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://prod/;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+        proxy_set_header X-Forwarded-For $remote_addr;
     }
 }
 
@@ -119,6 +149,12 @@ server {
     location /sockjs {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://prod/;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+        proxy_set_header X-Forwarded-For $remote_addr;
     }
 }
 
