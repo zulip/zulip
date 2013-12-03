@@ -1,8 +1,5 @@
-include /etc/nginx/zulip-include/proxy;
-
-# Needed for xhr_streaming transport
-proxy_buffering  off;
-proxy_read_timeout 1200;
+# Longpolling version needed for xhr streaming support
+include /etc/nginx/zulip-include/proxy_longpolling;
 
 proxy_set_header Upgrade         $http_upgrade;
 proxy_set_header Connection      $connection_upgrade;
