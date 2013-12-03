@@ -193,8 +193,8 @@ exports.scrollTop = function viewport_scrollTop (target_scrollTop) {
         // And then scroll where we intended to scroll to
         ret = jwindow.scrollTop(target_scrollTop);
         if (jwindow.scrollTop() === 0) {
-            blueslip.error("ScrollTop fix did not work when scrolling to " + target_scrollTop +
-                           "!  space_to_scroll was " + space_to_scroll);
+            blueslip.info("ScrollTop fix did not work when scrolling to " + target_scrollTop +
+                          "!  space_to_scroll was " + space_to_scroll);
         }
     }
     return ret;
