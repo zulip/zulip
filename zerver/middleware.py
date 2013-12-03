@@ -231,11 +231,13 @@ def wrapper_execute(self, action, sql, params=()):
 from django.db.backends.util import CursorWrapper
 def cursor_execute(self, sql, params=()):
     return wrapper_execute(self, self.cursor.execute, sql, params)
-CursorWrapper.execute = cursor_execute
-
 def cursor_executemany(self, sql, params=()):
     return wrapper_execute(self, self.cursor.executemany, sql, params)
-CursorWrapper.executemany = cursor_executemany
+
+if not settings.DEBUG:
+    # If settings.DEBUG, the default cursor will do the appropriate logging already
+    CursorWrapper.execute = cursor_execute
+    CursorWrapper.executemany = cursor_executemany
 
 class RateLimitMiddleware(object):
     def process_response(self, request, response):
