@@ -231,7 +231,6 @@ exports.register_click_handlers = function () {
             return;
         }
 
-        var last_sidebar_elem = current_user_sidebar_elem;
         popovers.hide_all();
         if (userlist_placement === "right") {
             popovers.show_userlist_sidebar();
@@ -375,7 +374,6 @@ exports.register_click_handlers = function () {
             return;
         }
 
-        var last_sidebar_elem = current_stream_sidebar_elem;
         popovers.hide_all();
         popovers.show_streamlist_sidebar();
 
