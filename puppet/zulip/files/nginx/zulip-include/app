@@ -16,14 +16,12 @@ location /static/ {
 # Send longpoll requests to Tornado
 location ~ /json/get_events|/json/events|/api/v1/events {
     proxy_pass       http://localhost:9993;
-    proxy_redirect   off;
+    include /etc/nginx/zulip-include/proxy;
 
     # Needed for longpolling
     proxy_buffering  off;
     proxy_read_timeout 1200;
 
-    proxy_next_upstream off;
-    proxy_set_header Host            $host;
     proxy_set_header X-Real-IP       $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 }
@@ -31,7 +29,6 @@ location ~ /json/get_events|/json/events|/api/v1/events {
 # Send sockjs requests to Tornado
 location /sockjs {
     proxy_pass http://localhost:9993;
-    proxy_next_upstream off;
     include /etc/nginx/zulip-include/location-sockjs;
 }
 

@@ -1,0 +1,4 @@
+proxy_http_version 1.1;
+proxy_set_header Host $host;
+proxy_next_upstream off;
+proxy_redirect off;
