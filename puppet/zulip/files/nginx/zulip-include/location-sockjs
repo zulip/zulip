@@ -3,6 +3,7 @@ proxy_http_version 1.1;
 # Needed for xhr_streaming transport
 proxy_buffering  off;
 proxy_read_timeout 1200;
+proxy_next_upstream off;
 
 proxy_set_header Upgrade         $http_upgrade;
 proxy_set_header Connection      $connection_upgrade;
