@@ -377,12 +377,12 @@ class WorkerTest(TestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         UserActivity.objects.filter(
                 user_profile = user.id,
-                client = get_client('iPhone')
+                client = get_client('ios')
         ).delete()
 
         data = dict(
                 user_profile_id = user.id,
-                client = 'iPhone',
+                client = 'ios',
                 time = time.time(),
                 query = 'send_message'
         )
@@ -393,7 +393,7 @@ class WorkerTest(TestCase):
             worker.start()
             activity_records = UserActivity.objects.filter(
                     user_profile = user.id,
-                    client = get_client('iPhone')
+                    client = get_client('ios')
             )
             self.assertTrue(len(activity_records), 1)
             self.assertTrue(activity_records[0].count, 1)

@@ -8,7 +8,7 @@ from django.db.models import Count
 from zerver.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
     Subscription, UserMessage
 
-MOBILE_CLIENT_LIST = ["Android", "iPhone"]
+MOBILE_CLIENT_LIST = ["Android", "ios"]
 HUMAN_CLIENT_LIST = MOBILE_CLIENT_LIST + ["website"]
 
 human_messages = Message.objects.filter(sending_client__name__in=HUMAN_CLIENT_LIST)

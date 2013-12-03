@@ -745,7 +745,7 @@ def realm_user_summary_table(all_records, admin_emails):
         sent_count = get_count(user_summary, 'send')
         cells = [user_summary['name'], email_link, sent_count]
         row_class = ''
-        for field in ['use', 'send', 'pointer', 'desktop', 'iPhone', 'Android']:
+        for field in ['use', 'send', 'pointer', 'desktop', 'ios', 'Android']:
             val = get_last_visit(user_summary, field)
             if field == 'use':
                 if val and is_recent(val):
@@ -770,7 +770,7 @@ def realm_user_summary_table(all_records, admin_emails):
             'Message sent',
             'Pointer motion',
             'Desktop',
-            'iPhone',
+            'ios',
             'Android'
     ]
 
