@@ -208,7 +208,7 @@ exports.update_huddles = function () {
 
     var huddles = exports.get_huddles().slice(0, 10);
 
-    if (huddles.length === 0 || !feature_flags.show_huddles) {
+    if (huddles.length === 0) {
         section.hide();
         return;
     }
