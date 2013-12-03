@@ -208,10 +208,6 @@ exports.hide_user_sidebar_popover = function () {
     }
 };
 
-exports.show_user_sidebar_popover = function () {
-    // TODO: implement & use
-};
-
 exports.register_click_handlers = function () {
     $("#main_div").on("click", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
