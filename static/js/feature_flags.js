@@ -47,6 +47,8 @@ exports.clicking_notification_causes_narrow = page_params.staging || _.contains(
 exports.show_digest_email_setting = page_params.staging;
 
 var zoom_realms = [
+    'customer4.invalid',
+    'users.customer4.invalid',
     'customer10.invalid',
     'upworthy.com',
     'mit.edu',
