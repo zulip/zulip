@@ -2301,6 +2301,19 @@ class ChangeSettingsTest(AuthedTestCase):
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                 enable_desktop_notifications, False)
 
+    def test_ui_settings(self):
+        self.login("hamlet@zulip.com")
+
+        json_result = self.client.post("/json/ui_settings/change", {"autoscroll_forever": "true"})
+        self.assert_json_success(json_result)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
+                enable_desktop_notifications, True)
+
+        json_result = self.client.post("/json/ui_settings/change", {})
+        self.assert_json_success(json_result)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
+                autoscroll_forever, False)
+
     def test_missing_params(self):
         """
         full_name is a required POST parameter for json_change_settings.

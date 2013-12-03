@@ -40,7 +40,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
-    do_deactivate_stream
+    do_deactivate_stream, do_change_autoscroll_forever
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
@@ -812,7 +812,8 @@ def home(request):
         is_admin              = user_profile.is_admin(),
         notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
         name_changes_disabled = settings.NAME_CHANGES_DISABLED,
-        has_mobile_devices    = num_push_devices_for_user(user_profile) > 0
+        has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
+        autoscroll_forever = user_profile.autoscroll_forever
     ))
 
     statsd.incr('views.home')
@@ -1887,6 +1888,20 @@ def create_user_backend(request, user_profile, email=REQ, password=REQ,
     new_user_profile = do_create_user(email, password, realm, full_name, short_name)
     process_new_human_user(new_user_profile)
     return json_success()
+
+@authenticated_json_post_view
+@has_request_variables
+def json_change_ui_settings(request, user_profile,
+                            autoscroll_forever=REQ(converter=lambda x: x == "on",
+                                                              default=False)):
+
+    result = {}
+
+    if user_profile.autoscroll_forever != autoscroll_forever:
+        do_change_autoscroll_forever(user_profile, autoscroll_forever)
+        result['autoscroll_forever'] = autoscroll_forever
+
+    return json_success(result)
 
 @authenticated_json_post_view
 @has_request_variables

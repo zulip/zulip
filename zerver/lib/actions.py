@@ -1240,6 +1240,15 @@ def do_change_enable_digest_emails(user_profile, enable_digest_emails, log=True)
                    'user': user_profile.email,
                    'enable_digest_emails': enable_digest_emails})
 
+def do_change_autoscroll_forever(user_profile, autoscroll_forever, log=True):
+    user_profile.autoscroll_forever = autoscroll_forever
+    user_profile.save(update_fields=["autoscroll_forever"])
+
+    if log:
+        log_event({'type': 'autoscroll_forever',
+                   'user': user_profile.email,
+                   'autoscroll_forever': autoscroll_forever})
+
 def do_change_enter_sends(user_profile, enter_sends):
     user_profile.enter_sends = enter_sends
     user_profile.save(update_fields=["enter_sends"])

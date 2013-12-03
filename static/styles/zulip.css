@@ -3033,7 +3033,7 @@ div.edit_bot {
     position: relative;
 }
 
-#settings #notify-settings-status {
+#settings #notify-settings-status,#ui-settings-status {
     width: 80%;
     text-align: center;
     margin: auto;
@@ -3058,7 +3058,7 @@ div.edit_bot {
     left: 20px;
 }
 
-#settings .settings-section .notification-settings-form {
+#settings .settings-section .notification-settings-form,.ui-settings-form {
     width: 400px;
     margin: auto;
 }
@@ -3076,7 +3076,8 @@ div.edit_bot {
     margin-left: 140px;
 }
 
-#settings .settings-section .notification-settings-form .controls  {
+#settings .settings-section .notification-settings-form .controls,
+#settings .settings-section .ui-settings-form .controls {
     display: inline-block;
     vertical-align: middle;
     margin: 0px;
@@ -3087,7 +3088,8 @@ div.edit_bot {
     margin-right: 12px;
 }
 
-#settings .settings-section .notification-settings-form .controls input[type='checkbox'] {
+#settings .settings-section .notification-settings-form .controls input[type='checkbox'],
+#settings .settings-section .ui-settings-form .controls input[type='checkbox'] {
     margin: 0px;
     padding: 0px;
     vertical-align: middle;
@@ -3095,7 +3097,8 @@ div.edit_bot {
     top: -1px;
 }
 
-#settings .settings-section .notification-settings-form .control-label {
+#settings .settings-section .notification-settings-form .control-label,
+#settings .settings-section .ui-settings-form .control-label {
     float: none;
     display: inline-block;
     vertical-align: middle;
@@ -3105,11 +3108,13 @@ div.edit_bot {
     width:  240px;
 }
 
-#settings .settings-section .notification-settings-form .notification-submission {
+#settings .settings-section .notification-settings-form .notification-submission,
+#settings .settings-section .ui-settings-form .ui-submission {
     margin-left: 140px;
 }
 
-#settings .notification-settings-form .notification-settings-note {
+#settings .notification-settings-form .notification-settings-note,
+#settings .ui-settings-form .ui-settings-note {
     margin-left: 110px;
     width: 250px;
     font-size: 13px;
@@ -3363,11 +3368,13 @@ div.edit_bot {
     cursor: pointer;
 }
 
-#notification-settings .control-group {
+#notification-settings .control-group,
+#ui-settings .control-group {
     margin-bottom: 5px;
 }
 
-#notification-settings .control-label {
+#notification-settings .control-label,
+#ui-settings .control-label {
     width: 280px;
     text-align: left;
 }

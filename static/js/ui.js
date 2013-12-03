@@ -1029,6 +1029,7 @@ $(function () {
 
     var settings_status = $('#settings-status').expectOne();
     var notify_settings_status = $('#notify-settings-status').expectOne();
+    var ui_settings_status = $('#ui-settings-status').expectOne();
 
     function settings_change_error(message) {
         // Scroll to the top so the error message is visible.
@@ -1125,6 +1126,35 @@ $(function () {
             }
 
             notify_settings_status.removeClass(status_classes)
+                .addClass('alert-error')
+                .text(response).stop(true).fadeTo(0,1);
+        }
+    });
+
+    $("form.ui-settings").expectOne().ajaxForm({
+        dataType: 'json',
+
+        success: function (resp, statusText, xhr, form) {
+            var message = "Updated UI settings!";
+            var result = $.parseJSON(xhr.responseText);
+
+            if (result.autoscroll_forever !== undefined) {
+                page_params.autoscroll_forever = result.autoscroll_forever;
+            }
+
+            ui_settings_status.removeClass(status_classes)
+                .addClass('alert-success')
+                .text(message).stop(true).fadeTo(0,1);
+        },
+        error: function (xhr, error_type, xhn) {
+            var response = "Error changing settings";
+            if (xhr.status.toString().charAt(0) === "4") {
+                // Only display the error response for 4XX, where we've crafted
+                // a nice response.
+                response += ": " + $.parseJSON(xhr.responseText).msg;
+            }
+
+            ui_settings_status.removeClass(status_classes)
                 .addClass('alert-error')
                 .text(response).stop(true).fadeTo(0,1);
         }
