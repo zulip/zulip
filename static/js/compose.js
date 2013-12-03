@@ -449,6 +449,16 @@ function process_send_time(message_id, start_time) {
     maybe_report_send_times(message_id);
 }
 
+function clear_compose_box() {
+    $("#new_message_content").val('').focus();
+    autosize_textarea();
+    $("#send-status").hide(0);
+    clear_message_snapshot();
+    $("#compose-send-button").removeAttr('disabled');
+    $("#sending-indicator").hide();
+    ui.resize_bottom_whitespace();
+}
+
 function send_message(request) {
     if (request === undefined) {
         request = create_message_object();
@@ -466,14 +476,10 @@ function send_message(request) {
         var message_id = data.id;
         process_send_time(message_id, start_time);
 
-        $("#new_message_content").val('').focus();
-        autosize_textarea();
-        $("#send-status").hide(0);
+        if (! feature_flags.local_echo) {
+            clear_compose_box();
+        }
 
-        clear_message_snapshot();
-        $("#compose-send-button").removeAttr('disabled');
-        $("#sending-indicator").hide();
-        ui.resize_bottom_whitespace();
         setTimeout(function () {
             if (exports.send_times_data[message_id].received === undefined) {
                 blueslip.error("Restarting get_updates due to delayed receipt of sent message " + message_id);
@@ -490,6 +496,10 @@ function send_message(request) {
     if (get_updates_xhr === undefined && get_updates_timeout === undefined) {
         restart_get_updates({dont_block: true});
         blueslip.error("Restarting get_updates because it was not running during send");
+    }
+
+    if (feature_flags.local_echo) {
+        clear_compose_box();
     }
 }
 
