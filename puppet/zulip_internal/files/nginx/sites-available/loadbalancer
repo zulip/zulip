@@ -96,6 +96,11 @@ server {
         proxy_pass https://prod/;
         include /etc/nginx/zulip-include/loadbalancer;
     }
+
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
 }
 
 
