@@ -852,11 +852,10 @@ def update_pointer_backend(request, user_profile,
     user_profile.pointer = pointer
     user_profile.save(update_fields=["pointer"])
 
-    if request.client.name.lower() in ['android', 'iphone']:
-        # TODO (leo)
-        # Until we handle the new read counts in the mobile apps natively,
-        # this is a shim that will mark as read any messages up until the
-        # pointer move
+    if request.client.name.lower() in ['android']:
+        # Until we handle the new read counts in the Android app
+        # natively, this is a shim that will mark as read any messages
+        # up until the pointer move
         UserMessage.objects.filter(user_profile=user_profile,
                                    message__id__gt=prev_pointer,
                                    message__id__lte=pointer,
