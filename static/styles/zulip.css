@@ -1944,6 +1944,12 @@ table.floating_recipient {
 #bottom_whitespace {
   display: block;
   height: 300px;
+ -webkit-touch-callout: none;
+ -webkit-user-select: none;
+ -khtml-user-select: none;
+ -moz-user-select: none;
+ -ms-user-select: none;
+  user-select: none;
 }
 
 #home-error {
