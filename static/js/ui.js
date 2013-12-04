@@ -830,6 +830,29 @@ exports.collapse_recipient_group = function (row) {
     current_msg_list.select_id(message_ids[0]);
 };
 
+/* EXPERIMENTS */
+
+/* This method allows an advanced user to use the console
+ * to switch to a different pair of backgrounds for home
+ * view and narrowed view. It either defaults to a specific
+ * pair of colors, or allows the user to specify them.
+ */
+exports.switchBackground = function (homecolor, narrowcolor) {
+    homecolor = homecolor || "#ffffff";
+    narrowcolor = narrowcolor || "#effcff";
+    $("#white-background-style").remove();
+    $('head').append('<style id="white-background-style" type="text/css">' +
+                         'body, #tab_bar, #tab_bar_underpadding, .message_list, #compose-container {' +
+                            'background-color: ' + homecolor + '; }' +
+                         'body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpadding,' +
+                         '.narrowed_view .message_list, .narrowed_view #compose-container {' +
+                            'background-color: ' + narrowcolor + '; }' +
+                       '</style>');
+    return ("Background has been changed");
+};
+
+/* END OF EXPERIMENTS */
+
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
