@@ -47,5 +47,5 @@ TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment", "owner"
 ## path, but if not, set a custom path below
 ZULIP_API_PATH = None
 
-# This should not need to change unless you have a custom Zulip subdomain.
+# If you're using Zulip Enterprise, set this to your Zulip Enterprise server
 ZULIP_SITE = "https://api.zulip.com"

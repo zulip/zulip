@@ -50,7 +50,7 @@ ZULIP_TICKETS_STREAM_NAME = "tickets"
 # path, but if not, set a custom path below
 ZULIP_API_PATH = None
 
-# This should not need to change unless you have a custom Zulip subdomain.
+# If you're using Zulip Enterprise, set this to your Zulip Enterprise server
 ZULIP_SITE = "https://api.zulip.com"
 
 # If you wish to log to a file rather than stdout/stderr,
