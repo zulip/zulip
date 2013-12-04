@@ -771,6 +771,69 @@ function update_messages(events) {
     stream_list.update_streams_sidebar();
 }
 
+function insert_new_messages(messages) {
+    // There is a known bug (#1062) in our backend
+    // whereby duplicate messages are delivered during a
+    // server update.  Once that bug is fixed, this
+    // should no longer be needed
+    messages = deduplicate_messages(messages);
+    messages = _.map(messages, add_message_metadata);
+
+    if (feature_flags.summarize_read_while_narrowed) {
+        _.each(messages, function (message) {
+            if (message.sent_by_me) {
+                summary.maybe_mark_summarized(message);
+            }
+        });
+    }
+
+    // You must add add messages to home_msg_list BEFORE
+    // calling process_loaded_for_unread.
+    add_messages(messages, home_msg_list, true);
+    add_messages(messages, all_msg_list, true);
+
+    if (narrow.active()) {
+        if (narrow.filter().can_apply_locally()) {
+            add_messages(messages, narrowed_msg_list, true);
+            notifications.possibly_notify_new_messages_outside_viewport(messages);
+        } else {
+            // if we cannot apply locally, we have to wait for this callback to happen to notify
+            maybe_add_narrowed_messages(messages, narrowed_msg_list, true);
+        }
+    } else {
+        notifications.possibly_notify_new_messages_outside_viewport(messages);
+    }
+
+    process_loaded_for_unread(messages);
+
+    if (narrow.narrowed_by_reply()) {
+        // If you send a message when narrowed to a recipient, move the
+        // pointer to it.
+
+        var i;
+        var selected_id = current_msg_list.selected_id();
+
+        // Iterate backwards to find the last message sent_by_me, stopping at
+        // the pointer position.
+        for (i = messages.length-1; i>=0; i--){
+            var id = messages[i].id;
+            if (id <= selected_id) {
+                break;
+            }
+            if (messages[i].sent_by_me && current_msg_list.get(id) !== undefined) {
+                // If this is a reply we just sent, advance the pointer to it.
+                current_msg_list.select_id(messages[i].id, {then_scroll: true,
+                                                            from_scroll: true});
+                break;
+            }
+        }
+    }
+
+    process_visible_unread_messages();
+    notifications.received_messages(messages);
+    stream_list.update_streams_sidebar();
+}
+
 function get_updates_success(data) {
     var messages = [];
     var messages_to_update = [];
@@ -869,66 +932,7 @@ function get_updates_success(data) {
     });
 
     if (messages.length !== 0) {
-        // There is a known bug (#1062) in our backend
-        // whereby duplicate messages are delivered during a
-        // server update.  Once that bug is fixed, this
-        // should no longer be needed
-        messages = deduplicate_messages(messages);
-        messages = _.map(messages, add_message_metadata);
-
-        if (feature_flags.summarize_read_while_narrowed) {
-            _.each(messages, function (message) {
-                if (message.sent_by_me) {
-                    summary.maybe_mark_summarized(message);
-                }
-            });
-        }
-
-        // You must add add messages to home_msg_list BEFORE
-        // calling process_loaded_for_unread.
-        add_messages(messages, home_msg_list, true);
-        add_messages(messages, all_msg_list, true);
-
-        if (narrow.active()) {
-            if (narrow.filter().can_apply_locally()) {
-                add_messages(messages, narrowed_msg_list, true);
-                notifications.possibly_notify_new_messages_outside_viewport(messages);
-            } else {
-                // if we cannot apply locally, we have to wait for this callback to happen to notify
-                maybe_add_narrowed_messages(messages, narrowed_msg_list, true);
-            }
-        } else {
-            notifications.possibly_notify_new_messages_outside_viewport(messages);
-        }
-
-        process_loaded_for_unread(messages);
-
-        if (narrow.narrowed_by_reply()) {
-            // If you send a message when narrowed to a recipient, move the
-            // pointer to it.
-
-            var i;
-            var selected_id = current_msg_list.selected_id();
-
-            // Iterate backwards to find the last message sent_by_me, stopping at
-            // the pointer position.
-            for (i = messages.length-1; i>=0; i--){
-                var id = messages[i].id;
-                if (id <= selected_id) {
-                    break;
-                }
-                if (messages[i].sent_by_me && current_msg_list.get(id) !== undefined) {
-                    // If this is a reply we just sent, advance the pointer to it.
-                    current_msg_list.select_id(messages[i].id, {then_scroll: true,
-                                                                from_scroll: true});
-                    break;
-                }
-            }
-        }
-
-        process_visible_unread_messages();
-        notifications.received_messages(messages);
-        stream_list.update_streams_sidebar();
+        insert_new_messages(messages);
     }
 
     if (new_pointer !== undefined
