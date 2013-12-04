@@ -723,10 +723,6 @@ exports.hide_loading_more_messages_indicator = function () {
     }
 };
 
-function could_be_condensed(elem) {
-    return elem.getBoundingClientRect().height > viewport.height() * 0.65;
-}
-
 function show_more_link(row) {
     row.find(".message_condenser").hide();
     row.find(".message_expander").show();
@@ -1710,6 +1706,12 @@ exports.restore_compose_cursor = function () {
 };
 
 exports.process_condensing = function (elem) {
+    var height_cutoff = viewport.height() * 0.65;
+
+    function could_be_condensed(elem) {
+        return elem.getBoundingClientRect().height > height_cutoff;
+    }
+
     var content = $(elem).find(".message_content");
     var message = current_msg_list.get(rows.id($(elem)));
     if (content !== undefined && message !== undefined) {
