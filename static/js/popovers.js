@@ -172,11 +172,12 @@ exports.show_streamlist_sidebar = function () {
 
 var current_stream_sidebar_elem;
 var current_topic_sidebar_elem;
-var current_user_sidebar_elem;
+var current_user_sidebar_email;
+var current_user_sidebar_popover;
 
 
 function user_sidebar_popped() {
-    return current_user_sidebar_elem !== undefined;
+    return current_user_sidebar_popover !== undefined;
 }
 
 function stream_sidebar_popped() {
@@ -203,8 +204,15 @@ exports.hide_topic_sidebar_popover = function () {
 
 exports.hide_user_sidebar_popover = function () {
     if (user_sidebar_popped()) {
-        $(current_user_sidebar_elem).closest("li").popover("destroy");
-        current_user_sidebar_elem = undefined;
+        // this hide_* method looks different from all the others since
+        // the presence list may be redrawn. Due to funkiness with jquery's .data()
+        // this would confuse $.popover("destroy"), which looks at the .data() attached
+        // to a certain element. We thus save off the .data("popover") in the show_user_sidebar_popover
+        // and inject it here before calling destroy.
+        $('#user_presences').data("popover", current_user_sidebar_popover);
+        $('#user_presences').popover("destroy");
+        current_user_sidebar_email = undefined;
+        current_user_sidebar_popover = undefined;
     }
 };
 
@@ -259,33 +267,37 @@ exports.register_click_handlers = function () {
     });
 
     $('#user_presences').on('click', 'span.arrow', function (e) {
-        var elt = e.target;
+        e.stopPropagation();
 
-        if (user_sidebar_popped() && current_user_sidebar_elem === elt) {
-            // If the popover is already shown, clicking again should toggle it.
-            popovers.hide_user_sidebar_popover();
-            e.stopPropagation();
-            return;
-        }
-
-        popovers.hide_all();
-        if (userlist_placement === "right") {
-            popovers.show_userlist_sidebar();
-        }
-        var target = $(elt).closest('li');
+        // use email of currently selected user, rather than some elem comparison,
+        // as the presence list may be redrawn with new elements.
+        var target = $(this).closest('li');
         var email = target.find('a').attr('data-email');
         var name = target.find('a').attr('data-name');
 
+        if (current_user_sidebar_email === email) {
+            // If the popover is already shown, clicking again should toggle it.
+            popovers.hide_all();
+            return;
+        }
+        popovers.hide_all();
+
+        if (userlist_placement === "right") {
+            popovers.show_userlist_sidebar();
+        }
+        var template_vars = {email: email, name: name};
+        var content = templates.render('user_sidebar_actions', template_vars);
+
         target.popover({
-            content:   templates.render('user_sidebar_actions', {'email': email,
-                                                                 'name': name}),
+            content:   content,
             placement: userlist_placement === "left" ? "right" : "left",
             trigger:   "manual",
             fixed: true
         });
         target.popover("show");
-        current_user_sidebar_elem = elt;
-        e.stopPropagation();
+        current_user_sidebar_email = email;
+        current_user_sidebar_popover = target.data('popover');
+
     });
 
     $('#stream_filters').on('click', '.topic-sidebar-arrow', function (e) {
