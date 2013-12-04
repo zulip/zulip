@@ -80,12 +80,13 @@ def format_commit_lines(web_url, repo, base, tip):
 
     return "\n".join(summary for summary in commit_summaries)
 
-def send_zulip(email, api_key, stream, subject, content):
+def send_zulip(email, api_key, site, stream, subject, content):
     """
     Send a message to Zulip using the provided credentials, which should be for
     a bot in most cases.
     """
     client = zulip.Client(email=email, api_key=api_key,
+                          site=site,
                           client="mercurial " + VERSION)
 
     message_data = {
@@ -144,6 +145,7 @@ def hook(ui, repo, **kwargs):
 
     email = get_config(ui, "email")
     api_key = get_config(ui, "api_key")
+    site = get_config(ui, "site")
 
     if not (email and api_key):
         ui.warn("Zulip: missing email or api_key configurations\n")
@@ -165,4 +167,4 @@ def hook(ui, repo, **kwargs):
     ui.debug("Sending to Zulip:\n")
     ui.debug(content + "\n")
 
-    send_zulip(email, api_key, stream, subject, content)
+    send_zulip(email, api_key, site, stream, subject, content)

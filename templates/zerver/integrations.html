@@ -1094,7 +1094,8 @@ changegroup = python:/usr/local/share/zulip/integrations/hg/zulip-changegroup.py
 [zulip]
 email = "hg-bot@example.com"
 api_key = "0123456789abcdefg"
-stream = "commits"</pre>
+stream = "commits"
+{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre>
         </li>
       </ol>
 
@@ -1122,7 +1123,8 @@ stream = "commits"</pre>
 email = "hg-bot@example.com"
 api_key = "0123456789abcdefg"
 stream = "commits"</font>
-web_url = "http://hg.example.com:8000/"</pre>
+web_url = "http://hg.example.com:8000/"
+{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre>
 
 
       <h4>Branch whitelists and blacklists</h4>
