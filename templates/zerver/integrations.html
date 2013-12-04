@@ -972,9 +972,9 @@ following, to the stream <code>commits</code> with a subject that matches the re
       server:</p>
 
 <div class="codehilite"><pre>[api]
-email=NAGIOS_BOT_EMAIL_ADDRESS
-key=NAGIOS_BOT_API_KEY
-{% if api_site_required %}site={{ external_api_uri }}{% endif %}</pre></div>
+email = NAGIOS_BOT_EMAIL_ADDRESS
+key = NAGIOS_BOT_API_KEY
+{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre></div>
 
       <p>Copy <code>integrations/nagios/zulip_nagios.cfg</code>
       to <code>/etc/nagios3/conf.d</code> on your Nagios server.</p>
