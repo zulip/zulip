@@ -146,7 +146,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         record_request_start_data(log_data)
         msg = ujson.loads(msg)
 
-        self.session.send_message({'req_id': msg['req_id'], 'type': 'ack'});
+        self.session.send_message({'req_id': msg['req_id'], 'type': 'ack'})
 
         if msg['type'] == 'auth':
             log_data['extra'] += ']'
@@ -179,7 +179,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         redis_key = req_redis_key(self.client_id, msg['req_id'])
         with redis_client.pipeline() as pipeline:
-            pipeline.hmset(redis_key, {'status': 'receieved'});
+            pipeline.hmset(redis_key, {'status': 'receieved'})
             pipeline.expire(redis_key, 60 * 5)
             pipeline.execute()
 
