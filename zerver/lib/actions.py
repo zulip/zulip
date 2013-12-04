@@ -1901,14 +1901,14 @@ def build_message_list(user_profile, messages):
         if message.recipient.type == Recipient.PERSONAL:
             header = "You and %s" % (message.sender.full_name)
             html_link = pm_narrow_url([message.sender.email])
-            header_html = "<a href='%s'>%s</a>" % (html_link, header)
+            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
             other_recipients = [r['full_name'] for r in disp_recipient
                                     if r['email'] != user_profile.email]
             header = "You and %s" % (", ".join(other_recipients),)
             html_link = pm_narrow_url([r["email"] for r in disp_recipient
                                        if r["email"] != user_profile.email])
-            header_html = "<a href='%s'>%s</a>" % (html_link, header)
+            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
             header = "%s > %s" % (disp_recipient, message.subject)
             stream_link = stream_narrow_url(disp_recipient)
@@ -1916,7 +1916,8 @@ def build_message_list(user_profile, messages):
             header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
                 stream_link, disp_recipient, topic_link, message.subject)
         return {"plain": header,
-                "html": header_html}
+                "html": header_html,
+                "stream_message": message.recipient.type_name() == "stream"}
 
     # # Collapse message list to
     # [
