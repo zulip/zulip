@@ -59,12 +59,14 @@
             <span class="integration-label">Desk.com</span>
          </a>
        </div>
+{% if email_integration_enabled %}
        <div class="integration-lozenge integration-email">
          <a class="integration-link integration-email" href="#email">
             <img class="integration-logo" src="/static/images/integrations/logos/email.png">
             <span class="integration-label">Email</span>
          </a>
        </div>
+{% endif %}
        <div class="integration-lozenge integration-freshdesk">
          <a class="integration-link integration-freshdesk" href="#freshdesk">
             <img class="integration-logo" src="/static/images/integrations/logos/freshdesk.png">
@@ -491,7 +493,7 @@
     </div>
 
 
-
+{% if email_integration_enabled %}
     <div id="email" class="integration-instructions">
 
 
@@ -522,6 +524,7 @@
       <p>Please note that it may take up to one minute for the message to show up
       in Zulip.</p>
     </div>
+{% endif %}
 
 
     <div id="freshdesk" class="integration-instructions">
