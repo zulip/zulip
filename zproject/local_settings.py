@@ -65,18 +65,20 @@ NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
+if DEPLOYED:
+    EXTERNAL_URI_SCHEME = "https://"
+else:
+    EXTERNAL_URI_SCHEME = "http://"
+
 if TESTING_DEPLOYED:
     EXTERNAL_HOST = platform.node()
-    EXTERNAL_API_HOST = 'https://%s/api' % (platform.node())
 elif STAGING_DEPLOYED:
     EXTERNAL_HOST = 'staging.zulip.com'
-    EXTERNAL_API_HOST = 'https://staging.zulip.com/api'
 elif DEPLOYED:
     EXTERNAL_HOST = 'zulip.com'
-    EXTERNAL_API_HOST = 'https://api.zulip.com'
 else:
     EXTERNAL_HOST = 'localhost:9991'
-    EXTERNAL_API_HOST = 'http://localhost:9991/api'
+    EXTERNAL_API_PATH = 'localhost:9991/api'
 
 EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 

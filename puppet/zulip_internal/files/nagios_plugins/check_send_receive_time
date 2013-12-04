@@ -99,11 +99,10 @@ if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None an
     settings.NAGIOS_STAGING_RECEIVE_BOT is not None:
     sender = get_user_profile_by_email(settings.NAGIOS_STAGING_SEND_BOT)
     recipient = get_user_profile_by_email(settings.NAGIOS_STAGING_RECEIVE_BOT)
-    site = "https://staging.zulip.com"
 else:
     sender = get_user_profile_by_email(settings.NAGIOS_SEND_BOT)
     recipient = get_user_profile_by_email(settings.NAGIOS_RECEIVE_BOT)
-    site = settings.EXTERNAL_API_HOST
+site = settings.EXTERNAL_API_URI
 
 zulip_sender = zulip.Client(
     email=sender.email,

@@ -67,12 +67,12 @@ if settings.DEPLOYED:
 
 
     api_client = zulip.Client(
-            site=settings.EXTERNAL_API_HOST,
+            site=settings.EXTERNAL_API_URI,
             email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 else:
     api_client = prod_api_client = zulip.Client(
-            site=settings.EXTERNAL_API_HOST,
+            site=settings.EXTERNAL_API_URI,
             email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 

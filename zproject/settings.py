@@ -296,6 +296,10 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", ""),
                      ("DEFAULT_FROM_EMAIL", ""),
                      ]
 
+if "EXTERNAL_API_PATH" not in vars():
+    EXTERNAL_API_PATH = EXTERNAL_HOST + "/api"
+EXTERNAL_API_URI = EXTERNAL_URI_SCHEME + EXTERNAL_API_PATH
+
 INTERNAL_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
                    'email_template': 'notification-bot@%s',
                    'name': 'Notification Bot'},
