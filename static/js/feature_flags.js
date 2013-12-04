@@ -47,6 +47,8 @@ exports.use_socket = false;
 exports.clicking_notification_causes_narrow = page_params.staging || is_customer4 ||
     _.contains(['customer25.invalid'], page_params.domain);
 
+exports.experimental_background = page_params.staging;
+
 exports.show_digest_email_setting = page_params.staging;
 
 var zoom_realms = [

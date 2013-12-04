@@ -1619,6 +1619,11 @@ $(function () {
         $("#group-pm-list").hide();
     }
 
+    // UI experiments
+    if (feature_flags.experimental_background) {
+        exports.switchBackground();
+    }
+
     // initialize other stuff
     composebox_typeahead.initialize();
     search.initialize();
