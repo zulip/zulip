@@ -20,6 +20,7 @@ def add_settings(request):
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
         'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_integration_enabled': settings.EMAIL_GATEWAY_BOT != "",
+        'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
     }
 
 def add_metrics(request):

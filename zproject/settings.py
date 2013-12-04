@@ -323,6 +323,8 @@ for bot in INTERNAL_BOTS:
 
 if EMAIL_GATEWAY_BOT not in API_SUPER_USERS:
     API_SUPER_USERS.add(EMAIL_GATEWAY_BOT)
+if EMAIL_GATEWAY_PATTERN != "":
+    EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
 
 if DEPLOYED:
     FEEDBACK_TARGET="https://staging.zulip.com/api"
