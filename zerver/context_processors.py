@@ -15,6 +15,10 @@ def add_settings(request):
         'password_auth_enabled': password_auth_enabled(),
         'login_url':     settings.HOME_NOT_LOGGED_IN,
         'only_sso':     settings.ONLY_SSO,
+        'external_api_path': settings.EXTERNAL_API_PATH,
+        'external_api_uri': settings.EXTERNAL_API_URI,
+        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
+        'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
     }
 
 def add_metrics(request):

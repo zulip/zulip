@@ -286,7 +286,7 @@
      Choose the <code>Webhooks</code> integration from the list presented. Make sure to replace the <code>@</code> in the bot's email address with <code>%40</code>,
      as Beanstalk's website will incorrectly refuse to parse a username containing a <code>@</code>.</p>
 
-     <p>In the URL field, enter <code>https://bot_email:bot_api_key@api.zulip.com/v1/external/beanstalk</code>:</p>
+     <p>In the URL field, enter <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path }}/v1/external/beanstalk</code>:</p>
       <img class="screenshot" src="/static/images/integrations/beanstalk/001.png">
 
       <p><b>Congratulations! You're done!</b><br /> Whenever you do a
@@ -310,7 +310,7 @@
      Choose the <code>POST</code> hook from the list presented and click "Add hook."   Make sure to replace the <code>@</code> in the bot's email address with <code>%40</code>,
      as Bitbucket will not execute the hook if the username contains a <code>@</code>.</p>
 
-      <p>In the URL field, enter <code>https://bot_email:bot_api_key@api.zulip.com/v1/external/bitbucket</code>:</p>
+      <p>In the URL field, enter <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path }}/v1/external/bitbucket</code>:</p>
       <img class="screenshot" src="/static/images/integrations/bitbucket/001.png">
 
       <p>By default, notifications are sent to the <code>commits</code> stream.
@@ -422,7 +422,7 @@
       <ul>
           <li><b>Name</b>: Zulip</li>
           <li><b>Authentication Method</b>: Basic Auth</li>
-          <li><b>URL</b>: <code>https://zulip.com/api/v1/external/desk</code></li>
+          <li><b>URL</b>: <code>{{ external_api_uri }}/v1/external/desk</code></li>
           <li><b>User name</b>: <em>your bot's user name, e.g.</em> <code>desk-bot@yourdomain.com</code></li>
           <li><b>Password</b>: <em>your bot's API key</em></li>
       </ul>
@@ -564,7 +564,7 @@
           to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
           the Zulip stream with your desired stream:</p>
 
-          <p><code>https://api.zulip.com/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
+          <p><code>{{ external_api_uri }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
 
           <p>Check the <b>"Requires Authentication"</b> box, and supply the bot
           e-mail address and API key.</p>
@@ -656,7 +656,7 @@
           to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
           the Zulip stream with your desired stream:</p>
 
-          <p><code>https://api.zulip.com/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
+          <p><code>{{ external_api_uri }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
 
           <p>Check the <b>"Requires Authentication"</b> box, and supply the bot
           e-mail address and API key.</p>
@@ -878,7 +878,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
       </p>
       <p>Give your new web hook a name, and for the URL provide the following:</p>
       <p>
-      <code>https://api.zulip.com/v1/external/jira?api_key=abcdefgh&amp;stream=jira</code>
+      <code>{{ external_api_uri }}/v1/external/jira?api_key=abcdefgh&amp;stream=jira</code>
       </p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
@@ -919,7 +919,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <p><b>SSL Setup</b></p>
         As Zulip is using a StartCOM SSL certificate that is not recognized by default in the Java installation shipped with JIRA,
         you will need to tell JIRA about the certificate. Navigate to <code>Administration > System > Configure SSL</code> and in
-        the <code>Import SSL Certificates</code> field, enter <code>https://api.zulip.com</code>. After clicking <code>Save Certificates</code>,
+        the <code>Import SSL Certificates</code> field, enter <code>{{ external_api_uri }}</code>. After clicking <code>Save Certificates</code>,
         follow the on-screen instructions and restart JIRA for it to recognize the proper certificates.
       <p><b>Zulip Integration</b></p>
         Copy the folder <code>integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA <code>classes</code> folder.
@@ -1041,7 +1041,7 @@ key=NAGIOS_BOT_API_KEY
       tab. Scroll down to the <code>Activity Web Hook</code> section, and enter
       the following url:</p>
 
-      <p><code>https://api.zulip.com/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
+      <p><code>{{ external_api_uri }}/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -1163,7 +1163,7 @@ ignore_branches = "noisy,even-more-noisy"</pre>
       "Integrations", then "Alerting notifications". On the "Webhook"
       tab, enter the following webhook URL:</p>
 
-      <p><code>https://api.zulip.com/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
+      <p><code>{{ external_api_uri }}/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -1295,7 +1295,7 @@ ignore_branches = "noisy,even-more-noisy"</pre>
           information. <b>Note:</b> the <code>@</code>-sign in the bot e-mail
           address must be escaped to <code>%40</code>:</p>
 
-          <p><code>https://<font color="#00A26F">stash-bot%40example.com</font>:<font color="#00A26F">api_key</font>@api.zulip.com/v1/external/stash?stream=<font color="#00A26F">commits</font></code></p>
+          <p><code>{{ external_uri_scheme }}<font color="#00A26F">stash-bot%40example.com</font>:<font color="#00A26F">api_key</font>@{{ external_api_path }}/v1/external/stash?stream=<font color="#00A26F">commits</font></code></p>
 
           <img class="screenshot" src="/static/images/integrations/stash/004.png">
         </li>

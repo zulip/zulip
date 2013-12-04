@@ -457,6 +457,7 @@ def api_endpoint_docs(request):
     calls = ujson.loads(raw_calls)
     langs = set()
     for call in calls:
+        call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com", settings.EXTERNAL_API_URI)
         response = call['example_response']
         if not '\n' in response:
             # For 1-line responses, pretty-print them
