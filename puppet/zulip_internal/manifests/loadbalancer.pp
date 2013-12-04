@@ -3,25 +3,6 @@ class zulip_internal::loadbalancer {
   include zulip::nginx
   include zulip::camo
 
-  file { "/etc/nginx/zulip-include/":
-    require => Package["nginx-full"],
-    recurse => true,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip_internal/nginx/zulip-include/",
-    notify => Service["nginx"],
-  }
-
-  file { "/etc/nginx/zulip-include/location-sockjs":
-    require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/nginx/zulip-include/location-sockjs",
-    notify => Service["nginx"],
-  }
-
   file { "/etc/nginx/sites-available/loadbalancer":
     require => Package["nginx-full"],
     ensure => file,

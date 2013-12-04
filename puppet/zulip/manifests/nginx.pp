@@ -4,6 +4,16 @@ class zulip::nginx {
                    ]
   package { $web_packages: ensure => "installed" }
 
+  file { "/etc/nginx/zulip-include/":
+    require => Package["nginx-full"],
+    recurse => true,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/nginx/zulip-include-common/",
+    notify => Service["nginx"],
+  }
+
   file { "/etc/nginx/nginx.conf":
     require => Package["nginx-full"],
     ensure => file,

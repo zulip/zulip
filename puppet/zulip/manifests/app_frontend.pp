@@ -66,13 +66,12 @@ class zulip::app_frontend {
   }
   safepackage { $web_packages: ensure => "installed" }
 
-  file { "/etc/nginx/zulip-include/":
+  file { "/etc/nginx/zulip-include/app":
     require => Package["nginx-full"],
-    recurse => true,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/nginx/zulip-include/",
+    source => "puppet:///modules/zulip/nginx/zulip-include-frontend/app",
     notify => Service["nginx"],
   }
   file { "/etc/nginx/zulip-include/app.d/":
