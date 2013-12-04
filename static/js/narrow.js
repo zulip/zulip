@@ -249,7 +249,7 @@ exports.activate = function (operators, opts) {
     // above us could change size -- which is problematic, because it
     // could cause us to lose our position. But doing this here, right
     // after showing the table, seems to cause us to win the race.
-    _.each($("tr.message_row"), ui.process_condensing);
+    ui.condense_and_collapse($("tr.message_row"));
 
     reset_load_more_status();
     if (! defer_selecting_closest) {

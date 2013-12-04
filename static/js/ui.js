@@ -1705,42 +1705,44 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor, saved_compose_cursor);
 };
 
-exports.process_condensing = function (elem) {
+exports.condense_and_collapse = function (elems) {
     var height_cutoff = viewport.height() * 0.65;
 
     function could_be_condensed(elem) {
         return elem.getBoundingClientRect().height > height_cutoff;
     }
 
-    var content = $(elem).find(".message_content");
-    var message = current_msg_list.get(rows.id($(elem)));
-    if (content !== undefined && message !== undefined) {
-        var long_message = could_be_condensed(elem);
-        if (long_message) {
-            // All long messages are flagged as such.
-            content.addClass("could-be-condensed");
-        }
+    _.each(elems, function (elem) {
+        var content = $(elem).find(".message_content");
+        var message = current_msg_list.get(rows.id($(elem)));
+        if (content !== undefined && message !== undefined) {
+            var long_message = could_be_condensed(elem);
+            if (long_message) {
+                // All long messages are flagged as such.
+                content.addClass("could-be-condensed");
+            }
 
-        // If message.condensed is defined, then the user has manually
-        // specified whether this message should be expanded or condensed.
-        if (message.condensed === true) {
-            condense($(elem));
-            return;
-        } else if (message.condensed === false) {
-            uncondense($(elem));
-            return;
-        } else if (long_message) {
-            // By default, condense a long message.
-            condense($(elem));
-        }
+            // If message.condensed is defined, then the user has manually
+            // specified whether this message should be expanded or condensed.
+            if (message.condensed === true) {
+                condense($(elem));
+                return;
+            } else if (message.condensed === false) {
+                uncondense($(elem));
+                return;
+            } else if (long_message) {
+                // By default, condense a long message.
+                condense($(elem));
+            }
 
-        // Completely hide the message and replace it with a [More]
-        // link if the user has collapsed it.
-        if (message.collapsed) {
-            content.addClass("collapsed");
-            $(elem).find(".message_expander").show();
+            // Completely hide the message and replace it with a [More]
+            // link if the user has collapsed it.
+            if (message.collapsed) {
+                content.addClass("collapsed");
+                $(elem).find(".message_expander").show();
+            }
         }
-    }
+    });
 };
 
 $(function () {
