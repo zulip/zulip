@@ -524,6 +524,7 @@ JS_SPECS = {
             'js/reload.js',
             'js/notifications_bar.js',
             'js/compose_fade.js',
+            'js/echo.js',
             'js/socket.js',
             'js/compose.js',
             'js/stream_color.js',
