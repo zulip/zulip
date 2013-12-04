@@ -231,6 +231,7 @@ Socket.prototype = {
         this._is_authenticated = false;
         this._is_reconnecting = true;
         this._reconnect_initiation_time = now;
+        this._sockjs.close();
 
         this._reconnect_timeout_id = setTimeout(function () {
             that._reconnect_timeout_id = null;
