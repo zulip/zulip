@@ -831,7 +831,8 @@ def home(request):
         name_changes_disabled = settings.NAME_CHANGES_DISABLED,
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         autoscroll_forever = user_profile.autoscroll_forever,
-        show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com")
+        show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com"),
+        avatar_url            = avatar_url(user_profile)
     )
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
@@ -859,8 +860,8 @@ def home(request):
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
                                    'page_params' : simplejson.encoder.JSONEncoderForHTML().encode(page_params),
-                                   'avatar_url': avatar_url(user_profile),
                                    'nofontface': is_buggy_ua(request.META["HTTP_USER_AGENT"]),
+                                   'avatar_url': avatar_url(user_profile),
                                    'show_debug':
                                        settings.DEBUG and ('show_debug' in request.GET),
                                    'show_invites': show_invites,
