@@ -49,7 +49,7 @@
         "arguments": [
             [
                 "event_types",
-                "(optional) An array indicating which types of events you're interested in.  Values that you might find useful include: <ul><li><strong>message</strong> (messages),</li> <li><strong>subscriptions</strong> (changes in your subscriptions),</li> <li><strong>realm_user</strong> (changes in the list of users in your realm), and</li> <li><strong>pointer</strong> (changes in your pointer).</li></ul>\n If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code.  For most applications, one is only interested in messages, so one specifies: <strong>event_types=['messages']</strong>"
+                "(optional) An array indicating which types of events you're interested in.  Values that you might find useful include: <ul><li><strong>message</strong> (messages),</li> <li><strong>subscriptions</strong> (changes in your subscriptions),</li> <li><strong>realm_user</strong> (changes in the list of users in your realm), and</li> <li><strong>pointer</strong> (changes in your pointer).</li></ul>\n If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code.  For most applications, one is only interested in messages, so one specifies: <strong>event_types=['message']</strong>"
             ],
             [
                 "apply_markdown",
@@ -58,7 +58,7 @@
         ],
         "example_request": {
             "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">register<span class=\"p\">()</span>\n</span></pre></div>",
-            "curl": "<div class=\"codehilite\"><pre>curl -G https://api.zulip.com/v1/register <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"event_types=['messages']\"</span>\n</pre></div>"
+            "curl": "<div class=\"codehilite\"><pre>curl https://api.zulip.com/v1/register <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">'event_types=[\"message\"]'</span>\n</pre></div>"
         }
     },
     {
@@ -140,7 +140,7 @@
         ],
         "example_request": {
             "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">get_events<span class=\"p\">()</span>\n</span></pre></div> or if you want the event queues managed for you, <div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">call_on_each_event<span class=\"p\">()</span>\n</span></pre></div>",
-            "curl": "<div class=\"codehilite\"><pre>curl -G https://api.zulip.com/v1/events <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"queue_id=1375801870:2942\"</span>\n -d <span class=\"s2\">\"last_event_id=-1\"</span>\n</pre></div>"
+            "curl": "<div class=\"codehilite\"><pre>curl -G https://api.zulip.com/v1/events <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"queue_id=1375801870:2942\"</span> <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"last_event_id=-1\"</span>\n</pre></div>"
         }
     }
 ]
