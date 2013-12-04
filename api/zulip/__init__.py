@@ -47,8 +47,8 @@ API_VERSTRING = "v1/"
 def generate_option_group(parser):
     group = optparse.OptionGroup(parser, 'API configuration')
     group.add_option('--site',
-                      default=None,
-                      help=optparse.SUPPRESS_HELP)
+                     help="Zulip Enterprise server URI (if using Zulip Enterprise)",
+                     default=None)
     group.add_option('--api-key',
                      action='store')
     group.add_option('--user',
