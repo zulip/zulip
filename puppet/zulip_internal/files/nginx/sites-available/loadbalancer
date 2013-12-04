@@ -19,7 +19,7 @@ server {
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
     location / {
-        proxy_pass https://staging/;
+        proxy_pass https://staging;
         include /etc/nginx/zulip-include/proxy;
     }
 
@@ -29,7 +29,7 @@ server {
     }
 
     location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://staging/;
+        proxy_pass https://staging;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
@@ -43,7 +43,7 @@ server {
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
     location / {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy;
     }
 
@@ -53,7 +53,7 @@ server {
     }
 
     location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
@@ -76,7 +76,7 @@ server {
     }
 
     location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
@@ -90,7 +90,7 @@ server {
     ssl_certificate_key /etc/ssl/private/production-zulip.key;
 
     location / {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy;
     }
 
@@ -100,7 +100,7 @@ server {
     }
 
     location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
@@ -113,7 +113,7 @@ server {
     ssl_certificate_key /etc/ssl/private/production-zulip.key;
 
     location / {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy;
     }
 
@@ -123,7 +123,7 @@ server {
     }
 
     location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
@@ -137,7 +137,7 @@ server {
     ssl_certificate_key /etc/ssl/private/production-zulip.key;
 
     location / {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy;
     }
 
@@ -147,7 +147,7 @@ server {
     }
 
     location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod/;
+        proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
@@ -160,7 +160,7 @@ server {
     ssl_certificate_key /etc/ssl/private/production-zulipcdn.key;
 
     location / {
-        proxy_pass http://127.0.0.1:9292/;
+        proxy_pass http://127.0.0.1:9292;
         include /etc/nginx/zulip-include/proxy;
     }
 }
