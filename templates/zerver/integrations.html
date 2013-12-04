@@ -203,10 +203,16 @@
         <p>Visit your <a href="https://app.asana.com/-/account_api">Asana
         account settings page</a> and retrieve your API key.</p>
 
-        <p>Edit <code>asana/zulip_asana_config.py</code> and set
-        the <code>ASANA_API_KEY</code>, <code>ZULIP_USER</code>,
-        and <code>ZULIP_API_KEY</code> configuration options to your
-        credentials.</p>
+        <p>Edit <code>asana/zulip_asana_config.py</code> and
+        change the following lines to configure the integration:</p>
+
+      <div class="codehilite">
+      <pre>
+<span class="n">ASANA_API_KEY</span> <span class="o">=</span> <span class="s">0123456789abcdef0123456789abcdef</span>
+<span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"asana-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri }}"</span>{% endif %}</pre>
+      </div>
 
         <p>If you are using a stream other than <code>asana</code>,
         set <code>ZULIP_STREAM_NAME</code> to the chosen stream name.</p>
@@ -1338,10 +1344,16 @@ ignore_branches = "noisy,even-more-noisy"</pre>
         and <code>integrations/svn/post-commit</code> from the API bindings
         directory to the <code>hooks</code> subdirectory of your SVN
         repository.</li>
-        <li>Open <code>zulip_svn_config.py</code> in your favorite editor and
-        change the <code>ZULIP_USER</code> and <code>ZULIP_API_KEY</code>
-        variables at the top of the file to the credentials for the bot you'd
-        like to use for this integration.</li>
+
+        <li><p>Next, open <code>integrations/git/zulip_svn_config.py</code>
+          in your favorite editor, and change the following lines to
+          configure your SVN integration:</p>
+
+        <div class="codehilite"><pre><span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"svn-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri }}"</span>{% endif %}</pre></div>
+        </li>
+
         <li>The default stream used by this post-commit hook
         is <code>commits</code>; if you'd prefer a different stream, change it
         now in <code>zulip_svn_config.py</code>. Make sure that everyone
