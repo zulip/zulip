@@ -466,7 +466,7 @@ function send_message(request) {
         $("#sending-indicator").hide();
         setTimeout(function () {
             if (exports.send_times_data[message_id].received === undefined) {
-                blueslip.debug("Restarting get_updates");
+                blueslip.error("Restarting get_updates due to delayed receipt of sent message " + message_id);
                 restart_get_updates();
             }
         }, 2000);
