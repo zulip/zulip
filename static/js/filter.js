@@ -74,6 +74,13 @@ Filter.canonicalize_tuple = function (tuple) {
         break;
     case 'topic':
         break;
+    case 'sender':
+    case 'pm-with':
+        operand = operand.toString().toLowerCase();
+        if (operand === 'me') {
+            operand = page_params.email;
+        }
+        break;
     default:
         operand = operand.toString().toLowerCase();
     }

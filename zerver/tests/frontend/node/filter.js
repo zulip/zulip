@@ -8,6 +8,7 @@ add_dependencies({
 });
 
 set_global('page_params', {
+    email: 'hamlet@zulip.com',
     domain: 'zulip.com'
 });
 
@@ -52,6 +53,9 @@ var Filter = require('js/filter.js');
     assert.equal(Filter.canonicalize_operator('Subject'), 'topic');
 
     assert.deepEqual(Filter.canonicalize_tuple(['Stream', 'Denmark']), ['stream', 'Denmark']);
+
+    assert.deepEqual(Filter.canonicalize_tuple(['sender', 'me']), ['sender', 'hamlet@zulip.com']);
+    assert.deepEqual(Filter.canonicalize_tuple(['pm-with', 'me']), ['pm-with', 'hamlet@zulip.com']);
 }());
 
 function get_predicate(operators) {
