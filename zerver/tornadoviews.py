@@ -61,7 +61,6 @@ def get_events_backend(request, user_profile, handler = None,
             queue_id = client.event_queue.id
         else:
             return json_error("Missing 'queue_id' argument")
-        logging.info("DEBUG: created queue %s" % (queue_id,))
     else:
         if last_event_id is None:
             return json_error("Missing 'last_event_id' argument")
