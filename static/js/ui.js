@@ -851,6 +851,17 @@ exports.switchBackground = function (homecolor, narrowcolor) {
     return ("Background has been changed");
 };
 
+/* This method allows an advanced user to use the console
+ * to switch the application to span full width of the browser.
+ */
+exports.switchToFullWidth = function () {
+    $("#full-width-style").remove();
+    $('head').append('<style id="full-width-style" type="text/css">' +
+                         '#home .alert-bar, .recipient-bar-content, #compose-container, .app-main, .header-main { max-width: none; }' +
+                     '</style>');
+    return ("Switched to full width");
+};
+
 /* END OF EXPERIMENTS */
 
 $(function () {
@@ -1622,6 +1633,10 @@ $(function () {
     // UI experiments
     if (feature_flags.experimental_background) {
         exports.switchBackground();
+    }
+
+    if (feature_flags.full_width) {
+        exports.switchToFullWidth();
     }
 
     // initialize other stuff
