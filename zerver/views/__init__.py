@@ -2007,6 +2007,18 @@ def json_report_send_time(request, user_profile,
 
 @authenticated_json_post_view
 @has_request_variables
+def json_report_narrow_time(request, user_profile,
+                            initial_core=REQ(converter=to_non_negative_int),
+                            initial_free=REQ(converter=to_non_negative_int),
+                            network=REQ(converter=to_non_negative_int)):
+    request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
+    statsd.timing("narrow.initial_core.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_core)
+    statsd.timing("narrow.initial_free.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_free)
+    statsd.timing("narrow.network.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), network)
+    return json_success()
+
+@authenticated_json_post_view
+@has_request_variables
 def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
                       ui_message=REQ(converter=json_to_bool), user_agent=REQ,
                       href=REQ, log=REQ,

@@ -96,7 +96,30 @@ exports.stream = function () {
     return undefined;
 };
 
+function report_narrow_time(initial_core_time, initial_free_time, network_time) {
+    $.ajax({
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        url: '/json/report_narrow_time',
+        type: 'POST',
+        data: {"initial_core": initial_core_time.toString(),
+               "initial_free": initial_free_time.toString(),
+               "network": network_time.toString()}
+    });
+}
+
+function maybe_report_narrow_time(msg_list) {
+    if (msg_list.network_time === undefined || msg_list.initial_core_time === undefined ||
+        msg_list.initial_free_time === undefined) {
+        return;
+    }
+    report_narrow_time(msg_list.initial_core_time - msg_list.start_time,
+                       msg_list.initial_free_time - msg_list.start_time,
+                       msg_list.network_time - msg_list.start_time);
+
+}
+
 exports.activate = function (operators, opts) {
+    var start_time = new Date();
     // most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
     notifications.clear_compose_notifications();
@@ -177,13 +200,14 @@ exports.activate = function (operators, opts) {
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top - viewport.scrollTop();
     }
 
-    narrowed_msg_list = new MessageList('zfilt', current_filter, {
+    var msg_list = new MessageList('zfilt', current_filter, {
         collapse_messages: ! current_filter.is_search(),
         muting_enabled: muting_enabled,
         summarize_read: this.summary_enabled()
     });
+    msg_list.start_time = start_time;
 
-
+    narrowed_msg_list = msg_list;
     current_msg_list = narrowed_msg_list;
 
     function maybe_select_closest() {
@@ -235,6 +259,8 @@ exports.activate = function (operators, opts) {
             if (defer_selecting_closest) {
                 maybe_select_closest();
             }
+            msg_list.network_time = new Date();
+            maybe_report_narrow_time(msg_list);
         },
         cont_will_add_messages: false
     });
@@ -279,6 +305,11 @@ exports.activate = function (operators, opts) {
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: narrowed_msg_list,
                                                             filter: current_filter,
                                                             trigger: opts.trigger}));
+    msg_list.initial_core_time = new Date();
+    setTimeout(function () {
+        msg_list.initial_free_time = new Date();
+        maybe_report_narrow_time(msg_list);
+    }, 0);
 };
 
 // Activate narrowing with a single operator.
