@@ -1,9 +1,13 @@
 upstream staging {
     server staging.zulip.net:443;
+
+    keepalive 10000;
 }
 
 upstream prod {
     server prod0.zulip.net:443;
+
+    keepalive 10000;
 }
 
 server {
