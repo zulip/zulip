@@ -52,27 +52,6 @@ def p4_build_cmd(cmd):
     """
     real_cmd = ["p4"]
 
-    user = gitConfig("git-p4.user")
-    if len(user) > 0:
-        real_cmd += ["-u",user]
-
-    password = gitConfig("git-p4.password")
-    if len(password) > 0:
-        real_cmd += ["-P", password]
-
-    port = gitConfig("git-p4.port")
-    if len(port) > 0:
-        real_cmd += ["-p", port]
-
-    host = gitConfig("git-p4.host")
-    if len(host) > 0:
-        real_cmd += ["-H", host]
-
-    client = gitConfig("git-p4.client")
-    if len(client) > 0:
-        real_cmd += ["-c", client]
-
-
     if isinstance(cmd,basestring):
         real_cmd = ' '.join(real_cmd) + ' ' + cmd
     else:
