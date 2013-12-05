@@ -2048,7 +2048,7 @@ table.floating_recipient {
 
 .operator_value {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-    color: red;
+    color: maroon;
 }
 .operator {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
