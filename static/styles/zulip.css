@@ -387,7 +387,7 @@ a:hover code {
     cursor: pointer;
 }
 
-#user_presences li, #group-pms li {
+#user_presences li {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -496,10 +496,13 @@ ul.filters {
 .user_sidebar_entry .selectable_sidebar_block,
 .group-pms-sidebar-entry .selectable_sidebar_block {
     width: 170px;
-    overflow: hidden;
     display: block;
+}
+
+.user_sidebar_entry .selectable_sidebar_block {
     white-space: nowrap;
-    text-overflow:ellipsis;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user_sidebar_entry.user-with-count .selectable_sidebar_block {
