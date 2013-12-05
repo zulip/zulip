@@ -35,6 +35,7 @@ zproject/test_settings.py
 zproject/settings.py
 tools/jslint/jslint.js
 api/setup.py
+api/integrations/perforce/git_p4.py
 """.split()
 
 if options.modified:
