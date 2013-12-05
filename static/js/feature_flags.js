@@ -51,17 +51,8 @@ exports.experimental_background = page_params.staging || _.contains(['mit.edu'],
 
 exports.show_digest_email_setting = page_params.staging;
 
-var zoom_realms = [
-    'customer4.invalid',
-    'users.customer4.invalid',
-    'customer10.invalid',
-    'upworthy.com',
-    'mit.edu',
-    'cmtelematics.com'
-];
-exports.topic_zooming = page_params.staging || _.contains(zoom_realms, page_params.domain);
-
 // Still burning in...
+exports.topic_zooming = true;
 exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.summarize_read_while_narrowed = false;
