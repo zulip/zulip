@@ -236,13 +236,14 @@ Socket.prototype = {
             this._heartbeat_timeout_id = null;
         }
 
-        // Cancel any pending auth requests
+        // Cancel any pending auth requests and any timeouts for ACKs
         _.each(this._requests, function (val, key) {
+            if (val.ack_timeout_id !== null) {
+                clearTimeout(val.ack_timeout_id);
+                val.ack_timeout_id = null;
+            }
+
             if (val.type === 'auth') {
-                if (val.ack_timeout_id !== null) {
-                    clearTimeout(val.ack_timeout_id);
-                    val.ack_timeout_id = null;
-                }
                 delete that._requests[key];
             }
         });
