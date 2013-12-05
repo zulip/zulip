@@ -54,9 +54,18 @@ Socket.prototype = {
             that._try_to_reconnect();
         }, 2000);
 
-        // TODO: I think we might need to catch exceptions here for certain transports
-        this._sockjs.send(JSON.stringify({req_id: req_id,
-                                          type: type, request: msg}));
+        try {
+            this._sockjs.send(JSON.stringify({req_id: req_id,
+                                              type: type, request: msg}));
+        } catch (e) {
+            if (e instanceof Error && e.message === 'INVALID_STATE_ERR') {
+                // The connection was somehow closed.  Our on-close handler will
+                // be called imminently and we'll retry this request upon reconnect.
+                return;
+            } else {
+                throw e;
+            }
+        }
     },
 
     _can_send: function Socket__can_send() {
