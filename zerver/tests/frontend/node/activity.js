@@ -32,6 +32,9 @@ set_global('people_dict', new global.Dict.from({
     },
     'mark@zulip.com': {
         full_name: 'Marky Mark'
+    },
+    'norbert@zulip.com': {
+        full_name: 'Norbert Oswald'
     }
 }));
 
@@ -120,13 +123,19 @@ var activity = require('js/activity.js');
 
     assert.equal(
         activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, + 1 other'
+        'Alice Smith, Fred Flintstone, Jill Hill'
     );
 
     assert.equal(
         activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
-        'Alice Smith, Fred Flintstone, + 2 others'
+        'Alice Smith, Fred Flintstone, Jill Hill, + 1 other'
     );
+
+    assert.equal(
+        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
+        'Alice Smith, Fred Flintstone, Jill Hill, + 2 others'
+    );
+
 }());
 
 (function test_huddle_fraction_present() {

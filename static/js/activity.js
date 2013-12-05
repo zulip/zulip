@@ -77,11 +77,12 @@ exports.full_huddle_name = function (huddle) {
 exports.short_huddle_name = function (huddle) {
     var emails = huddle.split(',');
 
-    var names = _.map(emails.slice(0,2), function (email) {
+    var num_to_show = 3;
+    var names = _.map(emails.slice(0, num_to_show), function (email) {
         var person = people_dict.get(email);
         return person ? person.full_name : email;
     });
-    var others = emails.length - 2;
+    var others = emails.length - num_to_show;
 
     if (others === 1) {
         names.push("+ 1 other");
