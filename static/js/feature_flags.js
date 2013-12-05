@@ -42,7 +42,7 @@ exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domai
 
 // Still very beta:
 exports.fade_users_when_composing = page_params.staging || is_customer4;
-exports.use_socket = false;
+exports.use_socket = page_params.staging;
 
 exports.clicking_notification_causes_narrow = page_params.staging || is_customer4 ||
     _.contains(['customer25.invalid'], page_params.domain);
