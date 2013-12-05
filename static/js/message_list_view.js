@@ -63,6 +63,8 @@ MessageListView.prototype = {
 
         var table_name = this.table_name;
         var table = rows.get_table(table_name);
+        // we we record if last_message_was_selected before updating the table
+        var last_message_was_selected = rows.id(rows.last_visible()) === list.selected_id();
         var messages_to_render = [];
         var ids_where_next_is_same_sender = {};
         var prev;
@@ -435,15 +437,43 @@ MessageListView.prototype = {
         }
 
         if (list === current_msg_list && messages_are_new) {
-            self._maybe_autoscroll(rendered_elems);
+            self._maybe_autoscroll(rendered_elems, last_message_was_selected);
         }
     },
 
-    _maybe_autoscroll: function MessageListView__maybe_autoscroll(rendered_elems) {
-
+    _maybe_autoscroll: function MessageListView__maybe_autoscroll(rendered_elems, last_message_was_selected) {
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
         // up to the amount taken up by the new message.
+        var new_messages_height = 0;
+        var distance_to_last_message_sent_by_me = 0;
+        var id_of_last_message_sent_by_us = -1;
+
+        // C++ iterators would have made this less painful
+        _.each(rendered_elems.toArray().reverse(), function (elem) {
+            // Sometimes there are non-DOM elements in rendered_elems; only
+            // try to get the heights of actual trs.
+            if ($(elem).is("tr")) {
+                new_messages_height += elem.offsetHeight;
+                // starting from the last message, ignore message heights that weren't sent by me.
+                if(id_of_last_message_sent_by_us > -1) {
+                    distance_to_last_message_sent_by_me += elem.offsetHeight;
+                } else if (elem.className !== "bookend_tr" &&
+                           this.get_message(rows.id($(elem))).sender_email === page_params.email)
+                {
+                    distance_to_last_message_sent_by_me += elem.offsetHeight;
+                    id_of_last_message_sent_by_us = rows.id($(elem));
+                }
+            }
+        }, this);
+
+        // autoscroll_forever: if we're on the last message, keep us on the last message
+        if (last_message_was_selected && page_params.autoscroll_forever) {
+            this.list.select_id(this.list.last().id, {from_rendering: true});
+            scroll_to_selected();
+            this.list.reselect_selected_id();
+            return;
+        }
 
         var selected_row = this.selected_row();
         var last_visible = rows.last_visible();
@@ -457,19 +487,17 @@ MessageListView.prototype = {
         var info = viewport.message_viewport_info();
         var available_space_for_scroll = selected_row_offset - info.visible_top;
 
+        // autoscroll_forever: if we've sent a message, move pointer at least that far.
+        if (page_params.autoscroll_forever && id_of_last_message_sent_by_us > -1 && (rows.last_visible().offset().top - this.list.selected_row().offset().top) < (viewport.height())) {
+            this.list.select_id(id_of_last_message_sent_by_us, {from_rendering: true});
+            scroll_to_selected();
+            return;
+        }
+
         // Don't scroll if we can't move the pointer up.
         if (available_space_for_scroll <= 0) {
             return;
         }
-
-        var new_messages_height = 0;
-        _.each(rendered_elems, function (elem) {
-            // Sometimes there are non-DOM elements in rendered_elems; only
-            // try to get the heights of actual trs.
-            if ($(elem).is("tr")) {
-                new_messages_height += $(elem).height();
-            }
-        });
 
         if (new_messages_height <= 0) {
             return;
