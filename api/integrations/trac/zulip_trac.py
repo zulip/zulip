@@ -40,6 +40,7 @@ import sys
 import os.path
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_trac_config as config
+VERSION = "0.9"
 
 if config.ZULIP_API_PATH is not None:
     sys.path.append(config.ZULIP_API_PATH)
@@ -48,7 +49,8 @@ import zulip
 client = zulip.Client(
     email=config.ZULIP_USER,
     site=config.ZULIP_SITE,
-    api_key=config.ZULIP_API_KEY)
+    api_key=config.ZULIP_API_KEY,
+    client="trac " + VERSION)
 
 def markdown_ticket_url(ticket, heading="ticket"):
     return "[%s #%s](%s/%s)" % (heading, ticket.id, config.TRAC_BASE_TICKET_URL, ticket.id)

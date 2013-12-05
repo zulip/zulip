@@ -36,6 +36,7 @@ import urllib2
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_asana_config as config
+VERSION = "0.9"
 
 if config.ZULIP_API_PATH is not None:
     sys.path.append(config.ZULIP_API_PATH)
@@ -47,7 +48,7 @@ else:
     logging.basicConfig(level=logging.INFO)
 
 client = zulip.Client(email=config.ZULIP_USER, api_key=config.ZULIP_API_KEY,
-                      site=config.ZULIP_SITE)
+                      site=config.ZULIP_SITE, client="asana " + VERSION)
 
 def fetch_from_asana(path):
     """

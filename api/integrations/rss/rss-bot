@@ -36,7 +36,7 @@ import urlparse
 
 import feedparser
 import zulip
-
+VERSION = "0.9"
 RSS_DATA_DIR = os.path.expanduser(os.path.join('~', '.cache', 'zulip-rss'))
 OLDNESS_THRESHOLD = 30 # days
 
@@ -164,7 +164,7 @@ except IOError:
     log_error_and_exit("Unable to read feed file at %s." % (opts.feed_file,))
 
 client = zulip.Client(email=opts.email, api_key=opts.api_key,
-                       site=opts.site)
+                       site=opts.site, client="rss " + VERSION)
 
 first_message = True
 

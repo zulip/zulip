@@ -29,7 +29,7 @@ import optparse
 import ConfigParser
 
 import zulip
-
+VERSION = "0.9"
 CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
 
 def write_config(config, since_id):
@@ -146,6 +146,7 @@ client = zulip.Client(
     email=opts.email,
     api_key=opts.api_key,
     site=opts.site,
+    client="twitter search " + VERSION,
     verbose=True)
 
 search_query = " OR ".join(opts.search_terms.split(","))

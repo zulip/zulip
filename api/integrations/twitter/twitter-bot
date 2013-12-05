@@ -29,7 +29,7 @@ import optparse
 import ConfigParser
 
 import zulip
-
+VERSION = "0.9"
 CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
 
 def write_config(config, since_id, user):
@@ -129,6 +129,7 @@ client = zulip.Client(
     email=options.email,
     api_key=options.api_key,
     site=options.site,
+    client="twitter " + VERSION,
     verbose=True)
 
 if since_id < 0 or options.twitter_id != user_id:
