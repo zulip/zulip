@@ -7,7 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
 from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     generic_bulk_cached_fetch, cache_set, \
-    display_recipient_cache_key, active_user_dicts_in_realm_cache_key
+    display_recipient_cache_key, cache_delete, active_user_dicts_in_realm_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
@@ -192,6 +192,42 @@ def update_realm_emoji_cache(sender, **kwargs):
 
 post_save.connect(update_realm_emoji_cache, sender=RealmEmoji)
 post_delete.connect(update_realm_emoji_cache, sender=RealmEmoji)
+
+class RealmFilter(models.Model):
+    realm = models.ForeignKey(Realm)
+    pattern = models.TextField()
+    url_format_string = models.TextField()
+
+    class Meta:
+        unique_together = ("realm", "pattern")
+
+    def __str__(self):
+        return "<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
+
+def get_realm_filters_cache_key(domain):
+    return 'all_realm_filters:%s' % (domain,)
+
+@cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
+def realm_filters_for_domain(domain):
+    filters = []
+    for realm_filter in RealmFilter.objects.filter(realm=get_realm(domain)):
+       filters.append((realm_filter.pattern, realm_filter.url_format_string))
+
+    return filters
+
+def all_realm_filters():
+    filters = defaultdict(list)
+    for realm_filter in RealmFilter.objects.all():
+       filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string))
+
+    return filters
+
+def update_realm_filter(sender, **kwargs):
+    realm = kwargs['instance'].realm
+    cache_delete(get_realm_filters_cache_key(realm.domain))
+
+post_save.connect(update_realm_filter, sender=RealmFilter)
+post_delete.connect(update_realm_filter, sender=RealmFilter)
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Fields from models.AbstractUser minus last_name and first_name,
