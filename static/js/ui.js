@@ -314,6 +314,16 @@ function need_skinny_mode() {
     }
 }
 
+function confine_to_range(lo, val, hi) {
+    if (val < lo) {
+        return lo;
+    }
+    if (val > hi) {
+        return hi;
+    }
+    return val;
+}
+
 function size_blocks(blocks, usable_height) {
     // The algorithm here is to give each block an amount of space proportional
     // to its size, but we don't let either block hog more than 80%.
@@ -323,11 +333,8 @@ function size_blocks(blocks, usable_height) {
         blocks[1].max_height = blocks[1].real_height;
     } else {
         var ratio = (blocks[0].real_height) / sum_height;
-        ratio = Math.max(0.2, ratio);
-        ratio = Math.min(0.8, ratio);
-        blocks[0].max_height = Math.max(40, usable_height * ratio);
-        blocks[0].max_height = Math.min(blocks[0].real_height, blocks[0].max_height);
-
+        ratio = confine_to_range(0.2, ratio, 0.8);
+        blocks[0].max_height = confine_to_range(40, usable_height * ratio, blocks[0].real_height);
         blocks[1].max_height = usable_height - blocks[0].max_height;
 
         var wasted_space = blocks[1].max_height - blocks[1].real_height;
