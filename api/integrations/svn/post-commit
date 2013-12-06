@@ -46,7 +46,7 @@ client = zulip.Client(
     email=config.ZULIP_USER,
     site=config.ZULIP_SITE,
     api_key=config.ZULIP_API_KEY,
-    client="svn " + VERSION)
+    client="ZulipSVN/" + VERSION)
 svn = pysvn.Client()
 
 path, rev = sys.argv[1:]

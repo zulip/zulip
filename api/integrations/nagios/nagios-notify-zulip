@@ -15,7 +15,7 @@ for opt in ('type', 'host', 'service', 'state'):
     parser.add_option('--' + opt)
 (opts, args) = parser.parse_args()
 
-client = zulip.Client(config_file=opts.config, client="nagios " + VERSION)
+client = zulip.Client(config_file=opts.config, client="ZulipNagios/" + VERSION)
 
 msg = dict(type='stream', to=opts.stream)
 

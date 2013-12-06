@@ -51,7 +51,7 @@ client = zulip.Client(
     email=config.ZULIP_USER,
     site=config.ZULIP_SITE,
     api_key=config.ZULIP_API_KEY,
-    client="codebase " + VERSION)
+    client="ZulipCodebase/" + VERSION)
 user_agent = "Codebase To Zulip Mirroring script (support@zulip.com)"
 
 # find some form of JSON loader/dumper, with a preference order for speed.

@@ -129,7 +129,7 @@ client = zulip.Client(
     email=options.email,
     api_key=options.api_key,
     site=options.site,
-    client="twitter " + VERSION,
+    client="ZulipTwitter/" + VERSION,
     verbose=True)
 
 if since_id < 0 or options.twitter_id != user_id:

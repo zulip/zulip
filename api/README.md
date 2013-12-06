@@ -49,7 +49,7 @@ At the top of the file:
 
     # Make sure the Zulip API distribution's root directory is in sys.path, then:
     import zulip
-    zulip_client = zulip.Client(email="your-bot@example.com")
+    zulip_client = zulip.Client(email="your-bot@example.com", client="MyTestClient/0.1")
 
 When you want to send a message:
 

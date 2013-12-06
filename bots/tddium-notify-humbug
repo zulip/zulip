@@ -49,6 +49,7 @@ sys.path.append(zulip_directory)
 import zulip
 
 client = zulip.Client(
+    client  = "ZulipTddiumNotifier/0.1",
     email   = os.environ['ZULIP_USER'],
     api_key = os.environ.get('ZULIP_API_KEY'))
 

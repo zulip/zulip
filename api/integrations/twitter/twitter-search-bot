@@ -146,7 +146,7 @@ client = zulip.Client(
     email=opts.email,
     api_key=opts.api_key,
     site=opts.site,
-    client="twitter search " + VERSION,
+    client="ZulipTwitterSearch/" + VERSION,
     verbose=True)
 
 search_query = " OR ".join(opts.search_terms.split(","))

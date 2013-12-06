@@ -50,7 +50,7 @@ client = zulip.Client(
     email=config.ZULIP_USER,
     site=config.ZULIP_SITE,
     api_key=config.ZULIP_API_KEY,
-    client="trac " + VERSION)
+    client="ZulipTrac/" + VERSION)
 
 def markdown_ticket_url(ticket, heading="ticket"):
     return "[%s #%s](%s/%s)" % (heading, ticket.id, config.TRAC_BASE_TICKET_URL, ticket.id)

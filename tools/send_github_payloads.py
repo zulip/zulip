@@ -6,7 +6,7 @@ import simplejson
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'api'))
 import zulip
 
-zulip_client = zulip.Client(site="http://localhost:9991")
+zulip_client = zulip.Client(site="http://localhost:9991", client="ZulipGithubPayloadSender/0.1")
 
 payload_dir = "zerver/fixtures/github"
 for filename in os.listdir(payload_dir):

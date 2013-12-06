@@ -87,7 +87,7 @@ def send_zulip(email, api_key, site, stream, subject, content):
     """
     client = zulip.Client(email=email, api_key=api_key,
                           site=site,
-                          client="mercurial " + VERSION)
+                          client="ZulipMercurial/" + VERSION)
 
     message_data = {
         "type": "stream",

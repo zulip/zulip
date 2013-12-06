@@ -388,7 +388,7 @@ def main(args):
     return 2
 
   if not opts.stdout:
-    client = zulip.Client(verbose=True)
+    client = zulip.Client(verbose=True, client="ZulipReview/0.1")
 
     if 'staging' not in client.base_url:
       print '''

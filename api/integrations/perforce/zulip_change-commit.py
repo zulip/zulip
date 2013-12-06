@@ -52,7 +52,8 @@ import zulip
 client = zulip.Client(
     email=config.ZULIP_USER,
     site=config.ZULIP_SITE,
-    api_key=config.ZULIP_API_KEY)
+    api_key=config.ZULIP_API_KEY,
+    client="ZulipPerforce/" + __version__)
 
 try:
     changelist = int(sys.argv[1])

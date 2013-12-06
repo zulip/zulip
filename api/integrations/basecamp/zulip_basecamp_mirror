@@ -48,7 +48,7 @@ client = zulip.Client(
     email=config.ZULIP_USER,
     site=config.ZULIP_SITE,
     api_key=config.ZULIP_API_KEY,
-    client="basecamp " + VERSION)
+    client="ZulipBasecamp/" + VERSION)
 user_agent = "Basecamp To Zulip Mirroring script (support@zulip.com)"
 htmlParser = HTMLParser()
 

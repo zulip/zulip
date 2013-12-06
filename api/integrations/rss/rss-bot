@@ -164,7 +164,7 @@ except IOError:
     log_error_and_exit("Unable to read feed file at %s." % (opts.feed_file,))
 
 client = zulip.Client(email=opts.email, api_key=opts.api_key,
-                       site=opts.site, client="rss " + VERSION)
+                       site=opts.site, client="ZulipRSS/" + VERSION)
 
 first_message = True
 

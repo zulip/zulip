@@ -183,6 +183,7 @@ def make_feedback_client():
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
     import zulip
     return zulip.Client(
+        client="ZulipFeedback/0.1",
         email=settings.DEPLOYMENT_ROLE_NAME,
         api_key=settings.DEPLOYMENT_ROLE_KEY,
         verbose=True,

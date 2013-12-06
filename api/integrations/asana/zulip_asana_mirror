@@ -48,7 +48,7 @@ else:
     logging.basicConfig(level=logging.INFO)
 
 client = zulip.Client(email=config.ZULIP_USER, api_key=config.ZULIP_API_KEY,
-                      site=config.ZULIP_SITE, client="asana " + VERSION)
+                      site=config.ZULIP_SITE, client="ZulipAsana/" + VERSION)
 
 def fetch_from_asana(path):
     """

@@ -46,7 +46,7 @@ client = zulip.Client(
     email=config.ZULIP_USER,
     site=config.ZULIP_SITE,
     api_key=config.ZULIP_API_KEY,
-    client="git " + VERSION)
+    client="ZulipGit/" + VERSION)
 
 # check_output is backported from subprocess.py in Python 2.7
 def check_output(*popenargs, **kwargs):

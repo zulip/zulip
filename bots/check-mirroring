@@ -43,7 +43,7 @@ zulip_client = zulip.Client(
     email=zulip_user,
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
-    client="test: Zulip monitoring",
+    client="ZulipMonitoring/0.1",
     site=options.site)
 
 # Configure logging

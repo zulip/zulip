@@ -35,6 +35,7 @@ next_user = gen_next_user()
 def connect_all(users):
     for user in users:
         users[user]['client'] = zulip.Client(
+            client="ZulipMessageInjector/0.1",
             email=user + '@zulip.com',
             api_key=users[user]['api-key'],
             site=options.site,

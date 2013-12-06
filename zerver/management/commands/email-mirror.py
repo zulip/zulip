@@ -61,17 +61,20 @@ except UserProfile.DoesNotExist:
 
 if settings.DEPLOYED:
     prod_api_client = zulip.Client(
+            client="ZulipEmailMirror/0.1",
             site="https://zulip.com",
             email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 
 
     api_client = zulip.Client(
+            client="ZulipEmailMirror/0.1",
             site=settings.EXTERNAL_API_URI,
             email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)
 else:
     api_client = prod_api_client = zulip.Client(
+            client="ZulipEmailMirror/0.1",
             site=settings.EXTERNAL_API_URI,
             email=settings.EMAIL_GATEWAY_BOT,
             api_key=api_key)

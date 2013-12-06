@@ -10,7 +10,7 @@ import unicodedata
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'api'))
 import zulip
 
-zulip_client = zulip.Client()
+zulip_client = zulip.Client(client="ZulipSyncPublicStreamsBot/0.1")
 
 def fetch_public_streams():
     public_streams = set()
