@@ -2013,7 +2013,7 @@ def do_send_missedmessage_events(user_profile, missed_messages):
 def handle_push_notification(user_profile_id, missed_message):
     user_profile = get_user_profile_by_id(user_profile_id)
     umessage = UserMessage.objects.get(user_profile=user_profile,
-                                      message__id=missed_message['message_id']).message
+                                      message__id=missed_message['message_id'])
     message = umessage.message
     if umessage.flags.read:
         return
