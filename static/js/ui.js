@@ -325,24 +325,17 @@ function confine_to_range(lo, val, hi) {
 }
 
 function size_blocks(blocks, usable_height) {
-    // The algorithm here is to give each block an amount of space proportional
-    // to its size, but we don't let either block hog more than 80%.
-    var sum_height = blocks[0].real_height + blocks[1].real_height;
-    if (sum_height < usable_height) {
-        blocks[0].max_height = blocks[0].real_height;
-        blocks[1].max_height = blocks[1].real_height;
-    } else {
-        var ratio = (blocks[0].real_height) / sum_height;
-        ratio = confine_to_range(0.2, ratio, 0.8);
-        blocks[0].max_height = confine_to_range(40, usable_height * ratio, blocks[0].real_height);
-        blocks[1].max_height = usable_height - blocks[0].max_height;
+    var n = blocks.length;
 
-        var wasted_space = blocks[1].max_height - blocks[1].real_height;
-        if (wasted_space > 0) {
-            blocks[0].max_height += wasted_space;
-            blocks[1].max_height -= wasted_space;
-        }
-    }
+    var sum_height = 0;
+    _.each(blocks, function (block) {
+        sum_height += block.real_height;
+    });
+
+    _.each(blocks, function (block) {
+        var ratio = block.real_height / sum_height;
+        block.max_height = confine_to_range(40, usable_height * ratio, 1.2 * block.real_height);
+    });
 }
 
 function set_user_list_heights(res, usable_height, user_presences, group_pms) {
