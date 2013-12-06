@@ -314,6 +314,45 @@ function need_skinny_mode() {
     }
 }
 
+function set_user_list_heights(res, usable_height, user_presences, group_pms) {
+    // Calculate these heights:
+    //    res.user_presences_max_height
+    //    res.group_pms_max_height
+    var blocks = [
+        {
+            real_height: user_presences.prop('scrollHeight')
+        },
+        {
+            real_height: group_pms.prop('scrollHeight')
+        }
+    ];
+
+    // The algorithm here is to give each block an amount of space proportional
+    // to its size, but we don't let either block hog more than 80%.
+    var sum_height = blocks[0].real_height + blocks[1].real_height;
+    if (sum_height < usable_height) {
+        blocks[0].max_height = blocks[0].real_height;
+        blocks[1].max_height = blocks[1].real_height;
+    } else {
+        var ratio = (blocks[0].real_height) / sum_height;
+        ratio = Math.max(0.2, ratio);
+        ratio = Math.min(0.8, ratio);
+        blocks[0].max_height = Math.max(40, usable_height * ratio);
+        blocks[0].max_height = Math.min(blocks[0].real_height, blocks[0].max_height);
+
+        blocks[1].max_height = usable_height - blocks[0].max_height;
+
+        var wasted_space = blocks[1].max_height - blocks[1].real_height;
+        if (wasted_space > 0) {
+            blocks[0].max_height += wasted_space;
+            blocks[1].max_height -= wasted_space;
+        }
+    }
+
+    res.user_presences_max_height = blocks[0].max_height;
+    res.group_pms_max_height = blocks[1].max_height;
+}
+
 function get_new_heights() {
     var res = {};
     var viewport_height = viewport.height();
@@ -358,37 +397,15 @@ function get_new_heights() {
         - parseInt(group_pms.css("marginBottom"), 10)
         - $("#group-pm-header").outerHeight(true);
 
-    var blocks = [
-        {
-            real_height: user_presences.prop('scrollHeight')
-        },
-        {
-            real_height: group_pms.prop('scrollHeight')
-        }
-    ];
-
-    var sum_height = blocks[0].real_height + blocks[1].real_height;
-    if (sum_height < usable_height) {
-        blocks[0].max_height = blocks[0].real_height;
-        blocks[1].max_height = blocks[1].real_height;
-    } else {
-        var ratio = (blocks[0].real_height) / sum_height;
-        ratio = Math.max(0.2, ratio);
-        ratio = Math.min(0.8, ratio);
-        blocks[0].max_height = Math.max(40, usable_height * ratio);
-        blocks[0].max_height = Math.min(blocks[0].real_height, blocks[0].max_height);
-
-        blocks[1].max_height = usable_height - blocks[0].max_height;
-
-        var wasted_space = blocks[1].max_height - blocks[1].real_height;
-        if (wasted_space > 0) {
-            blocks[0].max_height += wasted_space;
-            blocks[1].max_height -= wasted_space;
-        }
-    }
-
-    res.user_presences_max_height = blocks[0].max_height;
-    res.group_pms_max_height = blocks[1].max_height;
+    // set these
+    // res.user_presences_max_height
+    // res.group_pms_max_height
+    set_user_list_heights(
+        res,
+        usable_height,
+        user_presences,
+        group_pms
+    );
 
     return res;
 }
