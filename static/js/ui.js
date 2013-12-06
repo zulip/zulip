@@ -424,9 +424,11 @@ function left_userlist_get_new_heights() {
 
     var stream_filters = $('#stream_filters').expectOne();
     var user_presences = $('#user_presences').expectOne();
+    var group_pms = $('#group-pms').expectOne();
 
     var stream_filters_real_height = stream_filters.prop("scrollHeight");
     var user_list_real_height = user_presences.prop("scrollHeight");
+    var group_pms_real_height = group_pms.prop("scrollHeight");
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
@@ -441,9 +443,12 @@ function left_userlist_get_new_heights() {
                                 - $("#global_filters").outerHeight(true)
                                 - $("#streams_header").outerHeight(true)
                                 - $("#userlist-header").outerHeight(true)
+                                - $("#group-pm-header").outerHeight(true)
                                 - parseInt(stream_filters.css("marginBottom"),10)
                                 - parseInt(user_presences.css("marginTop"), 10)
                                 - parseInt(user_presences.css("marginBottom"), 10)
+                                - parseInt(group_pms.css("marginTop"), 10)
+                                - parseInt(group_pms.css("marginBottom"), 10)
                                 - invite_user_link_height
                                 - 15;
 
@@ -453,6 +458,9 @@ function left_userlist_get_new_heights() {
         },
         {
             real_height: user_list_real_height
+        },
+        {
+            real_height: group_pms_real_height
         }
     ];
 
@@ -460,11 +468,10 @@ function left_userlist_get_new_heights() {
 
     res.stream_filters_max_height = blocks[0].max_height;
     res.user_presences_max_height = blocks[1].max_height;
+    res.group_pms_max_height = blocks[2].max_height;
 
     res.viewport_height = viewport_height;
     res.viewport_width = viewport_width;
-
-    res.group_pms_max_height = 0;
 
     return res;
 }
