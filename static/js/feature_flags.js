@@ -37,7 +37,7 @@ exports.mandatory_topics = _.contains([
     page_params.domain
 );
 
-exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domain);
+exports.left_side_userlist = page_params.staging || _.contains(['customer7.invalid'], page_params.domain);
 
 
 // Still very beta:
