@@ -474,6 +474,14 @@ function left_userlist_get_new_heights() {
     return res;
 }
 
+exports.resize_bottom_whitespace = function (h) {
+    if (page_params.autoscroll_forever) {
+        $("#bottom_whitespace").height($("#compose-container")[0].offsetHeight);
+    } else if (h !== undefined) {
+        $("#bottom_whitespace").height(h.bottom_whitespace_height);
+    }
+};
+
 exports.resize_page_components = function () {
     var composebox = $("#compose");
     var floating_recipient_bar = $("#floating_recipient_bar");
@@ -523,7 +531,7 @@ exports.resize_page_components = function () {
 
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
-    $("#bottom_whitespace").height(h.bottom_whitespace_height);
+    exports.resize_bottom_whitespace(h);
     $("#stream_filters").css('max-height', h.stream_filters_max_height);
     $("#user_presences").css('max-height', h.user_presences_max_height);
     $("#group-pms").css('max-height', h.group_pms_max_height);
@@ -966,7 +974,7 @@ $(function () {
     });
     $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
         var target_tab = $(e.target).attr('href');
-
+        exports.resize_bottom_whitespace();
         // Hide all our error messages when switching tabs
         $('.alert-error').hide();
         $('.alert-success').hide();
@@ -1140,6 +1148,7 @@ $(function () {
 
             if (result.autoscroll_forever !== undefined) {
                 page_params.autoscroll_forever = result.autoscroll_forever;
+                exports.resize_page_components();
             }
 
             ui_settings_status.removeClass(status_classes)

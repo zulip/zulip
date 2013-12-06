@@ -240,6 +240,7 @@ exports.start = function (msg_type, opts) {
 
     exports.decorate_stream_bar(opts.stream);
     $(document).trigger($.Event('compose_started.zulip', opts));
+    ui.resize_bottom_whitespace();
 };
 
 function abort_xhr () {
@@ -254,6 +255,7 @@ function abort_xhr () {
 exports.cancel = function () {
     hide_box();
     $("#compose_close").hide();
+    ui.resize_bottom_whitespace();
     clear_box();
     notifications.clear_compose_notifications();
     abort_xhr();
@@ -464,6 +466,7 @@ function send_message(request) {
         clear_message_snapshot();
         $("#compose-send-button").removeAttr('disabled');
         $("#sending-indicator").hide();
+        ui.resize_bottom_whitespace();
         setTimeout(function () {
             if (exports.send_times_data[message_id].received === undefined) {
                 blueslip.error("Restarting get_updates due to delayed receipt of sent message " + message_id);

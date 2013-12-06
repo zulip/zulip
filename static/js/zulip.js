@@ -1115,6 +1115,7 @@ function get_old_messages_success(data, opts) {
     }
 
     process_result(data.messages, opts);
+    ui.resize_bottom_whitespace();
 }
 
 function load_old_messages(opts) {
