@@ -420,7 +420,6 @@ function left_userlist_get_new_heights() {
     var viewport_height = viewport.height();
     var viewport_width = viewport.width();
     var top_navbar_height = $(".header").outerHeight(true);
-    var invite_user_link_height = $("#invite-user-link").outerHeight(true) || 0;
 
     var stream_filters = $('#stream_filters').expectOne();
     var user_presences = $('#user_presences').expectOne();
@@ -449,7 +448,6 @@ function left_userlist_get_new_heights() {
                                 - parseInt(user_presences.css("marginBottom"), 10)
                                 - parseInt(group_pms.css("marginTop"), 10)
                                 - parseInt(group_pms.css("marginBottom"), 10)
-                                - invite_user_link_height
                                 - 15;
 
     var blocks = [
@@ -503,6 +501,7 @@ exports.resize_page_components = function () {
         $("#user_presences").css("margin", "0px");
         $("#group-pms").css("margin", "0px");
         $("#userlist-toggle").css("display", "none");
+        $("#invite-user-link").hide();
     }
     else if (viewport.width() > 975 && feature_flags.left_side_userlist && narrow_window) {
         narrow_window = false;
@@ -513,6 +512,7 @@ exports.resize_page_components = function () {
         $("#user_presences").css("margin", '');
         $("#group-pms").css("margin", '');
         $("#userlist-toggle").css("display", '');
+        $("#invite-user-link").show();
     }
 
 
