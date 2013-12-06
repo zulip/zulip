@@ -204,8 +204,10 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                            error_content=self.close_info.err_msg)
         else:
             deregister_connection(self)
+            email = self.session.user_profile.email \
+                if self.session.user_profile is not None else 'unknown'
             write_log_line(log_data, path='/socket/close', method='SOCKET',
-                           remote_ip=self.session.conn_info.ip, email='unknown',
+                           remote_ip=self.session.conn_info.ip, email=email,
                            client_name='?')
 
 def fake_message_sender(event):
