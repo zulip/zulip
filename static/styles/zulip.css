@@ -499,6 +499,11 @@ ul.filters {
     display: block;
 }
 
+.group-pm-link {
+    margin-left: 17px;
+    display: block;
+}
+
 .user_sidebar_entry .selectable_sidebar_block {
     white-space: nowrap;
     overflow: hidden;
