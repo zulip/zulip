@@ -103,6 +103,8 @@ class ZulipListener extends AbstractIssueEventListener {
     String post(String method, NameValuePair[] parameters) {
       PostMethod post = new PostMethod(zulipUrl(method))
       post.setRequestHeader("Content-Type", post.FORM_URL_ENCODED_CONTENT_TYPE)
+      // TODO: Include more useful data in the User-agent
+      post.setRequestHeader("User-agent", "ZulipJira/0.1")
       try {
         post.setRequestBody(parameters)
         HttpClient client = new HttpClient()
@@ -134,7 +136,6 @@ class ZulipListener extends AbstractIssueEventListener {
     String sendStreamMessage(String stream, String subject, String message) {
       NameValuePair[] body = [new NameValuePair("api-key", zulipAPIKey),
                               new NameValuePair("email",   zulipEmail),
-                              new NameValuePair("client",  "jira-groovy"),
                               new NameValuePair("type",    "stream"),
                               new NameValuePair("to",      stream),
                               new NameValuePair("subject", subject),
