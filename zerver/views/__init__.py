@@ -1107,8 +1107,13 @@ def get_old_messages_backend(request, user_profile,
 
     # Add some metadata to our logging data for narrows
     if narrow is not None:
-        operator_data = ",".join(operator for (operator, operand) in narrow)
-        request._log_data['extra'] = "[%s]" % (operator_data,)
+        verbose_operators = []
+        for (operator, operand) in narrow:
+            if operator == "is":
+                verbose_operators.append("is:" + operand)
+            else:
+                verbose_operators.append(operator)
+        request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
 
     num_extra_messages = 1
     is_search = False
