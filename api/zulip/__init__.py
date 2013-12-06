@@ -45,6 +45,9 @@ requests_json_is_function = callable(requests.Response.json)
 
 API_VERSTRING = "v1/"
 
+def _default_client():
+    return "ZulipPython/" + __version__
+
 def generate_option_group(parser):
     group = optparse.OptionGroup(parser, 'API configuration')
     group.add_option('--site',
@@ -63,7 +66,7 @@ def generate_option_group(parser):
                      help='Provide detailed output.')
     group.add_option('--client',
                      action='store',
-                     default="API: Python",
+                     default=_default_client(),
                      help=optparse.SUPPRESS_HELP)
 
     return group
@@ -75,7 +78,9 @@ def init_from_options(options):
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
-                 site=None, client="API: Python"):
+                 site=None, client=None):
+        if client is None:
+            client = _default_client()
         if None in (api_key, email):
             if config_file is None:
                 config_file = os.path.join(os.environ["HOME"], ".zuliprc")
