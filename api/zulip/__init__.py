@@ -66,14 +66,18 @@ def generate_option_group(parser):
                      help='Provide detailed output.')
     group.add_option('--client',
                      action='store',
-                     default=_default_client(),
+                     default=None,
                      help=optparse.SUPPRESS_HELP)
-
     return group
 
-def init_from_options(options):
-    return Client(email=options.email, api_key=options.api_key, config_file=options.config_file,
-                  verbose=options.verbose, site=options.site, client=options.client)
+def init_from_options(options, client=None):
+    if options.client is not None:
+        client = options.client
+    elif client is None:
+        client = _default_client()
+    return Client(email=options.email, api_key=options.api_key,
+                  config_file=options.config_file, verbose=options.verbose,
+                  site=options.site, client=client)
 
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
