@@ -314,19 +314,7 @@ function need_skinny_mode() {
     }
 }
 
-function set_user_list_heights(res, usable_height, user_presences, group_pms) {
-    // Calculate these heights:
-    //    res.user_presences_max_height
-    //    res.group_pms_max_height
-    var blocks = [
-        {
-            real_height: user_presences.prop('scrollHeight')
-        },
-        {
-            real_height: group_pms.prop('scrollHeight')
-        }
-    ];
-
+function size_blocks(blocks, usable_height) {
     // The algorithm here is to give each block an amount of space proportional
     // to its size, but we don't let either block hog more than 80%.
     var sum_height = blocks[0].real_height + blocks[1].real_height;
@@ -348,6 +336,22 @@ function set_user_list_heights(res, usable_height, user_presences, group_pms) {
             blocks[1].max_height -= wasted_space;
         }
     }
+}
+
+function set_user_list_heights(res, usable_height, user_presences, group_pms) {
+    // Calculate these heights:
+    //    res.user_presences_max_height
+    //    res.group_pms_max_height
+    var blocks = [
+        {
+            real_height: user_presences.prop('scrollHeight')
+        },
+        {
+            real_height: group_pms.prop('scrollHeight')
+        }
+    ];
+
+    size_blocks(blocks, usable_height);
 
     res.user_presences_max_height = blocks[0].max_height;
     res.group_pms_max_height = blocks[1].max_height;
