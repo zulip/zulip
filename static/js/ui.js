@@ -417,7 +417,6 @@ function left_userlist_get_new_heights() {
     var viewport_width = viewport.width();
     var top_navbar_height = $(".header").outerHeight(true);
     var invite_user_link_height = $("#invite-user-link").outerHeight(true) || 0;
-    var share_the_love_height = $("#share-the-love").is(":visible") ? $("#share-the-love").outerHeight(true) : 0;
 
     var stream_filters = $('#stream_filters').expectOne();
     var user_presences = $('#user_presences').expectOne();
@@ -442,7 +441,6 @@ function left_userlist_get_new_heights() {
                                 - parseInt(user_presences.css("marginTop"), 10)
                                 - parseInt(user_presences.css("marginBottom"), 10)
                                 - invite_user_link_height
-                                - share_the_love_height
                                 - 15;
 
 
