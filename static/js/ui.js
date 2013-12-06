@@ -447,25 +447,19 @@ function left_userlist_get_new_heights() {
                                 - invite_user_link_height
                                 - 15;
 
+    var blocks = [
+        {
+            real_height: stream_filters_real_height
+        },
+        {
+            real_height: user_list_real_height
+        }
+    ];
 
-    res.stream_filters_max_height = Math.max(40, res.total_leftlist_height / 2);
+    size_blocks(blocks, res.total_leftlist_height);
 
-
-    res.user_presences_max_height = Math.max(40, res.total_leftlist_height / 2);
-
-
-    if (res.stream_filters_max_height > stream_filters_real_height) {
-        res.stream_filters_max_height = stream_filters_real_height;
-        res.user_presences_max_height = Math.max(40, res.total_leftlist_height
-                                                     - stream_filters_real_height);
-    }
-
-    else if (res.user_presences_max_height > user_list_real_height) {
-        res.user_presences_max_height = user_list_real_height;
-        res.stream_filters_max_height = Math.max (40, res.total_leftlist_height
-                                                       - user_list_real_height);
-    }
-
+    res.stream_filters_max_height = blocks[0].max_height;
+    res.user_presences_max_height = blocks[1].max_height;
 
     res.viewport_height = viewport_height;
     res.viewport_width = viewport_width;
