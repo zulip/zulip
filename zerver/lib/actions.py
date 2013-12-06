@@ -2012,9 +2012,10 @@ def do_send_missedmessage_events(user_profile, missed_messages):
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
     user_profile = get_user_profile_by_id(user_profile_id)
-    message = UserMessage.objects.get(user_profile=user_profile,
+    umessage = UserMessage.objects.get(user_profile=user_profile,
                                       message__id=missed_message['message_id']).message
-    if message.flags.read:
+    message = umessage.message
+    if umessage.flags.read:
         return
     sender_str = message.sender.full_name
 
