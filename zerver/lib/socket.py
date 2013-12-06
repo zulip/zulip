@@ -21,6 +21,8 @@ from zerver.lib.event_queue import get_client_descriptor
 from zerver.middleware import record_request_start_data, record_request_stop_data, \
     record_request_restart_data, write_log_line, format_timedelta
 
+logger = logging.getLogger('zulip.socket')
+
 djsession_engine = import_module(settings.SESSION_ENGINE)
 def get_user_profile(session_id):
     if session_id is None:
@@ -75,6 +77,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         self.authenticated = False
         self.session.user_profile = None
         self.close_info = None
+        self.did_close = False
+
         try:
             self.browser_session_id = info.get_cookie(settings.SESSION_COOKIE_NAME).value
             self.csrf_token = info.get_cookie(settings.CSRF_COOKIE_NAME).value
@@ -146,6 +150,12 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         record_request_start_data(log_data)
         msg = ujson.loads(msg)
 
+        if self.did_close:
+            logger.info("Received message on already closed socket! transport=%s user=%s client_id=%s"
+                        % (self.session.transport_name,
+                           self.session.user_profile.email if self.session.user_profile is not None else 'unknown',
+                           self.client_id))
+
         self.session.send_message({'req_id': msg['req_id'], 'type': 'ack'})
 
         if msg['type'] == 'auth':
@@ -210,6 +220,8 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                            remote_ip=self.session.conn_info.ip, email=email,
                            client_name='?')
 
+        self.did_close = True
+
 def fake_message_sender(event):
     log_data = dict()
     record_request_start_data(log_data)
@@ -245,8 +257,11 @@ def respond_send_message(data):
         format_timedelta(forward_queue_delay), format_timedelta(return_queue_delay),
         format_timedelta(service_time))
 
-    connection = get_connection(data['server_meta']['client_id'])
-    if connection is not None:
+    client_id = data['server_meta']['client_id']
+    connection = get_connection(client_id)
+    if connection is None:
+        logger.info("Could not find connection to send response to! client_id=%s" % (client_id,))
+    else:
         connection.session.send_message({'req_id': data['req_id'], 'type': 'response',
                                          'response': data['response']})
 
