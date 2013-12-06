@@ -40,6 +40,8 @@ import os.path
 
 import git_p4
 
+__version__ = "0.1"
+
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_perforce_config as config
 
