@@ -347,13 +347,10 @@ class Stream(models.Model):
         return self.__repr__()
 
     def is_public(self):
-        # For every realm except for legacy realms on prod (aka those
-        # older than realm id 68 with some exceptions), we enable
-        # historical messages for all streams that are not invite-only.
-        return ((not settings.DEPLOYED or self.realm.domain in
-                 ["zulip.com"] or self.realm.id > 68
-                 or settings.ENTERPRISE)
-                and not self.invite_only)
+        if self.realm.domain in ["mit.edu", "customer1.invalid", "customer22.invalid"]:
+            # These realms predate public streams and all streams are private
+            return False
+        return not self.invite_only
 
     class Meta:
         unique_together = ("name", "realm")
