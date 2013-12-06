@@ -45,7 +45,7 @@ exports.fade_users_when_composing = page_params.staging || is_customer4;
 exports.use_socket = page_params.staging;
 
 exports.clicking_notification_causes_narrow = page_params.staging || is_customer4 ||
-    _.contains(['customer25.invalid'], page_params.domain);
+    _.contains(['customer25.invalid', 'mit.edu', 'customer21.invalid'], page_params.domain);
 
 exports.experimental_background = page_params.staging || _.contains(['mit.edu'], page_params.domain);
 exports.full_width = page_params.staging;
