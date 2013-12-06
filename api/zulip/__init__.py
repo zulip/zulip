@@ -28,6 +28,7 @@ import urlparse
 import sys
 import os
 import optparse
+import platform
 from distutils.version import LooseVersion
 
 from ConfigParser import SafeConfigParser
@@ -112,9 +113,25 @@ class Client(object):
         self.retry_on_errors = retry_on_errors
         self.client_name = client
 
+    def get_user_agent(self):
+        vendor = platform.system()
+        vendor_version = platform.release()
+
+        if vendor == "Linux":
+            vendor, vendor_version, dummy = platform.linux_distribution()
+        elif vendor == "Windows":
+            vendor_version = platform.win32_ver()[1]
+        elif vendor == "Darwin":
+            vendor_version = platform.mac_ver()[0]
+
+        return "{client_name} ({vendor}; {vendor_version})".format(
+                client_name=self.client_name,
+                vendor=vendor,
+                vendor_version=vendor_version,
+                )
+
     def do_api_query(self, orig_request, url, method="POST", longpolling = False):
         request = {}
-        request["client"] = self.client_name
 
         for (key, val) in orig_request.iteritems():
             if not (isinstance(val, str) or isinstance(val, unicode)):
@@ -164,6 +181,7 @@ class Client(object):
                         auth=requests.auth.HTTPBasicAuth(self.email,
                                                          self.api_key),
                         verify=True, timeout=90,
+                        headers={"User-agent": self.get_user_agent()},
                         **kwargs)
 
                 # On 50x errors, try again after a short sleep
