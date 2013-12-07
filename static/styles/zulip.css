@@ -3711,34 +3711,3 @@ li.show-more-topics a {
     display: none;
 }
 
-@media (min-width: 1600px)  {
-    .column-left {
-        width: 300px;
-        max-width: 300px;
-    }
-
-    .app-main .column-left .left-sidebar {
-        width: 300px;
-    }
-
-    .column-middle {
-        float: left;
-        width: 100%;
-        margin-left: -200px;
-    }
-
-    .column-middle-inner {
-        margin-left: 200px;
-        margin-right: 300px;
-    }
-
-    .app-main .column-middle .column-middle-inner {
-        margin-left: 500px; /* 200 + 300 */
-    }
-
-    .recipient-bar-main {
-        margin-left: 320px;
-        margin-right: 210px;
-    }
-
-}
