@@ -80,7 +80,7 @@ server {
     }
 
     location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod;
+        proxy_pass https://staging;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
