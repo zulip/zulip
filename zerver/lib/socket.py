@@ -190,7 +190,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         redis_key = req_redis_key(self.client_id, msg['req_id'])
         with redis_client.pipeline() as pipeline:
             pipeline.hmset(redis_key, {'status': 'received'})
-            pipeline.expire(redis_key, 60 * 5)
+            pipeline.expire(redis_key, 60 * 60 * 24)
             pipeline.execute()
 
         record_request_stop_data(log_data)
