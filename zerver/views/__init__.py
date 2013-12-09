@@ -610,22 +610,21 @@ def logout_then_login(request, **kwargs):
 
 def create_preregistration_user(email, request):
     domain = request.session.get("domain")
-    if not completely_open(domain):
-        domain = None
+    if completely_open(domain):
+        # Clear the "domain" from the session object; it's no longer needed
+        request.session["domain"] = None
+
+        # The user is trying to sign up for a completely open realm,
+        # so create them a PreregistrationUser for that realm
+        return PreregistrationUser.objects.create(email=email,
+                                                  realm=get_realm(domain))
+
     # MIT users who are not explicitly signing up for an open realm
     # require special handling (They may already have an (inactive)
     # account, for example)
-    if split_email_to_domain(email) == "mit.edu" and not domain:
-        prereg_user, created = MitUser.objects.get_or_create(email=email)
-    else:
-        domain = resolve_email_to_domain(email)
-
-        prereg_user = PreregistrationUser(email=email, realm=get_realm(domain))
-        prereg_user.save()
-
-    request.session["domain"] = None
-
-    return prereg_user
+    if split_email_to_domain(email) == "mit.edu":
+        return MitUser.objects.get_or_create(email=email)[0]
+    return PreregistrationUser.objects.create(email=email)
 
 def accounts_home_with_domain(request, domain):
     if completely_open(domain):
