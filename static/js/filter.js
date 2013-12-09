@@ -36,7 +36,7 @@ function mit_edu_topic_name_match(message, operand) {
 }
 
 function message_in_home(message) {
-    if (message.type === "private") {
+    if (message.type === "private" || message.mentioned) {
         return true;
     }
 
