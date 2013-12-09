@@ -321,36 +321,38 @@ def accounts_register(request):
                 user_profile = do_create_user(email, password, realm, full_name, short_name)
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name)
-            # We want to add the default subs list iff there were no subs
-            # specified when the user was invited.
-            streams = prereg_user.streams.all()
-            if len(streams) == 0:
-                streams = get_default_subs(user_profile)
-            bulk_add_subscriptions(streams, [user_profile])
 
-            # Give you the last 100 messages on your streams, so you have
-            # something to look at in your home view once you finish the
-            # tutorial.
-            one_week_ago = now() - datetime.timedelta(weeks=1)
-            recipients = Recipient.objects.filter(type=Recipient.STREAM,
+        # We want to add the default subs list iff there were no subs
+        # specified when the user was invited.
+        streams = prereg_user.streams.all()
+        if len(streams) == 0:
+            streams = get_default_subs(user_profile)
+        bulk_add_subscriptions(streams, [user_profile])
+
+        # Give you the last 100 messages on your streams, so you have
+        # something to look at in your home view once you finish the
+        # tutorial.
+        one_week_ago = now() - datetime.timedelta(weeks=1)
+        recipients = Recipient.objects.filter(type=Recipient.STREAM,
                                                   type_id__in=[stream.id for stream in streams])
-            messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
-            if len(messages) > 0:
-                ums_to_create = [UserMessage(user_profile=user_profile, message=message,
-                                             flags=UserMessage.flags.read)
-                                 for message in messages]
+        messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
+        if len(messages) > 0:
+            ums_to_create = [UserMessage(user_profile=user_profile, message=message,
+                                         flags=UserMessage.flags.read)
+                             for message in messages]
 
-                UserMessage.objects.bulk_create(ums_to_create)
+            UserMessage.objects.bulk_create(ums_to_create)
 
-            if prereg_user.referred_by is not None and settings.NOTIFICATION_BOT is not None:
-                # This is a cross-realm private message.
-                internal_send_message(settings.NOTIFICATION_BOT,
-                        "private", prereg_user.referred_by.email, user_profile.realm.domain,
-                        "%s <`%s`> accepted your invitation to join Zulip!" % (
-                            user_profile.full_name,
-                            user_profile.email,
-                            )
+        # mit_beta_users don't have a referred_by field
+        if not mit_beta_user and prereg_user.referred_by is not None and settings.NOTIFICATION_BOT is not None:
+            # This is a cross-realm private message.
+            internal_send_message(settings.NOTIFICATION_BOT,
+                    "private", prereg_user.referred_by.email, user_profile.realm.domain,
+                    "%s <`%s`> accepted your invitation to join Zulip!" % (
+                        user_profile.full_name,
+                        user_profile.email,
                         )
+                    )
         # Mark any other PreregistrationUsers that are STATUS_ACTIVE as inactive
         # so we can find the PreregistrationUser that we are actually working
         # with here
