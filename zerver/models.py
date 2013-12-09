@@ -77,7 +77,8 @@ def completely_open(domain):
     # This domain is completely open to everyone on the internet to
     # join. This is not the same as a "restricted_to_domain" realm: in
     # those realms, users from outside the domain must be invited.
-    return domain and domain.lower() == "customer3.invalid"
+    return domain and Realm.objects.filter(domain=domain).count() == 1 and \
+        domain.lower() == "customer3.invalid"
 
 
 def get_realm_emoji_cache_key(realm):
