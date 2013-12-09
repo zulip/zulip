@@ -314,11 +314,11 @@ def accounts_register(request):
         if mit_beta_user:
             try:
                 user_profile = get_user_profile_by_email(email)
+                do_activate_user(user_profile)
+                do_change_password(user_profile, password)
+                do_change_full_name(user_profile, full_name)
             except UserProfile.DoesNotExist:
                 user_profile = do_create_user(email, password, realm, full_name, short_name)
-            do_activate_user(user_profile)
-            do_change_password(user_profile, password)
-            do_change_full_name(user_profile, full_name)
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name)
             # We want to add the default subs list iff there were no subs
