@@ -2011,28 +2011,31 @@ def do_send_missedmessage_events(user_profile, missed_messages):
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
-    user_profile = get_user_profile_by_id(user_profile_id)
-    umessage = UserMessage.objects.get(user_profile=user_profile,
+    try:
+        user_profile = get_user_profile_by_id(user_profile_id)
+        umessage = UserMessage.objects.get(user_profile=user_profile,
                                       message__id=missed_message['message_id'])
-    message = umessage.message
-    if umessage.flags.read:
-        return
-    sender_str = message.sender.full_name
+        message = umessage.message
+        if umessage.flags.read:
+            return
+        sender_str = message.sender.full_name
 
-    if user_profile.enable_offline_push_notifications and num_push_devices_for_user(user_profile):
-        #TODO: set badge count in a better way
-        # Determine what alert string to display based on the missed messages
-        if message.recipient.type == Recipient.HUDDLE:
-            alert = "New private group message from %s" % (sender_str,)
-        elif message.recipient.type == Recipient.PERSONAL:
-            alert = "New private message from %s" % (sender_str,)
-        elif message.recipient.type == Recipient.STREAM:
-            alert = "New mention from %s" % (sender_str,)
-        else:
-            alert = "New Zulip mentions and private messages from %s" % (sender_str,)
-        extra_data = {'message_ids': [message.id]}
+        if user_profile.enable_offline_push_notifications and num_push_devices_for_user(user_profile):
+            #TODO: set badge count in a better way
+            # Determine what alert string to display based on the missed messages
+            if message.recipient.type == Recipient.HUDDLE:
+                alert = "New private group message from %s" % (sender_str,)
+            elif message.recipient.type == Recipient.PERSONAL:
+                alert = "New private message from %s" % (sender_str,)
+            elif message.recipient.type == Recipient.STREAM:
+                alert = "New mention from %s" % (sender_str,)
+            else:
+                alert = "New Zulip mentions and private messages from %s" % (sender_str,)
+            extra_data = {'message_ids': [message.id]}
 
-        send_apple_push_notification(user_profile, alert, badge=1, zulip=extra_data)
+            send_apple_push_notification(user_profile, alert, badge=1, zulip=extra_data)
+    except UserMessage.DoesNotExist:
+        logging.error("Could not find UserMessage with message_id %s" %(missed_message['message_id'],))
     return
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
