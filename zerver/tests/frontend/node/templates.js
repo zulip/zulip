@@ -218,11 +218,11 @@ function render(template_name, args) {
         include_layout_row: true
     };
     var html = render('message', args);
-    html = '<table class="message_table focused_table" id="zfilt">' + html + '</table>';
+    html = '<div class="message_table focused_table" id="zfilt">' + html + '</div>';
 
     global.write_test_output("message.handlebars.handlebars", html);
 
-    var first_message = $(html).find("td.messagebox:first");
+    var first_message = $(html).find("div.messagebox:first");
 
     var first_message_text = first_message.find(".message_content").text().trim();
     assert.equal(first_message_text, "This is message one.");

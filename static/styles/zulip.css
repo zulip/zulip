@@ -729,8 +729,7 @@ td.pointer {
     white-space:    nowrap;
     font-weight:    600;
     line-height:    14px;
-    padding:        3px 0px 2px 5px;
-    border-radius:  0px 3px 0px 0px;
+    border-radius:  3px 3px 0px 0px;
     background: rgb(220,220,220); /* Old browsers */
     background: -moz-linear-gradient(top, rgba(220,220,220,1) 0%, rgba(230,230,230,1) 100%); /* FF3.6+ */
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(220,220,220,1)), color-stop(100%,rgba(230,230,230,1))); /* Chrome,Safari4+ */
@@ -739,7 +738,13 @@ td.pointer {
     background: -ms-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(230,230,230,1) 100%); /* IE10+ */
     background: linear-gradient(to bottom, rgba(220,220,220,1) 0%,rgba(230,230,230,1) 100%); /* W3C */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dcdcdc', endColorstr='#e6e6e6',GradientType=0 ); /* IE6-9 */
-    box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #ccc;
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+}
+
+.message-header-contents {
+    padding: 3px 0px 2px 14px;
 }
 
 .summary_row .message_header{
@@ -802,14 +807,6 @@ just a temporary hack.
 */
 .floating_recipient .messages-collapse {
     display: none;
-}
-
-.floating_recipient .message_header {
-    box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333 !important;
-}
-
-.floating_recipient .message_header_colorblock {
-    box-shadow: inset 0px 2px 1px -2px #333, inset 2px 0px 1px -2px #333 !important;
 }
 
 .compose_table .message_header_colorblock, .compose_table .message_header {
@@ -920,27 +917,26 @@ just a temporary hack.
 }
 
 .pointer_icon {
-    width: 100%;
-    text-align: center;
-    display: none;
+    visibility: hidden;
     color: #000;
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    margin-top: -9px;
 }
 
 
 /* Round edges on the bottom of each message --
    a necessary evil in the world of tables */
 .last_message .messagebox {
-    height: 3px;
-    border-radius: 0px 0px 3px 0px;
+    border-radius: 0px 0px 3px 3px;
     border: none;
-    box-shadow: inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
+    border-left: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    overflow: hidden;
 }
 
-.last_message .messagebox_colorblock {
-    border-radius: 0px 0px 0px 3px;
-    border: none;
-    box-shadow: inset 2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
-}
 
 /* Base color backgrounds for messageboxes,
    private messages, mentions, and unread messages */
@@ -951,6 +947,7 @@ just a temporary hack.
 
 .messagebox {
     background-color: #ffffff;
+    position: relative;
 }
 
 .private-message .messagebox {
@@ -1001,33 +998,22 @@ just a temporary hack.
     opacity: 1;
 }
 
-
-.selected_message .messagebox_colorblock, .selected_message .summary_colorblock {
-    box-shadow: 0px 0px 5px 0px #3093c3, inset 3px 0px 1px -2px #39afe8, inset 0px -3px 1px -2px #39afe8, inset 0px 3px 1px -2px #39afe8, inset -12px 0px 0px -1px rgba(240,240,240,0.6);
-}
-
-.selected_message .messagebox_colorblock.message_header_private_message {
-    box-shadow: 0px 0px 5px 0px #3093c3, inset 3px 0px 1px -2px #39afe8, inset 0px -3px 1px -2px #39afe8, inset 0px 3px 1px -2px #39afe8, inset -12px 0px 0px -1px rgba(240,240,240,0.6);
-}
-
 .selected_message .pointer_icon {
-    display: inline-block;
+    visibility: visible;
 }
 
-.selected_message .messagebox,
-.selected_message.summary_row .message_header{
-    box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
- }
-
-.selected_message.mention .messagebox,
-.selected_message.private-message.mention .messagebox {
-    box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
- }
-
-
-.selected_message.private-message .messagebox {
-    box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
+.selected_message .messagebox {
+    z-index: 1;
+    border-color: #3093c3;
+    box-shadow: 0px 0px 6px 0px #3093c3;
 }
+.selected_message .messagebox-content {
+    box-shadow: inset 0px 2px 0px -1px #39afe8, inset 0px -2px 0px -1px #39afe8, inset 9px 0px 0px rgba(255,255,255,0.5);
+ }
+
+ .last_message.selected_message .messagebox-content {
+    box-shadow: inset 0px 2px 0px -1px #39afe8, inset 9px 0px 0px rgba(255,255,255,0.5);
+ }
 
 .selected_message .inline_profile_picture {
     border-color: #AAA;
@@ -1133,6 +1119,10 @@ a.message_label_clickable:hover {
     position: relative;
 }
 
+.include-sender .message_top_line {
+    margin-top: 5px;
+}
+
 .message-right {
     float: right;
 }
@@ -1160,8 +1150,7 @@ a.message_label_clickable:hover {
     text-decoration: underline;
 }
 
-table.message_table {
-    table-layout: fixed;
+div.message_table {
     border-collapse: separate;
     margin-left: auto;
     display: none;
@@ -1174,7 +1163,7 @@ table.compose_table {
     width: 100%;
 }
 
-table.focused_table {
+div.focused_table {
     display: table;
 }
 
@@ -1185,6 +1174,7 @@ table.focused_table {
 .message_content {
     line-height: 18px;
     padding-left: 35px; /* Also edit #message_edit_form .edit-controls */
+    display: block;
 }
 .message_edit_content {
     line-height: 18px;
@@ -1227,18 +1217,18 @@ div.message_content thead {
     background-color: #EFEFEF;
 }
 
-div.message_content tr {
+div.message_content div {
     display: table-row;
     vertical-align: inherit;
 }
 
-div.message_content tr th {
+div.message_content div {
     border: 1px solid #cccccc;
     padding: 4px;
     text-align: left;
 }
 
-div.message_content tr td {
+div.message_content div {
     border: 1px solid #cccccc;
     padding: 4px;
 }
@@ -1253,17 +1243,16 @@ blockquote p {
 }
 
 .messagebox {
-    padding: 7px 85px 0px 7px;
     word-wrap: break-word;
     cursor: pointer;
     vertical-align: top;
     border: none;
-    box-shadow: inset -2px 0px 1px -2px #333;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
 }
 
-.messagebox_colorblock {
-    border: none;
-    box-shadow: inset 2px 0px 1px -2px #333;
+.messagebox-content {
+    padding: 1px 85px 1px 15px;
 }
 
 .messagebox p {
@@ -1358,7 +1347,7 @@ blockquote p {
     position: fixed;
     bottom: 0px;
     left: 0px;
-    z-index: 1;
+    z-index: 2;
     width: 100%;
 }
 
@@ -1948,8 +1937,7 @@ input.recipient_box {
     margin-right: 210px;
 }
 
-table.floating_recipient {
-    table-layout: fixed;
+div.floating_recipient {
     border-collapse: separate;
     width: 100%;
 
@@ -2010,6 +1998,8 @@ table.floating_recipient {
     margin-bottom: 5px;
     margin-left: 5px;
     height: 100px;
+    display: block !important;
+    border: none !important;
 }
 
 .message_inline_image img {

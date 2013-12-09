@@ -47,7 +47,7 @@ function update_table_stream_color(table, stream_name, color) {
     var stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
     _.each(stream_labels, function (label) {
         if ($.trim($(label).text()) === stream_name) {
-            fixup($(label).parent("td").parent("tr").prev("tr")
+            fixup($(label).parent("div.selectable_row").prev("div")
                           .nextUntil(".bookend_tr")
                           .children(".messagebox_colorblock,.message_header_colorblock"));
         }

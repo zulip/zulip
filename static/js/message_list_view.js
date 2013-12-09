@@ -106,7 +106,7 @@ MessageListView.prototype = {
             // Delete the leftover recipient label.
             table.find('.recipient_row:first').remove();
         } else {
-            var last_row = table.find('tr[zid]:last');
+            var last_row = table.find('div[zid]:last');
             last_message_id = rows.id(last_row);
             prev = self.get_message(last_message_id);
 
@@ -314,7 +314,7 @@ MessageListView.prototype = {
 
         var rendered_elems = $(templates.render('message', {
             messages: messages_to_render,
-            include_layout_row: (table.find('tr:first').length === 0),
+            include_layout_row: (table.find('div:first').length === 0),
             use_match_properties: list.filter.is_search()
         }));
 
@@ -384,7 +384,7 @@ MessageListView.prototype = {
             // though, as resizing the window doesn't make them go away).
             // So, we add an empty row and then garbage collect them
             // later when the user is idle.
-            var dummy = $("<tr></tr>");
+            var dummy = $("<div></div>");
             table.find('.ztable_layout_row').after(dummy);
             $(document).idle({'idle': 1000*10,
                               'onIdle': function () {
@@ -453,7 +453,7 @@ MessageListView.prototype = {
         _.each(rendered_elems.toArray().reverse(), function (elem) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
-            if ($(elem).is("tr")) {
+            if ($(elem).is("div")) {
                 new_messages_height += elem.offsetHeight;
                 // starting from the last message, ignore message heights that weren't sent by me.
                 if(id_of_last_message_sent_by_us > -1) {

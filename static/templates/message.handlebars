@@ -5,37 +5,32 @@
     these CSS classes specify the widths for that first,
     collapsed row. (Otherwise, colspan breaks everything).}}
 {{#include_layout_row}}
-<tr class="ztable_layout_row">
-  <td class="ztable_col1"></td>
-  <td class="ztable_col2"></td>
-</tr>
+<div class="ztable_layout_row">
+</div>
 {{/include_layout_row}}
 
 {{#each messages}}
 {{#with this}}
 {{#include_bookend}}
-<tr class="bookend_tr">
-<td colspan="2" class="bookend{{#if subscribed}} sub-unsub-message{{/if}}{{#if unsubscribed}} sub-unsub-message{{/if}}">
+<div class="bookend_tr">
+<div class="bookend{{#if subscribed}} sub-unsub-message{{/if}}{{#if unsubscribed}} sub-unsub-message{{/if}}">
 {{#if subscribed}}
 <span>--- Subscribed to stream {{subscribed}} ---</span>
 {{/if}}
 {{#if unsubscribed}}
 <span>--- Unsubscribed from stream {{unsubscribed}} ---</span>
 {{/if}}
-</td>
-</tr>
+</div>
+</div>
 {{/include_bookend}}
 
 {{#if show_date}}
-<tr class="date_row" data-zid="{{id}}"><td colspan="4">{{{show_date}}}</td></tr>
+<div class="date_row" data-zid="{{id}}"><div colspan="4">{{{show_date}}}</div></div>
 {{/if}}
 
 {{#if is_summary}}
-  <tr zid="{{first_message_id}}" data-messages="{{message_ids}}" class="summary_row selectable_row{{#include_footer}} last_message{{/include_footer}}{{^is_stream}} summary_row_private_message{{/is_stream}}">
-    <td class="summary_colorblock" style="background-color: {{background_color}};">
-      <span class="pointer_icon"><i class="icon-vector-caret-right"></i></span>
-    </td>
-    <td class="message_header message_header_stream right_part">
+  <div zid="{{first_message_id}}" data-messages="{{message_ids}}" class="summary_row selectable_row{{#include_footer}} last_message{{/include_footer}}{{^is_stream}} summary_row_private_message{{/is_stream}}">
+    <div class="message_header message_header_stream right_part" style="box-shadow:inset 9px 0px {{background_color}};">
 
       {{! [+] }}
       <i class="messages-expand icon-vector-expand-alt"></i>
@@ -88,18 +83,15 @@
       {{! "(5 read)" or something similar}}
       ({{count}} {{summary_adjective}})
 
-    </td>
-  </tr>
+    </div>
+  </div>
 {{else}}
 
 {{#include_recipient}}
-<tr zid="{{id}}" class="recipient_row" data-messages="{{message_ids}}">
+<div zid="{{id}}" class="recipient_row" data-messages="{{message_ids}}">
 {{#if is_stream}}
-    {{! color strip on the left }}
-      <td class="message_header_colorblock" style="background-color: {{background_color}};">
-      </td>
-
-      <td class="message_header message_header_stream right_part">
+    <div class="message_header message_header_stream right_part">
+      <div class="message-header-contents" style="box-shadow:inset 9px 0px {{background_color}};">
         {{! [-] }}
         {{#if collapsible}}
           <i class="messages-collapse icon-vector-collapse-alt"></i>
@@ -156,10 +148,11 @@
         <span class="topic_edit">
           <span class="topic_edit_form" id="{{id}}"></span>
         </span>
-      </td>
+      </div>
+    </div>
 {{else}}
-    <td class="message_header_colorblock message_header_private_message" style="background-color: {{background_color}};"></td>
-    <td class="message_header message_header_private_message right_part dark_background">
+    <div class="message_header message_header_private_message right_part dark_background">
+      <div class="message-header-contents">
         {{#if collapsible}}
           <i class="messages-collapse icon-vector-collapse-alt"></i>
         {{/if}}
@@ -168,14 +161,18 @@
            title="Narrow to your private messages with {{display_reply_to}}">
         You and {{display_reply_to}}
         </a>
-    </td>
+      </div>
+    </div>
 {{/if}}
-</tr>
+</div>
 {{/include_recipient}}
-<tr zid="{{id}}" id="{{dom_id}}"
+<div zid="{{id}}" id="{{dom_id}}"
     class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#unread}} unread{{/unread}} selectable_row">
-    <td class="messagebox_colorblock{{^is_stream}} message_header_private_message{{/is_stream}}" style="background-color: {{background_color}};"><span class="pointer_icon"><i class="icon-vector-caret-right"></i></span></td>
-    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
+
+    <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
+      <div class="messagebox-border" style="box-shadow:inset 9px 0px {{background_color}};">
+        <div class="messagebox-content">
+          <span class="pointer_icon"><i class="icon-vector-caret-right"></i></span>
           <div class="message_top_line">
             <div class="unread_marker"></div>
             {{#include_sender}}
@@ -213,18 +210,20 @@
           {{#if last_edit_timestr}}
           <div class="message_edit_notice">Last edited: {{{last_edit_timestr}}}</div>
           {{/if}}
-    </td>
-</tr>
+        </div>
+      </div>
+    </div>
+</div>
 
 {{/if}}
 {{/with}}
 {{/each}}
 
 {{#if trailing_bookend}}
-<tr id="trailing_bookend" class="bookend_tr">
-  <td colspan="2" class="bookend">
+<div id="trailing_bookend" class="bookend_tr">
+  <div colspan="2" class="bookend">
     <center>{{trailing_bookend}}</center>
     <span class="tiny"><p></p></span>
-  </td>
-</tr>
+  </div>
+</div>
 {{/if}}

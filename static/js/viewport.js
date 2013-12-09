@@ -158,8 +158,8 @@ exports.visible_messages = function (require_fully_visible) {
     // We do this explicitly without merges and without recalculating
     // the feed bounds to keep this computation as cheap as possible.
     var visible_messages = [];
-    var messages_above_pointer = selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")");
-    var messages_below_pointer = selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")");
+    var messages_above_pointer = selected_row.prevAll("div.message_row[zid]:lt(" + num_neighbors + ")");
+    var messages_below_pointer = selected_row.nextAll("div.message_row[zid]:lt(" + num_neighbors + ")");
     add_to_visible_messages(selected_row, visible_messages,
                             top_of_feed.get(), bottom_of_feed.get(), require_fully_visible);
     add_to_visible_messages(messages_above_pointer, visible_messages,

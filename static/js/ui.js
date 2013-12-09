@@ -135,7 +135,7 @@ function copy_handler(e) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('tr')[0]), function (row) {
+        start_data = find_boundary_tr($(startc.parents('div.selectable_row')[0]), function (row) {
             return row.next();
         });
         if (start_data === undefined) {
@@ -147,10 +147,10 @@ function copy_handler(e) {
         // If the selection ends in the bottom whitespace, we should act as
         // though the selection ends on the final message
         if (endc.attr('id') === "bottom_whitespace") {
-            initial_end_tr = $("tr.message_row:last");
+            initial_end_tr = $("div.message_row:last");
             skip_same_td_check = true;
         } else {
-            initial_end_tr = $(endc.parents('tr')[0]);
+            initial_end_tr = $(endc.parents('div.selectable_row')[0]);
         }
         end_data = find_boundary_tr(initial_end_tr, function (row) {
             return row.prev();
@@ -167,7 +167,7 @@ function copy_handler(e) {
         // If the selection starts and ends in the same td,
         // we want to let the browser handle the copy-paste mostly on its own
         if (!skip_same_td_check &&
-            startc.parents('td')[0] === endc.parents('td')[0]) {
+            startc.parents('div.selectable_row>div')[0] === endc.parents('div.selectable_row>div')[0]) {
 
             // If the user is not running the desktop app, let the browser handle
             // the copy entirely on its own
@@ -585,7 +585,7 @@ function replace_floating_recipient_bar(desired_label) {
             other_label = $("#current_label_private_message");
             header = desired_label.children(".message_header_stream.right_part");
 
-            $("#current_label_stream td:first").css(
+            $("#current_label_stream .message_header_colorblock").css(
                 "background-color",
                 desired_label.children(".message_header_colorblock")
                              .css("background-color"));
@@ -594,9 +594,9 @@ function replace_floating_recipient_bar(desired_label) {
             other_label = $("#current_label_stream");
             header = desired_label.children(".message_header_private_message.right_part");
         }
-        new_label.find("td:last").replaceWith(header.clone());
+        new_label.find(".right_part").replaceWith(header.clone());
         other_label.css('display', 'none');
-        new_label.css('display', 'table-row');
+        new_label.css('display', 'block');
         new_label.attr("zid", rows.id(desired_label));
 
         new_label.toggleClass('faded', desired_label.hasClass('faded'));
