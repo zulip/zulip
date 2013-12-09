@@ -322,61 +322,12 @@ def accounts_register(request):
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name)
 
-        # We want to add the default subs list iff there were no subs
-        # specified when the user was invited.
-        streams = prereg_user.streams.all()
-        if len(streams) == 0:
-            streams = get_default_subs(user_profile)
-        bulk_add_subscriptions(streams, [user_profile])
-
-        # Give you the last 100 messages on your streams, so you have
-        # something to look at in your home view once you finish the
-        # tutorial.
-        one_week_ago = now() - datetime.timedelta(weeks=1)
-        recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                                  type_id__in=[stream.id for stream in streams])
-        messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
-        if len(messages) > 0:
-            ums_to_create = [UserMessage(user_profile=user_profile, message=message,
-                                         flags=UserMessage.flags.read)
-                             for message in messages]
-
-            UserMessage.objects.bulk_create(ums_to_create)
-
-        # mit_beta_users don't have a referred_by field
-        if not mit_beta_user and prereg_user.referred_by is not None and settings.NOTIFICATION_BOT is not None:
-            # This is a cross-realm private message.
-            internal_send_message(settings.NOTIFICATION_BOT,
-                    "private", prereg_user.referred_by.email, user_profile.realm.domain,
-                    "%s <`%s`> accepted your invitation to join Zulip!" % (
-                        user_profile.full_name,
-                        user_profile.email,
-                        )
-                    )
-        # Mark any other PreregistrationUsers that are STATUS_ACTIVE as inactive
-        # so we can find the PreregistrationUser that we are actually working
-        # with here
-        PreregistrationUser.objects.filter(email=email)             \
-                                   .exclude(id=prereg_user.id)      \
-                                   .update(status=0)
-
-        notify_new_user(user_profile)
-        queue_json_publish(
-                "signups",
-                {
-                    'EMAIL': email,
-                    'merge_vars': {
-                        'NAME': full_name,
-                        'REALM': domain,
-                        'OPTIN_IP': request.META['REMOTE_ADDR'],
-                        'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
-                    },
-                },
-                lambda event: None)
+        process_new_human_user(user_profile, prereg_user=prereg_user,
+                               newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
         # This logs you in using the ZulipDummyBackend, since honestly nothing
         # more fancy than this is required.
-        login(request, authenticate(username=email, use_dummy_backend=True))
+        login(request, authenticate(username=user_profile.email, use_dummy_backend=True))
 
         if first_in_realm:
             assign_perm("administer", user_profile, user_profile.realm)
@@ -393,6 +344,77 @@ def accounts_register(request):
              'lock_name': name_validated and settings.NAME_CHANGES_DISABLED
             },
         context_instance=RequestContext(request))
+
+# Does the processing for a new user account:
+# * Subscribes to default/invitation streams
+# * Fills in some recent historical messages
+# * Notifies other users in realm and Zulip about the signup
+# * Deactivates PreregistrationUser objects
+# * subscribe the user to newsletter if newsletter_data is specified
+def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None):
+    mit_beta_user = user_profile.realm.domain == "mit.edu"
+    if prereg_user is not None:
+        streams = prereg_user.streams.all()
+    else:
+        streams = []
+
+    # If the user's invitation didn't explicitly list some streams, we
+    # add the default streams
+    if len(streams) == 0:
+        streams = get_default_subs(user_profile)
+    bulk_add_subscriptions(streams, [user_profile])
+
+    # Give you the last 100 messages on your streams, so you have
+    # something to look at in your home view once you finish the
+    # tutorial.
+    one_week_ago = now() - datetime.timedelta(weeks=1)
+    recipients = Recipient.objects.filter(type=Recipient.STREAM,
+                                              type_id__in=[stream.id for stream in streams])
+    messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
+    if len(messages) > 0:
+        ums_to_create = [UserMessage(user_profile=user_profile, message=message,
+                                     flags=UserMessage.flags.read)
+                         for message in messages]
+
+        UserMessage.objects.bulk_create(ums_to_create)
+
+    # mit_beta_users don't have a referred_by field
+    if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None \
+            and settings.NOTIFICATION_BOT is not None:
+        # This is a cross-realm private message.
+        internal_send_message(settings.NOTIFICATION_BOT,
+                "private", prereg_user.referred_by.email, user_profile.realm.domain,
+                "%s <`%s`> accepted your invitation to join Zulip!" % (
+                    user_profile.full_name,
+                    user_profile.email,
+                    )
+                )
+    # Mark any other PreregistrationUsers that are STATUS_ACTIVE as
+    # inactive so we can keep track of the PreregistrationUser we
+    # actually used for analytics
+    if prereg_user is not None:
+        PreregistrationUser.objects.filter(email__iexact=user_profile.email).exclude(
+            id=prereg_user.id).update(status=0)
+    else:
+        PreregistrationUser.objects.filter(email__iexact=user_profile.email).update(status=0)
+
+    notify_new_user(user_profile)
+
+    if newsletter_data is not None:
+        # If the user was created automatically via the API, we may
+        # not want to register them for the newsletter
+        queue_json_publish(
+            "signups",
+            {
+                'EMAIL': user_profile.email,
+                'merge_vars': {
+                    'NAME': user_profile.full_name,
+                    'REALM': user_profile.realm.domain,
+                    'OPTIN_IP': newsletter_data["IP"],
+                    'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
+                },
+            },
+        lambda event: None)
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def accounts_accept_terms(request):
