@@ -405,6 +405,8 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
         if (row.length === 0) {
             if (muting.is_topic_muted(message.stream, message.subject)) {
                 note = "You sent a message to a muted topic.";
+            } else if (!stream_data.in_home_view(message.stream)) {
+                note = "You sent a message to a muted stream.";
             } else {
                 // offscreen because it is outside narrow
                 // we can only look for these on non-search (can_apply_locally) messages
