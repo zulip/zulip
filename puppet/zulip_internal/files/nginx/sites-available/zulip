@@ -30,6 +30,22 @@ server {
     include /etc/nginx/zulip-include/app;
 }
 
+server {
+    listen 443;
+
+    ssl on;
+
+    ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
+
+    server_name customer29.zulip.com;
+
+    ## We need to support running Zulip in an iframe for this
+    ## application, so X-Frame-Options is not set.
+    # add_header X-Frame-Options DENY;
+
+    include /etc/nginx/zulip-include/app;
+}
 
 server {
     listen 443;
