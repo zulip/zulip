@@ -469,7 +469,7 @@ function send_message(request) {
                 blueslip.error("Restarting get_updates due to delayed receipt of sent message " + message_id);
                 restart_get_updates();
             }
-        }, 2000);
+        }, 5000);
     }
 
     if (feature_flags.use_socket) {
