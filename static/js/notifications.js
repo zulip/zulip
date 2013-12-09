@@ -402,11 +402,15 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
         var link_text;
 
         var row = current_msg_list.get_row(message.id);
-        if (row.length  === 0) {
-            // offscreen because it is outside narrow
-            // we can only look for these on non-search (can_apply_locally) messages
-            // see also: exports.notify_messages_outside_current_search
-            note = "You sent a message outside the current narrow.";
+        if (row.length === 0) {
+            if (muting.is_topic_muted(message.stream, message.subject)) {
+                note = "You sent a message to a muted topic.";
+            } else {
+                // offscreen because it is outside narrow
+                // we can only look for these on non-search (can_apply_locally) messages
+                // see also: exports.notify_messages_outside_current_search
+                note = "You sent a message outside the current narrow.";
+            }
             link_class = "compose_notification_narrow_by_subject";
             link_text = "Narrow to " + get_message_header(message);
         } else {
