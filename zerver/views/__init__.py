@@ -57,7 +57,8 @@ from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
-    JsonableError, get_user_profile_by_email, process_as_post, REQ
+    JsonableError, get_user_profile_by_email, process_as_post, REQ, \
+    require_realm_admin
 from zerver.lib.query import last_n
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
@@ -1536,10 +1537,8 @@ def get_public_streams_backend(request, user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
+@require_realm_admin
 def json_rename_stream(request, user_profile, old_name=REQ, new_name=REQ):
-    if not user_profile.has_perm('administer', user_profile.realm):
-        return json_error("Insufficient permission to rename stream")
-
     return json_success(do_rename_stream(user_profile.realm, old_name, new_name))
 
 @authenticated_api_view
@@ -2132,14 +2131,12 @@ def reactivate_user_backend(request, user_profile, email):
     do_reactivate_user(target)
     return json_success({})
 
+@require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_name):
     try:
         target = get_stream(stream_name, user_profile.realm)
     except Stream.DoesNotExist:
         return json_error('No such stream name')
-
-    if not user_profile.is_admin():
-        return json_error('Insufficient permission')
 
     if target.invite_only:
         return json_error('Cannot administer invite-only streams this way')

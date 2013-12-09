@@ -86,6 +86,14 @@ def require_post(func):
         return func(request, *args, **kwargs)
     return wrapper
 
+def require_realm_admin(func):
+    @wraps(func)
+    def wrapper(request, user_profile, *args, **kwargs):
+        if not user_profile.has_perm('administer', user_profile.realm):
+            raise JsonableError("Must be a realm administrator")
+        return func(request, user_profile, *args, **kwargs)
+    return wrapper
+
 default_clients = {}
 
 def process_client(request, user_profile, default):
