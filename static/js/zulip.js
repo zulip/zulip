@@ -730,6 +730,8 @@ function update_messages(events) {
             return;
         }
 
+        ui.un_cache_message_content_height(msg.id);
+
         if (event.rendered_content !== undefined) {
             msg.content = event.rendered_content;
         }

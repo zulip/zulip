@@ -524,7 +524,16 @@ exports.resize_page_components = function () {
     $("#group-pms").css('max-height', h.group_pms_max_height);
 };
 
+var _old_width = $(window).width();
+
 function resizehandler(e) {
+    var new_width = $(window).width();
+
+    if (new_width !== _old_width) {
+        _old_width = new_width;
+        exports.clear_message_content_height_cache();
+    }
+
     popovers.hide_all();
     exports.resize_page_components();
 
@@ -1704,18 +1713,35 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor, saved_compose_cursor);
 };
 
+var _message_content_height_cache = new Dict();
+
+exports.clear_message_content_height_cache = function () {
+    _message_content_height_cache = new Dict();
+};
+
+exports.un_cache_message_content_height = function (message_id) {
+    _message_content_height_cache.del(message_id);
+};
+
+function get_message_height(elem, message_id) {
+    if (_message_content_height_cache.has(message_id)) {
+        return _message_content_height_cache.get(message_id);
+    }
+
+    var height = elem.getBoundingClientRect().height;
+    _message_content_height_cache.set(message_id, height);
+    return height;
+}
+
 exports.condense_and_collapse = function (elems) {
     var height_cutoff = viewport.height() * 0.65;
-
-    function could_be_condensed(elem) {
-        return elem.getBoundingClientRect().height > height_cutoff;
-    }
 
     _.each(elems, function (elem) {
         var content = $(elem).find(".message_content");
         var message = current_msg_list.get(rows.id($(elem)));
         if (content !== undefined && message !== undefined) {
-            var long_message = could_be_condensed(elem);
+            var message_height = get_message_height(elem, message.id);
+            var long_message = message_height > height_cutoff;
             if (long_message) {
                 // All long messages are flagged as such.
                 content.addClass("could-be-condensed");
