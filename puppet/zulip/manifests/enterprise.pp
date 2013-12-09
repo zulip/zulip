@@ -3,7 +3,7 @@ class zulip::enterprise {
   include zulip::app_frontend
   include zulip::postgres_appdb
 
-  apt::key {"A529EF65":
+  apt::key {"E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65":
     source  =>  "https://zulip.com/dist/keys/enterprise.asc",
   }
 
