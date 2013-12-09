@@ -306,7 +306,7 @@ def accounts_register(request):
 
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)
-        (realm, _) = Realm.objects.get_or_create(domain=domain)
+        realm = Realm.objects.get(domain=domain)
         first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
 
         # FIXME: sanitize email addresses and fullname
