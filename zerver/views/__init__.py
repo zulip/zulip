@@ -18,12 +18,12 @@ from django.core.mail import send_mail, mail_admins, EmailMessage
 from django.db import transaction
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, bulk_get_recipients, \
-    PreregistrationUser, get_client, MitUser, UserActivity, \
+    PreregistrationUser, get_client, MitUser, UserActivity, PushDeviceToken, \
     get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, completely_open, \
-    is_super_user, AppleDeviceToken, get_active_user_dicts_in_realm, remote_user_to_email
+    is_super_user, get_active_user_dicts_in_realm, remote_user_to_email
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_password, create_mirror_user_if_needed, compute_irc_user_fullname, \
     compute_jabber_user_fullname, do_change_full_name, \
@@ -2377,14 +2377,16 @@ def json_set_muted_topics(request, user_profile,
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()
 
-@has_request_variables
-def add_apns_device_token(request, user_profile, token=REQ):
-    if token == '' or len(token) > 255:
-        return json_error('Empty or invalid length APNS token')
+def add_push_device_token(request, user_profile, token, kind):
+    if token == '' or len(token) > 4096:
+        return json_error('Empty or invalid length token')
 
-    # The iOS app receives the token on each startup, so overwrite with our
-    # latest value
-    token, created = AppleDeviceToken.objects.get_or_create(user=user_profile, token=token)
+    # If another user was previously logged in on the same device and didn't
+    # properly log out, the token will still be registered to the wrong account
+    PushDeviceToken.objects.filter(token=token).delete()
+
+    # Overwrite with the latest value
+    token, created = PushDeviceToken.objects.get_or_create(user=user_profile, token=token, kind=kind)
     if not created:
         token.last_updated = now()
         token.save(update_fields=['last_updated'])
@@ -2392,17 +2394,24 @@ def add_apns_device_token(request, user_profile, token=REQ):
     return json_success()
 
 @has_request_variables
-def remove_apns_device_token(request, user_profile, token=REQ):
-    if token == '' or len(token) > 255:
-        return json_error('Empty or invalid length APNS token')
+def add_apns_device_token(request, user_profile, token=REQ):
+    return add_push_device_token(request, user_profile, token, PushDeviceToken.APNS)
+
+def remove_push_device_token(request, user_profile, token, kind):
+    if token == '' or len(token) > 4096:
+        return json_error('Empty or invalid length token')
 
     try:
-        apns_token = AppleDeviceToken.objects.get(token=token)
-        apns_token.delete()
-    except AppleDeviceToken.DoesNotExist:
-        return json_error("APNS token does not exist")
+        token = PushDeviceToken.objects.get(token=token, kind=kind)
+        token.delete()
+    except PushDeviceToken.DoesNotExist:
+        return json_error("Token does not exist")
 
     return json_success()
+
+@has_request_variables
+def remove_apns_device_token(request, user_profile, token=REQ):
+    return remove_push_device_token(request, user_profile, token, PushDeviceToken.APNS)
 
 def generate_204(request):
     return HttpResponse(content=None, status=204)

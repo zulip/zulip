@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from zerver.models import AppleDeviceToken
+from zerver.models import PushDeviceToken
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.decorator import statsd_increment
 
@@ -17,8 +17,11 @@ connection = None
 if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):
     connection = session.get_connection(settings.APNS_SANDBOX, cert_file=settings.APNS_CERT_FILE)
 
-def num_push_devices_for_user(user_profile):
-    return AppleDeviceToken.objects.filter(user=user_profile).count()
+def num_push_devices_for_user(user_profile, kind = None):
+    if kind is None:
+        return PushDeviceToken.objects.filter(user=user_profile).count()
+    else:
+        return PushDeviceToken.objects.filter(user=user_profile, kind=kind).count()
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data):
@@ -34,9 +37,9 @@ def hex_to_b64(data):
 def send_apple_push_notification(user, alert, **extra_data):
     if not connection:
         logging.error("Attempting to send push notification, but no connection was found. This may be because we could not find the APNS Certificate file.")
-    # Sends a push notifications to all the PushClients
-    # Only Apple Push Notifications clients are supported at the moment
-    tokens = [b64_to_hex(device.token) for device in AppleDeviceToken.objects.filter(user=user)]
+
+    tokens = [b64_to_hex(device.token) for device in
+        PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)]
 
     logging.info("Sending apple push notification to devices: %s" % (tokens,))
     message = Message(tokens, alert=alert, **extra_data)
@@ -69,5 +72,5 @@ def check_apns_feedback():
         since_date = timestamp_to_datetime(since)
         logging.info("Found unavailable token %s, unavailable since %s" % (token, since_date))
 
-        AppleDeviceToken.objects.filter(token=hex_to_b64(token), last_updates__lt=since_date).delete()
+        PushDeviceToken.objects.filter(token=hex_to_b64(token), last_updates__lt=since_date, type=PushDeviceToken.APNS).delete()
     logging.info("Finished checking feedback for stale tokens")
