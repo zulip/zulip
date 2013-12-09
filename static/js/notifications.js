@@ -321,6 +321,10 @@ function message_is_notifiable(message) {
     if (message.sent_by_me) {
         return false;
     }
+    // @-mentions take precent over muted-ness. See Trac #1929
+    if (exports.speaking_at_me(message)) {
+        return true;
+    }
     if ((message.type === "stream") &&
         !stream_data.in_home_view(message.stream)) {
         return false;
@@ -332,9 +336,6 @@ function message_is_notifiable(message) {
 
     // Then, do any properties make it notifiable?
     if (message.type === "private") {
-        return true;
-    }
-    if (exports.speaking_at_me(message)) {
         return true;
     }
     if ((message.type === "stream") &&
