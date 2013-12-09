@@ -558,9 +558,16 @@ def handle_openid_errors(request, issue, openid_response=None):
         if openid_response is not None and openid_response.status == openid_SUCCESS:
             ax_response = ax.FetchResponse.fromSuccessResponse(openid_response)
             google_email = openid_response.getSigned('http://openid.net/srv/ax/1.0', 'value.email')
-            full_name = " ".join((
-                    ax_response.get('http://axschema.org/namePerson/first')[0],
-                    ax_response.get('http://axschema.org/namePerson/last')[0]))
+            try:
+                first_name = full_name = ax_response.get('http://axschema.org/namePerson/first')[0]
+            except KeyError:
+                first_name = None
+            try:
+                last_name = full_name = ax_response.get('http://axschema.org/namePerson/last')[0]
+                if first_name is not None:
+                    full_name = first_name + " " + last_name
+            except KeyError:
+                pass
             return maybe_send_to_registration(request, google_email, full_name=full_name)
     return default_render_failure(request, issue)
 
