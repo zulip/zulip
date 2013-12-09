@@ -5,6 +5,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.decorator import statsd_increment
 
 from apnsclient import Session, Message, APNs
+import gcmclient
 
 from django.conf import settings
 
@@ -37,6 +38,7 @@ def hex_to_b64(data):
 def send_apple_push_notification(user, alert, **extra_data):
     if not connection:
         logging.error("Attempting to send push notification, but no connection was found. This may be because we could not find the APNS Certificate file.")
+        return
 
     tokens = [b64_to_hex(device.token) for device in
         PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)]
@@ -74,3 +76,44 @@ def check_apns_feedback():
 
         PushDeviceToken.objects.filter(token=hex_to_b64(token), last_updates__lt=since_date, type=PushDeviceToken.APNS).delete()
     logging.info("Finished checking feedback for stale tokens")
+
+
+if settings.ANDROID_GCM_API_KEY:
+    gcm = gcmclient.GCM(settings.ANDROID_GCM_API_KEY)
+else:
+    gcm = None
+
+@statsd_increment("android_push_notification")
+def send_android_push_notification(user, data):
+    if not gcm:
+        logging.error("Attempting to send a GCM push notification, but no API key was configured")
+        return
+
+    reg_ids = [device.token for device in
+        PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.GCM)]
+
+    msg = gcmclient.JSONMessage(reg_ids, data)
+    res = gcm.send(msg)
+
+    for reg_id, msg_id in res.success.items():
+        logging.info("GCM: Sent %s as %s" % (reg_id, msg_id))
+
+    for reg_id, new_reg_id in res.canonical.items():
+        logging.info("GCM: Updating registration %s with %s" % (reg_id, new_reg_id))
+
+        device = PushDeviceToken.objects.get(token=reg_id, kind=PushDeviceToken.GCM)
+        device.token = new_reg_id
+        device.save(update_fields=['token'])
+
+    for reg_id in res.not_registered:
+        logging.info("GCM: Removing %s" % (reg_id,))
+
+        device = PushDeviceToken.objects.get(token=reg_id, kind=PushDeviceToken.GCM)
+        device.delete()
+
+    for reg_id, err_code in res.failed.items():
+        logging.warning("GCM: Delivery to %s failed: %s" % (reg_id, err_code))
+
+    if res.needs_retry():
+        # TODO
+        logging.warning("GCM: delivery needs a retry but ignoring")

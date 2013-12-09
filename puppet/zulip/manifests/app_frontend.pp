@@ -54,6 +54,8 @@ class zulip::app_frontend {
                     "python-diff-match-patch",
                     # Needed for iOS
                     "python-apns-client",
+                    # Needed for Android push
+                    "python-gcm-client",
                     # Needed for avatar image resizing
                     "python-imaging",
 		    # Needed for LDAP support

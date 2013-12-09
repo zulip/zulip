@@ -2397,6 +2397,10 @@ def add_push_device_token(request, user_profile, token, kind):
 def add_apns_device_token(request, user_profile, token=REQ):
     return add_push_device_token(request, user_profile, token, PushDeviceToken.APNS)
 
+@has_request_variables
+def add_android_reg_id(request, user_profile, token=REQ):
+    return add_push_device_token(request, user_profile, token, PushDeviceToken.GCM)
+
 def remove_push_device_token(request, user_profile, token, kind):
     if token == '' or len(token) > 4096:
         return json_error('Empty or invalid length token')
@@ -2412,6 +2416,11 @@ def remove_push_device_token(request, user_profile, token, kind):
 @has_request_variables
 def remove_apns_device_token(request, user_profile, token=REQ):
     return remove_push_device_token(request, user_profile, token, PushDeviceToken.APNS)
+
+@has_request_variables
+def remove_android_reg_id(request, user_profile, token=REQ):
+    return remove_push_device_token(request, user_profile, token, PushDeviceToken.GCM)
+
 
 def generate_204(request):
     return HttpResponse(content=None, status=204)

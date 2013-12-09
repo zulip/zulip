@@ -14,6 +14,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
     UserActivityInterval, get_active_user_dicts_in_realm, RealmAlias, \
     ScheduledJob
+from zerver.lib.avatar import get_avatar_url
 
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
@@ -44,7 +45,8 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.push_notifications import num_push_devices_for_user, send_apple_push_notification
+from zerver.lib.push_notifications import num_push_devices_for_user, \
+     send_apple_push_notification, send_android_push_notification
 
 from zerver import tornado_callbacks
 
@@ -2020,7 +2022,10 @@ def handle_push_notification(user_profile_id, missed_message):
             return
         sender_str = message.sender.full_name
 
-        if user_profile.enable_offline_push_notifications and num_push_devices_for_user(user_profile):
+        apple = num_push_devices_for_user(user_profile, kind=PushDeviceToken.APNS)
+        android = num_push_devices_for_user(user_profile, kind=PushDeviceToken.GCM)
+
+        if apple or android:
             #TODO: set badge count in a better way
             # Determine what alert string to display based on the missed messages
             if message.recipient.type == Recipient.HUDDLE:
@@ -2031,12 +2036,41 @@ def handle_push_notification(user_profile_id, missed_message):
                 alert = "New mention from %s" % (sender_str,)
             else:
                 alert = "New Zulip mentions and private messages from %s" % (sender_str,)
-            extra_data = {'message_ids': [message.id]}
 
-            send_apple_push_notification(user_profile, alert, badge=1, zulip=extra_data)
+            if apple:
+                apple_extra_data = {'message_ids': [message.id]}
+                send_apple_push_notification(user_profile, alert, badge=1, zulip=apple_extra_data)
+
+            if android:
+                content = message.content
+                content_truncated = (len(content) > 200)
+                if content_truncated:
+                    content = content[:200] + "..."
+
+                android_data = {
+                    'user': user_profile.email,
+                    'event': 'message',
+                    'alert': alert,
+                    'zulip_message_id': message.id, # message_id is reserved for CCS
+                    'time': datetime_to_timestamp(message.pub_date),
+                    'content': content,
+                    'content_truncated': content_truncated,
+                    'sender_email': message.sender.email,
+                    'sender_full_name': message.sender.full_name,
+                    'sender_avatar_url': get_avatar_url(message.sender.avatar_source, message.sender.email),
+                }
+
+                if message.recipient.type == Recipient.STREAM:
+                    android_data['recipient_type'] = "stream"
+                    android_data['stream'] = get_display_recipient(message.recipient)
+                    android_data['topic'] = message.subject
+                elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
+                    android_data['recipient_type'] = "private"
+
+                send_android_push_notification(user_profile, android_data)
+
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" %(missed_message['message_id'],))
-    return
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     message_ids = [event.get('message_id') for event in missed_email_events]

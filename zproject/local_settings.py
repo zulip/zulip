@@ -136,6 +136,11 @@ else:
     APNS_FEEDBACK = "feedback_sandbox"
     APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"
 
+if DEPLOYED:
+    ANDROID_GCM_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+else:
+    ANDROID_GCM_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
 # Administrator domain for this install
 ADMIN_DOMAIN = "zulip.com"
 
