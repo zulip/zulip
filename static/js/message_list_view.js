@@ -401,7 +401,10 @@ MessageListView.prototype = {
 
         // Must happen after the elements are inserted into the document for
         // getBoundingClientRect to work.
-        ui.condense_and_collapse(rendered_elems);
+        // Also, the list must actually be visible.
+        if (list === current_msg_list) {
+            ui.condense_and_collapse(rendered_elems);
+        }
 
         // Must happen after anything that changes the height of messages has
         // taken effect.

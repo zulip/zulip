@@ -208,6 +208,12 @@ exports.activate = function (operators, opts) {
     });
     msg_list.start_time = start_time;
 
+    // Show the new set of messages.  It is important to set current_msg_list to
+    // the view right as it's being shown, because we rely on current_msg_list
+    // being shown for deciding when to condense messages.
+    $("body").addClass("narrowed_view");
+    $("#zfilt").addClass("focused_table");
+    $("#zhome").removeClass("focused_table");
     narrowed_msg_list = msg_list;
     current_msg_list = narrowed_msg_list;
 
@@ -265,18 +271,6 @@ exports.activate = function (operators, opts) {
         },
         cont_will_add_messages: false
     });
-
-    // Show the new set of messages.
-    $("body").addClass("narrowed_view");
-    $("#zfilt").addClass("focused_table");
-    $("#zhome").removeClass("focused_table");
-
-    // Deal with message condensing/uncondensing.
-    // In principle, this code causes us to scroll around because divs
-    // above us could change size -- which is problematic, because it
-    // could cause us to lose our position. But doing this here, right
-    // after showing the table, seems to cause us to win the race.
-    ui.condense_and_collapse($("tr.message_row"));
 
     reset_load_more_status();
     if (! defer_selecting_closest) {
@@ -402,11 +396,12 @@ exports.deactivate = function () {
     $("body").removeClass('narrowed_view');
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
+    current_msg_list = home_msg_list;
+    ui.condense_and_collapse($("#zhome tr.message_row"));
 
     $('#search_query').val('');
     reset_load_more_status();
 
-    current_msg_list = home_msg_list;
     if (current_msg_list.selected_id() !== -1) {
         var preserve_pre_narrowing_screen_position =
             (current_msg_list.selected_row().length > 0) &&
