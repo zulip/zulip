@@ -47,6 +47,10 @@ def get_connection(id):
     return connections.get(id)
 
 def register_connection(id, conn):
+    # Kill any old connections if they exist
+    if id in connections:
+        connections[id].close()
+
     conn.client_id = id
     connections[conn.client_id] = conn
 
