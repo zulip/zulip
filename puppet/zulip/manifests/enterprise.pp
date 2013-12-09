@@ -4,7 +4,7 @@ class zulip::enterprise {
   include zulip::postgres_appdb
 
   apt::key {"A529EF65":
-    source  =>  "http://apt.zulip.com/enterprise.asc",
+    source  =>  "https://zulip.com/dist/keys/enterprise.asc",
   }
 
   apt::sources_list {"zulip":

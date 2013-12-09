@@ -18,7 +18,7 @@ class zulip_internal::base {
   package { $org_base_packages: ensure => "installed" }
 
   apt::key {"A529EF65":
-    source  =>  "http://apt.zulip.com/ops.asc",
+    source  =>  "https://zulip.com/dist/keys/ops.asc",
   }
 
   apt::sources_list {"zulip":
