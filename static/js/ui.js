@@ -1248,7 +1248,7 @@ $(function () {
         if (message.collapsed) {
             // Uncollapse.
             ui.uncollapse(row);
-        } else if (content.hasClass("could-be-condensed")) {
+        } else if (content.hasClass("condensed")) {
             // Uncondense (show the full long message).
             message.condensed = false;
             content.removeClass("condensed");
@@ -1745,6 +1745,8 @@ exports.condense_and_collapse = function (elems) {
             if (long_message) {
                 // All long messages are flagged as such.
                 content.addClass("could-be-condensed");
+            } else {
+                content.removeClass("could-be-condensed");
             }
 
             // If message.condensed is defined, then the user has manually
@@ -1758,6 +1760,9 @@ exports.condense_and_collapse = function (elems) {
             } else if (long_message) {
                 // By default, condense a long message.
                 condense($(elem));
+            } else {
+                content.removeClass('condensed');
+                $(elem).find(".message_expander").hide();
             }
 
             // Completely hide the message and replace it with a [More]
