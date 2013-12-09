@@ -342,7 +342,8 @@ MessageList.prototype = {
 
     unmuted_messages: function MessageList_unmuted_messages(messages) {
         return _.reject(messages, function (message) {
-            return muting.is_topic_muted(message.stream, message.subject);
+            return muting.is_topic_muted(message.stream, message.subject) &&
+                   !message.mentioned;
         });
     },
 
