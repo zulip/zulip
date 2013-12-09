@@ -360,3 +360,4 @@ Client._register('list_subscriptions', method='GET', url='users/me/subscriptions
 Client._register('add_subscriptions', url='users/me/subscriptions', make_request=_mk_subs)
 Client._register('remove_subscriptions', method='PATCH', url='users/me/subscriptions', make_request=_mk_rm_subs)
 Client._register('render_message', method='GET', url='messages/render')
+Client._register('create_user', method='POST', url='users')

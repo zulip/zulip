@@ -44,7 +44,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
-    CreateBotForm, is_inactive
+    CreateUserForm, is_inactive
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -1907,6 +1907,30 @@ def json_change_notify_settings(request, user_profile,
 
     return json_success(result)
 
+@require_realm_admin
+@has_request_variables
+def create_user_backend(request, user_profile, email=REQ, password=REQ,
+                        full_name=REQ, short_name=REQ):
+    form = CreateUserForm({'full_name': full_name, 'email': email})
+    if not form.is_valid():
+        return json_error('Bad name or username')
+
+    # Check that the new user's email address belongs to the admin's realm
+    realm = user_profile.realm
+    domain = resolve_email_to_domain(email)
+    if realm.domain != domain:
+        return json_error("Email '%s' does not belong to domain '%s'" % (email, realm.domain))
+
+    try:
+        get_user_profile_by_email(email)
+        return json_error("Email '%s' already in use" % (email,))
+    except UserProfile.DoesNotExist:
+        pass
+
+    new_user_profile = do_create_user(email, password, realm, full_name, short_name)
+    process_new_human_user(new_user_profile)
+    return json_success()
+
 @authenticated_json_post_view
 @has_request_variables
 def json_stream_exists(request, user_profile, stream=REQ):
@@ -2261,7 +2285,7 @@ def regenerate_bot_api_key(request, user_profile, email):
 def json_create_bot(request, user_profile, full_name=REQ, short_name=REQ):
     short_name += "-bot"
     email = short_name + "@" + user_profile.realm.domain
-    form = CreateBotForm({'full_name': full_name, 'email': email})
+    form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
         # We validate client-side as well
         return json_error('Bad name or username')

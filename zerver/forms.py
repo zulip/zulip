@@ -82,6 +82,6 @@ class LoggingSetPasswordForm(SetPasswordForm):
                            log=True, commit=commit)
         return self.user
 
-class CreateBotForm(forms.Form):
+class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
     email = forms.EmailField()
