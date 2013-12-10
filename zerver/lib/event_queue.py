@@ -113,10 +113,14 @@ class ClientDescriptor(object):
                 return True
         return False
 
-    def accepts_event_type(self, type):
+    def accepts_event(self, event):
         if self.event_types is None:
             return True
-        return type in self.event_types
+        return event["type"] in self.event_types
+
+    # TODO: Refactor so we don't need this function
+    def accepts_messages(self):
+        return self.event_types is None or "message" in self.event_types
 
     def idle(self, now):
         if not hasattr(self, 'queue_timeout'):
@@ -379,9 +383,8 @@ def load_event_queues():
 def send_restart_events():
     event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
     for client in clients.itervalues():
-        if not client.accepts_event_type('restart'):
-            continue
-        client.add_event(event.copy())
+        if client.accepts_event(event):
+            client.add_event(event.copy())
 
 def setup_event_queue():
     load_event_queues()

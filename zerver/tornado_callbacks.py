@@ -28,7 +28,7 @@ NOTIFY_AFTER_IDLE_HOURS = 1
 def update_pointer(user_profile_id, new_pointer):
     event = dict(type='pointer', pointer=new_pointer)
     for client in get_client_descriptors_for_user(user_profile_id):
-        if client.accepts_event_type(event['type']):
+        if client.accepts_event(event):
             client.add_event(event.copy())
 
 
@@ -116,7 +116,7 @@ def receiver_is_idle(user_profile, realm_presences):
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
     all_client_descriptors = get_client_descriptors_for_user(user_profile.id)
-    message_event_queues = [client for client in all_client_descriptors if client.accepts_event_type('message')]
+    message_event_queues = [client for client in all_client_descriptors if client.accepts_messages()]
     off_zulip = len(message_event_queues) == 0
 
     # It's possible a recipient is not in the realm of a sender. We don't have
@@ -180,12 +180,10 @@ def process_new_message(data):
                 queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
 
     for client, flags in send_to_clients.itervalues():
-        if not client.accepts_event_type('message'):
-            continue
-
-        # The below prevents (Zephyr) mirroring loops.
-        if ('mirror' in message.sending_client.name and
-            message.sending_client == client.client_type):
+        if not client.accepts_messages():
+            # The actual check is the accepts_event() check below;
+            # this line is just an optimization to avoid copying
+            # message data unnecessarily
             continue
 
         if client.apply_markdown:
@@ -199,13 +197,20 @@ def process_new_message(data):
             message_dict["invite_only_stream"] = True
 
         event = dict(type='message', message=message_dict, flags=flags)
+        if not client.accepts_event(event):
+            continue
+
+        # The below prevents (Zephyr) mirroring loops.
+        if ('mirror' in message.sending_client.name and
+            message.sending_client == client.client_type):
+            continue
         client.add_event(event)
 
 def process_event(data):
     event = data['event']
     for user_profile_id in data['users']:
         for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event_type(event['type']):
+            if client.accepts_event(event):
                 client.add_event(event.copy())
 
 def process_notification(data):
