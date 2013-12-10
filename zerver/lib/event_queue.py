@@ -100,6 +100,7 @@ class ClientDescriptor(object):
 
     def finish_current_handler(self):
         if self.current_handler is not None:
+            err_msg = "Got error finishing handler for queue %s" % (self.event_queue.id,)
             try:
                 # We call async_request_restart here in case we are
                 # being finished without any events (because another
@@ -111,8 +112,14 @@ class ClientDescriptor(object):
                                                        queue_id=self.event_queue.id),
                                                   self.current_handler._request,
                                                   apply_markdown=self.apply_markdown)
+            except IOError as e:
+                if e.message != 'Stream is closed':
+                    logging.exception(err_msg)
+            except AssertionError as e:
+                if e.message != 'Request closed':
+                    logging.exception(err_msg)
             except Exception:
-                logging.exception("Got error finishing handler for queue %s" % (self.event_queue.id))
+                logging.exception(err_msg)
             finally:
                 self.disconnect_handler()
                 return True
