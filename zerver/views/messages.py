@@ -27,11 +27,49 @@ from zerver.models import Message, UserProfile, Stream, \
     stringify_message_dict, is_super_user, is_super_user_api, \
     resolve_email_to_domain, get_realm
 
+import sqlalchemy
+from sqlalchemy import func
+from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
+    or_, union_all, alias
+
 import re
 import ujson
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
+
+# This is a Pool that doesn't close connections.  Therefore it can be used with
+# existing Django database connections.
+class NonClosingPool(sqlalchemy.pool.NullPool):
+    def status(self):
+        return "NonClosingPool"
+
+    def _do_return_conn(self, conn):
+        pass
+
+    def recreate(self):
+        return self.__class__(creator=self._creator,
+                              recycle=self._recycle,
+                              use_threadlocal=self._use_threadlocal,
+                              reset_on_return=self._reset_on_return,
+                              echo=self.echo,
+                              logging_name=self._orig_logging_name,
+                              _dispatch=self.dispatch)
+
+sqlalchemy_engine = None
+def get_sqlalchemy_connection():
+    global sqlalchemy_engine
+    if sqlalchemy_engine is None:
+        def get_dj_conn():
+            connection.ensure_connection()
+            return connection.connection
+        sqlalchemy_engine = sqlalchemy.create_engine('postgresql://',
+                                                     creator=get_dj_conn,
+                                                     poolclass=NonClosingPool,
+                                                     pool_reset_on_return=False)
+    sa_connection = sqlalchemy_engine.connect()
+    sa_connection.execution_options(autocommit=False)
+    return sa_connection
 
 @authenticated_json_post_view
 def json_get_old_messages(request, user_profile):
@@ -46,36 +84,31 @@ class BadNarrowOperator(Exception):
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder(object):
-    def __init__(self, user_profile, prefix):
+    def __init__(self, user_profile, msg_id_column):
         self.user_profile = user_profile
-        self.prefix = prefix
+        self.msg_id_column = msg_id_column
 
     def __call__(self, query, operator, operand):
         # We have to be careful here because we're letting users call a method
         # by name! The prefix 'by_' prevents it from colliding with builtin
         # Python __magic__ stuff.
         method_name = 'by_' + operator.replace('-', '_')
-        if method_name == 'by_search':
-            return self.do_search(query, operand)
         method = getattr(self, method_name, None)
         if method is None:
             raise BadNarrowOperator('unknown operator ' + operator)
-        return query.filter(method(operand))
+        return method(query, operand)
 
-    # Wrapper for Q() which adds self.prefix to all the keys
-    def pQ(self, **kwargs):
-        return Q(**dict((self.prefix + key, kwargs[key]) for key in kwargs.keys()))
-
-    def by_is(self, operand):
+    def by_is(self, query, operand):
         if operand == 'private':
-            return (self.pQ(recipient__type=Recipient.PERSONAL) |
-                    self.pQ(recipient__type=Recipient.HUDDLE))
+            query = query.select_from(join(query.froms[0], "zerver_recipient",
+                                           column("recipient_id") ==
+                                           literal_column("zerver_recipient.id")))
+            return query.where(or_(column("type") == Recipient.PERSONAL,
+                                   column("type") == Recipient.HUDDLE))
         elif operand == 'starred':
-            return Q(flags=UserMessage.flags.starred)
-        elif operand == 'mentioned':
-            return Q(flags=UserMessage.flags.mentioned)
-        elif operand == 'alerted':
-            return Q(flags=UserMessage.flags.mentioned)
+            return query.where(column("flags").op("&")(UserMessage.flags.starred.mask) != 0)
+        elif operand == 'mentioned' or operand == 'alerted':
+            return query.where(column("flags").op("&")(UserMessage.flags.mentioned.mask) != 0)
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
     _alphanum = frozenset(
@@ -102,7 +135,7 @@ class NarrowBuilder(object):
                     s[i] = '\\' + c
         return ''.join(s)
 
-    def by_stream(self, operand):
+    def by_stream(self, query, operand):
         stream = get_stream(operand, self.user_profile.realm)
         if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
@@ -120,12 +153,12 @@ class NarrowBuilder(object):
                                                      name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
             matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
             recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
-            return self.pQ(recipient__in=recipients)
+            return query.where(column("recipient_id").in_([recipient.id for recipient in recipients]))
 
         recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
-        return self.pQ(recipient=recipient)
+        return query.where(column("recipient_id") == recipient.id)
 
-    def by_topic(self, operand):
+    def by_topic(self, query, operand):
         if self.user_profile.realm.domain == "mit.edu":
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
@@ -142,25 +175,25 @@ class NarrowBuilder(object):
             else:
                 regex = r'^%s(\.d)*$' % (self._pg_re_escape(base_topic),)
 
-            return self.pQ(subject__iregex=regex)
+            return query.where(column("subject").op("~*")(regex))
 
-        return self.pQ(subject__iexact=operand)
+        return query.where(func.upper(column("subject")) == func.upper(literal(operand)))
 
-    def by_sender(self, operand):
+    def by_sender(self, query, operand):
         try:
             sender = get_user_profile_by_email(operand)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + operand)
 
-        return self.pQ(sender=sender)
+        return query.where(column("sender_id") == literal(sender.id))
 
-    def by_near(self, operand):
-        return Q()
+    def by_near(self, query, operand):
+        return query
 
-    def by_id(self, operand):
-        return self.pQ(id=operand)
+    def by_id(self, query, operand):
+        return query.where(self.msg_id_column == literal(operand))
 
-    def by_pm_with(self, operand):
+    def by_pm_with(self, query, operand):
         if ',' in operand:
             # Huddle
             try:
@@ -169,7 +202,7 @@ class NarrowBuilder(object):
                     self.user_profile, self.user_profile)
             except ValidationError:
                 raise BadNarrowOperator('unknown recipient ' + operand)
-            return self.pQ(recipient=recipient)
+            return query.where(column("recipient_id") == recipient.id)
         else:
             # Personal message
             self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
@@ -185,17 +218,21 @@ class NarrowBuilder(object):
                 raise BadNarrowOperator('unknown user ' + operand)
 
             narrow_recipient = get_recipient(Recipient.PERSONAL, narrow_profile.id)
-            return ((self.pQ(sender=narrow_profile) & self.pQ(recipient=self_recipient)) |
-                    (self.pQ(sender=self.user_profile) & self.pQ(recipient=narrow_recipient)))
+            return query.where(or_(and_(column("sender_id") == narrow_profile.id,
+                                        column("recipient_id") == self_recipient.id),
+                                   and_(column("sender_id") == self.user_profile.id,
+                                        column("recipient_id") == narrow_recipient.id)))
 
-    def do_search(self, query, operand):
-        tsquery = "plainto_tsquery('zulip.english_us_search', %s)"
-        where = "search_tsvector @@ " + tsquery
-        content_matches = "ts_match_locs_array('zulip.english_us_search', rendered_content, " \
-            + tsquery + ")"
+    def by_search(self, query, operand):
+        tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
+        ts_locs_array = func.ts_match_locs_array
+        query = query.column(ts_locs_array(literal("zulip.english_us_search"),
+                                           column("rendered_content"),
+                                           tsquery).label("content_matches"))
         # We HTML-escape the subject in Postgres to avoid doing a server round-trip
-        subject_matches = "ts_match_locs_array('zulip.english_us_search', escape_html(subject), " \
-            + tsquery + ")"
+        query = query.column(ts_locs_array(literal("zulip.english_us_search"),
+                                           func.escape_html(column("subject")),
+                                           tsquery).label("subject_matches"))
 
         # Do quoted string matching.  We really want phrase
         # search here so we can ignore punctuation and do
@@ -204,13 +241,11 @@ class NarrowBuilder(object):
         for term in re.findall('"[^"]+"|\S+', operand):
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]
-                query = query.filter(self.pQ(content__icontains=term) |
-                                     self.pQ(subject__icontains=term))
+                term = '%' + connection.ops.prep_for_like_query(term) + '%'
+                query = query.where(or_(column("content").ilike(term),
+                                        column("subject").ilike(term)))
 
-        return query.extra(select={'content_matches': content_matches,
-                                   'subject_matches': subject_matches},
-                           where=[where],
-                           select_params=[operand, operand], params=[operand])
+        return query.where(column("search_tsvector").op("@@")(tsquery))
 
 def highlight_string(string, locs):
     highlight_start = '<span class="highlight">'
@@ -227,11 +262,9 @@ def highlight_string(string, locs):
     result += string[pos:]
     return result
 
-def get_search_fields(msg, matches_container):
-    return dict(match_content=highlight_string(msg.rendered_content,
-                                               matches_container.content_matches),
-                match_subject=highlight_string(escape_html(msg.subject),
-                                               matches_container.subject_matches))
+def get_search_fields(rendered_content, subject, content_matches, subject_matches):
+    return dict(match_content=highlight_string(rendered_content, content_matches),
+                match_subject=highlight_string(escape_html(subject), subject_matches))
 
 def narrow_parameter(json):
     # FIXME: A hack to support old mobile clients
@@ -279,23 +312,15 @@ def get_old_messages_backend(request, user_profile,
                 include_history = False
 
     if include_history:
-        prefix = ""
-        wanted_fields = ["id"]
-        query = Message.objects.only(*wanted_fields).order_by('id')
+        query = select([column("id")], None, "zerver_message")
+        inner_msg_id_col = literal_column("zerver_message.id")
     else:
-        prefix = "message__"
-        # Conceptually this query should be
-        #   UserMessage.objects.filter(user_profile=user_profile).order_by('message')
-        #
-        # However, our do_search code above requires that there be a
-        # unique 'rendered_content' row in the query, so we need to
-        # somehow get the 'message' table into the query without
-        # actually fetching all the rows from the message table (since
-        # doing so would cause Django to consume a lot of resources
-        # rendering them).  The following achieves these objectives.
-        wanted_fields = ["flags", "id", "message__id"]
-        query = UserMessage.objects.select_related("message").only(*wanted_fields) \
-            .filter(user_profile=user_profile).order_by('message')
+        query = select([column("id"), column("flags")],
+                       column("user_profile_id") == literal(user_profile.id),
+                       join("zerver_usermessage", "zerver_message",
+                            literal_column("zerver_usermessage.message_id") ==
+                            literal_column("zerver_message.id")))
+        inner_msg_id_col = column("message_id")
 
     # Add some metadata to our logging data for narrows
     if narrow is not None:
@@ -315,16 +340,12 @@ def get_old_messages_backend(request, user_profile,
     else:
         use_raw_query = False
         num_extra_messages = 0
-        build = NarrowBuilder(user_profile, prefix)
+        build = NarrowBuilder(user_profile, inner_msg_id_col)
         for operator, operand in narrow:
             if operator == 'search' and not is_search:
-                wanted_fields += [prefix + "subject", prefix + "rendered_content"]
-                query = query.only(*wanted_fields)
+                query = query.column("subject").column("rendered_content")
                 is_search = True
             query = build(query, operator, operand)
-
-    def add_prefix(**kwargs):
-        return dict((prefix + key, kwargs[key]) for key in kwargs.keys())
 
     # We add 1 to the number of messages requested if no narrow was
     # specified to ensure that the resulting list always contains the
@@ -337,6 +358,8 @@ def get_old_messages_backend(request, user_profile,
 
     before_result = []
     after_result = []
+    before_query = None
+    after_query = None
     if num_before != 0:
         before_anchor = anchor
         if num_after != 0:
@@ -352,7 +375,8 @@ def get_old_messages_backend(request, user_profile,
                            "ORDER BY message_id DESC LIMIT %s", [user_profile.id, before_anchor, num_before])
             before_result = reversed(cursor.fetchall())
         else:
-            before_result = last_n(num_before, query.filter(**add_prefix(id__lte=before_anchor)))
+            before_query = query.where(literal_column("zerver_message.id") <= before_anchor) \
+                                .order_by(literal_column("zerver_message.id").desc()).limit(num_before)
     if num_after != 0:
         if use_raw_query:
             cursor = connection.cursor()
@@ -364,8 +388,24 @@ def get_old_messages_backend(request, user_profile,
                            "ORDER BY message_id LIMIT %s", [user_profile.id, anchor, num_after])
             after_result = cursor.fetchall()
         else:
-            after_result = query.filter(**add_prefix(id__gte=anchor))[:num_after]
-    query_result = list(before_result) + list(after_result)
+            after_query = query.where(literal_column("zerver_message.id") >= anchor) \
+                               .order_by(literal_column("zerver_message.id").asc()).limit(num_after)
+
+    if use_raw_query:
+        query_result = list(before_result) + list(after_result)
+    else:
+        if before_query is not None:
+            if after_query is not None:
+                query = union_all(before_query.self_group(), after_query.self_group())
+            else:
+                query = before_query
+        else:
+            query = after_query
+
+        main_query = alias(query)
+        query = select(main_query.c, None, main_query).order_by(column("id").asc())
+        sa_conn = get_sqlalchemy_connection()
+        query_result = list(sa_conn.execute(query).fetchall())
 
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
@@ -383,23 +423,32 @@ def get_old_messages_backend(request, user_profile,
             user_message_flags[message_id] = parse_usermessage_flags(flags_val)
             message_ids.append(message_id)
     elif include_history:
+        message_ids = [row[0] for row in query_result]
+
+        # TODO: This could be done with an outer join instead of two queries
         user_message_flags = dict((user_message.message_id, user_message.flags_list()) for user_message in
                                   UserMessage.objects.filter(user_profile=user_profile,
-                                                             message__in=query_result))
-        for message in query_result:
-            message_ids.append(message.id)
-            if user_message_flags.get(message.id) is None:
-                user_message_flags[message.id] = ["read", "historical"]
+                                                             message__id__in=message_ids))
+        for row in query_result:
+            message_id = row[0]
+            if user_message_flags.get(message_id) is None:
+                user_message_flags[message_id] = ["read", "historical"]
             if is_search:
-                search_fields[message.id] = get_search_fields(message, message)
+                (_, subject, rendered_content, content_matches, subject_matches) = row
+                search_fields[message_id] = get_search_fields(rendered_content, subject,
+                                                              content_matches, subject_matches)
     else:
-        user_message_flags = dict((user_message.message_id, user_message.flags_list())
-                                  for user_message in query_result)
-        for user_message in query_result:
-            message_ids.append(user_message.message_id)
+        for row in query_result:
+            message_id = row[0]
+            flags = row[1]
+            user_message_flags[message_id] = parse_usermessage_flags(flags)
+
+            message_ids.append(message_id)
+
             if is_search:
-                search_fields[user_message.message_id] = \
-                    get_search_fields(user_message.message, user_message)
+                (_, _, subject, rendered_content, content_matches, subject_matches) = row
+                search_fields[message_id] = get_search_fields(rendered_content, subject,
+                                                              content_matches, subject_matches)
 
     cache_transformer = lambda row: Message.build_dict_from_raw_db_row(row, apply_markdown)
     id_fetcher = lambda row: row['id']
@@ -634,12 +683,24 @@ def messages_in_narrow_backend(request, user_profile,
     # Note that this function will only work on messages the user
     # actually received
 
-    query = UserMessage.objects.select_related("message") \
-                               .filter(user_profile=user_profile, message__id__in=msg_ids)
-    build = NarrowBuilder(user_profile, "message__")
+    query = select([column("message_id"), column("subject"), column("rendered_content")],
+                   and_(column("user_profile_id") == literal(user_profile.id),
+                        column("message_id").in_(msg_ids)),
+                   join("zerver_usermessage", "zerver_message",
+                        literal_column("zerver_usermessage.message_id") ==
+                        literal_column("zerver_message.id")))
+
+    build = NarrowBuilder(user_profile, column("message_id"))
     for operator, operand in narrow:
         query = build(query, operator, operand)
 
-    return json_success({"messages": dict((msg.message.id,
-                                           get_search_fields(msg.message, msg))
-                                          for msg in query.iterator())})
+    sa_conn = get_sqlalchemy_connection()
+    query_result = list(sa_conn.execute(query).fetchall())
+
+    search_fields = dict()
+    for row in query_result:
+        (message_id, subject, rendered_content, content_matches, subject_matches) = row
+        search_fields[message_id] = get_search_fields(rendered_content, subject,
+                                                      content_matches, subject_matches)
+
+    return json_success({"messages": search_fields})
