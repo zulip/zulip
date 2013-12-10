@@ -2467,7 +2467,68 @@ class POSTRequestMock(object):
         self.user = user_profile
         self._tornado_handler = DummyHandler(assert_callback)
         self.session = DummySession()
+        self._log_data = {}
         self.META = {'PATH_INFO': 'test'}
+
+from zerver.tornadoviews import get_events_backend
+class GetEventsTest(AuthedTestCase):
+    def tornado_call(self, view_func, user_profile, post_data,
+                     callback=None):
+        request = POSTRequestMock(post_data, user_profile, callback)
+        return view_func(request, user_profile)
+
+    def test_get_events(self):
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+        self.login(email)
+
+        result = self.tornado_call(get_events_backend, user_profile,
+                                   {"apply_markdown": ujson.dumps(True),
+                                    "event_types": ujson.dumps(["message"]),
+                                    "user_client": "website",
+                                    "dont_block": ujson.dumps(True),
+                                    })
+        self.assert_json_success(result)
+        queue_id = ujson.loads(result.content)["queue_id"]
+
+        result = self.tornado_call(get_events_backend, user_profile,
+                                   {"queue_id": queue_id,
+                                    "user_client": "website",
+                                    "last_event_id": -1,
+                                    "dont_block": ujson.dumps(True),
+                                    })
+        events = ujson.loads(result.content)["events"]
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 0)
+
+        self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
+
+        result = self.tornado_call(get_events_backend, user_profile,
+                                   {"queue_id": queue_id,
+                                    "user_client": "website",
+                                    "last_event_id": -1,
+                                    "dont_block": ujson.dumps(True),
+                                    })
+        events = ujson.loads(result.content)["events"]
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["sender_email"], email)
+        last_event_id = events[0]["id"]
+
+        self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
+
+        result = self.tornado_call(get_events_backend, user_profile,
+                                   {"queue_id": queue_id,
+                                    "user_client": "website",
+                                    "last_event_id": last_event_id,
+                                    "dont_block": ujson.dumps(True),
+                                    })
+        events = ujson.loads(result.content)["events"]
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["sender_email"], email)
 
 from zerver.lib.event_queue import EventQueue
 class EventQueueTest(TestCase):
