@@ -403,9 +403,9 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
 
         var row = current_msg_list.get_row(message.id);
         if (row.length === 0) {
-            if (muting.is_topic_muted(message.stream, message.subject)) {
+            if (message.type === "stream" && muting.is_topic_muted(message.stream, message.subject)) {
                 note = "You sent a message to a muted topic.";
-            } else if (!stream_data.in_home_view(message.stream)) {
+            } else if (message.type === "stream" && !stream_data.in_home_view(message.stream)) {
                 note = "You sent a message to a muted stream.";
             } else {
                 // offscreen because it is outside narrow
