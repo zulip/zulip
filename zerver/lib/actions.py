@@ -1682,7 +1682,7 @@ def get_status_dict(requesting_user_profile):
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
-# structures and new code to apply_events.
+# structures and new code to apply_events (and add a test in EventsRegisterTest).
 def fetch_initial_state_data(user_profile, event_types, queue_id):
     state = {'queue_id': queue_id}
     if event_types is None or "message" in event_types:

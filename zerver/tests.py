@@ -2570,6 +2570,77 @@ class GetEventsTest(AuthedTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
+from zerver.lib.actions import fetch_initial_state_data, apply_events, do_add_alert_words, \
+    do_set_muted_topics, do_add_realm_emoji, do_remove_realm_emoji, do_remove_alert_words, \
+    do_remove_subscription
+from zerver.lib.event_queue import allocate_client_descriptor
+from collections import OrderedDict
+class EventsRegisterTest(AuthedTestCase):
+    maxDiff = None
+    user_profile = get_user_profile_by_email("hamlet@zulip.com")
+
+    def do_test(self, trigger_event, event_types=None, matcher=None):
+        client = allocate_client_descriptor(self.user_profile.id, self.user_profile.realm.id,
+                                            event_types,
+                                            get_client("website"), True, False, 600, [])
+        initial_state = fetch_initial_state_data(self.user_profile, event_types, "")
+        trigger_event()
+        events = client.event_queue.contents()
+        after_state = fetch_initial_state_data(self.user_profile, event_types, "")
+        apply_events(initial_state, events)
+        if matcher is None:
+            self.assertEqual(initial_state, after_state)
+        else:
+            matcher(initial_state, after_state)
+
+    def match_with_reorder(self, a, b, field):
+        # We need to use an OrderedDict to turn these into strings consistently
+        self.assertEqual(set(ujson.dumps(OrderedDict(x.items())) for x in a[field]),
+                         set(ujson.dumps(OrderedDict(x.items())) for x in b[field]))
+        a[field] = []
+        b[field] = []
+        self.assertEqual(a, b)
+
+    def match_except(self, a, b, field):
+        a[field] = []
+        b[field] = []
+        self.assertEqual(a, b)
+
+    def test_send_message_events(self):
+        self.do_test(lambda: self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello"))
+
+    def test_pointer_events(self):
+        self.do_test(lambda: self.client.post("/json/update_pointer", {"pointer": 150}))
+
+    def test_register_events(self):
+        self.do_test(lambda: self.register("test1", "test1"),
+                     matcher=lambda a, b: self.match_with_reorder(a, b, "realm_users"))
+
+    def test_alert_words_events(self):
+        self.do_test(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
+        self.do_test(lambda: do_remove_alert_words(self.user_profile, ["alert_word"]))
+
+    def test_muted_topics_events(self):
+        self.do_test(lambda: do_set_muted_topics(self.user_profile, [["Denmark", "topic"]]))
+
+    def test_realm_emoji_events(self):
+        self.do_test(lambda: do_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
+                                                "https://realm.com/my_emoji"))
+        self.do_test(lambda: do_remove_realm_emoji(get_realm("zulip.com"), "my_emoji"))
+
+    def test_subscribe_events(self):
+        self.do_test(lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream"),
+                     matcher=lambda a, b: self.match_with_reorder(a, b, "subscriptions"))
+        self.do_test(lambda: self.subscribe_to_stream("othello@zulip.com", "test_stream"),
+                     matcher=lambda a, b: self.match_with_reorder(a, b, "subscriptions"))
+        stream = get_stream("test_stream", self.user_profile.realm)
+        self.do_test(lambda: do_remove_subscription(get_user_profile_by_email("othello@zulip.com"), stream),
+                     matcher=lambda a, b: self.match_with_reorder(a, b, "subscriptions"))
+        self.do_test(lambda: do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream),
+                     matcher=lambda a, b: self.match_except(a, b, "unsubscribed"))
+        self.do_test(lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream"),
+                     matcher=lambda a, b: self.match_with_reorder(a, b, "subscriptions"))
+
 from zerver.lib.event_queue import EventQueue
 class EventQueueTest(TestCase):
     def test_one_event(self):
