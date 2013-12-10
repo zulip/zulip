@@ -1783,6 +1783,8 @@ def apply_events(state, events):
             state['realm_emoji'] = event['realm_emoji']
         elif event['type'] == "alert_words":
             state['alert_words'] = event['alert_words']
+        elif event['type'] == "muted_topics":
+            state['muted_topics'] = event["muted_topics"]
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 
