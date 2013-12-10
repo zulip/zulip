@@ -6,8 +6,8 @@ import time
 import os
 import subprocess
 
-WARN_THRESHOLD = 50
-CRIT_THRESHOLD = 100
+WARN_THRESHOLD = 10
+CRIT_THRESHOLD = 50
 
 states = {
     0: "OK",
