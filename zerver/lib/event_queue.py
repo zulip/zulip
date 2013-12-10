@@ -18,6 +18,7 @@ import traceback
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 from zerver.models import get_client
+from zerver.lib.narrow import build_narrow_filter
 import copy
 
 # The idle timeout used to be a week, but we found that in that
@@ -39,7 +40,8 @@ HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor(object):
     def __init__(self, user_profile_id, realm_id, event_queue, event_types, client_type,
-                 apply_markdown=True, all_public_streams=False, lifespan_secs=0):
+                 apply_markdown=True, all_public_streams=False, lifespan_secs=0,
+                 narrow=[]):
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
@@ -55,6 +57,7 @@ class ClientDescriptor(object):
         self.all_public_streams = all_public_streams
         self.client_type = client_type
         self._timeout_handle = None
+        self.narrow_filter = build_narrow_filter(narrow)
 
         # Clamp queue_timeout to between minimum and maximum timeouts
         self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS, min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
@@ -116,7 +119,11 @@ class ClientDescriptor(object):
     def accepts_event(self, event):
         if self.event_types is None:
             return True
-        return event["type"] in self.event_types
+        if event["type"] not in self.event_types:
+            return False
+        if event["type"] == "message":
+            return self.narrow_filter(event)
+        return True
 
     # TODO: Refactor so we don't need this function
     def accepts_messages(self):
@@ -280,12 +287,13 @@ def get_client_descriptors_for_realm_all_streams(realm_id):
     return realm_clients_all_streams.get(realm_id, [])
 
 def allocate_client_descriptor(user_profile_id, realm_id, event_types, client_type,
-                               apply_markdown, all_public_streams, lifespan_secs):
+                               apply_markdown, all_public_streams, lifespan_secs,
+                               narrow=[]):
     global next_queue_id
     id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
     next_queue_id += 1
     client = ClientDescriptor(user_profile_id, realm_id, EventQueue(id), event_types, client_type,
-                              apply_markdown, all_public_streams, lifespan_secs)
+                              apply_markdown, all_public_streams, lifespan_secs, narrow)
     clients[id] = client
     user_clients.setdefault(user_profile_id, []).append(client)
     if all_public_streams:
@@ -422,13 +430,15 @@ def extract_json_response(resp):
         return resp.json
 
 def request_event_queue(user_profile, user_client, apply_markdown,
-                        queue_lifespan_secs, event_types=None, all_public_streams=False):
+                        queue_lifespan_secs, event_types=None, all_public_streams=False,
+                        narrow=[]):
     if settings.TORNADO_SERVER:
         req = {'dont_block'    : 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
                'all_public_streams': ujson.dumps(all_public_streams),
                'client'        : 'internal',
                'user_client'   : user_client.name,
+               'narrow'        : ujson.dumps(narrow),
                'lifespan_secs' : queue_lifespan_secs}
         if event_types is not None:
             req['event_types'] = ujson.dumps(event_types)

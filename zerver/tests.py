@@ -2530,6 +2530,46 @@ class GetEventsTest(AuthedTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
 
+    def test_get_events_narrow(self):
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+        self.login(email)
+
+        result = self.tornado_call(get_events_backend, user_profile,
+                                   {"apply_markdown": ujson.dumps(True),
+                                    "event_types": ujson.dumps(["message"]),
+                                    "narrow": ujson.dumps([["stream", "denmark"]]),
+                                    "user_client": "website",
+                                    "dont_block": ujson.dumps(True),
+                                    })
+        self.assert_json_success(result)
+        queue_id = ujson.loads(result.content)["queue_id"]
+
+        result = self.tornado_call(get_events_backend, user_profile,
+                                   {"queue_id": queue_id,
+                                    "user_client": "website",
+                                    "last_event_id": -1,
+                                    "dont_block": ujson.dumps(True),
+                                    })
+        events = ujson.loads(result.content)["events"]
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 0)
+
+        self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
+        self.send_message(email, "Denmark", Recipient.STREAM, "hello")
+
+        result = self.tornado_call(get_events_backend, user_profile,
+                                   {"queue_id": queue_id,
+                                    "user_client": "website",
+                                    "last_event_id": -1,
+                                    "dont_block": ujson.dumps(True),
+                                    })
+        events = ujson.loads(result.content)["events"]
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
+
 from zerver.lib.event_queue import EventQueue
 class EventQueueTest(TestCase):
     def test_one_event(self):

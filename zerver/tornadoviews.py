@@ -5,12 +5,13 @@ from zerver.models import get_client
 
 from zerver.decorator import asynchronous, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, json_to_bool, json_to_list, REQ
+    has_request_variables, json_to_bool, json_to_list, json_to_dict, REQ
 
 from zerver.lib.response import json_success, json_error
 from zerver.tornado_callbacks import process_notification
 
 from zerver.lib.event_queue import allocate_client_descriptor, get_client_descriptor
+from zerver.lib.narrow import check_supported_events_narrow_filter
 
 import ujson
 import logging
@@ -48,6 +49,7 @@ def get_events_backend(request, user_profile, handler = None,
                        all_public_streams = REQ(default=False, converter=json_to_bool),
                        event_types = REQ(default=None, converter=json_to_list),
                        dont_block = REQ(default=False, converter=json_to_bool),
+                       narrow = REQ(default=[], converter=json_to_list),
                        lifespan_secs = REQ(default=0, converter=int)):
     if user_client is None:
         user_client = request.client
@@ -58,7 +60,8 @@ def get_events_backend(request, user_profile, handler = None,
         if dont_block:
             client = allocate_client_descriptor(user_profile.id, user_profile.realm.id,
                                                 event_types, user_client, apply_markdown,
-                                                all_public_streams, lifespan_secs)
+                                                all_public_streams, lifespan_secs,
+                                                narrow=narrow)
             queue_id = client.event_queue.id
         else:
             return json_error("Missing 'queue_id' argument")

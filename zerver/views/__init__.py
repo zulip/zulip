@@ -910,6 +910,7 @@ class BadNarrowOperator(Exception):
     def to_json_error_msg(self):
         return 'Invalid narrow operator: ' + self.desc
 
+# When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder(object):
     def __init__(self, user_profile, prefix):
         self.user_profile = user_profile
@@ -2085,9 +2086,11 @@ def api_events_register(request, user_profile,
 def events_register_backend(request, user_profile, apply_markdown=True,
                             all_public_streams=False,
                             event_types=REQ(converter=json_to_list, default=None),
+                            narrow=REQ(converter=json_to_list, default=[]),
                             queue_lifespan_secs=REQ(converter=int, default=0)):
     ret = do_events_register(user_profile, request.client, apply_markdown,
-                             event_types, queue_lifespan_secs, all_public_streams)
+                             event_types, queue_lifespan_secs, all_public_streams,
+                             narrow=narrow)
     return json_success(ret)
 
 @authenticated_json_post_view

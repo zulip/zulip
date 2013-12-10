@@ -47,6 +47,7 @@ from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
 from zerver.lib.push_notifications import num_push_devices_for_user, \
      send_apple_push_notification, send_android_push_notification
+from zerver.lib.narrow import check_supported_events_narrow_filter
 
 from zerver import tornado_callbacks
 
@@ -1679,9 +1680,15 @@ def get_status_dict(requesting_user_profile):
 
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
-                       event_types=None, queue_lifespan_secs=0, all_public_streams=False):
+                       event_types=None, queue_lifespan_secs=0, all_public_streams=False,
+                       narrow=[]):
+    # Technically we don't need to check this here because
+    # build_narrow_filter will check it, but it's nicer from an error
+    # handling perspective to do it before contacting Tornado
+    check_supported_events_narrow_filter(narrow)
     queue_id = request_event_queue(user_profile, user_client, apply_markdown,
-                                   queue_lifespan_secs, event_types, all_public_streams)
+                                   queue_lifespan_secs, event_types, all_public_streams,
+                                   narrow=narrow)
     if queue_id is None:
         raise JsonableError("Could not allocate event queue")
 

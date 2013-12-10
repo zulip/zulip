@@ -250,13 +250,13 @@ class Client(object):
         call.func_name = name
         setattr(cls, name, call)
 
-    def call_on_each_event(self, callback, event_types=None):
+    def call_on_each_event(self, callback, event_types=None, narrow=[]):
         def do_register():
             while True:
                 if event_types is None:
                     res = self.register()
                 else:
-                    res = self.register(event_types=event_types)
+                    res = self.register(event_types=event_types, narrow=narrow)
 
                 if 'error' in res.get('result'):
                     if self.verbose:
@@ -318,10 +318,10 @@ def _mk_rm_subs(streams):
 def _mk_deregister(queue_id):
     return {'queue_id': queue_id}
 
-def _mk_events(event_types=None):
+def _mk_events(event_types=None, narrow=[]):
     if event_types is None:
         return dict()
-    return dict(event_types=event_types)
+    return dict(event_types=event_types, narrow=narrow)
 
 def _kwargs_to_dict(**kwargs):
     return kwargs
