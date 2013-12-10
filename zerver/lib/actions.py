@@ -799,6 +799,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     invite_only=stream.invite_only,
                     color=subscription.color,
                     email_address=encode_email_address(stream),
+                    notifications=subscription.notifications,
                     subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
     notice = dict(event=dict(type="subscriptions", op="add",
@@ -1738,6 +1739,11 @@ def apply_events(state, events):
             if event['op'] == "add" or event['op'] == "update":
                 state['realm_users'].append(event['person'])
         elif event['type'] == "subscriptions":
+            if event['op'] in ["add"]:
+                # Convert the user_profile IDs to emails since that's what register() returns
+                # TODO: Clean up this situation
+                for item in event["subscriptions"]:
+                    item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
             if event['op'] in ["add", "remove"]:
                 subscriptions_to_filter = set(sub['name'].lower() for sub in event["subscriptions"])
             # We add the new subscriptions to the list of streams the
@@ -1760,15 +1766,17 @@ def apply_events(state, events):
                     if sub['name'].lower() == event['name'].lower():
                         sub[event['property']] = event['value']
             elif event['op'] == 'peer_add':
+                user_id = get_user_profile_by_email(event['user_email']).id
                 for sub in state['subscriptions']:
                     if (sub['name'] in event['subscriptions'] and
-                        event['user_email'] not in sub['subscribers']):
-                        sub['subscribers'].append(event['user_email'])
+                        user_id not in sub['subscribers']):
+                        sub['subscribers'].append(user_id)
             elif event['op'] == 'peer_remove':
+                user_id = get_user_profile_by_email(event['user_email']).id
                 for sub in state['subscriptions']:
                     if (sub['name'] in event['subscriptions'] and
-                        event['user_email'] in sub['subscribers']):
-                        sub['subscribers'].remove(event['user_email'])
+                        user_id in sub['subscribers']):
+                        sub['subscribers'].remove(user_id)
         elif event['type'] == "presence":
             state['presences'][event['email']] = event['presence']
         elif event['type'] == "update_message":
