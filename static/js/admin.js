@@ -52,7 +52,8 @@ function populate_users (realm_people_data) {
 }
 
 function populate_streams (streams_data) {
-    var streams_table = $("#admin_streams_table");
+    var streams_table = $("#admin_streams_table").expectOne();
+    streams_table.find("tr.stream_row").remove();
     _.each(streams_data.streams, function (stream) {
         streams_table.append(templates.render("admin_streams_list", {stream: stream}));
     });
