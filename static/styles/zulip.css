@@ -15,7 +15,7 @@ body,
 #tab_bar_underpadding,
 .message_list,
 #compose-container {
-    background-color: ##ffffff;
+    background-color: #ffffff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
    -o-transition: background-color 200ms linear;
