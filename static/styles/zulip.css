@@ -15,7 +15,7 @@ body,
 #tab_bar_underpadding,
 .message_list,
 #compose-container {
-    background-color: #f4f5f4;
+    background-color: ##ffffff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
    -o-transition: background-color 200ms linear;
@@ -28,7 +28,7 @@ body.narrowed_view,
 .narrowed_view #tab_bar_underpadding,
 .narrowed_view .message_list,
 .narrowed_view #compose-container {
-    background-color: #f0f8ff;
+    background-color: #effcff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
    -o-transition: background-color 200ms linear;
