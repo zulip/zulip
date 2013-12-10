@@ -101,7 +101,8 @@ class ClientDescriptor(object):
                                                   apply_markdown=self.apply_markdown)
             except Exception:
                 logging.exception("Got error adding event to queue %s" % (self.event_queue.id))
-            self.disconnect_handler()
+            finally:
+                self.disconnect_handler()
 
     def accepts_event_type(self, type):
         if self.event_types is None:
