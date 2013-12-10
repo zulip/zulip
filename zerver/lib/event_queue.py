@@ -99,7 +99,7 @@ class ClientDescriptor(object):
                                                        queue_id=self.event_queue.id),
                                                   self.current_handler._request,
                                                   apply_markdown=self.apply_markdown)
-            except socket.error:
+            except Exception:
                 logging.exception("Got error adding event to queue %s" % (self.event_queue.id))
             self.disconnect_handler()
 
