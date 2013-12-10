@@ -1678,6 +1678,113 @@ def get_status_dict(requesting_user_profile):
 
     return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
 
+# Fetch initial data.  When event_types is not specified, clients want
+# all event types.  Whenever you add new code to this function, you
+# should also add corresponding events for changes in the data
+# structures and new code to apply_events.
+def fetch_initial_state_data(user_profile, event_types, queue_id):
+    state = {'queue_id': queue_id}
+    if event_types is None or "message" in event_types:
+        # The client should use get_old_messages() to fetch messages
+        # starting with the max_message_id.  They will get messages
+        # newer than that ID via get_events()
+        messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
+        if messages:
+            state['max_message_id'] = messages[0].id
+        else:
+            state['max_message_id'] = -1
+    if event_types is None or "pointer" in event_types:
+        state['pointer'] = user_profile.pointer
+    if event_types is None or "realm_user" in event_types:
+        state['realm_users'] = [{'email'     : userdict['email'],
+                                 'is_bot'    : userdict['is_bot'],
+                                 'full_name' : userdict['full_name']}
+                                for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
+    if event_types is None or "subscription" in event_types:
+        subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
+        state['subscriptions'] = subscriptions
+        state['unsubscribed'] = unsubscribed
+        state['email_dict'] = email_dict
+    if event_types is None or "presence" in event_types:
+        state['presences'] = get_status_dict(user_profile)
+    if event_types is None or "referral" in event_types:
+        state['referrals'] = {'granted': user_profile.invites_granted,
+                              'used': user_profile.invites_used}
+    if event_types is None or "update_message_flags" in event_types:
+        # There's no initial data for message flag updates, client will
+        # get any updates during a session from get_events()
+        pass
+    if event_types is None or "realm_emoji" in event_types:
+        state['realm_emoji'] = user_profile.realm.get_emoji()
+    if event_types is None or "alert_words" in event_types:
+        state['alert_words'] = user_alert_words(user_profile)
+    if event_types is None or "muted_topics" in event_types:
+        state['muted_topics'] = ujson.loads(user_profile.muted_topics)
+    return state
+
+def apply_events(state, events):
+    for event in events:
+        if event['type'] == "message":
+            state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
+        elif event['type'] == "pointer":
+            state['pointer'] = max(state['pointer'], event['pointer'])
+        elif event['type'] == "realm_user":
+            # We handle update by just removing the old value and
+            # adding the new one.
+            if event['op'] == "remove" or event['op'] == "update":
+                person = event['person']
+                state['realm_users'] = filter(lambda p: p['email'] != person['email'],
+                                              state['realm_users'])
+            if event['op'] == "add" or event['op'] == "update":
+                state['realm_users'].append(event['person'])
+        elif event['type'] == "subscriptions":
+            if event['op'] in ["add", "remove"]:
+                subscriptions_to_filter = set(sub['name'].lower() for sub in event["subscriptions"])
+            # We add the new subscriptions to the list of streams the
+            # user is subscribed to, and also remove/add them from the
+            # list of streams the user is not subscribed to (which we
+            # are still sending on data about so that e.g. colors and
+            # the in_home_view bit are properly available for those streams)
+            #
+            # And we do the opposite filtering process for unsubscribe events.
+            if event['op'] == "add":
+                state['subscriptions'] += event['subscriptions']
+                state['unsubscribed'] = filter(lambda s: s['name'].lower() not in subscriptions_to_filter,
+                                               state['unsubscribed'])
+            elif event['op'] == "remove":
+                state['unsubscribed'] += event['subscriptions']
+                state['subscriptions'] = filter(lambda s: s['name'].lower() not in subscriptions_to_filter,
+                                                state['subscriptions'])
+            elif event['op'] == 'update':
+                for sub in state['subscriptions']:
+                    if sub['name'].lower() == event['name'].lower():
+                        sub[event['property']] = event['value']
+            elif event['op'] == 'peer_add':
+                for sub in state['subscriptions']:
+                    if (sub['name'] in event['subscriptions'] and
+                        event['user_email'] not in sub['subscribers']):
+                        sub['subscribers'].append(event['user_email'])
+            elif event['op'] == 'peer_remove':
+                for sub in state['subscriptions']:
+                    if (sub['name'] in event['subscriptions'] and
+                        event['user_email'] in sub['subscribers']):
+                        sub['subscribers'].remove(event['user_email'])
+        elif event['type'] == "presence":
+            state['presences'][event['email']] = event['presence']
+        elif event['type'] == "update_message":
+            # The client will get the updated message directly
+            pass
+        elif event['type'] == "referral":
+            state['referrals'] = event['referrals']
+        elif event['type'] == "update_message_flags":
+            # The client will get the message with the updated flags directly
+            pass
+        elif event['type'] == "realm_emoji":
+            state['realm_emoji'] = event['realm_emoji']
+        elif event['type'] == "alert_words":
+            state['alert_words'] = event['alert_words']
+        else:
+            raise ValueError("Unexpected event type %s" % (event['type'],))
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
@@ -1691,120 +1798,18 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                                    narrow=narrow)
     if queue_id is None:
         raise JsonableError("Could not allocate event queue")
-
-    ret = {'queue_id': queue_id}
     if event_types is not None:
         event_types = set(event_types)
 
-    # Fetch initial data.  When event_types is not specified, clients
-    # want all event types.
-    if event_types is None or "message" in event_types:
-        # The client should use get_old_messages() to fetch messages
-        # starting with the max_message_id.  They will get messages
-        # newer than that ID via get_events()
-        messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
-        if messages:
-            ret['max_message_id'] = messages[0].id
-        else:
-            ret['max_message_id'] = -1
-    if event_types is None or "pointer" in event_types:
-        ret['pointer'] = user_profile.pointer
-    if event_types is None or "realm_user" in event_types:
-        ret['realm_users'] = [{'email'     : userdict['email'],
-                               'is_bot'    : userdict['is_bot'],
-                               'full_name' : userdict['full_name']}
-                              for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
-    if event_types is None or "subscription" in event_types:
-        subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
-        ret['subscriptions'] = subscriptions
-        ret['unsubscribed'] = unsubscribed
-        ret['email_dict'] = email_dict
-    if event_types is None or "presence" in event_types:
-        ret['presences'] = get_status_dict(user_profile)
-    if event_types is None or "referral" in event_types:
-        ret['referrals'] = {'granted': user_profile.invites_granted,
-                            'used': user_profile.invites_used}
-    if event_types is None or "update_message_flags" in event_types:
-        # There's no initial data for message flag updates, client will
-        # get any updates during a session from get_events()
-        pass
-    if event_types is None or "realm_emoji" in event_types:
-        ret['realm_emoji'] = user_profile.realm.get_emoji()
-    if event_types is None or "alert_words" in event_types:
-        ret['alert_words'] = user_alert_words(user_profile)
-    if event_types is None or "muted_topics" in event_types:
-        ret['muted_topics'] = ujson.loads(user_profile.muted_topics)
+    ret = fetch_initial_state_data(user_profile, event_types, queue_id)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    for event in events:
-        if event['type'] == "message":
-            ret['max_message_id'] = max(ret['max_message_id'], event['message']['id'])
-        elif event['type'] == "pointer":
-            ret['pointer'] = max(ret['pointer'], event['pointer'])
-        elif event['type'] == "realm_user":
-            # We handle update by just removing the old value and
-            # adding the new one.
-            if event['op'] == "remove" or event['op'] == "update":
-                person = event['person']
-                ret['realm_users'] = filter(lambda p: p['email'] != person['email'],
-                                            ret['realm_users'])
-            if event['op'] == "add" or event['op'] == "update":
-                ret['realm_users'].append(event['person'])
-        elif event['type'] == "subscriptions":
-            if event['op'] in ["add", "remove"]:
-                subscriptions_to_filter = set(sub['name'].lower() for sub in event["subscriptions"])
-            # We add the new subscriptions to the list of streams the
-            # user is subscribed to, and also remove/add them from the
-            # list of streams the user is not subscribed to (which we
-            # are still sending on data about so that e.g. colors and
-            # the in_home_view bit are properly available for those streams)
-            #
-            # And we do the opposite filtering process for unsubscribe events.
-            if event['op'] == "add":
-                ret['subscriptions'] += event['subscriptions']
-                ret['unsubscribed'] = filter(lambda s: s['name'].lower() not in subscriptions_to_filter,
-                                             ret['unsubscribed'])
-            elif event['op'] == "remove":
-                ret['unsubscribed'] += event['subscriptions']
-                ret['subscriptions'] = filter(lambda s: s['name'].lower() not in subscriptions_to_filter,
-                                              ret['subscriptions'])
-            elif event['op'] == 'update':
-                for sub in ret['subscriptions']:
-                    if sub['name'].lower() == event['name'].lower():
-                        sub[event['property']] = event['value']
-            elif event['op'] == 'peer_add':
-                for sub in ret['subscriptions']:
-                    if (sub['name'] in event['subscriptions'] and
-                            event['user_email'] not in sub['subscribers']):
-                        sub['subscribers'].append(event['user_email'])
-            elif event['op'] == 'peer_remove':
-                for sub in ret['subscriptions']:
-                    if (sub['name'] in event['subscriptions'] and
-                            event['user_email'] in sub['subscribers']):
-                        sub['subscribers'].remove(event['user_email'])
-        elif event['type'] == "presence":
-            ret['presences'][event['email']] = event['presence']
-        elif event['type'] == "update_message":
-            # The client will get the updated message directly
-            pass
-        elif event['type'] == "referral":
-            ret['referrals'] = event['referrals']
-        elif event['type'] == "update_message_flags":
-            # The client will get the message with the updated flags directly
-            pass
-        elif event['type'] == "realm_emoji":
-            ret['realm_emoji'] = event['realm_emoji']
-        elif event['type'] == "alert_words":
-            ret['alert_words'] = event['alert_words']
-        else:
-            raise ValueError("Unexpected event type %s" % (event['type'],))
-
+    apply_events(ret, events)
     if events:
         ret['last_event_id'] = events[-1]['id']
     else:
         ret['last_event_id'] = -1
-
     return ret
 
 def do_send_confirmation_email(invitee, referrer):
