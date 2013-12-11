@@ -1604,10 +1604,6 @@ def remove_subscriptions_backend(request, user_profile,
 
     return json_success(result)
 
-@authenticated_api_view
-def api_add_subscriptions(request, user_profile):
-    return add_subscriptions_backend(request, user_profile)
-
 @authenticated_json_post_view
 def json_add_subscriptions(request, user_profile):
     return add_subscriptions_backend(request, user_profile)

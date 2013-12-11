@@ -326,15 +326,10 @@ class AuthedTestCase(TestCase):
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email, streams, extra_post_data = {}, invite_only=False):
-        api_key = self.get_api_key(email)
-
-        post_data = {'email': email,
-                     'api-key': api_key,
-                     'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
+        post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-
-        result = self.client.post("/api/v1/subscriptions/add", post_data)
+        result = self.client.post("/api/v1/users/me/subscriptions", post_data, **self.api_auth(email))
         return result
 
     def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
@@ -512,7 +507,6 @@ class PublicURLTest(TestCase):
                      400: ["/api/v1/get_profile",
                            "/api/v1/get_old_messages",
                            "/api/v1/get_public_streams",
-                           "/api/v1/subscriptions/add",
                            "/api/v1/send_message",
                            "/api/v1/update_pointer",
                            "/api/v1/external/github",
