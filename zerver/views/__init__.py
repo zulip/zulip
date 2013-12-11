@@ -1422,7 +1422,7 @@ def json_fetch_raw_message(request, user_profile,
 def update_message_backend(request, user_profile,
                            message_id=REQ(converter=to_non_negative_int),
                            subject=REQ(default=None),
-                           propagate_mode=REQ(default="change-one"),
+                           propagate_mode=REQ(default="change_one"),
                            content=REQ(default=None)):
     if subject is None and content is None:
         return json_error("Nothing to change")
