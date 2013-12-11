@@ -1,4 +1,4 @@
-# Django settings for humbug project.
+# Django settings for zulip project.
 #
 # DO NOT PUT ANY SECRETS IN THIS FILE.
 # Those belong in local_settings.py.
