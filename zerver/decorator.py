@@ -160,9 +160,10 @@ def zulip_internal(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
-# authenticated_api_view will add the authenticated user's user_profile to
-# the view function's arguments list, since we have to look it up
-# anyway.
+# authenticated_api_view will add the authenticated user's
+# user_profile to the view function's arguments list, since we have to
+# look it up anyway.  It is deprecated in favor on the REST API
+# versions.
 def authenticated_api_view(view_func):
     @csrf_exempt
     @require_post

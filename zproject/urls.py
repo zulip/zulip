@@ -139,10 +139,12 @@ urlpatterns += patterns('zerver.views',
     url(r'^json/set_muted_topics$',         'json_set_muted_topics'),
     url(r'^json/set_avatar$',               'json_set_avatar'),
 
-    # These are json format views used by the API.  They require an API key.
+    # This json format view is used by the LEGACY pre-REST API.  It
+    # requires an API key.
     url(r'^api/v1/send_message$',           'api_send_message'),
 
-    # This json format view used by the API accepts a username password/pair and returns an API key.
+    # This json format view used by the mobila apps accepts a username
+    # password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'api_fetch_api_key'),
 
     # These are integration-specific web hook callbacks
