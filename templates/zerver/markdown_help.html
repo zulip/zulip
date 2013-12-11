@@ -35,9 +35,17 @@
           </td>
         </tr>
         <tr>
-          <td>&gt; Quoted</td>
-          <td><blockquote>Quoted</blockquote></td>
-
+          <td>:heart: (and <a href="http://www.emoji-cheat-sheet.com/" target="_blank">many others</a>)</td>
+          <td><img alt=":heart:" class="emoji" src="static/third/gemoji/images/emoji/heart.png" title=":heart:"></td>
+        </tr>
+        <tr>
+          <td>@**Joe Smith**<br/>
+            (autocompletes from @joe)</td>
+          <td><span class="user-mention">@Joe Smith</span> (notifies Joe Smith)</td>
+        </tr>
+        <tr>
+          <td>@**all**</td>
+          <td><span class="user-mention">@all</span> (notifies all recipients)</td>
         </tr>
         <tr>
           <td>Some inline `code`</td>
@@ -65,14 +73,15 @@ def zulip():
           <td colspan="2">You can also make a code block by indenting each line with 4 spaces.</td>
         </tr>
         <tr>
-          <td>:heart: (and <a href="http://www.emoji-cheat-sheet.com/" target="_blank">many others</a>)</td>
-          <td><img alt=":heart:" class="emoji" src="static/third/gemoji/images/emoji/heart.png" title=":heart:"></td>
+          <td>&gt; Quoted</td>
+          <td><blockquote>Quoted</blockquote></td>
+
         </tr>
         <tr>
-          <td>@**Joe Smith**<br/>
-            (autocompletes from @joe)</td>
-          <td><span class="user-mention">@Joe Smith</span><br/>
-            (notifies Joe Smith)</td>
+          <td class="preserve_spaces">``` quote
+Quoted block
+```</td>
+          <td><blockquote><p>Quoted block</p></blockquote></td>
         </tr>
         </tbody>
       </table>
