@@ -506,7 +506,6 @@ class PublicURLTest(TestCase):
                            ],
                      400: ["/api/v1/get_profile",
                            "/api/v1/get_old_messages",
-                           "/api/v1/get_public_streams",
                            "/api/v1/send_message",
                            "/api/v1/update_pointer",
                            "/api/v1/external/github",

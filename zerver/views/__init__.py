@@ -1501,10 +1501,6 @@ def render_message_backend(request, user_profile, content=REQ):
     rendered_content = bugdown.convert(content, user_profile.realm.domain)
     return json_success({"rendered": rendered_content})
 
-@authenticated_api_view
-def api_get_public_streams(request, user_profile):
-    return get_public_streams_backend(request, user_profile)
-
 @authenticated_json_post_view
 def json_get_public_streams(request, user_profile):
     return get_public_streams_backend(request, user_profile)
