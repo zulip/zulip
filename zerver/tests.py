@@ -485,6 +485,8 @@ class PublicURLTest(TestCase):
         # through Tornado.
         get_urls = {200: ["/accounts/home/", "/accounts/login/"],
                     302: ["/"],
+                    401: ["/api/v1/streams/Denmark/members",
+                          "/api/v1/users/me/subscriptions",],
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
@@ -507,7 +509,6 @@ class PublicURLTest(TestCase):
                            "/api/v1/get_public_streams",
                            "/api/v1/subscriptions/add",
                            "/api/v1/subscriptions/remove",
-                           "/api/v1/get_subscribers",
                            "/api/v1/send_message",
                            "/api/v1/update_pointer",
                            "/api/v1/external/github",
@@ -2766,28 +2767,29 @@ class InviteOnlyStreamTest(AuthedTestCase):
     def test_inviteonly(self):
         # Creating an invite-only stream is allowed
         email = 'hamlet@zulip.com'
+        stream_name = "Saxony"
 
-        result = self.common_subscribe_to_streams(email, ["Saxony"], invite_only=True)
+        result = self.common_subscribe_to_streams(email, [stream_name], invite_only=True)
         self.assert_json_success(result)
 
         json = ujson.loads(result.content)
-        self.assertEqual(json["subscribed"], {email: ['Saxony']})
+        self.assertEqual(json["subscribed"], {email: [stream_name]})
         self.assertEqual(json["already_subscribed"], {})
 
         # Subscribing oneself to an invite-only stream is not allowed
         email = "othello@zulip.com"
         self.login(email)
-        result = self.common_subscribe_to_streams(email, ["Saxony"])
+        result = self.common_subscribe_to_streams(email, [stream_name])
         self.assert_json_error(result, 'Unable to access stream (Saxony).')
 
         # authorization_errors_fatal=False works
         email = "othello@zulip.com"
         self.login(email)
-        result = self.common_subscribe_to_streams(email, ["Saxony"],
+        result = self.common_subscribe_to_streams(email, [stream_name],
                                                   extra_post_data={'authorization_errors_fatal': ujson.dumps(False)})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertEqual(json["unauthorized"], ['Saxony'])
+        self.assertEqual(json["unauthorized"], [stream_name])
         self.assertEqual(json["subscribed"], {})
         self.assertEqual(json["already_subscribed"], {})
 
@@ -2795,17 +2797,16 @@ class InviteOnlyStreamTest(AuthedTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         result = self.common_subscribe_to_streams(
-            email, ["Saxony"],
+            email, [stream_name],
             extra_post_data={'principals': ujson.dumps(["othello@zulip.com"])})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertEqual(json["subscribed"], {"othello@zulip.com": ['Saxony']})
+        self.assertEqual(json["subscribed"], {"othello@zulip.com": [stream_name]})
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream
-        result = self.client.post("/api/v1/get_subscribers", {'email':email,
-                                                            'api-key': self.get_api_key(email),
-                                                            'stream': 'Saxony'})
+        result = self.client.get("/api/v1/streams/%s/members" % (stream_name,),
+                                 **self.api_auth(email))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
 
@@ -2816,7 +2817,6 @@ class GetSubscribersTest(AuthedTestCase):
 
     def setUp(self):
         self.email = "hamlet@zulip.com"
-        self.api_key = self.get_api_key(self.email)
         self.user_profile = get_user_profile_by_email(self.email)
         self.login(self.email)
 
@@ -2836,9 +2836,8 @@ class GetSubscribersTest(AuthedTestCase):
         self.assertItemsEqual(result["subscribers"], true_subscribers)
 
     def make_subscriber_request(self, stream_name):
-        return self.client.post("/json/get_subscribers",
-                                {'email': self.email, 'api-key': self.api_key,
-                                 'stream': stream_name})
+        return self.client.get("/api/v1/streams/%s/members" % (stream_name,),
+                               **self.api_auth(self.email))
 
     def make_successful_subscriber_request(self, stream_name):
         result = self.make_subscriber_request(stream_name)

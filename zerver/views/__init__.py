@@ -1774,10 +1774,6 @@ def get_members_backend(request, user_profile):
         members.append(member)
     return json_success({'members': members})
 
-@authenticated_api_view
-def api_get_subscribers(request, user_profile):
-    return get_subscribers_backend(request, user_profile)
-
 @authenticated_json_post_view
 def json_get_subscribers(request, user_profile):
     return get_subscribers_backend(request, user_profile)
