@@ -57,7 +57,7 @@ def rest_dispatch(request, globals_list, **kwargs):
         #
         # Security implications of this portion of the code are minimal,
         # as we should worst-case fail closed if we miscategorise a request.
-        if request.user.is_authenticated():
+        if not request.path.startswith("/api") and request.user.is_authenticated():
             # Authenticated via sessions framework, only CSRF check needed
             target_function = csrf_protect(authenticated_json_view(target_function))
         elif request.META.get('HTTP_AUTHORIZATION', None):
