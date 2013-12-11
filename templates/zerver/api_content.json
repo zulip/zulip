@@ -120,7 +120,7 @@
         "returns": [
             [
                 "events",
-                "an array (possibly zero-length if dont_block is set) of events with IDs newer than `last_event_id`"
+                "an array (possibly zero-length if dont_block is set) of events with IDs newer than `last_event_id`.  Event IDs are guaranted to be increasing, but they are not guaranteed to be consecutive."
             ]
         ],
         "call": "Get new events from an events queue",
