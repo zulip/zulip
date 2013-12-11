@@ -194,14 +194,18 @@ class EventQueue(object):
         else:
             self.queue.append(event)
 
+    # Note that pop ignores virtual events.  This is fine in our
+    # current usage since virtual events should always be resolved to
+    # a real event before being given to users.
     def pop(self):
         return self.queue.popleft()
 
     def empty(self):
         return len(self.queue) == 0 and len(self.virtual_events) == 0
 
+    # See the comment on pop; that applies here as well
     def prune(self, through_id):
-        while not self.empty() and self.queue[0]['id'] <= through_id:
+        while len(self.queue) != 0 and self.queue[0]['id'] <= through_id:
             self.pop()
 
     def contents(self):
