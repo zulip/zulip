@@ -4854,7 +4854,7 @@ def run_test(test):
 
     bounce_key_prefix_for_testing(test_name)
 
-    print 'Running %s' % (test_name,)
+    print 'Running zerver.%s' % (test_name.replace("/", "."),)
     test._pre_setup()
 
     start_time = time.time()
