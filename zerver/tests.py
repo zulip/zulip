@@ -486,7 +486,9 @@ class PublicURLTest(TestCase):
         get_urls = {200: ["/accounts/home/", "/accounts/login/"],
                     302: ["/"],
                     401: ["/api/v1/streams/Denmark/members",
-                          "/api/v1/users/me/subscriptions",],
+                          "/api/v1/users/me/subscriptions",
+                          "/api/v1/messages",
+                          ],
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
@@ -505,7 +507,6 @@ class PublicURLTest(TestCase):
                            "/api/v1/users/me/subscriptions",
                            ],
                      400: ["/api/v1/get_profile",
-                           "/api/v1/get_old_messages",
                            "/api/v1/send_message",
                            "/api/v1/update_pointer",
                            "/api/v1/external/github",

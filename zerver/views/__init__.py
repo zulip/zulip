@@ -907,14 +907,6 @@ def update_pointer_backend(request, user_profile,
 def json_get_old_messages(request, user_profile):
     return get_old_messages_backend(request, user_profile)
 
-@authenticated_api_view
-@has_request_variables
-def api_get_old_messages(request, user_profile,
-                         apply_markdown=REQ(default=False,
-                                            converter=ujson.loads)):
-    return get_old_messages_backend(request, user_profile,
-                                    apply_markdown=apply_markdown)
-
 class BadNarrowOperator(Exception):
     def __init__(self, desc):
         self.desc = desc
