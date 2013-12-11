@@ -507,7 +507,6 @@ class PublicURLTest(TestCase):
                            "/api/v1/users/me/subscriptions",
                            ],
                      400: ["/api/v1/send_message",
-                           "/api/v1/update_pointer",
                            "/api/v1/external/github",
                            "/api/v1/fetch_api_key",
                            ],
@@ -1037,12 +1036,10 @@ class PointerTest(AuthedTestCase):
         Same as above, but for the API view
         """
         email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
         self.assertEqual(get_user_profile_by_email(email).pointer, -1)
         msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
-        result = self.client.post("/api/v1/update_pointer", {"email": email,
-                                                             "api-key": api_key,
-                                                             "pointer": msg_id})
+        result = self.client_put("/api/v1/users/me/pointer", {"pointer": msg_id},
+                                 **self.api_auth(email))
         self.assert_json_success(result)
         self.assertEqual(get_user_profile_by_email(email).pointer, msg_id)
 
