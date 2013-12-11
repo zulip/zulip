@@ -13,7 +13,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Subscription,
     get_display_recipient, Realm, Client, UserActivity, ScheduledJob, \
     PreregistrationUser, UserMessage, MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH, \
     get_user_profile_by_email, split_email_to_domain, resolve_email_to_domain, get_realm, \
-    get_stream, get_client
+    get_stream, get_client, RealmFilter
 from zerver.decorator import RespondAsynchronously, \
     RequestVariableConversionError, profiled, JsonableError
 from zerver.lib.initial_password import initial_password
@@ -798,7 +798,7 @@ class MessageDictTest(AuthedTestCase):
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
-        self.assertTrue(len(queries) <= 5)
+        self.assertTrue(len(queries) <= 6)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
@@ -3741,8 +3741,12 @@ But you can never leave**"""
         self.assertEqual(converted, "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>")
 
     def test_realm_patterns(self):
-        msg = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
-        converted = bugdown_convert(msg)
+        RealmFilter(realm=get_realm('zulip.com'), pattern=r"#(?P<id>[0-9]{2,8})",
+                    url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
+        msg = Message(sender=get_user_profile_by_email("othello@zulip.com"))
+
+        content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
+        converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
 

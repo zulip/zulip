@@ -14,6 +14,8 @@ import HTMLParser
 import httplib2
 
 import hashlib
+
+from collections import defaultdict
 import hmac
 
 from django.core import mail
@@ -727,6 +729,7 @@ class Bugdown(markdown.Extension):
 
 
 md_engines = {}
+realm_filter_data = {}
 
 def make_md_engine(key, opts):
     md_engines[key] = markdown.Markdown(
@@ -740,27 +743,48 @@ def make_md_engine(key, opts):
                          fenced_code.makeExtension(),
                          Bugdown(opts)])
 
-realm_filters = {
-    "default": [],
-    "zulip.com": [
-        ("#(?P<id>[0-9]{2,8})", "https://trac.zulip.net/ticket/%(id)s"),
-        ],
-    "mit.edu/zephyr_mirror": [],
-    }
-
 def subject_links(domain, subject):
+    from zerver.models import get_realm, RealmFilter, realm_filters_for_domain
     matches = []
-    for source_pattern, format_string in realm_filters.get(domain, []):
-        pattern = prepare_realm_pattern(source_pattern)
-        for m in re.finditer(pattern, subject):
-            matches += [format_string % m.groupdict()]
-    return matches
 
-for realm in realm_filters.keys():
+    try:
+        realm_filters = realm_filters_for_domain(domain)
+
+        for realm_filter in realm_filters:
+            pattern = prepare_realm_pattern(realm_filter[0])
+            for m in re.finditer(pattern, subject):
+                matches += [realm_filter[1] % m.groupdict()]
+        return matches
+    except RealmFilter.DoesNotExist:
+        return matches
+
+def make_realm_filters(domain, filters):
+    global md_engines, realm_filter_data
+    if domain in md_engines:
+        del md_engines[domain]
+    realm_filter_data[domain] = filters
+
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
-    make_md_engine(realm, {"realm_filters": [realm_filters[realm], "Realm-specific filters for %s" % (realm,)],
-                           "realm": [realm, "Realm name"]})
+    make_md_engine(domain, {"realm_filters": [filters, "Realm-specific filters for %s" % (domain,)],
+                           "realm": [domain, "Realm name"]})
+
+def maybe_update_realm_filters(domain):
+    from zerver.models import realm_filters_for_domain, all_realm_filters
+
+    # If domain is None, load all filters
+    if domain is None:
+        all_filters = all_realm_filters()
+        all_filters['default'] = []
+        for domain, filters in all_filters.iteritems():
+            make_realm_filters(domain, filters)
+    else:
+        realm_filters = realm_filters_for_domain(domain)
+        if domain not in realm_filter_data or realm_filter_data[domain] != realm_filters:
+            # Data has changed, re-load filters
+            make_realm_filters(domain, realm_filters)
+
+maybe_update_realm_filters(domain=None)
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
@@ -784,7 +808,10 @@ db_data = None
 
 def do_convert(md, realm_domain=None, message=None):
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
-    from zerver.models import get_active_user_dicts_in_realm
+    from zerver.models import get_active_user_dicts_in_realm, UserProfile
+
+    if message:
+        maybe_update_realm_filters(message.get_realm().domain)
 
     if realm_domain in md_engines:
         _md_engine = md_engines[realm_domain]
