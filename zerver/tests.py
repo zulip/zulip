@@ -506,8 +506,7 @@ class PublicURLTest(TestCase):
                            "/json/fetch_api_key",
                            "/api/v1/users/me/subscriptions",
                            ],
-                     400: ["/api/v1/get_profile",
-                           "/api/v1/send_message",
+                     400: ["/api/v1/send_message",
                            "/api/v1/update_pointer",
                            "/api/v1/external/github",
                            "/api/v1/fetch_api_key",
@@ -2614,8 +2613,7 @@ class GetProfileTest(AuthedTestCase):
         user_profile = get_user_profile_by_email(email)
         self.send_message(email, "Verona", Recipient.STREAM, "hello")
 
-        api_key = self.get_api_key(email)
-        result = self.client.post("/api/v1/get_profile", {'email': email, 'api-key': api_key})
+        result = self.client.get("/api/v1/users/me", **self.api_auth(email))
 
         max_id = most_recent_message(user_profile).id
 

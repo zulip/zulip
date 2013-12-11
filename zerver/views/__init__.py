@@ -1263,10 +1263,6 @@ def generate_client_id():
 def json_get_profile(request, user_profile):
     return get_profile_backend(request, user_profile)
 
-@authenticated_api_view
-def api_get_profile(request, user_profile):
-    return get_profile_backend(request, user_profile)
-
 def get_profile_backend(request, user_profile):
     result = dict(pointer        = user_profile.pointer,
                   client_id      = generate_client_id(),
