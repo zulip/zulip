@@ -57,6 +57,7 @@ class ClientDescriptor(object):
         self.all_public_streams = all_public_streams
         self.client_type = client_type
         self._timeout_handle = None
+        self.narrow = narrow
         self.narrow_filter = build_narrow_filter(narrow)
 
         # Clamp queue_timeout to between minimum and maximum timeouts
@@ -74,6 +75,7 @@ class ClientDescriptor(object):
                     last_connection_time=self.last_connection_time,
                     apply_markdown=self.apply_markdown,
                     all_public_streams=self.all_public_streams,
+                    narrow=self.narrow,
                     client_type=self.client_type.name)
 
     @classmethod
@@ -81,7 +83,7 @@ class ClientDescriptor(object):
         ret = cls(d['user_profile_id'], d['realm_id'],
                   EventQueue.from_dict(d['event_queue']), d['event_types'],
                   get_client(d['client_type']), d['apply_markdown'], d['all_public_streams'],
-                  d['queue_timeout'])
+                  d['queue_timeout'], d.get('narrow', []))
         ret.last_connection_time = d['last_connection_time']
         return ret
 
