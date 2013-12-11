@@ -33,7 +33,7 @@
         }
     },
     {
-        "endpoint": "GET /api/v1/register",
+        "endpoint": "POST /api/v1/register",
         "example_response": "{'msg': '', 'last_event_id': -1, 'result': 'success', 'queue_id': '1375801870:2942'}",
         "returns": [
             [
@@ -127,7 +127,7 @@
         "arguments": [
             [
                 "queue_id",
-                "The ID of a queue that you registered via <code>GET /api/v1/register</code>"
+                "The ID of a queue that you registered via <code>POST /api/v1/register</code>"
             ],
             [
                 "last_event_id",
