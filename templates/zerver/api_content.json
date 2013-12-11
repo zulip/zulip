@@ -49,7 +49,7 @@
         "arguments": [
             [
                 "event_types",
-                "(optional) An array indicating which types of events you're interested in.  Values that you might find useful include: <ul><li><strong>message</strong> (messages),</li> <li><strong>subscriptions</strong> (changes in your subscriptions),</li> <li><strong>realm_user</strong> (changes in the list of users in your realm), and</li> <li><strong>pointer</strong> (changes in your pointer).</li></ul>\n If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code.  For most applications, one is only interested in messages, so one specifies: <strong>event_types=['message']</strong>"
+                "(optional) A JSON-encoded array indicating which types of events you're interested in.  Values that you might find useful include: <ul><li><strong>message</strong> (messages),</li> <li><strong>subscriptions</strong> (changes in your subscriptions),</li> <li><strong>realm_user</strong> (changes in the list of users in your realm), and</li> <li><strong>pointer</strong> (changes in your pointer).</li></ul>\n If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code.  For most applications, one is only interested in messages, so one specifies: <strong>event_types=[\"message\"]</strong>"
             ],
             [
                 "apply_markdown",
