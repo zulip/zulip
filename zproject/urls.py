@@ -150,7 +150,6 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/get_subscribers$',        'api_get_subscribers'),
     url(r'^api/v1/send_message$',           'api_send_message'),
     url(r'^api/v1/update_pointer$',         'api_update_pointer'),
-    url(r'^api/v1/get_members$',            'api_get_members'),
 
     # This json format view used by the API accepts a username password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'api_fetch_api_key'),

@@ -1766,10 +1766,6 @@ def add_subscriptions_backend(request, user_profile,
         result["unauthorized"] = [stream.name for stream in unauthorized_streams]
     return json_success(result)
 
-@authenticated_api_view
-def api_get_members(request, user_profile):
-    return get_members_backend(request, user_profile)
-
 @authenticated_json_post_view
 def json_get_members(request, user_profile):
     return get_members_backend(request, user_profile)
