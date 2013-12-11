@@ -508,7 +508,6 @@ class PublicURLTest(TestCase):
                            "/api/v1/get_old_messages",
                            "/api/v1/get_public_streams",
                            "/api/v1/subscriptions/add",
-                           "/api/v1/subscriptions/remove",
                            "/api/v1/send_message",
                            "/api/v1/update_pointer",
                            "/api/v1/external/github",

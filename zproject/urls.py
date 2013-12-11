@@ -144,7 +144,6 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/get_old_messages$',       'api_get_old_messages'),
     url(r'^api/v1/get_public_streams$',     'api_get_public_streams'),
     url(r'^api/v1/subscriptions/add$',      'api_add_subscriptions'),
-    url(r'^api/v1/subscriptions/remove$',   'api_remove_subscriptions'),
     url(r'^api/v1/send_message$',           'api_send_message'),
     url(r'^api/v1/update_pointer$',         'api_update_pointer'),
 

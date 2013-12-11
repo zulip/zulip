@@ -1585,10 +1585,6 @@ def update_subscriptions_backend(request, user_profile,
         json_dict.update(ujson.loads(response.content))
     return json_success(json_dict)
 
-@authenticated_api_view
-def api_remove_subscriptions(request, user_profile):
-    return remove_subscriptions_backend(request, user_profile)
-
 @authenticated_json_post_view
 def json_remove_subscriptions(request, user_profile):
     return remove_subscriptions_backend(request, user_profile)
