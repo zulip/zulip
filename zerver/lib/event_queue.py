@@ -129,11 +129,13 @@ class ClientDescriptor(object):
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
     def disconnect_handler(self):
+        was_connected = (self.current_handler is not None)
         self.current_handler = None
         if self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
             ioloop.remove_timeout(self._timeout_handle)
             self._timeout_handle = None
+        return was_connected
 
     def cleanup(self):
         do_gc_event_queues([self.event_queue.id], [self.user_profile_id],

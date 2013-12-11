@@ -52,6 +52,7 @@ def get_events_backend(request, user_profile, handler = None,
     if user_client is None:
         user_client = request.client
 
+    was_connected = False
     orig_queue_id = queue_id
     if queue_id is None:
         if dont_block:
@@ -70,16 +71,21 @@ def get_events_backend(request, user_profile, handler = None,
         if user_profile.id != client.user_profile_id:
             return json_error("You are not authorized to get events from this queue")
         client.event_queue.prune(last_event_id)
-        client.disconnect_handler()
+        was_connected = client.disconnect_handler()
 
     if not client.event_queue.empty() or dont_block:
         ret = {'events': client.event_queue.contents()}
         if orig_queue_id is None:
             ret['queue_id'] = queue_id
         request._log_data['extra'] = "[%s/%s]" % (queue_id, len(ret["events"]))
+        if was_connected:
+            request._log_data['extra'] += " [was connected]"
         return json_success(ret)
 
     handler._request = request
+    if was_connected:
+        logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile.email,
+                                                                    user_client.name))
     client.connect_handler(handler)
 
     # runtornado recognizes this special return value.
