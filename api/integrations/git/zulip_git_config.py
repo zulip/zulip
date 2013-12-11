@@ -39,12 +39,12 @@ ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
 #
 # The default code below will send every commit pushed to "master" to
 # * stream "commits"
-# * subject "deploy => master" (using a pretty unicode right arrow)
+# * topic "master"
 # And similarly for branch "test-post-receive" (for use when testing).
 def commit_notice_destination(repo, branch, commit):
     if branch in ["master", "test-post-receive"]:
         return dict(stream  = "commits",
-                    subject = u"deploy \u21D2 %s" % (branch,))
+                    subject = u"%s" % (branch,))
 
     # Return None for cases where you don't want a notice sent
     return None

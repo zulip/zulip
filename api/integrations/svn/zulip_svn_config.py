@@ -36,15 +36,15 @@ ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
 # Returns a dictionary encoding the stream and subject to send the
 # notification to (or None to send no notification).
 #
-# The default code below will send every commit except for the "master-plan"
-# and "secret" repos to
+# The default code below will send every commit except for the "evil-master-plan"
+# and "my-super-secret-repository" repos to
 # * stream "commits"
-# * subject "deploy => branch_name" (using a pretty unicode right arrow)
+# * topic "branch_name"
 def commit_notice_destination(path, commit):
     repo = path.split('/')[-1]
     if repo not in ["evil-master-plan", "my-super-secret-repository"]:
         return dict(stream  = "commits",
-                    subject = u"deploy \u21D2 %s" % (repo,))
+                    subject = u"%s" % (repo,))
 
     # Return None for cases where you don't want a notice sent
     return None
