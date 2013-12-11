@@ -2833,9 +2833,11 @@ class GetSubscribersTest(AuthedTestCase):
                 stream_name, domain)]
         self.assertItemsEqual(result["subscribers"], true_subscribers)
 
-    def make_subscriber_request(self, stream_name):
+    def make_subscriber_request(self, stream_name, email=None):
+        if email is None:
+            email = self.email
         return self.client.get("/api/v1/streams/%s/members" % (stream_name,),
-                               **self.api_auth(self.email))
+                               **self.api_auth(email))
 
     def make_successful_subscriber_request(self, stream_name):
         result = self.make_subscriber_request(stream_name)
@@ -2939,14 +2941,13 @@ class GetSubscribersTest(AuthedTestCase):
         A non-subscriber to a private stream can't query that stream's membership.
         """
         # Create a private stream for which Hamlet is the only subscriber.
-        stream_name = "Saxony"
+        stream_name = "NewStream"
         self.common_subscribe_to_streams(self.email, [stream_name],
                                          invite_only=True)
         other_email = "othello@zulip.com"
 
         # Try to fetch the subscriber list as a non-member.
-        self.login(other_email)
-        result = self.make_subscriber_request(stream_name)
+        result = self.make_subscriber_request(stream_name, email=other_email)
         self.assert_json_error(result,
                                "Unable to retrieve subscribers for invite-only stream")
 
