@@ -199,11 +199,16 @@ def is_known_slow_test(test_method):
 API_KEYS = {}
 
 class AuthedTestCase(TestCase):
-    def client_patch(self, url, info):
-        # self.client.patch will be available in later versions of Django,
-        # although we may still want our version for the url encoding
+    # Helper because self.client.patch annoying requires you to urlencode
+    def client_patch(self, url, info={}, **kwargs):
         info = urllib.urlencode(info)
-        return self.client.generic('PATCH', url, info)
+        return self.client.patch(url, info, **kwargs)
+    def client_put(self, url, info={}, **kwargs):
+        info = urllib.urlencode(info)
+        return self.client.put(url, info, **kwargs)
+    def client_delete(self, url, info={}, **kwargs):
+        info = urllib.urlencode(info)
+        return self.client.delete(url, info, **kwargs)
 
     def login(self, email, password=None):
         if password is None:
@@ -857,7 +862,7 @@ class ActivateTest(AuthedTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.is_active)
 
-        result = self.client.delete('/json/users/hamlet@zulip.com')
+        result = self.client_delete('/json/users/hamlet@zulip.com')
         self.assert_json_success(result)
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertFalse(user.is_active)
@@ -883,7 +888,7 @@ class BotTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def deactivate_bot(self):
-        result = self.client.delete("/json/users/hambot-bot@zulip.com")
+        result = self.client_delete("/json/users/hambot-bot@zulip.com")
         self.assert_json_success(result)
 
     def test_add_bot(self):
@@ -908,7 +913,7 @@ class BotTest(AuthedTestCase):
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
-        result = self.client.delete("/json/users/bogus-bot@zulip.com")
+        result = self.client_delete("/json/users/bogus-bot@zulip.com")
         self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
 
@@ -923,10 +928,10 @@ class BotTest(AuthedTestCase):
         # Hamlet's bot.
         self.login("othello@zulip.com")
 
-        result = self.client.delete("/json/users/hamlet@zulip.com")
+        result = self.client_delete("/json/users/hamlet@zulip.com")
         self.assert_json_error(result, 'Insufficient permission')
 
-        result = self.client.delete("/json/users/hambot-bot@zulip.com")
+        result = self.client_delete("/json/users/hambot-bot@zulip.com")
         self.assert_json_error(result, 'Insufficient permission')
 
         # But we don't actually deactivate the other person's bot.
@@ -4643,8 +4648,7 @@ class AlertWordTests(AuthedTestCase):
         result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
-        data = urllib.urlencode({'alert_words': ujson.dumps(['one'])})
-        result = self.client.delete('/json/users/me/alert_words', data)
+        result = self.client_delete('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one'])})
         self.assert_json_success(result)
 
         result = self.client.get('/json/users/me/alert_words')
@@ -4658,8 +4662,7 @@ class AlertWordTests(AuthedTestCase):
         result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
-        data = urllib.urlencode({'alert_words': ujson.dumps(['a', 'b', 'c'])})
-        result = self.client.put('/json/users/me/alert_words', data)
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
         self.assert_json_success(result)
 
         result = self.client.get('/json/users/me/alert_words')
@@ -4788,7 +4791,7 @@ class APNSTokenTests(AuthedTestCase):
         result = self.client.post('/json/users/me/apns_device_token', {'token':token})
         self.assert_json_success(result)
 
-        result = self.client.delete('/json/users/me/apns_device_token', urllib.urlencode({'token': token}))
+        result = self.client_delete('/json/users/me/apns_device_token', {'token': token})
         self.assert_json_success(result)
 
 class GCMTokenTests(AuthedTestCase):
