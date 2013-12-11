@@ -1766,10 +1766,6 @@ def add_subscriptions_backend(request, user_profile,
         result["unauthorized"] = [stream.name for stream in unauthorized_streams]
     return json_success(result)
 
-@authenticated_json_post_view
-def json_get_members(request, user_profile):
-    return get_members_backend(request, user_profile)
-
 def get_members_backend(request, user_profile):
     members = []
     for profile in UserProfile.objects.select_related().filter(realm=user_profile.realm):
