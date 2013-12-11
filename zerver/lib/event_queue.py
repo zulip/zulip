@@ -198,7 +198,7 @@ class EventQueue(object):
         return self.queue.popleft()
 
     def empty(self):
-        return len(self.queue) == 0
+        return len(self.queue) == 0 and len(self.virtual_events) == 0
 
     def prune(self, through_id):
         while not self.empty() and self.queue[0]['id'] <= through_id:

@@ -2483,6 +2483,7 @@ class EventQueueTest(TestCase):
         queue.push({"type": "pointer",
                     "pointer": 1,
                     "timestamp": "1"})
+        self.assertFalse(queue.empty())
         self.assertEqual(queue.contents(),
                          [{'id': 0,
                            'type': 'pointer',
