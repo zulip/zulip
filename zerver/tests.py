@@ -500,11 +500,11 @@ class PublicURLTest(TestCase):
                            "/json/subscriptions/property",
                            "/json/get_subscribers",
                            "/json/fetch_api_key",
+                           "/api/v1/users/me/subscriptions",
                            ],
                      400: ["/api/v1/get_profile",
                            "/api/v1/get_old_messages",
                            "/api/v1/get_public_streams",
-                           "/api/v1/subscriptions/list",
                            "/api/v1/subscriptions/add",
                            "/api/v1/subscriptions/remove",
                            "/api/v1/get_subscribers",
@@ -1374,12 +1374,10 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_successful_subscriptions_list(self):
         """
-        Calling /api/v1/subscriptions/list should successfully return your subscriptions.
+        Calling /api/v1/users/me/subscriptions should successfully return your subscriptions.
         """
         email = self.test_email
-        api_key = self.get_api_key(email)
-        params = {'email': email, 'api-key': api_key}
-        result = self.client.post("/api/v1/subscriptions/list", params)
+        result = self.client.get("/api/v1/users/me/subscriptions", **self.api_auth(email))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
@@ -2695,9 +2693,7 @@ class GetPublicStreamsTest(AuthedTestCase):
 
         # Check it correctly lists the user's subs with include_public=false
         result = self.client.get("/api/v1/streams?include_public=false", **self.api_auth(email))
-        api_key = self.get_api_key(email)
-        params = {'email': email, 'api-key': api_key}
-        result2 = self.client.post("/api/v1/subscriptions/list", params)
+        result2 = self.client.get("/api/v1/users/me/subscriptions", **self.api_auth(email))
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -2746,7 +2742,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
 
     def test_list_respects_invite_only_bit(self):
         """
-        Make sure that /api/v1/subscriptions/list properly returns
+        Make sure that /api/v1/users/me/subscriptions properly returns
         the invite-only bit for streams that are invite-only
         """
         email = 'hamlet@zulip.com'
@@ -2756,9 +2752,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assert_json_success(result1)
         result2 = self.common_subscribe_to_streams(email, ["Normandy"], invite_only=False)
         self.assert_json_success(result2)
-        api_key = self.get_api_key(email)
-        params = {'email': email, 'api-key': api_key}
-        result = self.client.post("/api/v1/subscriptions/list", params)
+        result = self.client.get("/api/v1/users/me/subscriptions", **self.api_auth(email))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)

@@ -1565,10 +1565,6 @@ def get_public_streams_backend(request, user_profile):
 def json_rename_stream(request, user_profile, old_name=REQ, new_name=REQ):
     return json_success(do_rename_stream(user_profile.realm, old_name, new_name))
 
-@authenticated_api_view
-def api_list_subscriptions(request, user_profile):
-    return list_subscriptions_backend(request, user_profile)
-
 def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
