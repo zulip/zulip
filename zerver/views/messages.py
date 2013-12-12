@@ -312,18 +312,27 @@ def get_old_messages_backend(request, user_profile,
                 include_history = False
 
     if include_history:
-        query = select([column("id")], None, "zerver_message")
+        query = select([column("id").label("message_id")], None, "zerver_message")
         inner_msg_id_col = literal_column("zerver_message.id")
+    elif narrow is None:
+        query = select([column("message_id"), column("flags")],
+                       column("user_profile_id") == literal(user_profile.id),
+                       "zerver_usermessage")
+        inner_msg_id_col = column("message_id")
     else:
-        query = select([column("id"), column("flags")],
+        # TODO: Don't do this join if we're not doing a search
+        query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
                        join("zerver_usermessage", "zerver_message",
                             literal_column("zerver_usermessage.message_id") ==
                             literal_column("zerver_message.id")))
         inner_msg_id_col = column("message_id")
 
-    # Add some metadata to our logging data for narrows
+    num_extra_messages = 1
+    is_search = False
+
     if narrow is not None:
+        # Add some metadata to our logging data for narrows
         verbose_operators = []
         for (operator, operand) in narrow:
             if operator == "is":
@@ -332,13 +341,7 @@ def get_old_messages_backend(request, user_profile,
                 verbose_operators.append(operator)
         request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
 
-    num_extra_messages = 1
-    is_search = False
-
-    if narrow is None:
-        use_raw_query = True
-    else:
-        use_raw_query = False
+        # Build the query for the narrow
         num_extra_messages = 0
         build = NarrowBuilder(user_profile, inner_msg_id_col)
         for operator, operand in narrow:
@@ -356,8 +359,6 @@ def get_old_messages_backend(request, user_profile,
     else:
         num_before += num_extra_messages
 
-    before_result = []
-    after_result = []
     before_query = None
     after_query = None
     if num_before != 0:
@@ -365,47 +366,23 @@ def get_old_messages_backend(request, user_profile,
         if num_after != 0:
             # Don't include the anchor in both the before query and the after query
             before_anchor = anchor - 1
-        if use_raw_query:
-            cursor = connection.cursor()
-            # These queries should always be equivalent to what we
-            # would do in the !use_raw_query case.  In this case we
-            # don't actually need the zerver_message join at all.
-            cursor.execute("SELECT message_id, flags FROM zerver_usermessage "
-                           "WHERE user_profile_id = %s and message_id <= %s " +
-                           "ORDER BY message_id DESC LIMIT %s", [user_profile.id, before_anchor, num_before])
-            before_result = reversed(cursor.fetchall())
-        else:
-            before_query = query.where(literal_column("zerver_message.id") <= before_anchor) \
-                                .order_by(literal_column("zerver_message.id").desc()).limit(num_before)
+        before_query = query.where(inner_msg_id_col <= before_anchor) \
+                            .order_by(inner_msg_id_col.desc()).limit(num_before)
     if num_after != 0:
-        if use_raw_query:
-            cursor = connection.cursor()
-            # These queries should always be equivalent to what we
-            # would do in the !use_raw_query case.  In this case we
-            # don't actually need the zerver_message join at all.
-            cursor.execute("SELECT message_id, flags FROM zerver_usermessage "
-                           "WHERE user_profile_id = %s and message_id >= %s " +
-                           "ORDER BY message_id LIMIT %s", [user_profile.id, anchor, num_after])
-            after_result = cursor.fetchall()
-        else:
-            after_query = query.where(literal_column("zerver_message.id") >= anchor) \
-                               .order_by(literal_column("zerver_message.id").asc()).limit(num_after)
+        after_query = query.where(inner_msg_id_col >= anchor) \
+                           .order_by(inner_msg_id_col.asc()).limit(num_after)
 
-    if use_raw_query:
-        query_result = list(before_result) + list(after_result)
+    if before_query is not None:
+        if after_query is not None:
+            query = union_all(before_query.self_group(), after_query.self_group())
+        else:
+            query = before_query
     else:
-        if before_query is not None:
-            if after_query is not None:
-                query = union_all(before_query.self_group(), after_query.self_group())
-            else:
-                query = before_query
-        else:
-            query = after_query
-
-        main_query = alias(query)
-        query = select(main_query.c, None, main_query).order_by(column("id").asc())
-        sa_conn = get_sqlalchemy_connection()
-        query_result = list(sa_conn.execute(query).fetchall())
+        query = after_query
+    main_query = alias(query)
+    query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
+    sa_conn = get_sqlalchemy_connection()
+    query_result = list(sa_conn.execute(query).fetchall())
 
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
@@ -417,12 +394,7 @@ def get_old_messages_backend(request, user_profile,
     search_fields = dict()
     message_ids = []
     user_message_flags = {}
-    if use_raw_query:
-        for row in query_result:
-            (message_id, flags_val) = row
-            user_message_flags[message_id] = parse_usermessage_flags(flags_val)
-            message_ids.append(message_id)
-    elif include_history:
+    if include_history:
         message_ids = [row[0] for row in query_result]
 
         # TODO: This could be done with an outer join instead of two queries
