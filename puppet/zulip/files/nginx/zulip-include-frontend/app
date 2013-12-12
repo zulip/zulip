@@ -15,7 +15,7 @@ location /static/ {
 
 # Send longpoll requests to Tornado
 location ~ /json/get_events|/json/events|/api/v1/events {
-    proxy_pass       http://localhost:9993;
+    proxy_pass http://tornado;
     include /etc/nginx/zulip-include/proxy_longpolling;
 
     proxy_set_header X-Real-IP       $remote_addr;
@@ -23,14 +23,14 @@ location ~ /json/get_events|/json/events|/api/v1/events {
 
 # Send sockjs requests to Tornado
 location /sockjs {
-    proxy_pass http://localhost:9993;
+    proxy_pass http://tornado;
     include /etc/nginx/zulip-include/location-sockjs;
 }
 
 # Send everything else to Django via FastCGI
 location / {
     include fastcgi_params;
-    fastcgi_pass unix:/home/zulip/deployments/fastcgi-socket;
+    fastcgi_pass django;
     fastcgi_split_path_info ^()(.*)$;
     # Second number set to `getconf PAGESIZE`
     fastcgi_buffers 1024 4k;
