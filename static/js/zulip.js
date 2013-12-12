@@ -1214,6 +1214,7 @@ setInterval(function () {
 $(function () {
     $(document).on('unsuspend', function () {
         // Immediately poll for new updates on unsuspend
+        blueslip.log("Restarting get_updates due to unsuspend");
         get_updates_failures = 0;
         restart_get_updates({dont_block: true});
     });
