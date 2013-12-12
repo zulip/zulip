@@ -19,10 +19,13 @@ class zulip::enterprise {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip/nginx/sites-available/zulip-enterprise",
+    notify => Service["nginx"],
   }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
+    require => Package["nginx-full"],
     ensure => 'link',
     target => '/etc/nginx/sites-available/zulip-enterprise',
+    notify => Service["nginx"],
   }
 
   file { '/home/zulip/prod-static':

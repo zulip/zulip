@@ -10,6 +10,7 @@ class zulip_internal::loadbalancer {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip_internal/nginx/sites-available/loadbalancer",
+    notify => Service["nginx"],
   }
 
   file { "/etc/motd":
@@ -21,8 +22,10 @@ class zulip_internal::loadbalancer {
   }
 
   file { '/etc/nginx/sites-enabled/loadbalancer':
+    require => Package["nginx-full"],
     ensure => 'link',
     target => '/etc/nginx/sites-available/loadbalancer',
+    notify => Service["nginx"],
   }
 
   file { "/etc/default/camo":

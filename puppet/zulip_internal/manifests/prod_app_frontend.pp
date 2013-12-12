@@ -9,10 +9,13 @@ class zulip_internal::prod_app_frontend {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip_internal/nginx/sites-available/zulip",
+    notify => Service["nginx"],
   }
   file { '/etc/nginx/sites-enabled/zulip':
+    require => Package["nginx-full"],
     ensure => 'link',
     target => '/etc/nginx/sites-available/zulip',
+    notify => Service["nginx"],
   }
 
   file { [ "/srv/www/", "/srv/www/dist/", "/srv/www/dist/api",

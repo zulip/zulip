@@ -9,10 +9,13 @@ class zulip_internal::staging_app_frontend {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip_internal/nginx/sites-available/zulip-staging",
+    notify => Service["nginx"],
   }
   file { '/etc/nginx/sites-enabled/zulip-staging':
+    require => Package["nginx-full"],
     ensure => 'link',
     target => '/etc/nginx/sites-available/zulip-staging',
+    notify => Service["nginx"],
   }
   file { "/etc/cron.d/email-mirror":
     ensure => file,
