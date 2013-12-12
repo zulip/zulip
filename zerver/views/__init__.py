@@ -14,7 +14,7 @@ from django.core import validators
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q, F
-from django.core.mail import send_mail, mail_admins, EmailMessage
+from django.core.mail import send_mail, EmailMessage
 from django.db import transaction
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, bulk_get_recipients, \
@@ -42,7 +42,7 @@ from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
     CreateUserForm, is_inactive, OurAuthenticationForm
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from django_openid_auth.views import default_render_failure, login_complete
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
@@ -55,12 +55,11 @@ from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
-    JsonableError, get_user_profile_by_email, process_as_post, REQ, \
-    require_realm_admin
+    JsonableError, get_user_profile_by_email, REQ, require_realm_admin
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
     get_signed_upload_url
-from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
+from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token, statsd_key
