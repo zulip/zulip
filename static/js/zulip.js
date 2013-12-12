@@ -784,6 +784,11 @@ function get_updates_success(data) {
     var messages_to_update = [];
     var new_pointer;
 
+    _.each(data.events, function (event) {
+        get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
+                                                    event.id);
+    });
+
     if (tutorial.is_running()) {
         events_stored_during_tutorial = events_stored_during_tutorial.concat(data.events);
         return;
@@ -795,9 +800,6 @@ function get_updates_success(data) {
     }
 
     _.each(data.events, function (event) {
-        get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
-                                                    event.id);
-
         switch (event.type) {
         case 'message':
             var msg = event.message;
@@ -993,12 +995,7 @@ function get_updates(options) {
             $('#connection-error').hide();
 
             get_updates_success(data);
-
-            if (tutorial.is_running()) {
-                get_updates_timeout = setTimeout(get_updates, 5000);
-            } else {
-                get_updates_timeout = setTimeout(get_updates, 0);
-            }
+            get_updates_timeout = setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
             get_updates_xhr = undefined;
