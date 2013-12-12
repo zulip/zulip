@@ -10,7 +10,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import authenticated_api_view, REQ, \
     has_request_variables, json_to_dict, authenticated_rest_api_view, \
     api_key_only_webhook_view
-from zerver.views import send_message_backend
+from zerver.views.messages import send_message_backend
 from django.db.models import Q
 
 from defusedxml.ElementTree import fromstring as xml_fromstring

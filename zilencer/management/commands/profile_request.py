@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from zerver.models import get_user_profile_by_email, UserMessage
-from zerver.views import get_old_messages_backend
+from zerver.views.old_messages import get_old_messages_backend
 import cProfile
 import logging
 from zerver.middleware import LogRequests

@@ -104,12 +104,12 @@ if not settings.DEPLOYED and settings.LOCAL_UPLOADS_DIR is not None:
 urlpatterns += patterns('zerver.views',
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/update_pointer$',           'json_update_pointer'),
-    url(r'^json/get_old_messages$',         'json_get_old_messages'),
+    url(r'^json/get_old_messages$',         'messages.json_get_old_messages'),
     url(r'^json/get_public_streams$',       'json_get_public_streams'),
     url(r'^json/rename_stream$',            'json_rename_stream'),
     url(r'^json/make_stream_public$',       'json_make_stream_public'),
     url(r'^json/make_stream_private$',      'json_make_stream_private'),
-    url(r'^json/send_message$',             'json_send_message'),
+    url(r'^json/send_message$',             'messages.json_send_message'),
     url(r'^json/invite_users$',             'json_invite_users'),
     url(r'^json/bulk_invite_users$',        'json_bulk_invite_users'),
     url(r'^json/settings/change$',          'json_change_settings'),
@@ -129,14 +129,14 @@ urlpatterns += patterns('zerver.views',
     url(r'^json/report_error$',             'json_report_error'),
     url(r'^json/report_send_time$',         'json_report_send_time'),
     url(r'^json/report_narrow_time$',       'json_report_narrow_time'),
-    url(r'^json/update_message_flags$',     'json_update_flags'),
+    url(r'^json/update_message_flags$',     'messages.json_update_flags'),
     url(r'^json/register$',                 'json_events_register'),
     url(r'^json/upload_file$',              'json_upload_file'),
-    url(r'^json/messages_in_narrow$',       'json_messages_in_narrow'),
+    url(r'^json/messages_in_narrow$',       'messages.json_messages_in_narrow'),
     url(r'^json/create_bot$',               'json_create_bot'),
     url(r'^json/get_bots$',                 'json_get_bots'),
-    url(r'^json/update_message$',           'json_update_message'),
-    url(r'^json/fetch_raw_message$',        'json_fetch_raw_message'),
+    url(r'^json/update_message$',           'messages.json_update_message'),
+    url(r'^json/fetch_raw_message$',        'messages.json_fetch_raw_message'),
     url(r'^json/refer_friend$',             'json_refer_friend'),
     url(r'^json/set_alert_words$',          'json_set_alert_words'),
     url(r'^json/set_muted_topics$',         'json_set_muted_topics'),
@@ -144,7 +144,7 @@ urlpatterns += patterns('zerver.views',
 
     # This json format view is used by the LEGACY pre-REST API.  It
     # requires an API key.
-    url(r'^api/v1/send_message$',           'api_send_message'),
+    url(r'^api/v1/send_message$',           'messages.api_send_message'),
 
     # This json format view used by the mobila apps accepts a username
     # password/pair and returns an API key.
@@ -165,17 +165,8 @@ urlpatterns += patterns('zerver.views',
         {'GET': 'get_uploaded_file'}),
 )
 
+# JSON format views used by the redesigned API, accept basic auth username:password.
 v1_api_and_json_patterns = patterns('zerver.views',
-    # JSON format views used by the redesigned API, accept basic auth username:password.
-    # GET returns messages, possibly filtered, POST sends a message
-    url(r'^messages$', 'rest_dispatch',
-            {'GET':  'get_old_messages_backend',
-             'PATCH': 'update_message_backend',
-             'POST': 'send_message_backend'}),
-    url(r'^messages/render$', 'rest_dispatch',
-            {'GET':  'render_message_backend'}),
-    url(r'^messages/flags$', 'rest_dispatch',
-            {'POST':  'update_message_flags'}),
     url(r'^streams$', 'rest_dispatch',
             {'GET':  'get_streams_backend'}),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
@@ -230,6 +221,17 @@ v1_api_and_json_patterns = patterns('zerver.views',
 
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'generate_204'),
+
+) + patterns('zerver.views.messages',
+    # GET returns messages, possibly filtered, POST sends a message
+    url(r'^messages$', 'rest_dispatch',
+            {'GET':  'get_old_messages_backend',
+             'PATCH': 'update_message_backend',
+             'POST': 'send_message_backend'}),
+    url(r'^messages/render$', 'rest_dispatch',
+            {'GET':  'render_message_backend'}),
+    url(r'^messages/flags$', 'rest_dispatch',
+            {'POST':  'update_message_flags'}),
 
 ) + patterns('zerver.tornadoviews',
     url(r'^events$', 'rest_dispatch',
