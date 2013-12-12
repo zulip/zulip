@@ -491,30 +491,31 @@ exports.resize_page_components = function () {
     var h;
     var sidebar;
 
-    if (viewport.width() < 975 && feature_flags.left_side_userlist && !narrow_window) {
-        narrow_window = true;
-        popovers.set_userlist_placement("left");
-        sidebar = $(".bottom_sidebar").expectOne();
-        sidebar.append($("#user-list").expectOne());
-        sidebar.append($("#group-pm-list").expectOne());
-        sidebar.append($("#share-the-love").expectOne());
-        $("#user_presences").css("margin", "0px");
-        $("#group-pms").css("margin", "0px");
-        $("#userlist-toggle").css("display", "none");
-        $("#invite-user-link").hide();
+    if (feature_flags.left_side_userlist) {
+        if (viewport.width() < 975 && !narrow_window) {
+            narrow_window = true;
+            popovers.set_userlist_placement("left");
+            sidebar = $(".bottom_sidebar").expectOne();
+            sidebar.append($("#user-list").expectOne());
+            sidebar.append($("#group-pm-list").expectOne());
+            sidebar.append($("#share-the-love").expectOne());
+            $("#user_presences").css("margin", "0px");
+            $("#group-pms").css("margin", "0px");
+            $("#userlist-toggle").css("display", "none");
+            $("#invite-user-link").hide();
+        }
+        else if (viewport.width() > 975 && narrow_window) {
+            narrow_window = false;
+            popovers.set_userlist_placement("right");
+            sidebar = $("#right-sidebar").expectOne();
+            sidebar.append($("#user-list").expectOne());
+            sidebar.append($("#group-pm-list").expectOne());
+            $("#user_presences").css("margin", '');
+            $("#group-pms").css("margin", '');
+            $("#userlist-toggle").css("display", '');
+            $("#invite-user-link").show();
+        }
     }
-    else if (viewport.width() > 975 && feature_flags.left_side_userlist && narrow_window) {
-        narrow_window = false;
-        popovers.set_userlist_placement("right");
-        sidebar = $("#right-sidebar").expectOne();
-        sidebar.append($("#user-list").expectOne());
-        sidebar.append($("#group-pm-list").expectOne());
-        $("#user_presences").css("margin", '');
-        $("#group-pms").css("margin", '');
-        $("#userlist-toggle").css("display", '');
-        $("#invite-user-link").show();
-    }
-
 
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
