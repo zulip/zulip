@@ -496,7 +496,6 @@ JS_SPECS = {
             'js/viewport.js',
             'js/rows.js',
             'js/unread.js',
-            'js/message_tour.js',
             'js/stream_list.js',
             'js/filter.js',
             'js/narrow.js',
