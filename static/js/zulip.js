@@ -966,6 +966,13 @@ function get_updates(options) {
         get_updates_params.last_event_id = page_params.last_event_id;
     }
 
+    if (get_updates_xhr !== undefined) {
+        get_updates_xhr.abort();
+    }
+    if (get_updates_timeout !== undefined) {
+        clearTimeout(get_updates_timeout);
+    }
+    get_updates_timeout = undefined;
     get_updates_xhr = $.ajax({
         type:     'POST',
         url:      '/json/get_events',
@@ -1158,14 +1165,6 @@ function load_old_messages(opts) {
 }
 
 function restart_get_updates(options) {
-    if (get_updates_xhr !== undefined) {
-        get_updates_xhr.abort();
-    }
-
-    if (get_updates_timeout !== undefined) {
-        clearTimeout(get_updates_timeout);
-    }
-
     get_updates(options);
 }
 
