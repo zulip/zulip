@@ -769,7 +769,7 @@ def home(request):
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
-    page_params = simplejson.encoder.JSONEncoderForHTML().encode(dict(
+    page_params_dict = dict(
         enterprise            = settings.ENTERPRISE,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
@@ -813,8 +813,10 @@ def home(request):
         notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
         name_changes_disabled = settings.NAME_CHANGES_DISABLED,
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
-        autoscroll_forever = user_profile.autoscroll_forever
-    ))
+        autoscroll_forever = user_profile.autoscroll_forever,
+        show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com")
+    )
+    page_params = simplejson.encoder.JSONEncoderForHTML().encode(page_params_dict)
 
     statsd.incr('views.home')
     show_invites = True
@@ -836,7 +838,8 @@ def home(request):
                                    'show_invites': show_invites,
                                    'is_admin': user_profile.is_admin(),
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
-                                   'enable_feedback': settings.ENABLE_FEEDBACK
+                                   'enable_feedback': settings.ENABLE_FEEDBACK,
+                                   'show_autoscroll_forever_option': page_params_dict["show_autoscroll_forever_option"]
                                    },
                                   context_instance=RequestContext(request))
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
