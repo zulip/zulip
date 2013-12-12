@@ -91,6 +91,9 @@ for device in macs.values():
         device = "eth%i:%i" % (device_number, count)
         log.info("Configuring %s with IP %s" % (device, ip))
         subprocess.check_call(['/sbin/ifconfig', device, ip])
+        subprocess.check_call(
+                ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
+                    ip, '-j', 'MARK', '--set-mark', str(device_number)])
 
     for throwaway in range(2):
         # Don't freak out if this doens't work.
