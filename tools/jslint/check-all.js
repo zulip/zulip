@@ -62,7 +62,7 @@ var globals =
     + ' send_summarize_in_stream'
     + ' suppress_unread_counts'
     + ' msg_metadata_cache'
-    + ' get_updates_xhr'
+    + ' get_updates_xhr get_updates_timeout'
     ;
 
 
