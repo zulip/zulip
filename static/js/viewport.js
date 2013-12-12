@@ -224,6 +224,14 @@ exports.stop_auto_scrolling = function () {
     }
 };
 
+exports.is_narrow = function () {
+    // This basically returns true when we hide the right sidebar for
+    // skinny mode.  It would be nice to have a less brittle
+    // test for this.  See the "@media (max-width: 975px)" section in
+    // zulip.css.
+    return window.innerWidth <= 975;
+};
+
 exports.system_initiated_animate_scroll = function (scroll_amount) {
     suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
     var viewport_offset = exports.scrollTop();

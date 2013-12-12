@@ -3475,7 +3475,7 @@ div.edit_bot {
     display: none !important;
 }
 
-
+/* This must be synced with viewport.is_narrow */
 @media (max-width: 975px) {
 
     .screen-full-show {

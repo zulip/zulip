@@ -492,7 +492,10 @@ exports.resize_page_components = function () {
     var sidebar;
 
     if (feature_flags.left_side_userlist) {
-        if (viewport.width() < 975 && !narrow_window) {
+        var css_narrow_mode = viewport.is_narrow();
+
+        if (css_narrow_mode && !narrow_window) {
+            // move stuff to the left sidebar (skinny mode)
             narrow_window = true;
             popovers.set_userlist_placement("left");
             sidebar = $(".bottom_sidebar").expectOne();
@@ -504,7 +507,8 @@ exports.resize_page_components = function () {
             $("#userlist-toggle").css("display", "none");
             $("#invite-user-link").hide();
         }
-        else if (viewport.width() > 975 && narrow_window) {
+        else if (!css_narrow_mode && narrow_window) {
+            // move stuff to the right sidebar (wide mode)
             narrow_window = false;
             popovers.set_userlist_placement("right");
             sidebar = $("#right-sidebar").expectOne();
