@@ -31,6 +31,8 @@ from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
 from zerver.lib.digest import send_digest_email
 from zerver.forms import not_mit_mailing_list
+from zerver.lib.validator import check_string, check_list, check_dict, \
+    check_bool, check_int
 
 from zerver.worker import queue_processors
 
@@ -197,6 +199,93 @@ def is_known_slow_test(test_method):
     return hasattr(test_method, 'slowness_reason')
 
 API_KEYS = {}
+
+class ValidatorTestCase(TestCase):
+    def test_check_string(self):
+        x = "hello"
+        self.assertEqual(check_string('x', x), None)
+
+        x = 4
+        self.assertEqual(check_string('x', x), 'x is not a string')
+
+    def test_check_bool(self):
+        x = True
+        self.assertEqual(check_bool('x', x), None)
+
+        x = 4
+        self.assertEqual(check_bool('x', x), 'x is not a boolean')
+
+    def test_check_int(self):
+        x = 5
+        self.assertEqual(check_int('x', x), None)
+
+        x = [{}]
+        self.assertEqual(check_int('x', x), 'x is not an integer')
+
+    def test_check_list(self):
+        x = 999
+        error = check_list(check_string)('x', x)
+        self.assertEqual(error, 'x is not a list')
+
+        x = ["hello", 5]
+        error = check_list(check_string)('x', x)
+        self.assertEqual(error, 'x[1] is not a string')
+
+        x = [["yo"], ["hello", "goodbye", 5]]
+        error = check_list(check_list(check_string))('x', x)
+        self.assertEqual(error, 'x[1][2] is not a string')
+
+    def test_check_dict(self):
+        keys = [
+            ('names', check_list(check_string)),
+            ('city', check_string),
+        ]
+
+        x = {
+            'names': ['alice', 'bob'],
+            'city': 'Boston',
+        }
+        error = check_dict(keys)('x', x)
+        self.assertEqual(error, None)
+
+        x = 999
+        error = check_dict(keys)('x', x)
+        self.assertEqual(error, 'x is not a dict')
+
+        x = {}
+        error = check_dict(keys)('x', x)
+        self.assertEqual(error, 'names key is missing from x')
+
+        x = {
+            'names': ['alice', 'bob', {}]
+        }
+        error = check_dict(keys)('x', x)
+        self.assertEqual(error, 'x["names"][2] is not a string')
+
+        x = {
+            'names': ['alice', 'bob'],
+            'city': 5
+        }
+        error = check_dict(keys)('x', x)
+        self.assertEqual(error, 'x["city"] is not a string')
+
+    def test_encapsulation(self):
+        # There might be situations where we want deep
+        # validation, but the error message should be customized.
+        # This is an example.
+        def check_person(val):
+            error = check_dict([
+                ['name', check_string],
+                ['age', check_int],
+            ])('_', val)
+            if error:
+                return 'This is not a valid person'
+
+        person = {'name': 'King Lear', 'age': 42}
+        self.assertEqual(check_person(person), None)
+
+        person = 'misconfigured data'
+        self.assertEqual(check_person(person), 'This is not a valid person')
 
 class AuthedTestCase(TestCase):
     # Helper because self.client.patch annoying requires you to urlencode
