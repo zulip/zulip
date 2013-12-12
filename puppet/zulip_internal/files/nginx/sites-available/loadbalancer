@@ -103,7 +103,8 @@ server {
         include /etc/nginx/zulip-include/location-sockjs;
     }
 
-    location ~ /json/get_events|/json/events|/api/v1/events {
+    # On api.zulip.com, there's an automatic leading /api
+    location ~ /v1/events {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
