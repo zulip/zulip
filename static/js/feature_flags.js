@@ -29,8 +29,6 @@ exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
 
 exports.twenty_four_hour_time = internal_24_hour_people || iceland;
 
-exports.dropbox_integration = page_params.staging || _.contains(['dropbox.com'], page_params.domain);
-
 exports.mandatory_topics = _.contains([
     'customer7.invalid'
     ],
@@ -59,6 +57,7 @@ exports.summarize_read_while_narrowed = false;
 
 // Ready for deprecation.
 exports.collapsible = false;
+exports.dropbox_integration = false;
 
 return exports;
 
