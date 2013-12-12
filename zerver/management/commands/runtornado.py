@@ -140,6 +140,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             self.load_middleware()
         self.initLock.release()
         self._auto_finish = False
+        self.client_descriptor = None
 
     def get(self):
         from tornado.wsgi import WSGIContainer
@@ -181,6 +182,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     def delete(self):
         self.get()
+
+    def on_connection_close(self):
+        if self.client_descriptor is not None:
+            self.client_descriptor.disconnect_handler(client_closed=True)
 
     # Based on django.core.handlers.base: get_response
     def get_response(self, request):

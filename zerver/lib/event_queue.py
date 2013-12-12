@@ -127,6 +127,7 @@ class ClientDescriptor(object):
 
     def connect_handler(self, handler):
         self.current_handler = handler
+        handler.client_descriptor = self
         self.last_connection_time = time.time()
         def timeout_callback():
             self._timeout_handle = None
@@ -137,7 +138,13 @@ class ClientDescriptor(object):
         if self.client_type.name != 'API: heartbeat test':
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
-    def disconnect_handler(self):
+    def disconnect_handler(self, client_closed=False):
+        if self.current_handler:
+            self.current_handler.client_descriptor = None
+            if client_closed:
+                request = self.current_handler._request
+                logging.info("Client disconnected for queue %s (%s via %s)" % \
+                                 (self.event_queue.id, request._email, request.client.name))
         self.current_handler = None
         if self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
