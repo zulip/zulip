@@ -973,6 +973,7 @@ function get_updates(options) {
         dataType: 'json',
         timeout:  page_params.poll_timeout,
         success: function (data) {
+            get_updates_xhr = undefined;
             if (! data) {
                 // The server occasionally returns no data during a
                 // restart.  Ignore those responses so the page keeps
@@ -993,6 +994,7 @@ function get_updates(options) {
             }
         },
         error: function (xhr, error_type, exn) {
+            get_updates_xhr = undefined;
             // If we are old enough to have messages outside of the
             // Tornado cache or if we're old enough that our message
             // queue has been garbage collected, immediately reload.

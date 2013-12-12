@@ -477,6 +477,10 @@ function send_message(request) {
     } else {
         send_message_ajax(request, success);
     }
+    if (get_updates_xhr === undefined) {
+        restart_get_updates({dont_block: true});
+        blueslip.error("Restarting get_updates because it was not running during send");
+    }
 }
 
 // This function is for debugging / data collection only.  Arguably it
