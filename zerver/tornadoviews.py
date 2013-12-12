@@ -71,7 +71,7 @@ def get_events_backend(request, user_profile, handler = None,
         if user_profile.id != client.user_profile_id:
             return json_error("You are not authorized to get events from this queue")
         client.event_queue.prune(last_event_id)
-        was_connected = client.disconnect_handler()
+        was_connected = client.finish_current_handler()
 
     if not client.event_queue.empty() or dont_block:
         ret = {'events': client.event_queue.contents()}

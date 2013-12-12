@@ -91,8 +91,15 @@ class ClientDescriptor(object):
             async_request_restart(self.current_handler._request)
 
         self.event_queue.push(event)
+        self.finish_current_handler()
+
+    def finish_current_handler(self):
         if self.current_handler is not None:
             try:
+                # We call async_request_restart here in case we are
+                # being finished without any events (because another
+                # get_events request has supplanted this request)
+                async_request_restart(self.current_handler._request)
                 self.current_handler._request._log_data['extra'] = "[%s/1]" % (self.event_queue.id,)
                 self.current_handler.zulip_finish(dict(result='success', msg='',
                                                        events=self.event_queue.contents(),
@@ -100,9 +107,11 @@ class ClientDescriptor(object):
                                                   self.current_handler._request,
                                                   apply_markdown=self.apply_markdown)
             except Exception:
-                logging.exception("Got error adding event to queue %s" % (self.event_queue.id))
+                logging.exception("Got error finishing handler for queue %s" % (self.event_queue.id))
             finally:
                 self.disconnect_handler()
+                return True
+        return False
 
     def accepts_event_type(self, type):
         if self.event_types is None:
@@ -129,13 +138,11 @@ class ClientDescriptor(object):
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
     def disconnect_handler(self):
-        was_connected = (self.current_handler is not None)
         self.current_handler = None
         if self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
             ioloop.remove_timeout(self._timeout_handle)
             self._timeout_handle = None
-        return was_connected
 
     def cleanup(self):
         do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
