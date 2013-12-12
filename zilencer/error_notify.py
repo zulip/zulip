@@ -54,23 +54,8 @@ def zulip_browser_error(report):
     user_info = user_info_str(report)
 
     body =  "User: %s\n" % (user_info,)
-    body += (
-        "Message: %(message)s\n"
-        "~~~\n%(stacktrace)s\n~~~\n~~~\n"
-        "- User agent: %(user_agent)s\n"
-        "- href: %(href)s\n"
-        "- Server path: %(server_path)s\n"
-        "- Deployed version: %(version)s\n~~~\n"
-        % report )
-
-    more_info = report['more_info']
-    if more_info is not None:
-        body += "\nAdditional information:\n~~~"
-        for (key, value) in more_info.iteritems():
-            body += "\n%s: %s" % (key, value)
-        body += "\n~~~\n"
-
-    body += "Log:\n~~~\n%s\n~~~" % (report['log'],)
+    body += ("Message: %(message)s\n"
+             % report )
 
     internal_send_message(settings.ERROR_BOT,
             "stream", "errors", format_subject(subject), body)
