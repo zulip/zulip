@@ -770,7 +770,7 @@ def home(request):
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
-    page_params_dict = dict(
+    page_params = dict(
         enterprise            = settings.ENTERPRISE,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
@@ -817,7 +817,6 @@ def home(request):
         autoscroll_forever = user_profile.autoscroll_forever,
         show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com")
     )
-    page_params = simplejson.encoder.JSONEncoderForHTML().encode(page_params_dict)
 
     statsd.incr('views.home')
     show_invites = True
@@ -831,7 +830,7 @@ def home(request):
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
-                                   'page_params' : page_params,
+                                   'page_params' : simplejson.encoder.JSONEncoderForHTML().encode(page_params),
                                    'avatar_url': avatar_url(user_profile),
                                    'nofontface': is_buggy_ua(request.META["HTTP_USER_AGENT"]),
                                    'show_debug':
@@ -840,7 +839,7 @@ def home(request):
                                    'is_admin': user_profile.is_admin(),
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
-                                   'show_autoscroll_forever_option': page_params_dict["show_autoscroll_forever_option"]
+                                   'show_autoscroll_forever_option': page_params["show_autoscroll_forever_option"]
                                    },
                                   context_instance=RequestContext(request))
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
