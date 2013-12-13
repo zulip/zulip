@@ -20,6 +20,10 @@ function make_tab_data() {
           !stream_data.in_home_view(filter.operands("stream")[0])) ||
          filter.has_operand("in", "all"))) {
         tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
+    } else if (page_params.narrow !== undefined) {
+        tabs.push(make_tab("Stream " + page_params.narrow_stream,
+                           hashchange.operators_to_hash(page_params.narrow[0]),
+                           page_params.narrow_stream, 'stream'));
     } else {
         tabs.push(make_tab("Home", "#", "home", "root"));
     }
