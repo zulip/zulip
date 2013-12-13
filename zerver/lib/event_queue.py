@@ -286,6 +286,11 @@ def get_client_descriptors_for_user(user_profile_id):
 def get_client_descriptors_for_realm_all_streams(realm_id):
     return realm_clients_all_streams.get(realm_id, [])
 
+def add_to_client_dicts(client):
+    user_clients.setdefault(client.user_profile_id, []).append(client)
+    if client.all_public_streams:
+        realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
+
 def allocate_client_descriptor(user_profile_id, realm_id, event_types, client_type,
                                apply_markdown, all_public_streams, lifespan_secs,
                                narrow=[]):
@@ -295,9 +300,7 @@ def allocate_client_descriptor(user_profile_id, realm_id, event_types, client_ty
     client = ClientDescriptor(user_profile_id, realm_id, EventQueue(id), event_types, client_type,
                               apply_markdown, all_public_streams, lifespan_secs, narrow)
     clients[id] = client
-    user_clients.setdefault(user_profile_id, []).append(client)
-    if all_public_streams:
-        realm_clients_all_streams.setdefault(realm_id, []).append(client)
+    add_to_client_dicts(client)
     return client
 
 def do_gc_event_queues(to_remove, affected_users, affected_realms):
@@ -381,9 +384,7 @@ def load_event_queues():
     for client in clients.itervalues():
         # Put code for migrations due to event queue data format changes here
 
-        user_clients.setdefault(client.user_profile_id, []).append(client)
-        if client.all_public_streams:
-            realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
+        add_to_client_dicts(client)
 
     logging.info('Tornado loaded %d event queues in %.3fs'
                  % (len(clients), time.time() - start))
