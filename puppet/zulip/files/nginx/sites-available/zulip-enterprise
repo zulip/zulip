@@ -2,6 +2,9 @@ server {
     listen 80;
     return 301 https://$host$request_uri;
 }
+
+include /etc/nginx/zulip-include/upstreams;
+
 server {
     listen 443;
 

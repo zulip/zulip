@@ -4,6 +4,8 @@ server {
     return 301 https://$server_name$request_uri;
 }
 
+include /etc/nginx/zulip-include/upstreams;
+
 server {
     listen 443;
 

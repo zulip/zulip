@@ -14,18 +14,7 @@ server {
     return 301 https://$host$request_uri;
 }
 
-upstream django {
-    server_name unix:/home/zulip/deployments/fastcgi-socket;
-}
-
-upstream tornado {
-    server_name localhost:9993;
-    keepalive 10000;
-}
-
-upstream localhost_sso {
-    server_name localhost:8888;
-}
+include /etc/nginx/zulip-include/upstreams;
 
 server {
     listen 443;
