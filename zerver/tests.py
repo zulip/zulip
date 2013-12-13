@@ -1429,6 +1429,37 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_error(result,
                                "Unknown subscription property: bad")
 
+class SubscriptionRestApiTest(AuthedTestCase):
+    def test_basic_add_delete(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        # add
+        request = {
+            'add': ujson.dumps([{'name': 'my_test_stream_1'}])
+        }
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions",
+            request,
+            **self.api_auth(email)
+        )
+        self.assert_json_success(result)
+        streams = self.get_streams(email)
+        self.assertTrue('my_test_stream_1' in streams)
+
+        # now delete the same stream
+        request = {
+            'delete': ujson.dumps(['my_test_stream_1'])
+        }
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions",
+            request,
+            **self.api_auth(email)
+        )
+        self.assert_json_success(result)
+        streams = self.get_streams(email)
+        self.assertTrue('my_test_stream_1' not in streams)
+
 class SubscriptionAPITest(AuthedTestCase):
 
     def setUp(self):
