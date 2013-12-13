@@ -506,6 +506,7 @@ JS_SPECS = {
             'third/winchan/winchan.js',
             'third/sockjs/sockjs-0.3.4.js',
             'third/handlebars/handlebars.runtime.js',
+            'third/marked/lib/marked.js',
             'templates/compiled.js',
             'js/feature_flags.js',
             'js/summary.js',
