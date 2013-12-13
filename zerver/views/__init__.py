@@ -2117,6 +2117,11 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                             event_types=REQ(converter=json_to_list, default=None),
                             narrow=REQ(converter=json_to_list, default=[]),
                             queue_lifespan_secs=REQ(converter=int, default=0)):
+
+    error = check_list(check_string)('event_types', event_types)
+    if error:
+        raise JsonableError(error)
+
     ret = do_events_register(user_profile, request.client, apply_markdown,
                              event_types, queue_lifespan_secs, all_public_streams,
                              narrow=narrow)
