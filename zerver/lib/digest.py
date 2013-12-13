@@ -51,6 +51,13 @@ def gather_hot_conversations(user_profile, stream_messages):
         if len(hot_conversations) >= 4:
             break
 
+    # There was so much overlap between the diversity and length lists that we
+    # still have < 4 conversations. Try to use remaining diversity items to pad
+    # out the hot conversations.
+    num_convos = len(hot_conversations)
+    if num_convos < 4:
+        hot_conversations.extend([elt[0] for elt in diversity_list[num_convos:4]])
+
     hot_conversation_render_payloads = []
     for h in hot_conversations:
         stream_id, subject = h
