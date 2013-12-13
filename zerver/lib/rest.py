@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-        process_as_post
+        process_as_post, JsonableError
 from zerver.lib.response import json_method_not_allowed, json_unauthorized, json_unhandled_exception
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -82,7 +82,9 @@ def rest_dispatch(request, globals_list, **kwargs):
 
         try:
             return target_function(request, **kwargs)
-        except:
+        except JsonableError:
+            raise
+        except Exception:
             logging.exception('Uncaught exception in rest_dispatch')
             return json_unhandled_exception()
 
