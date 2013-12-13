@@ -59,53 +59,11 @@ exports.highlight_query_in_phrase = function (query, phrase) {
     return result;
 };
 
-exports.private_message_typeahead_list = [];
-exports.private_message_mapped = {};
-
 exports.render_person = function (person) {
     if (person.special_item_text){
         return person.special_item_text;
     }
     return person.full_name + " <" + person.email + ">";
-};
-
-function add_to_known_recipients(recipient_data, count_towards_autocomplete_preference) {
-    var name_string = exports.render_person(recipient_data);
-    if (exports.private_message_mapped[name_string] === undefined) {
-        exports.private_message_mapped[name_string] = recipient_data;
-        exports.private_message_mapped[name_string].count = 0;
-        exports.private_message_typeahead_list.push(name_string);
-    }
-    if (count_towards_autocomplete_preference) {
-        exports.private_message_mapped[name_string].count += 1;
-    }
-}
-
-exports.known_to_typeahead = function (recipient_data) {
-    return exports.private_message_mapped[exports.render_person(recipient_data)] !== undefined;
-};
-
-exports.update_all_recipients = function (recipients) {
-    _.each(recipients, function (recipient_data) {
-        add_to_known_recipients(recipient_data, false);
-    });
-};
-
-exports.update_your_recipients = function (recipients) {
-    _.each(recipients, function (recipient_data) {
-        if (recipient_data.email !== page_params.email) {
-            add_to_known_recipients(recipient_data, true);
-        }
-    });
-};
-
-exports.remove_recipient = function (recipients) {
-    _.each(recipients, function (recipient_data) {
-        var name_string = exports.render_person(recipient_data);
-        delete exports.private_message_mapped[name_string];
-        var arr = exports.private_message_typeahead_list;
-        arr.splice(arr.indexOf(name_string), 1);
-    });
 };
 
 function prefix_sort(query, objs, get_item) {
