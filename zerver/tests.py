@@ -1460,6 +1460,39 @@ class SubscriptionRestApiTest(AuthedTestCase):
         streams = self.get_streams(email)
         self.assertTrue('my_test_stream_1' not in streams)
 
+    def test_bad_add_parameters(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        def check_for_error(val, expected_message):
+            request = {
+                'add': ujson.dumps(val)
+            }
+            result = self.client_patch(
+                "/api/v1/users/me/subscriptions",
+                request,
+                **self.api_auth(email)
+            )
+            self.assert_json_error(result, expected_message)
+
+        check_for_error(['foo'], 'add[0] is not a dict')
+        check_for_error([{'bogus': 'foo'}], 'name key is missing from add[0]')
+        check_for_error([{'name': {}}], 'add[0]["name"] is not a string')
+
+    def test_bad_delete_parameters(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        request = {
+            'delete': ujson.dumps([{'name': 'my_test_stream_1'}])
+        }
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions",
+            request,
+            **self.api_auth(email)
+        )
+        self.assert_json_error(result, "delete[0] is not a string")
+
 class SubscriptionAPITest(AuthedTestCase):
 
     def setUp(self):

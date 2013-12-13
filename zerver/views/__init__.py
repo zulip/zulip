@@ -52,6 +52,7 @@ from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
 from zerver.lib import bugdown
 from zerver.lib.alert_words import user_alert_words
+from zerver.lib.validator import check_string, check_list, check_dict
 
 from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
@@ -1560,6 +1561,16 @@ def update_subscriptions_backend(request, user_profile,
                                  add=REQ(converter=json_to_list, default=[])):
     if not add and not delete:
         return json_error('Nothing to do. Specify at least one of "add" or "delete".')
+
+    # validate 'add' is a list of one-item dicts with key "name" and a string value
+    error = check_list(check_dict([['name', check_string]]))('add', add)
+    if error:
+        raise JsonableError(error)
+
+    # validate 'delete' is a list of strings
+    error = check_list(check_string)('delete', delete)
+    if error:
+        raise JsonableError(error)
 
     json_dict = {}
     for method, items in ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)):
