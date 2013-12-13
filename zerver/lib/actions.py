@@ -1944,6 +1944,8 @@ def build_message_list(user_profile, messages):
     #    },
     # ]
 
+    messages.sort(key=lambda message: message.pub_date)
+
     for message in messages:
         header = message_header(user_profile, message)
 
