@@ -1638,13 +1638,8 @@ def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions", json_to_list),
                               invite_only = REQ(converter=json_to_bool, default=False),
                               announce = REQ(converter=json_to_bool, default=False),
-                              principals = REQ(converter=json_to_list, default=None),
+                              principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(converter=json_to_bool, default=True)):
-
-    if principals is not None:
-        error = check_list(check_string)('principals', principals)
-        if error:
-            return json_error(error)
 
     stream_names = []
     for stream in streams_raw:
