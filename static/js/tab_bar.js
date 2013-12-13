@@ -12,21 +12,21 @@ function make_tab(title, hash, data, extra_class) {
 
 function make_tab_data() {
     var tabs = [];
+    var filter = narrow.filter();
+
+    // Root breadcrumb item: Either Home or All Messages
+    if (filter !== undefined &&
+        ((filter.has_operator("stream") &&
+          !stream_data.in_home_view(filter.operands("stream")[0])) ||
+         filter.has_operand("in", "all"))) {
+        tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
+    } else {
+        tabs.push(make_tab("Home", "#", "home", "root"));
+    }
 
     if (narrow.active() && narrow.operators().length > 0) {
         var stream, ops = narrow.operators();
-        var filter = narrow.filter();
         var hash = hashchange.operators_to_hash(ops);
-
-        // Root breadcrumb item: Either Home or All Messages
-        if ((filter.has_operator("stream") &&
-             !stream_data.in_home_view(filter.operands("stream")[0])) ||
-            filter.has_operand("in", "all")) {
-            tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
-        } else {
-            tabs.push(make_tab("Home", "#", "home", "root"));
-        }
-
         // Second breadcrumb item
         var hashed = hashchange.operators_to_hash(ops.slice(0, 1));
         if (filter.has_operator("stream")) {
@@ -79,9 +79,6 @@ function make_tab_data() {
 
             tabs.push(make_tab(subject, hashed, null));
         }
-    } else {
-        // Just the home view
-        tabs.push(make_tab("Home", '#', "home", "root"));
     }
 
     // Last tab is not a link
