@@ -1887,9 +1887,27 @@ def build_message_list(user_profile, messages):
             sender = message.sender.full_name
         return sender
 
+    def relative_to_full_url(content):
+        # URLs for uploaded content are of the form
+        # "/user_uploads/abc.png". Make them full paths.
+        #
+        # There's a small chance of colliding with non-Zulip URLs containing
+        # "/user_uploads/", but we don't have much information about the
+        # structure of the URL to leverage.
+        return re.sub(
+            r"/user_uploads/(\S*)",
+            settings.EXTERNAL_HOST + r"/user_uploads/\1", content)
+
+    def fix_plaintext_image_urls(content):
+        # Replace image URLs in plaintext content of the form
+        #     [image name](image url)
+        # with a simple hyperlink.
+        return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
+
     def build_message_payload(message):
-        return {'plain': message.content,
-                'html': message.rendered_content}
+        return {'plain': relative_to_full_url(
+                fix_plaintext_image_urls(message.content)),
+                'html': relative_to_full_url(message.rendered_content)}
 
     def build_sender_payload(message):
         sender = sender_string(message)
