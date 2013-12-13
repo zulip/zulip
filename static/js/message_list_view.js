@@ -458,8 +458,12 @@ MessageListView.prototype = {
                 // starting from the last message, ignore message heights that weren't sent by me.
                 if(id_of_last_message_sent_by_us > -1) {
                     distance_to_last_message_sent_by_me += elem.offsetHeight;
-                } else if (elem.className !== "bookend_tr" &&
-                           this.get_message(rows.id($(elem))).sender_email === page_params.email)
+                    return;
+                }
+                var row_id = rows.id($(elem));
+                // check for `row_id` NaN in case we're looking at a date row or bookend row
+                if (row_id > -1 &&
+                    this.get_message(row_id).sender_email === page_params.email)
                 {
                     distance_to_last_message_sent_by_me += elem.offsetHeight;
                     id_of_last_message_sent_by_us = rows.id($(elem));
