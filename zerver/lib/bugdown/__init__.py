@@ -135,8 +135,12 @@ def get_tweet_id(url):
     parsed_url = urlparse.urlparse(url)
     if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
         return False
+    to_match = parsed_url.path
+    # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs, we need to look at the fragment instead
+    if parsed_url.path == '/' and len(parsed_url.fragment) > 5:
+        to_match= parsed_url.fragment
 
-    tweet_id_match = re.match(r'^/.*?/status(es)?/(?P<tweetid>\d{18})$', parsed_url.path)
+    tweet_id_match = re.match(r'^!?/.*?/status(es)?/(?P<tweetid>\d{10,18})(/photo/[0-9])?/?$', to_match)
     if not tweet_id_match:
         return False
     return tweet_id_match.group("tweetid")
