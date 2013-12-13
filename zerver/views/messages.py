@@ -655,6 +655,10 @@ def messages_in_narrow_backend(request, user_profile,
     # Note that this function will only work on messages the user
     # actually received
 
+    # TODO: We assume that the narrow is a search.  For now this works because
+    # the browser only ever calls this function for searches, since it can't
+    # apply that narrow operator itself.
+
     query = select([column("message_id"), column("subject"), column("rendered_content")],
                    and_(column("user_profile_id") == literal(user_profile.id),
                         column("message_id").in_(msg_ids)),
