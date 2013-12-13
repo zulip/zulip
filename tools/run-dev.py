@@ -37,6 +37,10 @@ parser.add_option('--test',
     action='store_true', dest='test',
     help='Use the testing database and ports')
 
+parser.add_option('--noworkers',
+    action='store_true', dest='noworkers',
+    help='Do not start workers')
+
 (options, args) = parser.parse_args()
 
 base_port   = 9991
@@ -51,7 +55,6 @@ manage_args = '--settings=%s' % (settings_module,)
 os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zerver.worker.queue_processors import get_active_worker_queues
 
 proxy_port   = base_port
 django_port  = base_port+1
@@ -73,8 +76,11 @@ cmds = ['python manage.py runserver --nostatic %s localhost:%d'
           % (manage_args, django_port),
         'python manage.py runtornado %s localhost:%d'
           % (manage_args, tornado_port)]
-for queue in get_active_worker_queues():
-    cmds.append('python manage.py process_queue %s %s' %(manage_args, queue))
+
+if not options.noworkers:
+    from zerver.worker.queue_processors import get_active_worker_queues
+    for queue in get_active_worker_queues():
+        cmds.append('python manage.py process_queue %s %s' %(manage_args, queue))
 
 for cmd in cmds:
     subprocess.Popen(cmd, shell=True)
