@@ -122,6 +122,11 @@ exports.start = function (row) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;
                 edit_message(row, data.raw_content);
+                var row_bottom = row.height() + row.offset().top;
+                var composebox_top = $("#compose").offset().top;
+                if (row_bottom > composebox_top) {
+                    viewport.scrollTop(viewport.scrollTop() + row_bottom - composebox_top);
+                }
             }
         }
     });
