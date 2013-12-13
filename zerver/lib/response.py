@@ -34,3 +34,6 @@ def json_success(data={}):
 
 def json_error(msg, data={}, status=400):
     return json_response(res_type="error", msg=msg, data=data, status=status)
+
+def json_unhandled_exception():
+    return json_response(res_type="error", msg="Internal server error", status=500)

@@ -4,9 +4,11 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
         process_as_post
-from zerver.lib.response import json_method_not_allowed, json_unauthorized
+from zerver.lib.response import json_method_not_allowed, json_unauthorized, json_unhandled_exception
 from django.http import HttpResponseRedirect
 from django.conf import settings
+
+import logging
 
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
@@ -77,7 +79,13 @@ def rest_dispatch(request, globals_list, **kwargs):
             # otherwise we might access and thus cache a value for
             # request.REQUEST.
             target_function = process_as_post(target_function)
-        return target_function(request, **kwargs)
+
+        try:
+            return target_function(request, **kwargs)
+        except:
+            logging.exception('Uncaught exception in rest_dispatch')
+            return json_unhandled_exception()
+
     return json_method_not_allowed(supported_methods.keys())
 
 
