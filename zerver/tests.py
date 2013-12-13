@@ -15,6 +15,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Subscription,
     get_user_profile_by_email, split_email_to_domain, resolve_email_to_domain, get_realm, \
     get_stream, get_client, RealmFilter
 from zerver.decorator import RespondAsynchronously, \
+    REQ, has_request_variables, json_to_list, RequestVariableMissingError, \
     RequestVariableConversionError, profiled, JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
@@ -199,6 +200,31 @@ def is_known_slow_test(test_method):
     return hasattr(test_method, 'slowness_reason')
 
 API_KEYS = {}
+
+class DecoratorTestCase(TestCase):
+    def test_REQ_converter(self):
+
+        @has_request_variables
+        def get_total(request, numbers=REQ(converter=json_to_list)):
+            return sum(numbers)
+
+        class Request:
+            pass
+
+        request = Request()
+        request.REQUEST = {}
+
+        with self.assertRaises(RequestVariableMissingError):
+            get_total(request)
+
+        request.REQUEST['numbers'] = 'bad_value'
+        with self.assertRaises(RequestVariableConversionError) as cm:
+            get_total(request)
+        self.assertEqual(str(cm.exception), "Bad value for 'numbers': bad_value")
+
+        request.REQUEST['numbers'] = ujson.dumps([1,2,3,4,5,6])
+        result = get_total(request)
+        self.assertEqual(result, 21)
 
 class ValidatorTestCase(TestCase):
     def test_check_string(self):
