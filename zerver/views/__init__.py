@@ -1557,20 +1557,10 @@ def list_subscriptions_backend(request, user_profile):
 @transaction.commit_on_success
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
-                                 delete=REQ(converter=json_to_list, default=[]),
-                                 add=REQ(converter=json_to_list, default=[])):
+                                 delete=REQ(validator=check_list(check_string), default=[]),
+                                 add=REQ(validator=check_list(check_dict([['name', check_string]])), default=[])):
     if not add and not delete:
         return json_error('Nothing to do. Specify at least one of "add" or "delete".')
-
-    # validate 'add' is a list of one-item dicts with key "name" and a string value
-    error = check_list(check_dict([['name', check_string]]))('add', add)
-    if error:
-        raise JsonableError(error)
-
-    # validate 'delete' is a list of strings
-    error = check_list(check_string)('delete', delete)
-    if error:
-        raise JsonableError(error)
 
     json_dict = {}
     for method, items in ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)):
