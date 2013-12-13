@@ -44,7 +44,7 @@ var Filter = require('js/filter.js');
 
     operators = [['in', 'all']];
     filter = new Filter(operators);
-    assert.deepEqual(filter.public_operators(), undefined);
+    assert.deepEqual(filter.public_operators(), []);
 }());
 
 (function test_canonicalizations() {

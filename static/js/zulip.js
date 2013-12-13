@@ -1126,7 +1126,14 @@ function load_old_messages(opts) {
                 num_after: opts.num_after};
 
     if (opts.msg_list.narrowed && narrow.active()) {
-        data.narrow = JSON.stringify(narrow.public_operators());
+        var operators = narrow.public_operators();
+        if (page_params.narrow !== undefined) {
+            operators = operators.concat(page_params.narrow);
+        }
+        data.narrow = JSON.stringify(operators);
+    }
+    if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
+        data.narrow = JSON.stringify([["stream", page_params.narrow_stream]]);
     }
 
     $.ajax({
@@ -1295,8 +1302,8 @@ function main() {
                       keepTracking: true});
 
     $(document).on('message_selected.zulip', function (event) {
-
-        if ((event.msg_list === home_msg_list) || (event.msg_list === all_msg_list)) {
+        // Only advance the pointer when not narrowed
+        if (event.msg_list === home_msg_list && page_params.narrow_stream === undefined) {
             if (event.id > furthest_read) {
                 furthest_read = event.id;
             }

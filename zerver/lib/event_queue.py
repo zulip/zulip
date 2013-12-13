@@ -288,7 +288,7 @@ def get_client_descriptors_for_realm_all_streams(realm_id):
 
 def add_to_client_dicts(client):
     user_clients.setdefault(client.user_profile_id, []).append(client)
-    if client.all_public_streams:
+    if client.all_public_streams or client.narrow != []:
         realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
 
 def allocate_client_descriptor(user_profile_id, realm_id, event_types, client_type,

@@ -563,12 +563,16 @@ exports.has_message_content = function () {
 
 
 // *Synchronously* check if a stream exists.
-exports.check_stream_existence = function (stream_name) {
+exports.check_stream_existence = function (stream_name, autosubscribe) {
     var result = "error";
+    var request = {'stream': stream_name};
+    if (autosubscribe) {
+        request.autosubscribe = true;
+    }
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/exists",
-        data: {'stream': stream_name},
+        data: request,
         async: false,
         success: function (data) {
             if (data.subscribed) {
@@ -591,8 +595,8 @@ exports.check_stream_existence = function (stream_name) {
 
 // Checks if a stream exists. If not, displays an error and returns
 // false.
-function check_stream_for_send(stream_name) {
-    var result = exports.check_stream_existence(stream_name);
+function check_stream_for_send(stream_name, autosubscribe) {
+    var result = exports.check_stream_existence(stream_name, autosubscribe);
 
     if (result === "error") {
         compose_error("Error checking subscription", $("#stream"));
@@ -621,7 +625,7 @@ function validate_stream_message() {
     var response;
 
     if (!stream_data.is_subscribed(stream_name)) {
-        switch(check_stream_for_send(stream_name)) {
+        switch(check_stream_for_send(stream_name, page_params.narrow_stream !== undefined)) {
         case "does-not-exist":
             response = "<p>The stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +

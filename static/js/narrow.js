@@ -26,7 +26,7 @@ exports.predicate = function () {
 
 exports.operators = function () {
     if (current_filter === undefined) {
-        return [];
+        return page_params.narrow;
     }
     return current_filter.operators();
 };

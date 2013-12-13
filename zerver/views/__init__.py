@@ -732,8 +732,19 @@ def home(request):
     request._email = request.user.email
     request.client = get_client("website")
 
+    narrow = []
+    narrow_stream = None
+    if request.GET.get("narrow"):
+        try:
+            narrow_stream = get_stream(request.GET.get("narrow"), user_profile.realm)
+            assert(narrow_stream is not None)
+            assert(narrow_stream.is_public())
+            narrow = [["stream", narrow_stream.name]]
+        except Exception:
+            logging.exception("Narrow parsing")
+
     register_ret = do_events_register(user_profile, request.client,
-                                      apply_markdown=True)
+                                      apply_markdown=True, narrow=narrow)
     user_has_messages = (register_ret['max_message_id'] != -1)
 
     # Reset our don't-spam-users-with-email counter since the
@@ -817,6 +828,18 @@ def home(request):
         autoscroll_forever = user_profile.autoscroll_forever,
         show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com")
     )
+    if narrow_stream is not None:
+        # In narrow_stream context, initial pointer is just latest message
+        recipient = get_recipient(Recipient.STREAM, narrow_stream.id)
+        try:
+            initial_pointer = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
+        except IndexError:
+            initial_pointer = -1
+        page_params["narrow_stream"] = narrow_stream.name
+        page_params["narrow"] = narrow
+        page_params["max_message_id"] = initial_pointer
+        page_params["initial_pointer"] = initial_pointer
+        page_params["have_initial_messages"] = (initial_pointer != -1)
 
     statsd.incr('views.home')
     show_invites = True
@@ -1908,16 +1931,19 @@ def json_change_ui_settings(request, user_profile,
 
 @authenticated_json_post_view
 @has_request_variables
-def json_stream_exists(request, user_profile, stream=REQ):
-    return stream_exists_backend(request, user_profile, stream)
+def json_stream_exists(request, user_profile, stream=REQ,
+                       autosubscribe=REQ(default=False)):
+    return stream_exists_backend(request, user_profile, stream, autosubscribe)
 
-def stream_exists_backend(request, user_profile, stream_name):
+def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
     if not valid_stream_name(stream_name):
         return json_error("Invalid characters in stream name")
     stream = get_stream(stream_name, user_profile.realm)
     result = {"exists": bool(stream)}
     if stream is not None:
         recipient = get_recipient(Recipient.STREAM, stream.id)
+        if autosubscribe:
+            bulk_add_subscriptions([stream], [user_profile])
         result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
                                                            recipient=recipient,
                                                            active=True).exists()

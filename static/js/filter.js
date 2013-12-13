@@ -36,7 +36,9 @@ function mit_edu_topic_name_match(message, operand) {
 }
 
 function message_in_home(message) {
-    if (message.type === "private" || message.mentioned) {
+    if (message.type === "private" || message.mentioned ||
+        (page_params.narrow_stream !== undefined &&
+         message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase())) {
         return true;
     }
 
@@ -178,12 +180,12 @@ Filter.prototype = {
 
     public_operators: function Filter_public_operators() {
         var safe_to_return = _.filter(this._operators, function (value) {
-            // Currently just filter out the "in" keyword.
-            return value[0] !== 'in';
+            // Filter out the "in" keyword and the embedded narrow (if any).
+            return value[0] !== 'in' && !(page_params.narrow_stream !== undefined &&
+                                          value[0] === "stream" &&
+                                          value[1].toLowerCase() === page_params.narrow_stream.toLowerCase());
         });
-        if (safe_to_return.length !== 0) {
-            return safe_to_return;
-        }
+        return safe_to_return;
     },
 
     operands: function Filter_get_operands(operator) {
