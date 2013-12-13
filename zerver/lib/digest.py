@@ -76,7 +76,7 @@ def gather_hot_conversations(user_profile, stream_messages):
                 user_profile, first_few_messages)}
 
         hot_conversation_render_payloads.append(teaser_data)
-        return hot_conversation_render_payloads
+    return hot_conversation_render_payloads
 
 def gather_new_users(user_profile, threshold):
     # Gather information on users in the realm who have recently
