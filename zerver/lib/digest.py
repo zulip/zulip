@@ -82,9 +82,12 @@ def gather_new_users(user_profile, threshold):
     return len(user_names), user_names
 
 def gather_new_streams(user_profile, threshold):
-    new_streams = list(Stream.objects.filter(
-            realm=user_profile.realm, invite_only=False,
-            date_created__gt=threshold))
+    if user_profile.realm.domain == "mit.edu":
+        new_streams = []
+    else:
+        new_streams = list(Stream.objects.filter(
+                realm=user_profile.realm, invite_only=False,
+                date_created__gt=threshold))
 
     base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
 
