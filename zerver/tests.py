@@ -226,6 +226,35 @@ class DecoratorTestCase(TestCase):
         result = get_total(request)
         self.assertEqual(result, 21)
 
+    def test_REQ_validator(self):
+
+        @has_request_variables
+        def get_total(request, numbers=REQ(validator=check_list(check_int))):
+            return sum(numbers)
+
+        class Request:
+            pass
+
+        request = Request()
+        request.REQUEST = {}
+
+        with self.assertRaises(RequestVariableMissingError):
+            get_total(request)
+
+        request.REQUEST['numbers'] = 'bad_value'
+        with self.assertRaises(JsonableError) as cm:
+            get_total(request)
+        self.assertEqual(str(cm.exception), 'argument "numbers" is not valid json.')
+
+        request.REQUEST['numbers'] = ujson.dumps([1,2,"what?",4,5,6])
+        with self.assertRaises(JsonableError) as cm:
+            get_total(request)
+        self.assertEqual(str(cm.exception), 'numbers[2] is not an integer')
+
+        request.REQUEST['numbers'] = ujson.dumps([1,2,3,4,5,6])
+        result = get_total(request)
+        self.assertEqual(result, 21)
+
 class ValidatorTestCase(TestCase):
     def test_check_string(self):
         x = "hello"

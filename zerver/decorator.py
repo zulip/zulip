@@ -332,7 +332,7 @@ class REQ(object):
         pass
     NotSpecified = _NotSpecified()
 
-    def __init__(self, whence=None, converter=None, default=NotSpecified):
+    def __init__(self, whence=None, converter=None, default=NotSpecified, validator=None):
         """
         whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
@@ -344,12 +344,20 @@ class REQ(object):
 
         default: a value to be used for the argument if the parameter
         is missing in the request
+
+        validator: similar to converter, but takes an already parsed JSON
+        data structure.  If specified, we will parse the JSON request
+        variable value before passing to the function
         """
 
         self.post_var_name = whence
         self.func_var_name = None
         self.converter = converter
+        self.validator = validator
         self.default = default
+
+        if converter and validator:
+            raise Exception('converter and validator are mutually exclusive')
 
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
@@ -414,6 +422,18 @@ def has_request_variables(view_func):
                     val = param.converter(val)
                 except:
                     raise RequestVariableConversionError(param.post_var_name, val)
+
+            # Validators are like converters, but they don't handle JSON parsing; we do.
+            if param.validator is not None and not default_assigned:
+                try:
+                    val = ujson.loads(val)
+                except:
+                    raise JsonableError('argument "%s" is not valid json.' % (param.post_var_name,))
+
+                error = param.validator(param.post_var_name, val)
+                if error:
+                    raise JsonableError(error)
+
             kwargs[param.func_var_name] = val
 
         return view_func(request, *args, **kwargs)
