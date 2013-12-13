@@ -119,9 +119,7 @@ class ClientDescriptor(object):
         return False
 
     def accepts_event(self, event):
-        if self.event_types is None:
-            return True
-        if event["type"] not in self.event_types:
+        if self.event_types is not None and event["type"] not in self.event_types:
             return False
         if event["type"] == "message":
             return self.narrow_filter(event)
