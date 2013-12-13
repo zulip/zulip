@@ -1641,6 +1641,11 @@ def add_subscriptions_backend(request, user_profile,
                               principals = REQ(converter=json_to_list, default=None),
                               authorization_errors_fatal = REQ(converter=json_to_bool, default=True)):
 
+    if principals is not None:
+        error = check_list(check_string)('principals', principals)
+        if error:
+            return json_error(error)
+
     stream_names = []
     for stream in streams_raw:
         if not isinstance(stream, dict):

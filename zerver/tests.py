@@ -1479,6 +1479,21 @@ class SubscriptionRestApiTest(AuthedTestCase):
         check_for_error([{'bogus': 'foo'}], 'name key is missing from add[0]')
         check_for_error([{'name': {}}], 'add[0]["name"] is not a string')
 
+    def test_bad_principals(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        request = {
+            'add': ujson.dumps([{'name': 'my_new_stream'}]),
+            'principals': ujson.dumps([{}]),
+        }
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions",
+            request,
+            **self.api_auth(email)
+        )
+        self.assert_json_error(result, 'principals[0] is not a string')
+
     def test_bad_delete_parameters(self):
         email = 'hamlet@zulip.com'
         self.login(email)
