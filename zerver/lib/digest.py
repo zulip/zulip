@@ -83,7 +83,8 @@ def gather_new_users(user_profile, threshold):
 
 def gather_new_streams(user_profile, threshold):
     new_streams = list(Stream.objects.filter(
-            realm=user_profile.realm, date_created__gt=threshold))
+            realm=user_profile.realm, invite_only=False,
+            date_created__gt=threshold))
 
     base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
 
