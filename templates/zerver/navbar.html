@@ -7,7 +7,7 @@
   </div>
   <div class="column-middle" id="navbar-middle">
     <div class="column-middle-inner">
-          <div id="streamlist-toggle">
+          <div id="streamlist-toggle" {%if embedded %} style="visibility: hidden"{% endif %}>
             <a href="#" id="streamlist-toggle-button" role="button"><i class="icon-vector-reorder"></i>
               <span id="streamlist-toggle-unreadcount">0</span>
             </a>
@@ -26,7 +26,7 @@
     </div>
   </div>
   <div class="column-right">
-          <div id="navbar-buttons">
+          <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
             <ul class="nav" role="navigation">
               <li class="dropdown actual-dropdown-menu" id="gear-menu">
                 <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">

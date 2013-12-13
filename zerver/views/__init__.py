@@ -862,6 +862,7 @@ def home(request):
                                    'is_admin': user_profile.is_admin(),
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
+                                   'embedded': narrow_stream is not None,
                                    'show_autoscroll_forever_option': page_params["show_autoscroll_forever_option"]
                                    },
                                   context_instance=RequestContext(request))
