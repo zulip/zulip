@@ -2,112 +2,105 @@
 
 <h1><i class="icon-vector-wrench settings-icon"></i>Settings</h1>
 
-  <div id="settings-change-box">
+<div id="settings-change-box">
 
-    <div class="alert" id="settings-status"></div>
+  <div class="alert" id="settings-status"></div>
 
-    <div id="account-settings" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>Your Account</div>
-        <div class="account-settings-form">
-          <form action="/json/settings/change" method="post"
-                class="form-horizontal your-account-settings">{% csrf_token %}
+  <div id="account-settings" class="settings-section">
+    <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>Your Account</div>
+    <div class="account-settings-form">
+      <form action="/json/settings/change" method="post"
+            class="form-horizontal your-account-settings">{% csrf_token %}
+        <div class="control-group" id="name_change_container">
+          <label for="full_name" class="control-label">Full name</label>
+          <div class="controls">
+            <input type="text" name="full_name" id="full_name"
+                   value="{{ user_profile.full_name }}" />
+          </div>
+        </div>
 
-           <div class="control-group" id="name_change_container">
-             <label for="full_name" class="control-label">Full name</label>
-             <div class="controls">
-               <input type="text" name="full_name" id="full_name"
-                      value="{{ user_profile.full_name }}" />
-             </div>
-           </div>
+        {% if password_auth_enabled %}
+        <div class="control-group" id="pw_change_link">
+          <label for="change_password_button" class="control-label">Password</label>
+          <div class="controls">
+            <button class="btn change_password_button" data-dismiss="modal" aria-hidden="true">Change Password</button>
+          </div>
+        </div>
 
-           {% if password_auth_enabled %}
-           <div class="control-group" id="pw_change_link">
-             <label for="change_password_button" class="control-label">Password</label>
-             <div class="controls">
-               <button class="btn change_password_button" data-dismiss="modal" aria-hidden="true">Change Password</button>
-             </div>
-           </div>
-
-           <div id="pw_change_controls">
-
-             <div class="control-group">
-               <label for="old_password" class="control-label">Old password</label>
-               <div class="controls">
-                 <input type="password" autocomplete="off"
-                        name="old_password" id="old_password" value="" />
-                 (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)
-               </div>
-             </div>
-
-             <div class="control-group">
-               <label for="new_password" class="control-label">New password</label>
-               <div class="controls">
-                 <input type="password" autocomplete="off"
-                        name="new_password" id="new_password" value="" />
-               </div>
-             </div>
-
-             <div class="control-group">
-               <label class="control-label">Password strength</label>
-               <div class="controls">
-                 <div class="progress" id="pw_strength">
-                   <div class="bar bar-danger" style="width: 10%;"></div>
-                 </div>
-               </div>
-             </div>
-
-             <div class="control-group">
-               <label for="confirm_password" class="control-label">Confirm password</label>
-               <div class="controls">
-                 <input type="password" autocomplete="off"
-                        name="confirm_password" id="confirm_password" value="" />
-               </div>
-             </div>
-
-           </div>
-           {% endif %}
-
-          <div id="user_avatar_file_input_error" class="text-error"></div>
-
+        <div id="pw_change_controls">
           <div class="control-group">
+            <label for="old_password" class="control-label">Old password</label>
             <div class="controls">
-              <div id="user_avatar_file"></div>
-                <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="Upload avatar" />
-                <button class="btn" id="user_avatar_upload_button">Customize avatar</button>
-                <p>
-                    <img id="user-settings-avatar" src="{{ avatar_url }}" />
-                </p>
-                <div id="upload_avatar_spinner"></div>
+              <input type="password" autocomplete="off"
+                     name="old_password" id="old_password" value="" />
+              (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)
             </div>
           </div>
 
-           <div class="control-group">
-             <div class="controls">
-               <input type="submit" name="change_settings"
-                      value="Save changes" class="btn btn-big btn-primary" />
-             </div>
-           </div>
+          <div class="control-group">
+            <label for="new_password" class="control-label">New password</label>
+            <div class="controls">
+              <input type="password" autocomplete="off"
+                     name="new_password" id="new_password" value="" />
+            </div>
+          </div>
 
-          </form>
+          <div class="control-group">
+            <label class="control-label">Password strength</label>
+            <div class="controls">
+              <div class="progress" id="pw_strength">
+                <div class="bar bar-danger" style="width: 10%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label for="confirm_password" class="control-label">Confirm password</label>
+            <div class="controls">
+              <input type="password" autocomplete="off"
+                     name="confirm_password" id="confirm_password" value="" />
+            </div>
+          </div>
 
         </div>
+        {% endif %}
+
+        <div id="user_avatar_file_input_error" class="text-error"></div>
+        <div class="control-group">
+          <div class="controls">
+            <div id="user_avatar_file"></div>
+            <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="Upload avatar" />
+            <button class="btn" id="user_avatar_upload_button">Customize avatar</button>
+            <p>
+              <img id="user-settings-avatar" src="{{ avatar_url }}" />
+            </p>
+            <div id="upload_avatar_spinner"></div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <input type="submit" name="change_settings"
+                   value="Save changes" class="btn btn-big btn-primary" />
+          </div>
+        </div>
+      </form>
+
     </div>
+  </div>
 
-
-
-    <form action="/json/notify_settings/change" method="post"
-          class="form-horizontal notify-settings">{% csrf_token %}
-
+  <form action="/json/notify_settings/change" method="post"
+        class="form-horizontal notify-settings">{% csrf_token %}
     <div id="notification-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>Notifications <i class="tiny icon-vector-question-sign" id="notification-docs"></i></div>
-        <div class="alert" id="notify-settings-status"></div>
-    <div class="notification-settings-form">
+      <div class="alert" id="notify-settings-status"></div>
+      <div class="notification-settings-form">
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
-              {% if user_profile.enable_desktop_notifications %}
-                checked="yes"
-              {% endif %} />
+                   {% if user_profile.enable_desktop_notifications %}
+                   checked="yes"
+                   {% endif %} />
           </div>
           <label for="enable_desktop_notifications" class="control-label">
             Desktop notifications
@@ -117,9 +110,9 @@
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_sounds" id="enable_sounds"
-              {% if user_profile.enable_sounds %}
-                checked="yes"
-              {% endif %} />
+                   {% if user_profile.enable_sounds %}
+                   checked="yes"
+                   {% endif %} />
           </div>
           <label for="enable_sounds" class="control-label">
             Audible notifications
@@ -129,9 +122,9 @@
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
-              {% if user_profile.enable_offline_email_notifications %}
-              checked="yes"
-              {% endif %} />
+                   {% if user_profile.enable_offline_email_notifications %}
+                   checked="yes"
+                   {% endif %} />
           </div>
           <label for="enable_offline_email_notifications" class="control-label">
             Email notifications when offline
@@ -141,9 +134,9 @@
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
-              {% if user_profile.enable_offline_push_notifications %}
-              checked="yes"
-              {% endif %} />
+                   {% if user_profile.enable_offline_push_notifications %}
+                   checked="yes"
+                   {% endif %} />
           </div>
           <label for="enable_offline_push_notifications" class="control-label">
             Mobile push notifications when offline
@@ -153,9 +146,9 @@
         <div class="control-group" id="digest_container">
           <div class="controls">
             <input type="checkbox" name="enable_digest_emails" id="enable_digest_emails"
-              {% if user_profile.enable_digest_emails %}
-              checked="yes"
-              {% endif %} />
+                   {% if user_profile.enable_digest_emails %}
+                   checked="yes"
+                   {% endif %} />
           </div>
           <label for="enable_digest_emails" class="control-label">
             Digest emails when I'm away
@@ -169,20 +162,20 @@
             <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
           </div>
         </div>
-    </div>
+      </div>
 
     </div>
 
-    </form>
-  </div>
+  </form>
+</div>
 
-    <div id="bot-settings" class="settings-section">
+<div id="bot-settings" class="settings-section">
 
-      <div class="settings-section-title"><i class="icon-vector-github settings-section-icon"></i>Your Bots</div>
+  <div class="settings-section-title"><i class="icon-vector-github settings-section-icon"></i>Your Bots</div>
 
-    <div class="bot-settings-form">
+  <div class="bot-settings-form">
     <p class="bot-settings-note">Looking for our <a href="/integrations" target="_blank">Integrations</a>
-    or <a href="/api" target="_blank">API</a> documentation?</p>
+      or <a href="/api" target="_blank">API</a> documentation?</p>
 
     <ol id="bots_list">
     </ol>
@@ -225,81 +218,78 @@
 
     <hr class="settings_separator" />
 
-      <div class="form-horizontal" id="api_key_button_box">
-        <p class="api-key-note">For most bots using the API, you'll want to give each bot
+    <div class="form-horizontal" id="api_key_button_box">
+      <p class="api-key-note">For most bots using the API, you'll want to give each bot
         its own name and API key using the above section.  But if you
         want to write a bot that can access your own private
         messages, you should use your personal API key.
-        </p>
-        <div class="control-group">
-          <button class="btn" id="api_key_button">Show/change your API key</button>
-        </div>
+      </p>
+      <div class="control-group">
+        <button class="btn" id="api_key_button">Show/change your API key</button>
       </div>
-      <div id="get_api_key_box">
-        <p>Please re-enter your password to confirm your identity.
+    </div>
+    <div id="get_api_key_box">
+      <p>Please re-enter your password to confirm your identity.
         (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
-        <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
-          <div class="control-group">
-            <label for="password" class="control-label">Current password</label>
-              <input type="password" autocomplete="off"
-                     name="password" id="get_api_key_password" value="" />
-          </div>
-          <div class="control-group">
-              <input type="submit" name="view_api_key" value="Get API key"
-                     class="btn btn-primary" />
-          </div>
-        </form>
-      </div>
-      <div id="show_api_key_box">
-        <p>Your API key:</p>
-        <p><b><span id="api_key_value"></span></b></p>
-        <button type="submit" class="btn btn-primary regenerate_api_key">
-          Generate new API Key
-        </button>
-        <div id="user_api_key_error text-error">
+      <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
+        <div class="control-group">
+          <label for="password" class="control-label">Current password</label>
+          <input type="password" autocomplete="off"
+                 name="password" id="get_api_key_password" value="" />
         </div>
+        <div class="control-group">
+          <input type="submit" name="view_api_key" value="Get API key"
+                 class="btn btn-primary" />
+        </div>
+      </form>
+    </div>
+    <div id="show_api_key_box">
+      <p>Your API key:</p>
+      <p><b><span id="api_key_value"></span></b></p>
+      <button type="submit" class="btn btn-primary regenerate_api_key">
+        Generate new API Key
+      </button>
+      <div id="user_api_key_error text-error">
       </div>
-
-    </div>
     </div>
 
-  <div id="word-alert-settings" class="settings-section">
-    <div class="settings-section-title"><i class="icon-vector-book settings-section-icon"></i>Custom Word Alerts</div>
-    <ul id="word-alerts">
-    </ul>
   </div>
+</div>
 
-    {% if show_autoscroll_forever_option %}
-    <form action="/json/ui_settings/change" method="post"
-          class="form-horizontal ui-settings">{% csrf_token %}
+<div id="word-alert-settings" class="settings-section">
+  <div class="settings-section-title"><i class="icon-vector-book settings-section-icon"></i>Custom Word Alerts</div>
+  <ul id="word-alerts">
+  </ul>
+</div>
 
-    <div id="ui-settings" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>Zulip Labs</div>
-        <div class="alert" id="ui-settings-status"></div>
+{% if show_autoscroll_forever_option %}
+<form action="/json/ui_settings/change" method="post"
+      class="form-horizontal ui-settings">{% csrf_token %}
+  <div id="ui-settings" class="settings-section">
+    <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>Zulip Labs</div>
+    <div class="alert" id="ui-settings-status"></div>
     <div class="ui-settings-form">
       <p>
         Zulip Labs is where you can try out some experimental new
         features we're working on. Let us know what you think!
       </p>
-        <div class="control-group">
-          <div class="controls">
-            <input type="checkbox" name="autoscroll_forever" id="autoscroll_forever"
-              {% if user_profile.autoscroll_forever %}
-                checked="yes"
+      <div class="control-group">
+        <div class="controls">
+          <input type="checkbox" name="autoscroll_forever" id="autoscroll_forever"
+                 {% if user_profile.autoscroll_forever %}
+                 checked="yes"
               {% endif %} />
-          </div>
-          <label for="autoscroll_forever" class="control-label">
-            Always auto-scroll to new messages
-          </label>
         </div>
-        <div class="control-group">
-          <div class="controls ui-submission">
-            <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
-          </div>
+        <label for="autoscroll_forever" class="control-label">
+          Always auto-scroll to new messages
+        </label>
+      </div>
+      <div class="control-group">
+        <div class="controls ui-submission">
+          <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
         </div>
+      </div>
     </div>
-
-    </div>
-
-    </form>
-    {% endif %}
+  </div>
+</form>
+{% endif %}
