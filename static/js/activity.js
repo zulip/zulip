@@ -157,9 +157,17 @@ function update_users() {
 
     var users = sort_users(Object.keys(presence_info), presence_info);
 
+    function get_num_unread(email) {
+        if (suppress_unread_counts) {
+            return 0;
+        }
+        return unread.num_unread_for_person(email);
+    }
+
     var my_info = {
         name: page_params.fullname,
         email: page_params.email,
+        num_unread: get_num_unread(page_params.email),
         type: (activity.has_focus) ? activity.ACTIVE : activity.IDLE,
         type_desc: presence_descriptions.active,
         my_fullname: true
@@ -170,6 +178,7 @@ function update_users() {
         return {
             name: people_dict.get(email).full_name,
             email: email,
+            num_unread: get_num_unread(email),
             type: presence,
             type_desc: presence_descriptions[presence]
         };
@@ -182,19 +191,6 @@ function update_users() {
     var user_info = [my_info].concat(_.map(user_emails, info_for));
 
     $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
-
-    // Update the counts in the presence list.
-    if (!suppress_unread_counts) {
-        // We do this after rendering the template, to avoid dealing with
-        // the suppress_unread_counts conditional in the template.
-
-        var set_count = function (email) {
-            stream_list.set_presence_list_count(email, unread.num_unread_for_person(email));
-        };
-
-        _.each(user_emails, set_count);
-        set_count(page_params.email);
-    }
 
     // Update user fading, if necessary.
     compose_fade.update_faded_users();

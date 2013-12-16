@@ -518,6 +518,10 @@ ul.filters {
     width: 150px;
 }
 
+.user_sidebar_entry.user-with-count .count {
+    display: inherit;
+}
+
 .group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
     width: 170px;
 }

@@ -522,12 +522,14 @@ function render(template_name, args) {
                 "my_fullname": true,
                 "type_desc": "Active",
                 "type": "active",
+                "num_unread": 0,
                 "email": "lear@zulip.com",
                 "name": "King Lear"
             },
             {
                 "type_desc": "Away",
                 "type": "away",
+                "num_unread": 5,
                 "email": "othello@zulip.com",
                 "name": "Othello"
             }
