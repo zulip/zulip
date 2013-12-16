@@ -174,37 +174,6 @@
     </div>
 
     </form>
-    {% if show_autoscroll_forever_option %}
-    <form action="/json/ui_settings/change" method="post"
-          class="form-horizontal ui-settings">{% csrf_token %}
-
-    <div id="ui-settings" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-desktop settings-section-icon"></i>User Interface</div>
-        <div class="alert" id="ui-settings-status"></div>
-    <div class="ui-settings-form">
-        <div class="control-group">
-          <div class="controls">
-            <input type="checkbox" name="autoscroll_forever" id="autoscroll_forever"
-              {% if user_profile.autoscroll_forever %}
-                checked="yes"
-              {% endif %} />
-          </div>
-          <label for="autoscroll_forever" class="control-label">
-            Auto-scroll forever
-          </label>
-        </div>
-        <div class="control-group">
-          <div class="controls ui-submission">
-            <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
-          </div>
-        </div>
-    </div>
-
-    </div>
-
-    </form>
-    {% endif %}
-
   </div>
 
     <div id="bot-settings" class="settings-section">
@@ -294,11 +263,43 @@
     </div>
     </div>
 
-
-
   <div id="word-alert-settings" class="settings-section">
     <div class="settings-section-title"><i class="icon-vector-book settings-section-icon"></i>Custom Word Alerts</div>
     <ul id="word-alerts">
     </ul>
   </div>
 
+    {% if show_autoscroll_forever_option %}
+    <form action="/json/ui_settings/change" method="post"
+          class="form-horizontal ui-settings">{% csrf_token %}
+
+    <div id="ui-settings" class="settings-section">
+      <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>Zulip Labs</div>
+        <div class="alert" id="ui-settings-status"></div>
+    <div class="ui-settings-form">
+      <p>
+        Zulip Labs is where you can try out some experimental new
+        features we're working on. Let us know what you think!
+      </p>
+        <div class="control-group">
+          <div class="controls">
+            <input type="checkbox" name="autoscroll_forever" id="autoscroll_forever"
+              {% if user_profile.autoscroll_forever %}
+                checked="yes"
+              {% endif %} />
+          </div>
+          <label for="autoscroll_forever" class="control-label">
+            Always auto-scroll to new messages
+          </label>
+        </div>
+        <div class="control-group">
+          <div class="controls ui-submission">
+            <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
+          </div>
+        </div>
+    </div>
+
+    </div>
+
+    </form>
+    {% endif %}

@@ -1145,7 +1145,7 @@ $(function () {
             dataType: 'json',
 
             success: function (resp, statusText, xhr, form) {
-                var message = "Updated UI settings!";
+                var message = "Updated Zulip Labs settings!";
                 var result = $.parseJSON(xhr.responseText);
 
                 if (result.autoscroll_forever !== undefined) {
