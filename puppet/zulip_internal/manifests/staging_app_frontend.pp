@@ -38,6 +38,13 @@ class zulip_internal::staging_app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip_internal/cron.d/clearsessions",
   }
+  file { "/etc/cron.d/send-digest-emails":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip_internal/cron.d/send-digest-emails",
+  }
   # Staging has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dev.pem
 }

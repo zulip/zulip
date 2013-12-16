@@ -1,0 +1,4 @@
+MAILTO=root
+
+# Send digest emails once a day.
+0 11 * * *   zulip cd /home/zulip/deployments/current && python manage.py enqueue_digest_emails
