@@ -2858,10 +2858,6 @@ input.edit-alert-word::-webkit-input-placeholder {
     margin-bottom: 20px;
 }
 
-#bots_list .field:after {
-    content: ':';
-}
-
 #bots_list .regenerate_bot_api_key {
     padding: 2px;
     width: 20px;
