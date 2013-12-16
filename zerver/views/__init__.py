@@ -1546,8 +1546,8 @@ def get_public_streams_backend(request, user_profile):
                                include_subscribed=False, include_all_active=False)
 
 @authenticated_json_post_view
-@has_request_variables
 @require_realm_admin
+@has_request_variables
 def json_rename_stream(request, user_profile, old_name=REQ, new_name=REQ):
     return json_success(do_rename_stream(user_profile.realm, old_name, new_name))
 
