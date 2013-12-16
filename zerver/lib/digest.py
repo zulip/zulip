@@ -81,9 +81,12 @@ def gather_hot_conversations(user_profile, stream_messages):
 def gather_new_users(user_profile, threshold):
     # Gather information on users in the realm who have recently
     # joined.
-    new_users = list(UserProfile.objects.filter(
-            realm=user_profile.realm, date_joined__gt=threshold,
-            is_bot=False))
+    if user_profile.realm.domain == "mit.edu":
+        new_users = []
+    else:
+        new_users = list(UserProfile.objects.filter(
+                realm=user_profile.realm, date_joined__gt=threshold,
+                is_bot=False))
     user_names = [user.full_name for user in new_users]
 
     return len(user_names), user_names
