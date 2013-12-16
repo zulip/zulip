@@ -57,6 +57,7 @@ try:
     api_key = email_gateway_user.api_key
 except UserProfile.DoesNotExist:
     print "No configured %s user" % (settings.EMAIL_GATEWAY_BOT,)
+    sys.exit(1)
 
 
 if settings.DEPLOYED:
@@ -310,8 +311,7 @@ Run this command out of a cron job.
     def handle(self, **options):
         if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
             not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
-            not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER or
-            not email_gateway_user):
+            not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER):
             print "Please configure the Email Mirror Gateway in your local_settings.py"
             exit(1)
 
