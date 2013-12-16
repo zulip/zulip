@@ -2937,7 +2937,7 @@ div.edit_bot {
 
 #bots_list .email .value,
 #bots_list .api_key .api-key-value-and-button {
-    display: inline-block;
+    display: block;
     margin-left: 6em;
     white-space: -moz-pre-wrap !important;
     white-space: -pre-wrap;
