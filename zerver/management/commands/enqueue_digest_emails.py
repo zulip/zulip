@@ -5,7 +5,7 @@ import pytz
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish
-from zerver.models import UserActivity, get_user_profile_by_email
+from zerver.models import UserActivity, UserProfile, get_realm
 
 VALID_DIGEST_DAYS = (1, 2, 3)
 def inactive_since(user_profile, cutoff):
@@ -47,9 +47,12 @@ in a while.
         if datetime.datetime.utcnow().weekday() not in VALID_DIGEST_DAYS:
             return
 
-        for email in ["jesstess@zulip.com", "jessica.mckellar@gmail.com",
-                      "sipbtest@mit.edu", "jesstess+si@zulip.com"]:
-            user_profile = get_user_profile_by_email(email)
-            cutoff = last_business_day()
-            if inactive_since(user_profile, cutoff):
-                queue_digest_recipient(user_profile, cutoff)
+        for domain in ["zulip.com"]:
+            user_profiles = UserProfile.objects.filter(
+                realm=get_realm(domain), is_active=True, is_bot=False,
+                enable_digest_emails=True)
+
+            for user_profile in user_profiles:
+                cutoff = last_business_day()
+                if inactive_since(user_profile, cutoff):
+                    queue_digest_recipient(user_profile, cutoff)
