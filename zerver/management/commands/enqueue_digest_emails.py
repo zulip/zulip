@@ -1,11 +1,27 @@
 from __future__ import absolute_import
 import datetime
 import pytz
+import logging
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import UserActivity, UserProfile, get_realm
+
+## Logging setup ##
+
+log_format = "%(asctime)s: %(message)s"
+logging.basicConfig(format=log_format)
+
+formatter = logging.Formatter(log_format)
+file_handler = logging.FileHandler(settings.DIGEST_LOG_PATH)
+file_handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+
 
 VALID_DIGEST_DAYS = (1, 2, 3)
 def inactive_since(user_profile, cutoff):
@@ -56,3 +72,4 @@ in a while.
                 cutoff = last_business_day()
                 if inactive_since(user_profile, cutoff):
                     queue_digest_recipient(user_profile, cutoff)
+                    logger.info("Enqueuing digest email for %s" % (user_profile.email,))
