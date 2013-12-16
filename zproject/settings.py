@@ -597,6 +597,7 @@ CACHES = {
 
 ZULIP_PATHS = [
     ("SERVER_LOG_PATH", "/var/log/zulip/server.log"),
+    ("ERROR_FILE_LOG_PATH", "/var/log/zulip/errors.log"),
     ("MANAGEMENT_LOG_PATH", "/var/log/zulip/manage.log"),
     ("WORKER_LOG_PATH", "/var/log/zulip/workers.log"),
     ("PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.pickle"),
@@ -674,26 +675,35 @@ LOGGING = {
             'interval':    7,
             'backupCount': 100000000,
         },
+        'errors_file': {
+            'level':       'WARNING',
+            'class':       'logging.handlers.TimedRotatingFileHandler',
+            'formatter':   'default',
+            'filename':    ERROR_FILE_LOG_PATH,
+            'when':        'D',
+            'interval':    7,
+            'backupCount': 100000000,
+        },
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'errors_file'],
             'level':    'INFO',
             'propagate': False,
         },
         'django': {
             'handlers': (['zulip_admins'] if ERROR_REPORTING else [])
-                        + ['console', 'file'],
+                        + ['console', 'file', 'errors_file'],
             'level':    'INFO',
             'propagate': False,
         },
         'zulip.requests': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'errors_file'],
             'level':    'INFO',
             'propagate': False,
         },
         'zulip.management': {
-            'handlers': ['file'],
+            'handlers': ['file', 'errors_file'],
             'level':    'INFO',
             'propagate': False,
         },
