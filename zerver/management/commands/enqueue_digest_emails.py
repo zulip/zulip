@@ -38,7 +38,7 @@ def inactive_since(user_profile, cutoff):
     return last_visit < cutoff
 
 def last_business_day():
-    one_day = datetime.timedelta(hours=24)
+    one_day = datetime.timedelta(hours=23)
     previous_day = datetime.datetime.now(tz=pytz.utc) - one_day
     while previous_day.weekday() not in VALID_DIGEST_DAYS:
         previous_day -= one_day
