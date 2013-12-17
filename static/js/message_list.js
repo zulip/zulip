@@ -406,6 +406,32 @@ MessageList.prototype = {
         this.view.rerender_the_whole_thing();
     },
 
+    remove_and_rerender: function MessageList_remove_and_rerender(messages) {
+        var self = this;
+        _.each(messages, function (message) {
+            var stored_message = self._hash[message.id];
+            if (stored_message !== undefined) {
+                delete self._hash[stored_message];
+            }
+        });
+
+        var msg_ids_to_remove = {};
+        _.each(messages, function (message) {
+            msg_ids_to_remove[message.id] = true;
+        });
+        this._items = _.filter(this._items, function (message) {
+            return !msg_ids_to_remove.hasOwnProperty(message.id);
+        });
+        if (this.muting_enabled) {
+            this._all_items = _.filter(this._all_items, function (message) {
+                return !msg_ids_to_remove.hasOwnProperty(message.id);
+            });
+        }
+
+        this.view.rerender_the_whole_thing();
+        this.select_id(this.selected_id(), {use_closest: true, empty_ok: true});
+    },
+
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
         row.find(".message_edit_form").empty().append(edit_obj.form);
         row.find(".message_content").hide();

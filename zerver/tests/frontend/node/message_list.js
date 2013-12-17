@@ -96,8 +96,14 @@ var MessageList = require('js/message_list');
     list.append(new_messages, true);
     assert.equal(list.last().id, 90);
 
-
     list.view.clear_table = function () {};
+
+    list.remove_and_rerender([{id: 60}]);
+    var removed = list.all().filter(function (msg) {
+        return msg.id !== 60;
+    });
+    assert.deepEqual(list.all(), removed);
+
     list.clear();
     assert.deepEqual(list.all(), []);
 
