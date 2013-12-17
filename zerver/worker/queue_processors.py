@@ -15,6 +15,7 @@ from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation
     check_send_message, extract_recipients, one_click_unsubscribe_link, \
     enqueue_welcome_emails, handle_push_notification
 from zerver.lib.digest import handle_digest_email
+from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
 from zerver.lib.socket import req_redis_key
 from confirmation.models import Confirmation
@@ -25,6 +26,7 @@ import os
 import sys
 import ujson
 from collections import defaultdict
+import email
 import time
 import datetime
 import logging
@@ -309,6 +311,13 @@ class DigestWorker(QueueProcessingWorker):
     def consume(self, event):
         logging.info("Received digest event: %s" % (event,))
         handle_digest_email(event["user_profile_id"], event["cutoff"])
+
+@assign_queue('email_mirror')
+class MirrorWorker(QueueProcessingWorker):
+    # who gets a digest is entirely determined by the enqueue_digest_emails
+    # management command, not here.
+    def consume(self, event):
+        mirror_email(email.message_from_string(event["message"]), rcpt_to=event["rcpt_to"])
 
 @assign_queue('test')
 class TestWorker(QueueProcessingWorker):
