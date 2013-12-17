@@ -80,13 +80,7 @@ def rest_dispatch(request, globals_list, **kwargs):
             # request.REQUEST.
             target_function = process_as_post(target_function)
 
-        try:
-            return target_function(request, **kwargs)
-        except JsonableError:
-            raise
-        except Exception:
-            logging.exception('Uncaught exception in rest_dispatch')
-            return json_unhandled_exception()
+        return target_function(request, **kwargs)
 
     return json_method_not_allowed(supported_methods.keys())
 

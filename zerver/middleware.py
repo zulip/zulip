@@ -14,6 +14,7 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 import logging
 import time
 import cProfile
+import traceback
 
 logger = logging.getLogger('zulip.requests')
 
@@ -218,6 +219,9 @@ class JsonErrorHandler(object):
     def process_exception(self, request, exception):
         if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
             return json_error(exception.to_json_error_msg())
+        if request.error_format == "JSON":
+            logging.error(traceback.format_exc())
+            return json_error("Internal server error", status=500)
         return None
 
 class TagRequests(object):
