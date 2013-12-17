@@ -3,17 +3,35 @@
 """
 Forward messages sent to the configured email gateway to Zulip.
 
-Messages to that address go to the Inbox of emailgateway@zulip.com.
+At Zulip, messages to that address go to the Inbox of emailgateway@zulip.com.
+Zulip enterprise customers' configurations will differ.
 
 Messages meant for Zulip have a special recipient form of
 
-<stream name>+<regenerable stream token>@streams.zulip.com
+    <stream name>+<regenerable stream token>@streams.zulip.com
 
-We extract and validate the target stream from information in the
-recipient address and retrieve, forward, and archive the message.
+This pattern is configurable via the EMAIL_GATEWAY_PATTERN settings.py
+variable.
 
-Run this management command out of a cron job.
+This script can be used via two mechanisms:
+
+  1) Run this in a cronjob every N minutes if you have configured Zulip to poll
+     an external IMAP mailbox for messages. The script will then connect to
+     your IMAP server and batch-process all messages.
+
+     We extract and validate the target stream from information in the
+     recipient address and retrieve, forward, and archive the message.
+
+  2) Alternatively, configure your MTA to execute this script on message
+     receipt with the contents of the message piped to standard input. The
+     script will queue the message for processing. In this mode of invocation,
+     you should pass the destination email address in the ORIGINAL_RECIPIENT
+     environment variable.
+
+     In Postfix, you can express that via an /etc/aliases entry like this:
+         |/usr/bin/python /home/zulip/deployments/current/manage.py email-mirror
 """
+
 
 from __future__ import absolute_import
 
