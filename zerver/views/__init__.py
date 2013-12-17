@@ -1652,7 +1652,8 @@ def stream_link(stream_name):
 
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
-                              streams_raw = REQ("subscriptions", json_to_list),
+                              streams_raw = REQ("subscriptions",
+                              validator=check_list(check_dict([['name', check_string]]))),
                               invite_only = REQ(converter=json_to_bool, default=False),
                               announce = REQ(converter=json_to_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
@@ -1660,8 +1661,6 @@ def add_subscriptions_backend(request, user_profile,
 
     stream_names = []
     for stream in streams_raw:
-        if not isinstance(stream, dict):
-            return json_error("Malformed request")
         stream_name = stream["name"].strip()
         if len(stream_name) > Stream.MAX_NAME_LENGTH:
             return json_error("Stream name (%s) too long." % (stream_name,))
