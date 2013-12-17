@@ -2134,7 +2134,7 @@ def api_events_register(request, user_profile,
 def events_register_backend(request, user_profile, apply_markdown=True,
                             all_public_streams=False,
                             event_types=REQ(validator=check_list(check_string), default=None),
-                            narrow=REQ(converter=json_to_list, default=[]),
+                            narrow=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
                             queue_lifespan_secs=REQ(converter=int, default=0)):
     ret = do_events_register(user_profile, request.client, apply_markdown,
                              event_types, queue_lifespan_secs, all_public_streams,
