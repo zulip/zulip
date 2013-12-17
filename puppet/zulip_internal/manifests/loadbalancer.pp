@@ -36,4 +36,28 @@ class zulip_internal::loadbalancer {
     mode => 644,
     source => "puppet:///modules/zulip_internal/camo_defaults",
   }
+
+  file { '/etc/log2zulip.conf':
+    ensure     => file,
+    owner      => "zulip",
+    group      => "zulip",
+    mode       => 644,
+    source     => 'puppet:///modules/zulip_internal/log2zulip.conf',
+  }
+
+  file { '/etc/cron.d/log2zulip':
+    ensure     => file,
+    owner      => "zulip",
+    group      => "zulip",
+    mode       => 644,
+    source     => 'puppet:///modules/zulip_internal/cron.d/log2zulip',
+  }
+
+  file { '/etc/log2zulip.zuliprc':
+    ensure     => file,
+    owner      => "zulip",
+    group      => "zulip",
+    mode       => 600,
+    source     => 'puppet:///modules/zulip_internal/log2zulip.zuliprc',
+  }
 }
