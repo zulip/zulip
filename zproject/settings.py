@@ -131,6 +131,7 @@ if DEPLOYED:
 # the token from the DOM, which means malicious code could too.  But hiding the
 # cookie will slow down some attackers.
 CSRF_COOKIE_PATH = '/;HttpOnly'
+CSRF_FAILURE_VIEW = 'zerver.middleware.csrf_failure'
 
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.
@@ -154,6 +155,7 @@ if DEPLOYED:
 
 MIDDLEWARE_CLASSES = (
     # Our logging middleware should be the first middleware item.
+    'zerver.middleware.TagRequests',
     'zerver.middleware.LogRequests',
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',

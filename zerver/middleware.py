@@ -9,6 +9,7 @@ from zerver.lib.cache import get_memcached_time, get_memcached_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
 from zerver.models import flush_per_request_caches
 from zerver.exceptions import RateLimited
+from django.views.csrf import csrf_failure as html_csrf_failure
 
 import logging
 import time
@@ -218,6 +219,21 @@ class JsonErrorHandler(object):
         if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
             return json_error(exception.to_json_error_msg())
         return None
+
+class TagRequests(object):
+    def process_view(self, request, view_func, args, kwargs):
+        self.process_request(request)
+    def process_request(self, request):
+        if request.path.startswith("/api/") or request.path.startswith("/json/"):
+            request.error_format = "JSON"
+        else:
+            request.error_format = "HTML"
+
+def csrf_failure(request, reason=""):
+    if request.error_format == "JSON":
+        return json_error("CSRF Error: %s" % (reason,), status=403)
+    else:
+        return html_csrf_failure(request, reason)
 
 # Monkeypatch in time tracking to the Django non-debug cursor
 # Code comes from CursorDebugWrapper
