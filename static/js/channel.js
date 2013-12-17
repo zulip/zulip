@@ -3,6 +3,19 @@ var channel = (function () {
 var exports = {};
 
 function call(args) {
+    // Wrap the error handlers to reload the page if we get a CSRF error
+    // (What probably happened is that the user logged out in another tab).
+    var orig_error = args.error;
+    if (orig_error === undefined) {
+        orig_error = function () {};
+    }
+    args.error = function wrapped_error(xhr, error_type, xhn) {
+        if (xhr.status === 403 && $.parseJSON(xhr.responseText).msg.indexOf("CSRF Error:") !== -1) {
+            reload.initiate({immediate: true});
+        }
+        return orig_error(xhr, error_type, xhn);
+    };
+
     return $.ajax(args);
 }
 
