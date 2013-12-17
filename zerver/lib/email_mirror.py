@@ -193,14 +193,17 @@ def find_emailgateway_recipient(message):
 
     raise ZulipEmailForwardError("Missing recipient in mirror email")
 
-def process_message(message):
+def process_message(message, rcpt_to=None):
     subject = decode_header(message.get("Subject", "(no subject)"))[0][0]
 
     debug_info = {}
 
     try:
         body = filter_footer(extract_body(message))
-        to = find_emailgateway_recipient(message)
+        if rcpt_to is not None:
+            to = rcpt_to
+        else:
+            to = find_emailgateway_recipient(message)
         debug_info["to"] = to
         stream = extract_and_validate(to)
         debug_info["stream"] = stream
