@@ -1604,7 +1604,7 @@ def json_remove_subscriptions(request, user_profile):
 
 @has_request_variables
 def remove_subscriptions_backend(request, user_profile,
-                                 streams_raw = REQ("subscriptions", json_to_list)):
+                                 streams_raw = REQ("subscriptions", validator=check_list(check_string))):
 
     streams, _ = list_to_streams(streams_raw, user_profile)
 
