@@ -109,10 +109,7 @@ def main():
     d.addBoth(done)
 
 class Command(BaseCommand):
-    help = """Forward emails sent to the configured email gateway to Zulip.
-
-Run this command out of a cron job.
-"""
+    help = __doc__
 
     def handle(self, **options):
         if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
