@@ -29,8 +29,8 @@ class zulip_internal::app_frontend {
 
   file { '/etc/cron.d/log2zulip':
     ensure     => file,
-    owner      => "zulip",
-    group      => "zulip",
+    owner      => "root",
+    group      => "root",
     mode       => 644,
     source     => 'puppet:///modules/zulip_internal/cron.d/log2zulip',
   }
