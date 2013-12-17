@@ -610,7 +610,8 @@ def login_page(request, **kwargs):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_bulk_invite_users(request, user_profile, invitee_emails=REQ(converter=json_to_list)):
+def json_bulk_invite_users(request, user_profile,
+                           invitee_emails=REQ(validator=check_list(check_string))):
     invitee_emails = set(invitee_emails)
     streams = get_default_subs(user_profile)
 
