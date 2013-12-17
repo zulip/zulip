@@ -150,7 +150,7 @@ function focus_lost() {
     exports.has_focus = false;
 }
 
-function update_users() {
+function actually_update_users() {
     if (page_params.domain === 'mit.edu') {
         return;  // MIT realm doesn't have a presence list
     }
@@ -195,6 +195,14 @@ function update_users() {
     // Update user fading, if necessary.
     compose_fade.update_faded_users();
 }
+
+// The function actually_update_users() can be pretty expensive for realms with lots
+// of users.  Not only is there more work to do in terms of rendering the user list, but
+// we also get more updates.  Large realms have reported lags while typing in the compose
+// box, and there's strong evidence that this is caused by user list updates.  This isn't a
+// perfect solution, but it should remove some pain, and there's no real harm in waiting five
+// seconds to update user activity.
+var update_users = _.throttle(actually_update_users, 5000);
 
 exports.update_huddles = function () {
     if (page_params.domain === 'mit.edu') {
