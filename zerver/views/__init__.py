@@ -52,7 +52,7 @@ from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
 from zerver.lib import bugdown
 from zerver.lib.alert_words import user_alert_words
-from zerver.lib.validator import check_string, check_list, check_dict
+from zerver.lib.validator import check_string, check_list, check_dict, check_int
 
 from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
@@ -1307,7 +1307,8 @@ def json_update_flags(request, user_profile):
     return update_message_flags(request, user_profile);
 
 @has_request_variables
-def update_message_flags(request, user_profile, messages=REQ('messages', converter=json_to_list),
+def update_message_flags(request, user_profile,
+                      messages=REQ('messages', validator=check_list(check_int)),
                       operation=REQ('op'), flag=REQ('flag'),
                       all=REQ('all', converter=json_to_bool, default=False)):
     do_update_message_flags(user_profile, operation, flag, messages, all)
