@@ -23,14 +23,16 @@ from email.header import decode_header
 import logging
 import re
 import sys
+import posix
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import decode_email_address, convert_html_to_markdown
 from zerver.lib.upload import upload_message_image
+from zerver.lib.queue import queue_json_publish
 from zerver.models import Stream, get_user_profile_by_email, UserProfile
-from zerver.lib.email_mirror import logger, process_message
+from zerver.lib.email_mirror import logger, process_message, extract_and_validate, ZulipEmailForwardError
 
 from twisted.internet import protocol, reactor, ssl
 from twisted.mail import imap4
@@ -112,11 +114,37 @@ class Command(BaseCommand):
     help = __doc__
 
     def handle(self, **options):
-        if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
-            not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
-            not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER):
-            print "Please configure the Email Mirror Gateway in your local_settings.py"
-            exit(1)
+        rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", None)
+        if rcpt_to is not None:
+            try:
+                extract_and_validate(rcpt_to)
+            except ZulipEmailForwardError:
+                print "5.1.1 Bad destination mailbox address: Please use the address specified in your Streams page."
+                exit(posix.EX_NOUSER)
 
-        reactor.callLater(0, main)
-        reactor.run()
+            # Read in the message, at most 25MiB. This is the limit enforced by
+            # Gmail, which we use here as a decent metric.
+            message = sys.stdin.read(25*1024*1024)
+
+            if len(sys.stdin.read(1)) != 0:
+                # We're not at EOF, reject large mail.
+                print "5.3.4 Message too big for system: Max size is 25MiB"
+                exit(posix.EX_DATAERR)
+
+            queue_json_publish(
+                    "email_mirror",
+                    {
+                        "message": message,
+                        "rcpt_to": rcpt_to
+                    },
+                    lambda x: None
+            )
+        else:
+            # We're probably running from cron, try to batch-process mail
+            if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
+                not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
+                not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER):
+                print "Please configure the Email Mirror Gateway in your local_settings.py, or specify $ORIGINAL_RECIPIENT if piping a single mail."
+                exit(1)
+            reactor.callLater(0, main)
+            reactor.run()
