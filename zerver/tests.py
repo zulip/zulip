@@ -2342,6 +2342,17 @@ class InviteUserTest(AuthedTestCase):
         email_recipients = [email.recipients()[0] for email in outbox]
         self.assertItemsEqual(email_recipients, correct_recipients)
 
+    def test_bulk_invite_users(self):
+        # The bulk_invite_users code path is for the first user in a realm.
+        self.login('hamlet@zulip.com')
+        invitees = ['alice@zulip.com', 'bob@zulip.com']
+        params = {
+            'invitee_emails': ujson.dumps(invitees)
+        }
+        result = self.client.post('/json/bulk_invite_users', params)
+        self.assert_json_success(result)
+        self.check_sent_emails(invitees)
+
     def test_successful_invite_user(self):
         """
         A call to /json/invite_users with valid parameters causes an invitation
