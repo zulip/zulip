@@ -2355,25 +2355,25 @@ def list_alert_words(request, user_profile):
 @authenticated_json_post_view
 @has_request_variables
 def json_set_alert_words(request, user_profile,
-                         alert_words=REQ(converter=json_to_list, default=[])):
+                         alert_words=REQ(validator=check_list(check_string), default=[])):
     do_set_alert_words(user_profile, alert_words)
     return json_success()
 
 @has_request_variables
 def set_alert_words(request, user_profile,
-                    alert_words=REQ(converter=json_to_list, default=[])):
+                    alert_words=REQ(validator=check_list(check_string), default=[])):
     do_set_alert_words(user_profile, alert_words)
     return json_success()
 
 @has_request_variables
 def add_alert_words(request, user_profile,
-                    alert_words=REQ(converter=json_to_list, default=[])):
+                    alert_words=REQ(validator=check_list(check_string), default=[])):
     do_add_alert_words(user_profile, alert_words)
     return json_success()
 
 @has_request_variables
 def remove_alert_words(request, user_profile,
-                       alert_words=REQ(converter=json_to_list, default=[])):
+                       alert_words=REQ(validator=check_list(check_string), default=[])):
     do_remove_alert_words(user_profile, alert_words)
     return json_success()
 
