@@ -34,12 +34,12 @@ def is_super_user(user):
 
 # Doing 1000 memcached requests to get_display_recipient is quite slow,
 # so add a local cache as well as the memcached cache.
-per_process_display_recipient_cache = {}
+per_request_display_recipient_cache = {}
 def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id):
-    if recipient_id not in per_process_display_recipient_cache:
+    if recipient_id not in per_request_display_recipient_cache:
         result = get_display_recipient_memcached(recipient_id, recipient_type, recipient_type_id)
-        per_process_display_recipient_cache[recipient_id] = result
-    return per_process_display_recipient_cache[recipient_id]
+        per_request_display_recipient_cache[recipient_id] = result
+    return per_request_display_recipient_cache[recipient_id]
 
 def get_display_recipient(recipient):
     return get_display_recipient_by_id(
@@ -48,9 +48,9 @@ def get_display_recipient(recipient):
             recipient.type_id
     )
 
-def flush_per_process_display_recipient_cache():
-    global per_process_display_recipient_cache
-    per_process_display_recipient_cache = {}
+def flush_per_request_caches():
+    global per_request_display_recipient_cache
+    per_request_display_recipient_cache = {}
 
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)

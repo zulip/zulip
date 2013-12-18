@@ -7,7 +7,7 @@ from zerver.lib.utils import statsd
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_memcached_time, get_memcached_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_per_process_display_recipient_cache
+from zerver.models import flush_per_request_caches
 from zerver.exceptions import RateLimited
 
 import logging
@@ -265,8 +265,7 @@ class RateLimitMiddleware(object):
 
 class FlushDisplayRecipientCache(object):
     def process_response(self, request, response):
-        # We flush the recipient cache after every request, so it is
-        # not shared at all between requests. We do this so all users
-        # have a consistent view of stream name changes.
-        flush_per_process_display_recipient_cache()
+        # We flush the per-request caches after every request, so they
+        # are not shared at all between requests.
+        flush_per_request_caches()
         return response
