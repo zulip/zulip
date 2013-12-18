@@ -510,7 +510,7 @@ def ad_hoc_queries():
 
 @zulip_internal
 @has_request_variables
-def get_activity(request, realm=REQ(default=None)):
+def get_activity(request):
     duration_content, realm_minutes = user_activity_intervals()
     counts_content = realm_summary_table(realm_minutes)
     data = [
@@ -524,7 +524,7 @@ def get_activity(request, realm=REQ(default=None)):
 
     return render_to_response(
         'analytics/activity.html',
-        dict(data=data, realm=realm, title=title, is_home=True),
+        dict(data=data, title=title, is_home=True),
         context_instance=RequestContext(request)
     )
 
@@ -831,10 +831,9 @@ def get_user_activity(request, email):
     content = raw_user_activity_table(records)
     data += [('Info', content)]
 
-    realm = None
     title = email
     return render_to_response(
         'analytics/activity.html',
-        dict(data=data, realm=realm, title=title),
+        dict(data=data, title=title),
         context_instance=RequestContext(request)
     )
