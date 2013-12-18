@@ -32,11 +32,9 @@ exports.save = function (row) {
         // If they didn't change anything, just cancel it.
         return true;
     }
-    $.ajax({
-        type: 'POST',
+    channel.post({
         url: '/json/update_message',
         data: request,
-        dataType: 'json',
         success: function (data) {
             if (msg_list === current_msg_list) {
                 return true;
@@ -113,11 +111,9 @@ function edit_message (row, raw_content) {
 exports.start = function (row) {
     var message = current_msg_list.get(rows.id(row));
     var msg_list = current_msg_list;
-    $.ajax({
-        type: 'POST',
+    channel.post({
         url: '/json/fetch_raw_message',
         data: {message_id: message.id},
-        dataType: 'json',
         success: function (data) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;

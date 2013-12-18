@@ -68,20 +68,16 @@ exports.setup_page = function () {
     util.make_loading_indicator($('#admin_page_deactivated_users_loading_indicator'));
 
     // Populate users and bots tables
-    $.ajax({
-        type:     'GET',
+    channel.get({
         url:      '/json/users',
-        dataType: 'json',
         timeout:  10*1000,
         success: populate_users,
         error: failed_listing_users
     });
 
     // Populate streams table
-    $.ajax({
-        type:     'POST',
+    channel.post({
         url:      '/json/get_public_streams',
-        dataType: 'json',
         timeout:  10*1000,
         success: populate_streams,
         error: failed_listing_streams
@@ -126,8 +122,7 @@ exports.setup_page = function () {
         $(e.target).closest(".user_row").addClass("active_user_row");
 
         var email = $(".active_user_row").find('.email').text();
-        $.ajax({
-            type: 'POST',
+        channel.post({
             url: '/json/users/' + $(".active_user_row").find('.email').text() + "/reactivate",
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
@@ -159,8 +154,7 @@ exports.setup_page = function () {
         }
         $("#deactivation_user_modal").modal("hide");
         $(".active_user_row button").prop("disabled", true).text("Working…");
-        $.ajax({
-            type: 'DELETE',
+        channel.del({
             url: '/json/users/' + $(".active_user_row").find('.email').text(),
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
@@ -193,8 +187,7 @@ exports.setup_page = function () {
         }
         $("#deactivation_stream_modal").modal("hide");
         $(".active_stream_row button").prop("disabled", true).text("Working…");
-        $.ajax({
-            type: 'DELETE',
+        channel.del({
             url: '/json/streams/' + encodeURIComponent($(".active_stream_row").find('.stream_name').text()),
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {

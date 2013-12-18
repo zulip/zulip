@@ -27,7 +27,7 @@ var globals =
     + ' invite ui util activity timerender MessageList MessageListView blueslip unread stream_list'
     + ' message_edit tab_bar emoji popovers navigate settings'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
-    + ' Filter summary admin stream_data muting WinChan muting_ui Socket'
+    + ' Filter summary admin stream_data muting WinChan muting_ui Socket channel'
 
     // colorspace.js
     + ' colorspace'

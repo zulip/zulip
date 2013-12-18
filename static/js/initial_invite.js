@@ -188,12 +188,10 @@ $(document).ready(function () {
             $('#submit_invitation').attr('disabled', '');
             $('#submit_invitation').text("Inviting …");
 
-            $.ajax({
-                type: 'POST',
+            channel.post({
                 url: '/json/bulk_invite_users',
                 data: { invitee_emails: JSON.stringify(get_invitee_emails()),
                         csrfmiddlewaretoken: csrf_token },
-                dataType: 'json',
                 complete: function () {
                     // Redirect to home
                     window.location.href = "/";

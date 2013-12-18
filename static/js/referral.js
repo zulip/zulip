@@ -73,10 +73,8 @@ $(function () {
     var validator = $("#referral-form").validate({
         errorClass: 'text-error',
         submitHandler: function () {
-            $.ajax({
-                type: "POST",
+            channel.post({
                 url: "/json/refer_friend",
-                dataType: "json",
                 data: { email: $("#referral-form input").val() },
                 error: function () {
                     // We ignore errors from the server because

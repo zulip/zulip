@@ -156,8 +156,7 @@ function enable_event_handlers() {
 }
 
 function set_tutorial_status(status, callback) {
-    return $.ajax({
-        type:     'POST',
+    return channel.post({
         url:      '/json/tutorial_status',
         data:     {status: status},
         success:  callback

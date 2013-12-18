@@ -97,10 +97,8 @@ exports.stream = function () {
 };
 
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
-    $.ajax({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+    channel.post({
         url: '/json/report_narrow_time',
-        type: 'POST',
         data: {"initial_core": initial_core_time.toString(),
                "initial_free": initial_free_time.toString(),
                "network": network_time.toString()}

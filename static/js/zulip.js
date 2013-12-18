@@ -288,13 +288,11 @@ function batched_flag_updater(flag, op) {
     }
 
     function server_request() {
-        $.ajax({
-            type:     'POST',
+        channel.post({
             url:      '/json/update_message_flags',
             data:     {messages: JSON.stringify(queue),
                        op:       op,
                        flag:     flag},
-            dataType: 'json',
             success:  on_success
         });
     }
@@ -351,14 +349,12 @@ function mark_all_as_read(cont) {
     unread.declare_bankruptcy();
     update_unread_counts();
 
-    $.ajax({
-        type:     'POST',
+    channel.post({
         url:      '/json/update_message_flags',
         data:     {messages: JSON.stringify([]),
                    all:      true,
                    op:       'add',
                    flag:     'read'},
-        dataType: 'json',
         success:  cont});
 }
 
@@ -470,11 +466,9 @@ function respond_to_message(opts) {
 function update_pointer() {
     if (!pointer_update_in_flight) {
         pointer_update_in_flight = true;
-        return $.ajax({
-            type:     'POST',
+        return channel.post({
             url:      '/json/update_pointer',
             data:     {pointer: furthest_read},
-            dataType: 'json',
             success: function () {
                 server_furthest_read = furthest_read;
                 pointer_update_in_flight = false;
@@ -680,12 +674,10 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
         ids.push(elem.id);
     });
 
-    $.ajax({
-        type:     'POST',
+    channel.post({
         url:      '/json/messages_in_narrow',
         data:     {msg_ids: JSON.stringify(ids),
                    narrow:  JSON.stringify(narrow.public_operators())},
-        dataType: 'json',
         timeout:  5000,
         success: function (data) {
             if (msg_list !== current_msg_list) {
@@ -975,11 +967,9 @@ function get_updates(options) {
         clearTimeout(get_updates_timeout);
     }
     get_updates_timeout = undefined;
-    get_updates_xhr = $.ajax({
-        type:     'POST',
+    get_updates_xhr = channel.post({
         url:      '/json/get_events',
         data:     get_updates_params,
-        dataType: 'json',
         timeout:  page_params.poll_timeout,
         success: function (data) {
             get_updates_xhr = undefined;
@@ -1041,11 +1031,9 @@ function cleanup_event_queue() {
     if (page_params.event_queue_expired === true) {
         return;
     }
-    $.ajax({
-        type:     'DELETE',
+    channel.del({
         url:      '/json/events',
-        data:     {queue_id: page_params.event_queue_id},
-        dataType: 'json'
+        data:     {queue_id: page_params.event_queue_id}
     });
 }
 
@@ -1136,11 +1124,9 @@ function load_old_messages(opts) {
         data.narrow = JSON.stringify([["stream", page_params.narrow_stream]]);
     }
 
-    $.ajax({
-        type:     'POST',
+    channel.post({
         url:      '/json/get_old_messages',
         data:     data,
-        dataType: 'json',
         success: function (data) {
             get_old_messages_success(data, opts);
         },
@@ -1227,11 +1213,9 @@ $(function () {
 });
 
 function fast_forward_pointer() {
-    $.ajax({
-        type: 'POST',
+    channel.post({
         url: '/json/get_profile',
         data: {email: page_params.email},
-        dataType: 'json',
         success: function (data) {
             mark_all_as_read(function () {
                 furthest_read = data.max_message_id;

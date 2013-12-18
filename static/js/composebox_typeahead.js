@@ -338,10 +338,8 @@ exports.initialize = function () {
         // press Enter to send.
         $("#new_message_content").focus();
 
-        return $.ajax({
-            dataType: 'json',
+        return channel.post({
             url: '/json/change_enter_sends',
-            type: 'POST',
             data: {'enter_sends': page_params.enter_sends}
         });
     });

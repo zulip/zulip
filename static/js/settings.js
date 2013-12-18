@@ -40,9 +40,8 @@ $(function () {
         var spinner = $("#upload_avatar_spinner").expectOne();
         util.make_loading_indicator(spinner, {text: 'Uploading avatar.'});
 
-        $.ajax({
+        channel.post({
             url: '/json/set_avatar',
-            type: 'POST',
             data: form_data,
             cache: false,
             processData: false,
@@ -72,10 +71,8 @@ $(function () {
         $("#name_change_container").hide();
     }
 
-    $.ajax({
-        type: 'POST',
+    channel.post({
         url: '/json/get_bots',
-        dataType: 'json',
         success: function (data) {
             $('#bot_table_error').hide();
 
@@ -113,9 +110,8 @@ $(function () {
                 formData.append('file-'+i, file);
             });
             $('#create_bot_button').val('Adding bot...').prop('disabled', true);
-            $.ajax({
+            channel.post({
                 url: '/json/create_bot',
-                type: 'POST',
                 data: formData,
                 cache: false,
                 processData: false,
@@ -146,9 +142,8 @@ $(function () {
 
     $("#bots_list").on("click", "button.delete_bot", function (e) {
         var email = $(e.currentTarget).data('email');
-        $.ajax({
+        channel.del({
             url: '/json/users/' + encodeURIComponent(email),
-            type: 'DELETE',
             success: function () {
                 var row = $(e.currentTarget).closest("li");
                 row.hide('slow', function () { row.remove(); });
@@ -161,9 +156,8 @@ $(function () {
 
     $("#bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
         var email = $(e.currentTarget).data('email');
-        $.ajax({
+        channel.post({
             url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
-            type: 'POST',
             success: function (data) {
                 var row = $(e.currentTarget).closest("li");
                 row.find(".api_key").find(".value").text(data.api_key);
@@ -223,17 +217,13 @@ $(function () {
                 var formData = new FormData();
                 formData.append('full_name', full_name);
                 formData.append('csrfmiddlewaretoken', csrf_token);
-                // Send a PATCH as a POST in order to work around QtWebkit (Linux/Windows desktop app)
-                // not supporting PATCH body.
-                formData.append('method', 'PATCH');
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
                 });
                 util.make_loading_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
-                $.ajax({
+                channel.patch({
                     url: '/json/bots/' + encodeURIComponent(email),
-                    type: 'POST',
                     data: formData,
                     cache: false,
                     processData: false,
@@ -265,9 +255,8 @@ $(function () {
     });
 
     $("#show_api_key_box").on("click", "button.regenerate_api_key", function (e) {
-        $.ajax({
+        channel.post({
             url: '/json/users/me/api_key/regenerate',
-            type: 'POST',
             success: function (data) {
                 $('#api_key_value').text(data.api_key);
             },

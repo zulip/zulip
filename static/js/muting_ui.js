@@ -26,11 +26,9 @@ exports.persist_and_rerender = function () {
         muted_topics: JSON.stringify(muting.get_muted_topics())
     };
     last_topic_update = timestamp_ms();
-    $.ajax({
-        type: 'POST',
+    channel.post({
         url: '/json/set_muted_topics',
-        data: data,
-        dataType: 'json'
+        data: data
     });
 };
 

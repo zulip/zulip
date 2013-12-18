@@ -495,6 +495,7 @@ JS_SPECS = {
             'js/summary.js',
             'js/util.js',
             'js/dict.js',
+            'js/channel.js',
             'js/muting.js',
             'js/muting_ui.js',
             'js/setup.js',

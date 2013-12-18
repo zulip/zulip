@@ -15,11 +15,9 @@ $(function () {
             return word !== "";
         });
 
-        $.ajax({
-            type: 'POST',
+        channel.post({
             url: '/json/set_alert_words',
-            data: {alert_words: JSON.stringify(words)},
-            dataType: 'json'});
+            data: {alert_words: JSON.stringify(words)}});
     }
 
     function add_alert_word(word, event) {

@@ -684,13 +684,11 @@ function hack_for_floating_recipient_bar() {
 }
 
 function update_message_flag(messages, flag_name, set_flag) {
-    $.ajax({
-        type: 'POST',
+    channel.post({
         url: '/json/update_message_flags',
         data: {messages: JSON.stringify(_.pluck(messages, 'id')),
                op: set_flag ? 'add' : 'remove',
-               flag: flag_name},
-        dataType: 'json'});
+               flag: flag_name}});
 }
 
 function change_message_collapse(message, collapsed) {
@@ -1603,11 +1601,9 @@ $(function () {
                 return;
             }
 
-            $.ajax({
-                type:     'POST',
+            channel.post({
                 url:      "/accounts/webathena_kerberos_login/",
                 data:     {cred: JSON.stringify(r.session)},
-                dataType: 'json',
                 success: function (data, success) {
                     $("#zephyr-mirror-error").hide();
                 },

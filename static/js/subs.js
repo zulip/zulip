@@ -41,10 +41,8 @@ exports.stream_id = function (stream_name) {
 };
 
 function set_stream_property(stream_name, property, value) {
-    $.ajax({
-        type:     'POST',
+    return channel.post({
         url:      '/json/subscriptions/property',
-        dataType: 'json',
         data: {
             "property": property,
             "stream_name": stream_name,
@@ -431,14 +429,11 @@ exports.setup_page = function () {
     }
 
     if (should_list_all_streams()) {
-        var req = $.ajax({
-            type:     'POST',
+        var req = channel.post({
             url:      '/json/get_public_streams',
-            dataType: 'json',
             timeout:  10*1000,
             success: populate_and_fill,
             error: failed_listing
-
         });
     } else {
         populate_and_fill({streams: []});
@@ -471,10 +466,8 @@ function ajaxSubscribe(stream) {
     // Subscribe yourself to a single stream.
     var true_stream_name;
 
-    return $.ajax({
-        type: "POST",
+    return channel.post({
         url: "/json/subscriptions/add",
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
         data: {"subscriptions": JSON.stringify([{"name": stream}]) },
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
@@ -496,10 +489,8 @@ function ajaxSubscribe(stream) {
 }
 
 function ajaxUnsubscribe(stream) {
-    $.ajax({
-        type: "POST",
+    return channel.post({
         url: "/json/subscriptions/remove",
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
         data: {"subscriptions": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
             var name, res = $.parseJSON(xhr.responseText);
@@ -515,10 +506,8 @@ function ajaxUnsubscribe(stream) {
 
 function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
-    return $.ajax({
-        type: "POST",
+    return channel.post({
         url: "/json/subscriptions/add",
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
         data: {"subscriptions": JSON.stringify([{"name": stream}]),
                "principals": JSON.stringify(principals),
                "invite_only": JSON.stringify(invite_only),
@@ -590,10 +579,8 @@ function show_new_stream_modal() {
 }
 
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
-    $.ajax({
-        type: "POST",
+    return channel.post({
         url: "/json/subscriptions/add",
-        dataType: 'json',
         data: {"subscriptions": JSON.stringify([{"name": stream_name}]),
                "principals": JSON.stringify([user_email])},
         success: success,
@@ -798,10 +785,8 @@ $(function () {
 
         $("#subscriptions-status").hide();
 
-        $.ajax({
-            type: "POST",
+        channel.post({
             url: "/json/rename_stream",
-            dataType: 'json',
             data: {"old_name": old_name, "new_name": new_name},
             success: function (data) {
                 new_name_box.val('');
@@ -842,10 +827,8 @@ $(function () {
 
         util.make_loading_indicator(indicator_elem);
 
-        $.ajax({
-            type: "POST",
+        channel.post({
             url: "/json/get_subscribers",
-            dataType: 'json', // This seems to be ignored. We still get back an xhr.
             data: {stream: stream},
             success: function (data) {
                 util.destroy_loading_indicator(indicator_elem);

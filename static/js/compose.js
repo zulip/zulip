@@ -349,10 +349,8 @@ function compose_error(error_text, bad_input) {
 var send_options;
 
 function send_message_ajax(request, success) {
-    $.ajax({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+    channel.post({
         url: '/json/send_message',
-        type: 'POST',
         data: request,
         success: success,
         error: function (xhr, error_type) {
@@ -368,10 +366,8 @@ function send_message_ajax(request, success) {
 }
 
 function report_send_time(send_time, receive_time, display_time) {
-    $.ajax({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+    channel.post({
         url: '/json/report_send_time',
-        type: 'POST',
         data: {"time": send_time.toString(),
                "received": receive_time.toString(),
                "displayed": display_time.toString()}
@@ -569,8 +565,7 @@ exports.check_stream_existence = function (stream_name, autosubscribe) {
     if (autosubscribe) {
         request.autosubscribe = true;
     }
-    $.ajax({
-        type: "POST",
+    channel.post({
         url: "/json/subscriptions/exists",
         data: request,
         async: false,
