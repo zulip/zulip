@@ -11,6 +11,7 @@
         <th>Bots</th>
         <th>Hours per user</th>
         <th>Hours</th>
+        <th>Messages sent</th>
     </tr>
     </thead>
 
@@ -51,6 +52,11 @@
             {# Hours #}
             <td class="number">
                 {{ row.hours }}
+            </td>
+
+            {# Messages sent #}
+            <td>
+                {{ row.history }}
             </td>
 
         </tr>

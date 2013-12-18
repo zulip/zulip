@@ -8,6 +8,7 @@ from zerver.decorator import has_request_variables, REQ, zulip_internal
 from zerver.models import get_realm, UserActivity, UserActivityInterval, Realm
 from zerver.lib.timestamp import timestamp_to_datetime
 
+from collections import defaultdict
 from datetime import datetime, timedelta
 import itertools
 import time
@@ -38,6 +39,46 @@ def dictfetchall(cursor):
         dict(zip([col[0] for col in desc], row))
         for row in cursor.fetchall()
     ]
+
+
+def get_realm_day_counts():
+    query = '''
+        select
+            r.domain,
+            trunc(extract(epoch from now() - pub_date)/(24*3600)) age,
+            count(*) cnt
+        from zerver_message m
+        join zerver_userprofile up on up.id = m.sender_id
+        join zerver_realm r on r.id = up.realm_id
+        where
+            (not up.is_bot)
+        and
+            pub_date > now() - interval '8 day'
+        and
+            r.domain != 'zulip.com'
+        group by
+            r.domain,
+            age
+        order by
+            r.domain,
+            age
+    '''
+    cursor = connection.cursor()
+    cursor.execute(query)
+    rows = dictfetchall(cursor)
+    cursor.close()
+
+    counts = defaultdict(dict)
+    for row in rows:
+        counts[row['domain']][row['age']] = row['cnt']
+
+    result = {}
+    for domain in counts:
+        cnts = [counts[domain].get(age, 0) for age in reversed(range(8))]
+        cnts = ','.join(map(str, cnts))
+        result[domain] = dict(cnts=cnts)
+
+    return result
 
 def realm_summary_table(realm_minutes):
     query = '''
@@ -139,6 +180,14 @@ def realm_summary_table(realm_minutes):
     rows = dictfetchall(cursor)
     cursor.close()
 
+    # get messages sent per day
+    counts = get_realm_day_counts()
+    for row in rows:
+        try:
+            row['history'] = counts[row['domain']]['cnts']
+        except:
+            row['history'] = ''
+
     # augment data with realm_minutes
     total_hours = 0
     for row in rows:
@@ -165,6 +214,7 @@ def realm_summary_table(realm_minutes):
         total_user_profile_count += int(row['user_profile_count'])
         total_bot_count += int(row['bot_count'])
 
+
     rows.append(dict(
         domain='Total',
         active_user_count=total_active_user_count,
@@ -172,7 +222,6 @@ def realm_summary_table(realm_minutes):
         bot_count=total_bot_count,
         hours=int(total_hours)
     ))
-
 
     def meets_goal(row):
         # We don't count toward company goals for obvious reasons, and
