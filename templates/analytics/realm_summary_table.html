@@ -11,7 +11,7 @@
         <th>Bots</th>
         <th>Hours per user</th>
         <th>Hours</th>
-        <th>Messages sent</th>
+        <th colspan=8>Messages sent</th>
     </tr>
     </thead>
 
@@ -55,10 +55,11 @@
             </td>
 
             {# Messages sent #}
-            <td>
-                {{ row.history }}
-            </td>
-
+            {% if row.history %}
+                {{ row.history|safe }}
+            {% else %}
+                <td colspan=8></td>
+            {% endif %}
         </tr>
     {% endfor %}
     </tbody>

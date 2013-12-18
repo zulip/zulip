@@ -75,7 +75,7 @@ def get_realm_day_counts():
     result = {}
     for domain in counts:
         cnts = [counts[domain].get(age, 0) for age in reversed(range(8))]
-        cnts = ','.join(map(str, cnts))
+        cnts = ''.join('<td>%s</td>' % (cnt,) for cnt in cnts)
         result[domain] = dict(cnts=cnts)
 
     return result
