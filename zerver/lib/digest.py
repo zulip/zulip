@@ -124,8 +124,8 @@ def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
 
 def send_digest_email(user_profile, html_content, text_content):
     recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
-    subject = "While you've been gone: the Zulip Digest"
-    sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip Support'}
+    subject = "While you've been gone - Zulip"
+    sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
 
     # Send now, through Mandrill.
     send_future_email(recipients, html_content, text_content, subject,
