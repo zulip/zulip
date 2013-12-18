@@ -1329,7 +1329,7 @@ function main() {
         //
         // We fall back to the closest selected id, as the user may have removed
         // a stream from the home before already
-        if (home_msg_list.selected_id() === -1) {
+        if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
             home_msg_list.select_id(page_params.initial_pointer,
                 {then_scroll: true, use_closest: true});
         }
