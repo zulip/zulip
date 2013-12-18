@@ -38,3 +38,14 @@ tr.admin td:first-child {
     color: blue;
     font-size: 110%;
 }
+
+.good {
+    font-weight: bold;
+    color: #0a0;
+}
+
+.bad {
+    font-weight: bold;
+    color: #c00;
+}
+

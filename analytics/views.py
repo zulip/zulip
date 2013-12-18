@@ -72,10 +72,24 @@ def get_realm_day_counts():
     for row in rows:
         counts[row['domain']][row['age']] = row['cnt']
 
+
     result = {}
     for domain in counts:
         cnts = [counts[domain].get(age, 0) for age in reversed(range(8))]
-        cnts = ''.join('<td class="number">%s</td>' % (cnt,) for cnt in cnts)
+        min_cnt = min(cnts)
+        max_cnt = max(cnts)
+
+        def format_count(cnt):
+            if cnt == min_cnt:
+                good_bad = 'bad'
+            elif cnt == max_cnt:
+                good_bad = 'good'
+            else:
+                good_bad = 'neutral'
+
+            return '<td class="number %s">%s</td>' % (good_bad, cnt)
+
+        cnts = ''.join(map(format_count, cnts))
         result[domain] = dict(cnts=cnts)
 
     return result
