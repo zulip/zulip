@@ -806,10 +806,15 @@ def get_realm_activity(request, realm):
     content = sent_messages_report(realm)
     data += [(page_title, content)]
 
+    fix_name = lambda realm: realm.replace('.', '_')
+
+    realm_link = 'https://stats1.zulip.net:444/render/?from=-7days'
+    realm_link += '&target=stats.gauges.staging.users.active.%s.0_16hr' % (fix_name(realm),)
+
     title = realm
     return render_to_response(
         'analytics/activity.html',
-        dict(data=data, realm=realm, title=title),
+        dict(data=data, realm_link=realm_link, title=title),
         context_instance=RequestContext(request)
     )
 
