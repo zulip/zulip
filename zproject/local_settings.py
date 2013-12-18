@@ -76,9 +76,9 @@ elif STAGING_DEPLOYED:
     EXTERNAL_HOST = 'staging.zulip.com'
 elif DEPLOYED:
     EXTERNAL_HOST = 'zulip.com'
+    EXTERNAL_API_PATH = 'api.zulip.com'
 else:
     EXTERNAL_HOST = 'localhost:9991'
-    EXTERNAL_API_PATH = 'localhost:9991/api'
 
 EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
