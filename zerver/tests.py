@@ -4967,6 +4967,20 @@ class RateLimitTests(AuthedTestCase):
 class AlertWordTests(AuthedTestCase):
     interesting_alert_word_list = ['alert', 'multi-word word', '☃'.decode("utf-8")]
 
+    def test_internal_endpoint(self):
+        email = "cordelia@zulip.com"
+        self.login(email)
+
+        params = {
+            'alert_words': ujson.dumps(['milk', 'cookies'])
+        }
+        result = self.client.post('/json/set_alert_words', params)
+        self.assert_json_success(result)
+        user = get_user_profile_by_email(email)
+        words = user_alert_words(user)
+        self.assertEqual(words, ['milk', 'cookies'])
+
+
     def test_default_no_words(self):
         """
         Users start out with no alert words.
