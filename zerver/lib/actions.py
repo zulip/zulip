@@ -1894,9 +1894,17 @@ def build_message_list(user_profile, messages):
         # There's a small chance of colliding with non-Zulip URLs containing
         # "/user_uploads/", but we don't have much information about the
         # structure of the URL to leverage.
-        return re.sub(
+        content = re.sub(
             r"/user_uploads/(\S*)",
             settings.EXTERNAL_HOST + r"/user_uploads/\1", content)
+        # URLs for emoji are of the form
+        # "static/third/gemoji/images/emoji/snowflake.png".
+        content = re.sub(
+            r"static/third/gemoji/images/emoji/",
+            settings.EXTERNAL_HOST + r"/static/third/gemoji/images/emoji/",
+            content)
+
+        return content
 
     def fix_plaintext_image_urls(content):
         # Replace image URLs in plaintext content of the form
