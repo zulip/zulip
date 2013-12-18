@@ -24,7 +24,7 @@ var page_params = {{ page_params }};
     position: fixed;
     height: 100%;
     width: 100%;
-    padding: 0px;
+    padding: 10px;
     top: 0px;
     left: 0px;
 }
@@ -46,8 +46,8 @@ var page_params = {{ page_params }};
 {% endblock %}
 {% block content %}
 <div id="css-loading">
-    <h3>Loading CSS...</h3>
-    <p>If this message does not go away, please wait a couple seconds and reload the page.</p>
+    <h3>Loading...</h3>
+    <p>If this message does not go away, please wait a couple seconds and <a href="javascript:location.reload(true)">reload</a> the page.</p>
 </div>
 
 <div id="top-screen" class="screen"></div>
