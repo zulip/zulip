@@ -354,9 +354,11 @@ def accounts_register(request):
 # * subscribe the user to newsletter if newsletter_data is specified
 def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None):
     mit_beta_user = user_profile.realm.domain == "mit.edu"
-    if prereg_user is not None:
+    try:
         streams = prereg_user.streams.all()
-    else:
+    except AttributeError:
+        # This will catch both the case where prereg_user is None and where it
+        # is a MitUser.
         streams = []
 
     # If the user's invitation didn't explicitly list some streams, we
