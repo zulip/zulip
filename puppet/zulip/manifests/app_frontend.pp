@@ -84,6 +84,14 @@ class zulip::app_frontend {
     source => "puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams",
     notify => Service["nginx"],
   }
+  file { "/etc/nginx/zulip-include/uploads.types":
+    require => Package["nginx-full"],
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/nginx/zulip-include-frontend/uploads.types",
+    notify => Service["nginx"],
+  }
   file { "/etc/nginx/zulip-include/app.d/":
     ensure => directory,
     owner => "root",
