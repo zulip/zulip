@@ -51,6 +51,8 @@ def get_display_recipient(recipient):
 def flush_per_request_caches():
     global per_request_display_recipient_cache
     per_request_display_recipient_cache = {}
+    global per_request_realm_filters_cache
+    per_request_realm_filters_cache = {}
 
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
@@ -207,8 +209,16 @@ class RealmFilter(models.Model):
 def get_realm_filters_cache_key(domain):
     return 'all_realm_filters:%s' % (domain,)
 
-@cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
+# We have a per-process cache to avoid doing 1000 memcached queries during page load
+per_request_realm_filters_cache = {}
 def realm_filters_for_domain(domain):
+    domain = domain.lower()
+    if domain not in per_request_realm_filters_cache:
+        per_request_realm_filters_cache[domain] = realm_filters_for_domain_memcached(domain)
+    return per_request_realm_filters_cache[domain]
+
+@cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
+def realm_filters_for_domain_memcached(domain):
     filters = []
     for realm_filter in RealmFilter.objects.filter(realm=get_realm(domain)):
        filters.append((realm_filter.pattern, realm_filter.url_format_string))
@@ -225,6 +235,10 @@ def all_realm_filters():
 def update_realm_filter(sender, **kwargs):
     realm = kwargs['instance'].realm
     cache_delete(get_realm_filters_cache_key(realm.domain))
+    try:
+        per_request_realm_filters_cache.pop(realm.domain.lower())
+    except KeyError:
+        pass
 
 post_save.connect(update_realm_filter, sender=RealmFilter)
 post_delete.connect(update_realm_filter, sender=RealmFilter)
