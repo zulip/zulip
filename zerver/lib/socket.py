@@ -38,7 +38,7 @@ def get_user_profile(session_id):
 
     try:
         return UserProfile.objects.get(pk=session_store['_auth_user_id'])
-    except UserProfile.DoesNotExist:
+    except (UserProfile.DoesNotExist, KeyError):
         return None
 
 connections = dict()
