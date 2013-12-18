@@ -41,11 +41,13 @@ def check_bool(var_name, val):
         return '%s is not a boolean' % (var_name,)
     return None
 
-def check_list(sub_validator):
+def check_list(sub_validator, length=None):
     def f(var_name, val):
         if not isinstance(val, list):
             return '%s is not a list' % (var_name,)
 
+        if length is not None and length != len(val):
+            return '%s should have exactly %d items' % (var_name, length)
         for i, item in enumerate(val):
             vname = '%s[%d]' % (var_name, i)
             error = sub_validator(vname, item)

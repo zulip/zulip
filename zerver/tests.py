@@ -290,6 +290,10 @@ class ValidatorTestCase(TestCase):
         error = check_list(check_list(check_string))('x', x)
         self.assertEqual(error, 'x[1][2] is not a string')
 
+        x = ["hello", "goodbye", "hello again"]
+        error = check_list(check_string, length=2)('x', x)
+        self.assertEqual(error, 'x should have exactly 2 items')
+
     def test_check_dict(self):
         keys = [
             ('names', check_list(check_string)),
