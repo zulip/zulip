@@ -2380,7 +2380,7 @@ def remove_alert_words(request, user_profile,
 @authenticated_json_post_view
 @has_request_variables
 def json_set_muted_topics(request, user_profile,
-                         muted_topics=REQ(converter=json_to_list, default=[])):
+                         muted_topics=REQ(validator=check_list(check_list(check_string, length=2)), default=[])):
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()
 
