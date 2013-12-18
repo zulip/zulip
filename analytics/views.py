@@ -55,7 +55,7 @@ def get_realm_day_counts():
         and
             pub_date > now() - interval '8 day'
         and
-            r.domain != 'zulip.com'
+            r.domain not in ('zulip.com', 'mit.edu')
         group by
             r.domain,
             age
