@@ -1897,6 +1897,12 @@ def build_message_list(user_profile, messages):
         content = re.sub(
             r"/user_uploads/(\S*)",
             settings.EXTERNAL_HOST + r"/user_uploads/\1", content)
+
+        # Our proxying user-uploaded images seems to break inline images in HTML
+        # emails, so scrub the image but leave the link.
+        content = re.sub(
+            r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
+
         # URLs for emoji are of the form
         # "static/third/gemoji/images/emoji/snowflake.png".
         content = re.sub(
