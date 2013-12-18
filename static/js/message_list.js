@@ -142,6 +142,7 @@ MessageList.prototype = {
         opts = _.extend({
                 then_scroll: false,
                 use_closest: false,
+                empty_ok: false,
                 mark_read: true
             }, opts, {
                 id: id,
@@ -167,7 +168,7 @@ MessageList.prototype = {
                            {table_name: this.table_name, id: id});
         }
 
-        if (closest_id === -1) {
+        if (closest_id === -1 && !opts.empty_ok) {
             var error_data = {
                 table_name: this.table_name,
                 id: id,

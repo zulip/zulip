@@ -1303,6 +1303,9 @@ function main() {
 
     $(document).on('message_selected.zulip', function (event) {
         // Only advance the pointer when not narrowed
+        if (event.id === -1) {
+            return;
+        }
         if (event.msg_list === home_msg_list && page_params.narrow_stream === undefined) {
             if (event.id > furthest_read) {
                 furthest_read = event.id;
