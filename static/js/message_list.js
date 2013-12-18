@@ -86,7 +86,7 @@ MessageList.prototype = {
     },
 
     get: function MessageList_get(id) {
-        id = parseInt(id, 10);
+        id = parseFloat(id);
         if (isNaN(id)) {
             return undefined;
         }
@@ -150,7 +150,7 @@ MessageList.prototype = {
                 previously_selected: this._selected_id
             });
 
-        id = parseInt(id, 10);
+        id = parseFloat(id);
         if (isNaN(id)) {
             blueslip.fatal("Bad message id");
         }
@@ -262,7 +262,7 @@ MessageList.prototype = {
     _add_to_hash: function MessageList__add_to_hash(messages) {
         var self = this;
         messages.forEach(function (elem) {
-            var id = parseInt(elem.id, 10);
+            var id = parseFloat(elem.id);
             if (isNaN(id)) {
                 blueslip.fatal("Bad message id");
             }

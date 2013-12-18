@@ -36,7 +36,7 @@ exports.last_visible = function () {
 };
 
 exports.id = function (message_row) {
-    return parseInt(message_row.attr('zid'), 10);
+    return parseFloat(message_row.attr('zid'), 10);
 };
 
 var valid_table_names = {
