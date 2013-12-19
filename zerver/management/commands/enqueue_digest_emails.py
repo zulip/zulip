@@ -52,6 +52,33 @@ def queue_digest_recipient(user_profile, cutoff):
              "cutoff": cutoff.strftime('%s')}
     queue_json_publish("digest_emails", event, lambda event: None)
 
+def domains_for_this_deployment():
+    if settings.DEPLOYED and not settings.ENTERPRISE:
+        # Enterprise deployments don't have a Deployment entry.
+        # Only send zulip.com digests on staging.
+        from zilencer.models import Deployment
+        site_url = settings.EXTERNAL_URI_SCHEME + settings.EXTERNAL_HOST.rstrip("/")
+        try:
+            deployment = Deployment.objects.select_related('realms').get(
+                base_site_url__startswith=site_url)
+        except Deployment.DoesNotExist:
+            raise ValueError("digest: Unable to determine deployment.")
+
+        return (r.domain for r in deployment.realms.all())
+    # Enterprise and localhost.
+    return ()
+
+def should_process_digest(domain, deployment_domains):
+    if settings.ENTERPRISE:
+        # Enterprise. We ship with a zulip.com realm for the feedback bot, but
+        # don't try to send e-mails to it.
+        return domain != "zulip.com"
+    elif settings.DEPLOYED:
+        return domain in deployment_domains
+    else:
+        # Localhost.
+        return True
+
 class Command(BaseCommand):
     help = """Enqueue digest emails for users that haven't checked the app
 in a while.
@@ -63,7 +90,13 @@ in a while.
         if datetime.datetime.utcnow().weekday() not in VALID_DIGEST_DAYS:
             return
 
-        for domain in ["zulip.com"]:
+        digest_domains = ["zulip.com"]
+        deployment_domains = domains_for_this_deployment()
+
+        for domain in digest_domains:
+            if not should_process_digest(domain, deployment_domains):
+                continue
+
             user_profiles = UserProfile.objects.filter(
                 realm=get_realm(domain), is_active=True, is_bot=False,
                 enable_digest_emails=True)
