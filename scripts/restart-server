@@ -26,10 +26,15 @@ logging.info("Filling memcached caches")
 subprocess.check_call(["python", "./manage.py", "fill_memcached_caches"])
 
 # Restart the FastCGI and related processes via supervisorctl.
-logging.info("Killing daemons")
-subprocess.check_call(["supervisorctl", "stop", "zulip-workers:* zulip-django zulip-tornado"])
+logging.info("Stopping workers")
+subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*"])
+logging.info("Stopping server core")
+subprocess.check_call(["supervisorctl", "stop", "zulip-senders:* zulip-django zulip-tornado"])
 subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "current")])
-subprocess.check_call(["supervisorctl", "start", "zulip-tornado zulip-django zulip-workers:*"])
+logging.info("Starting server core")
+subprocess.check_call(["supervisorctl", "start", "zulip-tornado zulip-django zulip-senders:*"])
+logging.info("Starting workers")
+subprocess.check_call(["supervisorctl", "start", "zulip-workers:*"])
 
 using_sso = subprocess.check_output(['./bin/get-django-setting', 'USING_SSO'])
 if using_sso.strip() == 'True':
