@@ -1196,6 +1196,9 @@ var watchdog_time = $.now();
 setInterval(function () {
     var new_time = $.now();
     if ((new_time - watchdog_time) > 20000) { // 20 seconds.
+        // Defensively reset watchdog_time here in case there's an
+        // exception in one of the event handlers
+        watchdog_time = new_time;
         // Our app's JS wasn't running, which probably means the machine was
         // asleep.
         $(document).trigger($.Event('unsuspend'));
