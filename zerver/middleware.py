@@ -160,9 +160,11 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
                      logger_timing, extra_request_data, logger_client)
     logger.info(logger_line)
 
-    if time_delta >= 1 and path not in ["/activity",
-                                        "/json/report_error",
-                                        "/api/v1/deployments/report_error"]:
+    if (time_delta >= 1
+        and path not in ["/activity", "/json/report_error",
+                         "/api/v1/deployments/report_error"]
+        and not path.startswith("/realm_activity/")
+        and not path.startswith("/user_activity/")):
         queue_json_publish("slow_queries", "%s (%s)" % (logger_timing, email), lambda e: None)
 
     if settings.PROFILE_ALL_REQUESTS:
