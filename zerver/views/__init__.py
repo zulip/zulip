@@ -884,7 +884,7 @@ def is_buggy_ua(agent):
     just serve the more conservative CSS to all our desktop apps.
     """
     return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
-        not "Macintosh" in agent
+        not "Mac" in agent
 
 def get_pointer_backend(request, user_profile):
     return json_success({'pointer': user_profile.pointer})
