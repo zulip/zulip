@@ -302,7 +302,8 @@ def do_send_messages(messages):
 
             for um in ums_to_create:
                 sent_by_human = (message['message'].sending_client.name.lower() in \
-                                    ['website', 'ios', 'android']) or \
+                                    ['zulipandroid', 'zulipios', 'zulipdesktop',
+                                     'website', 'ios', 'android']) or \
                                 ('desktop app' in message['message'].sending_client.name.lower())
                 if um.user_profile.id == message['message'].sender.id and sent_by_human:
                     um.flags |= UserMessage.flags.read

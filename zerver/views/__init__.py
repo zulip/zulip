@@ -912,7 +912,7 @@ def update_pointer_backend(request, user_profile,
     user_profile.save(update_fields=["pointer"])
     request._log_data["extra"] = "[%s]" % (pointer,)
 
-    if request.client.name.lower() in ['android']:
+    if request.client.name.lower() in ['android', "zulipandroid"]:
         # Until we handle the new read counts in the Android app
         # natively, this is a shim that will mark as read any messages
         # up until the pointer move
