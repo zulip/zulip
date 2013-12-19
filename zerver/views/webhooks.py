@@ -145,7 +145,7 @@ def api_github_landing(request, user_profile, event=REQ,
     if user_profile.realm.domain == "customer14.invalid":
         subject = "GitHub"
 
-    request.client = get_client("github_bot")
+    request.client = get_client("ZulipGitHubWebhook")
     return send_message_backend(request, user_profile,
                                 message_type_name="stream",
                                 message_to=[stream],
@@ -349,7 +349,7 @@ def api_jira_webhook(request, user_profile):
             logging.warning("Got JIRA event type we don't understand: %s" % (event,))
         return json_error("Unknown JIRA event type")
 
-    check_send_message(user_profile, get_client("JIRA webhook"), "stream",
+    check_send_message(user_profile, get_client("ZulipJIRAWebhook"), "stream",
                        [stream], subject, content)
     return json_success()
 
@@ -417,7 +417,7 @@ def api_pivotal_webhook(request, user_profile):
     except AttributeError:
         return json_error("Failed to extract data from Pivotal XML response")
 
-    check_send_message(user_profile, get_client("Pivotal webhook"), "stream",
+    check_send_message(user_profile, get_client("ZulipPivotalWebhook"), "stream",
                        [stream], subject, content)
     return json_success()
 
@@ -465,7 +465,7 @@ def api_beanstalk_webhook(request, user_profile,
         subject = "svn r%s" % (revision,)
         content = "%s pushed [revision %s](%s):\n\n> %s" % (author, revision, url, short_commit_msg)
 
-    check_send_message(user_profile, get_client("Beanstalk webhook"), "stream",
+    check_send_message(user_profile, get_client("ZulipBeanstalkWebhook"), "stream",
                        ["commits"], subject, content)
     return json_success()
 
@@ -480,7 +480,7 @@ def api_beanstalk_webhook(request, user_profile,
 def api_deskdotcom_webhook(request, user_profile, data=REQ(),
                            topic=REQ(default="Desk.com notification"),
                            stream=REQ(default="desk.com")):
-    check_send_message(user_profile, get_client("Desk webhook"), "stream",
+    check_send_message(user_profile, get_client("ZulipDeskWebhook"), "stream",
                        [stream], topic, data)
     return json_success()
 
@@ -508,7 +508,7 @@ def api_newrelic_webhook(request, user_profile, alert=REQ(converter=json_to_dict
     else:
         return json_error("Unknown webhook request")
 
-    check_send_message(user_profile, get_client("NewRelic webhook"), "stream",
+    check_send_message(user_profile, get_client("ZulipNewRelicWebhook"), "stream",
                        [stream], subject, content)
     return json_success()
 
@@ -535,7 +535,7 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_d
         content = build_commit_list_content(commits, branch, None, payload['user'])
         subject += '/%s' % (branch,)
 
-    check_send_message(user_profile, get_client("BitBucket webhook"), "stream",
+    check_send_message(user_profile, get_client("ZulipBitBucketWebhook"), "stream",
                        [stream], subject, content)
     return json_success()
 
@@ -573,7 +573,7 @@ def api_stash_webhook(request, user_profile, stream=REQ(default='')):
     content += "\n".join("* `%s`: %s" % (
             commit[0], commit[1]) for commit in commits)
 
-    check_send_message(user_profile, get_client("Stash webhook"), "stream",
+    check_send_message(user_profile, get_client("ZulipStashWebhook"), "stream",
                        [stream], subject, content)
     return json_success()
 
@@ -701,6 +701,6 @@ def api_freshdesk_webhook(request, user_profile, stream=REQ(default='')):
         # Not an event we know handle; do nothing.
         return json_success()
 
-    check_send_message(user_profile, get_client("Freshdesk webhook"), "stream",
+    check_send_message(user_profile, get_client("ZulipFreshdeskWebhook"), "stream",
                        [stream], subject, content)
     return json_success()
