@@ -75,7 +75,7 @@ def get_realm_day_counts():
 
     result = {}
     for domain in counts:
-        cnts = [counts[domain].get(age, 0) for age in reversed(range(8))]
+        cnts = [counts[domain].get(age, 0) for age in range(8)]
         min_cnt = min(cnts)
         max_cnt = max(cnts)
 
