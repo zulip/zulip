@@ -94,15 +94,34 @@ def require_realm_admin(func):
         return func(request, user_profile, *args, **kwargs)
     return wrapper
 
-default_clients = {}
+from zerver.lib.user_agent import parse_user_agent
 
-def process_client(request, user_profile, default):
+def process_client(request, user_profile, is_json_view=False):
+    # If the API request specified a client in the request content,
+    # that has priority.  Otherwise, extract the client from the
+    # User-Agent.
     if 'client' in request.REQUEST:
         request.client = get_client(request.REQUEST['client'])
+    elif "HTTP_USER_AGENT" not in request.META:
+        # In the future, we will require setting USER_AGENT, but for
+        # now we just want to tag these requests so we can review them
+        # in logs and figure out the extent of the problem
+        if is_json_view:
+            request.client = get_client("website")
+        else:
+            request.client = get_client("Unspecified")
     else:
-        if default not in default_clients:
-            default_clients[default] = get_client(default)
-        request.client = default_clients[default]
+        user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
+        # We could check for a browser's name being "Mozilla", but
+        # e.g. Opera and MobileSafari don't set that, and it seems
+        # more robust to just key off whether it was a json view
+        if user_agent["name"] != "ZulipDesktop" and is_json_view:
+            # Avoid changing the client string for browsers Once this
+            # is out to prod, we can name the field to something like
+            # Browser for consistency.
+            request.client = get_client("website")
+        else:
+            request.client = get_client(user_agent["name"])
 
     update_user_activity(request, user_profile)
 
@@ -142,7 +161,7 @@ def api_key_only_webhook_view(view_func):
 
         request.user = user_profile
         request._email = user_profile.email
-        process_client(request, user_profile, "API")
+        process_client(request, user_profile)
         rate_limit_user(request, user_profile, domain='all')
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
@@ -156,7 +175,7 @@ def zulip_internal(view_func):
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
         request._email = request.user.email
-        process_client(request, request.user, "website")
+        process_client(request, request.user)
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
@@ -179,7 +198,7 @@ def authenticated_api_view(view_func):
         user_profile = validate_api_key(email, api_key)
         request.user = user_profile
         request._email = user_profile.email
-        process_client(request, user_profile, "API")
+        process_client(request, user_profile)
         # Apply rate limiting
         limited_func = rate_limit()(view_func)
         return limited_func(request, user_profile, *args, **kwargs)
@@ -212,7 +231,7 @@ def authenticated_rest_api_view(view_func):
         except JsonableError, e:
             return json_unauthorized(e.error)
         request.user = profile
-        process_client(request, profile, "API")
+        process_client(request, profile)
         if isinstance(profile, UserProfile):
             request._email = profile.email
         else:
@@ -252,7 +271,7 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
     user_profile = request.user
-    process_client(request, user_profile, "website")
+    process_client(request, user_profile, True)
     request._email = user_profile.email
     return view_func(request, user_profile, *args, **kwargs)
 
