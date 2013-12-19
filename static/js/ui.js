@@ -700,26 +700,33 @@ function sync_message_star(message, starred) {
     sync_message_flag([message], "starred", starred);
 }
 
+function update_message_in_all_views(message_id, callback) {
+    _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (list) {
+        if (list === undefined) {
+            return;
+        }
+        var row = list.get_row(message_id);
+        if (row === undefined) {
+            // The row may not exist, e.g. if you do an action on a message in
+            // a narrowed view
+            return;
+        }
+        callback(row);
+    });
+}
+
 exports.update_starred = function (message_id, starred) {
+    // Update the message object pointed to by the various message
+    // lists.
+    var message = current_msg_list.get(message_id);
+
+    mark_message_as_read(message);
+
+    message.starred = message.starred !== true;
+
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (msg_list) {
-        if (msg_list === undefined) {
-            return;
-        }
-
-        var message = msg_list.get(message_id);
-        if (message === undefined) {
-            return;
-        }
-        message.starred = starred;
-
-        var row = msg_list.get_row(message.id);
-        if (row === undefined) {
-            // The row may not exist, e.g. if you star a message in the all
-            // messages table from a stream that isn't in your home view.
-            return;
-        }
+    update_message_in_all_views(message_id, function update_row(row) {
         var elt = row.find(".message_star");
         if (starred) {
             elt.addClass("icon-vector-star").removeClass("icon-vector-star-empty").removeClass("empty-star");
@@ -739,6 +746,35 @@ function toggle_star(message_id) {
     exports.update_starred(message.id, message.starred !== true);
     sync_message_star(message, message.starred);
 }
+
+var local_messages_to_show = [];
+var show_message_timestamps = _.throttle(function () {
+    _.each(local_messages_to_show, function (message_id) {
+        update_message_in_all_views(message_id, function update_row(row) {
+            row.find('.message_time').toggleClass('notvisible', false);
+        });
+    });
+    local_messages_to_show = [];
+}, 100);
+
+exports.show_local_message_arrived = function (message_id) {
+    local_messages_to_show.push(message_id);
+    show_message_timestamps();
+};
+
+exports.show_message_failed = function (message_id) {
+    // Failed to send message, so display inline retry/cancel
+    update_message_in_all_views(message_id, function update_row(row) {
+        row.find('.message_failed').toggleClass('notvisible', false);
+    });
+};
+
+exports.show_failed_message_success = function (message_id) {
+    // Previously failed message succeeded
+    update_message_in_all_views(message_id, function update_row(row) {
+        row.find('.message_failed').toggleClass('notvisible', true);
+    });
+};
 
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px

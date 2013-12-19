@@ -320,18 +320,18 @@ function message_range(msg_list, start, end) {
 
 function batched_flag_updater(flag, op) {
     var queue = [];
-
-    function on_success(data, status, jqXHR) {
-        queue = _.filter(queue, function (message) {
-            return data.messages.indexOf(message) === -1;
-        });
-    }
+    var on_success;
 
     function server_request() {
+        // Wait for server IDs before sending flags
+        var real_msgs = _.filter(queue, function (msg) {
+            return msg.local_id === undefined;
+        });
+
         channel.post({
             url:      '/json/update_message_flags',
             idempotent: true,
-            data:     {messages: JSON.stringify(queue),
+            data:     {messages: JSON.stringify(real_msgs),
                        op:       op,
                        flag:     flag},
             success:  on_success
@@ -339,6 +339,20 @@ function batched_flag_updater(flag, op) {
     }
 
     var start = _.debounce(server_request, 1000);
+
+    on_success = function on_success(data, status, jqXHR) {
+        if (data ===  undefined || data.messages === undefined) {
+            return;
+        }
+
+        queue = _.filter(queue, function (message) {
+            return data.messages.indexOf(message) === -1;
+        });
+
+        if (queue.length > 0) {
+            start();
+        }
+    };
 
     function add(message) {
         if (message.flags === undefined) {
@@ -900,6 +914,9 @@ function get_updates_success(data) {
         case 'message':
             var msg = event.message;
             msg.flags = event.flags;
+            if (event.local_message_id !== undefined) {
+                msg.local_id = event.local_message_id;
+            }
             messages.push(msg);
             break;
         case 'pointer':
@@ -995,6 +1012,7 @@ function get_updates_success(data) {
     });
 
     if (messages.length !== 0) {
+        messages = echo.process_from_server(messages);
         insert_new_messages(messages);
     }
 
@@ -1356,8 +1374,11 @@ function main() {
         if (event.id === -1) {
             return;
         }
+        // Additionally, don't advance the pointer server-side
+        // if the selected message is local-only
         if (event.msg_list === home_msg_list && page_params.narrow_stream === undefined) {
-            if (event.id > furthest_read) {
+            if (event.id > furthest_read &&
+                home_msg_list.get(event.id).local_id === undefined) {
                 furthest_read = event.id;
             }
         }
@@ -1429,6 +1450,36 @@ function main() {
     } else {
         get_updates();
     }
+
+    $(document).on('message_id_changed', function (event) {
+        var old_id = event.old_id, new_id = event.new_id;
+        if (furthest_read === old_id) {
+            furthest_read = new_id;
+        }
+        if (get_updates_params.pointer === old_id) {
+            get_updates_params.pointer = new_id;
+        }
+        if (msg_metadata_cache[old_id]) {
+            msg_metadata_cache[new_id] = msg_metadata_cache[old_id];
+            delete msg_metadata_cache[old_id];
+        }
+
+        // This handler cannot be in the MessageList constructor, which is the logical place
+        // If it's there, the event handler creates a closure with a reference to the message
+        // list itself. When narrowing, the old narrow message list is discarded and a new one
+        // created, but due to the closure, the old list is not garbage collected. This also leads
+        // to the old list receiving the change id events, and throwing errors as it does not
+        // have the messages that you would expect in its internal data structures.
+        _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (msg_list) {
+            if (msg_list !== undefined) {
+                msg_list.change_message_id(old_id, new_id);
+
+                if (msg_list.view !== undefined) {
+                    msg_list.view.change_message_id(old_id, new_id);
+                }
+            }
+        });
+    });
 }
 
 function install_main_scroll_handler() {

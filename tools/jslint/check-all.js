@@ -4,7 +4,7 @@
 var globals =
     // Third-party libraries
       ' $ _ jQuery Spinner Handlebars XDate zxcvbn Intl mixpanel Notification'
-    + ' LazyLoad Dropbox SockJS'
+    + ' LazyLoad Dropbox SockJS marked'
 
     // Node-based unit tests
     + ' module'
@@ -40,6 +40,9 @@ var globals =
 
     // alert_words.js
     + ' alert_words'
+
+    // echo.js
+    + ' echo'
 
     // zulip.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'

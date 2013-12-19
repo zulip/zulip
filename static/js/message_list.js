@@ -24,6 +24,7 @@ function MessageList(table_name, filter, opts) {
 
     this.num_appends = 0;
     this.min_id_exempted_from_summaries = -1;
+
     return this;
 }
 
@@ -514,6 +515,64 @@ MessageList.prototype = {
             }
         });
         this.view.rerender_the_whole_thing();
+    },
+
+    change_message_id: function MessageList_change_message_id(old_id, new_id) {
+        // Update our local cache that uses the old id to the new id
+        function message_sort_func(a, b) {return a.id - b.id;}
+
+        function is_local_only(message) {
+            return message.id % 1 !== 0;
+        }
+
+        function next_nonlocal_message(item_list, start_index, op) {
+            var cur_idx = start_index;
+            do {
+                cur_idx = op(cur_idx);
+            } while(item_list[cur_idx] !== undefined && is_local_only(item_list[cur_idx]));
+            return item_list[cur_idx];
+        }
+
+        if (this._hash.hasOwnProperty(old_id)) {
+            var value = this._hash[old_id];
+            delete this._hash[old_id];
+            this._hash[new_id] = value;
+        }
+
+        if (this._selected_id === old_id) {
+            this._selected_id = new_id;
+        }
+
+        if (this.min_id_exempted_from_summaries === old_id) {
+            this.min_id_exempted_from_summaries = new_id;
+        }
+
+        // If this message is now out of order, re-order and re-render
+        var self = this;
+        setTimeout(function () {
+            var current_message = self._hash[new_id];
+            var index = self._items.indexOf(current_message);
+
+            if (index === -1) {
+                if ( !self.muting_enabled && current_msg_list === self) {
+                    blueslip.error("Trying to re-order message but can't find message with new_id in _items!");
+                }
+                return;
+            }
+
+            var next = next_nonlocal_message(self._items, index, function (idx) { return idx + 1; });
+            var prev = next_nonlocal_message(self._items, index, function (idx) { return idx - 1; });
+
+            if ((next !== undefined && current_message.id > next.id) ||
+                (prev !== undefined && current_message.id < prev.id)) {
+                blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
+                self._items.sort(message_sort_func);
+                if (self.muting_enabled) {
+                    self._all_items.sort(message_sort_func);
+                }
+                self.view.rerender_the_whole_thing();
+            }
+        }, 0);
     }
 };
 

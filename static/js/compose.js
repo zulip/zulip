@@ -290,12 +290,14 @@ function create_message_object() {
 
     var content = make_uploads_relative(compose.message_content());
 
+    // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {client: client(),
                    type: compose.composing(),
                    subject: subject,
                    stream: compose.stream_name(),
                    private_message_recipient: compose.recipient(),
-                   content: content};
+                   content: content,
+                   queue_id: page_params.event_queue_id};
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -359,7 +361,7 @@ function compose_error(error_text, bad_input) {
 
 var send_options;
 
-function send_message_ajax(request, success) {
+function send_message_ajax(request, success, error) {
     channel.post({
         url: '/json/send_message',
         data: request,
@@ -370,8 +372,9 @@ function send_message_ajax(request, success) {
                 reload.initiate({immediate: true, send_after_reload: true});
                 return;
             }
+
             var response = util.xhr_error_message("Error sending message", xhr);
-            compose_error(response, $('#new_message_content'));
+            error(response);
         }
     });
 }
@@ -392,13 +395,13 @@ if (feature_flags.use_socket) {
 // For debugging.  The socket will eventually move out of this file anyway.
 exports._socket = socket;
 
-function send_message_socket(request, success) {
+function send_message_socket(request, success, error) {
     socket.send(request, success, function (type, resp) {
         var err_msg = "Error sending message";
         if (type === 'response') {
             err_msg += ": " + resp.msg;
         }
-        compose_error(err_msg, $('#new_message_content'));
+        error(err_msg);
     });
 }
 
@@ -459,6 +462,33 @@ function clear_compose_box() {
     ui.resize_bottom_whitespace();
 }
 
+exports.send_message_success = function (local_id, message_id, start_time) {
+    if (! feature_flags.local_echo) {
+        clear_compose_box();
+    }
+
+    process_send_time(message_id, start_time);
+
+    if (feature_flags.local_echo) {
+        echo.reify_message_id(local_id, message_id);
+    }
+
+    setTimeout(function () {
+        if (exports.send_times_data[message_id].received === undefined) {
+            blueslip.error("Restarting get_updates due to delayed receipt of sent message " + message_id);
+            restart_get_updates();
+        }
+    }, 5000);
+};
+
+exports.transmit_message = function (request, success, error) {
+    if (feature_flags.use_socket) {
+        send_message_socket(request, success, error);
+    } else {
+        send_message_ajax(request, success, error);
+    }
+};
+
 function send_message(request) {
     if (request === undefined) {
         request = create_message_object();
@@ -472,27 +502,32 @@ function send_message(request) {
     }
 
     var start_time = new Date();
-    function success(data) {
-        var message_id = data.id;
-        process_send_time(message_id, start_time);
+    var local_id;
+    if (feature_flags.local_echo) {
+        local_id = echo.try_deliver_locally(request);
+        if (local_id !== undefined) {
+            // We delivered this message locally
+            request.local_id = local_id;
+        }
+    }
 
-        if (! feature_flags.local_echo) {
-            clear_compose_box();
+    function success(data) {
+        exports.send_message_success(local_id, data.id, start_time);
+    }
+
+    function error(response) {
+        // If we're not local echo'ing messages, or if this message was not
+        // locally echoed, show error in compose box
+        if (!feature_flags.local_echo || request.local_id === undefined) {
+            compose_error(response, $('#new_message_content'));
+            return;
         }
 
-        setTimeout(function () {
-            if (exports.send_times_data[message_id].received === undefined) {
-                blueslip.error("Restarting get_updates due to delayed receipt of sent message " + message_id);
-                restart_get_updates();
-            }
-        }, 5000);
+        echo.message_send_error(local_id);
     }
 
-    if (feature_flags.use_socket) {
-        send_message_socket(request, success);
-    } else {
-        send_message_ajax(request, success);
-    }
+    exports.transmit_message(request, success, error);
+
     if (get_updates_xhr === undefined && get_updates_timeout === undefined) {
         restart_get_updates({dont_block: true});
         blueslip.error("Restarting get_updates because it was not running during send");
@@ -926,6 +961,14 @@ $(function () {
             compose.start("stream", {});
         }
     }
+
+    $(document).on('message_id_changed', function (event) {
+        if (exports.send_times_data[event.old_id] !== undefined) {
+            var value = exports.send_times_data[event.old_id];
+            delete exports.send_times_data[event.old_id];
+            exports.send_times_data[event.new_id] = _.extend({}, exports.send_times_data[event.old_id], value);
+        }
+    });
 });
 
 return exports;

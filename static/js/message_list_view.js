@@ -695,8 +695,32 @@ MessageListView.prototype = {
 
     get_message: function MessageListView_get_message(id) {
         return this.list.get(id);
-    }
+    },
 
+    change_message_id: function MessageListView_change_message_id(old_id, new_id) {
+        if (this._rows[old_id] !== undefined) {
+            var row = this._rows[old_id];
+            delete this._rows[old_id];
+
+            var prev_recipient_row = $(row).prev('.recipient_row');
+            if (prev_recipient_row.length > 0 &&
+                parseFloat(prev_recipient_row.attr('zid')) === old_id) {
+                prev_recipient_row.attr('zid', new_id);
+
+                var messages = prev_recipient_row.attr('data-messages').split();
+                var fixed_messages = _.map(messages, function (msgid) {
+                    if (parseFloat(msgid) === old_id) {
+                        return String(new_id);
+                    }
+                });
+                prev_recipient_row.attr('data-messages', fixed_messages.join(" "));
+
+            }
+            row.setAttribute('zid', new_id);
+            row.setAttribute('id', this.table_name + new_id);
+            this._rows[new_id] = row;
+        }
+    }
 };
 
 }());

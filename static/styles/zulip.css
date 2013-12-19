@@ -1066,6 +1066,24 @@ just a temporary hack.
     color: #0088CC;
 }
 
+.message_failed,
+.message_local {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.message_failed {
+    font-weight: bold;
+    color: red;
+    padding: 0px 1px 0px 1px;
+}
+
+.message_failed i {
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
 a.message_label_clickable:hover {
     cursor: pointer;
     color: #08C;
