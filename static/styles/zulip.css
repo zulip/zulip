@@ -255,6 +255,19 @@ code {
     font-size: 0.857em;
 }
 
+.codehilite {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+}
+
+.codehilite pre {
+    width: 100%;
+    margin-left: -5000px;
+    position: relative;
+    left: 5000px;
+}
+
 pre {
     /* 12/14 em, so bootstrap's default 12 px,
        when body is the default 14 px */
