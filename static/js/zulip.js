@@ -655,19 +655,6 @@ function add_messages(messages, msg_list, messages_are_new) {
     }
 }
 
-function deduplicate_messages(messages) {
-    var new_message_ids = {};
-    return _.filter(messages, function (msg) {
-        if (new_message_ids[msg.id] === undefined
-            && all_msg_list.get(msg.id) === undefined)
-        {
-            new_message_ids[msg.id] = true;
-            return true;
-        }
-        return false;
-    });
-}
-
 function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
     var ids = [];
     _.each(messages, function (elem) {
@@ -772,11 +759,6 @@ function update_messages(events) {
 }
 
 function insert_new_messages(messages) {
-    // There is a known bug (#1062) in our backend
-    // whereby duplicate messages are delivered during a
-    // server update.  Once that bug is fixed, this
-    // should no longer be needed
-    messages = deduplicate_messages(messages);
     messages = _.map(messages, add_message_metadata);
 
     if (feature_flags.summarize_read_while_narrowed) {
