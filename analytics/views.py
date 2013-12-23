@@ -219,6 +219,16 @@ def realm_summary_table(realm_minutes):
     for row in rows:
         row['domain'] = realm_activity_link(row['domain'])
 
+    # Count active sites
+    def meets_goal(row):
+        # We don't count toward company goals for obvious reasons, and
+        # customer4.invalid is essentially a dup for users.customer4.invalid.
+        if row['domain'] in ['zulip.com', 'customer4.invalid', 'wdaher.com']:
+            return False
+        return row['active_user_count'] >= 5
+
+    num_active_sites = len(filter(meets_goal, rows))
+
     # create totals
     total_active_user_count = 0
     total_user_profile_count = 0
@@ -236,15 +246,6 @@ def realm_summary_table(realm_minutes):
         bot_count=total_bot_count,
         hours=int(total_hours)
     ))
-
-    def meets_goal(row):
-        # We don't count toward company goals for obvious reasons, and
-        # customer4.invalid is essentially a dup for users.customer4.invalid.
-        if row['domain'] in ['zulip.com', 'customer4.invalid', 'wdaher.com']:
-            return False
-        return row['active_user_count'] >= 5
-
-    num_active_sites = len(filter(meets_goal, rows))
 
     content = loader.render_to_string(
         'analytics/realm_summary_table.html',
