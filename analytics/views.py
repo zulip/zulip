@@ -240,7 +240,7 @@ def realm_summary_table(realm_minutes):
     def meets_goal(row):
         # We don't count toward company goals for obvious reasons, and
         # customer4.invalid is essentially a dup for users.customer4.invalid.
-        if row['domain'] in ['zulip.com', 'customer4.invalid']:
+        if row['domain'] in ['zulip.com', 'customer4.invalid', 'wdaher.com']:
             return False
         return row['active_user_count'] >= 5
 
