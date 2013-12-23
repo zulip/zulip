@@ -21,9 +21,9 @@ import re
 import ujson
 from functools import wraps
 
-def github_generic_subject(noun, repository, blob):
+def github_generic_subject(noun, topic_focus, blob):
     # issue and pull_request objects have the same fields we're interested in
-    return "%s: %s %d: %s" % (repository['name'], noun, blob['number'], blob['title'])
+    return "%s: %s %d: %s" % (topic_focus, noun, blob['number'], blob['title'])
 
 def github_generic_content(noun, payload, blob):
     # issue and pull_request objects have the same fields we're interested in
@@ -57,10 +57,18 @@ def api_github_landing(request, user_profile, event=REQ,
     if not stream:
         stream = 'commits'
 
+    # short_ref is typically a branch, but some events (like comments) don't
+    # have one.
+    short_ref = re.sub(r'^refs/heads/', '', payload.get('ref', ""))
+
+    topic_focus = repository["name"]
+    if (user_profile.realm.domain == "customer26.invalid") and short_ref:
+        topic_focus = short_ref
+
     # CUSTOMER18 has requested not to get pull request notifications
     if event == 'pull_request' and user_profile.realm.domain not in ['customer18.invalid']:
         pull_req = payload['pull_request']
-        subject = github_generic_subject('pull request', repository, pull_req)
+        subject = github_generic_subject('pull request', topic_focus, pull_req)
         content = github_generic_content('pull request', payload, pull_req)
     elif event == 'issues':
         if user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
@@ -71,7 +79,7 @@ def api_github_landing(request, user_profile, event=REQ,
 
         stream = 'issues'
         issue = payload['issue']
-        subject = github_generic_subject('issue', repository, issue)
+        subject = github_generic_subject('issue', topic_focus, issue)
         content = github_generic_content('issue', payload, issue)
     elif event == 'issue_comment':
         if user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
@@ -90,7 +98,7 @@ def api_github_landing(request, user_profile, event=REQ,
             # It's a pull request comment
             noun = 'pull request'
 
-        subject = github_generic_subject(noun, repository, issue)
+        subject = github_generic_subject(noun, topic_focus, issue)
         comment = payload['comment']
         content = ("%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~"
                    % (comment['user']['login'],
@@ -103,7 +111,6 @@ def api_github_landing(request, user_profile, event=REQ,
         if user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
             return json_success()
 
-        short_ref = re.sub(r'^refs/heads/', '', payload['ref'])
         # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
         # get spammed when people commit to non-master all over the place.
         # Long-term, this will be replaced by some GitHub configuration
@@ -118,14 +125,14 @@ def api_github_landing(request, user_profile, event=REQ,
                 return json_success()
 
 
-        subject, content = build_message_from_gitlog(user_profile, repository['name'],
+        subject, content = build_message_from_gitlog(user_profile, topic_focus,
                                                      payload['ref'], payload['commits'],
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
                                                      payload['pusher']['name'])
     elif event == 'commit_comment':
         comment = payload['comment']
-        subject = "%s: commit %s" % (repository['name'], comment['commit_id'])
+        subject = "%s: commit %s" % (topic_focus, comment['commit_id'])
 
         content = ("%s [commented](%s)"
                    % (comment['user']['login'],
