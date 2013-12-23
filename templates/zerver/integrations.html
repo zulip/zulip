@@ -769,28 +769,30 @@
 
     <div id="github" class="integration-instructions">
 
-
       <p>First, create the stream you'd like to use for GitHub notifications,
       and subscribe all interested parties to this stream. The integration will
       use the default stream <code>commits</code> if no stream is supplied in
       the hook; you still need to create the stream even if you are using this
       default.</p>
 
-      <p>Next, go to your repository page and click "Settings":</p>
+      <p>Next, go to your repository page and click <b>"Settings"</b>:</p>
       <img src="/static/images/integrations/github/001.png" />
 
-      <p>From there, select "Service Hooks":</p>
+      <p>From there, select <b>"Service Hooks"</b>:</p>
       <img src="/static/images/integrations/github/002.png" />
 
-      <p>Select "Humbug" from the list, fill in the API key and email
-      address for your bot, check the "active" checkbox, and pick
-      "Update settings":</p>
-      <img src="/static/images/integrations/github/003.png" />
+      <p>Select <b>"Humbug"</b> from the list of service hooks. Fill in the API
+      key and email address for your bot and check the <b>"active"</b>
+      checkbox. You can optionally supply the Zulip stream (the default
+      is <code>commits</code>) and restrict Zulip notifications to a specified
+      set of branches.</p>
 
-      <p><b>Congratulations! You're done!</b><br /> When people push to your
-      repository, you'll see a commit message like the following, to the
-      stream <code>commits</code> with a topic that matches the repository name
-      (in this case "humbug-test"):</p>
+      <p>Click the <b>"Update settings"</b> button to complete the
+      configuration:</p> <img src="/static/images/integrations/github/003.png"
+      />
+
+      <p><b>Congratulations! You're done!</b><br /> When team members push to
+      your repository, you'll get a Zulip notification that looks like this:</p>
 
       <img class="screenshot" src="/static/images/integrations/github/004.png" />
 
