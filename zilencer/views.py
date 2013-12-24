@@ -33,16 +33,15 @@ def submit_feedback(request, deployment, message=REQ(converter=json_to_dict)):
     domainish = message["sender_domain"]
     if get_realm("zulip.com") not in deployment.realms.all():
         domainish += " via " + deployment.name
-    subject = "feedback: %s (%s)" % (message["sender_email"], domainish)
+    subject = "%s" % (message["sender_email"],)
 
     if len(subject) > 60:
         subject = subject[:57].rstrip() + "..."
 
 
     ticket_number = get_ticket_number()
-    content = '@support, Please ack this new request.'
-    content += '\n~~~'
-    content += '\nticket Z%03d' % (ticket_number,)
+    content = '\n~~~'
+    content += '\nticket Z%03d (@support please ack)' % (ticket_number,)
     content += '\nsender: %s' % (message['sender_full_name'],)
     content += '\nemail: %s' % (message['sender_email'],)
     if 'sender_domain' in message:
