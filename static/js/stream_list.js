@@ -258,10 +258,9 @@ exports._build_subject_list = function (stream, active_topic, max_subjects) {
         display_subjects.push(display_subject);
     });
 
-    var want_show_more_topics_links = hiding_topics && feature_flags.topic_zooming;
     var topic_dom = templates.render('sidebar_subject_list',
                                       {subjects: display_subjects,
-                                       want_show_more_topics_links: want_show_more_topics_links,
+                                       want_show_more_topics_links: hiding_topics,
                                        stream: stream});
 
     return topic_dom;

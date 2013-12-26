@@ -49,7 +49,6 @@ exports.show_digest_email_setting = page_params.staging;
 
 // Still burning in...
 exports.fade_users_when_composing = true;
-exports.topic_zooming = true;
 exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.summarize_read_while_narrowed = false;
