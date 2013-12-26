@@ -66,7 +66,7 @@ def format_timedelta(timedelta):
     return "%.0fms" % (timedelta_ms(timedelta),)
 
 def is_slow_query(time_delta, path):
-    if time_delta < 1:
+    if time_delta < 1.2:
         return False
     is_exempt = \
         path in ["/activity", "/json/report_error",
