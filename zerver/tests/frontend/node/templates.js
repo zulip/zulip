@@ -220,7 +220,7 @@ function render(template_name, args) {
     var html = render('message', args);
     html = '<div class="message_table focused_table" id="zfilt">' + html + '</div>';
 
-    global.write_test_output("message.handlebars.handlebars", html);
+    global.write_test_output("message.handlebars", html);
 
     var first_message = $(html).find("div.messagebox:first");
 
