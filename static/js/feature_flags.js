@@ -41,7 +41,6 @@ exports.left_side_userlist = page_params.staging || _.contains(['customer7.inval
 exports.show_autoscroll_forever_option = page_params.show_autoscroll_forever_option;
 
 // Still very beta:
-exports.fade_users_when_composing = page_params.staging || is_customer4;
 exports.use_socket = page_params.staging;
 
 exports.full_width = page_params.staging;
@@ -49,6 +48,7 @@ exports.full_width = page_params.staging;
 exports.show_digest_email_setting = page_params.staging;
 
 // Still burning in...
+exports.fade_users_when_composing = true;
 exports.topic_zooming = true;
 exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
