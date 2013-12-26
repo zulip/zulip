@@ -66,11 +66,16 @@ def format_timedelta(timedelta):
     return "%.0fms" % (timedelta_ms(timedelta),)
 
 def is_slow_query(time_delta, path):
-    return time_delta >= 1 \
-        and path not in ["/activity", "/json/report_error",
-                         "/api/v1/deployments/report_error"] \
-        and not path.startswith("/realm_activity/") \
-        and not path.startswith("/user_activity/")
+    if time_delta < 1:
+        return False
+    is_exempt = \
+        path in ["/activity", "/json/report_error",
+                 "/api/v1/deployments/report_error"] \
+        or path.startswith("/realm_activity/") \
+        or path.startswith("/user_activity/")
+    if is_exempt:
+        return False
+    return True
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=''):
