@@ -211,6 +211,8 @@ class SlowQueryTest(TestCase):
         self.assertFalse(is_slow_query(2, '/api/v1/deployments/report_error'))
         self.assertFalse(is_slow_query(2, '/realm_activity/whatever'))
         self.assertFalse(is_slow_query(2, '/user_activity/whatever'))
+        self.assertFalse(is_slow_query(9, '/accounts/webathena_kerberos_login/'))
+        self.assertTrue(is_slow_query(11, '/accounts/webathena_kerberos_login/'))
 
 class DecoratorTestCase(TestCase):
     def test_REQ_converter(self):

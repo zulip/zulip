@@ -75,6 +75,8 @@ def is_slow_query(time_delta, path):
         or path.startswith("/user_activity/")
     if is_exempt:
         return False
+    if 'webathena_kerberos' in path:
+        return time_delta >= 10
     return True
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
