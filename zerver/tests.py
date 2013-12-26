@@ -206,6 +206,7 @@ class SlowQueryTest(TestCase):
     def test_is_slow_query(self):
         self.assertFalse(is_slow_query(1.1, '/some/random/url'))
         self.assertTrue(is_slow_query(2, '/some/random/url'))
+        self.assertTrue(is_slow_query(5.1, '/activity'))
         self.assertFalse(is_slow_query(2, '/activity'))
         self.assertFalse(is_slow_query(2, '/json/report_error'))
         self.assertFalse(is_slow_query(2, '/api/v1/deployments/report_error'))

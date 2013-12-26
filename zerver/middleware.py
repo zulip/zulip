@@ -74,7 +74,7 @@ def is_slow_query(time_delta, path):
         or path.startswith("/realm_activity/") \
         or path.startswith("/user_activity/")
     if is_exempt:
-        return False
+        return time_delta >= 5
     if 'webathena_kerberos' in path:
         return time_delta >= 10
     return True
