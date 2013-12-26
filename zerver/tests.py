@@ -34,6 +34,7 @@ from zerver.lib.digest import send_digest_email
 from zerver.forms import not_mit_mailing_list
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_int
+from zerver.middleware import is_slow_query
 
 from zerver.worker import queue_processors
 
@@ -200,6 +201,16 @@ def is_known_slow_test(test_method):
     return hasattr(test_method, 'slowness_reason')
 
 API_KEYS = {}
+
+class SlowQueryTest(TestCase):
+    def test_is_slow_query(self):
+        self.assertFalse(is_slow_query(0.9, '/some/random/url'))
+        self.assertTrue(is_slow_query(2, '/some/random/url'))
+        self.assertFalse(is_slow_query(2, '/activity'))
+        self.assertFalse(is_slow_query(2, '/json/report_error'))
+        self.assertFalse(is_slow_query(2, '/api/v1/deployments/report_error'))
+        self.assertFalse(is_slow_query(2, '/realm_activity/whatever'))
+        self.assertFalse(is_slow_query(2, '/user_activity/whatever'))
 
 class DecoratorTestCase(TestCase):
     def test_REQ_converter(self):
