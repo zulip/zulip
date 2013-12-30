@@ -15,9 +15,6 @@ function handle_error {
 }
 trap handle_error ERR
 
-cd wikidata
-git pull
-
 function commit {
     git commit --allow-empty -a -m '[AUTO] backup'
     git repack -da
