@@ -301,11 +301,8 @@ def do_send_messages(messages):
             ids_with_alert_words = message['message'].user_ids_with_alert_words
 
             for um in ums_to_create:
-                sent_by_human = (message['message'].sending_client.name.lower() in \
-                                    ['zulipandroid', 'zulipios', 'zulipdesktop',
-                                     'website', 'ios', 'android']) or \
-                                ('desktop app' in message['message'].sending_client.name.lower())
-                if um.user_profile.id == message['message'].sender.id and sent_by_human:
+                if um.user_profile.id == message['message'].sender.id and \
+                        message['message'].sent_by_human():
                     um.flags |= UserMessage.flags.read
                 if wildcard:
                     um.flags |= UserMessage.flags.wildcard_mentioned

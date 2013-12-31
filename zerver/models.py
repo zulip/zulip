@@ -880,6 +880,13 @@ class Message(models.Model):
         """Remove all Messages that are not referred to by any UserMessage."""
         cls.objects.exclude(id__in = UserMessage.objects.values('message_id')).delete()
 
+    def sent_by_human(self):
+        sending_client = self.sending_client.name.lower()
+
+        return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
+                                   'website', 'ios', 'android')) or \
+                                   ('desktop app' in sending_client)
+
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     message = models.ForeignKey(Message)
