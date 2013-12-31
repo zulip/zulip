@@ -64,9 +64,9 @@ def domains_for_this_deployment():
         except Deployment.DoesNotExist:
             raise ValueError("digest: Unable to determine deployment.")
 
-        return (r.domain for r in deployment.realms.all())
+        return [r.domain for r in deployment.realms.all()]
     # Enterprise and localhost.
-    return ()
+    return []
 
 def should_process_digest(domain, deployment_domains):
     if settings.ENTERPRISE:
