@@ -30,6 +30,10 @@ def gather_hot_conversations(user_profile, stream_messages):
     conversation_length = defaultdict(int)
     conversation_diversity = defaultdict(set)
     for user_message in stream_messages:
+        if not user_message.message.sent_by_human():
+            # Don't include automated messages in the count.
+            continue
+
         key = (user_message.message.recipient.type_id,
                user_message.message.subject)
         conversation_diversity[key].add(
