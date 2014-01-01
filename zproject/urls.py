@@ -205,6 +205,8 @@ v1_api_and_json_patterns = patterns('zerver.views',
              'DELETE': 'remove_alert_words'}),
     url(r'^users/me/api_key/regenerate$', 'rest_dispatch',
             {'POST': 'regenerate_api_key'}),
+    url(r'^users/me/presence$', 'rest_dispatch',
+            {'POST': 'update_active_status_backend'}),
     # Endpoint used by iOS devices to register their
     # unique APNS device token
     url(r'^users/me/apns_device_token$', 'rest_dispatch',

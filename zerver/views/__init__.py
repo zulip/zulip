@@ -2018,10 +2018,9 @@ def get_status_list(requesting_user_profile):
     return {'presences': get_status_dict(requesting_user_profile),
             'server_timestamp': time.time()}
 
-@authenticated_json_post_view
 @has_request_variables
-def json_update_active_status(request, user_profile, status=REQ,
-                              new_user_input=REQ(converter=json_to_bool, default=False)):
+def update_active_status_backend(request, user_profile, status=REQ,
+                                 new_user_input=REQ(converter=json_to_bool, default=False)):
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError("Invalid presence status: %s" % (status,))
@@ -2043,6 +2042,10 @@ def json_update_active_status(request, user_profile, status=REQ,
             ret['zephyr_mirror_active'] = False
 
     return json_success(ret)
+
+@authenticated_json_post_view
+def json_update_active_status(request, user_profile):
+    return update_active_status_backend(request, user_profile)
 
 @authenticated_json_post_view
 def json_get_active_statuses(request, user_profile):
