@@ -844,20 +844,24 @@
       notifications, and subscribe all interested parties to this stream. We
       recommend the name <code>jenkins</code> or <code>hudson</code>.</p>
 
-      <p><strong>Install the plugin</strong><br />
-      Install the "Humbug" plugin by going to <code>Manage Jenkins
-      > Manage Plugins > Available</code>, typing in "Humbug", and
-      clicking "Install without restart".</p>
+      <p><strong>Install the plugin</strong><br /> Install the "Zulip"
+      plugin by going to <code>Manage Jenkins > Manage Plugins >
+      Available</code>, typing in "Zulip", and clicking "Install
+      without restart". (For historical reasons, the plugin will be
+      named "Humbug Plugin")</p>
 
-      <img src="/static/images/integrations/jenkins/001.png" />
+      <img class="screenshot" src="/static/images/integrations/jenkins/001.png" />
 
       <p><strong>Configure the plugin</strong><br /> Once the plugin
       is installed, configure it by going to <code>Manage Jenkins >
-      Configure System</code>. Scroll to the section labeled "Humbug
+      Configure System</code>. Scroll to the section labeled "Zulip
       Notification Settings", and specify your bot's email address,
       API key, the stream receiving the notifications, and whether you'd
       like a notification on every build, or only when the build fails
       (Smart Notification).</p>
+
+      <p>(If you don't see this option, you may first need to restart
+      Jenkins.)</p>
 
       <img src="/static/images/integrations/jenkins/002.png" />
 
@@ -866,7 +870,7 @@
       projects to use the Zulip notification plugin. From your
       project page, click "Configure" on the left sidebar. Scroll to
       the bottom until you find the section labeled "Post-build
-      Actions". Click the dropdown and select "Humbug
+      Actions". Click the dropdown and select "Zulip
       Notification". It should look as below. Then click "Save".</p>
 
       <img src="/static/images/integrations/jenkins/003.png" />
@@ -874,9 +878,8 @@
       <p><b>Congratulations! You're done!</b><br /> When your builds
       fail or succeed, you'll see a commit message like the following
       with a topic that matches the project name (in this case
-      "Humbug Test"):</p>
+      "SecretProject"):</p>
       <img class="screenshot" src="/static/images/integrations/jenkins/004.png" />
-      <img class="screenshot" src="/static/images/integrations/jenkins/005.png" />
 
       <p><b>Troubleshooting</b><br />
         <ul>
