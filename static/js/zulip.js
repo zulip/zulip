@@ -53,6 +53,8 @@ var events_stored_during_tutorial = [];
 
 var waiting_on_browser_scroll = true;
 
+var waiting_on_homeview_load = true;
+
 function add_person(person, in_realm) {
     page_params.people_list.push(person);
     people_dict.set(person.email, person);
@@ -1104,6 +1106,16 @@ function force_get_updates() {
     get_updates_timeout = setTimeout(get_updates, 0);
 }
 
+function home_view_loaded() {
+    if (!waiting_on_homeview_load) {
+        return;
+    }
+
+    waiting_on_homeview_load = false;
+
+    $(document).trigger("home_view_loaded.zulip");
+}
+
 function cleanup_event_queue() {
     // Submit a request to the server to cleanup our event queue
     if (page_params.event_queue_expired === true) {
@@ -1182,6 +1194,10 @@ function get_old_messages_success(data, opts) {
 
     process_result(data.messages, opts);
     ui.resize_bottom_whitespace();
+
+    if (waiting_on_homeview_load && opts.msg_list === home_msg_list) {
+        home_view_loaded();
+    }
 }
 
 function load_old_messages(opts) {
@@ -1448,6 +1464,7 @@ function main() {
             cont: load_more
         });
     } else {
+        home_view_loaded();
         get_updates();
     }
 
