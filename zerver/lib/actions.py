@@ -1116,6 +1116,17 @@ def do_make_stream_public(user_profile, realm, stream_name):
     stream.save(update_fields=['invite_only'])
     return {}
 
+def do_make_stream_private(realm, stream_name):
+    stream_name = stream_name.strip()
+    stream = get_stream(stream_name, realm)
+
+    if not stream:
+        raise JsonableError('Unknown stream "%s"' % (stream_name,))
+
+    stream.invite_only = True
+    stream.save(update_fields=['invite_only'])
+    return {}
+
 def do_rename_stream(realm, old_name, new_name, log=True):
     old_name = old_name.strip()
     new_name = new_name.strip()

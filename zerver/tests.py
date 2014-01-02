@@ -534,6 +534,22 @@ class StreamAdminTest(AuthedTestCase):
         stream = Stream.objects.get(name='private_stream', realm=realm)
         self.assertFalse(stream.invite_only)
 
+    def test_make_stream_private(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'public_stream')
+
+        assign_perm('administer', user_profile, realm)
+        params = {
+            'stream_name': 'public_stream'
+        }
+        result = self.client.post("/json/make_stream_private", params)
+        self.assert_json_success(result)
+        stream = Stream.objects.get(name='public_stream', realm=realm)
+        self.assertTrue(stream.invite_only)
+
 class PermissionTest(TestCase):
     def test_get_admin_users(self):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
