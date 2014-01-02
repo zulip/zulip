@@ -92,6 +92,24 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
     return message.local_id;
 };
 
+exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
+    message.raw_content = raw_content;
+    if (new_topic !== undefined) {
+        process_message_for_recent_subjects(message, true);
+        message.subject = new_topic;
+        process_message_for_recent_subjects(message);
+    }
+
+    message.content = exports.apply_markdown(raw_content);
+    // We don't handle unread counts since local messages must be sent by us
+
+    home_msg_list.rerender();
+    if (current_msg_list === narrowed_msg_list) {
+        narrowed_msg_list.rerender();
+    }
+    stream_list.update_streams_sidebar();
+};
+
 exports.reify_message_id = function reify_message_id(local_id, server_id) {
     var message = waiting_for_id[local_id];
     delete waiting_for_id[local_id];
@@ -190,6 +208,10 @@ function abort_message(message) {
     });
 }
 
+function edit_failed_message(message) {
+    message_edit.start_local_failed_edit(current_msg_list.get_row(message.local_id), message);
+}
+
 $(function () {
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function (_) {
@@ -244,6 +266,7 @@ $(function () {
 
     on_failed_action('remove', abort_message);
     on_failed_action('refresh', resend_message);
+    on_failed_action('edit', edit_failed_message);
 });
 
 return exports;

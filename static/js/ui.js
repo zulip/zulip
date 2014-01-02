@@ -1618,7 +1618,8 @@ $(function () {
     $("body").on("click", ".message_edit_save", function (e) {
         var row = $(this).closest(".message_row");
         if (message_edit.save(row) === true) {
-            message_edit.end(row);
+            // Re-fetch the message row in case .save() re-rendered the message list
+            message_edit.end($(this).closest(".message_row"));
         }
         e.stopPropagation();
         popovers.hide_all();

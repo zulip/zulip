@@ -9,21 +9,35 @@ exports.save = function (row) {
     var message = current_msg_list.get(rows.id(row));
     var changed = false;
 
-    var request = {message_id: message.id};
+    var new_content = row.find(".message_edit_content").val();
+    var topic_changed = false;
+    var new_topic;
     if (message.type === "stream") {
-        var new_topic = row.find(".message_edit_topic").val();
-        if (new_topic !== message.subject && new_topic.trim() !== "") {
-            request.subject = new_topic;
-
-            if (feature_flags.propagate_topic_edits) {
-                var selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
-                request.propagate_mode = selected_topic_propagation;
-            }
-            changed = true;
-        }
+        new_topic = row.find(".message_edit_topic").val();
+        topic_changed = (new_topic !== message.subject && new_topic.trim() !== "");
     }
 
-    var new_content = row.find(".message_edit_content").val();
+    // Editing a not-yet-acked message (because the original send attempt failed)
+    // just results in the in-memory message being changed
+    if (message.local_id !== undefined) {
+        // No changes
+        if (new_content !== message.raw_content && !new_topic) {
+            return true;
+        }
+        echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
+        return true;
+    }
+
+    var request = {message_id: message.id};
+    if (topic_changed) {
+        request.subject = new_topic;
+        if (feature_flags.propagate_topic_edits) {
+            var selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
+            request.propagate_mode = selected_topic_propagation;
+        }
+        changed = true;
+    }
+
     if (new_content !== message.raw_content) {
         request.content = new_content;
         changed = true;
@@ -97,7 +111,7 @@ function edit_message (row, raw_content) {
     edit_obj.scrolled_by = scroll_by;
     viewport.scrollTop(viewport.scrollTop() + scroll_by);
 
-    if (feature_flags.propagate_topic_edits) {
+    if (feature_flags.propagate_topic_edits && message.local_id !== undefined) {
         var topic_input = edit_row.find(".message_edit_topic");
         topic_input.keyup( function () {
             var new_topic = topic_input.val();
@@ -106,6 +120,15 @@ function edit_message (row, raw_content) {
     }
 
     composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
+}
+
+function start_edit_maintaining_scroll(row, content) {
+    edit_message(row, content);
+    var row_bottom = row.height() + row.offset().top;
+    var composebox_top = $("#compose").offset().top;
+    if (row_bottom > composebox_top) {
+        viewport.scrollTop(viewport.scrollTop() + row_bottom - composebox_top);
+    }
 }
 
 exports.start = function (row) {
@@ -118,15 +141,14 @@ exports.start = function (row) {
         success: function (data) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;
-                edit_message(row, data.raw_content);
-                var row_bottom = row.height() + row.offset().top;
-                var composebox_top = $("#compose").offset().top;
-                if (row_bottom > composebox_top) {
-                    viewport.scrollTop(viewport.scrollTop() + row_bottom - composebox_top);
-                }
+                start_edit_maintaining_scroll(row, data.raw_content);
             }
         }
     });
+};
+
+exports.start_local_failed_edit = function (row, message) {
+    start_edit_maintaining_scroll(row, message.raw_content);
 };
 
 exports.start_topic_edit = function (recipient_row) {

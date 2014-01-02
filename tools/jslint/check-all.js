@@ -66,7 +66,7 @@ var globals =
     + ' suppress_unread_counts'
     + ' msg_metadata_cache'
     + ' get_updates_xhr get_updates_timeout'
-    + ' insert_new_messages reify_person'
+    + ' insert_new_messages process_message_for_recent_subjects reify_person'
     ;
 
 
