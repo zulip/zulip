@@ -56,7 +56,7 @@ exports.toggle_actions_popover = function (element, id) {
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         var message = current_msg_list.get(id);
-        var can_edit = message.sent_by_me && !feature_flags.disable_message_editing;
+        var can_edit = message.sent_by_me && message.local_id === undefined && !feature_flags.disable_message_editing;
         var can_mute_topic =
                 message.stream &&
                 message.subject &&
