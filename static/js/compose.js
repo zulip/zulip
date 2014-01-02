@@ -523,7 +523,7 @@ function send_message(request) {
             return;
         }
 
-        echo.message_send_error(local_id);
+        echo.message_send_error(local_id, response);
     }
 
     exports.transmit_message(request, success, error);

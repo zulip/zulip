@@ -762,10 +762,12 @@ exports.show_local_message_arrived = function (message_id) {
     show_message_timestamps();
 };
 
-exports.show_message_failed = function (message_id) {
+exports.show_message_failed = function (message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
     update_message_in_all_views(message_id, function update_row(row) {
-        row.find('.message_failed').toggleClass('notvisible', false);
+        var failed_div = row.find('.message_failed');
+        failed_div.toggleClass('notvisible', false);
+        failed_div.find('.failed_text').attr('title', failed_msg);
     });
 };
 

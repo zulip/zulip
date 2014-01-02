@@ -161,10 +161,10 @@ exports.process_from_server = function process_from_server(messages) {
     return messages;
 };
 
-exports.message_send_error = function message_send_error(local_id) {
+exports.message_send_error = function message_send_error(local_id, error_response) {
     // Error sending message, show inline
     all_msg_list.get(local_id).failed_request = true;
-    ui.show_message_failed(local_id);
+    ui.show_message_failed(local_id, error_response);
 };
 
 function resend_message(message) {
