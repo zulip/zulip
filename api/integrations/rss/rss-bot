@@ -49,7 +49,7 @@ To use this script:
 1. Create an RSS feed file containing 1 feed URL per line (default feed
    file location: ~/.cache/zulip-rss/rss-feeds)
 2. Subscribe to the stream that will receive RSS updates (default stream: rss)
-3. create a ~/.zuliprc, or specify user and api-key with command line arguments
+3. create a ~/.zuliprc as described on https://zulip.com/api#api_keys
 4. Test the script by running it manually, like this:
 
 /usr/local/share/zulip/integrations/rss/rss-bot

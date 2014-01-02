@@ -160,6 +160,12 @@
             <span class="integration-label">Redmine</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-rss">
+         <a class="integration-link integration-rss" href="#rss">
+            <img class="integration-logo" src="/static/images/integrations/logos/rss.png" alt="RSS logo" />
+            <span class="integration-label">RSS</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-stash">
          <a class="integration-link integration-stash" href="#stash">
             <img class="integration-logo" src="/static/images/integrations/logos/stash.png" alt="Stash logo" />
@@ -1342,6 +1348,35 @@ ignore_branches = "noisy,even-more-noisy"</pre>
       Redmine, the team can see these updates in real time in Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/redmine/001.png" />
+    </div>
+
+
+    <div id="rss" class="integration-instructions">
+      <h4>RSS</h4>
+
+      <p>Get service alerts, news, and new blog posts right in Zulip with our
+      RSS integration!</p>
+
+      <p>First, create the stream you'd like to use for RSS notifications, and
+      subscribe all interested parties to this stream. We recommend the
+      name <code>rss</code>.</p>
+
+      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
+      page</a>, create an RSS bot.</p>
+
+      <p>Then, download and install our <a href="/api">Python bindings</a> on
+      the server where the RSS bot will live. The RSS integration will be
+      installed to a location
+      like <code>/usr/local/share/zulip/integrations/rss/rss-bot</code>.</p>
+
+      <p>Follow the instructions in the <code>rss-bot</code> script for
+      configuring the bot, adding your subscriptions, and setting up a cron job
+      to run the bot.</p>
+
+      <p><b>Congratulations! You're done!</b><br /> When new items appear in
+      your feeds, the team can see these updates in real time in Zulip:</p>
+
+      <img class="screenshot" src="/static/images/integrations/rss/001.png" />
     </div>
 
 
