@@ -508,6 +508,32 @@ class AuthedTestCase(TestCase):
 
         return msg
 
+class StreamAdminTest(AuthedTestCase):
+    def test_make_stream_public(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'private_stream', invite_only=True)
+
+        assign_perm('administer', user_profile, realm)
+        params = {
+            'stream_name': 'private_stream'
+        }
+        result = self.client.post("/json/make_stream_public", params)
+        self.assert_json_error(result, 'You are not invited to this stream.')
+
+        do_add_subscription(user_profile, stream)
+
+        assign_perm('administer', user_profile, realm)
+        params = {
+            'stream_name': 'private_stream'
+        }
+        result = self.client.post("/json/make_stream_public", params)
+        self.assert_json_success(result)
+        stream = Stream.objects.get(name='private_stream', realm=realm)
+        self.assertFalse(stream.invite_only)
+
 class PermissionTest(TestCase):
     def test_get_admin_users(self):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')

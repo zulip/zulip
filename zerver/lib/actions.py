@@ -1102,6 +1102,20 @@ def do_change_full_name(user_profile, full_name, log=True):
                   users=active_user_ids(user_profile.realm))
     tornado_callbacks.send_notification(notice)
 
+def do_make_stream_public(user_profile, realm, stream_name):
+    stream_name = stream_name.strip()
+    stream = get_stream(stream_name, realm)
+
+    if not stream:
+        raise JsonableError('Unknown stream "%s"' % (stream_name,))
+
+    if not subscribed_to_stream(user_profile, stream):
+        raise JsonableError('You are not invited to this stream.')
+
+    stream.invite_only = False
+    stream.save(update_fields=['invite_only'])
+    return {}
+
 def do_rename_stream(realm, old_name, new_name, log=True):
     old_name = old_name.strip()
     new_name = new_name.strip()

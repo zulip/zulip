@@ -40,7 +40,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
-    do_deactivate_stream, do_change_autoscroll_forever
+    do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
@@ -1578,6 +1578,12 @@ def get_public_streams_backend(request, user_profile):
 @has_request_variables
 def json_rename_stream(request, user_profile, old_name=REQ, new_name=REQ):
     return json_success(do_rename_stream(user_profile.realm, old_name, new_name))
+
+@authenticated_json_post_view
+@require_realm_admin
+@has_request_variables
+def json_make_stream_public(request, user_profile, stream_name=REQ):
+    return json_success(do_make_stream_public(user_profile, user_profile.realm, stream_name))
 
 def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
