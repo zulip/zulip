@@ -428,6 +428,9 @@ function render(template_name, args) {
 
     span = $(html).find(".rename-stream .sub_settings_title");
     assert.equal(span.text(), 'Administrator settings');
+
+    var div = $(html).find(".subscription-type");
+    assert(div.text().indexOf('invite-only stream') > 0);
 }());
 
 
