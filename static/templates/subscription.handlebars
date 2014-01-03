@@ -2,11 +2,9 @@
 {{#with this}}
 <div class="subscription_row" id="subscription_{{id}}">
     <div class="subscription_table_elem subscription_header collapsed" data-toggle="collapse" data-target="#subscription_settings_{{id}}">
-      {{#if invite_only}}
-           <span class="subscription_lock"><i class="icon-vector-lock" style="color: {{color}}"></i></span>
-      {{else}}
-         <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
-      {{/if}}
+      <span class="subscription-setting-icon">
+        {{partial "subscription_setting_icon"}}
+      </span>
       <span class="subscription_block">
       <span class="subscription_name subscription-name-row">{{name}}</span>
       </span>
