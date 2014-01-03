@@ -4,6 +4,8 @@ class zulip::postgres_appdb {
 
   $appdb_packages = [# Needed to run process_fts_updates
                      "python-psycopg2",
+                     # Needed for our full text search system
+                     "postgresql-9.1-tsearch-extras",
                      ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
