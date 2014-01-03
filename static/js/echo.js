@@ -34,6 +34,32 @@ exports.apply_markdown = function apply_markdown(content) {
     return marked(content).trim();
 };
 
+function resend_message(message, row) {
+    message.content = message.raw_content;
+    var retry_spinner = row.find('.refresh-failed-message');
+    retry_spinner.toggleClass('rotating', true);
+    // Always re-set queue_id if we've gotten a new one
+    // since the time when the message object was initially created
+    message.queue_id = page_params.event_queue_id;
+    var start_time = new Date();
+    compose.transmit_message(message, function success(data) {
+        retry_spinner.toggleClass('rotating', false);
+
+        var message_id = data.id;
+
+        retry_spinner.toggleClass('rotating', false);
+        compose.send_message_success(message.local_id, message_id, start_time);
+
+        // Resend succeeded, so mark as no longer failed
+        all_msg_list.get(message_id).failed_request = false;
+        ui.show_failed_message_success(message_id);
+    }, function error(response) {
+        exports.message_send_error(message.local_id, response);
+        retry_spinner.toggleClass('rotating', false);
+        blueslip.log("Manual resend of message failed");
+    });
+}
+
 function truncate_precision(float) {
     return parseFloat(float.toFixed(3));
 }
@@ -185,22 +211,6 @@ exports.message_send_error = function message_send_error(local_id, error_respons
     ui.show_message_failed(local_id, error_response);
 };
 
-function resend_message(message) {
-    message.content = message.raw_content;
-    compose.transmit_message(message, function success(data) {
-        var message_id = data.id;
-        var local_id = data.local_id;
-
-        exports.reify_message_id(local_id, message_id);
-
-        // Resend succeeded, so mark as no longer failed
-        all_msg_list.get(message_id).failed_request = false;
-        ui.show_failed_message_success(message_id);
-    }, function error() {
-        blueslip.log("Manual resend of message failed");
-    });
-}
-
 function abort_message(message) {
     // Remove in all lists in which it exists
     _.each([all_msg_list, home_msg_list, current_msg_list], function (msg_list) {
@@ -252,7 +262,8 @@ $(function () {
         $("#main_div").on("click", "." + action + "-failed-message", function (e) {
             e.stopPropagation();
             popovers.hide_all();
-            var message_id = rows.id($(this).closest(".message_row"));
+            var row = $(this).closest(".message_row");
+            var message_id = rows.id(row);
             // Message should be waiting for ack and only have a local id,
             // otherwise send would not have failed
             var message = waiting_for_ack[message_id];
@@ -260,7 +271,7 @@ $(function () {
                 blueslip.warning("Got resend or retry on failure request but did not find message in ack list " + message_id);
                 return;
             }
-            callback(message);
+            callback(message, row);
         });
     }
 
