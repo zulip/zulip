@@ -399,7 +399,7 @@ function render(template_name, args) {
                 name: 'devel',
                 subscribed: true,
                 notifications: true,
-                allow_rename: true,
+                is_admin: true,
                 render_subscribers: true,
                 color: 'purple',
                 invite_only: true,
@@ -425,6 +425,9 @@ function render(template_name, args) {
 
     var span = $(html).find(".subscription_name:first");
     assert.equal(span.text(), 'devel');
+
+    span = $(html).find(".rename-stream .sub_settings_title");
+    assert.equal(span.text(), 'Administrator settings');
 }());
 
 
