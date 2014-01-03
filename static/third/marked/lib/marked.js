@@ -453,6 +453,8 @@ var inline = {
   code: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
   br: /^ {2,}\n(?!\s*$)/,
   del: noop,
+  emoji: noop,
+  usermention: noop,
   text: /^[\s\S]+?(?=[\\<!\[_*`]| {2,}\n|$)/
 };
 
@@ -506,6 +508,14 @@ inline.breaks = merge({}, inline.gfm, {
   text: replace(inline.gfm.text)('{2,}', '*')()
 });
 
+inline.zulip = merge({}, inline.breaks, {
+  emoji: /^:([A-Za-z0-9_\-\+]+?):/,
+  usermention: /^(@\*\*([^\*]+)?\*\*)/m,
+  text: replace(inline.text)
+    (']|', '@:]|')
+    ()
+});
+
 /**
  * Inline Lexer & Compiler
  */
@@ -521,14 +531,18 @@ function InlineLexer(links, options) {
       Error('Tokens array requires a `links` property.');
   }
 
-  if (this.options.gfm) {
-    if (this.options.breaks) {
-      this.rules = inline.breaks;
-    } else {
-      this.rules = inline.gfm;
+  if (this.options.zulip) {
+    this.rules = inline.zulip;
+  } else {
+    if (this.options.gfm) {
+      if (this.options.breaks) {
+        this.rules = inline.breaks;
+      } else {
+        this.rules = inline.gfm;
+      }
+    } else if (this.options.pedantic) {
+      this.rules = inline.pedantic;
     }
-  } else if (this.options.pedantic) {
-    this.rules = inline.pedantic;
   }
 }
 
@@ -625,6 +639,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // usermention (zulip)
+    if (cap = this.rules.usermention.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.usermention(cap[2], cap[1]);
+      continue;
+    }
+
     // strong
     if (cap = this.rules.strong.exec(src)) {
       src = src.substring(cap[0].length);
@@ -660,6 +681,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // emoji (gfm)
+    if (cap = this.rules.emoji.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.emoji(cap[1]);
+      continue;
+    }
+
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
@@ -689,6 +717,27 @@ InlineLexer.prototype.outputLink = function(cap, link) {
   } else {
     return this.renderer.image(href, title, escape(cap[1]));
   }
+};
+
+InlineLexer.prototype.emoji = function (name) {
+  if (typeof this.options.emojiHandler !== 'function')
+    return ':' + name + ':';
+
+  return this.options.emojiHandler(name);
+};
+
+InlineLexer.prototype.usermention = function (username, orig) {
+  if (typeof this.options.userMentionHandler !== 'function')
+  {
+    return orig;
+  }
+
+  var handled = this.options.userMentionHandler(username);
+  if (handled !== undefined) {
+    return handled;
+  }
+
+  return orig;
 };
 
 /**
@@ -1144,6 +1193,7 @@ marked.setOptions = function(opt) {
 
 marked.defaults = {
   gfm: true,
+  emoji: false,
   tables: true,
   breaks: false,
   pedantic: false,

@@ -259,15 +259,15 @@ $(function () {
     // We used GFM + tables, so replace the list start regex for that ruleset
     // We remove the |[\d+]\. that matches the numbering in a numbered list
     marked.Lexer.rules.tables.list = /^( *)((?:\*)) [\s\S]+?(?:\n+(?=(?: *[\-*_]){3,} *(?:\n+|$))|\n{2,}(?! )(?!\1(?:\*) )\n*|\s*$)/;
-    // marked.Lexer.rules.tables
+
     // Disable headings
     disable_markdown_regex(marked.Lexer.rules.tables, 'heading');
     disable_markdown_regex(marked.Lexer.rules.tables, 'lheading');
 
     // Disable __strong__, all <em>
-    marked.InlineLexer.rules.breaks.strong = /^\*\*([\s\S]+?)\*\*(?!\*)/;
-    disable_markdown_regex(marked.InlineLexer.rules.breaks, 'em');
-    disable_markdown_regex(marked.InlineLexer.rules.breaks, 'del');
+    marked.InlineLexer.rules.zulip.strong = /^\*\*([\s\S]+?)\*\*(?!\*)/;
+    disable_markdown_regex(marked.InlineLexer.rules.zulip, 'em');
+    disable_markdown_regex(marked.InlineLexer.rules.zulip, 'del');
 
     marked.setOptions({
         gfm: true,
@@ -277,6 +277,7 @@ $(function () {
         sanitize: true,
         smartLists: true,
         smartypants: false,
+        zulip: true,
         renderer: r
     });
 
