@@ -1,7 +1,7 @@
 [
     {
         "method": "POST",
-        "endpoint": "/api/v1/messages",
+        "endpoint": "messages",
         "example_response": "{'msg': '', 'result': 'success', 'id': 12345678}",
         "returns": [
             [
@@ -35,7 +35,7 @@
     },
     {
         "method": "POST",
-        "endpoint": "/api/v1/register",
+        "endpoint": "register",
         "example_response": "{'msg': '', 'last_event_id': -1, 'result': 'success', 'queue_id': '1375801870:2942'}",
         "returns": [
             [
@@ -65,7 +65,7 @@
     },
     {
         "method": "GET",
-        "endpoint": "/api/v1/events",
+        "endpoint": "events",
         "example_response":
 "{'result': 'success',
  'msg': '',
