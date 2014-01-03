@@ -25,9 +25,7 @@
     <div id="subscription_settings_{{id}}" class="collapse subscription_settings">
       <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
         <div class="subscription-type">
-          This is
-          {{#if invite_only}}an <span class="icon-vector-lock"></span> <b>invite-only stream</b>. Only people who have been invited can access its content, but&nbsp;any&nbsp;member&nbsp;of&nbsp;the&nbsp;stream can&nbsp;invite&nbsp;others.
-          {{else}}a <span class="icon-vector-globe"></span> <b>public stream</b>. Anybody in your organization can join.{{/if}}
+          {{partial "subscription_type"}}
         </div>
         <div class="subscription-config">
         <ul>

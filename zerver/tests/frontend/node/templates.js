@@ -416,6 +416,7 @@ function render(template_name, args) {
     };
 
     global.use_template('subscription'); // partial
+    global.use_template('subscription_type'); // partial
     var html = '';
     html += '<div id="subscriptions_table">';
     html += render('subscription_table_body', args);
