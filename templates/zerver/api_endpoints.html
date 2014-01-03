@@ -25,7 +25,7 @@
 {% for blurb in content %}
 <div class="api-block">
     <h2 class="call">{{ blurb.call }}</h2>
-    <div class="endpoint"><code>{{ blurb.endpoint }}</code></div>
+    <div class="endpoint"><code>{{blurb.method}} {{ blurb.endpoint }}</code></div>
     <div class="api-details">
         <h3>Arguments</h3>
         <dl class="dl-horizontal arguments">
