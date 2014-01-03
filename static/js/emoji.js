@@ -3,6 +3,7 @@ var emoji = (function () {
 var exports = {};
 
 exports.emojis = [];
+exports.emojis_by_name = {};
 
 var default_emojis = [];
 
@@ -19,6 +20,10 @@ exports.update_emojis = function update_emojis(realm_emojis) {
 	_.each(realm_emojis, function (url, name) {
 		exports.emojis.push({emoji_name:name, emoji_url: url});
 	});
+    exports.emojis_by_name = {};
+    _.each(exports.emojis, function (emoji) {
+        exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
+    });
 };
 
 exports.update_emojis(page_params.realm_emoji);

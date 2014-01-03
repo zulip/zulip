@@ -14,6 +14,10 @@ set_global('$', function (obj) {
   }
 });
 
+set_global('emoji', {
+  emojis_by_name: {emoji: 'some/url/here/emoji.png'}
+});
+
 var echo = require('js/echo.js');
 
 (function test_bugdown_detection() {
@@ -28,12 +32,12 @@ var echo = require('js/echo.js');
                      "No png to be found here, a png",
                      "No user mention **leo**",
                      "No user mention @what there",
-                     "We like to code\n~~~\ndef code():\n    we = \"like to do\"\n~~~"
+                     "We like to code\n~~~\ndef code():\n    we = \"like to do\"\n~~~",
+                     "This is a\nmultiline :emoji: here\n message",
+                     "This is an :emoji: message"
                     ];
 
     var markup = [
-                   "This is an :emoji: message",
-                   "This is a\nmultiline :emoji: here\n message",
                    "Contains a https://zulip.com/image.png file",
                    "Contains a https://zulip.com/image.jpg file",
                    "https://zulip.com/image.jpg",
@@ -76,7 +80,9 @@ var echo = require('js/echo.js');
     {input: '1. an\n2. ordered \n3. list',
      expected: '<p>1. an</p>\n<p>2. ordered </p>\n<p>3. list</p>'},
     {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
-     expected: '<blockquote><p>quote this for me</p></blockquote><p>thanks</p>'}
+     expected: '<blockquote><p>quote this for me</p></blockquote><p>thanks</p>'},
+     {input: 'This is an :emoji: message',
+      expected: '<p>This is an <img alt=":emoji:" class="emoji" src="some/url/here/emoji.png" title=":emoji:"> message</p>'}
   ];
 
   test_cases.forEach(function (test_case) {

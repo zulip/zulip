@@ -7,7 +7,6 @@ var waiting_for_ack = {};
 
 // Regexes that match some of our common bugdown markup
 var bugdown_re = [
-                    /(?::[^:\s]+:)(?!\w)/, // Emoji
                     // Inline image previews, check for contiguous chars ending in image suffix
                     // To keep the below regexes simple, split them out for the end-of-message case
                     /[^\s]*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\s+/m,
@@ -232,6 +231,18 @@ function escape(html, encode) {
     .replace(/'/g, '&#39;');
 }
 
+function handleEmoji(emoji_name) {
+    var input_emoji = ':' + emoji_name + ":";
+    if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
+        var emoji_url = emoji.emojis_by_name[emoji_name];
+        return '<img alt="' + input_emoji + '"' +
+               ' class="emoji" src="' + emoji_url + '"' +
+               ' title="' + input_emoji + '">';
+    } else {
+        return input_emoji;
+    }
+}
+
 $(function () {
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function (_) {
@@ -278,6 +289,8 @@ $(function () {
         smartLists: true,
         smartypants: false,
         zulip: true,
+        emoji: true,
+        emojiHandler: handleEmoji,
         renderer: r
     });
 
