@@ -30,6 +30,8 @@ class zulip::app_frontend {
                     # Needed to access our database
                     "postgresql-client-9.1",
                     "python-psycopg2",
+                    # Needed for building complex DB queries
+                    "python-sqlalchemy",
                     # Needed for integrations
                     "python-twitter",
                     "python-defusedxml",
