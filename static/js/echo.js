@@ -222,6 +222,16 @@ function edit_failed_message(message) {
     message_edit.start_local_failed_edit(current_msg_list.get_row(message.local_id), message);
 }
 
+
+function escape(html, encode) {
+  return html
+    .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 $(function () {
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function (_) {
@@ -232,6 +242,18 @@ $(function () {
 
     // Configure the marked markdown parser for our usage
     var r = new marked.Renderer();
+
+    // No <code> around our code blocks instead a codehilite <div>, and disable class-specific highlighting
+    // We special-case the 'quote' language and output a blockquote
+    r.code = function (code, lang) {
+        if (lang === 'quote') {
+            return '<blockquote><p>' + escape(code, true) + '</p></blockquote>';
+        }
+
+        return '<div class="codehilite"><pre>'
+          + escape(code, true)
+          + '\n</pre></div>';
+    };
 
     // Disable ordered lists
     // We used GFM + tables, so replace the list start regex for that ruleset

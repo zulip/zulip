@@ -27,7 +27,8 @@ var echo = require('js/echo.js');
                      "Contains a not an http://www.google.com/ok/image.png/stop file",
                      "No png to be found here, a png",
                      "No user mention **leo**",
-                     "No user mention @what there"
+                     "No user mention @what there",
+                     "We like to code\n~~~\ndef code():\n    we = \"like to do\"\n~~~"
                     ];
 
     var markup = [
@@ -67,14 +68,15 @@ var echo = require('js/echo.js');
     {input: 'hello there', expected: '<p>hello there</p>'},
     {input: 'hello **bold** for you', expected: '<p>hello <strong>bold</strong> for you</p>'},
     {input: '__hello__', expected: '<p>__hello__</p>'},
-    // TODO fix fenced code to output like pygments
-    {input: '\n```\nfenced code\n```\n\nand then after\n', expected: '<pre><code>fenced code\n</code></pre><p>and then after</p>'},
+    {input: '\n```\nfenced code\n```\n\nand then after\n', expected: '<div class="codehilite"><pre>fenced code\n</pre></div><p>and then after</p>'},
     {input: '* a\n* list \n* here',
      expected: '<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>'},
     {input: 'Some text first\n* a\n* list \n* here\n\nand then after',
      expected: '<p>Some text first</p>\n<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>\n<p>and then after</p>'},
     {input: '1. an\n2. ordered \n3. list',
-     expected: '<p>1. an</p>\n<p>2. ordered </p>\n<p>3. list</p>'}
+     expected: '<p>1. an</p>\n<p>2. ordered </p>\n<p>3. list</p>'},
+    {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
+     expected: '<blockquote><p>quote this for me</p></blockquote><p>thanks</p>'}
   ];
 
   test_cases.forEach(function (test_case) {
