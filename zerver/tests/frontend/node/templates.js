@@ -403,6 +403,8 @@ function render(template_name, args) {
                 render_subscribers: true,
                 color: 'purple',
                 invite_only: true,
+                can_make_public: true,
+                can_make_private: true, /* not logical, but that's ok */
                 email_address: 'xxxxxxxxxxxxxxx@zulip.com',
                 id: 888,
                 in_home_view: true
@@ -418,6 +420,7 @@ function render(template_name, args) {
     global.use_template('subscription'); // partial
     global.use_template('subscription_type'); // partial
     global.use_template('subscription_setting_icon'); // partial
+    global.use_template('change_stream_privacy'); // partial
     var html = '';
     html += '<div id="subscriptions_table">';
     html += render('subscription_table_body', args);

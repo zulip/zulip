@@ -65,6 +65,9 @@
             <input type="submit" name="rename" value="Rename stream" class="zulip-button red-button stream-rename-button" />
           </form>
         </div>
+        <div class="change-stream-privacy">
+          {{partial "change_stream_privacy"}}
+        </div>
       {{/if}}
 
       {{#render_subscribers}}

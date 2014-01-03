@@ -4,6 +4,14 @@ var exports = {};
 
 var next_sub_id = 0;
 
+function add_admin_options(sub) {
+    return _.extend(sub, {
+        'is_admin': page_params.is_admin,
+        'can_make_public': page_params.is_admin && sub.invite_only && stream_data.is_subscribed(sub.name),
+        'can_make_private': page_params.is_admin && !sub.invite_only
+    });
+}
+
 function get_color() {
     var used_colors = stream_data.get_colors();
     var color = stream_color.pick_color(used_colors);
@@ -225,9 +233,9 @@ function add_email_hint(row) {
 }
 
 function add_sub_to_table(sub) {
-    $('#create_stream_row').after(templates.render(
-        'subscription',
-        _.extend(sub, {'is_admin': page_params.is_admin})));
+    sub = add_admin_options(sub);
+    var html = templates.render('subscription', sub);
+    $('#create_stream_row').after(html);
     settings_for_sub(sub).collapse('show');
     add_email_hint(sub);
 }
@@ -407,7 +415,7 @@ exports.setup_page = function () {
         // Add in admin options.
         var sub_rows = [];
         _.each(all_subs, function (sub) {
-            sub = _.extend(sub, {'is_admin': page_params.is_admin});
+            sub = add_admin_options(sub);
             sub_rows.push(sub);
         });
 
@@ -798,6 +806,73 @@ $(function () {
             },
             error: function (xhr) {
                 ui.report_error("Error renaming stream", xhr, $("#subscriptions-status"));
+            }
+        });
+    });
+
+    function redraw_privacy_related_stuff(sub_row, sub) {
+        var html;
+
+        sub = add_admin_options(sub);
+
+        html = templates.render('subscription_setting_icon', sub);
+        sub_row.find('.subscription-setting-icon').expectOne().html(html);
+
+        html = templates.render('subscription_type', sub);
+        sub_row.find('.subscription-type').expectOne().html(html);
+
+        html = templates.render('change_stream_privacy', sub);
+        sub_row.find('.change-stream-privacy').expectOne().html(html);
+    }
+
+    $("#subscriptions_table").on("click", ".make-stream-public-button", function (e) {
+        e.preventDefault();
+
+        var stream_name = $(e.target).attr("data-stream-name");
+        var sub_row = $(e.target).closest('.subscription_row');
+
+        $("#subscriptions-status").hide();
+        var data = {"stream_name": stream_name};
+
+        channel.post({
+            url: "/json/make_stream_public",
+            data: data,
+            success: function (data) {
+                var sub = stream_data.get_sub(stream_name);
+                sub.invite_only = false;
+                redraw_privacy_related_stuff(sub_row, sub);
+                var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
+                ui.report_success("The stream has been made public!", feedback_div);
+            },
+            error: function (xhr) {
+                var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
+                ui.report_error("Error making stream public", xhr, feedback_div);
+            }
+        });
+    });
+
+    $("#subscriptions_table").on("click", ".make-stream-private-button", function (e) {
+        e.preventDefault();
+
+        var stream_name = $(e.target).attr("data-stream-name");
+        var sub_row = $(e.target).closest('.subscription_row');
+
+        $("#subscriptions-status").hide();
+        var data = {"stream_name": stream_name};
+
+        channel.post({
+            url: "/json/make_stream_private",
+            data: data,
+            success: function (data) {
+                var sub = stream_data.get_sub(stream_name);
+                sub.invite_only = true;
+                redraw_privacy_related_stuff(sub_row, sub);
+                var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
+                ui.report_success("The stream has been made private!", feedback_div);
+            },
+            error: function (xhr) {
+                var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
+                ui.report_error("Error making stream private", xhr, feedback_div);
             }
         });
     });

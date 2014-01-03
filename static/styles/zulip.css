@@ -3720,3 +3720,12 @@ li.show-more-topics a {
     display: none;
 }
 
+.change-stream-privacy {
+    width: 100%;
+    text-align: center;
+}
+
+.change-stream-privacy-feedback {
+    display: none;
+}
+
