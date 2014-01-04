@@ -15,9 +15,7 @@ var bugdown_re = [
                     /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
                     // Gravatars are inlined as well
                     /!avatar\([^)]+\)/,
-                    /!gravatar\([^)]+\)/,
-                    // User mentions
-                    /\s+@\*\*[^\*]+\*\*/m
+                    /!gravatar\([^)]+\)/
                   ];
 
 exports.contains_bugdown = function contains_bugdown(content) {
@@ -227,7 +225,6 @@ function escape(html, encode) {
     .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
 
@@ -240,6 +237,16 @@ function handleEmoji(emoji_name) {
                ' title="' + input_emoji + '">';
     } else {
         return input_emoji;
+    }
+}
+
+function handleUserMentions(username) {
+    if (people_by_name_dict.get(username)) {
+        var person = people_by_name_dict.get(username);
+        return '<span class="user-mention" data-user-email="' + person.email + '">' +
+                '@' + person.full_name + '</span>';
+    } else {
+        return undefined;
     }
 }
 
@@ -279,6 +286,8 @@ $(function () {
     marked.InlineLexer.rules.zulip.strong = /^\*\*([\s\S]+?)\*\*(?!\*)/;
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'em');
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'del');
+    // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
+    disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');
 
     marked.setOptions({
         gfm: true,
@@ -289,8 +298,8 @@ $(function () {
         smartLists: true,
         smartypants: false,
         zulip: true,
-        emoji: true,
         emojiHandler: handleEmoji,
+        userMentionHandler: handleUserMentions,
         renderer: r
     });
 

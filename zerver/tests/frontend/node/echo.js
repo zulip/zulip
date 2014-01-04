@@ -1,7 +1,9 @@
+/*global Dict */
 var assert = require('assert');
 add_dependencies({
     _: 'third/underscore/underscore.js',
-    marked: 'third/marked/lib/marked.js'
+    marked: 'third/marked/lib/marked.js',
+    Dict: 'js/dict.js'
 });
 
 set_global('$', function (obj) {
@@ -17,6 +19,8 @@ set_global('$', function (obj) {
 set_global('emoji', {
   emojis_by_name: {emoji: 'some/url/here/emoji.png'}
 });
+
+set_global('people_by_name_dict', Dict.from({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}}));
 
 var echo = require('js/echo.js');
 
@@ -34,7 +38,10 @@ var echo = require('js/echo.js');
                      "No user mention @what there",
                      "We like to code\n~~~\ndef code():\n    we = \"like to do\"\n~~~",
                      "This is a\nmultiline :emoji: here\n message",
-                     "This is an :emoji: message"
+                     "This is an :emoji: message",
+                     "User Mention @**leo**",
+                     "User Mention @**leo f**",
+                     "User Mention @**leo with some name**"
                     ];
 
     var markup = [
@@ -45,9 +52,6 @@ var echo = require('js/echo.js');
                    "https://zulip.com/image.jpg too",
                    "Contains a zulip.com/foo.jpeg file",
                    "Contains a https://zulip.com/image.png file",
-                   "User Mention @**leo**",
-                   "User Mention @**leo f**",
-                   "User Mention @**leo with some name**",
                    "twitter url https://twitter.com/jacobian/status/407886996565016579",
                    "https://twitter.com/jacobian/status/407886996565016579",
                    "then https://twitter.com/jacobian/status/407886996565016579",
@@ -81,8 +85,10 @@ var echo = require('js/echo.js');
      expected: '<p>1. an</p>\n<p>2. ordered </p>\n<p>3. list</p>'},
     {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
      expected: '<blockquote><p>quote this for me</p></blockquote><p>thanks</p>'},
-     {input: 'This is an :emoji: message',
-      expected: '<p>This is an <img alt=":emoji:" class="emoji" src="some/url/here/emoji.png" title=":emoji:"> message</p>'}
+    {input: 'This is a @**Cordelia Lear** mention',
+     expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
+    {input: 'This is an :emoji: message',
+     expected: '<p>This is an <img alt=":emoji:" class="emoji" src="some/url/here/emoji.png" title=":emoji:"> message</p>'}
   ];
 
   test_cases.forEach(function (test_case) {

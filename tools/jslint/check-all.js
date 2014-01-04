@@ -47,7 +47,7 @@ var globals =
     // zulip.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'
     + ' add_messages'
-    + ' people_dict realm_people_dict'
+    + ' people_dict people_by_name_dict realm_people_dict'
     + ' keep_pointer_in_view unread_messages_read_in_narrow'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
     + ' scroll_to_selected get_private_message_recipient'
