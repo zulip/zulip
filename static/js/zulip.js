@@ -12,9 +12,10 @@ var home_msg_list = new MessageList('zhome',
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
 
-// The following two Dicts point to the same objects
+// The following three Dicts point to the same objects
 // All people we've seen
 var people_dict = new Dict();
+var people_by_name_dict = new Dict();
 // People in this realm
 var realm_people_dict = new Dict();
 
@@ -55,6 +56,7 @@ var waiting_on_browser_scroll = true;
 function add_person(person, in_realm) {
     page_params.people_list.push(person);
     people_dict.set(person.email, person);
+    people_by_name_dict.set(person.full_name, person);
     person.pm_recipient_count = 0;
 }
 
@@ -72,6 +74,7 @@ function remove_person(person) {
         }
     }
     people_dict.del(person.email);
+    people_by_name_dict.del(person.full_name);
     realm_people_dict.del(person.email);
 }
 
@@ -86,7 +89,12 @@ function update_person(person) {
                        {email: person.email});
         return;
     }
-    people_dict.get(person.email).full_name = person.full_name;
+    var person_obj = people_dict.get(person.email);
+    if (people_by_name_dict.has(person_obj.full_name)) {
+        people_by_name_dict.set(person.full_name, person_obj);
+        people_by_name_dict.del(person_obj.full_name);
+    }
+    person_obj.full_name = person.full_name;
     // This should be the same object, but...
     realm_people_dict.get(person.email).full_name = person.full_name;
     for (i = 0; i < page_params.people_list.length; i++) {
@@ -1243,6 +1251,7 @@ function consider_bankruptcy() {
 
 _.each(page_params.people_list, function (person) {
     people_dict.set(person.email, person);
+    people_by_name_dict.set(person.full_name, person);
     realm_people_dict.set(person.email, person);
     person.pm_recipient_count = 0;
 });
