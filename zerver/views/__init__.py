@@ -826,6 +826,7 @@ def home(request):
         staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
         alert_words           = register_ret['alert_words'],
         muted_topics          = register_ret['muted_topics'],
+        realm_filters         = register_ret['realm_filters'],
         is_admin              = user_profile.is_admin(),
         notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
         name_changes_disabled = settings.NAME_CHANGES_DISABLED,

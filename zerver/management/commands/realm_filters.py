@@ -3,6 +3,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from zerver.models import RealmFilter, all_realm_filters, Realm
+from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
 import sys
 
 class Command(BaseCommand):
@@ -44,11 +45,10 @@ Example: python manage.py realm_filters --realm=zulip.com --op=show
 
         if options["op"] == "add":
             url_format_string = args[1]
-            RealmFilter(realm=realm, pattern=pattern,
-                        url_format_string=url_format_string).save()
+            do_add_realm_filter(realm, pattern, url_format_string)
             sys.exit(0)
         elif options["op"] == "remove":
-            RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
+            do_remove_realm_filter(realm, pattern)
             sys.exit(0)
         else:
             self.print_help("python manage.py", "realm_filters")

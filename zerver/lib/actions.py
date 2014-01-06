@@ -13,7 +13,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     resolve_email_to_domain, email_to_username, display_recipient_cache_key, \
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
     UserActivityInterval, get_active_user_dicts_in_realm, RealmAlias, \
-    ScheduledJob
+    ScheduledJob, realm_filters_for_domain, RealmFilter
 from zerver.lib.avatar import get_avatar_url
 
 from django.db import transaction, IntegrityError
@@ -1753,6 +1753,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['alert_words'] = user_alert_words(user_profile)
     if event_types is None or "muted_topics" in event_types:
         state['muted_topics'] = ujson.loads(user_profile.muted_topics)
+    if event_types is None or "realm_filters" in event_types:
+        state['realm_filters'] = realm_filters_for_domain(user_profile.realm.domain)
     return state
 
 def apply_events(state, events):
@@ -1825,6 +1827,8 @@ def apply_events(state, events):
             state['alert_words'] = event['alert_words']
         elif event['type'] == "muted_topics":
             state['muted_topics'] = event["muted_topics"]
+        elif event['type'] == "realm_filters":
+            state['realm_filters'] = event["realm_filters"]
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 
@@ -2304,6 +2308,22 @@ def do_set_muted_topics(user_profile, muted_topics):
     notice = dict(event=dict(type="muted_topics", muted_topics=muted_topics),
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
+
+def notify_realm_filters(realm):
+    realm_filters = realm_filters_for_domain(realm.domain)
+    user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
+
+    notice = dict(event=dict(type="realm_filters", realm_filters=realm_filters), users=user_ids)
+    tornado_callbacks.send_notification(notice)
+
+def do_add_realm_filter(realm, pattern, url_format_string):
+    RealmFilter(realm=realm, pattern=pattern,
+                url_format_string=url_format_string).save()
+    notify_realm_filters(realm)
+
+def do_remove_realm_filter(realm, pattern):
+    RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
+    notify_realm_filters(realm)
 
 def get_emails_from_user_ids(user_ids):
     # We may eventually use memcached to speed this up, but the DB is fast.

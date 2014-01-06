@@ -2942,7 +2942,7 @@ class GetEventsTest(AuthedTestCase):
 
 from zerver.lib.actions import fetch_initial_state_data, apply_events, do_add_alert_words, \
     do_set_muted_topics, do_add_realm_emoji, do_remove_realm_emoji, do_remove_alert_words, \
-    do_remove_subscription
+    do_remove_subscription, do_add_realm_filter, do_remove_realm_filter
 from zerver.lib.event_queue import allocate_client_descriptor
 from collections import OrderedDict
 class EventsRegisterTest(AuthedTestCase):
@@ -2997,6 +2997,11 @@ class EventsRegisterTest(AuthedTestCase):
         self.do_test(lambda: do_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
                                                 "https://realm.com/my_emoji"))
         self.do_test(lambda: do_remove_realm_emoji(get_realm("zulip.com"), "my_emoji"))
+
+    def test_realm_filter_events(self):
+        self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#[123]",
+                                                "https://realm.com/my_realm_filter/%(id)s"))
+        self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#[123]"))
 
     def test_subscribe_events(self):
         self.do_test(lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream"),
