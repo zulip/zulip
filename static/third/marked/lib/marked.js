@@ -455,6 +455,7 @@ var inline = {
   del: noop,
   emoji: noop,
   usermention: noop,
+  realm_filters: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`]| {2,}\n|$)/
 };
 
@@ -511,6 +512,7 @@ inline.breaks = merge({}, inline.gfm, {
 inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
   usermention: /^(@\*\*([^\*]+)?\*\*)/m,
+  realm_filters: [],
   text: replace(inline.text)
     (']|', '@:]|')
     ()
@@ -565,6 +567,25 @@ InlineLexer.output = function(src, links, options) {
  * Lexing/Compiling
  */
 
+InlineLexer.prototype.inlineReplacement = function(regex, src, replace_func) {
+  var cap, out = "";
+  regex.lastIndex = 0;
+  if (cap = regex.exec(src)) {
+    // Split before-match into its own segment and handle it separately
+    var match_idx = regex.lastIndex;
+    var before = src.substring(0, match_idx - cap[0].length);
+    before = this.output(before);
+    out += before;
+
+    // Consume all of the matched text
+    src = src.substring(match_idx);
+
+    out += replace_func(regex, cap.slice(1), cap[0]);
+  }
+
+  return [src, out];
+};
+
 InlineLexer.prototype.output = function(src) {
   var out = ''
     , link
@@ -579,6 +600,24 @@ InlineLexer.prototype.output = function(src) {
       out += cap[1];
       continue;
     }
+
+    // realm_filters (zulip)
+    var self = this;
+    this.rules.realm_filters.forEach(function (realm_filter) {
+      var ret = self.inlineReplacement(realm_filter, src, function(regex, groups, match) {
+        // Insert the created URL
+        href = self.realm_filter(regex, groups, match);
+        if (href !== undefined) {
+          href = escape(href);
+          return self.renderer.link(href, href, match);
+        } else {
+          return match;
+        }
+      });
+
+      src = ret[0];
+      out += ret[1];
+    });
 
     // autolink
     if (cap = this.rules.autolink.exec(src)) {
@@ -724,6 +763,13 @@ InlineLexer.prototype.emoji = function (name) {
     return ':' + name + ':';
 
   return this.options.emojiHandler(name);
+};
+
+InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
+  if (typeof this.options.realmFilterHandler !== 'function')
+    return;
+
+  return this.options.realmFilterHandler(filter, matches);
 };
 
 InlineLexer.prototype.usermention = function (username, orig) {
