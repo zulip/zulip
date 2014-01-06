@@ -929,12 +929,13 @@ $(function () {
                 return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
             },
             matcher: function (item) {
-                var query = $.trim(this.query);
+                var query = $.trim(this.query.toLowerCase());
                 if (query === '' || query === item.email) {
                     return false;
                 }
                 // Case-insensitive.
-                return (item.email.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+                return (item.email.toLowerCase().indexOf(query) !== -1) ||
+                    (item.full_name.toLowerCase().indexOf(query) !== -1);
             },
             sorter: typeahead_helper.sort_recipientbox_typeahead,
             updater: function (item) {
