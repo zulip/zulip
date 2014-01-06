@@ -23,7 +23,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
 
-VALID_DIGEST_DAYS = (1, 2, 3)
+VALID_DIGEST_DAYS = (1, 2, 3, 4)
 def inactive_since(user_profile, cutoff):
     # Hasn't used the app in the last 24 business-day hours.
     most_recent_visit = [row.last_visit for row in \
