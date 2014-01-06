@@ -580,6 +580,38 @@ class StreamAdminTest(AuthedTestCase):
         result = self.client.delete('/json/streams/new_stream')
         self.assert_json_error(result, 'Must be a realm administrator')
 
+    def test_rename_stream(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'stream_name1')
+        do_add_subscription(user_profile, stream, no_log=True)
+        assign_perm('administer', user_profile, realm)
+
+        result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+        self.assert_json_success(result)
+
+        stream_name1_exists = Stream.objects.filter(
+            name='stream_name1',
+            realm=realm,
+        ).exists()
+        self.assertFalse(stream_name1_exists)
+        stream_name2_exists = Stream.objects.filter(
+            name='stream_name2',
+            realm=realm,
+        ).exists()
+        self.assertTrue(stream_name2_exists)
+
+    def test_rename_stream_requires_realm_admin(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'stream_name1')
+
+        result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+        self.assert_json_error(result, 'Must be a realm administrator')
 
 class PermissionTest(TestCase):
     def test_get_admin_users(self):
