@@ -433,7 +433,7 @@ exports.notify_messages_outside_current_search = function (messages) {
         if (message.sender_email !== page_params.email) {
             return;
         }
-        exports.notify_above_composebox("Your recent message is outside the current search.",
+        exports.notify_above_composebox("Sent! Your recent message is outside the current search.",
                                         "compose_notification_narrow_by_subject",
                                         message.id,
                                         "Narrow to " + get_message_header(message));
