@@ -825,7 +825,7 @@ $(function () {
         sub_row.find('.change-stream-privacy').expectOne().html(html);
     }
 
-    $("#subscriptions_table").on("click", ".make-stream-public-button", function (e) {
+    function change_stream_privacy(e, url, success_message, error_message, invite_only) {
         e.preventDefault();
 
         var stream_name = $(e.target).attr("data-stream-name");
@@ -835,46 +835,40 @@ $(function () {
         var data = {"stream_name": stream_name};
 
         channel.post({
-            url: "/json/make_stream_public",
+            url: url,
             data: data,
             success: function (data) {
                 var sub = stream_data.get_sub(stream_name);
-                sub.invite_only = false;
+                sub.invite_only = invite_only;
                 redraw_privacy_related_stuff(sub_row, sub);
                 var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
-                ui.report_success("The stream has been made public!", feedback_div);
+                ui.report_success(success_message, feedback_div);
             },
             error: function (xhr) {
                 var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
-                ui.report_error("Error making stream public", xhr, feedback_div);
+                ui.report_error(error_message, xhr, feedback_div);
             }
         });
+    }
+
+    $("#subscriptions_table").on("click", ".make-stream-public-button", function (e) {
+        change_stream_privacy(
+            e,
+            "/json/make_stream_public",
+            "The stream has been made public!",
+            "Error making stream public",
+            false
+        );
     });
 
     $("#subscriptions_table").on("click", ".make-stream-private-button", function (e) {
-        e.preventDefault();
-
-        var stream_name = $(e.target).attr("data-stream-name");
-        var sub_row = $(e.target).closest('.subscription_row');
-
-        $("#subscriptions-status").hide();
-        var data = {"stream_name": stream_name};
-
-        channel.post({
-            url: "/json/make_stream_private",
-            data: data,
-            success: function (data) {
-                var sub = stream_data.get_sub(stream_name);
-                sub.invite_only = true;
-                redraw_privacy_related_stuff(sub_row, sub);
-                var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
-                ui.report_success("The stream has been made private!", feedback_div);
-            },
-            error: function (xhr) {
-                var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
-                ui.report_error("Error making stream private", xhr, feedback_div);
-            }
-        });
+        change_stream_privacy(
+            e,
+            "/json/make_stream_private",
+            "The stream has been made private!",
+            "Error making stream private",
+            true
+        );
     });
 
     $("#subscriptions_table").on("show", ".regular_subscription_settings", function (e) {
