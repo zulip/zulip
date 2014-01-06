@@ -683,13 +683,23 @@ function hack_for_floating_recipient_bar() {
     floating_recipient.offset(offset);
 }
 
+var batched_updaters = {};
+
 function sync_message_flag(messages, flag_name, set_flag) {
-    channel.post({
-        url: '/json/update_message_flags',
-        idempotent: true,
-        data: {messages: JSON.stringify(_.pluck(messages, 'id')),
-               op: set_flag ? 'add' : 'remove',
-               flag: flag_name}});
+    var op = set_flag ? 'add' : 'remove';
+    var flag_key = flag_name + '_' + op;
+    var updater;
+
+    if (batched_updaters.hasOwnProperty(flag_key)) {
+        updater = batched_updaters[flag_key];
+    } else {
+        updater = batched_flag_updater(flag_name, op);
+        batched_updaters[flag_key] = updater;
+    }
+
+    _.each(messages, function (message) {
+        updater(message);
+    });
 }
 
 function sync_message_collapse(message, collapsed) {

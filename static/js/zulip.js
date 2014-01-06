@@ -323,24 +323,33 @@ function message_range(msg_list, start, end) {
 function batched_flag_updater(flag, op) {
     var queue = [];
     var on_success;
+    var start;
 
     function server_request() {
         // Wait for server IDs before sending flags
         var real_msgs = _.filter(queue, function (msg) {
             return msg.local_id === undefined;
         });
+        var real_msg_ids = _.map(real_msgs, function (msg) {
+            return msg.id;
+        });
+
+        if (real_msg_ids.length === 0) {
+            start();
+            return;
+        }
 
         channel.post({
             url:      '/json/update_message_flags',
             idempotent: true,
-            data:     {messages: JSON.stringify(real_msgs),
+            data:     {messages: JSON.stringify(real_msg_ids),
                        op:       op,
                        flag:     flag},
             success:  on_success
         });
     }
 
-    var start = _.debounce(server_request, 1000);
+    start = _.debounce(server_request, 1000);
 
     on_success = function on_success(data, status, jqXHR) {
         if (data ===  undefined || data.messages === undefined) {
@@ -348,7 +357,7 @@ function batched_flag_updater(flag, op) {
         }
 
         queue = _.filter(queue, function (message) {
-            return data.messages.indexOf(message) === -1;
+            return data.messages.indexOf(message.id) === -1;
         });
 
         if (queue.length > 0) {
@@ -365,7 +374,7 @@ function batched_flag_updater(flag, op) {
         } else {
             message.flags = _.without(message.flags, flag);
         }
-        queue.push(message.id);
+        queue.push(message);
         start();
     }
 

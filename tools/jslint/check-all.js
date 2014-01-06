@@ -60,7 +60,7 @@ var globals =
     + ' mark_all_as_read message_unread process_read_messages unread_in_current_view'
     + ' fast_forward_pointer recent_subjects unread_subjects'
     + ' add_message_metadata'
-    + ' mark_message_as_read'
+    + ' mark_message_as_read batched_flag_updater'
     + ' send_summarize_in_home'
     + ' send_summarize_in_stream'
     + ' suppress_unread_counts'
