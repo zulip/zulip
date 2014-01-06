@@ -1019,6 +1019,10 @@ function get_updates_success(data) {
         case 'muted_topics':
             muting_ui.handle_updates(event.muted_topics);
             break;
+        case 'realm_filters':
+            page_params.realm_filters = event.realm_filters;
+            echo.set_realm_filters(page_params.realm_filters);
+            break;
         }
     });
 

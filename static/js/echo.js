@@ -4,6 +4,7 @@ var exports = {};
 
 var waiting_for_id = {};
 var waiting_for_ack = {};
+var realm_filter_map = {};
 
 // Regexes that match some of our common bugdown markup
 var bugdown_re = [
@@ -250,6 +251,53 @@ function handleUserMentions(username) {
     }
 }
 
+function handleRealmFilter(pattern, matches) {
+    var url = realm_filter_map[pattern];
+
+    var current_group = 1;
+    _.each(matches, function (match) {
+        var back_ref = "\\" + current_group;
+        url = url.replace(back_ref, match);
+    });
+
+    return url;
+}
+
+function python_to_js_filter(pattern, url) {
+    // Converts a python named-group regex to a javascript-compatible numbered
+    // group regex... with a regex!
+    var named_group_re = /\(?P<([^>]+?)>/g;
+    var match = named_group_re.exec(pattern);
+    var current_group = 1;
+    while (match) {
+        var name = match[1];
+        // Replace named group with regular matching group
+        pattern = pattern.replace('(?P<' + name + '>', '(');
+        // Replace named reference in url to numbered reference
+        url = url.replace('%(' + name + ')s', '\\' + current_group);
+
+        match = named_group_re.exec(pattern);
+    }
+    return [new RegExp(pattern, 'g'), url];
+}
+
+exports.set_realm_filters = function set_realm_filters(realm_filters) {
+    // Update the marked parser with our particular set of realm filters
+    realm_filter_map = {};
+
+    var marked_rules = [];
+    _.each(realm_filters, function (realm_filter) {
+        var pattern = realm_filter[0];
+        var url = realm_filter[1];
+        var js_filters = python_to_js_filter(pattern, url);
+
+        realm_filter_map[js_filters[0]] = js_filters[1];
+        marked_rules.push(js_filters[0]);
+    });
+
+    marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
+};
+
 $(function () {
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function (_) {
@@ -289,6 +337,8 @@ $(function () {
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');
 
+    exports.set_realm_filters(page_params.realm_filters);
+
     marked.setOptions({
         gfm: true,
         tables: true,
@@ -300,6 +350,7 @@ $(function () {
         zulip: true,
         emojiHandler: handleEmoji,
         userMentionHandler: handleUserMentions,
+        realmFilterHandler: handleRealmFilter,
         renderer: r
     });
 

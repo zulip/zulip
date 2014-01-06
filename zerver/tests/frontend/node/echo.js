@@ -20,6 +20,10 @@ set_global('emoji', {
   emojis_by_name: {emoji: 'some/url/here/emoji.png'}
 });
 
+set_global('page_params', {
+  realm_filters: [["#(?P<id>[0-9]{2,8})", "https://trac.zulip.net/ticket/%(id)s"]]
+});
+
 set_global('people_by_name_dict', Dict.from({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}}));
 
 var echo = require('js/echo.js');
@@ -88,7 +92,9 @@ var echo = require('js/echo.js');
     {input: 'This is a @**Cordelia Lear** mention',
      expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
     {input: 'This is an :emoji: message',
-     expected: '<p>This is an <img alt=":emoji:" class="emoji" src="some/url/here/emoji.png" title=":emoji:"> message</p>'}
+     expected: '<p>This is an <img alt=":emoji:" class="emoji" src="some/url/here/emoji.png" title=":emoji:"> message</p>'},
+    {input: 'This is a realm filter #1234 with text after it',
+     expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'}
   ];
 
   test_cases.forEach(function (test_case) {
