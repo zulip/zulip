@@ -45,7 +45,7 @@ def get_realm_day_counts():
     query = '''
         select
             r.domain,
-            trunc(extract(epoch from now() - pub_date)/(24*3600)) age,
+            (now()::date - pub_date::date) age,
             count(*) cnt
         from zerver_message m
         join zerver_userprofile up on up.id = m.sender_id
@@ -53,7 +53,7 @@ def get_realm_day_counts():
         where
             (not up.is_bot)
         and
-            pub_date > now() - interval '8 day'
+            pub_date > now()::date - interval '8 day'
         and
             r.domain not in ('zulip.com', 'mit.edu')
         group by
