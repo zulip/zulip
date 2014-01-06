@@ -550,6 +550,37 @@ class StreamAdminTest(AuthedTestCase):
         stream = Stream.objects.get(name='public_stream', realm=realm)
         self.assertTrue(stream.invite_only)
 
+    def test_deactivate_stream_backend(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'new_stream')
+        do_add_subscription(user_profile, stream, no_log=True)
+        assign_perm('administer', user_profile, realm)
+
+        result = self.client.delete('/json/streams/new_stream')
+        self.assert_json_success(result)
+        subscription_exists = Subscription.objects.filter(
+            user_profile=user_profile,
+            recipient__type_id=stream.id,
+            recipient__type=Recipient.STREAM,
+            active=True,
+        ).exists()
+        self.assertFalse(subscription_exists)
+
+    def test_deactivate_stream_backend_requires_realm_admin(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'new_stream')
+        do_add_subscription(user_profile, stream, no_log=True)
+
+        result = self.client.delete('/json/streams/new_stream')
+        self.assert_json_error(result, 'Must be a realm administrator')
+
+
 class PermissionTest(TestCase):
     def test_get_admin_users(self):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
