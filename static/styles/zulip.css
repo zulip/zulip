@@ -968,18 +968,19 @@ just a temporary hack.
     position: relative;
 }
 
-.messagebox .unread_marker {
+.unread_marker {
     display: block;
     position: absolute;
     width: 10px;
     height: 10px;
     border-radius: 16px;
     background: #2b8213;
-    left: -31px;
-    margin-top: 6px;
-    opacity: 0;
+    left: -16px;
+    top: 50%;
+    margin-top: -6px;
     box-shadow: inset 1px 1px 1px -1px #000;
     border: 1px solid #fff;
+    opacity: 0;
 }
 
 .messagebox .unread_marker.slow_fade {
@@ -1161,6 +1162,10 @@ div.message_table {
     margin-left: auto;
     display: none;
     width: 100%;
+}
+
+.message_row {
+    position: relative;
 }
 
 table.compose_table {
