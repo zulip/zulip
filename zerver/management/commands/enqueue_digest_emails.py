@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish
-from zerver.models import UserActivity, UserProfile, get_realm
+from zerver.models import UserActivity, UserProfile, get_realm, Realm
 
 ## Logging setup ##
 
@@ -90,7 +90,10 @@ in a while.
         if datetime.datetime.utcnow().weekday() not in VALID_DIGEST_DAYS:
             return
 
-        digest_domains = ["zulip.com"]
+        all_domains = Realm.objects.values_list('domain', flat=True)
+        non_digest_domains = set(("users.customer4.invalid", "mit.edu"))
+        digest_domains = set(all_domains) - non_digest_domains
+
         deployment_domains = domains_for_this_deployment()
 
         for domain in digest_domains:
