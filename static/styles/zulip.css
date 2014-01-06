@@ -2536,6 +2536,7 @@ div.floating_recipient {
     text-align: center;
 }
 
+#empty_narrow_private_message p,
 #empty_narrow_message p {
     text-align: center;
 }
