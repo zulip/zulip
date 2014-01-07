@@ -321,6 +321,13 @@ $(function () {
           + '\n</pre></div>';
     };
 
+    // Our links have title= and target=_blank
+    r.link = function (href, title, text) {
+        title = title || href;
+        var out = '<a href="' + href + '"' + ' target="_blank" title="' + title + '"' + '>' + text + '</a>';
+        return out;
+    };
+
     // Disable ordered lists
     // We used GFM + tables, so replace the list start regex for that ruleset
     // We remove the |[\d+]\. that matches the numbering in a numbered list
