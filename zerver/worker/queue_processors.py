@@ -18,7 +18,7 @@ from zerver.lib.digest import handle_digest_email
 from zerver.decorator import JsonableError
 from zerver.lib.socket import req_redis_key
 from confirmation.models import Confirmation
-from django.db import reset_queries
+from zerver.lib.db import reset_queries
 from django.core.mail import EmailMessage
 
 import os

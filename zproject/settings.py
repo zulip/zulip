@@ -9,6 +9,7 @@ import sys
 import ConfigParser
 
 from zerver.openid import openid_failure_handler
+from zerver.lib.db import TimeTrackingConnection
 
 config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
@@ -62,6 +63,7 @@ DATABASES = {"default": {
     'OPTIONS': {
         'sslmode': 'verify-full',
         'autocommit': True,
+        'connection_factory': TimeTrackingConnection
         },
     },
 }
@@ -72,6 +74,7 @@ if ENTERPRISE:
             'HOST': '',
             'OPTIONS': {
                 'autocommit': True,
+                'connection_factory': TimeTrackingConnection
             }
             })
 elif not DEPLOYED:
@@ -80,6 +83,7 @@ elif not DEPLOYED:
             'HOST': 'localhost',
             'OPTIONS': {
                 'autocommit': True,
+                'connection_factory': TimeTrackingConnection
             }
             })
     INTERNAL_ZULIP_USERS = []

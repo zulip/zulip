@@ -149,15 +149,16 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
     # Get the amount of time spent doing database queries
     db_time_output = ""
-    if len(connection.queries) > 0:
-        query_time = sum(float(query.get('time', 0)) for query in connection.queries)
+    queries = connection.connection.queries if connection.connection is not None else []
+    if len(queries) > 0:
+        query_time = sum(float(query.get('time', 0)) for query in queries)
         db_time_output = " (db: %s/%sq)" % (format_timedelta(query_time),
-                                            len(connection.queries))
+                                            len(queries))
 
         if not suppress_statsd:
             # Log ms, db ms, and num queries to statsd
             statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(query_time))
-            statsd.incr("%s.dbq" % (statsd_path, ), len(connection.queries))
+            statsd.incr("%s.dbq" % (statsd_path, ), len(queries))
             statsd.timing("%s.total" % (statsd_path,), timedelta_ms(time_delta))
 
     if 'extra' in log_data:
@@ -195,7 +196,8 @@ class LogRequests(object):
     def process_request(self, request):
         request._log_data = dict()
         record_request_start_data(request._log_data)
-        connection.queries = []
+        if connection.connection is not None:
+            connection.connection.queries = []
 
     def process_view(self, request, view_func, args, kwargs):
         # process_request was already run; we save the initialization
@@ -206,7 +208,8 @@ class LogRequests(object):
         # And then completely reset our tracking to only cover work
         # done as part of this request
         record_request_start_data(request._log_data)
-        connection.queries = []
+        if connection.connection is not None:
+            connection.connection.queries = []
 
     def process_response(self, request, response):
         # The reverse proxy might have sent us the real external IP
@@ -252,30 +255,6 @@ def csrf_failure(request, reason=""):
         return json_error("CSRF Error: %s" % (reason,), status=403)
     else:
         return html_csrf_failure(request, reason)
-
-# Monkeypatch in time tracking to the Django non-debug cursor
-# Code comes from CursorDebugWrapper
-def wrapper_execute(self, action, sql, params=()):
-    start = time.time()
-    try:
-        return action(sql, params)
-    finally:
-        stop = time.time()
-        duration = stop - start
-        self.db.queries.append({
-                'time': "%.3f" % duration,
-                })
-
-from django.db.backends.util import CursorWrapper
-def cursor_execute(self, sql, params=()):
-    return wrapper_execute(self, self.cursor.execute, sql, params)
-def cursor_executemany(self, sql, params=()):
-    return wrapper_execute(self, self.cursor.executemany, sql, params)
-
-if not settings.DEBUG:
-    # If settings.DEBUG, the default cursor will do the appropriate logging already
-    CursorWrapper.execute = cursor_execute
-    CursorWrapper.executemany = cursor_executemany
 
 class RateLimitMiddleware(object):
     def process_response(self, request, response):

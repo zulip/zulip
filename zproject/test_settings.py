@@ -8,7 +8,7 @@ DATABASES["default"] = {"NAME": "zulip_test",
                         "SCHEMA": "zulip",
                         "ENGINE": "django.db.backends.postgresql_psycopg2",
                         "TEST_NAME": "django_zulip_tests",
-                        "OPTIONS": { },}
+                        "OPTIONS": {"connection_factory": TimeTrackingConnection },}
 
 
 if "TORNADO_SERVER" in os.environ:

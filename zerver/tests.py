@@ -6,7 +6,6 @@ from django.test.simple import DjangoTestSuiteRunner
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.db.backends.util import CursorDebugWrapper
 from guardian.shortcuts import assign_perm, remove_perm
 
 from zilencer.models import Deployment
@@ -33,6 +32,7 @@ from zerver.lib.rate_limiter import clear_user_history
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
 from zerver.lib.digest import send_digest_email
+from zerver.lib.db import TimeTrackingCursor
 from zerver.forms import not_mit_mailing_list
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_int
@@ -114,25 +114,21 @@ def queries_captured():
                     'time': "%.3f" % duration,
                     })
 
-    old_settings = settings.DEBUG
-    settings.DEBUG = True
-
-    old_execute = CursorDebugWrapper.execute
-    old_executemany = CursorDebugWrapper.executemany
+    old_execute = TimeTrackingCursor.execute
+    old_executemany = TimeTrackingCursor.executemany
 
     def cursor_execute(self, sql, params=()):
-        return wrapper_execute(self, self.cursor.execute, sql, params)
-    CursorDebugWrapper.execute = cursor_execute
+        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)
+    TimeTrackingCursor.execute = cursor_execute
 
     def cursor_executemany(self, sql, params=()):
-        return wrapper_execute(self, self.cursor.executemany, sql, params)
-    CursorDebugWrapper.executemany = cursor_executemany
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)
+    TimeTrackingCursor.executemany = cursor_executemany
 
     yield queries
 
-    settings.DEBUG = old_settings
-    CursorDebugWrapper.execute = old_execute
-    CursorDebugWrapper.executemany = old_executemany
+    TimeTrackingCursor.execute = old_execute
+    TimeTrackingCursor.executemany = old_executemany
 
 
 def bail(msg):
