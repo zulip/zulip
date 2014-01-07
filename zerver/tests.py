@@ -1062,7 +1062,7 @@ class MessageDictTest(AuthedTestCase):
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
-        self.assertTrue(len(queries) <= 6)
+        self.assertTrue(len(queries) <= 7)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
