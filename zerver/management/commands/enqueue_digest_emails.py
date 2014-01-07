@@ -90,7 +90,8 @@ in a while.
         if datetime.datetime.utcnow().weekday() not in VALID_DIGEST_DAYS:
             return
 
-        all_domains = Realm.objects.values_list('domain', flat=True)
+        all_domains = Realm.objects.filter(
+            deactivated=False).values_list('domain', flat=True)
         non_digest_domains = set(("users.customer4.invalid", "mit.edu"))
         digest_domains = set(all_domains) - non_digest_domains
 
