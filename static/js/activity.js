@@ -253,35 +253,32 @@ function status_from_timestamp(baseline_time, presence) {
 }
 
 function focus_ping() {
-    $.post('/json/update_active_status',
-           {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
-            new_user_input: exports.new_user_input}, function (data) {
-        if (data === undefined || data.presences === undefined) {
-            // We sometimes receive no data even on successful
-            // requests; we should figure out why but this will
-            // prevent us from throwing errors until then
-            return;
-        }
+    channel.post({
+        url: '/json/update_active_status',
+        data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
+               new_user_input: exports.new_user_input},
+        idempotent: true,
+        success: function (data) {
+            presence_info = {};
 
-        presence_info = {};
-
-        // Update Zephyr mirror activity warning
-        if (data.zephyr_mirror_active === false) {
-            $('#zephyr-mirror-error').show();
-        } else {
-            $('#zephyr-mirror-error').hide();
-        }
-
-        exports.new_user_input = false;
-
-        // Ping returns the active peer list
-        _.each(data.presences, function (presence, this_email) {
-            if (page_params.email !== this_email) {
-                presence_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
+            // Update Zephyr mirror activity warning
+            if (data.zephyr_mirror_active === false) {
+                $('#zephyr-mirror-error').show();
+            } else {
+                $('#zephyr-mirror-error').hide();
             }
-        });
-        update_users();
-        exports.update_huddles();
+
+            exports.new_user_input = false;
+
+            // Ping returns the active peer list
+            _.each(data.presences, function (presence, this_email) {
+                if (page_params.email !== this_email) {
+                    presence_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
+                }
+            });
+            update_users();
+            exports.update_huddles();
+        }
     });
 }
 
