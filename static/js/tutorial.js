@@ -247,7 +247,7 @@ function finale() {
     $("#tutorial-get-started").click(function () {
         finale_modal.modal("hide");
         $(".screen").css({opacity: 0.0, width: 0, height: 0});
-    });
+    }).focus();
 
     // Restore your actual stream colors and rerender to display any
     // messages received during the tutorial.
@@ -278,7 +278,7 @@ function reply() {
     $("#tutorial-reply-next").click(function () {
         spotlight_message.popover("destroy");
         finale();
-    });
+    }).focus();
 }
 
 function home() {
@@ -300,7 +300,7 @@ function home() {
     $("#tutorial-home-next").click(function () {
         spotlight_message.popover("destroy");
         reply();
-    });
+    }).focus();
 }
 
 function private_message() {
@@ -330,7 +330,7 @@ function private_message() {
     $("#tutorial-private-next").click(function () {
         bar.popover("destroy");
         home();
-    });
+    }).focus();
 }
 
 function subject() {
@@ -349,7 +349,7 @@ function subject() {
     $("#tutorial-subject-next").click(function () {
         bar.popover("destroy");
         private_message();
-    });
+    }).focus();
 }
 
 function stream() {
@@ -367,7 +367,7 @@ function stream() {
     $("#tutorial-stream-next").click(function () {
         bar.popover("destroy");
         subject();
-    });
+    }).focus();
 }
 
 function message() {
@@ -388,7 +388,7 @@ function message() {
     $("#tutorial-message-next").click(function () {
         bar.popover("destroy");
         stream();
-    });
+    }).focus();
 }
 
 function welcome() {
@@ -408,7 +408,7 @@ function welcome() {
     $("#tutorial-welcome-next").click(function () {
         bar.popover("destroy");
         message();
-    });
+    }).focus();
 }
 
 exports.start = function () {
