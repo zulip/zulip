@@ -309,6 +309,9 @@ def do_send_messages(messages):
         else:
             raise ValueError('Bad recipient type')
 
+        # Only deliver the message to active user recipients
+        message['active_recipients'] = filter(lambda user_profile: user_profile.is_active,
+                                              message['recipients'])
         message['message'].maybe_render_content(None)
 
     # Save the message receipts in the database
@@ -318,8 +321,7 @@ def do_send_messages(messages):
         ums = []
         for message in messages:
             ums_to_create = [UserMessage(user_profile=user_profile, message=message['message'])
-                             for user_profile in message['recipients']
-                             if user_profile.is_active]
+                             for user_profile in message['active_recipients']]
 
             # These properties on the Message are set via
             # Message.render_markdown by code in the bugdown inline patterns
@@ -350,19 +352,18 @@ def do_send_messages(messages):
         message['message'].to_dict(apply_markdown=False)
         user_flags = user_message_flags.get(message['message'].id, {})
         sender = message['message'].sender
-        recipient_emails = [user.email for user in message['recipients']]
         user_presences = get_status_dict(sender)
         presences = {}
-        for email in recipient_emails:
-            if email in user_presences:
-                presences[email] = user_presences[email]
+        for user_profile in message['active_recipients']:
+            if user_profile.email in user_presences:
+                presences[user_profile.email] = user_presences[user_profile.email]
 
         data = dict(
             type         = 'new_message',
             message      = message['message'].id,
             presences    = presences,
             users        = [{'id': user.id, 'flags': user_flags.get(user.id, [])}
-                             for user in message['recipients']])
+                             for user in message['active_recipients']])
         if message['message'].recipient.type == Recipient.STREAM:
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
