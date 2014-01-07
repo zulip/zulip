@@ -45,7 +45,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
-    CreateUserForm, is_inactive
+    CreateUserForm, is_inactive, OurAuthenticationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -612,11 +612,14 @@ def process_openid_login(request):
     return login_complete(request, render_failure=handle_openid_errors)
 
 def login_page(request, **kwargs):
-    template_response = django_login_page(request, **kwargs)
+    template_response = django_login_page(
+        request, authentication_form=OurAuthenticationForm, **kwargs)
+
     try:
         template_response.context_data['email'] = request.GET['email']
     except KeyError:
         pass
+
     return template_response
 
 @authenticated_json_post_view

@@ -826,6 +826,17 @@ class LoginTest(AuthedTestCase):
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_profile_by_email('test@zulip.com')
 
+    def test_login_deactivated(self):
+        """
+        If you try to log in to a deactivated realm, you get a clear error page.
+        """
+        realm = Realm.objects.get(domain="zulip.com")
+        realm.deactivated = True
+        realm.save(update_fields=["deactivated"])
+
+        result = self.login("hamlet@zulip.com")
+        self.assertIn("has been deactivated", result.content.replace("\n", " "))
+
     def test_logout(self):
         self.login("hamlet@zulip.com")
         self.client.post('/accounts/logout/')

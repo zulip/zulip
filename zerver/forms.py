@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
-from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm
 from django.conf import settings
 
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
@@ -85,3 +85,20 @@ class LoggingSetPasswordForm(SetPasswordForm):
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
     email = forms.EmailField()
+
+class OurAuthenticationForm(AuthenticationForm):
+    def clean_username(self):
+        email = self.cleaned_data['username']
+        try:
+            user_profile = get_user_profile_by_email(email)
+        except UserProfile.DoesNotExist:
+            return
+
+        if user_profile.realm.deactivated:
+            error_msg = u"""Sorry for the trouble, but %s has been deactivated.
+
+Please contact support@zulip.com to reactivate this group.""" % (
+                user_profile.realm.name,)
+            raise ValidationError(mark_safe(error_msg))
+
+        return email
