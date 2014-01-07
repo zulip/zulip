@@ -1514,6 +1514,8 @@ def truncate_topic(topic):
 
 
 def update_user_message_flags(message, ums):
+    wildcard = message.mentions_wildcard
+    mentioned_ids = message.mentions_user_ids
     ids_with_alert_words = message.user_ids_with_alert_words
     changed_ums = set()
 
@@ -1530,6 +1532,11 @@ def update_user_message_flags(message, ums):
     for um in ums:
         has_alert_word = um.user_profile_id in ids_with_alert_words
         update_flag(um, has_alert_word, UserMessage.flags.has_alert_word)
+
+        mentioned = um.user_profile_id in mentioned_ids
+        update_flag(um, mentioned, UserMessage.flags.mentioned)
+
+        update_flag(um, wildcard, UserMessage.flags.wildcard_mentioned)
 
     for um in changed_ums:
         um.save(update_fields=['flags'])
