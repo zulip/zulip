@@ -29,19 +29,19 @@
         <ul>
           <li>
             <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox">
-              <input id="mutestream-{{id}}" class="sub_setting_control" type="checkbox" {{#unless in_home_view}}checked{{/unless}} />
+              <input id="mutestream-{{id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless in_home_view}}checked{{/unless}} />
               <label class="subscription-control-label">Mute stream</label>
             </div>
           </li>
           <li>
             <div id="sub_setting_notifications" class="sub_setting_checkbox">
-              <input id="notifystream-{{id}}" class="sub_setting_control" type="checkbox" {{#if notifications}}checked{{/if}} />
+              <input id="notifystream-{{id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if notifications}}checked{{/if}} />
               <label class="subscription-control-label">Show desktop notifications<br/>for traffic on this stream</label>
             </div>
           </li>
           <li>
             <span class="sub_setting_control">
-              <input stream_name="{{name}}" class="colorpicker" id="streamcolor" type="text" value="{{color}}" />
+              <input stream_name="{{name}}" class="colorpicker" id="streamcolor" type="text" value="{{color}}" tabindex="-1" />
             </span>
             <label for="streamcolor" class="subscription-control-label">Stream color</label>
           </li>
@@ -61,8 +61,8 @@
         <div class="rename-stream">
         <span class="sub_settings_title">Administrator settings</span>
           <form class="form-inline">
-            <input type="text" name="new-name" value="" class="input-block new-stream-name" />
-            <input type="submit" name="rename" value="Rename stream" class="zulip-button red-button stream-rename-button" />
+            <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
+            <input type="submit" name="rename" value="Rename stream" class="zulip-button red-button stream-rename-button" tabindex="-1" />
           </form>
         </div>
         <div class="change-stream-privacy">
@@ -75,8 +75,8 @@
         <span class="sub_settings_title">Stream membership</span>
         <div class="subscriber_list_add">
           <form class="form-inline">
-            <input type="text" name="principal" placeholder="Email address" value="" class="input-block" />
-            <input type="submit" name="add_subscriber" value="Add" class="zulip-button blue-button add-subscriber-button" />
+            <input type="text" name="principal" placeholder="Email address" value="" class="input-block" tabindex="-1" />
+            <input type="submit" name="add_subscriber" value="Add" class="zulip-button blue-button add-subscriber-button" tabindex="-1 "/>
           </form>
         </div>
       </div>

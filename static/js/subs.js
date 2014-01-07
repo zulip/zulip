@@ -732,6 +732,15 @@ $(function () {
             });
         }
 
+        // Make all inputs have a default tabindex
+        subrow.find('.subscription_settings :input').removeAttr('tabindex');
+    });
+
+    $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
+        var subrow = $(e.target).closest('.subscription_row');
+
+        // Remove all inputs from the tabindex
+        subrow.find('.subscription_settings :input').attr('tabindex', '-1');
     });
 
     $("#subscriptions_table").on("click", ".sub_setting_checkbox", function (e) {
