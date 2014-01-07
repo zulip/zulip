@@ -167,6 +167,10 @@ def process_new_message(data):
         user_profile = user_profiles[user_data['id']]
         flags = user_data.get('flags', [])
 
+        if not user_profile.is_active:
+            logging.warning("Message %s being delivered to inactive user %s" %
+                            (message.id, user_profile_id))
+
         for client in get_client_descriptors_for_user(user_profile_id):
             send_to_clients[client.event_queue.id] = {'client': client, 'flags': flags}
             if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
