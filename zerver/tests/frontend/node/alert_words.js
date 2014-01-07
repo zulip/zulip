@@ -15,34 +15,33 @@ set_global('feature_flags', {
 
 var alert_words = require('js/alert_words.js');
 
-var regular_message = { sender_email: 'another@zulip.com', content: '<p>a message</p>',
-                        flags: [] };
+var regular_message = { sender_email: 'another@zulip.com', content: '<p>a message</p>'};
 var own_message = { sender_email: 'tester@zulip.com', content: '<p>hey this message alertone</p>',
-                        flags: ['has_alert_word'] };
+                    alerted: true };
 var other_message = { sender_email: 'another@zulip.com', content: '<p>another alertone message</p>',
-                        flags: ['has_alert_word'] };
+                      alerted: true };
 var caps_message = { sender_email: 'another@zulip.com', content: '<p>another ALERTtwo message</p>',
-                        flags: ['has_alert_word'] };
+                     alerted: true };
 var alertwordboundary_message = { sender_email: 'another@zulip.com',
-                                  content: '<p>another alertthreemessage</p>', flags: [] };
+                                  content: '<p>another alertthreemessage</p>', alerted: false };
 var multialert_message = { sender_email: 'another@zulip.com', content:
                            '<p>another alertthreemessage alertone and then alerttwo</p>',
-                           flags: ['has_alert_word'] };
+                           alerted: true };
 var unsafe_word_message = { sender_email: 'another@zulip.com', content: '<p>gotta al*rt.*s all</p>',
-                            flags: ['has_alert_word'] };
+                            alerted: true };
 var alert_in_url_message = { sender_email: 'another@zulip.com', content: '<p>http://www.google.com/alertone/me</p>',
-                            flags: ['has_alert_word'] };
+                            alerted: true };
 var question_word_message = { sender_email: 'another@zulip.com', content: '<p>still alertone? me</p>',
-                            flags: ['has_alert_word'] };
+                            alerted: true };
 
 (function test_notifications() {
-    assert.equal(alert_words.notifies(regular_message), false);
-    assert.equal(alert_words.notifies(own_message), false);
-    assert.equal(alert_words.notifies(other_message), true);
-    assert.equal(alert_words.notifies(caps_message), true);
-    assert.equal(alert_words.notifies(alertwordboundary_message), false);
-    assert.equal(alert_words.notifies(multialert_message), true);
-    assert.equal(alert_words.notifies(unsafe_word_message), true);
+    assert(!alert_words.notifies(regular_message));
+    assert(!alert_words.notifies(own_message));
+    assert(alert_words.notifies(other_message));
+    assert(alert_words.notifies(caps_message));
+    assert(!alert_words.notifies(alertwordboundary_message));
+    assert(alert_words.notifies(multialert_message));
+    assert(alert_words.notifies(unsafe_word_message));
 }());
 
 (function test_munging() {
@@ -71,3 +70,4 @@ var question_word_message = { sender_email: 'another@zulip.com', content: '<p>st
     alert_words.process_message(question_word_message);
     assert.equal(question_word_message.content, "<p>still <span class='alert-word'>alertone</span>? me</p>");
 }());
+

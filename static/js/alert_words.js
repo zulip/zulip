@@ -30,8 +30,7 @@ exports.process_message = function (message) {
 };
 
 exports.notifies = function (message) {
-    return ((message.sender_email !== page_params.email) &&
-            (message.flags.indexOf('has_alert_word') > -1));
+    return ((message.sender_email !== page_params.email) && message.alerted);
 };
 
 return exports;
