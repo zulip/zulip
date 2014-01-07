@@ -942,7 +942,7 @@ def get_user_profile_by_id(uid):
 
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
 def get_user_profile_by_email(email):
-    return UserProfile.objects.select_related().get(email__iexact=email)
+    return UserProfile.objects.select_related().get(email__iexact=email.strip())
 
 @cache_with_key(active_user_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_active_user_dicts_in_realm(realm):
@@ -952,7 +952,7 @@ def get_active_user_dicts_in_realm(realm):
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest
     # invite.
-    return PreregistrationUser.objects.filter(email__iexact=email).latest("invited_at")
+    return PreregistrationUser.objects.filter(email__iexact=email.strip()).latest("invited_at")
 
 class Huddle(models.Model):
     # TODO: We should consider whether using
