@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
+from zerver.lib.cache import update_user_profile_cache
 from zerver.lib.context_managers import lockfile
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
@@ -137,6 +138,29 @@ def delete_realm_user_sessions(realm):
 def delete_all_user_sessions():
     for session in Session.objects.all():
         delete_session(session)
+
+def active_humans_in_realm(realm):
+    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
+
+def do_deactivate_realm(realm):
+    """
+    Deactivate this realm. Do NOT deactivate the users -- we need to be able to
+    tell the difference between users that were intentionally deactivated,
+    e.g. by a realm admin, and users who can't currently use Zulip because their
+    realm has been deactivated.
+    """
+    if realm.deactivated:
+        return
+
+    realm.deactivated = True
+    realm.save(update_fields=["deactivated"])
+
+    for user in active_humans_in_realm(realm):
+        # Don't deactivate the users, but do delete their sessions so they get
+        # bumped to the login screen, where they'll get a realm deactivation
+        # notice when they try to log in.
+        delete_user_sessions(user)
+        update_user_profile_cache(None, instance=user, update_fields=None)
 
 def do_deactivate_user(user_profile, log=True, _cascade=True):
     if not user_profile.is_active:
