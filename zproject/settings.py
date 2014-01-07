@@ -36,6 +36,11 @@ if not 'DEBUG' in globals():
 TEMPLATE_DEBUG = DEBUG
 TEST_SUITE = False
 
+if len(sys.argv) > 2 and sys.argv[0].endswith('manage.py') and sys.argv[1] == 'process_queue':
+    IS_WORKER = True
+else:
+    IS_WORKER = False
+
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
 if TESTING_DEPLOYED or ENTERPRISE:
@@ -626,7 +631,7 @@ for (var, path) in ZULIP_PATHS:
 ZULIP_WORKER_TEST_FILE = '/tmp/zulip-worker-test-file'
 
 
-if len(sys.argv) > 2 and sys.argv[0].endswith('manage.py') and sys.argv[1] == 'process_queue':
+if IS_WORKER:
     FILE_LOG_PATH = WORKER_LOG_PATH
 else:
     FILE_LOG_PATH = SERVER_LOG_PATH
