@@ -77,6 +77,30 @@ class NarrowBuilder(object):
             return Q(flags=UserMessage.flags.mentioned)
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
+    _alphanum = frozenset(
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+
+    def _pg_re_escape(self, pattern):
+        """
+        Escape user input to place in a regex
+
+        Python's re.escape escapes unicode characters in a way which postgres
+        fails on, u'\u03bb' to u'\\\u03bb'. This function will correctly escape
+        them for postgres, u'\u03bb' to u'\\u03bb'.
+        """
+        s = list(pattern)
+        for i, c in enumerate(s):
+            if c not in self._alphanum:
+                if c == '\000':
+                    s[1] = '\\000'
+                elif ord(c) >= 128:
+                    # convert the character to hex postgres regex will take
+                    # \uXXXX
+                    s[i] = '\\u{:0>4x}'.format(ord(c))
+                else:
+                    s[i] = '\\' + c
+        return ''.join(s)
+
     def by_stream(self, operand):
         stream = get_stream(operand, self.user_profile.realm)
         if stream is None:
@@ -92,7 +116,7 @@ class NarrowBuilder(object):
                 base_stream_name = stream.name
 
             matching_streams = Stream.objects.filter(realm=self.user_profile.realm,
-                                                     name__iregex=r'^(un)*%s(\.d)*$' % (re.escape(base_stream_name),))
+                                                     name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
             matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
             recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
             return self.pQ(recipient__in=recipients)
@@ -115,7 +139,7 @@ class NarrowBuilder(object):
             if base_topic in ('', 'personal', '(instance "")'):
                 regex = r'^(|personal|\(instance ""\))(\.d)*$'
             else:
-                regex = r'^%s(\.d)*$' % (re.escape(base_topic),)
+                regex = r'^%s(\.d)*$' % (self._pg_re_escape(base_topic),)
 
             return self.pQ(subject__iregex=regex)
 

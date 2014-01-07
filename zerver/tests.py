@@ -2235,6 +2235,74 @@ class GetOldMessagesTest(AuthedTestCase):
             self.assertEqual(message["type"], "stream")
             self.assertEqual(message["recipient_id"], stream_id)
 
+    def test_get_old_messages_with_narrow_stream_mit_unicode_regex(self):
+        """
+        A request for old messages for a user in the mit.edu relam with unicode
+        stream name should be correctly escaped in the database query.
+        """
+        self.login("starnine@mit.edu")
+        # We need to susbcribe to a stream and then send a message to
+        # it to ensure that we actually have a stream message in this
+        # narrow view.
+        realm = Realm.objects.get(domain="mit.edu")
+        lambda_stream, _ = create_stream_if_needed(realm, u"\u03bb-stream")
+        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
+                            lambda_stream, no_log=True)
+
+        lambda_stream_d, _ = create_stream_if_needed(realm, u"\u03bb-stream.d")
+        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
+                            lambda_stream_d, no_log=True)
+
+        self.send_message("starnine@mit.edu", u"\u03bb-stream", Recipient.STREAM)
+        self.send_message("starnine@mit.edu", u"\u03bb-stream.d", Recipient.STREAM)
+
+        result = self.post_with_params({"num_after": 2, "narrow": ujson.dumps(
+                    [['stream', u'\u03bb-stream']])})
+        self.check_well_formed_messages_response(result)
+
+        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
+                                 messages)
+
+        self.assertEqual(len(result["messages"]), 2)
+        for i, message in enumerate(result["messages"]):
+            self.assertEqual(message["type"], "stream")
+            stream_id = stream_messages[i].recipient.id
+            self.assertEqual(message["recipient_id"], stream_id)
+
+    def test_get_old_messages_with_narrow_topic_mit_unicode_regex(self):
+        """
+        A request for old messages for a user in the mit.edu relam with unicode
+        topic name should be correctly escaped in the database query.
+        """
+        self.login("starnine@mit.edu")
+        # We need to susbcribe to a stream and then send a message to
+        # it to ensure that we actually have a stream message in this
+        # narrow view.
+        realm = Realm.objects.get(domain="mit.edu")
+        stream, _ = create_stream_if_needed(realm, "Scotland")
+        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
+                            stream, no_log=True)
+
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"\u03bb-topic")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"\u03bb-topic.d")
+
+        result = self.post_with_params({"num_after": 2, "narrow": ujson.dumps(
+                    [['topic', u'\u03bb-topic']])})
+        self.check_well_formed_messages_response(result)
+
+        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
+                                 messages)
+        self.assertEqual(len(result["messages"]), 2)
+        for i, message in enumerate(result["messages"]):
+            self.assertEqual(message["type"], "stream")
+            stream_id = stream_messages[i].recipient.id
+            self.assertEqual(message["recipient_id"], stream_id)
+
+
     def test_get_old_messages_with_narrow_sender(self):
         """
         A request for old messages with a narrow by sender only returns
