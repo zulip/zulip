@@ -340,6 +340,7 @@ exports.initialize = function () {
 
         return channel.post({
             url: '/json/change_enter_sends',
+            idempotent: true,
             data: {'enter_sends': page_params.enter_sends}
         });
     });

@@ -113,6 +113,7 @@ exports.start = function (row) {
     var msg_list = current_msg_list;
     channel.post({
         url: '/json/fetch_raw_message',
+        idempotent: true,
         data: {message_id: message.id},
         success: function (data) {
             if (current_msg_list === msg_list) {

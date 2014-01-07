@@ -73,6 +73,7 @@ $(function () {
 
     channel.post({
         url: '/json/get_bots',
+        idempotent: true,
         success: function (data) {
             $('#bot_table_error').hide();
 
@@ -158,6 +159,7 @@ $(function () {
         var email = $(e.currentTarget).data('email');
         channel.post({
             url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
+            idempotent: true,
             success: function (data) {
                 var row = $(e.currentTarget).closest("li");
                 row.find(".api_key").find(".value").text(data.api_key);
@@ -257,6 +259,7 @@ $(function () {
     $("#show_api_key_box").on("click", "button.regenerate_api_key", function (e) {
         channel.post({
             url: '/json/users/me/api_key/regenerate',
+            idempotent: true,
             success: function (data) {
                 $('#api_key_value').text(data.api_key);
             },

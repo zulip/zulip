@@ -70,6 +70,7 @@ exports.setup_page = function () {
     // Populate users and bots tables
     channel.get({
         url:      '/json/users',
+        idempotent: true,
         timeout:  10*1000,
         success: populate_users,
         error: failed_listing_users
@@ -79,6 +80,7 @@ exports.setup_page = function () {
     channel.post({
         url:      '/json/get_public_streams',
         timeout:  10*1000,
+        idempotent: true,
         success: populate_streams,
         error: failed_listing_streams
     });

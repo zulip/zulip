@@ -439,6 +439,7 @@ exports.setup_page = function () {
     if (should_list_all_streams()) {
         var req = channel.post({
             url:      '/json/get_public_streams',
+            idempotent: true,
             timeout:  10*1000,
             success: populate_and_fill,
             error: failed_listing
@@ -907,6 +908,7 @@ $(function () {
 
         channel.post({
             url: "/json/get_subscribers",
+            idempotent: true,
             data: {stream: stream},
             success: function (data) {
                 util.destroy_loading_indicator(indicator_elem);

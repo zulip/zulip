@@ -17,6 +17,7 @@ $(function () {
 
         channel.post({
             url: '/json/set_alert_words',
+            idempotent: true,
             data: {alert_words: JSON.stringify(words)}});
     }
 

@@ -686,6 +686,7 @@ function hack_for_floating_recipient_bar() {
 function update_message_flag(messages, flag_name, set_flag) {
     channel.post({
         url: '/json/update_message_flags',
+        idempotent: true,
         data: {messages: JSON.stringify(_.pluck(messages, 'id')),
                op: set_flag ? 'add' : 'remove',
                flag: flag_name}});
