@@ -60,7 +60,7 @@ from zerver.decorator import require_post, \
     has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, get_user_profile_by_email, process_as_post, REQ, \
-    require_realm_admin
+    require_realm_admin, to_non_negative_float
 from zerver.lib.query import last_n
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
@@ -1461,7 +1461,9 @@ def send_message_backend(request, user_profile,
                          forged = REQ(default=False),
                          subject_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
-                         domain = REQ('domain', default=None)):
+                         domain = REQ('domain', default=None),
+                         local_id = REQ(default=None, converter=to_non_negative_float),
+                         queue_id = REQ(default=None)):
     client = request.client
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
@@ -1514,7 +1516,8 @@ def send_message_backend(request, user_profile,
     ret = check_send_message(sender, client, message_type_name, message_to,
                              subject_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
-                             forwarder_user_profile=user_profile, realm=realm)
+                             forwarder_user_profile=user_profile, realm=realm,
+                             local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
 
 @has_request_variables

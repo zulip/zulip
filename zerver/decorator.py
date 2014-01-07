@@ -466,6 +466,12 @@ def to_non_negative_int(x):
         raise ValueError("argument is negative")
     return x
 
+def to_non_negative_float(x):
+    x = float(x)
+    if x < 0:
+        raise ValueError("argument is negative")
+    return x
+
 def json_to_foo(json, type):
     data = ujson.loads(json)
     if not isinstance(data, type):

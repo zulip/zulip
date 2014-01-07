@@ -225,11 +225,12 @@ def log_message(message):
         log_event(message.to_log_dict())
 
 # Helper function. Defaults here are overriden by those set in do_send_messages
-def do_send_message(message, rendered_content = None, no_log = False, stream = None):
+def do_send_message(message, rendered_content = None, no_log = False, stream = None, local_id = None):
     return do_send_messages([{'message': message,
                               'rendered_content': rendered_content,
                               'no_log': no_log,
-                              'stream': stream}])[0]
+                              'stream': stream,
+                              'local_id': local_id}])[0]
 
 def do_send_messages(messages):
     # Filter out messages which didn't pass internal_prep_message properly
@@ -251,6 +252,8 @@ def do_send_messages(messages):
         message['rendered_content'] = message.get('rendered_content', None)
         message['no_log'] = message.get('no_log', False)
         message['stream'] = message.get('stream', None)
+        message['local_id'] = message.get('local_id', None)
+        message['sender_queue_id'] = message.get('sender_queue_id', None)
 
     # Log the message to our message log for populate_db to refill
     for message in messages:
@@ -349,6 +352,10 @@ def do_send_messages(messages):
                 data['stream_name'] = message['stream'].name
             if message['stream'].invite_only:
                 data['invite_only'] = True
+        if message['local_id'] is not None:
+            data['local_id'] = message['local_id']
+        if message['sender_queue_id'] is not None:
+            data['sender_queue_id'] = message['sender_queue_id']
         tornado_callbacks.send_notification(data)
         if (settings.ENABLE_FEEDBACK and
             message['message'].recipient.type == Recipient.PERSONAL and
@@ -495,7 +502,8 @@ def send_pm_if_empty_stream(sender, stream, stream_name):
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content, realm=None, forged=False,
-                  forged_timestamp=None, forwarder_user_profile=None):
+                  forged_timestamp=None, forwarder_user_profile=None, local_id=None,
+                  sender_queue_id=None):
     stream = None
     if len(message_to) == 0:
         raise JsonableError("Message must have recipients")
@@ -580,7 +588,7 @@ def check_message(sender, client, message_type_name, message_to,
         if id is not None:
             return {'message': id}
 
-    return {'message': message, 'stream': stream}
+    return {'message': message, 'stream': stream, 'local_id': local_id, 'sender_queue_id': sender_queue_id}
 
 def internal_prep_message(sender_email, recipient_type_name, recipients,
                           subject, content, realm=None):

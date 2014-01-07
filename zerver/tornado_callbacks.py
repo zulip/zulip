@@ -146,16 +146,19 @@ def process_new_message(data):
                                                      data['users'])
 
     realm_presences = data['presences']
+    sender_queue_id = data.get('sender_queue_id', None)
 
     message_dict_markdown = message.to_dict(True)
     message_dict_no_markdown = message.to_dict(False)
 
-    # To remove duplicate clients: Maps queue ID to (Client, flags)
+    # To remove duplicate clients: Maps queue ID to {'client': Client, 'flags': flags}
     send_to_clients = dict()
 
     if 'stream_name' in data and not data.get("invite_only"):
         for client in get_client_descriptors_for_realm_all_streams(data['realm_id']):
-            send_to_clients[client.event_queue.id] = (client, None)
+            send_to_clients[client.event_queue.id] = {'client': client, 'flags': None}
+            if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
+                send_to_clients[client.event_queue.id]['is_sender'] = True
 
     for user_data in data['users']:
         user_profile_id = user_data['id']
@@ -163,7 +166,9 @@ def process_new_message(data):
         flags = user_data.get('flags', [])
 
         for client in get_client_descriptors_for_user(user_profile_id):
-            send_to_clients[client.event_queue.id] = (client, flags)
+            send_to_clients[client.event_queue.id] = {'client': client, 'flags': flags}
+            if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
+                send_to_clients[client.event_queue.id]['is_sender'] = True
 
         # If the recipient was offline and the message was a single or group PM to him
         # or she was @-notified potentially notify more immediately
@@ -179,7 +184,11 @@ def process_new_message(data):
                 queue_json_publish("missedmessage_emails", event, lambda event: None)
                 queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
 
-    for client, flags in send_to_clients.itervalues():
+    for client_data in send_to_clients.itervalues():
+        client = client_data['client']
+        flags = client_data['flags']
+        is_sender = client_data.get('is_sender', False)
+
         if not client.accepts_messages():
             # The actual check is the accepts_event() check below;
             # this line is just an optimization to avoid copying
@@ -197,6 +206,12 @@ def process_new_message(data):
             message_dict["invite_only_stream"] = True
 
         event = dict(type='message', message=message_dict, flags=flags)
+
+        if is_sender:
+            local_message_id = data.get('local_id', None)
+            if local_message_id is not None:
+                event["local_message_id"] = local_message_id
+
         if not client.accepts_event(event):
             continue
 

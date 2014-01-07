@@ -418,7 +418,7 @@ class AuthedTestCase(TestCase):
         return [get_display_recipient(sub.recipient) for sub in subs]
 
     def send_message(self, sender_name, recipient_name, message_type,
-                     content="test content", subject="test"):
+                     content="test content", subject="test", **kwargs):
         sender = get_user_profile_by_email(sender_name)
         if message_type == Recipient.PERSONAL:
             message_type_name = "private"
@@ -430,7 +430,7 @@ class AuthedTestCase(TestCase):
         return check_send_message(
             sender, sending_client, message_type_name, recipient_list, subject,
             content, forged=False, forged_timestamp=None,
-            forwarder_user_profile=sender, realm=sender.realm)
+            forwarder_user_profile=sender, realm=sender.realm, **kwargs)
 
     def get_old_messages(self, anchor=1, num_before=100, num_after=100):
         post_params = {"anchor": anchor, "num_before": num_before,
@@ -2849,7 +2849,9 @@ class GetEventsTest(AuthedTestCase):
 
     def test_get_events(self):
         email = "hamlet@zulip.com"
+        recipient_email = "othello@zulip.com"
         user_profile = get_user_profile_by_email(email)
+        recipient_user_profile = get_user_profile_by_email(recipient_email)
         self.login(email)
 
         result = self.tornado_call(get_events_backend, user_profile,
@@ -2861,6 +2863,15 @@ class GetEventsTest(AuthedTestCase):
         self.assert_json_success(result)
         queue_id = ujson.loads(result.content)["queue_id"]
 
+        recipient_result = self.tornado_call(get_events_backend, recipient_user_profile,
+                                             {"apply_markdown": ujson.dumps(True),
+                                              "event_types": ujson.dumps(["message"]),
+                                              "user_client": "website",
+                                              "dont_block": ujson.dumps(True),
+                                              })
+        self.assert_json_success(recipient_result)
+        recipient_queue_id = ujson.loads(recipient_result.content)["queue_id"]
+
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
                                     "user_client": "website",
@@ -2871,7 +2882,8 @@ class GetEventsTest(AuthedTestCase):
         self.assert_json_success(result)
         self.assertEqual(len(events), 0)
 
-        self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
+        local_id = 10.01
+        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -2884,9 +2896,11 @@ class GetEventsTest(AuthedTestCase):
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
+        self.assertEqual(events[0]["local_message_id"], local_id)
         last_event_id = events[0]["id"]
+        local_id += 0.01
 
-        self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
+        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -2899,6 +2913,25 @@ class GetEventsTest(AuthedTestCase):
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
+        self.assertEqual(events[0]["local_message_id"], local_id)
+
+        # Test that the received message in the receiver's event queue
+        # exists and does not contain a local id
+        recipient_result = self.tornado_call(get_events_backend, recipient_user_profile,
+                                             {"queue_id": recipient_queue_id,
+                                              "user_client": "website",
+                                              "last_event_id": -1,
+                                              "dont_block": ujson.dumps(True),
+                                              })
+        recipient_events = ujson.loads(recipient_result.content)["events"]
+        self.assert_json_success(recipient_result)
+        self.assertEqual(len(recipient_events), 2)
+        self.assertEqual(recipient_events[0]["type"], "message")
+        self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
+        self.assertTrue("local_message_id" not in recipient_events[0])
+        self.assertEqual(recipient_events[1]["type"], "message")
+        self.assertEqual(recipient_events[1]["message"]["sender_email"], email)
+        self.assertTrue("local_message_id" not in recipient_events[1])
 
     def test_get_events_narrow(self):
         email = "hamlet@zulip.com"
