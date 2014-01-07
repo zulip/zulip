@@ -252,6 +252,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_bot = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+    is_mirror_dummy = models.BooleanField(default=False)
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
 
     USERNAME_FIELD = 'email'
