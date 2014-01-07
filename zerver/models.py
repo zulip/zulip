@@ -97,6 +97,7 @@ class Realm(models.Model):
     restricted_to_domain = models.BooleanField(default=True)
     date_created = models.DateTimeField(default=timezone.now)
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True)
+    deactivated = models.BooleanField(default=False)
 
     NOTIFICATION_STREAM_NAME = 'zulip'
 
