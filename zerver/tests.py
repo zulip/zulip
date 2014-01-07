@@ -811,6 +811,21 @@ class LoginTest(AuthedTestCase):
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
+    def test_register_deactivated(self):
+        """
+        If you try to register for a deactivated realm, you get a clear error
+        page.
+        """
+        realm = Realm.objects.get(domain="zulip.com")
+        realm.deactivated = True
+        realm.save(update_fields=["deactivated"])
+
+        result = self.register("test", "test")
+        self.assertIn("has been deactivated", result.content.replace("\n", " "))
+
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_profile_by_email('test@zulip.com')
+
     def test_logout(self):
         self.login("hamlet@zulip.com")
         self.client.post('/accounts/logout/')

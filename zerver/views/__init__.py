@@ -241,6 +241,13 @@ def accounts_register(request):
     else:
         domain = resolve_email_to_domain(email)
 
+    realm = get_realm(domain)
+    if realm and realm.deactivated:
+        # The user is trying to register for a deactivated realm. Advise them to
+        # contact support.
+        return render_to_response("zerver/deactivated.html",
+                                  {"deactivated_domain_name": realm.name})
+
     try:
         if mit_beta_user:
             # MIT users already exist, but are supposed to be inactive.
