@@ -8,16 +8,9 @@ from django.conf import settings
 
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     completely_open, resolve_email_to_domain, get_realm
-from zerver.lib.actions import do_change_password
+from zerver.lib.actions import do_change_password, is_inactive
 from zproject.backends import password_auth_enabled
 import DNS
-
-def is_inactive(value):
-    try:
-        if get_user_profile_by_email(value).is_active:
-            raise ValidationError(u'%s is already active' % value)
-    except UserProfile.DoesNotExist:
-        pass
 
 SIGNUP_STRING = '<a href="https://zulip.com/signup">Sign up</a> to find out when Zulip is ready for you.'
 

@@ -2210,6 +2210,13 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     if messages:
         do_send_missedmessage_events(user_profile, messages)
 
+def is_inactive(value):
+    try:
+        if get_user_profile_by_email(value).is_active:
+            raise ValidationError(u'%s is already active' % value)
+    except UserProfile.DoesNotExist:
+        pass
+
 def user_email_is_unique(value):
     try:
         get_user_profile_by_email(value)
@@ -2240,7 +2247,16 @@ def do_invite_users(user_profile, invitee_emails, streams):
             continue
 
         try:
-            user_email_is_unique(email)
+            existing_user_profile = get_user_profile_by_email(email)
+        except UserProfile.DoesNotExist:
+            existing_user_profile = None
+        try:
+            if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+                # Mirror dummy users to be activated must be inactive
+                is_inactive(email)
+            else:
+                # Other users should not already exist at all.
+                user_email_is_unique(email)
         except ValidationError:
             skipped.append((email, "Already has an account."))
             continue

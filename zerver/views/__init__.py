@@ -218,6 +218,10 @@ def accounts_register(request):
     prereg_user = confirmation.content_object
     email = prereg_user.email
     mit_beta_user = isinstance(confirmation.content_object, MitUser)
+    try:
+        existing_user_profile = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        existing_user_profile = None
 
     validators.validate_email(email)
     # If someone invited you, you are joining their realm regardless
@@ -242,8 +246,8 @@ def accounts_register(request):
                                   {"deactivated_domain_name": realm.name})
 
     try:
-        if mit_beta_user:
-            # MIT users already exist, but are supposed to be inactive.
+        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+            # Mirror dummy users to be activated must be inactive
             is_inactive(email)
         else:
             # Other users should not already exist at all.
@@ -313,9 +317,9 @@ def accounts_register(request):
         first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
 
         # FIXME: sanitize email addresses and fullname
-        if mit_beta_user:
+        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             try:
-                user_profile = get_user_profile_by_email(email)
+                user_profile = existing_user_profile
                 do_activate_user(user_profile)
                 do_change_password(user_profile, password)
                 do_change_full_name(user_profile, full_name)
