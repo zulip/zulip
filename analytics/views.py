@@ -416,8 +416,6 @@ def ad_hoc_queries():
             join zerver_realm realm on realm.id = up.realm_id
             where
                 client.name like '%s'
-            and
-                query = 'send_message_backend'
             group by domain, up.id, client.name
             having max(last_visit) > now() - interval '2 week'
             order by domain, up.id, client.name
