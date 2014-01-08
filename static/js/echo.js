@@ -62,6 +62,20 @@ function truncate_precision(float) {
     return parseFloat(float.toFixed(3));
 }
 
+function add_message_flags(message) {
+    // Locally delivered messages cannot be unread (since we sent them), nor
+    // can they alert the user
+    var flags = ["read"];
+
+    // Messages that mention the sender should highlight as well
+    var self_mention = 'data-user-email="' + page_params.email + '"';
+    if (message.content.indexOf(self_mention) > -1) {
+        flags.push("mentioned");
+    }
+
+    message.flags = flags;
+}
+
 exports.try_deliver_locally = function try_deliver_locally(message_request) {
     var local_id_increment = 0.01;
     var next_local_id = truncate_precision(all_msg_list.last().id + local_id_increment);
@@ -82,15 +96,13 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
     // NOTE: This will parse synchronously. We're not using the async pipeline
     message.content = exports.apply_markdown(message.content);
     message.content_type = 'text/html';
-    // Locally delivered messages cannot be unread (since we sent them), nor
-    // can they alert the user
-    message.flags = ["read"];
     message.sender_email = page_params.email;
     message.sender_full_name = page_params.fullname;
     message.avatar_url = page_params.avatar_url;
     message.timestamp = new XDate().getTime() / 1000;
     message.local_id = next_local_id;
     message.id = message.local_id;
+    add_message_flags(message);
 
     waiting_for_id[message.local_id] = message;
     waiting_for_ack[message.local_id] = message;
