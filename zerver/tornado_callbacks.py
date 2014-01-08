@@ -234,12 +234,25 @@ def process_event(data):
             if client.accepts_event(event):
                 client.add_event(event.copy())
 
+def process_update_message(data):
+    event = data['event']
+    for user in data['users']:
+        user_profile_id = user['id']
+        user_event = event.copy() # shallow, but deep enough for our needs
+        user_event['flags'] = user['flags']
+
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(user_event):
+                client.add_event(user_event)
+
 def process_notification(data):
     if 'type' not in data:
         # Generic event that doesn't need special handling
         process_event(data)
     elif data['type'] == 'new_message':
         process_new_message(data)
+    elif data['type'] == 'update_message':
+        process_update_message(data)
     elif data['type'] == 'pointer_update':
         update_pointer(data['user'], data['new_pointer'])
     else:

@@ -1548,6 +1548,8 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             if 'prev_rendered_content' in old_edit_history_event:
                 first_rendered_content = old_edit_history_event['prev_rendered_content']
 
+    ums = UserMessage.objects.filter(message=message_id)
+
     if content is not None:
         if len(content.strip()) == 0:
             content = "(deleted)"
@@ -1637,8 +1639,12 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=False)),)
     cache_set_many(items_for_memcached)
 
-    recipients = [um.user_profile_id for um in UserMessage.objects.filter(message=message_id)]
-    notice = dict(event=event, users=recipients)
+    def user_info(um):
+        return {
+            'id': um.user_profile_id,
+            'flags': um.flags_list()
+        }
+    notice = dict(event=event, users=map(user_info, ums), type='update_message')
     tornado_callbacks.send_notification(notice)
 
 def encode_email_address(stream):
