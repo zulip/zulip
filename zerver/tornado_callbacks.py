@@ -103,12 +103,14 @@ def cache_load_message_data(message_id, users):
     for user_profile_id, user_profile in user_profiles.iteritems():
         if user_profile:
             continue
-        if not settings.TEST_SUITE:
-            logging.warning("Tornado failed to load user profile from memcached when delivering message!")
 
         user_profile = UserProfile.objects.select_related().get(id=user_profile_id)
         user_profiles[user_profile_id] = user_profile
         cache_save_user_profile(user_profile)
+
+        if not settings.TEST_SUITE:
+            logging.warning("Tornado failed to load user profile %s from memcached when delivering message!" %
+                            (user_profile.email,))
 
     return message, user_profiles
 
