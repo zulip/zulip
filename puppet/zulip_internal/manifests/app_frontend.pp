@@ -42,5 +42,12 @@ class zulip_internal::app_frontend {
     mode       => 600,
     source     => 'puppet:///modules/zulip_internal/log2zulip.zuliprc',
   }
+  file { "/etc/cron.d/check-apns-tokens":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/check-apns-tokens",
+  }
 
 }
