@@ -1512,6 +1512,29 @@ def truncate_body(body):
 def truncate_topic(topic):
     return truncate_content(topic, MAX_SUBJECT_LENGTH, "...")
 
+
+def update_user_message_flags(message, ums):
+    ids_with_alert_words = message.user_ids_with_alert_words
+    changed_ums = set()
+
+    def update_flag(um, should_set, flag):
+        if should_set:
+            if not (um.flags & flag):
+                um.flags |= flag
+                changed_ums.add(um)
+        else:
+            if (um.flags & flag):
+                um.flags &= ~flag
+                changed_ums.add(um)
+
+    for um in ums:
+        has_alert_word = um.user_profile_id in ids_with_alert_words
+        update_flag(um, has_alert_word, UserMessage.flags.has_alert_word)
+
+    for um in changed_ums:
+        um.save(update_fields=['flags'])
+
+
 def do_update_message(user_profile, message_id, subject, propagate_mode, content):
     try:
         message = Message.objects.select_related().get(id=message_id)
@@ -1555,8 +1578,11 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             content = "(deleted)"
         content = truncate_body(content)
         rendered_content = message.render_markdown(content)
+
         if not rendered_content:
             raise JsonableError("We were unable to render your updated message")
+
+        update_user_message_flags(message, ums)
 
         # We are turning off diff highlighting everywhere until ticket #1532 is addressed.
         if False:
