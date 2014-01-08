@@ -718,6 +718,8 @@ function update_messages(events) {
         }
 
         msg.alerted = event.flags.indexOf("has_alert_word") !== -1;
+        msg.mentioned = event.flags.indexOf("mentioned") !== -1 ||
+                        event.flags.indexOf("wildcard_mentioned") !== -1;
 
         ui.un_cache_message_content_height(msg.id);
 
