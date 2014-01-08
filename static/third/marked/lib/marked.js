@@ -513,7 +513,7 @@ inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
   usermention: /^(@\*\*([^\*]+)?\*\*)/m,
   realm_filters: [],
-  text: replace(inline.text)
+  text: replace(inline.breaks.text)
     (']|', '@:]|')
     ()
 });

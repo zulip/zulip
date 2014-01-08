@@ -238,6 +238,7 @@ function escape(html, encode) {
     .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
 
@@ -338,6 +339,11 @@ $(function () {
         title = title || href;
         var out = '<a href="' + href + '"' + ' target="_blank" title="' + title + '"' + '>' + text + '</a>';
         return out;
+    };
+
+    // Put a newline after a <br> in the generated HTML to match bugdown
+    r.br = function () {
+        return '<br>\n';
     };
 
     // Disable ordered lists
