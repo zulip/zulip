@@ -400,37 +400,38 @@ def ad_hoc_queries():
 
     ###
 
-    title = 'Android usage'
+    for mobile_type in ['Android', 'ZulipiOS']:
+        title = '%s usage' % (mobile_type,)
 
-    query = '''
-        select
-            realm.domain,
-            up.id user_id,
-            client.name,
-            sum(count) as hits,
-            max(last_visit) as last_time
-        from zerver_useractivity ua
-        join zerver_client client on client.id = ua.client_id
-        join zerver_userprofile up on up.id = ua.user_profile_id
-        join zerver_realm realm on realm.id = up.realm_id
-        where
-            client.name like 'Android'
-        and
-            query = 'send_message_backend'
-        group by domain, up.id, client.name
-        having max(last_visit) > now() - interval '2 week'
-        order by domain, up.id, client.name
-    '''
+        query = '''
+            select
+                realm.domain,
+                up.id user_id,
+                client.name,
+                sum(count) as hits,
+                max(last_visit) as last_time
+            from zerver_useractivity ua
+            join zerver_client client on client.id = ua.client_id
+            join zerver_userprofile up on up.id = ua.user_profile_id
+            join zerver_realm realm on realm.id = up.realm_id
+            where
+                client.name like '%s'
+            and
+                query = 'send_message_backend'
+            group by domain, up.id, client.name
+            having max(last_visit) > now() - interval '2 week'
+            order by domain, up.id, client.name
+        ''' % (mobile_type,)
 
-    cols = [
-        'Domain',
-        'User id',
-        'Name',
-        'Hits',
-        'Last time'
-    ]
+        cols = [
+            'Domain',
+            'User id',
+            'Name',
+            'Hits',
+            'Last time'
+        ]
 
-    pages.append(get_page(query, cols, title))
+        pages.append(get_page(query, cols, title))
 
     ###
 
@@ -481,7 +482,7 @@ def ad_hoc_queries():
         join zerver_realm realm on realm.id = up.realm_id
         where
             (query = 'send_message_backend'
-            and client.name not in ('Android')
+            and client.name not in ('Android', 'ZulipiOS')
             and client.name not like 'test: Zulip%%'
             )
         or
@@ -519,7 +520,7 @@ def ad_hoc_queries():
         join zerver_realm realm on realm.id = up.realm_id
         where
             (query = 'send_message_backend'
-            and client.name not in ('Android')
+            and client.name not in ('Android', 'ZulipiOS')
             and client.name not like 'test: Zulip%%'
             )
         or
@@ -777,7 +778,7 @@ def realm_user_summary_table(all_records, admin_emails):
         sent_count = get_count(user_summary, 'send')
         cells = [user_summary['name'], email_link, sent_count]
         row_class = ''
-        for field in ['use', 'send', 'pointer', 'desktop', 'ios', 'Android']:
+        for field in ['use', 'send', 'pointer', 'desktop', 'ZulipiOS', 'Android']:
             val = get_last_visit(user_summary, field)
             if field == 'use':
                 if val and is_recent(val):
@@ -802,7 +803,7 @@ def realm_user_summary_table(all_records, admin_emails):
             'Message sent',
             'Pointer motion',
             'Desktop',
-            'ios',
+            'ZulipiOS',
             'Android'
     ]
 

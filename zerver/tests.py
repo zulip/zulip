@@ -716,7 +716,7 @@ class ActivityTest(AuthedTestCase):
         with queries_captured() as queries:
             self.client.get('/activity')
 
-        self.assertEqual(len(queries), 11)
+        self.assertEqual(len(queries), 12)
 
 class UserProfileTest(TestCase):
     def test_get_emails_from_user_ids(self):
