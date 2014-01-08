@@ -40,6 +40,8 @@ from zerver.middleware import is_slow_query
 
 from zerver.worker import queue_processors
 
+from zerver.views.messages import get_old_messages_backend
+
 import base64
 from django.conf import settings
 from django.db import connection
@@ -110,7 +112,7 @@ def queries_captured():
             stop = time.time()
             duration = stop - start
             queries.append({
-                    'sql': sql,
+                    'sql': self.mogrify(sql, params),
                     'time': "%.3f" % duration,
                     })
 
@@ -2524,6 +2526,59 @@ class GetOldMessagesTest(AuthedTestCase):
         d = m.to_dict_uncached(True)
         self.assertEqual(d['content'], '<p>test content</p>')
 
+    def common_check_get_old_messages_query(self, query_params, expected):
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        request = POSTRequestMock(query_params, user_profile)
+        with queries_captured() as queries:
+            get_old_messages_backend(request, user_profile)
+
+        for query in queries:
+            if "/* get_old_messages */" in query['sql']:
+                sql = query['sql'].replace(" /* get_old_messages */", '')
+                self.assertEqual(sql, expected)
+                return
+        self.fail("get_old_messages query not found")
+
+    def test_get_old_messages_queries(self):
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10},
+                                                 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = 4 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC')
+        self.common_check_get_old_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 0},
+                                                 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = 4 AND message_id <= 100 ORDER BY message_id DESC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC')
+        self.common_check_get_old_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 10},
+                                                 'SELECT anon_1.message_id, anon_1.flags \nFROM ((SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = 4 AND message_id <= 99 ORDER BY message_id DESC \n LIMIT 10) UNION ALL (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = 4 AND message_id >= 100 ORDER BY message_id ASC \n LIMIT 11)) AS anon_1 ORDER BY message_id ASC')
+
+    def test_get_old_messages_with_narrow_queries(self):
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["pm-with", "othello@zulip.com"]]'},
+                                                 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 4 AND (sender_id = 3 AND recipient_id = 4 OR sender_id = 4 AND recipient_id = 3) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC')
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["is", "starred"]]'},
+                                                 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 4 AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC')
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["sender", "othello@zulip.com"]]'},
+                                                 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 4 AND sender_id = 3 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC')
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["stream", "Scotland"]]'},
+                                                 'SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = 7 AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC')
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["topic", "blah"]]'},
+                                                 "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 4 AND upper(subject) = upper('blah') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC")
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["stream", "Scotland"], ["topic", "blah"]]'},
+                                                 "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = 7 AND upper(subject) = upper('blah') AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC")
+
+    def test_get_old_messages_with_search_queries(self):
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["search", "jumping"]]'},
+                                                 "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 4 AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC")
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["stream", "Scotland"], ["search", "jumping"]]'},
+                                                 "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT id AS message_id, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_message \nWHERE recipient_id = 7 AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC")
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["search", "\\"jumping\\" quickly"]]'},
+                                                 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(subject), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 4 AND (content ILIKE \'%jumping%\' OR subject ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC')
+
+
 class EditMessageTest(AuthedTestCase):
     def check_message(self, msg_id, subject=None, content=None):
         msg = Message.objects.get(id=msg_id)
@@ -3007,6 +3062,7 @@ class POSTRequestMock(object):
         self.session = DummySession()
         self._log_data = {}
         self.META = {'PATH_INFO': 'test'}
+        self._log_data = {}
 
 from zerver.tornadoviews import get_events_backend
 class GetEventsTest(AuthedTestCase):

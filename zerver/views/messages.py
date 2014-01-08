@@ -381,6 +381,8 @@ def get_old_messages_backend(request, user_profile,
         query = after_query
     main_query = alias(query)
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
+    # This is a hack to tag the query we use for testing
+    query = query.prefix_with("/* get_old_messages */")
     sa_conn = get_sqlalchemy_connection()
     query_result = list(sa_conn.execute(query).fetchall())
 
