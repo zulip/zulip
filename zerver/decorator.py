@@ -102,15 +102,7 @@ def process_client(request, user_profile, is_json_view=False):
     # User-Agent.
     if 'client' in request.REQUEST:
         request.client = get_client(request.REQUEST['client'])
-    elif "HTTP_USER_AGENT" not in request.META:
-        # In the future, we will require setting USER_AGENT, but for
-        # now we just want to tag these requests so we can review them
-        # in logs and figure out the extent of the problem
-        if is_json_view:
-            request.client = get_client("website")
-        else:
-            request.client = get_client("Unspecified")
-    else:
+    elif "HTTP_USER_AGENT" in request.META:
         user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
         # We could check for a browser's name being "Mozilla", but
         # e.g. Opera and MobileSafari don't set that, and it seems
@@ -122,6 +114,14 @@ def process_client(request, user_profile, is_json_view=False):
             request.client = get_client("website")
         else:
             request.client = get_client(user_agent["name"])
+    else:
+        # In the future, we will require setting USER_AGENT, but for
+        # now we just want to tag these requests so we can review them
+        # in logs and figure out the extent of the problem
+        if is_json_view:
+            request.client = get_client("website")
+        else:
+            request.client = get_client("Unspecified")
 
     update_user_activity(request, user_profile)
 
