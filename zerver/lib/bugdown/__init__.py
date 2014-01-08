@@ -12,6 +12,8 @@ import platform
 import time
 import HTMLParser
 import httplib2
+import itertools
+import urllib
 
 import hashlib
 
@@ -189,6 +191,74 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return "https://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
 
+    def twitter_text(self, text, urls, user_mentions):
+        """
+        Use data from the twitter API to turn links and mentions into A tags.
+
+        This works by using the urls and user_mentions data from the twitter
+        API.
+
+        The first step is finding the locations of the URLs and mentions in the
+        text. For each match we build a dictionary with the start location, end
+        location, the URL to link to, and the text to show in the link.
+
+        Next we sort the matches by start location. And for each we add the
+        text from the end of the last link to the start of the current link to
+        the output. The text needs to added to the text attribute of the first
+        node (the P tag) or the tail the last link created.
+
+        Finally we add any remaining text to the last node.
+        """
+
+        to_linkify = []
+        # Build dicts for URLs
+        for short_url, full_url in urls.items():
+            for match in re.finditer(re.escape(short_url), text):
+                to_linkify.append({
+                    'start': match.start(),
+                    'end': match.end(),
+                    'url': short_url,
+                    'text': full_url,
+                })
+        # Build dicts for mentions
+        for user_mention in user_mentions:
+            screen_name = user_mention['screen_name']
+            mention_string = '@' + screen_name
+            for match in re.finditer(re.escape(mention_string), text):
+                to_linkify.append({
+                    'start': match.start(),
+                    'end': match.end(),
+                    'url': 'https://twitter.com/' + urllib.quote(screen_name),
+                    'text': mention_string,
+                })
+
+        def set_text(text):
+            """
+            Helper to set the text or the tail of the current_node
+            """
+            if current_node == p:
+                current_node.text = text
+            else:
+                current_node.tail = text
+
+        to_linkify.sort(key=lambda x: x['start'])
+        p = current_node = markdown.util.etree.Element('p')
+        current_index = 0
+        for link in to_linkify:
+            # The text we want to link starts in already linked text skip it
+            if link['start'] < current_index:
+                continue
+            # Add text from the end of last link to the start of the current
+            # link
+            set_text(text[current_index:link['start']])
+            current_index = link['end']
+            current_node = a = url_to_a(link['url'], link['text'])
+            p.append(a)
+
+        # Add any unused text
+        set_text(text[current_index:])
+        return p
+
     def twitter_link(self, url):
         tweet_id = get_tweet_id(url)
 
@@ -214,10 +284,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # back gracefully.
             image_url = user.get('profile_image_url_https', user['profile_image_url'])
             profile_img.set('src', image_url)
-            p = markdown.util.etree.SubElement(tweet, 'p')
+
             ## TODO: unescape is an internal function, so we should
             ## use something else if we can find it
-            p.text = HTMLParser.HTMLParser().unescape(res['text'])
+            text = HTMLParser.HTMLParser().unescape(res['text'])
+            urls = res.get('urls', {})
+            user_mentions = res.get('user_mentions', [])
+            p = self.twitter_text(text, urls, user_mentions)
+            tweet.append(p)
+
             span = markdown.util.etree.SubElement(tweet, 'span')
             span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
 

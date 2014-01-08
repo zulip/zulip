@@ -4284,9 +4284,13 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         def make_link(url):
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
-        def make_inline_twitter_preview(url):
+        normal_tweet_html = """<a href="https://twitter.com/twitter" target="_blank" title="https://twitter.com/twitter">@twitter</a> meets <a href="https://twitter.com/seepicturely" target="_blank" title="https://twitter.com/seepicturely">@seepicturely</a> at #tcdisrupt cc.<a href="https://twitter.com/boscomonkey" target="_blank" title="https://twitter.com/boscomonkey">@boscomonkey</a> <a href="https://twitter.com/episod" target="_blank" title="https://twitter.com/episod">@episod</a> <a href="http://t.co/6J2EgYM" target="_blank" title="http://t.co/6J2EgYM">http://instagram.com/p/MuW67/</a>"""
+
+        mention_in_link_tweet_html = """<a href="http://t.co/@foo" target="_blank" title="http://t.co/@foo">http://foo.com</a>"""
+
+        def make_inline_twitter_preview(url, tweet_html):
             ## As of right now, all previews are mocked to be the exact same tweet
-            return """<div class="inline-preview-twitter"><div class="twitter-tweet"><a href="%s" target="_blank"><img class="twitter-avatar" src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png"></a><p>@twitter meets @seepicturely at #tcdisrupt cc.@boscomonkey @episod http://t.co/6J2EgYM</p><span>- Eoin McMillan  (@imeoin)</span></div></div>""" % (url, )
+            return """<div class="inline-preview-twitter"><div class="twitter-tweet"><a href="%s" target="_blank"><img class="twitter-avatar" src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png"></a><p>%s</p><span>- Eoin McMillan  (@imeoin)</span></div></div>""" % (url, tweet_html)
 
         msg = 'http://www.twitter.com'
         converted = bugdown_convert(msg)
@@ -4313,25 +4317,31 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
-                                                       make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456')))
+                                                       make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
-                                                       make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456')))
+                                                       make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         msg = 'http://twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
-                                                       make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456')))
+                                                       make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         # Only one should get converted
         msg = 'http://twitter.com/wdaher/status/287977969287315456 http://twitter.com/wdaher/status/287977969287315457'
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s %s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
                                                           make_link('http://twitter.com/wdaher/status/287977969287315457'),
-                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456')))
+                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
+        # Tweet has a mention in a URL, only the URL is linked
+        msg = 'http://twitter.com/wdaher/status/287977969287315458'
+
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315458'),
+                                                       make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
 
     def test_emoji(self):
         def emoji_img(name, filename=None):
