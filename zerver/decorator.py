@@ -96,12 +96,12 @@ def require_realm_admin(func):
 
 from zerver.lib.user_agent import parse_user_agent
 
-def process_client(request, user_profile, is_json_view=False):
+def get_client_name(request, is_json_view):
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
     if 'client' in request.REQUEST:
-        request.client = get_client(request.REQUEST['client'])
+        return request.REQUEST['client']
     elif "HTTP_USER_AGENT" in request.META:
         user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
         # We could check for a browser's name being "Mozilla", but
@@ -111,18 +111,21 @@ def process_client(request, user_profile, is_json_view=False):
             # Avoid changing the client string for browsers Once this
             # is out to prod, we can name the field to something like
             # Browser for consistency.
-            request.client = get_client("website")
+            return "website"
         else:
-            request.client = get_client(user_agent["name"])
+            return user_agent["name"]
     else:
         # In the future, we will require setting USER_AGENT, but for
         # now we just want to tag these requests so we can review them
         # in logs and figure out the extent of the problem
         if is_json_view:
-            request.client = get_client("website")
+            return "website"
         else:
-            request.client = get_client("Unspecified")
+             return "Unspecified"
 
+def process_client(request, user_profile, is_json_view=False):
+    client_name = get_client_name(request, is_json_view)
+    request.client = get_client(client_name)
     update_user_activity(request, user_profile)
 
 def validate_api_key(role, api_key):
