@@ -716,8 +716,7 @@ class ActivityTest(AuthedTestCase):
         with queries_captured() as queries:
             self.client.get('/activity')
 
-        # We have 7 tabs, and one query per tab, plus 4 to create a client
-        self.assertEqual(len(queries), 12)
+        self.assertEqual(len(queries), 11)
 
 class UserProfileTest(TestCase):
     def test_get_emails_from_user_ids(self):

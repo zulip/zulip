@@ -464,38 +464,6 @@ def ad_hoc_queries():
 
     ###
 
-    title = 'Pure API'
-
-    query = '''
-        select
-            realm.domain,
-            sum(count) as hits,
-            max(last_visit) as last_time
-        from zerver_useractivity ua
-        join zerver_client client on client.id = ua.client_id
-        join zerver_userprofile up on up.id = ua.user_profile_id
-        join zerver_realm realm on realm.id = up.realm_id
-        where
-            query = '/api/v1/send_message'
-        and
-            client.name = 'API'
-        and
-            domain != 'zulip.com'
-        group by domain
-        having max(last_visit) > now() - interval '2 week'
-        order by domain
-    '''
-
-    cols = [
-        'Domain',
-        'Hits',
-        'Last time'
-    ]
-
-    pages.append(get_page(query, cols, title))
-
-    ###
-
     title = 'Integrations by domain'
 
     query = '''
@@ -513,7 +481,7 @@ def ad_hoc_queries():
         join zerver_realm realm on realm.id = up.realm_id
         where
             (query = 'send_message_backend'
-            and client.name not in ('Android', 'API', 'API: Python')
+            and client.name not in ('Android')
             and client.name not like 'test: Zulip%%'
             )
         or
@@ -551,7 +519,7 @@ def ad_hoc_queries():
         join zerver_realm realm on realm.id = up.realm_id
         where
             (query = 'send_message_backend'
-            and client.name not in ('Android', 'API', 'API: Python')
+            and client.name not in ('Android')
             and client.name not like 'test: Zulip%%'
             )
         or
