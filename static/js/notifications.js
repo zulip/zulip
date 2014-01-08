@@ -321,6 +321,13 @@ function message_is_notifiable(message) {
     if (message.sent_by_me) {
         return false;
     }
+
+    // If a message is edited multiple times, we want to err on the side of
+    // not spamming notifications.
+    if (message.notification_sent) {
+        return false;
+    }
+
     // @-mentions take precent over muted-ness. See Trac #1929
     if (exports.speaking_at_me(message)) {
         return true;
@@ -361,6 +368,8 @@ exports.received_messages = function (messages) {
         if (!unread.message_unread(message) && !page_params.autoscroll_forever) {
             return;
         }
+
+        message.notification_sent = true;
 
         if (page_params.desktop_notifications_enabled &&
             browser_desktop_notifications_on()) {

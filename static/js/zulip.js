@@ -761,6 +761,7 @@ function update_messages(events) {
         msg.last_edit_timestamp = event.edit_timestamp;
         delete msg.last_edit_timestr;
 
+        notifications.received_messages([msg]);
         alert_words.process_message(msg);
     });
 
