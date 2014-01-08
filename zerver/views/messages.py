@@ -281,7 +281,7 @@ def narrow_parameter(json):
             raise ValueError("element is not a string pair")
     return data
 
-def is_public_stream(request, stream, realm):
+def is_public_stream(stream, realm):
     if not valid_stream_name(stream):
         raise JsonableError("Invalid stream name")
     stream = get_stream(stream, realm)
@@ -301,7 +301,7 @@ def get_old_messages_backend(request, user_profile,
     if narrow is not None:
         for operator, operand in narrow:
             if operator == "stream":
-                if is_public_stream(request, operand, user_profile.realm):
+                if is_public_stream(operand, user_profile.realm):
                     include_history = True
         # Disable historical messages if the user is narrowing to show
         # only starred messages (or anything else that's a property on
