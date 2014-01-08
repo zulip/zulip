@@ -109,4 +109,5 @@ in a while.
                 cutoff = last_business_day()
                 if inactive_since(user_profile, cutoff):
                     queue_digest_recipient(user_profile, cutoff)
-                    logger.info("Enqueuing digest email for %s" % (user_profile.email,))
+                    logger.info("%s is inactive, queuing for potential digest" % (
+                            user_profile.email,))

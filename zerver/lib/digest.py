@@ -12,6 +12,19 @@ from zerver.lib.actions import build_message_list, hashchange_encode, \
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription
 
+import logging
+
+log_format = "%(asctime)s: %(message)s"
+logging.basicConfig(format=log_format)
+
+formatter = logging.Formatter(log_format)
+file_handler = logging.FileHandler(settings.DIGEST_LOG_PATH)
+file_handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+
 # Digests accumulate 4 types of interesting traffic for a user:
 # 1. Missed PMs
 # 2. New streams
@@ -198,4 +211,5 @@ def handle_digest_email(user_profile_id, cutoff):
     if enough_traffic(template_payload["unread_pms"],
                       template_payload["hot_conversations"],
                       new_streams_count, new_users_count):
+        logger.info("Sending digest email for %s" % (user_profile.email,))
         send_digest_email(user_profile, html_content, text_content)
