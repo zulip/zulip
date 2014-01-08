@@ -244,6 +244,19 @@ test('boolean groups', function (t) {
     t.end();
 });
 
+test('newlines in params' , function (t) {
+    var args = optimist.parse([ '-s', "X\nX" ])
+    t.same(args, { _ : [], s : "X\nX", $0 : $0 });
+
+    // reproduce in bash:
+    // VALUE="new
+    // line"
+    // node program.js --s="$VALUE"
+    args = optimist.parse([ "--s=X\nX" ])
+    t.same(args, { _ : [], s : "X\nX", $0 : $0 });
+    t.end();
+});
+
 test('strings' , function (t) {
     var s = optimist([ '-s', '0001234' ]).string('s').argv.s;
     t.same(s, '0001234');

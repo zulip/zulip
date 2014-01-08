@@ -15,9 +15,6 @@ Handlebars.parse = function(input) {
   return Handlebars.Parser.parse(input);
 };
 
-Handlebars.print = function(ast) {
-  return new Handlebars.PrintVisitor().accept(ast);
-};
 // END(BROWSER)
 
 return Handlebars;

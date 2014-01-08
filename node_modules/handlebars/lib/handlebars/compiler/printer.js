@@ -2,6 +2,10 @@ exports.attach = function(Handlebars) {
 
 // BEGIN(BROWSER)
 
+Handlebars.print = function(ast) {
+  return new Handlebars.PrintVisitor().accept(ast);
+};
+
 Handlebars.PrintVisitor = function() { this.padding = 0; };
 Handlebars.PrintVisitor.prototype = new Handlebars.Visitor();
 

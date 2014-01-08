@@ -12,13 +12,11 @@ Handlebars.VM = {
       program: function(i, fn, data) {
         var programWrapper = this.programs[i];
         if(data) {
-          return Handlebars.VM.program(fn, data);
-        } else if(programWrapper) {
-          return programWrapper;
-        } else {
-          programWrapper = this.programs[i] = Handlebars.VM.program(fn);
-          return programWrapper;
+          programWrapper = Handlebars.VM.program(i, fn, data);
+        } else if (!programWrapper) {
+          programWrapper = this.programs[i] = Handlebars.VM.program(i, fn);
         }
+        return programWrapper;
       },
       programWithDepth: Handlebars.VM.programWithDepth,
       noop: Handlebars.VM.noop,
@@ -50,21 +48,27 @@ Handlebars.VM = {
     };
   },
 
-  programWithDepth: function(fn, data, $depth) {
-    var args = Array.prototype.slice.call(arguments, 2);
+  programWithDepth: function(i, fn, data /*, $depth */) {
+    var args = Array.prototype.slice.call(arguments, 3);
 
-    return function(context, options) {
+    var program = function(context, options) {
       options = options || {};
 
       return fn.apply(this, [context, options.data || data].concat(args));
     };
+    program.program = i;
+    program.depth = args.length;
+    return program;
   },
-  program: function(fn, data) {
-    return function(context, options) {
+  program: function(i, fn, data) {
+    var program = function(context, options) {
       options = options || {};
 
       return fn(context, options.data || data);
     };
+    program.program = i;
+    program.depth = 0;
+    return program;
   },
   noop: function() { return ""; },
   invokePartial: function(partial, name, context, helpers, partials, data) {
