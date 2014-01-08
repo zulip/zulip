@@ -41,8 +41,6 @@ exports.left_side_userlist = page_params.staging || _.contains(['customer7.inval
 exports.show_autoscroll_forever_option = page_params.show_autoscroll_forever_option;
 
 // Still very beta:
-exports.use_socket = page_params.staging || is_customer4;
-
 exports.full_width = false; //page_params.staging;
 
 exports.show_digest_email_setting = page_params.staging;
@@ -53,6 +51,7 @@ exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.summarize_read_while_narrowed = false;
 exports.clicking_notification_causes_narrow = true;
+exports.use_socket = true;
 
 // Ready for deprecation.
 exports.collapsible = false;
