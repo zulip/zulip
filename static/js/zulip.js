@@ -717,6 +717,8 @@ function update_messages(events) {
             return;
         }
 
+        msg.alerted = event.flags.indexOf("has_alert_word") !== -1;
+
         ui.un_cache_message_content_height(msg.id);
 
         if (event.rendered_content !== undefined) {
@@ -756,6 +758,8 @@ function update_messages(events) {
 
         msg.last_edit_timestamp = event.edit_timestamp;
         delete msg.last_edit_timestr;
+
+        alert_words.process_message(msg);
     });
 
     home_msg_list.rerender();
