@@ -2,12 +2,13 @@ var tab_bar = (function () {
 
 var exports = {};
 
-function make_tab(title, hash, data, extra_class) {
+function make_tab(title, hash, data, extra_class, home) {
     return {active: "inactive",
             cls: extra_class || "",
             title: title,
             hash: hash,
-            data: data};
+            data: data,
+            home: home || false };
 }
 
 function make_tab_data() {
@@ -30,7 +31,7 @@ function make_tab_data() {
                                null));
         }
     } else {
-        tabs.push(make_tab("Home", "#", "home", "root"));
+        tabs.push(make_tab('Home', "#", "home", "root", true));
     }
 
     if (narrow.active() && narrow.operators().length > 0) {
@@ -91,14 +92,11 @@ function make_tab_data() {
     }
 
     // Last tab is not a link
-    tabs[tabs.length - 1].hash = false;
-
+    tabs[tabs.length - 1].hash = null;
     return tabs;
 }
 
 exports.colorize_tab_bar = function () {
-    // The stream tab, if it exists, should be the same color as that stream's chosen color
-    // Likewise, the border and outline should be the stream color as well
     var stream_tab = $('#tab_list .stream');
     if (stream_tab.length > 0) {
         var stream_name = stream_tab.data('name');
@@ -107,27 +105,28 @@ exports.colorize_tab_bar = function () {
         }
         stream_name = stream_name.toString();
 
-        var stream_color = stream_data.get_color(stream_name);
+        var color_for_stream = stream_data.get_color(stream_name);
+        var stream_dark = stream_color.get_color_class(color_for_stream);
+        var stream_light = colorspace.getHexColor(colorspace.getLighterColor(colorspace.getDecimalColor(color_for_stream), 0.2));
 
-        if (!stream_tab.hasClass('active')) {
-            stream_tab.css('border-color', stream_color);
+        if (stream_tab.hasClass("stream")) {
+            stream_tab.css('border-left-color', color_for_stream).css('background-color', color_for_stream);
+            if (stream_tab.hasClass("inactive")) {
+              stream_tab.hover (
+                function () {
+                 $(this).css('border-left-color', stream_light).css('background-color', stream_light);
+                }, function () {
+                 $(this).css('border-left-color', color_for_stream).css('background-color', color_for_stream);
+                }
+              );
+            }
+            stream_tab.addClass(stream_dark);
         }
-
-        $('#tab_list li.active').css('border-color', stream_color);
     }
 };
 
 function build_tab_bar() {
     var tabs = make_tab_data();
-
-    // Insert the narrow spacer between each tab
-    if (tabs.length > 1) {
-        var idx = -1;
-        while (Math.abs(idx) < tabs.length) {
-            tabs.splice(idx, 0, {cls: "narrow_spacer", icon: true});
-            idx -= 2;
-        }
-    }
 
     var tab_bar = $("#tab_bar");
     tab_bar.empty();

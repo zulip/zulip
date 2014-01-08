@@ -36,5 +36,21 @@ exports.luminance_to_lightness = function (luminance) {
     return 116*v - 16;
 };
 
+exports.getDecimalColor = function (hexcolor) {
+    return {r: parseInt(hexcolor.substr(1,2), 16),
+            g: parseInt(hexcolor.substr(3,2), 16),
+            b: parseInt(hexcolor.substr(5,2), 16)};
+};
+
+exports.getLighterColor = function (rgb, lightness) {
+    return {r: (lightness * 255 + (1 - lightness) * rgb.r).toFixed(),
+            g: (lightness * 255 + (1 - lightness) * rgb.g).toFixed(),
+            b: (lightness * 255 + (1 - lightness) * rgb.b).toFixed()};
+};
+
+exports.getHexColor = function (rgb) {
+    return "#" + parseInt(rgb.r, 10).toString(16) + parseInt(rgb.g, 10).toString(16) + parseInt(rgb.b, 10).toString(16);
+};
+
 return exports;
 }());

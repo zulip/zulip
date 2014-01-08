@@ -6,9 +6,18 @@
     {{/if}}
     {{! Most tabs are links, but some are not since we don't have a narrow for them (e.g. Search) }}
     {{#if hash}}
-      <a href="{{hash}}">{{title}}</a>
+      {{#if home}}
+        <a href="{{hash}}"><i class="icon-vector-home"></i></a>
+      {{else}}
+        <a href="{{hash}}">{{title}}</a>
+      {{/if}}
     {{else}}
-      {{title}}
+      {{#if home}}
+        <i class="icon-vector-home"></i>
+      {{/if}}
+      {{#unless home}}
+        {{title}}
+      {{/unless}}
     {{/if}}
   </li>
 {{/each}}

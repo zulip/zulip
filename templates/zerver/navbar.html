@@ -1,31 +1,7 @@
 <div class="header">
 <div class="header-main" id="top_navbar">
   <div class="column-left">
-        <div>
-          <a class="brand logo" href="#"><img src="/static/images/logo/zulip@2x.png" class="logoimage" alt="Zulip" content="Zulip" /></a>
-        </div>
-  </div>
-  <div class="column-middle" id="navbar-middle">
-    <div class="column-middle-inner">
-          <div id="streamlist-toggle" {%if embedded %} style="visibility: hidden"{% endif %}>
-            <a href="#" id="streamlist-toggle-button" role="button"><i class="icon-vector-reorder"></i>
-              <span id="streamlist-toggle-unreadcount">0</span>
-            </a>
-          </div>
-          <div id="searchbox">
-            <form id="searchbox_form" class="form-search navbar-search">
-              <div id="search_arrows" class="input-append">
-                <i class="icon-vector-search"></i>
-                <input class="search-query input-block-level" id="search_query" type="text" placeholder="Search"
-                       autocomplete="off" />
-                {# Start the button off disabled since there is no active search #}
-                <button class="btn search_button" type="button" id="search_exit" disabled="disabled"><i class="icon-vector-remove"></i></button>
-              </div>
-            </form>
-          </div>{# /searchbox #}
-    </div>
-  </div>
-  <div class="column-right">
+          <a class="brand logo" href="#"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="logoimage" alt="Zulip" content="Zulip" /></a>
           <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
             <ul class="nav" role="navigation">
               <li class="dropdown actual-dropdown-menu" id="gear-menu">
@@ -126,6 +102,30 @@
               </li>
             </ul>
         </div>
+  </div>
+  <div class="column-middle" id="navbar-middle">
+    <div class="column-middle-inner">
+          <div id="streamlist-toggle" {%if embedded %} style="visibility: hidden"{% endif %}>
+            <a href="#" id="streamlist-toggle-button" role="button"><i class="icon-vector-reorder"></i>
+              <span id="streamlist-toggle-unreadcount">0</span>
+            </a>
+          </div>
+          <div id="searchbox">
+            <div id="tab_bar" class="notdisplayed">
+            </div>
+            <form id="searchbox_form" class="form-search navbar-search">
+              <div id="search_arrows" class="input-append">
+                <i class="icon-vector-search"></i>
+                <input class="search-query input-block-level" id="search_query" type="text" placeholder="Search"
+                       autocomplete="off" />
+                {# Start the button off disabled since there is no active search #}
+                <button class="btn search_button" type="button" id="search_exit" disabled="disabled"><i class="icon-vector-remove"></i></button>
+              </div>
+            </form>
+          </div>{# /searchbox #}
+    </div>
+  </div>
+  <div class="column-right">
         <div id="userlist-toggle">
             <a href="#" id="userlist-toggle-button" role="button"><i class="icon-vector-group"></i>
               <span id="userlist-toggle-unreadcount">0</span>
