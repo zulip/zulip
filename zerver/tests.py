@@ -5369,7 +5369,7 @@ class BeanstalkHookTests(AuthedTestCase):
 
 > Added some code""")
 
-class GithubHookTests(AuthedTestCase):
+class GithubV1HookTests(AuthedTestCase):
 
     push_content = """zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) to branch master
 
@@ -5382,7 +5382,7 @@ class GithubHookTests(AuthedTestCase):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         stream = 'commits'
-        data = ujson.loads(self.fixture_data('github', 'push'))
+        data = ujson.loads(self.fixture_data('github', 'v1_push'))
         data.update({'email': email,
                      'api-key': api_key,
                      'branches': 'dev,staging',
@@ -5407,7 +5407,123 @@ class GithubHookTests(AuthedTestCase):
     def basic_test(self, fixture_name, stream_name, expected_subject, expected_content, send_stream=False, branches=None):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
-        data = ujson.loads(self.fixture_data('github', fixture_name))
+        data = ujson.loads(self.fixture_data('github', 'v1_' + fixture_name))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'payload': ujson.dumps(data['payload'])})
+        if send_stream:
+            data['stream'] = stream_name
+        if branches is not None:
+            data['branches'] = branches
+        msg = self.send_json_payload(email, "/api/v1/external/github",
+                                     data,
+                                     stream_name=stream_name)
+        self.assertEqual(msg.subject, expected_subject)
+        self.assertEqual(msg.content, expected_content)
+
+    def test_user_specified_branches(self):
+        self.basic_test('push', 'my_commits', 'zulip-test', self.push_content,
+                        send_stream=True, branches="master,staging")
+
+    def test_user_specified_stream(self):
+        # Around May 2013 the github webhook started to specify the stream.
+        # Before then, the stream was hard coded to "commits".
+        self.basic_test('push', 'my_commits', 'zulip-test', self.push_content,
+                        send_stream=True)
+
+    def test_legacy_hook(self):
+        self.basic_test('push', 'commits', 'zulip-test', self.push_content)
+
+    def test_issues_opened(self):
+        self.basic_test('issues_opened', 'issues',
+                        "zulip-test: issue 5: The frobnicator doesn't work",
+                        "zbenjamin opened [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
+
+    def test_issue_comment(self):
+        self.basic_test('issue_comment', 'issues',
+                        "zulip-test: issue 5: The frobnicator doesn't work",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
+
+    def test_issues_closed(self):
+        self.basic_test('issues_closed', 'issues',
+                        "zulip-test: issue 5: The frobnicator doesn't work",
+                        "zbenjamin closed [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)")
+
+    def test_pull_request_opened(self):
+        self.basic_test('pull_request_opened', 'commits',
+                        "zulip-test: pull request 7: Counting is hard.",
+                        "lfaraone opened [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)\n\n~~~ quote\nOmitted something I think?\n~~~")
+
+    def test_pull_request_closed(self):
+        self.basic_test('pull_request_closed', 'commits',
+                        "zulip-test: pull request 7: Counting is hard.",
+                        "zbenjamin closed [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)")
+
+    def test_pull_request_synchronize(self):
+        self.basic_test('pull_request_synchronize', 'commits',
+                        "zulip-test: pull request 13: Even more cowbell.",
+                        "zbenjamin synchronized [pull request 13](https://github.com/zbenjamin/zulip-test/pull/13)")
+
+    def test_pull_request_comment(self):
+        self.basic_test('pull_request_comment', 'commits',
+                        "zulip-test: pull request 9: Less cowbell.",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [pull request 9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
+
+    def test_pull_request_comment_user_specified_stream(self):
+        self.basic_test('pull_request_comment', 'my_commits',
+                        "zulip-test: pull request 9: Less cowbell.",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [pull request 9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
+                        send_stream=True)
+
+    def test_commit_comment(self):
+        self.basic_test('commit_comment', 'commits',
+                        "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252302)\n\n~~~ quote\nAre we sure this is enough cowbell?\n~~~")
+
+    def test_commit_comment_line(self):
+        self.basic_test('commit_comment_line', 'commits',
+                        "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on `cowbell`, line 13\n\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
+
+class GithubV2HookTests(AuthedTestCase):
+
+    push_content = """zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) to branch master
+
+* [48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e): Add baz
+* [06ebe5f](https://github.com/zbenjamin/zulip-test/commit/06ebe5f472a32f6f31fd2a665f0c7442b69cce72): Baz needs to be longer
+* [b954491](https://github.com/zbenjamin/zulip-test/commit/b95449196980507f08209bdfdc4f1d611689b7a8): Final edit to baz, I swear
+"""
+
+    def test_spam_branch_is_ignored(self):
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        stream = 'commits'
+        data = ujson.loads(self.fixture_data('github', 'v2_push'))
+        data.update({'email': email,
+                     'api-key': api_key,
+                     'branches': 'dev,staging',
+                     'stream': stream,
+                     'payload': ujson.dumps(data['payload'])})
+        url = '/api/v1/external/github'
+
+        # We subscribe to the stream in this test, even though
+        # it won't get written, to avoid failing for the wrong
+        # reason.
+        self.subscribe_to_stream(email, stream)
+
+        prior_count = Message.objects.count()
+
+        result = self.client.post(url, data)
+        self.assert_json_success(result)
+
+        after_count = Message.objects.count()
+        self.assertEqual(prior_count, after_count)
+
+
+    def basic_test(self, fixture_name, stream_name, expected_subject, expected_content, send_stream=False, branches=None):
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        data = ujson.loads(self.fixture_data('github', 'v2_' + fixture_name))
         data.update({'email': email,
                      'api-key': api_key,
                      'payload': ujson.dumps(data['payload'])})

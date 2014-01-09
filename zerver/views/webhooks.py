@@ -8,7 +8,7 @@ from zerver.lib.actions import check_send_message, convert_html_to_markdown
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import authenticated_api_view, REQ, \
     has_request_variables, json_to_dict, authenticated_rest_api_view, \
-    api_key_only_webhook_view
+    api_key_only_webhook_view, to_non_negative_int, ruby_boolean
 from zerver.views.messages import send_message_backend
 from django.db.models import Q
 
@@ -40,62 +40,57 @@ def github_generic_content(noun, payload, blob):
         content += "\n\n~~~ quote\n%s\n~~~" % (blob['body'],)
     return content
 
-@authenticated_api_view
-@has_request_variables
-def api_github_landing(request, user_profile, event=REQ,
-                       payload=REQ(converter=json_to_dict),
-                       branches=REQ(default=''),
-                       stream=REQ(default='')):
+
+def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
+    """
+    processes github payload with version 1 field specification
+    `payload` comes in unmodified from github
+    `stream` is set to 'commits' if otherwise unset
+    """
+
+    commit_stream = stream
+    # in v1, we assume that the stream 'issues' exists, since we only handle issues for CUSTOMER5 and ourselves
+    issue_stream = 'issues' if user_profile.realm.domain in ('customer5.invalid', 'zulip.com') else stream
+
+    return api_github_v2(user_profile, event, payload, branches, stream, commit_stream, issue_stream, **kwargs)
+
+
+def api_github_v2(user_profile, event, payload, branches, default_stream, commit_stream, issue_stream, topic_focus = None):
+    """
+    processes github payload with version 2 field specification
+    `payload` comes in unmodified from github
+    `default_stream` is set to what `stream` is in v1 above
+    `commit_stream` and `issue_stream` fall back to `default_stream` if they are empty
+    This and allowing alternative endpoints is what distinguishes v1 from v2 of the github configuration
+    """
+    if not commit_stream:
+        commit_stream = default_stream
+    if not issue_stream:
+        issue_stream = default_stream
+
+    target_stream = commit_stream
     repository = payload['repository']
 
-    # Special hook for capturing event data
-    try:
-        if repository['name'] == 'zulip-test' and settings.DEPLOYED:
-            with open('/var/log/zulip/github-payloads', 'a') as f:
-                f.write(ujson.dumps({'event': event, 'payload': payload}))
-                f.write("\n")
-    except Exception:
-        logging.exception("Error while capturing Github event")
+    if not topic_focus:
+        topic_focus = repository['name']
 
-    if not stream:
-        stream = 'commits'
-
-    # short_ref is typically a branch, but some events (like comments) don't
-    # have one.
-    short_ref = re.sub(r'^refs/heads/', '', payload.get('ref', ""))
-
-    topic_focus = repository["name"]
-    if (user_profile.realm.domain == "customer26.invalid") and short_ref:
-        topic_focus = short_ref
-
-    # CUSTOMER18 has requested not to get pull request notifications
-    if event == 'pull_request' and user_profile.realm.domain not in ['customer18.invalid']:
+    # Event Handlers
+    if event == 'pull_request':
         pull_req = payload['pull_request']
         subject = github_generic_subject('pull request', topic_focus, pull_req)
         content = github_generic_content('pull request', payload, pull_req)
     elif event == 'issues':
-        if user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
-            return json_success()
-
-        if user_profile.realm.domain not in ('zulip.com', 'customer5.invalid'):
-            return json_success()
-
-        stream = 'issues'
+        # in v1, we assume that this stream exists, since we only handle issues for CUSTOMER5 and ourselves
+        target_stream = issue_stream
         issue = payload['issue']
         subject = github_generic_subject('issue', topic_focus, issue)
         content = github_generic_content('issue', payload, issue)
     elif event == 'issue_comment':
-        if user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
-            return json_success()
-
-        if payload['action'] != 'created':
-            return json_success()
-
         # Comments on both issues and pull requests come in as issue_comment events
         issue = payload['issue']
         if issue['pull_request']['diff_url'] is None:
             # It's an issues comment
-            stream = 'issues'
+            target_stream = issue_stream
             noun = 'issue'
         else:
             # It's a pull request comment
@@ -111,23 +106,6 @@ def api_github_landing(request, user_profile, event=REQ,
                       issue['html_url'],
                       comment['body']))
     elif event == 'push':
-        if user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
-            return json_success()
-
-        # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
-        # get spammed when people commit to non-master all over the place.
-        # Long-term, this will be replaced by some GitHub configuration
-        # option of which branches to notify on.
-        if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'zulip.com']:
-            return json_success()
-
-        if branches:
-            # If we are given a whitelist of branches, then we silently ignore
-            # any push notification on a branch that is not in our whitelist.
-            if short_ref not in re.split('[\s,;|]+', branches):
-                return json_success()
-
-
         subject, content = build_message_from_gitlog(user_profile, topic_focus,
                                                      payload['ref'], payload['commits'],
                                                      payload['before'], payload['after'],
@@ -145,20 +123,107 @@ def api_github_landing(request, user_profile, event=REQ,
             content += " on `%s`, line %d" % (comment['path'], comment['line'])
 
         content += "\n\n~~~ quote\n%s\n~~~" % (comment['body'],)
-    else:
-        # We don't handle other events even though we get notified
-        # about them
+
+    return (target_stream, subject, content)
+
+@authenticated_api_view
+@has_request_variables
+def api_github_landing(request, user_profile, event=REQ,
+                       payload=REQ(converter=json_to_dict),
+                       branches=REQ(default=''),
+                       stream=REQ(default=''),
+                       version=REQ(converter=to_non_negative_int, default=1),
+                       commit_stream=REQ(default=''),
+                       issue_stream=REQ(default=''),
+                       exclude_pull_requests=REQ(converter=ruby_boolean, default=False),
+                       exclude_issues=REQ(converter=ruby_boolean, default=False),
+                       exclude_commits=REQ(converter=ruby_boolean, default=False)
+                       ):
+
+    repository = payload['repository']
+
+    # Special hook for capturing event data. If we see our special test repo, log the payload from github.
+    try:
+        if repository['name'] == 'zulip-test' and repository['id'] == 6893087 and settings.DEPLOYED:
+            with open('/var/log/zulip/github-payloads', 'a') as f:
+                f.write(ujson.dumps({'event': event,
+                                     'payload': payload,
+                                     'branches': branches,
+                                     'stream': stream,
+                                     'version': version,
+                                     'commit_stream': commit_stream,
+                                     'issue_stream': issue_stream,
+                                     'exclude_pull_requests': exclude_pull_requests,
+                                     'exclude_issues': exclude_issues,
+                                     'exclude_commits': exclude_commits}))
+                f.write("\n")
+    except Exception:
+        logging.exception("Error while capturing Github event")
+
+    if not stream:
+        stream = 'commits'
+
+    short_ref = re.sub(r'^refs/heads/', '', payload.get('ref', ""))
+    kwargs = dict()
+
+    ### realm-specific logic
+    if user_profile.realm.domain == "customer26.invalid" and short_ref:
+        kwargs['topic_focus'] = short_ref
+
+    # CUSTOMER18 has requested not to get pull request notifications
+    if (event == 'pull_request' and user_profile.realm.domain in ['customer18.invalid']) or exclude_pull_requests:
         return json_success()
+
+    # Only Zulip and CUSTOMER5 get issues right now
+    # TODO: is this still the desired behavior?
+    if event == 'issues' and user_profile.realm.domain not in ('zulip.com', 'customer5.invalid') or exclude_issues:
+        return json_success()
+
+    # CUSTOMER37 and CUSTOMER38 do not want github issues traffic, or push notifications, only pull requests.
+    if event in ('issues', 'issue_comment', 'push') and user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
+        return json_success()
+
+    ### Zulip-specific logic
+
+    # We currently handle push, pull_request, issues, issue_comment, commit_comment
+    if event not in ('pull_request', 'issues', 'issue_comment', 'push', 'commit_comment'):
+        # we don't handle this event type yet
+        return json_success()
+
+    # We filter issue_comment events for issue creation events
+    if event == 'issue_comment' and payload['action'] != 'created' or exclude_issues:
+        return json_success()
+
+    if event == 'push':
+        # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
+        # get spammed when people commit to non-master all over the place.
+        # Long-term, this will be replaced by some GitHub configuration
+        # option of which branches to notify on.
+        # FIXME: get CUSTOMER18 to use the branch whitelist
+        if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'zulip.com']:
+            return json_success()
+
+        # If we are given a whitelist of branches, then we silently ignore
+        # any push notification on a branch that is not in our whitelist.
+        if branches and short_ref not in re.split('[\s,;|]+', branches):
+            return json_success()
+
+    # Map payload to the handler with the right version
+    if version == 2:
+        target_stream, subject, content = api_github_v2(user_profile, event, payload, branches, stream, commit_stream, issue_stream, **kwargs)
+    else:
+        target_stream, subject, content = api_github_v1(user_profile, event, payload, branches, stream, **kwargs)
 
     # customer14.invalid has a stream per GitHub project and wants the topic to
     # always be 'GitHub'.
+    # TODO: I'm not sure how to accomodate this hack into a configuration somewhere.
     if user_profile.realm.domain == "customer14.invalid":
         subject = "GitHub"
 
     request.client = get_client("ZulipGitHubWebhook")
     return send_message_backend(request, user_profile,
                                 message_type_name="stream",
-                                message_to=[stream],
+                                message_to=[target_stream],
                                 forged=False, subject_name=subject,
                                 message_content=content)
 

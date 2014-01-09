@@ -496,6 +496,15 @@ def json_to_list(json):
 def json_to_bool(json):
     return json_to_foo(json, bool)
 
+def ruby_boolean(boolean):
+    """ruby booleans may be "true", "false" or ""
+
+    Returns a (python) bool"""
+    if boolean == "true":
+        return True
+    else:
+        return False
+
 def statsd_increment(counter, val=1):
     """Increments a statsd counter on completion of the
     decorated function.
