@@ -433,13 +433,13 @@ exports.deactivate = function () {
                 then_scroll: !preserve_pre_narrowing_screen_position,
                 use_closest: true
             });
-        }
 
-        if (preserve_pre_narrowing_screen_position) {
-            // We scroll the user back to exactly the offset from the selected
-            // message that he was at the time that he narrowed.
-            // TODO: Make this correctly handle the case of resizing while narrowed.
-            viewport.scrollTop(current_msg_list.selected_row().offset().top - current_msg_list.pre_narrow_offset);
+            if (preserve_pre_narrowing_screen_position) {
+                // We scroll the user back to exactly the offset from the selected
+                // message that he was at the time that he narrowed.
+                // TODO: Make this correctly handle the case of resizing while narrowed.
+                viewport.scrollTop(current_msg_list.selected_row().offset().top - current_msg_list.pre_narrow_offset);
+            }
         }
     }
 
