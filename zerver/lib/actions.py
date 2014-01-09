@@ -2187,12 +2187,20 @@ def do_send_missedmessage_events(user_profile, missed_messages):
 
     return
 
+def receives_offline_notifications(user_profile):
+    return ((user_profile.enable_offline_email_notifications or
+             user_profile.enable_offline_push_notifications) and
+            not user_profile.is_bot)
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
     try:
         user_profile = get_user_profile_by_id(user_profile_id)
+        if not receives_offline_notifications(user_profile):
+            return
+
         umessage = UserMessage.objects.get(user_profile=user_profile,
-                                      message__id=missed_message['message_id'])
+                                           message__id=missed_message['message_id'])
         message = umessage.message
         if umessage.flags.read:
             return
@@ -2252,6 +2260,9 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     message_ids = [event.get('message_id') for event in missed_email_events]
 
     user_profile = get_user_profile_by_id(user_profile_id)
+    if not receives_offline_notifications(user_profile):
+        return
+
     messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
