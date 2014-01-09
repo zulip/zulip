@@ -127,13 +127,14 @@ var fake_messages = [
     }
 ];
 
-function hide_desktop_app_alert() {
+function hide_app_alert() {
     $('#alert-bar-container').slideUp(100);
 }
 
-function show_desktop_app_alert() {
+function show_app_alert(contents) {
+    $('#custom-alert-bar-content').html(contents);
     $('#alert-bar-container').show();
-    $('#alert-bar-container .close-alert-icon').expectOne().click(hide_desktop_app_alert);
+    $('#alert-bar-container .close-alert-icon').expectOne().click(hide_app_alert);
 }
 
 function disable_event_handlers() {
@@ -264,7 +265,8 @@ function finale() {
         callback();
     });
     deferred_work = [];
-    show_desktop_app_alert();
+    var alert_contents = "<i class='icon-vector-desktop alert-icon'></i> Have you heard: the <a href='/apps' target='_blank'>Zulip desktop app</a> is awesome and you should get it!";
+    show_app_alert(alert_contents);
 }
 
 function reply() {
