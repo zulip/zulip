@@ -66,6 +66,9 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 # Clean up stale .pyc files etc.
 subprocess.check_call('./tools/clean-repo')
 
+# Watch for handlebars changes.
+subprocess.Popen('./tools/compile-handlebars-templates forever', shell=True)
+
 # Set up a new process group, so that we can later kill run{server,tornado}
 # and all of the processes they spawn.
 os.setpgrp()
