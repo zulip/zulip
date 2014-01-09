@@ -9,7 +9,7 @@ from zerver.models import Message, UserProfile, \
 from zerver.decorator import JsonableError
 from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile
-from zerver.lib.cache_helpers import cache_save_message
+from zerver.lib.cache_helpers import cache_with_key
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.event_queue import get_client_descriptors_for_user,\
     get_client_descriptors_for_realm_all_streams
@@ -55,48 +55,11 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         queue_json_publish("missedmessage_emails", event, lambda event: None)
         queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
 
-def cache_load_message_data(message_id, users):
-    # Get everything that we'll need out of memcached in one fetch, to save round-trip times:
-    # * The message itself
-    # * Every recipient's UserProfile
-    user_profile_keys = [user_profile_by_id_cache_key(user_data['id']) for user_data in users]
-
-    cache_keys = [message_cache_key(message_id)]
-    cache_keys.extend(user_profile_keys)
-
-    # Single memcached fetch
-    result = cache_get_many(cache_keys)
-
-    cache_extractor = lambda result: result[0] if result is not None else None
-
-    message = cache_extractor(result.get(cache_keys[0], None))
-
-    user_profiles = dict((user_data['id'], cache_extractor(result.get(user_profile_by_id_cache_key(user_data['id']), None)))
-                            for user_data in users)
-
-    # Any data that was not found in memcached, we have to load from the database
-    # and save back. This should never happen---we take steps to keep recent messages,
-    # all user profile & presence objects in memcached.
-    if message is None:
-        if not settings.TEST_SUITE:
-            logging.warning("Tornado failed to load message from memcached when delivering!")
-
-        message = Message.objects.select_related().get(id=message_id)
-        cache_save_message(message)
-
-    for user_profile_id, user_profile in user_profiles.iteritems():
-        if user_profile:
-            continue
-
-        user_profile = UserProfile.objects.select_related().get(id=user_profile_id)
-        user_profiles[user_profile_id] = user_profile
-        cache_save_user_profile(user_profile)
-
-        if not settings.TEST_SUITE:
-            logging.warning("Tornado failed to load user profile %s from memcached when delivering message!" %
-                            (user_profile.email,))
-
-    return message, user_profiles
+@cache_with_key(message_cache_key, timeout=3600*24)
+def get_message_by_id_dbwarn(message_id):
+    if not settings.TEST_SUITE:
+        logging.warning("Tornado failed to load message from memcached when delivering!")
+    return Message.objects.select_related().get(id=message_id)
 
 def receiver_is_idle(user_profile_id, realm_presences):
     # If a user has no message-receiving event queues, they've got no open zulip
@@ -128,8 +91,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
     return off_zulip or idle_too_long
 
 def process_new_message(data):
-    message, user_profiles = cache_load_message_data(data['message'],
-                                                     data['users'])
+    message = get_message_by_id_dbwarn(data['message'])
 
     realm_presences = data['presences']
     sender_queue_id = data.get('sender_queue_id', None)
@@ -148,12 +110,7 @@ def process_new_message(data):
 
     for user_data in data['users']:
         user_profile_id = user_data['id']
-        user_profile = user_profiles[user_data['id']]
         flags = user_data.get('flags', [])
-
-        if not user_profile.is_active:
-            logging.warning("Message %s being delivered to inactive user %s" %
-                            (message.id, user_profile_id))
 
         for client in get_client_descriptors_for_user(user_profile_id):
             send_to_clients[client.event_queue.id] = {'client': client, 'flags': flags}
