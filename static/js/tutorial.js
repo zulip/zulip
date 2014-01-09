@@ -265,7 +265,14 @@ function finale() {
         callback();
     });
     deferred_work = [];
-    var alert_contents = "<i class='icon-vector-desktop alert-icon'></i> Have you heard: the <a href='/apps' target='_blank'>Zulip desktop app</a> is awesome and you should get it!";
+
+    var alert_contents;
+
+    if (page_params.prompt_for_invites) {
+        alert_contents = "<i class='icon-vector-heart alert-icon'></i>It's lonely in here! <a href='#invite-user' data-toggle='modal'>Invite some coworkers</a>.";
+    } else {
+        alert_contents = "<i class='icon-vector-desktop alert-icon'></i> Have you heard: the <a href='/apps' target='_blank'>Zulip desktop app</a> is awesome and you should get it!";
+    }
     show_app_alert(alert_contents);
 }
 

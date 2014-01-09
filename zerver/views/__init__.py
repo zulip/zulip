@@ -135,6 +135,10 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
 
     return existing_streams, created_streams
 
+def realm_user_count(realm):
+    user_dicts = get_active_user_dicts_in_realm(realm)
+    return len([user_dict for user_dict in user_dicts if not user_dict["is_bot"]])
+
 def send_signup_message(sender, signups_stream, user_profile,
                         internal=False, realm=None):
     if internal:
@@ -143,11 +147,10 @@ def send_signup_message(sender, signups_stream, user_profile,
     else:
         internal_blurb = " "
 
+    user_count = realm_user_count(user_profile.realm)
     # Send notification to realm notifications stream if it exists
     # Don't send notification for the first user in a realm
-    user_dicts = get_active_user_dicts_in_realm(user_profile.realm)
-    realm_user_count = len([user_dict for user_dict in user_dicts if not user_dict["is_bot"]])
-    if user_profile.realm.notifications_stream is not None and realm_user_count > 1:
+    if user_profile.realm.notifications_stream is not None and user_count > 1:
         internal_send_message(sender, "stream",
                               user_profile.realm.notifications_stream.name,
                               "New users", "%s just signed up for Zulip. Say hello!" % \
@@ -160,7 +163,7 @@ def send_signup_message(sender, signups_stream, user_profile,
                 user_profile.full_name,
                 user_profile.email,
                 internal_blurb,
-                realm_user_count,
+                user_count,
                 )
             )
 
@@ -775,6 +778,11 @@ def home(request):
     needs_tutorial = settings.TUTORIAL_ENABLED and \
         user_profile.tutorial_status != UserProfile.TUTORIAL_FINISHED
 
+    # If you are the only person in the realm and you didn't invite
+    # anyone, we'll continue to encourage you to do so on the frontend.
+    prompt_for_invites = (realm_user_count(user_profile.realm) == 1) and \
+        not PreregistrationUser.objects.filter(referred_by=user_profile).count()
+
     if user_profile.pointer == -1 and user_has_messages:
         # Put the new user's pointer at the bottom
         #
@@ -822,6 +830,7 @@ def home(request):
         referrals             = register_ret['referrals'],
         realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,
+        prompt_for_invites    = prompt_for_invites,
         desktop_notifications_enabled =
             user_profile.enable_desktop_notifications,
         sounds_enabled =
