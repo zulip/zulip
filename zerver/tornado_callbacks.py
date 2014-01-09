@@ -98,10 +98,10 @@ def cache_load_message_data(message_id, users):
 
     return message, user_profiles
 
-def receiver_is_idle(user_profile, realm_presences):
+def receiver_is_idle(user_profile_id, realm_presences):
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
-    all_client_descriptors = get_client_descriptors_for_user(user_profile.id)
+    all_client_descriptors = get_client_descriptors_for_user(user_profile_id)
     message_event_queues = [client for client in all_client_descriptors if client.accepts_messages()]
     off_zulip = len(message_event_queues) == 0
 
@@ -109,12 +109,12 @@ def receiver_is_idle(user_profile, realm_presences):
     # presence information in this case (and it's hard to get without an additional
     # db query) so we simply don't try to guess if this cross-realm recipient
     # has been idle for too long
-    if realm_presences is None or not user_profile.id in realm_presences:
+    if realm_presences is None or not user_profile_id in realm_presences:
         return off_zulip
 
     # If the most recent online status from a user is >1hr in the past, we notify
     # them regardless of whether or not they have an open window
-    user_presence = realm_presences[user_profile.id]
+    user_presence = realm_presences[user_profile_id]
     idle_too_long = False
     newest = None
     for client, status in user_presence.iteritems():
@@ -165,7 +165,7 @@ def process_new_message(data):
         received_pm = message.recipient.type in (Recipient.PERSONAL, Recipient.HUDDLE) and \
                         user_profile_id != message.sender.id
         mentioned = 'mentioned' in flags
-        if (received_pm or mentioned) and receiver_is_idle(user_profile, realm_presences):
+        if (received_pm or mentioned) and receiver_is_idle(user_profile_id, realm_presences):
             event = build_offline_notification_event(user_profile_id, message.id)
 
             # We require RabbitMQ to do this, as we can't call the email handler
