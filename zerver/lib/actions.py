@@ -356,7 +356,7 @@ def do_send_messages(messages):
         presences = {}
         for user_profile in message['active_recipients']:
             if user_profile.email in user_presences:
-                presences[user_profile.email] = user_presences[user_profile.email]
+                presences[user_profile.id] = user_presences[user_profile.email]
 
         data = dict(
             type         = 'new_message',

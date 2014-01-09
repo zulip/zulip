@@ -109,12 +109,12 @@ def receiver_is_idle(user_profile, realm_presences):
     # presence information in this case (and it's hard to get without an additional
     # db query) so we simply don't try to guess if this cross-realm recipient
     # has been idle for too long
-    if realm_presences is None or not user_profile.email in realm_presences:
+    if realm_presences is None or not user_profile.id in realm_presences:
         return off_zulip
 
     # If the most recent online status from a user is >1hr in the past, we notify
     # them regardless of whether or not they have an open window
-    user_presence = realm_presences[user_profile.email]
+    user_presence = realm_presences[user_profile.id]
     idle_too_long = False
     newest = None
     for client, status in user_presence.iteritems():
