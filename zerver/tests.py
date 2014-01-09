@@ -796,6 +796,10 @@ class LoginTest(AuthedTestCase):
         self.login("hamlet@zulip.com", "wrongpassword")
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
+    def test_login_nonexist_user(self):
+        result = self.login("xxx@zulip.com", "xxx")
+        self.assertIn("Please enter a correct email and password", result.content)
+
     def test_register(self):
         realm = Realm.objects.get(domain="zulip.com")
         streams = ["stream_%s" % i for i in xrange(40)]
