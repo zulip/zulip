@@ -487,13 +487,14 @@ exports.resize_page_components = function () {
     } else {
         desired_width = $("#main_div").outerWidth();
     }
-    tab_bar_under.width(desired_width);
 
     var h;
     var sidebar;
 
     if (feature_flags.left_side_userlist) {
         var css_narrow_mode = viewport.is_narrow();
+
+        $("#top_navbar").removeClass("rightside-userlist");
 
         if (css_narrow_mode && !narrow_window) {
             // move stuff to the left sidebar (skinny mode)

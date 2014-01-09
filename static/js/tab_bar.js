@@ -107,16 +107,24 @@ exports.colorize_tab_bar = function () {
 
         var color_for_stream = stream_data.get_color(stream_name);
         var stream_dark = stream_color.get_color_class(color_for_stream);
-        var stream_light = colorspace.getHexColor(colorspace.getLighterColor(colorspace.getDecimalColor(color_for_stream), 0.2));
+        var stream_light = colorspace.getHexColor(
+                           colorspace.getLighterColor(
+                           colorspace.getDecimalColor(color_for_stream), 0.2));
 
         if (stream_tab.hasClass("stream")) {
-            stream_tab.css('border-left-color', color_for_stream).css('background-color', color_for_stream);
+            stream_tab.css('border-left-color',
+                           color_for_stream).css('background-color',
+                                                 color_for_stream);
             if (stream_tab.hasClass("inactive")) {
               stream_tab.hover (
                 function () {
-                 $(this).css('border-left-color', stream_light).css('background-color', stream_light);
+                 $(this).css('border-left-color',
+                             stream_light).css('background-color',
+                             stream_light);
                 }, function () {
-                 $(this).css('border-left-color', color_for_stream).css('background-color', color_for_stream);
+                 $(this).css('border-left-color',
+                             color_for_stream).css('background-color',
+                                                   color_for_stream);
                 }
               );
             }

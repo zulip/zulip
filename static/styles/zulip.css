@@ -86,8 +86,14 @@ a {
     max-width: 1200px;
     min-width: 950px;
     margin: 0px auto;
-    padding: 0px 5px 0px 5px;
+    padding: 0px;
     position: relative;
+}
+
+.fixed-app {
+    width: 100%;
+    position: fixed;
+    z-index: 98;
 }
 
 .column-left,
@@ -113,7 +119,12 @@ a {
     position: fixed;
     margin-top: 50px;
     width: 200px;
-    z-index:3;
+    z-index:99;
+    padding-left: 10px;
+}
+
+.app-main .column-left .left-sidebar {
+    width: 190px;
 }
 
 .app-main .column-right .right-sidebar {
@@ -123,6 +134,7 @@ a {
 .column-middle {
     margin-right: 200px;
     margin-left: 200px;
+    position: relative;
 }
 
 textarea,
@@ -1630,7 +1642,6 @@ input.recipient_box {
 #searchbox {
     width: 100%;
     height: 40px;
-    box-shadow: 1px 0px 1px -1px #c4c4c4;
 }
 
 #tab_bar {
@@ -1663,6 +1674,7 @@ input.recipient_box {
    margin: 0px;
    padding: 0px;
    text-overflow: ellipsis;
+   height: 40px;
 }
 
 #tab_list li.inactive {
@@ -1686,7 +1698,7 @@ input.recipient_box {
    width:  0px;
    position: absolute;
    pointer-events: none;
-   margin-top: -32px;
+   margin-top: -25px;
    border-style: solid;
    border-width: 25px 0 25px 12px;
    border-color: inherit;
@@ -1702,7 +1714,7 @@ input.recipient_box {
    width:  0px;
    position: absolute;
    pointer-events: none;
-   margin-top: -35px;
+   margin-top: -28px;
    border-style: solid;
    border-width: 28px 0 28px 14px;
    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
@@ -1770,11 +1782,11 @@ input.recipient_box {
 }
 
 #tab_bar_underpadding {
-    position: fixed;
-    z-index: 10;
-    top: 74px;
-    background-color: #FFF;
-    height: 0px;
+    position: absolute;
+    width: 100%;
+    top: 40px;
+    height: 20px;
+    z-index:99;
 }
 
 
@@ -1807,6 +1819,7 @@ input.recipient_box {
     position: relative;
     background-color: #e4e4e4;
     width: 40px;
+    height: 19px;
     padding-top: 12px;
     padding-bottom: 9px;
 }
@@ -1837,21 +1850,23 @@ input.recipient_box {
     right: 0px;
     text-align: center;
     vertical-align: middle;
-    border-left: 1px solid #777;
+    border-left: 2px solid #afbfca;
 }
 
 #userlist-toggle-button {
     text-decoration: none;
-    color: #ffffff;
+    background-color: #e4e4e4;
+    color: #858585;
     display: block;
-    background-color: rgba(255,255,255,0.2);
     width: 40px;
+    height: 19px;
     padding-top: 12px;
     padding-bottom: 9px;
 }
 
 .nav .dropdown-menu {
-    left: -31px;
+    left: auto;
+    right: 0px;
     top: 30px;
     min-width: 180px;
     -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
@@ -1864,7 +1879,7 @@ input.recipient_box {
     width: 0px;
     height: 0px;
     top: -7px;
-    left: 5px;
+    right: 10px;
     display: inline-block;
     border-right: 7px solid transparent;
     border-bottom: 7px solid #aaa;
@@ -1920,6 +1935,8 @@ input.recipient_box {
     width: auto;
     float: none;
     overflow: hidden;
+    border-right: 1px solid #e4e4e4;
+    height: 40px;
 }
 
 #search_query {
@@ -2009,7 +2026,7 @@ input.recipient_box {
     position: fixed;
     /* .message_list max-width */
     text-decoration: none;
-    top: 70px; /* should really be the same as the height of navbar-spacer + height of the tab bar*/
+    top: 60px; /* should really be the same as the height of navbar-spacer + height of the tab bar*/
     visibility: hidden; /* so that we pass clicks through to underneath us */
     /* If zhome has opacity on it, it suddenly starts getting drawn on top
        of top_statusbar -- unless we specify a z-index.  */
@@ -2019,14 +2036,14 @@ input.recipient_box {
 }
 
 .recipient-bar-content {
-    max-width: 1210px;
+    max-width: 1200px;
     width: 100%;
     margin: auto;
 }
 
 .recipient-bar-main {
-    margin-left: 220px;
-    margin-right: 210px;
+    margin-left: 215px;
+    margin-right: 205px;
 }
 
 div.floating_recipient {
@@ -3624,25 +3641,19 @@ div.edit_bot {
         width: 30px;
     }
 
+
+    #top_navbar.rightside-userlist .navbar-search {
+        margin-right: 100px;
+    }
+
+    #top_navbar.rightside-userlist #navbar-buttons {
+        margin-right: 41px;
+    }
+
     .navbar-search {
-        margin-right: 5px;
+        margin-right: 60px;
     }
 
-    #searchbox {
-        margin-left: 200px;
-    }
-
-    #navbar-buttons.right-userlist .settings-dropdown-caret {
-        display: none;
-    }
-
-    #navbar-buttons.right-userlist #settings-dropdown {
-        right: 37px;
-    }
-
-    #navbar-buttons.right-userlist .nav .dropdown-menu {
-        left: -223px;
-    }
 
     #userlist-toggle {
         display: block;
@@ -3667,28 +3678,17 @@ div.edit_bot {
         right: 10px;
     }
 
-    .column-middle {
-        margin-left:  -200px;
-        margin-right: 0px;
-    }
-
-    .column-middle-inner {
-        margin-left:  200px;
-    }
-
-    .app-main .column-middle {
-        margin-left: 0px;
-    }
-
-    .app-main .column-middle .column-middle-inner {
-        margin-left:  200px;
-        margin-right: 10px;
-    }
-
     .recipient-bar-main {
         margin-right: 20px;
     }
 
+    .column-middle {
+        margin-right: 0px;
+    }
+
+    .app .column-middle-inner {
+        margin-right: 15px;
+    }
 }
 
 @media (max-width: 775px) {
@@ -3721,6 +3721,7 @@ div.edit_bot {
         padding-top: 10px;
         height: 100%;
         padding-left: 10px;
+        width: 200px;
     }
 
     body, html,
@@ -3761,12 +3762,19 @@ div.edit_bot {
     }
 
     .recipient-bar-main {
-        margin-left: 20px;
-        margin-right: 25px;
+        margin-left: 15px;
     }
 
     #searchbox {
-        margin-left: 37px;
+        margin-left: 42px;
+    }
+
+    #top_navbar.rightside-userlist .navbar-search {
+        margin-right: 127px;
+    }
+
+    .navbar-search {
+        margin-right: 81px;
     }
 
 }

@@ -49,7 +49,9 @@ exports.getLighterColor = function (rgb, lightness) {
 };
 
 exports.getHexColor = function (rgb) {
-    return "#" + parseInt(rgb.r, 10).toString(16) + parseInt(rgb.g, 10).toString(16) + parseInt(rgb.b, 10).toString(16);
+    return "#" + parseInt(rgb.r, 10).toString(16) +
+                 parseInt(rgb.g, 10).toString(16) +
+                 parseInt(rgb.b, 10).toString(16);
 };
 
 return exports;
