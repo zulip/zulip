@@ -4945,7 +4945,7 @@ class GithubHookTests(AuthedTestCase):
                         "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
                         "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on `cowbell`, line 13\n\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
 
-class PivotalHookTests(AuthedTestCase):
+class PivotalV3HookTests(AuthedTestCase):
 
     def send_pivotal_message(self, name):
         email = "hamlet@zulip.com"
@@ -5016,6 +5016,91 @@ class PivotalHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'My new Feature story')
         self.assertEqual(msg.content, 'Leo Franchi edited "My new Feature story" \
 [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
+
+class PivotalV5HookTests(AuthedTestCase):
+    def send_pivotal_message(self, name):
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        return self.send_json_payload(email, "/api/v1/external/pivotal?api_key=%s&stream=%s" % (api_key,"pivotal"),
+                                      self.fixture_data('pivotal', "v5_" + name, file_type='json'),
+                                      stream_name="pivotal",
+                                      content_type="application/xml")
+
+    def test_accepted(self):
+        msg = self.send_pivotal_message('accepted')
+        self.assertEqual(msg.subject, '#63486316: Story of the Year')
+        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316) updated:
+* state changed from **unstarted** to **accepted**
+""")
+
+    def test_commented(self):
+        msg = self.send_pivotal_message('commented')
+        self.assertEqual(msg.subject, '#63486316: Story of the Year')
+        self.assertEqual(msg.content, """Leo Franchi added a comment to [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316):
+~~~quote
+A comment on the story
+~~~""")
+
+    def test_created(self):
+        msg = self.send_pivotal_message('created')
+        self.assertEqual(msg.subject, '#63495662: Story that I created')
+        self.assertEqual(msg.content, """Leo Franchi created bug: [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story that I created](http://www.pivotaltracker.com/story/show/63495662)
+* State is **unscheduled**
+* Description is
+
+> What a description""")
+
+    def test_delivered(self):
+        msg = self.send_pivotal_message('delivered')
+        self.assertEqual(msg.subject, '#63486316: Story of the Year')
+        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316) updated:
+* state changed from **accepted** to **delivered**
+""")
+
+    def test_finished(self):
+        msg = self.send_pivotal_message('finished')
+        self.assertEqual(msg.subject, '#63486316: Story of the Year')
+        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316) updated:
+* state changed from **delivered** to **accepted**
+""")
+
+    def test_moved(self):
+        msg = self.send_pivotal_message('moved')
+        self.assertEqual(msg.subject, '#63496066: Pivotal Test')
+        self.assertEqual(msg.content, """Leo Franchi moved [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Pivotal Test](http://www.pivotaltracker.com/story/show/63496066) from **unstarted** to **unscheduled**""")
+
+    def test_rejected(self):
+        msg = self.send_pivotal_message('rejected')
+        self.assertEqual(msg.subject, '#63486316: Story of the Year')
+        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316) updated:
+* Comment added:
+~~~quote
+Try again next time
+~~~
+* state changed from **delivered** to **rejected**
+""")
+
+    def test_started(self):
+        msg = self.send_pivotal_message('started')
+        self.assertEqual(msg.subject, '#63495972: Fresh Story')
+        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Fresh Story](http://www.pivotaltracker.com/story/show/63495972) updated:
+* state changed from **unstarted** to **started**
+""")
+
+    def test_created_estimate(self):
+        msg = self.send_pivotal_message('created_estimate')
+        self.assertEqual(msg.subject, '#63496066: Pivotal Test')
+        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Pivotal Test](http://www.pivotaltracker.com/story/show/63496066) updated:
+* estimate is now **3 points**
+""")
+
+    def test_type_changed(self):
+        msg = self.send_pivotal_message('type_changed')
+        self.assertEqual(msg.subject, '#63496066: Pivotal Test')
+        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Pivotal Test](http://www.pivotaltracker.com/story/show/63496066) updated:
+* estimate changed from 3 to **0 points**
+* type changed from **feature** to **bug**
+""")
 
 class NewRelicHookTests(AuthedTestCase):
     def send_new_relic_message(self, name):

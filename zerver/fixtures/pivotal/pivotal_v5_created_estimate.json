@@ -1,0 +1,45 @@
+{
+  "occurred_at": 1389218976000,
+  "kind": "story_update_activity",
+  "project": {
+    "name": "Hard Code",
+    "kind": "project",
+    "id": 807213
+  },
+  "changes": [
+    {
+      "name": "Pivotal Test",
+      "story_type": "feature",
+      "change_type": "update",
+      "kind": "story",
+      "new_values": {
+        "estimate": 3,
+        "updated_at": 1389218976000
+      },
+      "id": 63496066,
+      "original_values": {
+        "estimate": null,
+        "updated_at": 1389218941000
+      }
+    }
+  ],
+  "highlight": "estimated",
+  "project_version": 81,
+  "guid": "807213_81",
+  "primary_resources": [
+    {
+      "name": "Pivotal Test",
+      "story_type": "feature",
+      "kind": "story",
+      "id": 63496066,
+      "url": "http://www.pivotaltracker.com/story/show/63496066"
+    }
+  ],
+  "performed_by": {
+    "name": "Leo Franchi",
+    "initials": "LF",
+    "kind": "person",
+    "id": 981905
+  },
+  "message": "Leo Franchi estimated this feature as 3 points"
+}
