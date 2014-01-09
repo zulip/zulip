@@ -146,7 +146,7 @@ urlpatterns += patterns('zerver.views',
     # requires an API key.
     url(r'^api/v1/send_message$',           'messages.api_send_message'),
 
-    # This json format view used by the mobila apps accepts a username
+    # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'api_fetch_api_key'),
 
