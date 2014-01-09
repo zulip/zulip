@@ -92,7 +92,7 @@ class OurAuthenticationForm(AuthenticationForm):
         try:
             user_profile = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
-            return
+            return email
 
         if user_profile.realm.deactivated:
             error_msg = u"""Sorry for the trouble, but %s has been deactivated.
