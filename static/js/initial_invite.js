@@ -189,7 +189,7 @@ $(document).ready(function () {
             $('#submit_invitation').text("Inviting …");
 
             $.ajax({
-                method: 'POST',
+                type: 'POST',
                 dataType: 'json',
                 url: '/json/bulk_invite_users',
                 data: { invitee_emails: JSON.stringify(get_invitee_emails()),
