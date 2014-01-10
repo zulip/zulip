@@ -9,6 +9,8 @@ from django.db.models import Q
 from django.db.backends.util import CursorDebugWrapper
 from guardian.shortcuts import assign_perm, remove_perm
 
+from zilencer.models import Deployment
+
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, UserActivity, ScheduledJob, \
     PreregistrationUser, UserMessage, MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH, \
@@ -378,12 +380,12 @@ class AuthedTestCase(TestCase):
         return self.client.post('/accounts/login/',
                                 {'username':email, 'password':password})
 
-    def register(self, username, password):
+    def register(self, username, password, domain="zulip.com"):
         self.client.post('/accounts/home/',
-                         {'email': username + '@zulip.com'})
-        return self.submit_reg_form_for_user(username, password)
+                         {'email': username + "@" + domain})
+        return self.submit_reg_form_for_user(username, password, domain=domain)
 
-    def submit_reg_form_for_user(self, username, password):
+    def submit_reg_form_for_user(self, username, password, domain="zulip.com"):
         """
         Stage two of the two-step registration process.
 
@@ -392,7 +394,7 @@ class AuthedTestCase(TestCase):
         """
         return self.client.post('/accounts/register/',
                                 {'full_name': username, 'password': password,
-                                 'key': find_key_by_email(username + '@zulip.com'),
+                                 'key': find_key_by_email(username + '@' + domain),
                                  'terms': True})
 
     def get_api_key(self, email):
@@ -863,6 +865,79 @@ class LoginTest(AuthedTestCase):
         self.client.post('/accounts/logout/')
         self.login(email, password)
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
+
+    def test_register_first_user_with_invites(self):
+        """
+        The first user in a realm has a special step in their signup workflow
+        for inviting coworkers. Do as realistic an end-to-end test as we can
+        without Tornado running.
+        """
+        username = "user1"
+        password = "test"
+        domain = "test.com"
+        email = "user1@test.com"
+
+        # Create a new realm to ensure that we're the first user in it.
+        realm = Realm.objects.create(domain=domain, name="Test Inc.")
+        deployment = Deployment.objects.all().first()
+        deployment.realms.add(realm)
+        deployment.save()
+
+        # Start the signup process by supplying an email address.
+        result = self.client.post('/accounts/home/', {'email': email})
+
+        # Check the redirect telling you to check your mail for a confirmation
+        # link.
+        self.assertEquals(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+                "/accounts/send_confirm/%s%%40%s" % (username, domain)))
+        result = self.client.get(result["Location"])
+        self.assertIn("Check your email so we can get started.", result.content)
+
+        # Visit the confirmation link.
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                confirmation_link_pattern = re.compile("example.com(\S+)>")
+                confirmation_url = confirmation_link_pattern.search(
+                    message.body).groups()[0]
+                break
+        else:
+            raise ValueError("Couldn't find a confirmation email.")
+
+        result = self.client.get(confirmation_url)
+        self.assertEquals(result.status_code, 200)
+
+        # Pick a password and agree to the ToS.
+        result = self.submit_reg_form_for_user(username, password, domain)
+        self.assertEquals(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith("/invite/"))
+
+        # Invite coworkers to join you.
+        result = self.client.get(result["Location"])
+        self.assertIn("You're the first one here!", result.content)
+
+        # Reset the outbox for our invites.
+        outbox.pop()
+
+        invitees = ['alice@' + domain, 'bob@' + domain]
+        params = {
+            'invitee_emails': ujson.dumps(invitees)
+        }
+        result = self.client.post('/json/bulk_invite_users', params)
+        self.assert_json_success(result)
+
+        # We really did email these users, and they have PreregistrationUser
+        # objects.
+        email_recipients = [message.recipients()[0] for message in outbox]
+        self.assertEqual(len(outbox), len(invitees))
+        self.assertItemsEqual(email_recipients, invitees)
+
+        user_profile = get_user_profile_by_email(email)
+        self.assertEqual(len(invitees), PreregistrationUser.objects.filter(
+                referred_by=user_profile).count())
+
+        # After this we start manipulating browser information, so stop here.
 
 class PersonalMessagesTest(AuthedTestCase):
 
