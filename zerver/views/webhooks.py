@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 from zerver.models import UserProfile, get_client, get_user_profile_by_email
 from zerver.lib.actions import check_send_message, convert_html_to_markdown
 from zerver.lib.response import json_success, json_error
@@ -568,7 +567,6 @@ def api_beanstalk_webhook(request, user_profile,
 # There's no raw JSON for us to work from. Thus, it makes sense to just write
 # a template Zulip message within Desk.com and have the webhook extract that
 # from the "data" param and post it, which this does.
-@csrf_exempt
 @authenticated_rest_api_view
 @has_request_variables
 def api_deskdotcom_webhook(request, user_profile, data=REQ(),
@@ -633,7 +631,6 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_d
                        [stream], subject, content)
     return json_success()
 
-@csrf_exempt
 @authenticated_rest_api_view
 @has_request_variables
 def api_stash_webhook(request, user_profile, stream=REQ(default='')):
@@ -751,7 +748,6 @@ def format_freshdesk_ticket_creation_message(ticket):
 
     return content
 
-@csrf_exempt
 @authenticated_rest_api_view
 @has_request_variables
 def api_freshdesk_webhook(request, user_profile, stream=REQ(default='')):
@@ -799,4 +795,29 @@ def api_freshdesk_webhook(request, user_profile, stream=REQ(default='')):
 
     check_send_message(user_profile, get_client("ZulipFreshdeskWebhook"), "stream",
                        [stream], subject, content)
+    return json_success()
+
+def truncate(string, length):
+    if len(string) > length:
+        string = string[:length-3] + '...'
+    return string
+
+@authenticated_rest_api_view
+def api_zendesk_webhook(request, user_profile):
+    """
+    Zendesk uses trigers with message templates. This webhook uses the
+    ticket_id and ticket_title to create a subject. And passes with zendesk
+    user's configured message to zulip.
+    """
+    try:
+        ticket_title = request.POST['ticket_title']
+        ticket_id = request.POST['ticket_id']
+        message = request.POST['message']
+        stream = request.POST.get('stream', 'zendesk')
+    except KeyError as e:
+        return json_error('Missing post parameter %s' % (e.message,))
+
+    subject = truncate('#%s: %s' % (ticket_id, ticket_title), 60)
+    check_send_message(user_profile, get_client('ZulipZenDeskWebhook'), 'stream',
+                       [stream], subject, message)
     return json_success()

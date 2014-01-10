@@ -160,6 +160,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/external/desk$',          'webhooks.api_deskdotcom_webhook'),
     url(r'^api/v1/external/stash$',         'webhooks.api_stash_webhook'),
     url(r'^api/v1/external/freshdesk$',     'webhooks.api_freshdesk_webhook'),
+    url(r'^api/v1/external/zendesk$',       'webhooks.api_zendesk_webhook'),
 
     url(r'^user_uploads/(?P<realm_id>\d*)/(?P<filename>.*)', 'rest_dispatch',
         {'GET': 'get_uploaded_file'}),

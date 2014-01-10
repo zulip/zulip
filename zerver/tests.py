@@ -5372,6 +5372,41 @@ Priority: **High** => **Low**""")
         self.assertEqual(msg.subject, u"#12: Not enough ☃ guinea pigs")
         self.assertIn("[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)", msg.content)
 
+class ZenDeskHookTests(AuthedTestCase):
+
+    def generate_webhook_response(self, ticket_title='User can\'t login',
+                                  ticket_id=54, message='Message',
+                                  stream_name='zendesk'):
+        data = {
+            'ticket_title': ticket_title,
+            'ticket_id': ticket_id,
+            'message': message,
+            'stream': stream_name,
+        }
+        email = 'hamlet@zulip.com'
+        self.subscribe_to_stream(email, stream_name)
+        result = self.client.post('/api/v1/external/zendesk', data,
+                                  **self.api_auth(email))
+        self.assert_json_success(result)
+
+        # Check the correct message was sent
+        msg = Message.objects.filter().order_by('-id')[0]
+        self.assertEqual(msg.sender.email, email)
+
+        return msg
+
+    def test_subject(self):
+        msg = self.generate_webhook_response(ticket_id=4, ticket_title="Test ticket")
+        self.assertEqual(msg.subject, '#4: Test ticket')
+
+    def test_long_subject(self):
+        msg = self.generate_webhook_response(ticket_id=4, ticket_title="Test ticket" + '!' * 80)
+        self.assertEqual(msg.subject, '#4: Test ticket' + '!' * 42 + '...')
+
+    def test_content(self):
+        msg = self.generate_webhook_response(message='New comment:\n> It is better\n* here')
+        self.assertEqual(msg.content, 'New comment:\n> It is better\n* here')
+
 class RateLimitTests(AuthedTestCase):
 
     def setUp(self):
