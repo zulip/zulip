@@ -2019,6 +2019,9 @@ def build_message_list(user_profile, messages):
         # with a simple hyperlink.
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
+    def fix_emoji_sizes(html):
+        return html.replace(' class="emoji"', ' height="20px"')
+
     def build_message_payload(message):
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
@@ -2026,6 +2029,8 @@ def build_message_list(user_profile, messages):
 
         html = message.rendered_content
         html = relative_to_full_url(html)
+        html = fix_emoji_sizes(html)
+
         return {'plain': plain, 'html': html}
 
     def build_sender_payload(message):
