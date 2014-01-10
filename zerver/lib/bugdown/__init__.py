@@ -105,7 +105,9 @@ def fetch_tweet_data(tweet_id):
             # preview, rather than having the message be rejected
             # entirely. This timeout needs to be less than our overall
             # formatting timeout.
-            res = timeout(3, api.GetStatus, tweet_id).AsDict()
+            tweet = timeout(3, api.GetStatus, tweet_id)
+            res = tweet.AsDict()
+            res['media'] = tweet.media  # AsDict does not include media
         except TimeoutExpired as e:
             # We'd like to try again later and not cache the bad result,
             # so we need to re-raise the exception (just as though
@@ -161,6 +163,8 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
             img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, encoded_url))
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
+    TWITTER_MAX_IMAGE_HEIGHT = 400
+
     def is_image(self, url):
         if not settings.INLINE_IMAGE_PREVIEW:
             return False
@@ -191,16 +195,18 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return "https://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
 
-    def twitter_text(self, text, urls, user_mentions):
+    def twitter_text(self, text, urls, user_mentions, media):
         """
-        Use data from the twitter API to turn links and mentions into A tags.
+        Use data from the twitter API to turn links, mentions and media into A
+        tags.
 
-        This works by using the urls and user_mentions data from the twitter
-        API.
+        This works by using the urls, user_mentions and media data from the
+        twitter API.
 
-        The first step is finding the locations of the URLs and mentions in the
-        text. For each match we build a dictionary with the start location, end
-        location, the URL to link to, and the text to show in the link.
+        The first step is finding the locations of the URLs, mentions and media
+        in the text. For each match we build a dictionary with the start
+        location, end location, the URL to link to, and the text to show in the
+        link.
 
         Next we sort the matches by start location. And for each we add the
         text from the end of the last link to the start of the current link to
@@ -230,6 +236,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     'end': match.end(),
                     'url': 'https://twitter.com/' + urllib.quote(screen_name),
                     'text': mention_string,
+                })
+        # Build dicts for media
+        for media_item in media:
+            short_url = media_item['url']
+            expanded_url = media_item['expanded_url']
+            for match in re.finditer(re.escape(short_url), text):
+                to_linkify.append({
+                    'start': match.start(),
+                    'end': match.end(),
+                    'url': short_url,
+                    'text': expanded_url,
                 })
 
         def set_text(text):
@@ -290,11 +307,36 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             text = HTMLParser.HTMLParser().unescape(res['text'])
             urls = res.get('urls', {})
             user_mentions = res.get('user_mentions', [])
-            p = self.twitter_text(text, urls, user_mentions)
+            media = res.get('media', [])
+            p = self.twitter_text(text, urls, user_mentions, media)
             tweet.append(p)
 
             span = markdown.util.etree.SubElement(tweet, 'span')
             span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
+
+            # Add image previews
+            for media_item in media:
+                # Only photos have a preview image
+                if media_item['type'] != 'photo':
+                    continue
+
+                # Find the image size that is smaller than
+                # TWITTER_MAX_IMAGE_HEIGHT px tall or the smallest
+                size_name_tuples = media_item['sizes'].items()
+                size_name_tuples.sort(reverse=True,
+                                      key=lambda x: x[1]['h'])
+                for size_name, size in size_name_tuples:
+                    if size['h'] < self.TWITTER_MAX_IMAGE_HEIGHT:
+                        break
+
+                media_url = '%s:%s' % (media_item['media_url_https'], size_name)
+                img_a = markdown.util.etree.SubElement(tweet, 'a')
+                img_a.set('href', media_item['url'])
+                img_a.set('target', '_blank')
+                img_a.set('title', media_item['url'])
+                img = markdown.util.etree.SubElement(img_a, 'img')
+                img.set('src', media_url)
+                img.set('class', 'twitter-image')
 
             return tweet
         except:

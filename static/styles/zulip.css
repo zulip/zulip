@@ -2619,6 +2619,10 @@ li.expanded_subject {
     margin-right: .75em;
 }
 
+.twitter-image {
+    display: block;
+}
+
 .star {
     display: inline-block;
     opacity: 1;
