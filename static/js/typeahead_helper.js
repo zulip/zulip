@@ -108,6 +108,12 @@ exports.compare_by_pms = function (user_a, user_b) {
         return 1;
     }
 
+    if (!user_a.is_bot && user_b.is_bot) {
+        return -1;
+    } else if (user_a.is_bot && !user_b.is_bot) {
+        return 1;
+    }
+
     // We use alpha sort as a tiebreaker, which might be helpful for
     // new users.
     if (user_a.full_name < user_b.full_name) {
