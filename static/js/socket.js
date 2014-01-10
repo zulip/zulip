@@ -141,7 +141,7 @@ Socket.prototype = {
     _setup_sockjs_callbacks: function Socket__setup_sockjs_callbacks(sockjs) {
         var that = this;
         sockjs.onopen = function Socket__sockjs_onopen() {
-            blueslip.info("Socket connected.");
+            blueslip.info("Socket connected [transport=" + sockjs.protocol + "]");
             that._is_open = true;
 
             // Notify listeners that we've finished the websocket handshake
