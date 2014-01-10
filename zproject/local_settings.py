@@ -136,6 +136,9 @@ else:
     APNS_FEEDBACK = "feedback_sandbox"
     APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"
 
+# GCM tokens are IP-whitelisted; if we deploy to additional
+# servers you will need to explicitly add their IPs here:
+# https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
 if DEPLOYED:
     ANDROID_GCM_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 else:
