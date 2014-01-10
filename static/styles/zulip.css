@@ -983,22 +983,18 @@ just a temporary hack.
     opacity: 0;
 }
 
-.messagebox .unread_marker.slow_fade {
+.unread_marker.slow_fade {
     -webkit-transition: all 2.7s ease-in;
     -moz-transition: all 2.7s ease-in;
     -o-transition: all 2.7s ease-in;
     transition: all 2.7s ease-in;
 }
 
-.messagebox .unread_marker.fast_fade {
+.unread_marker.fast_fade {
     -webkit-transition: all 0.3s ease-in;
     -moz-transition: all 0.3s ease-in;
     -o-transition: all 0.3s ease-in;
     transition: all 0.3s ease-in;
-}
-
-.include-sender .messagebox .unread_marker {
-    margin-top: 8px; /* To line up with avatar */
 }
 
 .unread .unread_marker {
