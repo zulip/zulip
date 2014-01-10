@@ -60,9 +60,6 @@ def get_changed_source_files(other_checkout):
             continue  # Ignore non-static files.
 
         if filename.endswith('.handlebars'):
-            # Since Handlebars templates are compiled, treat this as if the
-            # compiled .js file changed (which it did).
-            changed.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
             continue
 
         changed.add(filename)
@@ -75,6 +72,9 @@ if prev_deploy:
     changed_files = get_changed_source_files(prev_deploy)
     if changed_files is None:
         prev_deploy = None
+
+# Always use the newly compiled handlebars templates.
+changed_files.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
 
 JS_SPECS = settings.JS_SPECS
 CLOSURE_BINARY = 'tools/closure-compiler/run'
