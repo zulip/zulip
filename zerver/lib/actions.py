@@ -2020,9 +2020,13 @@ def build_message_list(user_profile, messages):
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
     def build_message_payload(message):
-        return {'plain': relative_to_full_url(
-                fix_plaintext_image_urls(message.content)),
-                'html': relative_to_full_url(message.rendered_content)}
+        plain = message.content
+        plain = fix_plaintext_image_urls(plain)
+        plain = relative_to_full_url(plain)
+
+        html = message.rendered_content
+        html = relative_to_full_url(html)
+        return {'plain': plain, 'html': html}
 
     def build_sender_payload(message):
         sender = sender_string(message)
