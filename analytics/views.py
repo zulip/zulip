@@ -3,6 +3,7 @@ from django.template import RequestContext, loader
 from django.utils.html import mark_safe
 from django.shortcuts import render_to_response
 from django.core import urlresolvers
+from django.http import HttpResponseNotFound
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
 from zerver.models import get_realm, UserActivity, UserActivityInterval, Realm
@@ -816,7 +817,11 @@ def get_realm_activity(request, realm):
     all_records = {}
     all_user_records = {}
 
-    admins = Realm.objects.get(domain=realm).get_admin_users()
+    try:
+        admins = Realm.objects.get(domain=realm).get_admin_users()
+    except Realm.DoesNotExist:
+        return HttpResponseNotFound("Realm %s does not exist" % (realm,))
+
     admin_emails = {admin.email for admin in admins}
 
     for is_bot, page_title in [(False,  'Humans'), (True, 'Bots')]:
