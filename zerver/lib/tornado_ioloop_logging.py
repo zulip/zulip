@@ -2,10 +2,28 @@ from __future__ import absolute_import
 
 import logging
 import time
+import select
 from tornado import ioloop
 from django.conf import settings
 
-orig_poll_impl = ioloop._poll
+try:
+    # Tornado 2.4
+    orig_poll_impl = ioloop._poll
+    def instrument_tornado_ioloop():
+        ioloop._poll = InstrumentedPoll
+except:
+    # Tornado 3
+    from tornado.ioloop import IOLoop, PollIOLoop
+    # There isn't a good way to get at what the underlying poll implementation
+    # will be without actually constructing an IOLoop, so we just assume it will
+    # be epoll.
+    orig_poll_impl = select.epoll
+    class InstrumentedPollIOLoop(PollIOLoop):
+        def initialize(self, **kwargs):
+            super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
+
+    def instrument_tornado_ioloop():
+        IOLoop.configure(InstrumentedPollIOLoop)
 
 # A hack to keep track of how much time we spend working, versus sleeping in
 # the event loop.
@@ -57,6 +75,3 @@ class InstrumentedPoll(object):
                     self._last_print = t1
 
         return result
-
-def instrument_tornado_ioloop():
-    ioloop._poll = InstrumentedPoll
