@@ -2001,7 +2001,7 @@ div.floating_recipient {
 }
 
 
-.message_inline_image {
+.twitter-image, .message_inline_image {
     margin-bottom: 5px;
     margin-left: 5px;
     height: 100px;
@@ -2009,7 +2009,7 @@ div.floating_recipient {
     border: none !important;
 }
 
-.message_inline_image img {
+.twitter-image img, .message_inline_image img {
     height: auto;
     max-height: 100%;
 }
@@ -2617,10 +2617,6 @@ li.expanded_subject {
     width: 48px;
     height: 48px;
     margin-right: .75em;
-}
-
-.twitter-image {
-    display: block;
 }
 
 .star {

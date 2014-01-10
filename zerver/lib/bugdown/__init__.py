@@ -330,13 +330,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                         break
 
                 media_url = '%s:%s' % (media_item['media_url_https'], size_name)
-                img_a = markdown.util.etree.SubElement(tweet, 'a')
+                img_div = markdown.util.etree.SubElement(tweet, 'div')
+                img_div.set('class', 'twitter-image')
+                img_a = markdown.util.etree.SubElement(img_div, 'a')
                 img_a.set('href', media_item['url'])
                 img_a.set('target', '_blank')
                 img_a.set('title', media_item['url'])
                 img = markdown.util.etree.SubElement(img_a, 'img')
                 img.set('src', media_url)
-                img.set('class', 'twitter-image')
 
             return tweet
         except:
