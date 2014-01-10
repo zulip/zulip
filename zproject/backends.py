@@ -10,6 +10,8 @@ from zerver.models import UserProfile, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username
 
 from openid.consumer.consumer import SUCCESS
+from apiclient.sample_tools import client as googleapiclient
+from oauth2client.crypt import AppIdentityError
 
 def password_auth_enabled():
     for backend in django.contrib.auth.get_backends():
@@ -59,6 +61,32 @@ class EmailAuthBackend(ZulipAuthMixin):
                 return user_profile
         except UserProfile.DoesNotExist:
             return None
+
+class GoogleMobileOauth2Backend(ZulipAuthMixin):
+    """
+    Google Apps authentication for mobile devices
+
+    Allows a user to sign in using a Google-issued OAuth2 token.
+
+    Ref:
+        https://developers.google.com/+/mobile/android/sign-in#server-side_access_for_your_app
+        https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
+
+    This backend is not currently supported on enterprise.
+    """
+    def authenticate(self, google_oauth2_token=None, return_data={}):
+        try:
+            token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
+        except AppIdentityError:
+            return None
+        if token_payload["email_verified"] == "true":
+            try:
+                return get_user_profile_by_email(token_payload["email"])
+            except UserProfile.DoesNotExist:
+                return_data["valid_attestation"] = True
+                return None
+        else:
+            return_data["valid_attestation"] = False
 
 # Adapted from http://djangosnippets.org/snippets/2183/ by user Hangya (September 1, 2010)
 

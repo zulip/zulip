@@ -144,6 +144,8 @@ if DEPLOYED:
 else:
     ANDROID_GCM_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
+GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
+
 # Administrator domain for this install
 ADMIN_DOMAIN = "zulip.com"
 
@@ -170,6 +172,7 @@ EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
 SSO_APPEND_DOMAIN = None
 
 AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
+                           'zproject.backends.GoogleMobileOauth2Backend',
                            'zproject.backends.GoogleBackend')
 
 

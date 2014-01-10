@@ -1486,8 +1486,15 @@ def json_subscription_property(request, user_profile, stream_name=REQ,
 @require_post
 @has_request_variables
 def api_fetch_api_key(request, username=REQ, password=REQ):
-    user_profile = authenticate(username=username, password=password)
+    return_data = {}
+    if username == "google-oauth2-token":
+        user_profile = authenticate(google_oauth2_token=password, return_data=return_data)
+    else:
+        user_profile = authenticate(username=username, password=password)
     if user_profile is None:
+        if return_data.get("valid_attestation") == True:
+            # We can leak that the user is unregistered iff they present a valid authentication string for the user.
+            return json_error("This user is not registered; do so from a browser.", status=403)
         return json_error("Your username or password is incorrect.", status=403)
     if not user_profile.is_active:
         return json_error("Your account has been disabled.", status=403)

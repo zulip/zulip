@@ -7,6 +7,9 @@ class zulip_internal::app_frontend {
                    "python-django-statsd-mozilla",
                    # Needed only for a disabled integration
                    "python-embedly",
+		   # Needed for Google Apps mobile auth, unsupported on
+		   # Enterprise
+		   "python-googleapi",
                    ]
   package { $app_packages: ensure => "installed" }
 
