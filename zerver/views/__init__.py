@@ -1494,10 +1494,10 @@ def api_fetch_api_key(request, username=REQ, password=REQ):
     if user_profile is None:
         if return_data.get("valid_attestation") == True:
             # We can leak that the user is unregistered iff they present a valid authentication string for the user.
-            return json_error("This user is not registered; do so from a browser.", status=403)
-        return json_error("Your username or password is incorrect.", status=403)
+            return json_error("This user is not registered; do so from a browser.", data={"reason": "unregistered"}, status=403)
+        return json_error("Your username or password is incorrect.", data={"reason": "incorrect_creds"}, status=403)
     if not user_profile.is_active:
-        return json_error("Your account has been disabled.", status=403)
+        return json_error("Your account has been disabled.", data={"reason": "disabled"}, status=403)
     return json_success({"api_key": user_profile.api_key})
 
 @authenticated_json_post_view
