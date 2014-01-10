@@ -17,6 +17,30 @@ function render(template_name, args) {
     return global.templates.render(template_name, args);
 }
 
+(function test_handlebars_bug () {
+    // There was a bug in 1.0.9 where identically structured
+    // blocks get confused, so when foo is false, it still
+    // renders the foo-is-true block.
+    var s = '';
+    s += '{{#if foo}}';
+    s += '{{#if bar}}';
+    s += 'a';
+    s += '{{else}}';
+    s += 'b';
+    s += '{{/if}}';
+    s += '{{else}}';
+    s += '{{#if bar}}';
+    s += 'c';
+    s += '{{else}}';
+    s += 'd';
+    s += '{{/if}}';
+    s += '{{/if}}';
+    var template = global.Handlebars.compile(s);
+    var output = template({});
+
+    assert.equal(output, 'd'); // the buggy version would return 'b'
+}());
+
 (function actions_popover_content() {
     var args = {
         "stream_subject_uri": "/stream/subject/uri",
