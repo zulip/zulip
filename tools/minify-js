@@ -70,7 +70,8 @@ if prev_deploy:
         prev_deploy = None
 
 # Always use the newly compiled handlebars templates.
-changed_files.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
+if prev_deploy:
+    changed_files.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
 
 JS_SPECS = settings.JS_SPECS
 CLOSURE_BINARY = 'tools/closure-compiler/run'
