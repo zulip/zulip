@@ -274,6 +274,11 @@ function finale() {
         alert_contents = "<i class='icon-vector-desktop alert-icon'></i>What's better than Zulip in your browser? The <a href='/apps' target='_blank'>Zulip desktop app</a>!";
     }
     show_app_alert(alert_contents);
+
+    // We start you in a narrow so it's not overwhelming.
+    if (stream_data.in_home_view(page_params.notifications_stream)) {
+        narrow.activate([["stream", page_params.notifications_stream]]);
+    }
 }
 
 function reply() {
