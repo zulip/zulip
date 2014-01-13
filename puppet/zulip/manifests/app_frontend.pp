@@ -60,6 +60,8 @@ class zulip::app_frontend {
                     "python-imaging",
 		    # Needed for LDAP support
 		    "python-django-auth-ldap",
+		    # Needed for Google Apps mobile auth
+		    "python-googleapi",
                     ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
