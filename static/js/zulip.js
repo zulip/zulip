@@ -78,6 +78,29 @@ function remove_person(person) {
     realm_people_dict.del(person.email);
 }
 
+function reify_person(person) {
+    // If a locally sent message is a PM to
+    // an out-of-realm recipient, a people_dict
+    // entry is created with simply an email address
+    // Once we've received the full person object, replace
+    // it
+    if (! people_dict.has(person.email)) {
+        return;
+    }
+
+    var old_person = people_dict.get(person.email);
+    var old_idx = page_params.people_list.indexOf(old_person);
+
+    var new_person = _.extend({}, old_person, person);
+    people_dict.set(person.email, person);
+    people_by_name_dict.set(person.full_name, person);
+    page_params.people_list[old_idx] = new_person;
+
+    if (people_by_name_dict.has(person.email)) {
+        people_by_name_dict.del(person.email);
+    }
+}
+
 function update_person(person) {
     // Currently the only attribute that can change is full_name, so
     // we just push out changes to that field.  As we add more things
@@ -256,7 +279,7 @@ function maybe_scroll_to_selected() {
     }
 }
 
-function get_private_message_recipient(message, attr) {
+function get_private_message_recipient(message, attr, fallback_attr) {
     var recipient, i;
     var other_recipients = _.filter(message.display_recipient,
                                   function (element) {
@@ -268,8 +291,15 @@ function get_private_message_recipient(message, attr) {
     }
 
     recipient = other_recipients[0][attr];
+    if (recipient === undefined && fallback_attr !== undefined) {
+        recipient = other_recipients[0][fallback_attr];
+    }
     for (i = 1; i < other_recipients.length; i++) {
-        recipient += ', ' + other_recipients[i][attr];
+        var attr_value = other_recipients[i][attr];
+        if (attr_value === undefined && fallback_attr !== undefined) {
+            attr_value = other_recipients[i][fallback_attr];
+        }
+        recipient += ', ' + attr_value;
     }
     return recipient;
 }
@@ -623,7 +653,7 @@ function add_message_metadata(message) {
         message.is_private = true;
         message.reply_to = util.normalize_recipients(
                 get_private_message_recipient(message, 'email'));
-        message.display_reply_to = get_private_message_recipient(message, 'full_name');
+        message.display_reply_to = get_private_message_recipient(message, 'full_name', 'email');
 
         involved_people = message.display_recipient;
         break;
@@ -635,6 +665,10 @@ function add_message_metadata(message) {
         // with keys like "hasOwnProperty"
         if (! people_dict.has(person.email)) {
             add_person(person);
+        }
+
+        if (people_dict.get(person.email).full_name !== person.full_name) {
+            reify_person(person);
         }
 
         if (message.type === 'private' && message.sent_by_me) {
