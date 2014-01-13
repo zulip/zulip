@@ -3730,3 +3730,6 @@ li.show-more-topics a {
     display: none;
 }
 
+.user-list-filter {
+    width: 100%;
+}

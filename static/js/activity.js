@@ -150,12 +150,45 @@ function focus_lost() {
     exports.has_focus = false;
 }
 
+function filter_users_by_search(users) {
+    var search_term = $(".user-list-filter").expectOne().val().trim();
+
+    if (search_term === '') {
+        return users;
+    }
+
+    var search_terms = search_term.toLowerCase().split(",");
+    search_terms = _.map(search_terms, function (s) {
+        return s.trim();
+    });
+
+    var filtered_users = _.filter(users, function (user) {
+        var person = people_dict.get(user);
+        if (!person || !person.full_name) {
+            return false;
+        }
+        var names = person.full_name.toLowerCase().split();
+        names = _.map(names, function (s) {
+            return s.trim();
+        });
+        return _.any(search_terms, function (search_term) {
+            return _.any(names, function (name) {
+                return name.indexOf(search_term) === 0;
+            });
+        });
+    });
+
+    return filtered_users;
+}
+
 function actually_update_users() {
     if (page_params.domain === 'mit.edu') {
         return;  // MIT realm doesn't have a presence list
     }
 
-    var users = sort_users(Object.keys(presence_info), presence_info);
+    var users = Object.keys(presence_info);
+    users = filter_users_by_search(users);
+    users = sort_users(users, presence_info);
 
     function get_num_unread(email) {
         if (suppress_unread_counts) {
@@ -203,6 +236,14 @@ function actually_update_users() {
 // perfect solution, but it should remove some pain, and there's no real harm in waiting five
 // seconds to update user activity.
 var update_users = _.throttle(actually_update_users, 5000);
+
+
+function actually_update_users_for_search() {
+    actually_update_users();
+    ui.resize_page_components();
+}
+
+var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
 exports.update_huddles = function () {
     if (page_params.domain === 'mit.edu') {
@@ -321,6 +362,12 @@ exports.set_user_statuses = function (users, server_time) {
     update_users();
     exports.update_huddles();
 };
+
+
+$(function () {
+    $(".user-list-filter").expectOne().on('input', update_users_for_search);
+});
+
 
 return exports;
 
