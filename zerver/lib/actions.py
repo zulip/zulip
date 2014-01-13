@@ -1720,9 +1720,15 @@ def decode_email_address(email):
     if not match:
         return None
 
-    token = match.group(1)
-    decoded_token = re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), token)
-    return decoded_token.split('+')
+    full_address = match.group(1)
+    if '.' in full_address:
+        # Workaround for Google Groups and other programs that don't accept emails
+        # that have + signs in them (see Trac #2102)
+        encoded_stream_name, token = full_address.split('.')
+    else:
+        encoded_stream_name, token = full_address.split('+')
+    stream_name = re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), encoded_stream_name)
+    return stream_name, token
 
 # In general, it's better to avoid using .values() because it makes
 # the code pretty ugly, but in this case, it has significant
