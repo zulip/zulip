@@ -167,7 +167,7 @@ function filter_users_by_search(users) {
         if (!person || !person.full_name) {
             return false;
         }
-        var names = person.full_name.toLowerCase().split();
+        var names = person.full_name.toLowerCase().split(/\s+/);
         names = _.map(names, function (s) {
             return s.trim();
         });
