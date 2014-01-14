@@ -237,7 +237,9 @@ def fake_message_sender(event):
 
         msg_id = check_send_message(sender, client, req['type'],
                                     extract_recipients(req['to']),
-                                    req['subject'], req['content'])
+                                    req['subject'], req['content'],
+                                    local_id=req.get('local_id', None),
+                                    sender_queue_id=req.get('queue_id', None))
         resp = {"result": "success", "msg": "", "id": msg_id}
     except JsonableError as e:
         resp = {"result": "error", "msg": str(e)}
