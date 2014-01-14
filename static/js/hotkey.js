@@ -208,6 +208,13 @@ function process_hotkey(e) {
             }
         }
 
+        if (event_name === 'enter') {
+            if (activity.searching()) {
+                activity.blur_search();
+                return true;
+            }
+        }
+
         if ((event_name === 'up_arrow' || event_name === 'down_arrow')
             && compose.composing()
             && compose.message_content() === ""

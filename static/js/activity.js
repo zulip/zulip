@@ -367,6 +367,10 @@ exports.clear_search = function () {
     update_users_for_search();
 };
 
+exports.blur_search = function () {
+    $('.user-list-filter').blur();
+};
+
 $(function () {
     $(".user-list-filter").expectOne().on('input', update_users_for_search);
 });
