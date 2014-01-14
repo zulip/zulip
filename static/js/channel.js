@@ -58,11 +58,12 @@ exports.del = function (options) {
 exports.patch = function (options) {
     // Send a PATCH as a POST in order to work around QtWebkit
     // (Linux/Windows desktop app) not supporting PATCH body.
-    options.method = "PATCH";
     if (options.processData === false) {
         // If we're submitting a FormData object, we need to add the
         // method this way
         options.data.append("method", "PATCH");
+    } else {
+        options.data = _.extend({}, options.data, {method: 'PATCH'});
     }
     return exports.post(options, options.idempotent);
 };
