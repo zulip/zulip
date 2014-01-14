@@ -303,12 +303,11 @@ def get_old_messages_backend(request, user_profile,
             if operator == "stream":
                 if is_public_stream(operand, user_profile.realm):
                     include_history = True
-        # Disable historical messages if the user is narrowing to show
-        # only starred messages (or anything else that's a property on
-        # the UserMessage table).  There cannot be historical messages
-        # in these cases anyway.
+        # Disable historical messages if the user is narrowing on anything
+        # that's a property on the UserMessage table.  There cannot be
+        # historical messages in these cases anyway.
         for operator, operand in narrow:
-            if operator == "is" and operand == "starred":
+            if operator == "is":
                 include_history = False
 
     if include_history:
