@@ -137,7 +137,7 @@ exports.setup_page = function () {
             },
             success: function () {
                 var row = $(".active_user_row");
-                var button = $(".active_user_row button");
+                var button = $(".active_user_row button.reactivate");
                 button.addClass("btn-danger");
                 button.removeClass("btn-warning");
                 button.addClass("deactivate");
@@ -169,7 +169,7 @@ exports.setup_page = function () {
             },
             success: function () {
                 var row = $(".active_user_row");
-                var button = $(".active_user_row button");
+                var button = $(".active_user_row button.deactivate");
                 button.prop("disabled", false);
                 button.addClass("btn-warning");
                 button.removeClass("btn-danger");
