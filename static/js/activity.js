@@ -197,14 +197,9 @@ function actually_update_users() {
         return unread.num_unread_for_person(email);
     }
 
-    var my_info = {
-        name: page_params.fullname,
-        email: page_params.email,
-        num_unread: get_num_unread(page_params.email),
-        type: (activity.has_focus) ? activity.ACTIVE : activity.IDLE,
-        type_desc: presence_descriptions.active,
-        my_fullname: true
-    };
+    // Note that we do not include ourselves in the user list any more.
+    // If you want to figure out how to get details for "me", then revert
+    // the commit that added this comment.
 
     function info_for(email) {
         var presence = presence_info[email];
@@ -221,7 +216,7 @@ function actually_update_users() {
         return people_dict.has(email);
     });
 
-    var user_info = [my_info].concat(_.map(user_emails, info_for));
+    var user_info = _.map(user_emails, info_for);
 
     $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
 
