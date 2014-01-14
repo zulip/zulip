@@ -65,7 +65,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token, statsd_key
 from zerver import tornado_callbacks
 from zproject.backends import password_auth_enabled
-from guardian.shortcuts import assign_perm
+from guardian.shortcuts import assign_perm, remove_perm
 
 from confirmation.models import Confirmation
 
@@ -1661,6 +1661,24 @@ def reactivate_user_backend(request, user_profile, email):
         return json_error('Insufficient permission')
 
     do_reactivate_user(target)
+    return json_success({})
+
+@has_request_variables
+def update_user_backend(request, user_profile, email,
+                        is_admin=REQ(default=None, converter=json_to_bool)):
+    try:
+        target = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        return json_error('No such user')
+
+    if not user_profile.can_admin_user(target):
+        return json_error('Insufficient permission')
+
+    if is_admin is not None:
+        if is_admin:
+            assign_perm('administer', target, target.realm)
+        else:
+            remove_perm('administer', target, target.realm)
     return json_success({})
 
 @require_realm_admin

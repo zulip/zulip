@@ -729,7 +729,7 @@ class TestCrossRealmPMs(AuthedTestCase):
             self.send_message(user1_email, [user2_email, user3_email],
                               Recipient.PERSONAL)
 
-class PermissionTest(TestCase):
+class PermissionTest(AuthedTestCase):
     def test_get_admin_users(self):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         remove_perm('administer', user_profile, user_profile.realm)
@@ -738,6 +738,33 @@ class PermissionTest(TestCase):
         assign_perm('administer', user_profile, user_profile.realm)
         admin_users = user_profile.realm.get_admin_users()
         self.assertTrue(user_profile in admin_users)
+
+    def test_admin_api(self):
+        self.login('hamlet@zulip.com')
+        admin = get_user_profile_by_email('hamlet@zulip.com')
+        user = get_user_profile_by_email('othello@zulip.com')
+        realm = admin.realm
+        assign_perm('administer', admin, realm)
+        remove_perm('administer', user, realm)
+
+        # Giveth
+        req = dict(is_admin=ujson.dumps(True))
+        result = self.client_patch('/json/users/othello@zulip.com', req)
+        self.assert_json_success(result)
+        admin_users = realm.get_admin_users()
+        self.assertTrue(user in admin_users)
+
+        # Taketh away
+        req = dict(is_admin=ujson.dumps(False))
+        result = self.client_patch('/json/users/othello@zulip.com', req)
+        self.assert_json_success(result)
+        admin_users = realm.get_admin_users()
+        self.assertFalse(user in admin_users)
+
+        # Make sure only admins can patch other user's info.
+        self.login('othello@zulip.com')
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assert_json_error(result, 'Insufficient permission')
 
 class WorkerTest(TestCase):
     class FakeClient:
