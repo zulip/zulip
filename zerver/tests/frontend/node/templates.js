@@ -541,12 +541,10 @@ function render(template_name, args) {
     var tutorials = [
         'tutorial_home',
         'tutorial_message',
-        'tutorial_private',
         'tutorial_reply',
         'tutorial_stream',
         'tutorial_subject',
-        'tutorial_title',
-        'tutorial_welcome'
+        'tutorial_title'
     ];
     var html = '';
     _.each(tutorials, function (tutorial) {

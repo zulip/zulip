@@ -306,7 +306,7 @@ function home() {
 
     box(x, y, spotlight_message.width(), height);
     create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
-                            "Home view", "tutorial_home");
+                            "Narrowing", "tutorial_home");
 
     var my_popover = $("#tutorial-home").closest(".popover");
     my_popover.offset({left: my_popover.offset().left - 10});
@@ -314,36 +314,6 @@ function home() {
     $("#tutorial-home-next").click(function () {
         spotlight_message.popover("destroy");
         reply();
-    }).focus();
-}
-
-function private_message() {
-    var bar = rows.first_visible().nextUntil(".private_message").first().next();
-    var spotlight_message = bar.next();
-    var x = bar.offset().left;
-    var y = bar.offset().top;
-    // In the current example we have back-to-back pms.
-    var message_width = bar.width();
-    var message_height = bar.height() + spotlight_message.height() +
-        spotlight_message.next().height();
-
-    box(x, y, message_width, message_height);
-    create_and_show_popover(bar, "top", "Private messages", "tutorial_private");
-
-    var my_popover = $("#tutorial-private").closest(".popover");
-
-    var left_offset;
-    if (small_window()) { // Don't let part of the popover spill out of the feed area.
-        left_offset = bar.offset().left + bar.width() / 2 - my_popover.width() / 2;
-    } else {
-        left_offset = bar.offset().left + 76 - my_popover.width() / 2;
-    }
-
-    my_popover.offset({top: my_popover.offset().top - 10, left: left_offset});
-
-    $("#tutorial-private-next").click(function () {
-        bar.popover("destroy");
-        home();
     }).focus();
 }
 
@@ -362,7 +332,7 @@ function subject() {
 
     $("#tutorial-subject-next").click(function () {
         bar.popover("destroy");
-        private_message();
+        home();
     }).focus();
 }
 
@@ -384,7 +354,11 @@ function stream() {
     }).focus();
 }
 
-function message() {
+function welcome() {
+    // Grey out everything.
+    $('#top-screen').css({opacity: 0.7, width: $(document).width(),
+                          height: $(document).height()});
+
     var spotlight_message = rows.first_visible();
     var bar = spotlight_message.prev(".recipient_row");
     var x = bar.offset().left;
@@ -393,7 +367,7 @@ function message() {
     var message_width = bar.width();
 
     box(x, y, message_width, message_height);
-    create_and_show_popover(bar, maybe_tweak_placement("left"), "Messages",
+    create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome",
                             "tutorial_message");
 
     var my_popover = $("#tutorial-message").closest(".popover");
@@ -402,26 +376,6 @@ function message() {
     $("#tutorial-message-next").click(function () {
         bar.popover("destroy");
         stream();
-    }).focus();
-}
-
-function welcome() {
-    // Grey out everything.
-    $('#top-screen').css({opacity: 0.7, width: $(document).width(),
-                          height: $(document).height()});
-
-    // Highlight the first recipient row.
-    var bar = rows.first_visible().prev(".recipient_row");
-    create_and_show_popover(bar, maybe_tweak_placement("left"),
-                            "Welcome, " + page_params.fullname + "!",
-                            "tutorial_welcome");
-
-    var my_popover = $("#tutorial-welcome").closest(".popover");
-    my_popover.offset({left: my_popover.offset().left - 10});
-
-    $("#tutorial-welcome-next").click(function () {
-        bar.popover("destroy");
-        message();
     }).focus();
 }
 
