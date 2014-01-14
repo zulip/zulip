@@ -1255,11 +1255,14 @@ def add_subscriptions_backend(request, user_profile,
     return json_success(result)
 
 def get_members_backend(request, user_profile):
+    realm = user_profile.realm
+    admins = set(user_profile.realm.get_admin_users())
     members = []
-    for profile in UserProfile.objects.select_related().filter(realm=user_profile.realm):
+    for profile in UserProfile.objects.select_related().filter(realm=realm):
         member = {"full_name": profile.full_name,
                   "is_bot": profile.is_bot,
                   "is_active": profile.is_active,
+                  "is_admin": (profile in admins),
                   "email": profile.email}
         if profile.is_bot and profile.bot_owner is not None:
             member["bot_owner"] = profile.bot_owner.email

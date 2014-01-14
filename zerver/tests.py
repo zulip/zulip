@@ -183,6 +183,12 @@ def most_recent_message(user_profile):
     usermessage = most_recent_usermessage(user_profile)
     return usermessage.message
 
+def find_dict(lst, k, v):
+    for dct in lst:
+        if dct[k] == v:
+            return dct
+    raise Exception('Cannot find element in list where key %s == %s' % (k, v))
+
 def slow(expected_run_time, slowness_reason):
     '''
     This is a decorate that annotates a test as being "known
@@ -745,7 +751,15 @@ class PermissionTest(AuthedTestCase):
         user = get_user_profile_by_email('othello@zulip.com')
         realm = admin.realm
         assign_perm('administer', admin, realm)
-        remove_perm('administer', user, realm)
+
+        # Make sure we see is_admin flag in /json/users
+        result = self.client.get('/json/users')
+        self.assert_json_success(result)
+        members = ujson.loads(result.content)['members']
+        hamlet = find_dict(members, 'email', 'hamlet@zulip.com')
+        self.assertTrue(hamlet['is_admin'])
+        othello = find_dict(members, 'email', 'othello@zulip.com')
+        self.assertFalse(othello['is_admin'])
 
         # Giveth
         req = dict(is_admin=ujson.dumps(True))
