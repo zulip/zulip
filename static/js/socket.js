@@ -142,6 +142,12 @@ Socket.prototype = {
         var that = this;
         sockjs.onopen = function Socket__sockjs_onopen() {
             blueslip.info("Socket connected [transport=" + sockjs.protocol + "]");
+            if (that._reconnect_initiation_time !== null) {
+                // If this is a reconnect, network was probably
+                // recently interrupted, so we optimistically restart
+                // get_updates
+                restart_get_updates();
+            }
             that._is_open = true;
 
             // Notify listeners that we've finished the websocket handshake
