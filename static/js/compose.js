@@ -253,6 +253,13 @@ function abort_xhr () {
 }
 
 exports.cancel = function () {
+    if (page_params.narrow !== undefined) {
+        // Never close the compose box in narrow embedded windows, but
+        // at least clear the subject and unfade.
+        compose_fade.clear_compose();
+        compose.subject("");
+        return;
+    }
     hide_box();
     $("#compose_close").hide();
     ui.resize_bottom_whitespace();
@@ -897,6 +904,10 @@ $(function () {
             autosize_textarea();
         }
     });
+
+    if (page_params.narrow !== undefined) {
+        compose.start("stream", {});
+    }
 });
 
 return exports;
