@@ -420,14 +420,25 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
 def recipient_for_emails(emails, not_forged_mirror_message,
                          user_profile, sender):
     recipient_profile_ids = set()
+    realm_domains = set()
+    realm_domains.add(sender.realm.domain)
     for email in emails:
         try:
-            recipient_profile_ids.add(get_user_profile_by_email(email).id)
+            user_profile = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
             raise ValidationError("Invalid email '%s'" % (email,))
+        recipient_profile_ids.add(user_profile.id)
+        realm_domains.add(user_profile.realm.domain)
 
     if not_forged_mirror_message and user_profile.id not in recipient_profile_ids:
         raise ValidationError("User not authorized for this query")
+
+    # Prevent cross realm private messages unless it is between only two realms
+    # and one of the realms is zulip.com.
+    if len(realm_domains) == 2 and 'zulip.com' not in realm_domains:
+        raise ValidationError("You can't send private messages outside of your organization.")
+    if len(realm_domains) > 2:
+        raise ValidationError("You can't send private messages outside of your organization.")
 
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
