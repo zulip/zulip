@@ -785,9 +785,10 @@ def home(request):
     needs_tutorial = settings.TUTORIAL_ENABLED and \
         user_profile.tutorial_status != UserProfile.TUTORIAL_FINISHED
 
+    first_in_realm = realm_user_count(user_profile.realm) == 1
     # If you are the only person in the realm and you didn't invite
     # anyone, we'll continue to encourage you to do so on the frontend.
-    prompt_for_invites = (realm_user_count(user_profile.realm) == 1) and \
+    prompt_for_invites = first_in_realm and \
         not PreregistrationUser.objects.filter(referred_by=user_profile).count()
 
     if user_profile.pointer == -1 and user_has_messages:
@@ -846,6 +847,7 @@ def home(request):
         referrals             = register_ret['referrals'],
         realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,
+        first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
         desktop_notifications_enabled = desktop_notifications_enabled,
         notifications_stream  = notifications_stream,

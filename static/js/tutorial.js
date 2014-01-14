@@ -184,6 +184,20 @@ var fake_messages = [
     }
 ];
 
+function send_delayed_stream_message(stream, topic, content, delay) {
+    setTimeout(function () {
+        $.ajax({
+            dataType: 'json',
+            url: '/json/tutorial_send_message',
+            type: 'POST',
+            data: {'type': 'stream',
+                   'recipient': stream,
+                   'topic': topic,
+                   'content': content}
+        });
+    }, delay * 1000); // delay is in seconds.
+}
+
 function hide_app_alert() {
     $('#alert-bar-container').slideUp(100);
 }
@@ -335,6 +349,17 @@ function finale() {
     // We start you in a narrow so it's not overwhelming.
     if (stream_data.in_home_view(page_params.notifications_stream)) {
         narrow.activate([["stream", page_params.notifications_stream]]);
+    }
+
+    if (page_params.first_in_realm) {
+        if (stream_data.in_home_view("engineering")) {
+            send_delayed_stream_message("engineering", "projects", "This is a message on stream **engineering** with the topic **projects**. Practice sending sending some messages here, or creating a new topic.", 10);
+            send_delayed_stream_message("engineering", "projects", "You might also enjoy:\n* Our lightweight formatting\n* emoji :thumbsup:\n* Our [desktop and mobile apps](/apps)", 15);
+        }
+
+        if (stream_data.in_home_view("social")) {
+            send_delayed_stream_message("social", "cute animals", "This is a message on stream **social** with the topic **cute animals**. Try uploading or pasting in some pictures. Here's a [guinea pig](https://humbug-user-uploads.s3.amazonaws.com/byqgM1qjol1mzje_KzeNRT5F/guinea.jpg) to get you started:", 25);
+        }
     }
 }
 
