@@ -188,6 +188,10 @@ function actually_update_users() {
 
     var users = Object.keys(presence_info);
     users = filter_users_by_search(users);
+    users = _.filter(users, function (email) {
+        return people_dict.has(email);
+    });
+
     users = sort_users(users, presence_info);
 
     function get_num_unread(email) {
@@ -212,11 +216,7 @@ function actually_update_users() {
         };
     }
 
-    var user_emails = _.filter(users, function (email) {
-        return people_dict.has(email);
-    });
-
-    var user_info = _.map(user_emails, info_for);
+    var user_info = _.map(users, info_for);
 
     $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
 
