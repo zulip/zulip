@@ -24,6 +24,7 @@ function populate_users (realm_people_data) {
     var deactivated_users = [];
     var bots = [];
     _.each(realm_people_data.members, function (user) {
+        user.is_active_human = user.is_active && !user.is_bot;
         if (user.is_bot) {
             bots.push(user);
         } else if (user.is_active) {
@@ -144,6 +145,74 @@ exports.setup_page = function () {
                 button.removeClass("reactivate");
                 button.text("Deactivate");
                 row.removeClass("inactive_user_row");
+            }
+        });
+    });
+
+    $(".admin_user_table").on("click", ".make-admin", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Go up the tree until we find the user row, then grab the email element
+        $(".active_user_row").removeClass("active_user_row");
+        $(e.target).closest(".user_row").addClass("active_user_row");
+        var email = $(".active_user_row").find('.email').text();
+
+        var url = "/json/users/" + email;
+        var data = {
+            is_admin: JSON.stringify(true)
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+            success: function () {
+                var row = $(".active_user_row");
+                var button = $(".active_user_row button.make-admin");
+                button.addClass("btn-danger");
+                button.removeClass("btn-warning");
+                button.addClass("remove-admin");
+                button.removeClass("make-admin");
+                button.text("Remove admin");
+                row.removeClass("inactive_user_row");
+            },
+            error: function (xhr, error) {
+                var status = $(".active_user_row .admin-user-status");
+                ui.report_error("Failed!", xhr, status);
+            }
+        });
+    });
+
+    $(".admin_user_table").on("click", ".remove-admin", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Go up the tree until we find the user row, then grab the email element
+        $(".active_user_row").removeClass("active_user_row");
+        $(e.target).closest(".user_row").addClass("active_user_row");
+        var email = $(".active_user_row").find('.email').text();
+
+        var url = "/json/users/" + email;
+        var data = {
+            is_admin: JSON.stringify(false)
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+            success: function () {
+                var row = $(".active_user_row");
+                var button = $(".active_user_row button.remove-admin");
+                button.addClass("btn-warning");
+                button.removeClass("btn-danger");
+                button.addClass("make-admin");
+                button.removeClass("remove-admin");
+                button.text("Make admin");
+                row.removeClass("inactive_user_row");
+            },
+            error: function (xhr, error) {
+                var status = $(".active_user_row .admin-user-status");
+                ui.report_error("Failed!", xhr, status);
             }
         });
     });

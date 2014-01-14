@@ -21,6 +21,19 @@
         Reactivate
       </button>
   {{/if}}
+  {{#if is_active_human}}
+    {{#if is_admin}}
+        <button class="btn remove-admin btn-danger">
+          Remove admin
+        </button>
+    {{else}}
+        <button class="btn make-admin btn-warning">
+          Make admin
+        </button>
+    {{/if}}
+  {{/if}}
+      <div class='admin-user-status'>
+      </div>
   </td>
 </tr>
 {{/with}}
