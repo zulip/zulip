@@ -8,9 +8,7 @@ var deferred_work = [];
 // We'll temporarily set stream colors for the streams we use in the demo
 // tutorial messages.
 var real_stream_info;
-var tutorial_stream_info = Dict.from({"design": {"color": "#76ce90"},
-                                      "social": {"color": "#fae589"},
-                                      "devel": {"color": "#a6c7e5"}});
+var tutorial_stream_info = Dict.from({"engineering": {"color": "#76ce90"}});
 
 // Each message object contains the minimal information necessary for it to be
 // processed by our system for adding messages to your feed.
@@ -18,12 +16,13 @@ var today = new Date().getTime() / 1000;
 var fake_messages = [
     {
         id: 1,
-        content: "<p>We're working on some new screenshots for our landing page, and I'll show you what I have shortly.</p>",
+        content: "<p>We're working on some new screenshots for our landing page!</p>",
         is_stream: true,
-        sender_full_name: "Waseem Daher",
-        avatar_url: "https://secure.gravatar.com/avatar/364a79a57718ede3fadf6dd3623d2e0a",
-        display_recipient: "design",
-        stream: "design",
+        sender_full_name: "Abbie Patel",
+        sender_email: "abbie@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/5a8d2b3836d546d523f460924a8a9973",
+        display_recipient: "engineering",
+        stream: "engineering",
         subject: "screenshots",
         timestr: "12:11",
         timestamp: today,
@@ -31,97 +30,155 @@ var fake_messages = [
     },
     {
         id: 2,
-        content: "<p>Hey, if I work on Windows, can you two make one for Mac and Linux?</p>",
-        is_stream: false,
-        sender_full_name: "Waseem Daher",
-        sender_email: "wdaher@zulip.com",
-        avatar_url: "https://secure.gravatar.com/avatar/364a79a57718ede3fadf6dd3623d2e0a",
-        display_reply_to: "Jeff Arnold, Waseem Daher",
-        reply_to: true,
-        timestr: "12:12",
+        content: "<p>Here's the <a href='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png' target='_blank' title='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png'>latest version</a>:<div class='message_inline_image'><a href='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png' target='_blank' title='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png'><img src='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png'></a></div> for the Windows app -- thoughts? I'm particularly wondering whether people think the screenshot should be from Windows 7 or some other version.</p>",
+        is_stream: true,
+        sender_full_name: "Abbie Patel",
+        sender_email: "abbie@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/5a8d2b3836d546d523f460924a8a9973",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "screenshots",
+        timestr: "12:11",
         timestamp: today,
-        type: "private"
+        type: "stream"
     },
     {
         id: 3,
-        content: "<p>Sure, no problem <img alt=':+1:' class='emoji' src='static/third/gemoji/images/emoji/+1.png' title=':+1:'></p>",
-        is_stream: false,
-        sender_full_name: "Jessica McKellar",
-        sender_email: "jesstess@zulip.com",
-        avatar_url: "https://secure.gravatar.com/avatar/c89814a8ed5814421b617cf2242ff01a",
-        display_reply_to: "Jeff Arnold, Waseem Daher",
-        reply_to: true,
-        timestr: "12:12",
+        content: "<p>Looks good to me! <img alt=':+1:' class='emoji' src='static/third/gemoji/images/emoji/+1.png' title=':+1:'></p>",
+        is_stream: true,
+        sender_full_name: "Jeff Arnold",
+        sender_email: "jeff@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/dd0cf69d6d1989aa0b0d8c722f7d5840",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "screenshots",
+        timestr: "12:16",
         timestamp: today,
-        type: "private"
+        type: "stream"
     },
     {
         id: 4,
-        content: "<p>Ok, here's my <a href='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png' target='_blank' title='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png'>latest version</a><div class='message_inline_image'><a href='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png' target='_blank' title='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png'><img src='https://zulip.com/static/images/app-screenshots/zulip-desktop-windows.png'></a></div> for the Windows app -- thoughts? I'm particularly wondering whether people think the screenshot should be from Windows 7 or some other version.</p>",
+        content: "<p>Adam and I just finished a brainstorming session for the next set of integrations we want to support.</p><p><a href=''>Here</a> are our notes. I'll open tickets for the action items.</p>",
         is_stream: true,
-        sender_full_name: "Waseem Daher",
-        avatar_url: "https://secure.gravatar.com/avatar/364a79a57718ede3fadf6dd3623d2e0a",
-        display_recipient: "design",
-        stream: "design",
-        subject: "screenshots",
-        timestr: "12:15",
+        sender_full_name: "Jessica McKellar",
+        sender_email: "jessica@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/2a1ffb4ef0b4a20c04d540a35f430cf6",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "integrations",
+        timestr: "12:25",
         timestamp: today,
         type: "stream"
     },
     {
         id: 5,
-        content: "<p>Looks good to me!</p>",
+        content: "<p>Yay, Twitter integration. <img alt=':heart_eyes:' class='emoji' src='static/third/gemoji/images/emoji/heart_eyes.png' title=':heart_eyes:'></p>",
         is_stream: true,
-        sender_full_name: "Jeff Arnold",
-        avatar_url: "https://secure.gravatar.com/avatar/0e0080b53f71bb975c311a123acd8a48",
-        display_recipient: "design",
-        stream: "design",
-        subject: "screenshots",
-        timestr: "12:15",
+        sender_full_name: "Leo Franchi",
+        sender_email: "leo@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/4309007c980e1e8b9a2453488586482a",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "integrations",
+        timestr: "12:25",
         timestamp: today,
         type: "stream"
     },
     {
         id: 6,
-        content: "<p>@<strong>all</strong> Any interest in lunch? I'd go for:</p>" +
-"<ul>" +
-"<li><img alt=':pizza:' class='emoji' src='static/third/gemoji/images/emoji/pizza.png' title=':pizza:'> (Hi-fi)</li>" +
-"<li><img alt=':hamburger:' class='emoji' src='static/third/gemoji/images/emoji/hamburger.png' title=':hamburger:'> (Four Burgers)</li>" +
-"<li><img alt=':sushi:' class='emoji' src='static/third/gemoji/images/emoji/sushi.png' title=':sushi:'> (Thelonious)</li>" +
-"</ul></p>",
+        content: "<p>We need to add support for a few more markdown features before we can do GitHub integration.</p>",
         is_stream: true,
-        sender_full_name: "Tim Abbott",
-        avatar_url: "https://secure.gravatar.com/avatar/364a79a57718ede3fadf6dd3623d2e0a",
-        display_recipient: "social",
-        stream: "social",
-        subject: "lunch",
-        timestr: "12:20",
+        sender_full_name: "Li Jing",
+        sender_email: "li@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/2950c2c87fe7daaa56fd6a403ecc2ee0",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "integrations",
+        timestr: "12:26",
         timestamp: today,
         type: "stream"
     },
     {
         id: 7,
-        content: "<p>I'd go to Hi-fi</p>",
+        content: "<p>Good point, I'll add that to the ticket.</p>",
         is_stream: true,
-        sender_full_name: "Luke Faraone",
-        avatar_url: "https://secure.gravatar.com/avatar/948fcdfa93dd8986106032f1bad7f2c8",
-        display_recipient: "social",
-        stream: "social",
-        subject: "lunch",
-        timestr: "12:20",
+        sender_full_name: "Jessica McKellar",
+        sender_email: "jessica@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/2a1ffb4ef0b4a20c04d540a35f430cf6",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "integrations",
+        timestr: "12:26",
         timestamp: today,
         type: "stream"
     },
     {
         id: 8,
-        content: "<p>Reminder: engineering meeting in 1 hour.</p>",
+        content: "<p><img alt=':clock1130:' class='emoji' src='static/third/gemoji/images/emoji/clock1130.png' title=':clock1130:'> Reminder: engineering meeting in 1 hour. <img alt=':clock1130:' class='emoji' src='static/third/gemoji/images/emoji/clock1130.png' title=':clock1130:'></p>",
         is_stream: true,
-        sender_full_name: "Jessica McKellar",
-        avatar_url: "https://secure.gravatar.com/avatar/c89814a8ed5814421b617cf2242ff01a",
-        display_recipient: "devel",
-        stream: "devel",
-        subject: "meeting",
-        timestr: "12:34",
+        sender_full_name: "Reminder Bot",
+        sender_email: "reminder-bot@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/78873d7213d102dc36773046560d403a",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "weekly meeting",
+        timestr: "12:30",
+        timestamp: today,
+        type: "stream"
+    },
+    {
+        id: 9,
+        content: "<p>Quickly brainstorming my remaining TODO list out loud for you all:</p>",
+        is_stream: true,
+        sender_full_name: "Abbie Patel",
+        sender_email: "abbie@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/5a8d2b3836d546d523f460924a8a9973",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "screenshots",
+        timestr: "12:32",
+        timestamp: today,
+        type: "stream"
+    },
+    {
+        id: 10,
+        content: "<p><ul><li>Redo iPhone shot</li><li>Double-check layout on iPad</li><li>Update copy for new iOS app version</li><li>Check with Android team on timeline for login redesign</li></ul></p>",
+        is_stream: true,
+        sender_full_name: "Abbie Patel",
+        sender_email: "abbie@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/5a8d2b3836d546d523f460924a8a9973",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "screenshots",
+        timestr: "12:32",
+        timestamp: today,
+        type: "stream"
+    },
+    {
+        id: 11,
+        content: "<p>Oops, I actually took care of the text for iOS and forgot to update the ticket -- I'll do that now.</p>",
+        is_stream: true,
+        sender_full_name: "Jeff Arnold",
+        sender_email: "jeff@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/dd0cf69d6d1989aa0b0d8c722f7d5840",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "screenshots",
+        timestr: "12:16",
+        timestamp: today,
+        type: "stream"
+    },
+    {
+        id: 12,
+        content: "<p>No problem, less work for me. <img alt=':smile:' class='emoji' src='static/third/gemoji/images/emoji/smile.png' title=':smile:'></p>",
+        is_stream: true,
+        sender_full_name: "Abbie Patel",
+        sender_email: "abbie@zulip.com",
+        avatar_url: "https://secure.gravatar.com/avatar/5a8d2b3836d546d523f460924a8a9973",
+        display_recipient: "engineering",
+        stream: "engineering",
+        subject: "screenshots",
+        timestr: "12:32",
         timestamp: today,
         type: "stream"
     }
@@ -325,9 +382,9 @@ function subject() {
 
     var my_popover = $("#tutorial-subject").closest(".popover");
     if (placement === "bottom") { // Wider screen, popover is on bottom.
-        my_popover.offset({left: bar.offset().left + 114 - my_popover.width() / 2});
+        my_popover.offset({left: bar.offset().left + 140 - my_popover.width() / 2});
     } else {
-        my_popover.offset({left: bar.offset().left + 166});
+        my_popover.offset({left: bar.offset().left + 194});
     }
 
     $("#tutorial-subject-next").click(function () {
@@ -343,9 +400,9 @@ function stream() {
 
     var my_popover = $("#tutorial-stream").closest(".popover");
     if (placement === "bottom") { // Wider screen, popover is on bottom.
-        my_popover.offset({left: bar.offset().left + 44 - my_popover.width() / 2});
+        my_popover.offset({left: bar.offset().left + 50 - my_popover.width() / 2});
     } else { // Smaller screen, popover is to the right of the stream label.
-        my_popover.offset({left: bar.offset().left + 78});
+        my_popover.offset({left: bar.offset().left + 98});
     }
 
     $("#tutorial-stream-next").click(function () {
