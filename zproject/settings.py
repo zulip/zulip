@@ -336,7 +336,10 @@ INTERNAL_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
                    'name': 'Nagios Send Bot'},
                   {'var_name': 'NAGIOS_RECEIVE_BOT',
                    'email_template': 'nagios-receive-bot@%s',
-                   'name': 'Nagios Receive Bot'} ]
+                   'name': 'Nagios Receive Bot'},
+                  {'var_name': 'WELCOME_BOT',
+                   'email_template': 'welcome-bot@%s',
+                   'name': 'Welcome Bot'} ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
 

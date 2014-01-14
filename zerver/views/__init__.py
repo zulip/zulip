@@ -1001,6 +1001,25 @@ def json_change_enter_sends(request, user_profile,
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()
 
+
+@authenticated_json_post_view
+@has_request_variables
+def json_tutorial_send_message(request, user_profile, type=REQ,
+                               recipient=REQ, topic=REQ, content=REQ):
+    """
+    This function, used by the onboarding tutorial, causes the Tutorial Bot to
+    send you the message you pass in here. (That way, the Tutorial Bot's
+    messages to you get rendered by the server and therefore look like any other
+    message.)
+    """
+    sender_name = "welcome-bot@zulip.com"
+    if type == 'stream':
+        internal_send_message(sender_name, "stream", recipient, topic, content,
+                              realm=user_profile.realm)
+        return json_success()
+    # For now, there are no PM cases.
+    return json_error('Bad data passed in to tutorial_send_message')
+
 @authenticated_json_post_view
 @has_request_variables
 def json_tutorial_status(request, user_profile, status=REQ('status')):
