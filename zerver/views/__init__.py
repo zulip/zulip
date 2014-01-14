@@ -804,6 +804,10 @@ def home(request):
             logging.warning("%s has invalid pointer %s" % (user_profile.email, user_profile.pointer))
             latest_read = None
 
+    desktop_notifications_enabled = user_profile.enable_desktop_notifications
+    if narrow_stream is not None:
+        desktop_notifications_enabled = False
+
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
@@ -830,8 +834,7 @@ def home(request):
         realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,
         prompt_for_invites    = prompt_for_invites,
-        desktop_notifications_enabled =
-            user_profile.enable_desktop_notifications,
+        desktop_notifications_enabled = desktop_notifications_enabled,
         sounds_enabled =
             user_profile.enable_sounds,
         enable_offline_email_notifications =
