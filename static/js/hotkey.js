@@ -192,6 +192,9 @@ function process_hotkey(e) {
             } else if ($(".message_edit_content").filter(":focus").length > 0) {
                 row = $(".message_edit_content").filter(":focus").closest(".message_row");
                 message_edit.end(row);
+            } else if (activity.searching()) {
+                activity.clear_search();
+                return true;
             } else if (compose.composing()) {
                 // If the user hit the escape key, cancel the current compose
                 compose.cancel();

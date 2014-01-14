@@ -358,6 +358,14 @@ exports.set_user_statuses = function (users, server_time) {
     exports.update_huddles();
 };
 
+exports.searching = function () {
+    return $('.user-list-filter').expectOne().is(':focus');
+};
+
+exports.clear_search = function () {
+    $('.user-list-filter').val('');
+    update_users_for_search();
+};
 
 $(function () {
     $(".user-list-filter").expectOne().on('input', update_users_for_search);
