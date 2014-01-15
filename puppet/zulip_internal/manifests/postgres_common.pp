@@ -6,6 +6,8 @@ class zulip_internal::postgres_common {
                                  "lzop",
                                  "pv",
                                  "python-pip",
+                                 # Used to read /etc/zulip/zulip.conf for our backup system
+                                 "crudini",
                                  ]
   package { $internal_postgres_packages: ensure => "installed" }
 
