@@ -239,6 +239,15 @@ def cache_save_user_profile(user_profile):
 def active_user_dicts_in_realm_cache_key(realm):
     return "active_user_dicts_in_realm:%s" % (realm.id,)
 
+def get_stream_cache_key(stream_name, realm):
+    from zerver.models import Realm
+    if isinstance(realm, Realm):
+        realm_id = realm.id
+    else:
+        realm_id = realm
+    return "stream_by_realm_and_name:%s:%s" % (
+        realm_id, make_safe_digest(stream_name.strip().lower()))
+
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
 def update_user_profile_cache(sender, **kwargs):
@@ -261,3 +270,11 @@ def update_user_profile_cache(sender, **kwargs):
 
 def realm_alert_words_cache_key(realm):
     return "realm_alert_words:%s" % (realm.domain,)
+
+# Called by models.py to flush the stream cache whenever we save a stream
+# object.
+def update_stream_cache(sender, **kwargs):
+    stream = kwargs['instance']
+    items_for_memcached = {}
+    items_for_memcached[get_stream_cache_key(stream.name, stream.realm)] = (stream,)
+    cache_set_many(items_for_memcached)

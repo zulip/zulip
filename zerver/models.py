@@ -6,8 +6,9 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    generic_bulk_cached_fetch, cache_set, \
-    display_recipient_cache_key, cache_delete, active_user_dicts_in_realm_cache_key
+    generic_bulk_cached_fetch, cache_set, update_stream_cache, \
+    display_recipient_cache_key, cache_delete, \
+    get_stream_cache_key, active_user_dicts_in_realm_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
@@ -455,6 +456,9 @@ class Stream(models.Model):
                 active=True
         ).count()
 
+post_save.connect(update_stream_cache, sender=Stream)
+post_delete.connect(update_stream_cache, sender=Stream)
+
 def valid_stream_name(name):
     return name != ""
 
@@ -500,14 +504,6 @@ def get_client_cache_key(name):
 def get_client_memcached(name):
     (client, _) = Client.objects.get_or_create(name=name)
     return client
-
-def get_stream_cache_key(stream_name, realm):
-    if isinstance(realm, Realm):
-        realm_id = realm.id
-    else:
-        realm_id = realm
-    return "stream_by_realm_and_name:%s:%s" % (
-        realm_id, make_safe_digest(stream_name.strip().lower()))
 
 # get_stream_backend takes either a realm id or a realm
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
