@@ -2682,6 +2682,11 @@ class GetOldMessagesTest(AuthedTestCase):
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                                   'narrow': '[["stream", "Scotland"], ["topic", "blah"]]'},
                                                  "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = 7 AND upper(subject) = upper('blah') AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC")
+        # Narrow to pms with yourself
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["pm-with", "hamlet@zulip.com"]]'},
+                                                 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 4 AND sender_id = 4 AND recipient_id = 4 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC')
+
 
     def test_get_old_messages_with_search_queries(self):
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,

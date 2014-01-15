@@ -208,8 +208,8 @@ class NarrowBuilder(object):
             self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
             if operand == self.user_profile.email:
                 # Personals with self
-                return self.pQ(recipient__type=Recipient.PERSONAL,
-                          sender=self.user_profile, recipient=self_recipient)
+                return query.where(and_(column("sender_id") == self.user_profile.id,
+                                        column("recipient_id") == self_recipient.id))
 
             # Personals with other user; include both directions.
             try:
