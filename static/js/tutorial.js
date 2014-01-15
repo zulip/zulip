@@ -352,9 +352,21 @@ function finale() {
     }
 
     if (page_params.first_in_realm) {
+        // 'engineering' is the best possible stream since we used it in the
+        // tutorial, but fall back to something else if we have to.
+        var work_stream;
         if (stream_data.in_home_view("engineering")) {
-            send_delayed_stream_message("engineering", "projects", "This is a message on stream **engineering** with the topic **projects**. Practice sending sending some messages here, or creating a new topic.", 10);
-            send_delayed_stream_message("engineering", "projects", "You might also enjoy:\n* Our lightweight formatting\n* emoji :thumbsup:\n* Our [desktop and mobile apps](/apps)", 15);
+            work_stream = "engineering";
+        } else {
+            work_stream = _.find(stream_data.home_view_stream_names(),
+                                 function (stream_name) {
+                return (stream_name !== "social") && (stream_name !== page_params.notifications_stream);
+            });
+        }
+
+        if (work_stream !== undefined) {
+            send_delayed_stream_message(work_stream, "projects", "This is a message on stream **" + work_stream + "** with the topic **projects**. Practice sending sending some messages here, or creating a new topic.", 10);
+            send_delayed_stream_message(work_stream, "projects", "You might also enjoy:\n* Our lightweight formatting\n* emoji :thumbsup:\n* Our [desktop and mobile apps](/apps)", 15);
         }
 
         if (stream_data.in_home_view("social")) {
