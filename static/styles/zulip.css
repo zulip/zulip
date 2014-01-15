@@ -305,6 +305,10 @@ a:hover code {
     max-width: 200px;
 }
 
+#left-sidebar {
+    z-index: 4;
+}
+
 #left-sidebar .brand {
     display: table-row;
 }
@@ -3372,7 +3376,7 @@ div.edit_bot {
     width: 100%;
     top: 41px;
     left: 0px;
-    z-index: 5;
+    z-index: 3;
 }
 
 #home .alert-bar {
