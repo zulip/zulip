@@ -1,3 +1,4 @@
+{{#if can_create_streams}}
   <div id="create_stream_row">
       <div class="subscription_table_elem">
         <form id="add_new_subscription" class="form-inline" action="">
@@ -8,6 +9,7 @@
         </form>
       </div>
   </div>
+{{/if}}
 
 {{#each subscriptions}}
 {{partial "subscription"}}

@@ -420,7 +420,11 @@ exports.setup_page = function () {
         });
 
         $('#subscriptions_table').empty();
-        var rendered = templates.render('subscription_table_body', {subscriptions: sub_rows});
+        var template_data = {
+            can_create_streams: page_params.can_create_streams,
+            subscriptions: sub_rows
+        };
+        var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
 
         _.each(sub_rows, function (row) {

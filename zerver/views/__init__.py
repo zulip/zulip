@@ -852,6 +852,7 @@ def home(request):
         muted_topics          = register_ret['muted_topics'],
         realm_filters         = register_ret['realm_filters'],
         is_admin              = user_profile.is_admin(),
+        can_create_streams    = user_profile.can_create_streams(),
         notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
         name_changes_disabled = settings.NAME_CHANGES_DISABLED,
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
