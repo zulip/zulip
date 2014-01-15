@@ -11,7 +11,6 @@ casper.then(function () {
     casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
 
     casper.test.assertNotVisible("#old_password");
-    casper.test.assertSelectorHasText('.my_fullname', 'Iago');
 
     casper.click(".change_password_button");
 });
@@ -34,7 +33,6 @@ casper.waitUntilVisible("#old_password", function () {
 
 casper.waitUntilVisible('#settings-status', function () {
     casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
-    casper.test.assertSelectorHasText('.my_fullname', 'IagoNew');
 
     casper.test.assertNotVisible('');
     casper.click('#api_key_button');
