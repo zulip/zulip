@@ -399,6 +399,7 @@ exports.deactivate = function () {
 
     $('#search_query').val('');
     reset_load_more_status();
+    hashchange.save_narrow();
 
     if (current_msg_list.selected_id() !== -1) {
         var preserve_pre_narrowing_screen_position =
@@ -443,7 +444,6 @@ exports.deactivate = function () {
         }
     }
 
-    hashchange.save_narrow();
     compose_fade.update_message_list();
 
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
