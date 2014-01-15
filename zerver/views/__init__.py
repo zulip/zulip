@@ -522,6 +522,12 @@ def json_invite_users(request, user_profile, invitee_emails=REQ):
     if not stream_names:
         return json_error("You must specify at least one stream for invitees to join.")
 
+    # We unconditionally sub you to the notifications stream if it
+    # exists and is public.
+    notifications_stream = user_profile.realm.notifications_stream
+    if notifications_stream and not notifications_stream.invite_only:
+        stream_names.append(notifications_stream.name)
+
     streams = []
     for stream_name in stream_names:
         stream = get_stream(stream_name, user_profile.realm)
@@ -810,6 +816,11 @@ def home(request):
     if narrow_stream is not None:
         desktop_notifications_enabled = False
 
+    if user_profile.realm.notifications_stream:
+        notifications_stream = user_profile.realm.notifications_stream.name
+    else:
+        notifications_stream = ""
+
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
@@ -837,6 +848,7 @@ def home(request):
         needs_tutorial        = needs_tutorial,
         prompt_for_invites    = prompt_for_invites,
         desktop_notifications_enabled = desktop_notifications_enabled,
+        notifications_stream  = notifications_stream,
         sounds_enabled =
             user_profile.enable_sounds,
         enable_offline_email_notifications =
