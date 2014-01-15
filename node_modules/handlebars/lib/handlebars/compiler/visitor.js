@@ -1,18 +1,11 @@
-exports.attach = function(Handlebars) {
+function Visitor() {}
 
-// BEGIN(BROWSER)
+Visitor.prototype = {
+  constructor: Visitor,
 
-Handlebars.Visitor = function() {};
-
-Handlebars.Visitor.prototype = {
   accept: function(object) {
     return this[object.type](object);
   }
 };
 
-// END(BROWSER)
-
-return Handlebars;
-};
-
-
+export default Visitor;

@@ -1,32 +1,33 @@
-var handlebars = require("./handlebars/base"),
+/*globals Handlebars: true */
+import Handlebars from "./handlebars.runtime";
 
-// Each of these augment the Handlebars object. No need to setup here.
-// (This is done to easily share code between commonjs and browse envs)
-  utils = require("./handlebars/utils"),
-  compiler = require("./handlebars/compiler"),
-  runtime = require("./handlebars/runtime");
+// Compiler imports
+import AST from "./handlebars/compiler/ast";
+import { parser as Parser, parse } from "./handlebars/compiler/base";
+import { Compiler, compile, precompile } from "./handlebars/compiler/compiler";
+import JavaScriptCompiler from "./handlebars/compiler/javascript-compiler";
 
+var _create = Handlebars.create;
 var create = function() {
-  var hb = handlebars.create();
+  var hb = _create();
 
-  utils.attach(hb);
-  compiler.attach(hb);
-  runtime.attach(hb);
+  hb.compile = function(input, options) {
+    return compile(input, options, hb);
+  };
+  hb.precompile = function (input, options) {
+    return precompile(input, options, hb);
+  };
+
+  hb.AST = AST;
+  hb.Compiler = Compiler;
+  hb.JavaScriptCompiler = JavaScriptCompiler;
+  hb.Parser = Parser;
+  hb.parse = parse;
 
   return hb;
 };
 
-var Handlebars = create();
+Handlebars = create();
 Handlebars.create = create;
 
-module.exports = Handlebars; // instantiate an instance
-
-// BEGIN(BROWSER)
-
-// END(BROWSER)
-
-// USAGE:
-// var handlebars = require('handlebars');
-
-// var singleton = handlebars.Handlebars,
-//  local = handlebars.create();
+export default Handlebars;
