@@ -140,7 +140,6 @@ exports.initiate_search = function () {
 exports.clear_search = function () {
     narrow.deactivate();
 
-    $('.message_table').removeHighlight();
     $('#search_query').blur();
     exports.update_button_visibility();
 };

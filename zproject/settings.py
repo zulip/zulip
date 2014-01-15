@@ -484,7 +484,6 @@ JS_SPECS = {
             'third/html5-formdata/formdata.js',
             'third/jquery-validate/jquery.validate.js',
             'third/jquery-form/jquery.form.js',
-            'third/jquery-highlight/jquery.highlight.js',
             'third/jquery-filedrop/jquery.filedrop.js',
             'third/jquery-caret/jquery.caret.1.02.js',
             'third/xdate/xdate.dev.js',
