@@ -39,7 +39,7 @@ exports.pick_color = function (used_colors) {
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
     // so that we only have color in the headers.
-    var style = "inset 9px 0px " + color;
+    var style = color;
     var color_class = exports.get_color_class(color);
 
     var stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
@@ -48,8 +48,7 @@ function update_table_stream_color(table, stream_name, color) {
         if ($.trim($(label).text()) === stream_name) {
             var row = $(label).closest(".recipient_row");
             var rows = row.prev("div").nextUntil(".bookend_tr");
-            var elems = rows.find(".messagebox-border,.message-header-contents");
-            elems.css("box-shadow", style);
+            label.css("background", style);
         }
     });
 }

@@ -670,11 +670,11 @@ function hack_for_floating_recipient_bar() {
     // slight gap that our messages peek through as they scroll
     // by. This hack fixes this by programmatically measuring how big
     // the gap is, and then moving our table up to compensate.
-    var gap = $("#floating_recipient_layout_row").outerHeight(true);
-    var floating_recipient = $(".floating_recipient");
-    var offset = floating_recipient.offset();
-    offset.top = offset.top - gap;
-    floating_recipient.offset(offset);
+    //var gap = $("#floating_recipient_layout_row").outerHeight(true);
+    //var floating_recipient = $(".floating_recipient");
+    //var offset = floating_recipient.offset();
+    //offset.top = offset.top - gap;
+    //floating_recipient.offset(offset);
 }
 
 function update_message_in_all_views(message_id, callback) {
