@@ -63,6 +63,13 @@ from contextlib import contextmanager
 from zerver import tornado_callbacks
 
 @contextmanager
+def stub(obj, name, f):
+    old_f = getattr(obj, name)
+    setattr(obj, name, f)
+    yield
+    setattr(obj, name, old_f)
+
+@contextmanager
 def simulated_queue_client(client):
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client
@@ -2053,6 +2060,15 @@ class SubscriptionAPITest(AuthedTestCase):
         result = self.common_subscribe_to_streams(self.test_email, [long_stream_name])
         self.assert_json_error(result,
                                "Stream name (%s) too long." % (long_stream_name,))
+
+    def test_user_settings_for_adding_streams(self):
+        with stub(UserProfile, 'can_create_streams', lambda self: True):
+            result = self.common_subscribe_to_streams(self.test_email, ['stream1'])
+            self.assert_json_success(result)
+
+        with stub(UserProfile, 'can_create_streams', lambda self: False):
+            result = self.common_subscribe_to_streams(self.test_email, ['stream1'])
+            self.assert_json_error(result, 'User cannot create streams.')
 
     def test_subscriptions_add_invalid_stream(self):
         """

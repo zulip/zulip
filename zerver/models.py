@@ -357,6 +357,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         rows = UserProfile.objects.filter(id__in=user_ids).values('id', 'email')
         return {row['id']: row['email'] for row in rows}
 
+    def can_create_streams(self):
+        # Long term this might be an actual DB attribute.  Short term and long term, we want
+        # this to be conceptually a property of the user, although it may actually be administered
+        # in a more complicated way, like certain realms may allow only admins to create streams.
+        return True
+
 # Make sure we flush the UserProfile object from our memcached
 # whenever we save it.
 post_save.connect(update_user_profile_cache, sender=UserProfile)

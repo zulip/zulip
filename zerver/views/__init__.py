@@ -1147,6 +1147,9 @@ def add_subscriptions_backend(request, user_profile,
                               principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(converter=json_to_bool, default=True)):
 
+    if not user_profile.can_create_streams():
+        return json_error('User cannot create streams.')
+
     stream_names = []
     for stream in streams_raw:
         stream_name = stream["name"].strip()
