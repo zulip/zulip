@@ -125,7 +125,7 @@ exports.set_in_home_view = function (stream, in_home) {
     }
 };
 
-function build_narrow_filter(name) {
+function build_stream_sidebar_row(name) {
     var args = {name: name,
                 id: subs.stream_id(name),
                 uri: narrow.by_stream_uri(name),
@@ -144,7 +144,7 @@ exports.add_stream_to_sidebar = function (stream_name) {
         // already exists
         return false;
     }
-    return build_narrow_filter(stream_name);
+    return build_stream_sidebar_row(stream_name);
 };
 
 exports.get_stream_li = function (stream_name) {
@@ -370,7 +370,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 };
 
 exports.rename_stream = function (sub) {
-    sub.sidebar_li = build_narrow_filter(sub.name);
+    sub.sidebar_li = build_stream_sidebar_row(sub.name);
     exports.build_stream_list(); // big hammer
 };
 
