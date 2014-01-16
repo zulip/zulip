@@ -262,7 +262,7 @@
   </ul>
 </div>
 
-{% if show_autoscroll_forever_option %}
+{% if show_autoscroll_forever_option or show_default_desktop_notifications_option%}
 <form action="/json/ui_settings/change" method="post"
       class="form-horizontal ui-settings">{% csrf_token %}
   <div id="ui-settings" class="settings-section">
@@ -274,6 +274,7 @@
         features we're working on. Let us know what you think!
       </p>
       <div class="control-group">
+        {% if show_autoscroll_forever_option %}
         <div class="controls">
           <input type="checkbox" name="autoscroll_forever" id="autoscroll_forever"
                  {% if user_profile.autoscroll_forever %}
@@ -283,6 +284,20 @@
         <label for="autoscroll_forever" class="control-label">
           Always auto-scroll to new messages
         </label>
+        {% endif %}
+
+        {% if show_default_desktop_notifications_option %}
+        <div class="controls">
+          <input type="checkbox" name="default_desktop_notifications" id="default_desktop_notifications"
+                 {% if user_profile.default_desktop_notifications %}
+                 checked="yes"
+              {% endif %} />
+        </div>
+        <label for="default_desktop_notifications" class="control-label">
+          Enable desktop notifications for new streams
+        </label>
+        {% endif %}
+
       </div>
       <div class="control-group">
         <div class="controls ui-submission">

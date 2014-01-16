@@ -2403,6 +2403,45 @@ class SubscriptionAPITest(AuthedTestCase):
                                   {"stream": invalid_stream_name})
         self.assert_json_error(result, "Invalid characters in stream name")
 
+    def get_subscription(self, user_profile, stream_name):
+        stream = Stream.objects.get(realm=self.realm, name=stream_name)
+        return Subscription.objects.get(
+            user_profile=user_profile,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=stream.id,
+        )
+
+    def test_subscriptions_add_notification_default_true(self):
+        """
+        The user profile default_desktop_notifications is used when creating a
+        subscription.
+        """
+        invitee = "iago@zulip.com"
+        user_profile = get_user_profile_by_email(invitee)
+        user_profile.default_desktop_notifications = True
+        user_profile.save()
+        current_stream = self.get_streams(invitee)[0]
+        invite_streams = self.make_random_stream_names(current_stream)
+        self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
+        subscription = self.get_subscription(user_profile, invite_streams[0])
+        self.assertTrue(subscription.notifications)
+
+    def test_subscriptions_add_notification_default_false(self):
+        """
+        The user profile default_desktop_notifications is used when creating a
+        subscription.
+        """
+        invitee = "iago@zulip.com"
+        user_profile = get_user_profile_by_email(invitee)
+        user_profile.default_desktop_notifications = False
+        user_profile.save()
+        current_stream = self.get_streams(invitee)[0]
+        invite_streams = self.make_random_stream_names(current_stream)
+        self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
+        subscription = self.get_subscription(user_profile, invite_streams[0])
+        self.assertFalse(subscription.notifications)
+
+
 class GetOldMessagesTest(AuthedTestCase):
 
     def post_with_params(self, modified_params):
@@ -3064,7 +3103,7 @@ class ChangeSettingsTest(AuthedTestCase):
     def test_ui_settings(self):
         self.login("hamlet@zulip.com")
 
-        json_result = self.client.post("/json/ui_settings/change", {"autoscroll_forever": "true"})
+        json_result = self.client.post("/json/ui_settings/change", {"autoscroll_forever": "on"})
         self.assert_json_success(json_result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                 enable_desktop_notifications, True)
@@ -3073,6 +3112,16 @@ class ChangeSettingsTest(AuthedTestCase):
         self.assert_json_success(json_result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                 autoscroll_forever, False)
+
+        json_result = self.client.post("/json/ui_settings/change", {"default_desktop_notifications": "on"})
+        self.assert_json_success(json_result)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
+                default_desktop_notifications, True)
+
+        json_result = self.client.post("/json/ui_settings/change", {})
+        self.assert_json_success(json_result)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
+                default_desktop_notifications, False)
 
     def test_missing_params(self):
         """

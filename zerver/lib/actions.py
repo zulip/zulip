@@ -850,11 +850,18 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
     tornado_callbacks.send_notification(notice)
 
 def notify_for_streams_by_default(user_profile):
-    # For users in newer realms who are not CUSTOMER19, generate notifications for
-    # stream messages by default.
-    return (user_profile.realm.date_created > datetime.datetime(
-            2013, 9, 24, tzinfo=timezone.utc)) and \
-            (user_profile.realm.domain not in ["customer19.invalid", "customer25.invalid"])
+    # For users in older realms and CUSTOMER19, do not generate notifications
+    # for stream messages by default. Everyone else uses the setting on the
+    # user_profile.
+
+    if (user_profile.realm.domain in ["customer19.invalid", "customer25.invalid"] or
+        user_profile.realm.date_created <= datetime.datetime(2013, 9, 24,
+                                                             tzinfo=timezone.utc)):
+        return False
+
+    return user_profile.default_desktop_notifications
+
+
 
 def bulk_add_subscriptions(streams, users):
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
@@ -1321,6 +1328,10 @@ def do_change_autoscroll_forever(user_profile, autoscroll_forever, log=True):
 def do_change_enter_sends(user_profile, enter_sends):
     user_profile.enter_sends = enter_sends
     user_profile.save(update_fields=["enter_sends"])
+
+def do_change_default_desktop_notifications(user_profile, default_desktop_notifications):
+    user_profile.default_desktop_notifications = default_desktop_notifications
+    user_profile.save(update_fields=["default_desktop_notifications"])
 
 def set_default_streams(realm, stream_names):
     DefaultStream.objects.filter(realm=realm).delete()

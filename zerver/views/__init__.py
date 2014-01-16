@@ -37,7 +37,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
-    do_make_stream_private
+    do_make_stream_private, do_change_default_desktop_notifications
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
@@ -900,7 +900,8 @@ def home(request):
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
-                                   'show_autoscroll_forever_option': page_params["show_autoscroll_forever_option"]
+                                   'show_default_desktop_notifications_option': user_profile.realm.domain in ("customer13.invalid", "zulip.com",),
+                                   'show_autoscroll_forever_option': page_params["show_autoscroll_forever_option"],
                                    },
                                   context_instance=RequestContext(request))
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
@@ -1423,13 +1424,19 @@ def create_user_backend(request, user_profile, email=REQ, password=REQ,
 @has_request_variables
 def json_change_ui_settings(request, user_profile,
                             autoscroll_forever=REQ(converter=lambda x: x == "on",
-                                                              default=False)):
+                                                             default=False),
+                            default_desktop_notifications=REQ(converter=lambda x: x == "on",
+                                                                        default=False)):
 
     result = {}
 
     if user_profile.autoscroll_forever != autoscroll_forever:
         do_change_autoscroll_forever(user_profile, autoscroll_forever)
         result['autoscroll_forever'] = autoscroll_forever
+
+    if user_profile.default_desktop_notifications != default_desktop_notifications:
+        do_change_default_desktop_notifications(user_profile, default_desktop_notifications)
+        result['default_desktop_notifications'] = default_desktop_notifications
 
     return json_success(result)
 
