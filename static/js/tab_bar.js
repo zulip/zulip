@@ -22,8 +22,13 @@ function make_tab_data() {
         tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
     } else if (page_params.narrow !== undefined) {
         tabs.push(make_tab("Stream " + page_params.narrow_stream,
-                           hashchange.operators_to_hash(page_params.narrow[0]),
+                           hashchange.operators_to_hash([page_params.narrow[0]]),
                            page_params.narrow_stream, 'stream'));
+        if (page_params.narrow_topic !== undefined) {
+            tabs.push(make_tab("Topic " + page_params.narrow_topic,
+                               hashchange.operators_to_hash(page_params.narrow),
+                               null));
+        }
     } else {
         tabs.push(make_tab("Home", "#", "home", "root"));
     }
