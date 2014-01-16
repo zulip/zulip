@@ -86,6 +86,7 @@ function render(template_name, args) {
         var args = {
             "user": {
                 "is_active": true,
+                "is_active_human": true,
                 "email": user + '@zulip.com',
                 "full_name": user
             }
@@ -93,8 +94,15 @@ function render(template_name, args) {
         html += render('admin_user_list', args);
     });
     html += "</table>";
+
     var button = $(html).find("button:first");
     assert.equal(button.text().trim(), "Deactivate");
+    assert(button.hasClass("deactivate"));
+
+    button = $(html).find("button:last");
+    assert.equal(button.text().trim(), "Make admin");
+    assert(button.hasClass("make-admin"));
+
     global.write_test_output("admin_user_list.handlebars", html);
 }());
 
