@@ -257,7 +257,11 @@ exports.cancel = function () {
         // Never close the compose box in narrow embedded windows, but
         // at least clear the subject and unfade.
         compose_fade.clear_compose();
-        compose.subject("");
+        if (page_params.narrow_topic !== undefined) {
+            compose.subject(page_params.narrow_topic);
+        } else {
+            compose.subject("");
+        }
         return;
     }
     hide_box();
@@ -906,7 +910,11 @@ $(function () {
     });
 
     if (page_params.narrow !== undefined) {
-        compose.start("stream", {});
+        if (page_params.narrow_topic !== undefined) {
+            compose.start("stream", {subject: page_params.narrow_topic});
+        } else {
+            compose.start("stream", {});
+        }
     }
 });
 

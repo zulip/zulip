@@ -1115,7 +1115,7 @@ function load_old_messages(opts) {
         data.narrow = JSON.stringify(operators);
     }
     if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
-        data.narrow = JSON.stringify([["stream", page_params.narrow_stream]]);
+        data.narrow = JSON.stringify(page_params.narrow);
     }
 
     channel.post({

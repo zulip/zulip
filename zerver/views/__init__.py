@@ -754,6 +754,7 @@ def home(request):
 
     narrow = []
     narrow_stream = None
+    narrow_topic = request.GET.get("topic")
     if request.GET.get("narrow"):
         try:
             narrow_stream = get_stream(request.GET.get("narrow"), user_profile.realm)
@@ -762,6 +763,8 @@ def home(request):
             narrow = [["stream", narrow_stream.name]]
         except Exception:
             logging.exception("Narrow parsing")
+        if narrow_topic is not None:
+            narrow.append(["topic", narrow_topic])
 
     register_ret = do_events_register(user_profile, request.client,
                                       apply_markdown=True, narrow=narrow)
@@ -868,6 +871,8 @@ def home(request):
         except IndexError:
             initial_pointer = -1
         page_params["narrow_stream"] = narrow_stream.name
+        if narrow_topic is not None:
+            page_params["narrow_topic"] = narrow_topic
         page_params["narrow"] = narrow
         page_params["max_message_id"] = initial_pointer
         page_params["initial_pointer"] = initial_pointer
