@@ -137,6 +137,15 @@ if DEPLOYED:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE    = True
 
+try:
+    # For get_updates hostname sharding
+    domain = config_file.get('django', 'cookie_domain')
+    SESSION_COOKIE_DOMAIN = '.' + domain
+    CSRF_COOKIE_DOMAIN    = '.' + domain
+except ConfigParser.Error:
+    # Failing here is OK
+    pass
+
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
 # cookie will slow down some attackers.
