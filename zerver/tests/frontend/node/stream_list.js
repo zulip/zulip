@@ -1,5 +1,7 @@
 var assert = require('assert');
 
+set_global('$', function () {});
+
 add_dependencies({
     _: 'third/underscore/underscore',
     Dict: 'js/dict',
@@ -7,18 +9,25 @@ add_dependencies({
     templates: 'js/templates',
     muting: 'js/muting',
     narrow: 'js/narrow',
+    stream_color: 'js/stream_color',
+    stream_data: 'js/stream_data',
+    subs: 'js/subs',
     hashchange: 'js/hashchange'
 });
 
 set_global('recent_subjects', new global.Dict());
 set_global('unread', {});
-set_global('$', function () {});
 
 var stream_list = require('js/stream_list.js');
 
 global.$ = require('jquery');
+$.fn.expectOne = function () {
+    assert(this.length === 1);
+    return this;
+};
 
 global.use_template('sidebar_subject_list');
+global.use_template('stream_sidebar_row');
 
 (function test_build_subject_list() {
     var stream = "devel";
@@ -38,4 +47,41 @@ global.use_template('sidebar_subject_list');
 
     var topic = $(topic_html).find('a').text().trim();
     assert.equal(topic, 'coding');
+}());
+
+(function test_add_stream_to_sidebar() {
+    // Make a couple calls to add_stream_to_sidebar() and make sure they
+    // generate the right markup as well as play nice with get_stream_li().
+
+    var stream_filters = $('<ul id="stream_filters">');
+    $("body").append(stream_filters);
+
+    var stream = "devel";
+
+    var sub = {
+        name: 'devel',
+        color: 'blue',
+        id: 5
+    };
+    global.stream_data.add_sub('devel', sub);
+
+    sub = {
+        name: 'social',
+        color: 'green',
+        id: 6
+    };
+    global.stream_data.add_sub('social', sub);
+
+    stream_list.add_stream_to_sidebar('devel');
+    stream_list.add_stream_to_sidebar('social');
+
+    var html = $("body").html();
+    global.write_test_output("test_add_stream_to_sidebar", html);
+
+    var li = stream_list.get_stream_li('social');
+    assert.equal(li.attr('data-name'), 'social');
+    assert.equal(li.find('.streamlist_swatch').css('background-color'), 'green');
+    assert.equal(li.find('a.subscription_name').text().trim(), 'social');
+    assert(li.find('.arrow').find("i").hasClass("icon-vector-chevron-down"));
+
 }());

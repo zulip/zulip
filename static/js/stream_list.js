@@ -149,6 +149,16 @@ function add_narrow_filter(name, type) {
     return build_narrow_filter(name, type);
 }
 
+// This is a testing shim for now, but the goal is to replace
+// add_narrow_filter() with this API.
+exports.add_stream_to_sidebar = function (stream_name) {
+    return add_narrow_filter(stream_name, 'stream');
+};
+
+exports.get_stream_li = function (stream_name) {
+    return get_filter_li('stream', stream_name);
+};
+
 exports.get_count = function (type, name) {
     return get_filter_li(type, name).find('.count .value').text();
 };
