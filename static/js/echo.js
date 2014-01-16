@@ -5,6 +5,7 @@ var exports = {};
 var waiting_for_id = {};
 var waiting_for_ack = {};
 var realm_filter_map = {};
+var home_view_loaded = false;
 
 // Regexes that match some of our common bugdown markup
 var bugdown_re = [
@@ -76,18 +77,16 @@ function add_message_flags(message) {
     message.flags = flags;
 }
 
-exports.try_deliver_locally = function try_deliver_locally(message_request) {
+function get_next_local_id() {
     var local_id_increment = 0.01;
-    var next_local_id = truncate_precision(all_msg_list.last().id + local_id_increment);
-
-    if (next_local_id % 1 === 0) {
-        blueslip.error("Incremented local id to next integer---100 local messages queued");
+    var latest = page_params.max_message_id;
+    if (typeof all_msg_list !== 'undefined') {
+        latest = all_msg_list.last().id;
     }
+    return truncate_precision(latest + local_id_increment);
+}
 
-    if (exports.contains_bugdown(message_request.content)) {
-        return undefined;
-    }
-
+function insert_local_message(message_request, local_id) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
@@ -100,7 +99,7 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
     message.sender_full_name = page_params.fullname;
     message.avatar_url = page_params.avatar_url;
     message.timestamp = new XDate().getTime() / 1000;
-    message.local_id = next_local_id;
+    message.local_id = local_id;
     message.id = message.local_id;
     add_message_flags(message);
 
@@ -123,9 +122,21 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
     }
 
     insert_new_messages([message]);
-
-    blueslip.debug("Generated local id " + message.local_id);
     return message.local_id;
+}
+
+exports.try_deliver_locally = function try_deliver_locally(message_request) {
+    var next_local_id = get_next_local_id();
+    if (next_local_id % 1 === 0) {
+        blueslip.error("Incremented local id to next integer---100 local messages queued");
+        return undefined;
+    }
+
+    if (exports.contains_bugdown(message_request.content)) {
+        return undefined;
+    }
+
+    return insert_local_message(message_request, next_local_id);
 };
 
 exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
@@ -401,6 +412,41 @@ $(function () {
     on_failed_action('remove', abort_message);
     on_failed_action('refresh', resend_message);
     on_failed_action('edit', edit_failed_message);
+
+    $(document).on('home_view_loaded.zulip', function () {
+        home_view_loaded = true;
+    });
+});
+
+$(document).on('socket_loaded_requests.zulip', function (event, data) {
+    var msgs_to_insert = [];
+
+    var next_local_id = get_next_local_id();
+    _.each(data.requests, function (socket_msg, key) {
+        var msg = socket_msg.msg;
+        // Check for any message objects, then insert them locally
+        if (msg.stream === undefined || msg.local_id === undefined) {
+            return;
+        }
+        msg.local_id = next_local_id;
+        msg.queue_id = page_params.event_queue_id;
+
+        next_local_id = truncate_precision(next_local_id + 0.01);
+        msgs_to_insert.push(msg);
+    });
+
+    function echo_pending_messages() {
+        _.each(msgs_to_insert, function (msg) {
+            insert_local_message(msg, msg.local_id);
+        });
+    }
+    if (home_view_loaded) {
+        echo_pending_messages();
+    } else {
+        $(document).on('home_view_loaded.zulip', function () {
+            echo_pending_messages();
+        });
+    }
 });
 
 return exports;
