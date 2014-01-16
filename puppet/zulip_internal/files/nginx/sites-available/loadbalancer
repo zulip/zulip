@@ -22,8 +22,8 @@ server {
 }
 
 server {
-    # This stanza covers api, www, zephyr, and bare humbughq.com
-    listen www.humbughq.com:443;
+    listen www.zulip.com:443;
+    server_name www.humbughq.com humbughq.com;
 
     ssl on;
     ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
@@ -58,7 +58,7 @@ server {
 
 server {
     # This stanza also covers bare zulip.com
-    listen www.zulip.com:443;
+    listen www.zulip.com:443 default_server;
 
     ssl on;
     ssl_certificate /etc/ssl/certs/www.zulip.com.combined-chain.crt;
