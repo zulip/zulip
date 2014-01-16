@@ -125,7 +125,7 @@ exports.set_in_home_view = function (stream, in_home) {
     }
 };
 
-function build_narrow_filter(name, type) {
+function build_narrow_filter(name) {
     var args = {name: name,
                 id: subs.stream_id(name),
                 uri: narrow.by_stream_uri(name),
@@ -135,7 +135,7 @@ function build_narrow_filter(name, type) {
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
-    $("#" + type + "_filters").append(list_item);
+    $("#stream_filters").append(list_item);
     return list_item;
 }
 
@@ -144,7 +144,7 @@ exports.add_stream_to_sidebar = function (stream_name) {
         // already exists
         return false;
     }
-    return build_narrow_filter(stream_name, 'stream');
+    return build_narrow_filter(stream_name);
 };
 
 exports.get_stream_li = function (stream_name) {
@@ -370,7 +370,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 };
 
 exports.rename_stream = function (sub) {
-    sub.sidebar_li = build_narrow_filter(sub.name, "stream");
+    sub.sidebar_li = build_narrow_filter(sub.name);
     exports.build_stream_list(); // big hammer
 };
 
