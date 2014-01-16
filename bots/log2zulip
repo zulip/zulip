@@ -43,7 +43,9 @@ def process_lines(raw_lines, file_name):
             continue
         lines.append(line)
 
-    if len(lines) > 10:
+    if len(lines) == 0:
+        return
+    elif len(lines) > 10:
         send_log_zulip(file_name, len(lines), lines[0:3], extra=", examples include")
     else:
         send_log_zulip(file_name, len(lines), lines)
