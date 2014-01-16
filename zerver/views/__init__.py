@@ -1581,13 +1581,20 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 def json_report_send_time(request, user_profile,
                           time=REQ(converter=to_non_negative_int),
                           received=REQ(converter=to_non_negative_int, default="(unknown)"),
-                          displayed=REQ(converter=to_non_negative_int, default="(unknown)")):
-    request._log_data["extra"] = "[%sms/%sms/%sms]" % (time, received, displayed)
+                          displayed=REQ(converter=to_non_negative_int, default="(unknown)"),
+                          locally_echoed=REQ(converter=json_to_bool, default=False),
+                          rendered_content_disparity=REQ(converter=json_to_bool, default=False)):
+    request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
+        % (time, received, displayed, locally_echoed, rendered_content_disparity)
     statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), time)
     if received != "(unknown)":
         statsd.timing("endtoend.receive_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), received)
     if displayed != "(unknown)":
         statsd.timing("endtoend.displayed_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), displayed)
+    if locally_echoed:
+        statsd.incr('locally_echoed')
+    if rendered_content_disparity:
+        statsd.incr('render_disparity')
     return json_success()
 
 @authenticated_json_post_view

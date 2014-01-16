@@ -379,12 +379,17 @@ function send_message_ajax(request, success, error) {
     });
 }
 
-function report_send_time(send_time, receive_time, display_time) {
+function report_send_time(send_time, receive_time, display_time, locally_echoed, rendered_changed) {
+    var data = {"time": send_time.toString(),
+                "received": receive_time.toString(),
+                "displayed": display_time.toString(),
+                "locally_echoed": locally_echoed};
+    if (locally_echoed) {
+        data.rendered_content_disparity = rendered_changed;
+    }
     channel.post({
         url: '/json/report_send_time',
-        data: {"time": send_time.toString(),
-               "received": receive_time.toString(),
-               "displayed": display_time.toString()}
+        data: data
     });
 }
 
@@ -416,7 +421,9 @@ function maybe_report_send_times(message_id) {
     }
     report_send_time(data.send_finished - data.start,
                      data.received - data.start,
-                     data.displayed - data.start);
+                     data.displayed - data.start,
+                     data.locally_echoed,
+                     data.rendered_content_disparity || false);
 }
 
 exports.mark_end_to_end_receive_time = function (message_id) {
@@ -435,7 +442,14 @@ exports.mark_end_to_end_display_time = function (message_id) {
     maybe_report_send_times(message_id);
 };
 
-function process_send_time(message_id, start_time) {
+exports.mark_rendered_content_disparity = function (message_id, changed) {
+    if (exports.send_times_data[message_id] === undefined) {
+        exports.send_times_data[message_id] = {};
+    }
+    exports.send_times_data[message_id].rendered_content_disparity = changed;
+};
+
+function process_send_time(message_id, start_time, locally_echoed) {
     var send_finished = new Date();
     var send_time = (send_finished - start_time);
     if (feature_flags.log_send_times) {
@@ -449,6 +463,7 @@ function process_send_time(message_id, start_time) {
     }
     exports.send_times_data[message_id].start = start_time;
     exports.send_times_data[message_id].send_finished = send_finished;
+    exports.send_times_data[message_id].locally_echoed  = locally_echoed;
     maybe_report_send_times(message_id);
 }
 
@@ -462,12 +477,12 @@ function clear_compose_box() {
     ui.resize_bottom_whitespace();
 }
 
-exports.send_message_success = function (local_id, message_id, start_time) {
+exports.send_message_success = function (local_id, message_id, start_time, locally_echoed) {
     if (! feature_flags.local_echo) {
         clear_compose_box();
     }
 
-    process_send_time(message_id, start_time);
+    process_send_time(message_id, start_time, locally_echoed);
 
     if (feature_flags.local_echo) {
         echo.reify_message_id(local_id, message_id);
@@ -482,6 +497,7 @@ exports.send_message_success = function (local_id, message_id, start_time) {
 };
 
 exports.transmit_message = function (request, success, error) {
+    delete exports.send_times_data[request.id];
     if (feature_flags.use_socket) {
         send_message_socket(request, success, error);
     } else {
@@ -512,7 +528,7 @@ function send_message(request) {
     }
 
     function success(data) {
-        exports.send_message_success(local_id, data.id, start_time);
+        exports.send_message_success(local_id, data.id, start_time, local_id !== undefined);
     }
 
     function error(response) {

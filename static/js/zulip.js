@@ -707,6 +707,15 @@ function add_message_metadata(message) {
     return message;
 }
 
+function report_as_received(message) {
+    if (message.sent_by_me) {
+        compose.mark_end_to_end_receive_time(message.id);
+        setTimeout(function () {
+            compose.mark_end_to_end_display_time(message.id);
+        }, 0);
+    }
+}
+
 function add_messages(messages, msg_list, opts) {
     if (!messages) {
         return;
@@ -721,11 +730,8 @@ function add_messages(messages, msg_list, opts) {
 
     if (msg_list === home_msg_list && opts.messages_are_new) {
         _.each(messages, function (message) {
-            if (message.sent_by_me) {
-                compose.mark_end_to_end_receive_time(message.id);
-                setTimeout(function () {
-                    compose.mark_end_to_end_display_time(message.id);
-                }, 0);
+            if (message.local_id === undefined) {
+                report_as_received(message);
             }
         });
     }

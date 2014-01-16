@@ -46,7 +46,7 @@ function resend_message(message, row) {
         var message_id = data.id;
 
         retry_spinner.toggleClass('rotating', false);
-        compose.send_message_success(message.local_id, message_id, start_time);
+        compose.send_message_success(message.local_id, message_id, start_time, true);
 
         // Resend succeeded, so mark as no longer failed
         all_msg_list.get(message_id).failed_request = false;
@@ -177,6 +177,7 @@ exports.process_from_server = function process_from_server(messages) {
             if (client_message.content !== message.content) {
                 client_message.content = message.content;
                 updated = true;
+                compose.mark_rendered_content_disparity(message.id, true);
             }
             // If a PM was sent to an out-of-realm address,
             // we didn't have the full person object originally,
@@ -195,6 +196,7 @@ exports.process_from_server = function process_from_server(messages) {
                 }
             }
             locally_processed_ids.push(client_message.id);
+            report_as_received(client_message);
             delete waiting_for_ack[client_message.id];
             return false;
         }

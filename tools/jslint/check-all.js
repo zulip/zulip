@@ -65,7 +65,7 @@ var globals =
     + ' send_summarize_in_stream'
     + ' suppress_unread_counts'
     + ' msg_metadata_cache'
-    + ' get_updates_xhr get_updates_timeout'
+    + ' get_updates_xhr get_updates_timeout report_as_received'
     + ' insert_new_messages process_message_for_recent_subjects reify_person'
     ;
 
