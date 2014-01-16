@@ -139,20 +139,12 @@ function build_narrow_filter(name, type) {
     return list_item;
 }
 
-// Adds the sidebar stream name that, when clicked,
-// narrows to that stream
-function add_narrow_filter(name, type) {
-    if (get_filter_li(type, name).length) {
+exports.add_stream_to_sidebar = function (stream_name) {
+    if (exports.get_stream_li(stream_name).length) {
         // already exists
         return false;
     }
-    return build_narrow_filter(name, type);
-}
-
-// This is a testing shim for now, but the goal is to replace
-// add_narrow_filter() with this API.
-exports.add_stream_to_sidebar = function (stream_name) {
-    return add_narrow_filter(stream_name, 'stream');
+    return build_narrow_filter(stream_name, 'stream');
 };
 
 exports.get_stream_li = function (stream_name) {
@@ -435,7 +427,7 @@ $(function () {
     $(document).on('sub_obj_created.zulip', function (event) {
         if (event.sub.subscribed) {
             var stream_name = event.sub.name;
-            var li = add_narrow_filter(stream_name, "stream");
+            var li = exports.add_stream_to_sidebar(stream_name);
             if (li) {
                 event.sub.sidebar_li = li;
             }
@@ -444,7 +436,7 @@ $(function () {
 
     $(document).on('subscription_add_done.zulip', function (event) {
         var stream_name = event.sub.name;
-        var li = add_narrow_filter(stream_name, "stream");
+        var li = exports.add_stream_to_sidebar(stream_name);
         if (li) {
             event.sub.sidebar_li = li;
         }
