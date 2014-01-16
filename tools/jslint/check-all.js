@@ -44,6 +44,9 @@ var globals =
     // echo.js
     + ' echo'
 
+    // localstorage.js
+    + ' localstorage'
+
     // zulip.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'
     + ' add_messages'
