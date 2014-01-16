@@ -3,7 +3,7 @@ var feature_flags = (function () {
 var exports = {};
 
 // Helpers
-var internal_24_hour_people= _.contains([],
+var special_24_hour_people= _.contains([],
     page_params.email);
 
 var zulip_mit_emails = [];
@@ -27,7 +27,7 @@ exports.collect_send_times = false;
 // Permanent realm-specific stuff:
 exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
 
-exports.twenty_four_hour_time = internal_24_hour_people || iceland;
+exports.twenty_four_hour_time = special_24_hour_people || iceland;
 
 exports.mandatory_topics = _.contains([
     'customer7.invalid'
