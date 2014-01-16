@@ -28,6 +28,7 @@ $.fn.expectOne = function () {
 
 global.use_template('sidebar_subject_list');
 global.use_template('stream_sidebar_row');
+global.use_template('stream_privacy');
 
 (function test_build_subject_list() {
     var stream = "devel";

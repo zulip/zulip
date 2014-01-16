@@ -17,9 +17,10 @@
 
       <div class="count"><div class="value"></div></div>
 
-      {{#if invite_only}}
-      <i class="icon-vector-lock {{dark_background}}"></i>
-      {{/if}}
+      <span class="stream-privacy">
+        {{partial "stream_privacy"}}
+      </span>
+
     </div>
     <span class="arrow stream-sidebar-arrow"><i class="icon-vector-chevron-down"></i></span>
 
