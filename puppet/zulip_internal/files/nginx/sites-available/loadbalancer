@@ -4,6 +4,12 @@ upstream staging {
     keepalive 10000;
 }
 
+upstream alpha {
+    server alpha0.zulip.net:443;
+
+    keepalive 10000;
+}
+
 upstream prod {
     server prod0.zulip.net:443;
 
@@ -139,20 +145,44 @@ server {
 
     ssl on;
     ssl_certificate /etc/ssl/certs/customer29.zulip.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
+    ssl_certificate_key /etc/ssl/private/production-zulip.key;
 
     location / {
-        proxy_pass https://prod;
+        proxy_pass https://alpha;
         include /etc/nginx/zulip-include/proxy;
     }
 
     location /sockjs {
-        proxy_pass https://prod;
+        proxy_pass https://alpha;
         include /etc/nginx/zulip-include/location-sockjs;
     }
 
     location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod;
+        proxy_pass https://alpha;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+}
+
+server {
+    listen customer29.zulip.com:443;
+    server_name *.e.customer29.zulip.com;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/wildcard-e.customer29.zulip.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/production-zulip.key;
+
+    location / {
+        proxy_pass https://alpha;
+        include /etc/nginx/zulip-include/proxy;
+    }
+
+    location /sockjs {
+        proxy_pass https://alpha;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://alpha;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
