@@ -755,9 +755,9 @@ def home(request):
     narrow = []
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
-    if request.GET.get("narrow"):
+    if request.GET.get("stream"):
         try:
-            narrow_stream = get_stream(request.GET.get("narrow"), user_profile.realm)
+            narrow_stream = get_stream(request.GET.get("stream"), user_profile.realm)
             assert(narrow_stream is not None)
             assert(narrow_stream.is_public())
             narrow = [["stream", narrow_stream.name]]
