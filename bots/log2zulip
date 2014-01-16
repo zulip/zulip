@@ -39,6 +39,8 @@ def process_lines(raw_lines, file_name):
     lines = []
     for line in raw_lines:
         # Add any filtering or modification code here
+        if re.match(".*upstream timed out.*while reading upstream.*", line):
+            continue
         lines.append(line)
 
     if len(lines) > 10:
