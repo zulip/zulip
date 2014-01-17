@@ -723,7 +723,8 @@ td.pointer {
     padding: 3px 4px 2px 4px;
     margin-left: 10px;
     font-weight: normal;
-    height: 16px;
+    height: 17px;
+    line-height: 17px;
     border-top-color: rgba(0, 0, 0, 0);
     border-right-color: rgba(0, 0, 0, 0);
     border-bottom-color: rgba(0, 0, 0, 0);
@@ -732,6 +733,15 @@ td.pointer {
     border-width: 0px;
     position: relative;
     text-decoration: none;
+}
+
+.stream_label .invite-stream-icon {
+    font-size: 12px;
+    line-height: 17px;
+}
+
+.message_list .stream_label {
+    margin-left: 0px;
 }
 
 .stream_label:hover {
@@ -763,12 +773,25 @@ td.pointer {
    width:  0px;
    position: absolute;
    pointer-events: none;
-   margin-top: -11px;
+   margin-top: -14px;
    border-style: solid;
-   border-width: 11px 0 11px 5px;
+   border-width: 14px 0 14px 6px;
    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
    z-index: 1;
    -moz-transform: scale(.9999);
+}
+
+.stream_topic {
+    background-color: #e2e2e2;
+    display: inline-block;
+    padding: 3px 4px 2px 10px;
+    margin-left: -5px;
+    height: 17px;
+    line-height: 17px;
+}
+
+.stream-topic {
+    line-height: 17px;
 }
 
 .summary_row .message_header{
@@ -1257,6 +1280,31 @@ div.focused_table {
 .message_edit_content {
     line-height: 18px;
 }
+
+.topic_edit {
+    display: none;
+    line-height: 22px;
+}
+
+#message_edit_topic {
+    height: 20px;
+    margin-top: -1px;
+    line-height: 0px;
+    font-size: 14px;
+    display: inline-block;
+    padding: 0px;
+    border-radius: 0px;
+    border: 1px solid #afbfca;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+#message_edit_topic:focus {
+    box-shadow: none;
+    outline: none;
+    border-color: #727d84;
+}
+
 .message_edit_topic_propagate{
     display: inline-block;
     width: 400px;
@@ -2468,6 +2516,30 @@ div.floating_recipient {
     color: #fff;
 }
 
+button.primary {
+    background-color: #89a0b3;
+    padding: 2px;
+    color: #fff;
+    border: none;
+    border-radius: 0px;
+}
+
+button.primary:hover {
+    background-color: #91aabe;
+}
+
+button.primary:focus {
+    outline: none;
+}
+
+button.topic_edit_save,
+button.topic_edit_cancel {
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    margin-top: -1px;
+}
+
 .red-button {
     background-color: #cc0000;
     color: #ffffff;
@@ -3093,7 +3165,14 @@ div.edit_bot {
 }
 
 #topic_edit_form {
-    display: inline;
+    display: inline-block;
+    margin: 0 0 10px 0;
+    height: 22px;
+    background: #e2e2e2;
+    padding-left: 20px;
+    padding-right: 3px;
+    line-height: 22px;
+    margin-left: -15px;
 }
 
 .message_edit_notice {
