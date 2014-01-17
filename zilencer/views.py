@@ -16,10 +16,22 @@ from error_notify import notify_server_error, notify_browser_error
 from django.core.mail import send_mail
 from django.conf import settings
 import time
+import redis
 
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
-FEEDBACK_USER_TIMES = {}
+client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+
+def has_enough_time_expired_since_last_message(sender_email, min_delay):
+    # This function returns a boolean, but it also has the side effect
+    # of noting that a new message was received.
+    key = 'zilencer:feedback:%s' % (sender_email,)
+    t = int(time.time())
+    last_time = client.getset(key, t)
+    if last_time is None:
+        return True
+    delay = t - int(last_time)
+    return delay > min_delay
 
 def get_ticket_number():
     fn = '/var/tmp/.feedback-bot-ticket-number'
@@ -42,12 +54,13 @@ def submit_feedback(request, deployment, message=REQ(converter=json_to_dict)):
 
     content = ''
     sender_email = message['sender_email']
-    t = time.time()
 
     # We generate ticket numbers if it's been more than a few minutes
     # since their last message.  This avoids some noise when people use
     # enter-send.
-    if t - FEEDBACK_USER_TIMES.get(sender_email, 0) > 180:
+    need_ticket = has_enough_time_expired_since_last_message(sender_email, 180)
+
+    if need_ticket:
         ticket_number = get_ticket_number()
         content += '\n~~~'
         content += '\nticket Z%03d (@support please ack)' % (ticket_number,)
@@ -59,7 +72,6 @@ def submit_feedback(request, deployment, message=REQ(converter=json_to_dict)):
         content += '\n\n'
 
     content += message['content']
-    FEEDBACK_USER_TIMES[sender_email] = t
 
     internal_send_message("feedback@zulip.com", "stream", "support", subject, content)
 
