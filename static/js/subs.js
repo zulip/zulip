@@ -837,6 +837,8 @@ $(function () {
 
         html = templates.render('change_stream_privacy', sub);
         sub_row.find('.change-stream-privacy').expectOne().html(html);
+
+        stream_list.redraw_stream_privacy(sub.name);
     }
 
     function change_stream_privacy(e, url, success_message, error_message, invite_only) {
