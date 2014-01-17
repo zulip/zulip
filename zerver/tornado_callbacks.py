@@ -122,12 +122,16 @@ def process_new_message(data):
         received_pm = message.recipient.type in (Recipient.PERSONAL, Recipient.HUDDLE) and \
                         user_profile_id != message.sender.id
         mentioned = 'mentioned' in flags
-        if (received_pm or mentioned) and receiver_is_idle(user_profile_id, realm_presences):
+        idle = receiver_is_idle(user_profile_id, realm_presences)
+        always_push_notify = user_data.get('always_push_notify', False)
+        if (received_pm or mentioned) and (idle or always_push_notify):
             event = build_offline_notification_event(user_profile_id, message.id)
 
-            # We require RabbitMQ to do this, as we can't call the email handler
-            # from the Tornado process. So if there's no rabbitmq support do nothing
-            queue_json_publish("missedmessage_emails", event, lambda event: None)
+            # Don't send missed message emails if always_push_notify is True
+            if idle:
+                # We require RabbitMQ to do this, as we can't call the email handler
+                # from the Tornado process. So if there's no rabbitmq support do nothing
+                queue_json_publish("missedmessage_emails", event, lambda event: None)
             queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
 
     for client_data in send_to_clients.itervalues():

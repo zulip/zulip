@@ -248,6 +248,11 @@ def log_message(message):
     if not message.sending_client.name.startswith("test:"):
         log_event(message.to_log_dict())
 
+def always_push_notify(user):
+    # robinhood.io asked to get push notifications for **all** notifyable
+    # messages, regardless of idle status
+    return user.realm.domain in ['zulip.com', 'robinhood.io']
+
 # Helper function. Defaults here are overriden by those set in do_send_messages
 def do_send_message(message, rendered_content = None, no_log = False, stream = None, local_id = None):
     return do_send_messages([{'message': message,
@@ -301,9 +306,10 @@ def do_send_messages(messages):
             fields = [
                 'user_profile__id',
                 'user_profile__email',
-                'user_profile__is_active'
+                'user_profile__is_active',
+                'user_profile__realm__domain'
             ]
-            query = Subscription.objects.select_related("user_profile").only(*fields).filter(
+            query = Subscription.objects.select_related("user_profile", "user_profile__realm").only(*fields).filter(
                 recipient=message['message'].recipient, active=True)
             message['recipients'] = [s.user_profile for s in query]
         else:
@@ -362,8 +368,10 @@ def do_send_messages(messages):
             type         = 'new_message',
             message      = message['message'].id,
             presences    = presences,
-            users        = [{'id': user.id, 'flags': user_flags.get(user.id, [])}
-                             for user in message['active_recipients']])
+            users        = [{'id': user.id,
+                             'flags': user_flags.get(user.id, []),
+                             'always_push_notify': always_push_notify(user)}
+                            for user in message['active_recipients']])
         if message['message'].recipient.type == Recipient.STREAM:
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
