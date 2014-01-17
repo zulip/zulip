@@ -1,5 +1,8 @@
 /*global Dict */
 var assert = require('assert');
+var path = require('path');
+var fs = require('fs');
+
 add_dependencies({
     _: 'third/underscore/underscore.js',
     marked: 'third/marked/lib/marked.js',
@@ -31,6 +34,8 @@ set_global('page_params', {
 set_global('people_by_name_dict', Dict.from({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}}));
 
 var echo = require('js/echo.js');
+
+var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fixtures/bugdown-data.json'), 'utf8', 'r'));
 
 (function test_bugdown_detection() {
 
@@ -76,6 +81,20 @@ var echo = require('js/echo.js');
     markup.forEach(function (content) {
         assert.equal(echo.contains_bugdown(content), true);
     });
+}());
+
+(function test_marked_shared() {
+  var tests = bugdown_data.regular_tests;
+  tests.forEach(function (test) {
+    console.log("Doing " + test.name);
+    var output = echo.apply_markdown(test.input);
+
+    if (test.bugdown_matches_marked) {
+      assert.equal(test.expected_output, output);
+    } else {
+      assert.notEqual(test.expected_output, output);
+    }
+  });
 }());
 
 (function test_marked() {

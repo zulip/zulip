@@ -1,0 +1,489 @@
+{
+  "regular_tests": [
+    {
+      "name": "codeblock_hilite",
+      "input": "Hamlet said:\n~~~~.python\ndef speak(self):\n    x = 1\n~~~~",
+      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span class=\"k\">def</span> <span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</pre></div>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "basic_paragraph",
+      "input": "test_input",
+      "expected_output": "<p>test_input</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "codeblock_multiline",
+      "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n~~~~\nAnd all was good.",
+      "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</pre></div>\n\n\n<p>And all was good.</p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "codeblock_backticks",
+      "input": "\n```\nfenced code\n```\n\n```inline code```\n",
+      "expected_output": "<div class=\"codehilite\"><pre>fenced code\n</pre></div>\n\n\n<p><code>inline code</code></p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "hanging_multi_codeblock",
+      "input": "Hamlet said:\n~~~~\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n~~~~\n\nThen he mentioned ````y = 4 + x**2```` and\n~~~~\ndef foobar(self):\n    return self.baz()",
+      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</pre></div>\n\n\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre>def foobar(self):\n    return self.baz()\n</pre></div>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "fenced_quote",
+      "input": "Hamlet said:\n~~~ quote\nTo be or **not** to be.\n\nThat is the question\n~~~",
+      "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>To be or <strong>not</strong> to be.</p>\n<p>That is the question</p>\n</blockquote>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "fenced_nested_quote",
+      "input": "Hamlet said:\n~~~ quote\nPolonius said:\n> This above all: to thine ownself be true,\nAnd it must follow, as the night the day,\nThou canst not then be false to any man.\n\nWhat good advice!\n~~~",
+      "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Polonius said:</p>\n<blockquote>\n<p>This above all: to thine ownself be true,<br>\nAnd it must follow, as the night the day,<br>\nThou canst not then be false to any man.</p>\n</blockquote>\n<p>What good advice!</p>\n</blockquote>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "complexly_nested_quote",
+      "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` .py\ndef hello(): print 'hello\n```\nThey would prefer:\n~~~ .rb\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n``` .sh\necho \"hello\n\"\n```\n~~~",
+      "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span class=\"k\">def</span> <span class=\"nf\">hello</span><span class=\"p\">():</span> <span class=\"k\">print</span> <span class=\"s\">&#39;hello</span>\n</pre></div>\n\n\n<p>They would prefer:</p>\n<div class=\"codehilite\"><pre><span class=\"k\">def</span> <span class=\"nf\">hello</span><span class=\"p\">()</span>\n  <span class=\"nb\">puts</span> <span class=\"s1\">&#39;hello&#39;</span>\n<span class=\"k\">end</span>\n</pre></div>\n\n\n<p>Please advise.</p>\n</blockquote>\n<p>She said:</p>\n<blockquote>\n<p>Just send them this:</p>\n<div class=\"codehilite\"><pre><span class=\"nb\">echo</span> <span class=\"s2\">&quot;hello</span>\n<span class=\"s2\">&quot;</span>\n</pre></div>\n\n\n</blockquote>\n</blockquote>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "dangerous_block",
+      "input": "xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\"xxxx xxxx\\xxxxx\\xxxxxx\"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)```\n\nxxxxxxx'x xxxx xxxxxxxxxx ```'xxxx'```, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?",
+      "expected_output": "<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n<p><code>\"xxxx xxxx\\xxxxx\\xxxxxx\"</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx'x xxxx xxxxxxxxxx <code>'xxxx'</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "dangerous_block",
+      "input": "``` one ```\n\n``` two ```\n\n~~~~\nx = 1",
+      "expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<div class=\"codehilite\"><pre>x = 1\n</pre></div>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "ulist_standard",
+      "input": "Some text with a list:\n\n* One item\n* Two items\n* Three items",
+      "expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "ulist_hanging",
+      "input": "Some text with a hanging list:\n* One item\n* Two items\n* Three items",
+      "expected_output": "<p>Some text with a hanging list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "ulist_hanging_mixed",
+      "input": "Plain list\n\n* Alpha\n\n* Beta\n\nThen hang it off:\n* Ypsilon\n* Zeta",
+      "expected_output": "<p>Plain list</p>\n<ul>\n<li>\n<p>Alpha</p>\n</li>\n<li>\n<p>Beta</p>\n</li>\n</ul>\n<p>Then hang it off:</p>\n<ul>\n<li>Ypsilon</li>\n<li>Zeta</li>\n</ul>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "ulist_hanging_multi",
+      "input": "Plain list\n* Alpha\n* Beta\n\nAnd Again:\n* A\n* B\n* C\n\nOnce more for feeling:\n* Q\n* E\n* D",
+      "expected_output": "<p>Plain list</p>\n<ul>\n<li>Alpha</li>\n<li>Beta</li>\n</ul>\n<p>And Again:</p>\n<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>\n<p>Once more for feeling:</p>\n<ul>\n<li>Q</li>\n<li>E</li>\n<li>D</li>\n</ul>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "ulist_codeblock",
+      "input": "~~~\nint x = 3\n* 4;\n~~~",
+      "expected_output": "<div class=\"codehilite\"><pre>int x = 3\n* 4;\n</pre></div>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "malformed_fence",
+      "input": "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~",
+      "expected_output": "<p>~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "underscore_disabled",
+      "input": "_foo_",
+      "expected_output": "<p>_foo_</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "star_disabled",
+      "input": "*foo*",
+      "expected_output": "<p>*foo*</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "underscore_strong_disabled",
+      "input": "__foo__",
+      "expected_output": "<p>__foo__</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "star_strong",
+      "input": "**foo**",
+      "expected_output": "<p><strong>foo</strong></p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "linkify_interference",
+      "input": "link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx",
+      "expected_output": "<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\" target=\"_blank\" title=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\">xxxxx #xx</a>:<strong>xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "inline_image",
+      "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring",
+      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "two_inline_images",
+      "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boringGoogle logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring",
+      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div><div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "camo",
+      "input": "Google logo today: http://www.google.com/images/srpr/logo4w.png",
+      "expected_output": "<p>Google logo today: <a href=\"http://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"http://www.google.com/images/srpr/logo4w.png\">http://www.google.com/images/srpr/logo4w.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"http://www.google.com/images/srpr/logo4w.png\"><img src=\"https://external-content.zulipcdn.net/4882a845c6edd9a945bfe5f33734ce0aed8170f3/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"></a></div>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "nl2br",
+      "input": "test\nbar",
+      "expected_output": "<p>test<br>\nbar</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "nl2br_trailing_space",
+      "input": "test  ",
+      "expected_output": "<p>test  </p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "tables",
+      "input": "This is a table:\n\nFirst Header  | Second Header\n------------- | -------------\nContent Cell  | Content Cell\nContent Cell  | Content Cell\n",
+      "expected_output": "<p>This is a table:</p>\n<table>\n<thead>\n<tr>\n<th>First Header</th>\n<th>Second Header</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Content Cell</td>\n<td>Content Cell</td>\n</tr>\n<tr>\n<td>Content Cell</td>\n<td>Content Cell</td>\n</tr>\n</tbody>\n</table>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "multiline_strong",
+      "input": "You can check out **any time you'd like\nBut you can never leave**",
+      "expected_output": "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>",
+      "bugdown_matches_marked": false
+    }
+  ],
+  "linkify_tests": [
+    [
+      "http://www.google.com",
+      "<p>%s</p>",
+      "http://www.google.com"
+    ],
+    [
+      "https://www.google.com",
+      "<p>%s</p>",
+      "https://www.google.com"
+    ],
+    [
+      "http://www.theregister.co.uk/foo/bar",
+      "<p>%s</p>",
+      "http://www.theregister.co.uk/foo/bar"
+    ],
+    [
+      " some text https://www.google.com/",
+      "<p>some text %s</p>",
+      "https://www.google.com/"
+    ],
+    [
+      "with short example.com url",
+      "<p>with short %s url</p>",
+      "example.com"
+    ],
+    [
+      "t.co",
+      "<p>%s</p>",
+      "t.co"
+    ],
+    [
+      "go to views.org please",
+      "<p>go to %s please</p>",
+      "views.org"
+    ],
+    [
+      "http://foo.com/blah_blah/",
+      "<p>%s</p>",
+      "http://foo.com/blah_blah/"
+    ],
+    [
+      "python class views.py is",
+      "<p>python class views.py is</p>",
+      ""
+    ],
+    [
+      "with www www.zulip.com/foo ok?",
+      "<p>with www %s ok?</p>",
+      "www.zulip.com/foo"
+    ],
+    [
+      "allow questions like foo.com?",
+      "<p>allow questions like %s?</p>",
+      "foo.com"
+    ],
+    [
+      "\"is.gd/foo/ \"",
+      "<p>\"%s \"</p>",
+      "is.gd/foo/"
+    ],
+    [
+      "end of sentence https://t.co.",
+      "<p>end of sentence %s.</p>",
+      "https://t.co"
+    ],
+    [
+      "(Something like http://foo.com/blah_blah)",
+      "<p>(Something like %s)</p>",
+      "http://foo.com/blah_blah"
+    ],
+    [
+      "\"is.gd/foo/\"",
+      "<p>\"%s\"</p>",
+      "is.gd/foo/"
+    ],
+    [
+      "end with a quote www.google.com\"",
+      "<p>end with a quote %s\"</p>",
+      "www.google.com"
+    ],
+    [
+      "http://www.guardian.co.uk/foo/bar",
+      "<p>%s</p>",
+      "http://www.guardian.co.uk/foo/bar"
+    ],
+    [
+      "from http://supervisord.org/running.html:",
+      "<p>from %s:</p>",
+      "http://supervisord.org/running.html"
+    ],
+    [
+      "http://raven.io",
+      "<p>%s</p>",
+      "http://raven.io"
+    ],
+    [
+      "at https://zulip.com/api. Check it!",
+      "<p>at %s. Check it!</p>",
+      "https://zulip.com/api"
+    ],
+    [
+      "goo.gl/abc",
+      "<p>%s</p>",
+      "goo.gl/abc"
+    ],
+    [
+      "I spent a year at ucl.ac.uk",
+      "<p>I spent a year at %s</p>",
+      "ucl.ac.uk"
+    ],
+    [
+      "http://a.cc/i/FMXO",
+      "<p>%s</p>",
+      "http://a.cc/i/FMXO"
+    ],
+    [
+      "http://fmota.eu/blog/test.html",
+      "<p>%s</p>",
+      "http://fmota.eu/blog/test.html"
+    ],
+    [
+      "http://j.mp/14Hwm3X",
+      "<p>%s</p>",
+      "http://j.mp/14Hwm3X"
+    ],
+    [
+      "http://localhost:9991/?show_debug=1",
+      "<p>%s</p>",
+      "http://localhost:9991/?show_debug=1"
+    ],
+    [
+      "anyone before? (http://a.cc/i/FMXO)",
+      "<p>anyone before? (%s)</p>",
+      "http://a.cc/i/FMXO"
+    ],
+    [
+      "(http://en.wikipedia.org/wiki/Each-way_(bet))",
+      "<p>(%s)</p>",
+      "http://en.wikipedia.org/wiki/Each-way_(bet)"
+    ],
+    [
+      "(http://en.wikipedia.org/wiki/Each-way_(bet)_(more_parens))",
+      "<p>(%s)</p>",
+      "http://en.wikipedia.org/wiki/Each-way_(bet)_(more_parens)"
+    ],
+    [
+      "http://en.wikipedia.org/wiki/Qt_(framework)",
+      "<p>%s</p>",
+      "http://en.wikipedia.org/wiki/Qt_(framework)"
+    ],
+    [
+      "http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg",
+      "<p>%s</p>",
+      "http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg"
+    ],
+    [
+      "https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov",
+      "<p>%s</p>",
+      "https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov"
+    ],
+    [
+      "https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel",
+      "<p>%s</p>",
+      "https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel"
+    ],
+    [
+      "http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html",
+      "<p>%s</p>",
+      "http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html"
+    ],
+    [
+      "https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Zulip-062-subscriptions-page-3rd-ver.fw.png",
+      "<p>%s</p>",
+      "https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Zulip-062-subscriptions-page-3rd-ver.fw.png"
+    ],
+    [
+      "http://www.postgresql.org/message-id/14040.1364490185@sss.pgh.pa.us",
+      "<p>%s</p>",
+      "http://www.postgresql.org/message-id/14040.1364490185@sss.pgh.pa.us"
+    ],
+    [
+      "javascript:alert(\"hi\");.com",
+      "<p>javascript:alert(\"hi\");.com</p>",
+      ""
+    ],
+    [
+      "javascript:foo.com",
+      "<p>javascript:%s</p>",
+      "foo.com"
+    ],
+    [
+      "javascript://foo.com",
+      "<p>javascript://foo.com</p>",
+      ""
+    ],
+    [
+      "foobarscript://foo.com",
+      "<p>foobarscript://foo.com</p>",
+      ""
+    ],
+    [
+      "about:blank.com",
+      "<p>about:%s</p>",
+      "blank.com"
+    ],
+    [
+      "[foo](javascript:foo.com)",
+      "<p>[foo](javascript:%s)</p>",
+      "foo.com"
+    ],
+    [
+      "[foo](javascript://foo.com)",
+      "<p>[foo](javascript://foo.com)</p>",
+      ""
+    ],
+    [
+      "aim:addbuddy?screenname=foo",
+      "<p>aim:addbuddy?screenname=foo</p>",
+      ""
+    ],
+    [
+      "itms://itunes.com/apps/appname",
+      "<p>itms://itunes.com/apps/appname</p>",
+      ""
+    ],
+    [
+      "[foo](itms://itunes.com/apps/appname)",
+      "<p>[foo](itms://itunes.com/apps/appname)</p>",
+      ""
+    ],
+    [
+      "1 [](foo://) 3 [](foo://) 5",
+      "<p>1 [](foo://) 3 [](foo://) 5</p>",
+      ""
+    ],
+    [
+      "javascript:<i>\"foo&bar\"</i>",
+      "<p>javascript:&lt;i&gt;\"foo&amp;bar\"&lt;/i&gt;</p>",
+      ""
+    ],
+    [
+      "[foo](javascript:<i>\"foo&bar\"</i>)",
+      "<p>[foo](javascript:&lt;i&gt;\"foo&amp;bar\"&lt;/i&gt;)</p>",
+      ""
+    ],
+    [
+      "a@b.com",
+      "<p>%s</p>",
+      "a@b.com"
+    ],
+    [
+      "<a@b.com>",
+      "<p>&lt;%s&gt;</p>",
+      "a@b.com"
+    ],
+    [
+      "a@b.com/foo",
+      "<p>a@b.com/foo</p>",
+      ""
+    ],
+    [
+      "http://leo@foo.com/my/file",
+      "<p>%s</p>",
+      "http://leo@foo.com/my/file"
+    ],
+    [
+      "http://example.com/something?with,commas,in,url, but not at end",
+      "<p>%s, but not at end</p>",
+      "http://example.com/something?with,commas,in,url"
+    ],
+    [
+      "http://www.yelp.com/biz/taim-mobile-falafel-and-smoothie-truck-new-york#query",
+      "<p>%s</p>",
+      "http://www.yelp.com/biz/taim-mobile-falafel-and-smoothie-truck-new-york#query"
+    ],
+    [
+      " some text https://www.google.com/baz_(match)?with=foo&bar=baz with extras",
+      "<p>some text %s with extras</p>",
+      "https://www.google.com/baz_(match)?with=foo&amp;bar=baz"
+    ],
+    [
+      "hash it http://foo.com/blah_(wikipedia)_blah#cite-1",
+      "<p>hash it %s</p>",
+      "http://foo.com/blah_(wikipedia)_blah#cite-1"
+    ],
+    [
+      "http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov",
+      "<p>%s</p>",
+      "http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov"
+    ],
+    [
+      "https://metacpan.org/module/Image::Resize::OpenCV",
+      "<p>%s</p>",
+      "https://metacpan.org/module/Image::Resize::OpenCV"
+    ],
+    [
+      "foo.com/a::trollface::b",
+      "<p>%s</p>",
+      "foo.com/a::trollface::b"
+    ],
+    [
+      "a.commandstuff()",
+      "<p>a.commandstuff()</p>",
+      ""
+    ],
+    [
+      "love...it",
+      "<p>love...it</p>",
+      ""
+    ],
+    [
+      "sorry,http://example.com/",
+      "<p>sorry,%s</p>",
+      "http://example.com/"
+    ]
+  ]
+}

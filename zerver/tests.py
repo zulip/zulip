@@ -4223,333 +4223,24 @@ class BugdownTest(TestCase):
         converted = bugdown_convert(text)
         self.assertEqual(converted, expected)
 
-    def test_codeblock_hilite(self):
-        fenced_code = \
-"""Hamlet said:
-~~~~.python
-def speak(self):
-    x = 1
-~~~~"""
+    def load_bugdown_tests(self):
+        test_fixtures = {}
+        data_file = open(os.path.join(os.path.dirname(__file__), 'fixtures/bugdown-data.json'), 'r')
+        data = ujson.loads('\n'.join(data_file.readlines()))
+        for test in data['regular_tests']:
+            test_fixtures[test['name']] = test
 
-        expected_convert = \
-"""<p>Hamlet said:</p>
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">\
-speak</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
-</pre></div>"""
+        return test_fixtures, data['linkify_tests']
 
-        self.common_bugdown_test(fenced_code, expected_convert)
+    def test_bugdown_fixtures(self):
+        format_tests, linkify_tests = self.load_bugdown_tests()
 
-    def test_codeblock_multiline(self):
-        fenced_code = \
-"""Hamlet once said
-~~~~
-def func():
-    x = 1
+        for name, test in format_tests.iteritems():
+            converted = bugdown_convert(test['input'])
 
-    y = 2
+            print "Running Bugdown test %s" % (name,)
+            self.assertEqual(converted, test['expected_output'])
 
-    z = 3
-~~~~
-And all was good."""
-
-        expected_convert = \
-"""<p>Hamlet once said</p>
-<div class="codehilite"><pre>def func():
-    x = 1
-
-    y = 2
-
-    z = 3
-</pre></div>
-
-
-<p>And all was good.</p>"""
-
-        self.common_bugdown_test(fenced_code, expected_convert)
-
-    def test_codeblock_backticks(self):
-        fenced_code = \
-"""
-```
-fenced code
-```
-
-```inline code```
-"""
-        expected_convert = \
-u"""<div class="codehilite"><pre>fenced code
-</pre></div>
-
-
-<p><code>inline code</code></p>"""
-        self.common_bugdown_test(fenced_code, expected_convert)
-
-    def test_hanging_multi_codeblock(self):
-        fenced_code = \
-"""Hamlet said:
-~~~~
-def speak(self):
-    x = 1
-# Comment to make this code block longer to test Trac #1162
-~~~~
-
-Then he mentioned ````y = 4 + x**2```` and
-~~~~
-def foobar(self):
-    return self.baz()"""
-
-        expected_convert = \
-"""<p>Hamlet said:</p>
-<div class="codehilite"><pre>def speak(self):
-    x = 1
-# Comment to make this code block longer to test Trac #1162
-</pre></div>
-
-
-<p>Then he mentioned <code>y = 4 + x**2</code> and</p>
-<div class="codehilite"><pre>def foobar(self):
-    return self.baz()
-</pre></div>"""
-        self.common_bugdown_test(fenced_code, expected_convert)
-
-    def test_fenced_quote(self):
-        fenced_quote = \
-"""Hamlet said:
-~~~ quote
-To be or **not** to be.
-
-That is the question
-~~~"""
-
-        expected_convert = \
-"""<p>Hamlet said:</p>
-<blockquote>
-<p>To be or <strong>not</strong> to be.</p>
-<p>That is the question</p>
-</blockquote>"""
-        self.common_bugdown_test(fenced_quote, expected_convert)
-
-    def test_fenced_nested_quote(self):
-        fenced_quote = \
-"""Hamlet said:
-~~~ quote
-Polonius said:
-> This above all: to thine ownself be true,
-And it must follow, as the night the day,
-Thou canst not then be false to any man.
-
-What good advice!
-~~~"""
-
-        expected_convert = \
-"""<p>Hamlet said:</p>
-<blockquote>
-<p>Polonius said:</p>
-<blockquote>
-<p>This above all: to thine ownself be true,<br>
-And it must follow, as the night the day,<br>
-Thou canst not then be false to any man.</p>
-</blockquote>
-<p>What good advice!</p>
-</blockquote>"""
-
-        self.common_bugdown_test(fenced_quote, expected_convert)
-
-    def test_complexly_nested_quote(self):
-        fenced_quote = \
-"""I heard about this second hand...
-
-~~~ quote
-
-He said:
-~~~ quote
-The customer is complaining.
-
-They looked at this code:
-``` .py
-def hello(): print 'hello
-```
-They would prefer:
-~~~ .rb
-def hello()
-  puts 'hello'
-end
-~~~
-
-Please advise.
-~~~
-
-She said:
-~~~ quote
-Just send them this:
-``` .sh
-echo "hello\n"
-```
-~~~"""
-        expected = \
-"""<p>I heard about this second hand...</p>
-<blockquote>
-<p>He said:</p>
-<blockquote>
-<p>The customer is complaining.</p>
-<p>They looked at this code:</p>
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">hello</span><span class="p">():</span> <span class="k">print</span> <span class="s">&#39;hello</span>
-</pre></div>
-
-
-<p>They would prefer:</p>
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">hello</span><span class="p">()</span>
-  <span class="nb">puts</span> <span class="s1">&#39;hello&#39;</span>
-<span class="k">end</span>
-</pre></div>
-
-
-<p>Please advise.</p>
-</blockquote>
-<p>She said:</p>
-<blockquote>
-<p>Just send them this:</p>
-<div class="codehilite"><pre><span class="nb">echo</span> <span class="s2">&quot;hello</span>
-<span class="s2">&quot;</span>
-</pre></div>
-
-
-</blockquote>
-</blockquote>"""
-
-        self.common_bugdown_test(fenced_quote, expected)
-
-    def test_dangerous_block(self):
-        fenced_code = u'xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\
-"xxxx xxxx\\xxxxx\\xxxxxx"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x\'^xxxx$\'\
-, xx.xxxxxxxxx)```\n\nxxxxxxx\'x xxxx xxxxxxxxxx ```\'xxxx\'```, xxxxx \
-xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?'
-
-        expected = """<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n\
-<p><code>"xxxx xxxx\\xxxxx\\xxxxxx"</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx\
-(x\'^xxxx$\', xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx\'x xxxx xxxxxxxxxx <code>\'xxxx\'\
-</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x \
-xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>"""
-
-        self.common_bugdown_test(fenced_code, expected)
-
-        fenced_code = """``` one ```
-
-``` two ```
-
-~~~~
-x = 1"""
-
-        expected_convert = """\
-<p><code>one</code></p>
-<p><code>two</code></p>
-<div class="codehilite"><pre>x = 1
-</pre></div>"""
-
-        self.common_bugdown_test(fenced_code, expected_convert)
-
-    def test_ulist_standard(self):
-        ulisted = """Some text with a list:
-
-* One item
-* Two items
-* Three items"""
-
-        expected = """<p>Some text with a list:</p>
-<ul>
-<li>One item</li>
-<li>Two items</li>
-<li>Three items</li>
-</ul>"""
-        self.common_bugdown_test(ulisted, expected)
-
-    def test_ulist_hanging(self):
-        ulisted = """Some text with a hanging list:
-* One item
-* Two items
-* Three items"""
-
-        expected = """<p>Some text with a hanging list:</p>
-<ul>
-<li>One item</li>
-<li>Two items</li>
-<li>Three items</li>
-</ul>"""
-        self.common_bugdown_test(ulisted, expected)
-
-    def test_ulist_hanging_mixed(self):
-        ulisted = """Plain list
-
-* Alpha
-
-* Beta
-
-Then hang it off:
-* Ypsilon
-* Zeta"""
-
-        expected = """<p>Plain list</p>
-<ul>
-<li>
-<p>Alpha</p>
-</li>
-<li>
-<p>Beta</p>
-</li>
-</ul>
-<p>Then hang it off:</p>
-<ul>
-<li>Ypsilon</li>
-<li>Zeta</li>
-</ul>"""
-        self.common_bugdown_test(ulisted, expected)
-
-    def test_hanging_multi(self):
-        ulisted = """Plain list
-* Alpha
-* Beta
-
-And Again:
-* A
-* B
-* C
-
-Once more for feeling:
-* Q
-* E
-* D"""
-
-        expected = '<p>Plain list</p>\n<ul>\n<li>Alpha</li>\n<li>Beta\
-</li>\n</ul>\n<p>And Again:</p>\n<ul>\n<li>A</li>\n<li>B</li>\n<li>C\
-</li>\n</ul>\n<p>Once more for feeling:</p>\n<ul>\n<li>Q</li>\n<li>E\
-</li>\n<li>D</li>\n</ul>'
-        self.common_bugdown_test(ulisted, expected)
-
-    def test_ulist_codeblock(self):
-        ulisted_code = """~~~
-int x = 3
-* 4;
-~~~"""
-
-        expected = '<div class="codehilite"><pre>int x = 3\n* 4;\n</pre></div>'
-        self.common_bugdown_test(ulisted_code, expected)
-
-    def test_malformed_fence(self):
-        bad =  "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~"
-        good = "<p>~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~</p>"
-        self.common_bugdown_test(bad, good)
-
-    def test_italic_bold(self):
-        '''Italics (*foo*, _foo_) and bold syntax __foo__ are disabled.
-           Bold **foo** still works.'''
-        self.common_bugdown_test('_foo_',   '<p>_foo_</p>')
-        self.common_bugdown_test('*foo*',   '<p>*foo*</p>')
-        self.common_bugdown_test('__foo__', '<p>__foo__</p>')
-        self.common_bugdown_test('**foo**', '<p><strong>foo</strong></p>')
-
-    @slow(0.3, 'lots of examples')
-    def test_linkify(self):
         def replaced(payload, url, phrase=''):
             target = " target=\"_blank\""
             if url[:4] == 'http':
@@ -4561,168 +4252,15 @@ int x = 3
                 href = 'http://' + url
             return payload % ("<a href=\"%s\"%s title=\"%s\">%s</a>" % (href, target, href, url),)
 
-        conversions = \
-        [
-         # General linkification tests
-         ('http://www.google.com',                     "<p>%s</p>",                         'http://www.google.com'),
-         ('https://www.google.com',                    "<p>%s</p>",                         'https://www.google.com'),
-         ('http://www.theregister.co.uk/foo/bar',      "<p>%s</p>",                         'http://www.theregister.co.uk/foo/bar'),
-         (' some text https://www.google.com/',        "<p>some text %s</p>",               'https://www.google.com/'),
-         ('with short example.com url',                "<p>with short %s url</p>",          'example.com'),
-         ('t.co',                                      "<p>%s</p>",                         't.co'),
-         ('go to views.org please',                    "<p>go to %s please</p>",            'views.org'),
-         ('http://foo.com/blah_blah/',                 "<p>%s</p>",                         'http://foo.com/blah_blah/'),
-         ('python class views.py is',                  "<p>python class views.py is</p>",   ''),
-         ('with www www.zulip.com/foo ok?',            "<p>with www %s ok?</p>",            'www.zulip.com/foo'),
-         ('allow questions like foo.com?',             "<p>allow questions like %s?</p>",   'foo.com'),
-         ('"is.gd/foo/ "',                             "<p>\"%s \"</p>",                    'is.gd/foo/'),
-         ('end of sentence https://t.co.',             "<p>end of sentence %s.</p>",        'https://t.co'),
-         ('(Something like http://foo.com/blah_blah)', "<p>(Something like %s)</p>",        'http://foo.com/blah_blah'),
-         ('"is.gd/foo/"',                              "<p>\"%s\"</p>",                     'is.gd/foo/'),
-         ('end with a quote www.google.com"',          "<p>end with a quote %s\"</p>",      'www.google.com'),
-         ('http://www.guardian.co.uk/foo/bar',         "<p>%s</p>",                         'http://www.guardian.co.uk/foo/bar'),
-         ('from http://supervisord.org/running.html:', "<p>from %s:</p>",                   'http://supervisord.org/running.html'),
-         ('http://raven.io',                           "<p>%s</p>",                         'http://raven.io'),
-         ('at https://zulip.com/api. Check it!',       "<p>at %s. Check it!</p>",           'https://zulip.com/api'),
-         ('goo.gl/abc',                                "<p>%s</p>",                         'goo.gl/abc'),
-         ('I spent a year at ucl.ac.uk',               "<p>I spent a year at %s</p>",       'ucl.ac.uk'),
-         ('http://a.cc/i/FMXO',                        "<p>%s</p>",                         'http://a.cc/i/FMXO'),
-         ('http://fmota.eu/blog/test.html',            "<p>%s</p>",                         'http://fmota.eu/blog/test.html'),
-         ('http://j.mp/14Hwm3X',                       "<p>%s</p>",                         'http://j.mp/14Hwm3X'),
-         ('http://localhost:9991/?show_debug=1',       "<p>%s</p>",                         'http://localhost:9991/?show_debug=1'),
-         ('anyone before? (http://a.cc/i/FMXO)',       "<p>anyone before? (%s)</p>",        'http://a.cc/i/FMXO'),
-         ('(http://en.wikipedia.org/wiki/Each-way_(bet))',
-            '<p>(%s)</p>',                   'http://en.wikipedia.org/wiki/Each-way_(bet)'),
-         ('(http://en.wikipedia.org/wiki/Each-way_(bet)_(more_parens))',
-            '<p>(%s)</p>',                   'http://en.wikipedia.org/wiki/Each-way_(bet)_(more_parens)'),
-         ('http://en.wikipedia.org/wiki/Qt_(framework)', '<p>%s</p>', 'http://en.wikipedia.org/wiki/Qt_(framework)'),
 
-         ('http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg',
-            '<p>%s</p>', 'http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg'),
-         # Changed to .mov from .png to avoid inline preview
-         ('https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov', '<p>%s</p>',
-            'https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov'),
-         ('https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel',
-            '<p>%s</p>', 'https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel'),
-         ('http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html', '<p>%s</p>',
-            'http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html'),
-         ('https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Zulip-062-subscriptions-page-3rd-ver.fw.png',
-            '<p>%s</p>', 'https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Zulip-062-subscriptions-page-3rd-ver.fw.png'),
-         ('http://www.postgresql.org/message-id/14040.1364490185@sss.pgh.pa.us', '<p>%s</p>',
-            'http://www.postgresql.org/message-id/14040.1364490185@sss.pgh.pa.us'),
-
-         # XSS sanitization; URL is rendered as plain text
-         ('javascript:alert(\'hi\');.com',             "<p>javascript:alert('hi');.com</p>", ''),
-         ('javascript:foo.com',                        "<p>javascript:%s</p>",          'foo.com'),
-         ('javascript://foo.com',                      "<p>javascript://foo.com</p>",        ''),
-         ('foobarscript://foo.com',                    "<p>foobarscript://foo.com</p>",      ''),
-         ('about:blank.com',                           "<p>about:%s</p>",               'blank.com'),
-         ('[foo](javascript:foo.com)',                 "<p>[foo](javascript:%s)</p>",   'foo.com'),
-         ('[foo](javascript://foo.com)',               "<p>[foo](javascript://foo.com)</p>", ''),
-
-         # Other weird URL schemes are also blocked
-         ('aim:addbuddy?screenname=foo',               "<p>aim:addbuddy?screenname=foo</p>", ''),
-         ('itms://itunes.com/apps/appname',            "<p>itms://itunes.com/apps/appname</p>", ''),
-         ('[foo](itms://itunes.com/apps/appname)',     "<p>[foo](itms://itunes.com/apps/appname)</p>", ''),
-         ('1 [](foo://) 3 [](foo://) 5',               "<p>1 [](foo://) 3 [](foo://) 5</p>", ''),
-
-         # Make sure we HTML-escape the invalid URL on output.
-         # ' and " aren't escaped here, because we aren't in attribute context.
-         ('javascript:<i>"foo&bar"</i>',
-            '<p>javascript:&lt;i&gt;"foo&amp;bar"&lt;/i&gt;</p>', ''),
-         ('[foo](javascript:<i>"foo&bar"</i>)',
-            '<p>[foo](javascript:&lt;i&gt;"foo&amp;bar"&lt;/i&gt;)</p>', ''),
-
-         # Emails
-         ('a@b.com',                                    "<p>%s</p>",                         'a@b.com'),
-         ('<a@b.com>',                                  "<p>&lt;%s&gt;</p>",                 'a@b.com'),
-         ('a@b.com/foo',                                "<p>a@b.com/foo</p>",                ''),
-         ('http://leo@foo.com/my/file',                 "<p>%s</p>",                         'http://leo@foo.com/my/file'),
-
-         ('http://example.com/something?with,commas,in,url, but not at end',
-                        "<p>%s, but not at end</p>",         'http://example.com/something?with,commas,in,url'),
-         ('http://www.yelp.com/biz/taim-mobile-falafel-and-smoothie-truck-new-york#query',
-                        "<p>%s</p>", 'http://www.yelp.com/biz/taim-mobile-falafel-and-smoothie-truck-new-york#query'),
-         (' some text https://www.google.com/baz_(match)?with=foo&bar=baz with extras',
-                        "<p>some text %s with extras</p>",  'https://www.google.com/baz_(match)?with=foo&amp;bar=baz'),
-         ('hash it http://foo.com/blah_(wikipedia)_blah#cite-1',
-                        "<p>hash it %s</p>",                'http://foo.com/blah_(wikipedia)_blah#cite-1'),
-
-         # This last one was originally a .gif but was changed to .mov
-         # to avoid triggering the inline image preview support
-         ('http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov',
-                        "<p>%s</p>",
-                        'http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov'),
-
-         # Links that match other InlinePatterns
-         ('https://metacpan.org/module/Image::Resize::OpenCV', '<p>%s</p>', 'https://metacpan.org/module/Image::Resize::OpenCV'),
-         ('foo.com/a::trollface::b', '<p>%s</p>', 'foo.com/a::trollface::b'),
-
-         # Just because it has a TLD and parentheses in it doesn't mean it's a link. Trac #1364
-         ('a.commandstuff()', '<p>a.commandstuff()</p>', ''),
-         ('love...it', '<p>love...it</p>', ''),
-         ('sorry,http://example.com/', '<p>sorry,%s</p>', 'http://example.com/'),
-         ]
-
-        for inline_url, reference, url in conversions:
+        print "Running Bugdown Linkify tests"
+        for inline_url, reference, url in linkify_tests:
             try:
                 match = replaced(reference, url, phrase=inline_url)
             except TypeError:
                 match = reference
             converted = bugdown_convert(inline_url)
             self.assertEqual(match, converted)
-
-    def test_manual_links(self):
-        # These are links that the default markdown XSS fails due to to : in the path
-        urls = (('[Haskell NYC Meetup](http://www.meetsup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/108707682/\
-?a=co1.1_grp&rv=co1.1)', "<p><a href=\"http://www.meetsup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/\
-108707682/?a=co1.1_grp&amp;rv=co1.1\" target=\"_blank\" title=\"http://www.meetsup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/\
-NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></p>"),
-                ('[link](http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html)',
-                 '<p><a href="http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html" target="_blank" title=\
-"http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html">link</a></p>'),
-                ('[YOLO](http://en.wikipedia.org/wiki/YOLO_(motto))',
-                 '<p><a href="http://en.wikipedia.org/wiki/YOLO_(motto)" target="_blank" title="http://en.wikipedia.org/wiki/YOLO_(motto)"\
->YOLO</a></p>'),
-                ('[Streams](#subscriptions)', '<p><a href="#subscriptions" title="#subscriptions">Streams</a></p>'),
-                ('Sent to http_something_real@zulip.com', '<p>Sent to <a href="mailto:http_something_real@zulip.com" \
-title="mailto:http_something_real@zulip.com">http_something_real@zulip.com</a></p>'),
-                ('Sent to othello@zulip.com', '<p>Sent to <a href="mailto:othello@zulip.com" title="mailto:othello@zulip.com">\
-othello@zulip.com</a></p>')
-                )
-
-        for input, output in urls:
-            converted = bugdown_convert(input)
-            self.assertEqual(output, converted)
-
-    def test_linkify_interference(self):
-        # Check our auto links don't interfere with normal markdown linkification
-        msg = 'link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):\
-**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href="http://xxxxxxxxx:xxxx/\
-xxx/xxxxxx%xxxxxx/xx/" target="_blank" title="http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/">xxxxx #xx</a>:<strong>\
-xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx\
-<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>')
-
-    def test_inline_image(self):
-        msg = 'Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p>Google logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>')
-
-        # If there are two images, both should be previewed.
-        msg = 'Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boringGoogle logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p>Google logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div><div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>')
-
-        # http images should be converted to https via our Camo integration
-        msg = 'Google logo today: http://www.google.com/images/srpr/logo4w.png'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p>Google logo today: <a href="http://www.google.com/images/srpr/logo4w.png" target="_blank" title="http://www.google.com/images/srpr/logo4w.png">http://www.google.com/images/srpr/logo4w.png</a></p>\n<div class="message_inline_image"><a href="http://www.google.com/images/srpr/logo4w.png" target="_blank" title="http://www.google.com/images/srpr/logo4w.png"><img src="https://external-content.zulipcdn.net/4882a845c6edd9a945bfe5f33734ce0aed8170f3/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"></a></div>')
 
     def test_inline_youtube(self):
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
@@ -4750,15 +4288,6 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Look at the new dropbox logo: <a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png">https://www.dropbox.com/static/images/home_logo.png</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png"><img src="https://www.dropbox.com/static/images/home_logo.png"></a></div>')
-
-    def test_nl2br(self):
-        msg = 'test\nbar'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>test<br>\nbar</p>')
-
-        msg = 'test  '
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>test  </p>')
 
     def test_twitter_id_extraction(self):
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
@@ -4900,17 +4429,6 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         converted = bugdown.convert(":test:", "zulip.com", msg)
         self.assertEqual(converted, '<p>:test:</p>')
 
-    def test_multiline_strong(self):
-        msg = "Welcome to **the jungle**"
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p>Welcome to <strong>the jungle</strong></p>')
-
-        msg = """You can check out **any time you'd like
-But you can never leave**"""
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>")
-
     def test_realm_patterns(self):
         RealmFilter(realm=get_realm('zulip.com'), pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
@@ -4920,39 +4438,6 @@ But you can never leave**"""
         converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
-
-    def test_tables(self):
-        msg = """This is a table:
-
-First Header  | Second Header
-------------- | -------------
-Content Cell  | Content Cell
-Content Cell  | Content Cell
-"""
-
-        expected = """<p>This is a table:</p>
-<table>
-<thead>
-<tr>
-<th>First Header</th>
-<th>Second Header</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Content Cell</td>
-<td>Content Cell</td>
-</tr>
-<tr>
-<td>Content Cell</td>
-<td>Content Cell</td>
-</tr>
-</tbody>
-</table>"""
-
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, expected)
 
     def test_stream_subscribe_button_simple(self):
         msg = '!_stream_subscribe_button(simple)'
