@@ -367,6 +367,11 @@ MessageListView.prototype = {
             }
         }
 
+        _.each(rendered_elems, function (elem){
+            var e = $.Event('message_rendered.zulip', {target: elem});
+            $(document).trigger(e);
+        });
+
         if (where === 'top' && table.find('.ztable_layout_row').length > 0) {
             // If we have a totally empty narrow, there may not
             // be a .ztable_layout_row.
