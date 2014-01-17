@@ -556,7 +556,8 @@ JS_SPECS = {
             'js/settings.js',
             'js/tab_bar.js',
             'js/emoji.js',
-            'js/referral.js'
+            'js/referral.js',
+            'js/custom_markdown.js',
         ],
         'output_filename': 'min/app.js'
     },

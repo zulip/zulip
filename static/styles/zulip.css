@@ -3732,3 +3732,7 @@ li.show-more-topics a {
 .user-list-filter {
     width: 80%;
 }
+
+.inline-subscribe-error {
+    margin-left: 5px;
+}
