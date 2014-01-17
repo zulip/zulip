@@ -78,6 +78,10 @@ global.write_test_output = function (label, output) {
     fs.appendFileSync(output_fn, data);
 };
 
+global.append_test_output = function (output) {
+    fs.appendFileSync(output_fn, output);
+};
+
 tests.forEach(function (filename) {
     if (filename === 'index') {
         return;

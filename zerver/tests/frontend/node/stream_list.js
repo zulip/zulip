@@ -85,4 +85,12 @@ global.use_template('stream_privacy');
     assert.equal(li.find('a.subscription_name').text().trim(), 'social');
     assert(li.find('.arrow').find("i").hasClass("icon-vector-chevron-down"));
 
+    global.append_test_output("Then make 'social' private.");
+    global.stream_data.get_sub('social').invite_only = true;
+    stream_list.redraw_stream_privacy('social');
+
+    html = $("body").html();
+    global.append_test_output(html);
+
+    assert(li.find('.stream-privacy').find("i").hasClass("icon-vector-lock"));
 }());
