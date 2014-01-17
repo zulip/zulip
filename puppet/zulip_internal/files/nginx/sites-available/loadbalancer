@@ -23,10 +23,10 @@ server {
 
 server {
     listen www.zulip.com:443;
-    server_name www.humbughq.com humbughq.com;
+    server_name www.humbughq.com api.humbughq.com humbughq.com;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
+    ssl_certificate /etc/ssl/certs/www.humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
     location / {
