@@ -441,7 +441,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
 
     if event_type == "story_update_activity":
         # Find the changed valued and build a message
-        content += "%s updated:\n" % (story_info,)
+        content += "%s updated %s:\n" % (performed_by, story_info)
         for change in changes:
             old_values = change.get("original_values", {})
             new_values = change["new_values"]

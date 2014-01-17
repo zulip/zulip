@@ -5359,7 +5359,7 @@ class PivotalV5HookTests(AuthedTestCase):
     def test_accepted(self):
         msg = self.send_pivotal_message('accepted')
         self.assertEqual(msg.subject, '#63486316: Story of the Year')
-        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316) updated:
+        self.assertEqual(msg.content, """Leo Franchi updated [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316):
 * state changed from **unstarted** to **accepted**
 """)
 
@@ -5383,14 +5383,14 @@ A comment on the story
     def test_delivered(self):
         msg = self.send_pivotal_message('delivered')
         self.assertEqual(msg.subject, '#63486316: Story of the Year')
-        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316) updated:
+        self.assertEqual(msg.content, """Leo Franchi updated [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316):
 * state changed from **accepted** to **delivered**
 """)
 
     def test_finished(self):
         msg = self.send_pivotal_message('finished')
         self.assertEqual(msg.subject, '#63486316: Story of the Year')
-        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316) updated:
+        self.assertEqual(msg.content, """Leo Franchi updated [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316):
 * state changed from **delivered** to **accepted**
 """)
 
@@ -5402,7 +5402,7 @@ A comment on the story
     def test_rejected(self):
         msg = self.send_pivotal_message('rejected')
         self.assertEqual(msg.subject, '#63486316: Story of the Year')
-        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316) updated:
+        self.assertEqual(msg.content, """Leo Franchi updated [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316):
 * Comment added:
 ~~~quote
 Try again next time
@@ -5413,21 +5413,21 @@ Try again next time
     def test_started(self):
         msg = self.send_pivotal_message('started')
         self.assertEqual(msg.subject, '#63495972: Fresh Story')
-        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Fresh Story](http://www.pivotaltracker.com/story/show/63495972) updated:
+        self.assertEqual(msg.content, """Leo Franchi updated [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Fresh Story](http://www.pivotaltracker.com/story/show/63495972):
 * state changed from **unstarted** to **started**
 """)
 
     def test_created_estimate(self):
         msg = self.send_pivotal_message('created_estimate')
         self.assertEqual(msg.subject, '#63496066: Pivotal Test')
-        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Pivotal Test](http://www.pivotaltracker.com/story/show/63496066) updated:
+        self.assertEqual(msg.content, """Leo Franchi updated [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Pivotal Test](http://www.pivotaltracker.com/story/show/63496066):
 * estimate is now **3 points**
 """)
 
     def test_type_changed(self):
         msg = self.send_pivotal_message('type_changed')
         self.assertEqual(msg.subject, '#63496066: Pivotal Test')
-        self.assertEqual(msg.content, """[Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Pivotal Test](http://www.pivotaltracker.com/story/show/63496066) updated:
+        self.assertEqual(msg.content, """Leo Franchi updated [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Pivotal Test](http://www.pivotaltracker.com/story/show/63496066):
 * estimate changed from 3 to **0 points**
 * type changed from **feature** to **bug**
 """)
