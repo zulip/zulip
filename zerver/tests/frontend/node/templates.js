@@ -545,7 +545,8 @@ function render(template_name, args) {
         'tutorial_reply',
         'tutorial_stream',
         'tutorial_subject',
-        'tutorial_title'
+        'tutorial_title',
+        'tutorial_welcome'
     ];
     var html = '';
     _.each(tutorials, function (tutorial) {
@@ -604,3 +605,7 @@ function render(template_name, args) {
     assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
 }());
 
+// By the end of this test, we should have compiled all our templates.  Ideally,
+// we will also have exercised them to some degree, but that's a little trickier
+// to enforce.
+global.make_sure_all_templates_have_been_compiled();

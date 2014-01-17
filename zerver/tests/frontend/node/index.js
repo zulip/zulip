@@ -27,12 +27,29 @@ global.add_dependencies = function (dct) {
     });
 };
 
+function template_dir() {
+    return __dirname + '/../../../../static/templates/';
+}
+
+global.make_sure_all_templates_have_been_compiled = function () {
+    var dir = template_dir();
+    var fns = fs.readdirSync(dir).filter(function (fn) {
+        return (/\.handlebars/).test(fn);
+    });
+
+    _.each(fns, function (fn) {
+        var name = fn.split('.')[0];
+        if (!Handlebars.templates[name]) {
+            throw "The file " + fn + " has no test coverage.";
+        }
+    });
+};
+
 global.use_template = function (name) {
     if (Handlebars.templates === undefined) {
         Handlebars.templates = {};
     }
-    var template_dir = __dirname+'/../../../../static/templates/';
-    var data = fs.readFileSync(template_dir + name + '.handlebars').toString();
+    var data = fs.readFileSync(template_dir() + name + '.handlebars').toString();
     Handlebars.templates[name] = Handlebars.compile(data);
 };
 
