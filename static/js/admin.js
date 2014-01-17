@@ -246,6 +246,7 @@ exports.setup_page = function () {
                 button.removeClass("deactivate");
                 button.text("Reactivate");
                 row.addClass("inactive_user_row");
+                row.find(".user-admin-settings").hide();
             }
         });
     });
