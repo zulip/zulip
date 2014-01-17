@@ -15,9 +15,11 @@ from zilencer.forms import EnterpriseToSForm
 from error_notify import notify_server_error, notify_browser_error
 from django.core.mail import send_mail
 from django.conf import settings
+import time
 
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
+FEEDBACK_USER_TIMES = {}
 
 def get_ticket_number():
     fn = '/var/tmp/.feedback-bot-ticket-number'
@@ -38,18 +40,26 @@ def submit_feedback(request, deployment, message=REQ(converter=json_to_dict)):
     if len(subject) > 60:
         subject = subject[:57].rstrip() + "..."
 
+    content = ''
+    sender_email = message['sender_email']
+    t = time.time()
 
-    ticket_number = get_ticket_number()
-    content = '\n~~~'
-    content += '\nticket Z%03d (@support please ack)' % (ticket_number,)
-    content += '\nsender: %s' % (message['sender_full_name'],)
-    content += '\nemail: %s' % (message['sender_email'],)
-    if 'sender_domain' in message:
-        content += '\nrealm: %s' % (message['sender_domain'],)
-    content += '\n~~~'
+    # We generate ticket numbers if it's been more than a few minutes
+    # since their last message.  This avoids some noise when people use
+    # enter-send.
+    if t - FEEDBACK_USER_TIMES.get(sender_email, 0) > 180:
+        ticket_number = get_ticket_number()
+        content += '\n~~~'
+        content += '\nticket Z%03d (@support please ack)' % (ticket_number,)
+        content += '\nsender: %s' % (message['sender_full_name'],)
+        content += '\nemail: %s' % (sender_email,)
+        if 'sender_domain' in message:
+            content += '\nrealm: %s' % (message['sender_domain'],)
+        content += '\n~~~'
+        content += '\n\n'
 
-    content += '\n\n'
     content += message['content']
+    FEEDBACK_USER_TIMES[sender_email] = t
 
     internal_send_message("feedback@zulip.com", "stream", "support", subject, content)
 
