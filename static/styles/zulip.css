@@ -3695,7 +3695,7 @@ div.edit_bot {
     }
 }
 
-.inactive_user_row {
+.deactivated_user {
     text-decoration: line-through;
 }
 

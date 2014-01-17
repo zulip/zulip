@@ -144,7 +144,7 @@ exports.setup_page = function () {
                 button.addClass("deactivate");
                 button.removeClass("reactivate");
                 button.text("Deactivate");
-                row.removeClass("inactive_user_row");
+                row.removeClass("deactivated_user");
             }
         });
     });
@@ -174,7 +174,6 @@ exports.setup_page = function () {
                 button.addClass("remove-admin");
                 button.removeClass("make-admin");
                 button.text("Remove admin");
-                row.removeClass("inactive_user_row");
             },
             error: function (xhr, error) {
                 var status = $(".active_user_row .admin-user-status");
@@ -208,7 +207,6 @@ exports.setup_page = function () {
                 button.addClass("make-admin");
                 button.removeClass("remove-admin");
                 button.text("Make admin");
-                row.removeClass("inactive_user_row");
             },
             error: function (xhr, error) {
                 var status = $(".active_user_row .admin-user-status");
@@ -245,7 +243,7 @@ exports.setup_page = function () {
                 button.addClass("reactivate");
                 button.removeClass("deactivate");
                 button.text("Reactivate");
-                row.addClass("inactive_user_row");
+                row.addClass("deactivated_user");
                 row.find(".user-admin-settings").hide();
             }
         });
