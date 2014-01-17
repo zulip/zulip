@@ -29,8 +29,20 @@ server {
     ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
-    return 301 https://www.zulip.com$request_uri;
+    location / {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy;
+    }
 
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
 }
 
 server {
@@ -152,8 +164,7 @@ server {
 }
 
 server {
-    listen customer29.zulip.com:443;
-    server_name *.e.customer29.zulip.com;
+    listen 10.0.1.202:443;
 
     ssl on;
     ssl_certificate /etc/ssl/certs/wildcard-e.customer29.zulip.com.combined-chain.crt;
