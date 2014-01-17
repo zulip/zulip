@@ -5301,7 +5301,7 @@ class GithubHookTests(AuthedTestCase):
     def test_pull_request_closed(self):
         self.basic_test('pull_request_closed', 'commits',
                         "zulip-test: pull request 7: Counting is hard.",
-                        "lfaraone closed [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)")
+                        "zbenjamin closed [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)")
 
     def test_pull_request_comment(self):
         self.basic_test('pull_request_comment', 'commits',

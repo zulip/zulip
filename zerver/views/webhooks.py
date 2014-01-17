@@ -27,7 +27,7 @@ def github_generic_subject(noun, topic_focus, blob):
 def github_generic_content(noun, payload, blob):
     # issue and pull_request objects have the same fields we're interested in
     content = ("%s %s [%s %s](%s)"
-               % (blob['user']['login'],
+               % (payload['sender']['login'],
                   payload['action'],
                   noun,
                   blob['number'],
