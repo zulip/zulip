@@ -298,7 +298,7 @@ class MessageSenderWorker(QueueProcessingWorker):
         result = {'response': ujson.loads(resp_content), 'req_id': event['req_id'],
                   'server_meta': server_meta}
 
-        redis_key = req_redis_key(server_meta['client_id'], event['req_id'])
+        redis_key = req_redis_key(event['req_id'])
         self.redis_client.hmset(redis_key, {'status': 'complete',
                                             'response': resp_content});
 

@@ -5,7 +5,7 @@ function Socket(url) {
     this._is_reconnecting = false;
     this._reconnect_initiation_time = null;
     this._send_queue = [];
-    this._next_req_id = 0;
+    this._next_req_id_counter = 0;
     this._requests = {};
     this._connection_failures = 0;
     this._reconnect_timeout_id = null;
@@ -43,10 +43,21 @@ Socket.prototype = {
         this._do_send('request', msg, success, error);
     },
 
+    _get_next_req_id: function Socket__get_next_req_id() {
+        var req_id = page_params.event_queue_id + ':' + this._next_req_id_counter;
+        this._next_req_id_counter++;
+        return req_id;
+    },
+
+    _req_id_too_new: function Socket__req_id_too_new(req_id) {
+        var counter = req_id.split(':')[2];
+
+        return parseInt(counter, 10) >= this._next_req_id_counter;
+    },
+
     _do_send: function Socket__do_send(type, msg, success, error) {
-        var req_id = this._next_req_id;
+        var req_id = this._get_next_req_id();
         var that = this;
-        this._next_req_id++;
         this._requests[req_id] = {type: type, request: msg, success: success,
                                   error: error};
         this._requests[req_id].ack_timeout_id = setTimeout(function () {
@@ -106,7 +117,7 @@ Socket.prototype = {
     _process_response: function Socket__process_response(req_id, response) {
         var req_info = this._requests[req_id];
         if (req_info === undefined) {
-            if (req_id >= this._next_req_id) {
+            if (this._req_id_too_new(req_id)) {
                 blueslip.error("Got a response for an unknown request",
                                {request_id: req_id, next_id: this._next_req_id,
                                 outstanding_ids: _.keys(this._requests)});
@@ -133,7 +144,7 @@ Socket.prototype = {
         var req_info = this._requests[req_id];
         if (req_info === undefined) {
             blueslip.error("Got an ACK for an unknown request",
-                           {request_id: req_id, next_id: this._next_req_id,
+                           {request_id: req_id, next_id: this._next_req_id_counter,
                             outstanding_ids: _.keys(this._requests)});
             return;
         }

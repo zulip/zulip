@@ -59,8 +59,8 @@ def deregister_connection(conn):
 
 redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
-def req_redis_key(client_id, req_id):
-    return 'socket_req_status:%s:%s' % (client_id, req_id)
+def req_redis_key(req_id):
+    return 'socket_req_status:%s' % (req_id,)
 
 class SocketAuthError(Exception):
     def __init__(self, msg):
@@ -137,7 +137,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         if status_inquiries is not None:
             results = {}
             for inquiry in status_inquiries:
-                status = redis_client.hgetall(req_redis_key(self.client_id, inquiry))
+                status = redis_client.hgetall(req_redis_key(inquiry))
                 if len(status) == 0:
                     status['status'] = 'not_received'
                 if 'response' in status:
@@ -191,7 +191,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                status_code=403, error_content=ujson.dumps(response))
                 return
 
-        redis_key = req_redis_key(self.client_id, msg['req_id'])
+        redis_key = req_redis_key(msg['req_id'])
         with redis_client.pipeline() as pipeline:
             pipeline.hmset(redis_key, {'status': 'received'})
             pipeline.expire(redis_key, 60 * 60 * 24)
