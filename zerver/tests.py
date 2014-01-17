@@ -2043,6 +2043,61 @@ class SubscriptionAPITest(AuthedTestCase):
                 add_streams, self.streams, self.test_email, self.streams + add_streams)
         self.assertEqual(len(events), 1)
 
+    def test_successful_subscriptions_notifies(self):
+        """
+        Calling /json/subscriptions/add should notify when a new stream is created.
+        """
+        invitee = "iago@zulip.com"
+        invitee_full_name = 'Iago'
+
+        current_stream = self.get_streams(invitee)[0]
+        invite_streams = self.make_random_stream_names(current_stream)[:1]
+        result = self.common_subscribe_to_streams(
+            invitee,
+            invite_streams,
+            extra_post_data={
+                'announce': 'true',
+                'principals': '["%s"]' % (self.user_profile.email,)
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = Message.objects.latest('id')
+        self.assertEqual(msg.sender_id,
+                         get_user_profile_by_email('notification-bot@zulip.com').id)
+        expected_msg = "Hi there!  %s just created a new stream '%s'. " \
+                       "!_stream_subscribe_button(%s)" % (invitee_full_name,
+                                                          invite_streams[0],
+                                                          invite_streams[0])
+        self.assertEqual(msg.content, expected_msg)
+
+    def test_successful_subscriptions_notifies_with_escaping(self):
+        """
+        Calling /json/subscriptions/add should notify when a new stream is created.
+        """
+        invitee = "iago@zulip.com"
+        invitee_full_name = 'Iago'
+
+        invite_streams = ['strange ) \\ test']
+        result = self.common_subscribe_to_streams(
+            invitee,
+            invite_streams,
+            extra_post_data={
+                'announce': 'true',
+                'principals': '["%s"]' % (self.user_profile.email,)
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = Message.objects.latest('id')
+        self.assertEqual(msg.sender_id,
+                         get_user_profile_by_email('notification-bot@zulip.com').id)
+        expected_msg = "Hi there!  %s just created a new stream '%s'. " \
+                       "!_stream_subscribe_button(strange \\) \\\\ test)" % (
+                                                          invitee_full_name,
+                                                          invite_streams[0])
+        self.assertEqual(msg.content, expected_msg)
+
     def test_non_ascii_stream_subscription(self):
         """
         Subscribing to a stream name with non-ASCII characters succeeds.
@@ -4824,6 +4879,58 @@ Content Cell  | Content Cell
         converted = bugdown_convert(msg)
 
         self.assertEqual(converted, expected)
+
+    def test_stream_subscribe_button_simple(self):
+        msg = '!_stream_subscribe_button(simple)'
+        converted = bugdown_convert(msg)
+        self.assertEqual(
+            converted,
+            '<p>'
+            '<span class="inline-subscribe" data-stream-name="simple">'
+            '<button class="inline-subscribe-button zulip-button">Subscribe to simple</button>'
+            '<span class="inline-subscribe-error"></span>'
+            '</span>'
+            '</p>'
+        )
+
+    def test_stream_subscribe_button_in_name(self):
+        msg = '!_stream_subscribe_button(simple (not\\))'
+        converted = bugdown_convert(msg)
+        self.assertEqual(
+            converted,
+            '<p>'
+            '<span class="inline-subscribe" data-stream-name="simple (not)">'
+            '<button class="inline-subscribe-button zulip-button">Subscribe to simple (not)</button>'
+            '<span class="inline-subscribe-error"></span>'
+            '</span>'
+            '</p>'
+        )
+
+    def test_stream_subscribe_button_after_name(self):
+        msg = '!_stream_subscribe_button(simple) (not)'
+        converted = bugdown_convert(msg)
+        self.assertEqual(
+            converted,
+            '<p>'
+            '<span class="inline-subscribe" data-stream-name="simple">'
+            '<button class="inline-subscribe-button zulip-button">Subscribe to simple</button>'
+            '<span class="inline-subscribe-error"></span>'
+            '</span>'
+            ' (not)</p>'
+        )
+
+    def test_stream_subscribe_button_slash(self):
+        msg = '!_stream_subscribe_button(simple\\\\)'
+        converted = bugdown_convert(msg)
+        self.assertEqual(
+            converted,
+            '<p>'
+            '<span class="inline-subscribe" data-stream-name="simple\\">'
+            '<button class="inline-subscribe-button zulip-button">Subscribe to simple\\</button>'
+            '<span class="inline-subscribe-error"></span>'
+            '</span>'
+            '</p>'
+        )
 
 class UserPresenceTests(AuthedTestCase):
     def test_get_empty(self):

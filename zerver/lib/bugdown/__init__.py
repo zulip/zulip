@@ -507,6 +507,26 @@ class Emoji(markdown.inlinepatterns.Pattern):
         else:
             return None
 
+class StreamSubscribeButton(markdown.inlinepatterns.Pattern):
+    # This markdown extension has required javascript in
+    # static/js/custom_markdown.js
+    def handleMatch(self, match):
+        stream_name = match.group('stream_name')
+        stream_name = stream_name.replace('\\)', ')').replace('\\\\', '\\')
+
+        span = markdown.util.etree.Element('span')
+        span.set('class', 'inline-subscribe')
+        span.set('data-stream-name', stream_name)
+
+        button = markdown.util.etree.SubElement(span, 'button')
+        button.text = 'Subscribe to ' + stream_name
+        button.set('class', 'inline-subscribe-button zulip-button')
+
+        error = markdown.util.etree.SubElement(span, 'span')
+        error.set('class', 'inline-subscribe-error')
+
+        return span
+
 upload_re = re.compile(r"^(?:https://%s.s3.amazonaws.com|/user_uploads/\d+)/[^/]*/([^/]*)$" % (settings.S3_BUCKET,))
 def url_filename(url):
     """Extract the filename if a URL is an uploaded file, or return the original URL"""
@@ -790,6 +810,8 @@ class Bugdown(markdown.Extension):
         # Note that !gravatar syntax should be deprecated long term.
         md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
+
+        md.inlinePatterns.add('stream_subscribe_button', StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '_begin')
 
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')

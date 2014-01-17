@@ -1145,6 +1145,11 @@ def stream_link(stream_name):
     "Escapes a stream name to make a #narrow/stream/stream_name link"
     return "#narrow/stream/%s" % (urllib.quote(stream_name.encode('utf-8')),)
 
+def stream_button(stream_name):
+    stream_name = stream_name.replace('\\', '\\\\')
+    stream_name = stream_name.replace(')', '\\)')
+    return '!_stream_subscribe_button(%s)' % (stream_name,)
+
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions",
@@ -1236,16 +1241,17 @@ def add_subscriptions_backend(request, user_profile,
                               (", ".join('`%s`' % (s.name,) for s in created_streams),)
             else:
                 stream_msg = "a new stream `%s`" % (created_streams[0].name)
-            msg = ("%s just created %s. To join, visit your [Streams page](#subscriptions)."
-                  % (user_profile.full_name, stream_msg))
+
+            stream_buttons = ' '.join(stream_button(s.name for s in created_streams))
+            msg = ("%s just created %s. %s" % (user_profile.full_name,
+                                                stream_msg, stream_buttons))
             notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
                                    "stream",
                                    notifications_stream.name, "Streams", msg,
                                    realm=notifications_stream.realm))
         else:
-            msg = ("Hi there!  %s just created a new stream '%s'. "
-                       "To join, click the gear in the left-side streams list."
-                       % (user_profile.full_name, created_streams[0].name))
+            msg = ("Hi there!  %s just created a new stream '%s'. %s"
+                       % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))
             for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
                 # Don't announce to yourself or to people you explicitly added
                 # (who will get the notification above instead).
