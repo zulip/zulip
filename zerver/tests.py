@@ -5303,6 +5303,11 @@ class GithubHookTests(AuthedTestCase):
                         "zulip-test: pull request 7: Counting is hard.",
                         "zbenjamin closed [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)")
 
+    def test_pull_request_synchronize(self):
+        self.basic_test('pull_request_synchronize', 'commits',
+                        "zulip-test: pull request 13: Even more cowbell.",
+                        "zbenjamin synchronized [pull request 13](https://github.com/zbenjamin/zulip-test/pull/13)")
+
     def test_pull_request_comment(self):
         self.basic_test('pull_request_comment', 'commits',
                         "zulip-test: pull request 9: Less cowbell.",

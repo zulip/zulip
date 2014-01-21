@@ -25,10 +25,14 @@ def github_generic_subject(noun, topic_focus, blob):
     return "%s: %s %d: %s" % (topic_focus, noun, blob['number'], blob['title'])
 
 def github_generic_content(noun, payload, blob):
+    action = payload['action']
+    if action == 'synchronize':
+        action = 'synchronized'
+
     # issue and pull_request objects have the same fields we're interested in
     content = ("%s %s [%s %s](%s)"
                % (payload['sender']['login'],
-                  payload['action'],
+                  action,
                   noun,
                   blob['number'],
                   blob['html_url']))
