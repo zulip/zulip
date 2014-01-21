@@ -16,13 +16,13 @@
       "name": "codeblock_multiline",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n~~~~\nAnd all was good.",
       "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</pre></div>\n\n\n<p>And all was good.</p>",
-      "bugdown_matches_marked": false
+      "bugdown_matches_marked": true
     },
     {
       "name": "codeblock_backticks",
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
       "expected_output": "<div class=\"codehilite\"><pre>fenced code\n</pre></div>\n\n\n<p><code>inline code</code></p>",
-      "bugdown_matches_marked": false
+      "bugdown_matches_marked": true
     },
     {
       "name": "hanging_multi_codeblock",

@@ -339,12 +339,12 @@ $(function () {
     // We special-case the 'quote' language and output a blockquote
     r.code = function (code, lang) {
         if (lang === 'quote') {
-            return '<blockquote><p>' + escape(code, true) + '</p></blockquote>';
+            return '<blockquote>\n<p>' + escape(code, true) + '</p>\n</blockquote>\n\n\n';
         }
 
         return '<div class="codehilite"><pre>'
           + escape(code, true)
-          + '\n</pre></div>';
+          + '\n</pre></div>\n\n\n';
     };
 
     // Our links have title= and target=_blank
