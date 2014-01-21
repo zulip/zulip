@@ -1,3 +1,21 @@
 #!/bin/bash
 
-exec ssh zulip@staging.zulip.net 'rmdir deployments/lock'
+if [ -z "$1" ]; then
+    deployment="staging"
+else
+    deployment=$1
+fi
+
+case $deployment in
+    staging)
+        host=staging.zulip.net
+        ;;
+    prod)
+        host=prod0.zulip.net
+        ;;
+    *)
+        echo "Unknown deployment: $deployment"
+        exit 1
+esac
+
+exec ssh zulip@"$host" 'rmdir deployments/lock'
