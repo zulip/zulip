@@ -130,6 +130,7 @@ def realm_summary_table(realm_minutes):
                     query in (
                         '/json/send_message',
                         'send_message_backend',
+                        '/api/v1/send_message',
                         '/json/update_pointer'
                     )
                 AND
@@ -159,6 +160,7 @@ def realm_summary_table(realm_minutes):
                         ua.query in (
                             '/json/send_message',
                             'send_message_backend',
+                           '/api/v1/send_message',
                             '/json/update_pointer'
                         )
                     GROUP by realm.id, up.email
@@ -179,6 +181,7 @@ def realm_summary_table(realm_minutes):
                 WHERE
                     query in (
                         '/json/send_message',
+                        '/api/v1/send_message',
                         'send_message_backend',
                         '/json/update_pointer'
                     )
@@ -480,7 +483,7 @@ def ad_hoc_queries():
         join zerver_userprofile up on up.id = ua.user_profile_id
         join zerver_realm realm on realm.id = up.realm_id
         where
-            (query = 'send_message_backend'
+            (query in ('send_message_backend', '/api/v1/send_message')
             and client.name not in ('Android', 'ZulipiOS')
             and client.name not like 'test: Zulip%%'
             )
@@ -518,7 +521,7 @@ def ad_hoc_queries():
         join zerver_userprofile up on up.id = ua.user_profile_id
         join zerver_realm realm on realm.id = up.realm_id
         where
-            (query = 'send_message_backend'
+            (query in ('send_message_backend', '/api/v1/send_message')
             and client.name not in ('Android', 'ZulipiOS')
             and client.name not like 'test: Zulip%%'
             )
