@@ -22,7 +22,7 @@ server {
 }
 
 server {
-    listen www.zulip.com:443;
+    listen www.humbughq.com:443;
     server_name www.humbughq.com api.humbughq.com humbughq.com;
 
     ssl on;
