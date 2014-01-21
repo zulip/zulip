@@ -24,7 +24,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_active_user_dicts_in_realm, remote_user_to_email
 from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
-    do_change_full_name, do_change_enable_desktop_notifications, \
+    do_change_full_name, do_change_enable_desktop_notifications, do_change_is_admin, \
     do_change_enter_sends, do_change_enable_sounds, do_activate_user, do_create_user, \
     do_change_subscription_property, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, \
@@ -65,7 +65,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token, statsd_key
 from zerver import tornado_callbacks
 from zproject.backends import password_auth_enabled
-from guardian.shortcuts import assign_perm, remove_perm
+from guardian.shortcuts import assign_perm
 
 from confirmation.models import Confirmation
 
@@ -1700,10 +1700,7 @@ def update_user_backend(request, user_profile, email,
         return json_error('Insufficient permission')
 
     if is_admin is not None:
-        if is_admin:
-            assign_perm('administer', target, target.realm)
-        else:
-            remove_perm('administer', target, target.realm)
+        do_change_is_admin(target, is_admin)
     return json_success({})
 
 @require_realm_admin

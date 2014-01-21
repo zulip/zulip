@@ -16,6 +16,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, RealmAlias, \
     ScheduledJob, realm_filters_for_domain, RealmFilter
 from zerver.lib.avatar import get_avatar_url
+from guardian.shortcuts import assign_perm, remove_perm
 
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
@@ -1162,6 +1163,19 @@ def do_change_full_name(user_profile, full_name, log=True):
                                          full_name=user_profile.full_name)),
                   users=active_user_ids(user_profile.realm))
     tornado_callbacks.send_notification(notice)
+
+def do_change_is_admin(user_profile, is_admin):
+    if is_admin:
+        assign_perm('administer', user_profile, user_profile.realm)
+    else:
+        remove_perm('administer', user_profile, user_profile.realm)
+
+    notice = dict(event=dict(type="realm_user", op="update",
+                             person=dict(email=user_profile.email,
+                                         is_admin=is_admin)),
+                  users=active_user_ids(user_profile.realm))
+    tornado_callbacks.send_notification(notice)
+
 
 def do_make_stream_public(user_profile, realm, stream_name):
     stream_name = stream_name.strip()

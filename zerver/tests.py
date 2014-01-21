@@ -770,17 +770,28 @@ class PermissionTest(AuthedTestCase):
 
         # Giveth
         req = dict(is_admin=ujson.dumps(True))
-        result = self.client_patch('/json/users/othello@zulip.com', req)
+
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/othello@zulip.com', req)
         self.assert_json_success(result)
         admin_users = realm.get_admin_users()
         self.assertTrue(user in admin_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['email'], 'othello@zulip.com')
+        self.assertEqual(person['is_admin'], True)
 
         # Taketh away
         req = dict(is_admin=ujson.dumps(False))
-        result = self.client_patch('/json/users/othello@zulip.com', req)
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/othello@zulip.com', req)
         self.assert_json_success(result)
         admin_users = realm.get_admin_users()
         self.assertFalse(user in admin_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['email'], 'othello@zulip.com')
+        self.assertEqual(person['is_admin'], False)
 
         # Make sure only admins can patch other user's info.
         self.login('othello@zulip.com')
