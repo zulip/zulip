@@ -42,18 +42,27 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
     if not last_for_client:
         return
 
-    message_ids = []
+    message_ids_to_notify = []
     for event in queue.event_queue.contents():
         if not event['type'] == 'message' or not event['flags']:
             continue
 
         if 'mentioned' in event['flags'] and not 'read' in event['flags']:
-            message_ids.append(event['message']['id'])
+            notify_info = dict(message_id=event['message']['id'])
 
-    for msg_id in message_ids:
+            if not event.get('push_notified', False):
+                notify_info['send_push'] = True
+            if not event.get('email_notified', False):
+                notify_info['send_email'] = True
+            message_ids_to_notify.append(notify_info)
+
+    for notify_info in message_ids_to_notify:
+        msg_id = notify_info['message_id']
         event = build_offline_notification_event(user_profile_id, msg_id)
-        queue_json_publish("missedmessage_emails", event, lambda event: None)
-        queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
+        if notify_info.get('send_push', False):
+            queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
+        if notify_info.get('send_email', False):
+            queue_json_publish("missedmessage_}emails", event, lambda event: None)
 
 @cache_with_key(message_cache_key, timeout=3600*24)
 def get_message_by_id_dbwarn(message_id):
@@ -102,6 +111,9 @@ def process_new_message(data):
     # To remove duplicate clients: Maps queue ID to {'client': Client, 'flags': flags}
     send_to_clients = dict()
 
+    # Extra user-specific data to include
+    extra_user_data = {}
+
     if 'stream_name' in data and not data.get("invite_only"):
         for client in get_client_descriptors_for_realm_all_streams(data['realm_id']):
             send_to_clients[client.event_queue.id] = {'client': client, 'flags': None}
@@ -127,17 +139,22 @@ def process_new_message(data):
         if (received_pm or mentioned) and (idle or always_push_notify):
             event = build_offline_notification_event(user_profile_id, message.id)
 
+            queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
+            notified = dict(push_notified=True)
             # Don't send missed message emails if always_push_notify is True
             if idle:
                 # We require RabbitMQ to do this, as we can't call the email handler
                 # from the Tornado process. So if there's no rabbitmq support do nothing
                 queue_json_publish("missedmessage_emails", event, lambda event: None)
-            queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
+                notified['email_notified'] = True
+
+            extra_user_data[user_profile_id] = notified
 
     for client_data in send_to_clients.itervalues():
         client = client_data['client']
         flags = client_data['flags']
         is_sender = client_data.get('is_sender', False)
+        extra_data = extra_user_data.get(client.user_profile_id, None)
 
         if not client.accepts_messages():
             # The actual check is the accepts_event() check below;
@@ -156,6 +173,8 @@ def process_new_message(data):
             message_dict["invite_only_stream"] = True
 
         event = dict(type='message', message=message_dict, flags=flags)
+        if extra_data is not None:
+            event.update(extra_data)
 
         if is_sender:
             local_message_id = data.get('local_id', None)
