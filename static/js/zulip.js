@@ -83,29 +83,24 @@ function update_person(person) {
     // we just push out changes to that field.  As we add more things
     // that can change, this will need to either get complicated or be
     // replaced by MVC
-    var i;
     if (! people_dict.has(person.email)) {
         blueslip.error("Got update_person event for unexpected user",
                        {email: person.email});
         return;
     }
     var person_obj = people_dict.get(person.email);
+
     if (people_by_name_dict.has(person_obj.full_name)) {
         people_by_name_dict.set(person.full_name, person_obj);
         people_by_name_dict.del(person_obj.full_name);
     }
+
     person_obj.full_name = person.full_name;
-    // This should be the same object, but...
-    realm_people_dict.get(person.email).full_name = person.full_name;
-    for (i = 0; i < page_params.people_list.length; i++) {
-        if (page_params.people_list[i].email === person.email) {
-            page_params.people_list[i].full_name = person.full_name;
-            break;
-        }
-    }
+
     if (person.email === page_params.email) {
         page_params.fullname = person.full_name;
     }
+
     activity.set_user_statuses([]);
 
     // TODO: update sender names on messages
