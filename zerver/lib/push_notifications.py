@@ -65,9 +65,12 @@ def send_apple_push_notification(user, alert, **extra_data):
         logging.warning("APNS: Unknown error when delivering APNS: %s" %  (errmsg,))
 
     if ret.needs_retry():
-        # TODO handle retrying by potentially scheduling a background job
-        # or re-queueing
-        logging.warning("APNS: delivery needs a retry but ignoring")
+        logging.warning("APNS: delivery needs a retry, trying again")
+        retry_msg = ret.retry()
+        ret = apns_client.send(retry_msg)
+        for code, errmsg in ret.errors:
+            logging.warning("APNS: Unknown error when delivering APNS: %s" %  (errmsg,))
+
 
 # NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
 # feedback() call can take up to 15s
