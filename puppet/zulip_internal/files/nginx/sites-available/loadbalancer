@@ -27,7 +27,7 @@ server {
 
     ssl on;
     ssl_certificate /etc/ssl/certs/www.humbughq.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
+    ssl_certificate_key /etc/ssl/private/production-zulip.key;
 
     location / {
         proxy_pass https://prod;
