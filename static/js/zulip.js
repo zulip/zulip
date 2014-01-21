@@ -90,15 +90,17 @@ function update_person(person) {
     }
     var person_obj = people_dict.get(person.email);
 
-    if (people_by_name_dict.has(person_obj.full_name)) {
-        people_by_name_dict.set(person.full_name, person_obj);
-        people_by_name_dict.del(person_obj.full_name);
-    }
+    if (_.has(person, 'full_name')) {
+        if (people_by_name_dict.has(person_obj.full_name)) {
+            people_by_name_dict.set(person.full_name, person_obj);
+            people_by_name_dict.del(person_obj.full_name);
+        }
 
-    person_obj.full_name = person.full_name;
+        person_obj.full_name = person.full_name;
 
-    if (person.email === page_params.email) {
-        page_params.fullname = person.full_name;
+        if (person.email === page_params.email) {
+            page_params.fullname = person.full_name;
+        }
     }
 
     activity.set_user_statuses([]);
