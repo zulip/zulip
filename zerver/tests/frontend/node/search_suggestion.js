@@ -102,6 +102,15 @@ set_global('narrow', {});
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    query = 'is:private al';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "is:private al",
+        "pm-with:alice@zulip.com",
+        "is:private"
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
     query = 'pm-with:t';
     suggestions = search.get_suggestions(query);
     expected = [

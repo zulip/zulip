@@ -173,6 +173,7 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
 
         if (operator === 'search') {
             query = operators[0][1];
+            matching_operator = person_operator_matches[0];
         } else {
             _.each(person_operator_matches, function (item) {
                 if (operator === item) {
