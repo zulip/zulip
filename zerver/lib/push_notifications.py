@@ -55,6 +55,10 @@ def send_apple_push_notification(user, alert, **extra_data):
     for token, reason in ret.failed.items():
         code, errmsg = reason
         logging.warning("APNS: Failed to deliver APNS notification to %s, reason: %s" % (token, errmsg))
+        if code == 8:
+            # Invalid Token, remove from our database
+            logging.warning("APNS: Removing token from database due to above failure")
+            PushDeviceToken.objects.get(user=user, token=hex_to_b64(token)).delete()
 
     # Check failures not related to devices.
     for code, errmsg in ret.errors:
