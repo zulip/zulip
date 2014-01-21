@@ -43,27 +43,27 @@ def send_apple_push_notification(user, alert, **extra_data):
     tokens = [b64_to_hex(device.token) for device in
         PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)]
 
-    logging.info("Sending apple push notification to devices: %s" % (tokens,))
+    logging.info("APNS: Sending apple push notification to devices: %s" % (tokens,))
     message = Message(tokens, alert=alert, **extra_data)
 
     apns_client = APNs(connection)
     ret = apns_client.send(message)
     if not ret:
-       logging.warning("Failed to send push notification for clients %s" % (tokens,))
+       logging.warning("APNS: Failed to send push notification for clients %s" % (tokens,))
        return
 
     for token, reason in ret.failed.items():
         code, errmsg = reason
-        logging.warning("Failed to deliver APNS notification to %s, reason: %s" % (token, errmsg))
+        logging.warning("APNS: Failed to deliver APNS notification to %s, reason: %s" % (token, errmsg))
 
     # Check failures not related to devices.
     for code, errmsg in ret.errors:
-        logging.warning("Unknown error when delivering APNS: %s" %  (errmsg,))
+        logging.warning("APNS: Unknown error when delivering APNS: %s" %  (errmsg,))
 
     if ret.needs_retry():
         # TODO handle retrying by potentially scheduling a background job
         # or re-queueing
-        logging.warning("APNS delivery needs a retry but ignoring")
+        logging.warning("APNS: delivery needs a retry but ignoring")
 
 # NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
 # feedback() call can take up to 15s
