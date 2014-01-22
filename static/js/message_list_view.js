@@ -53,7 +53,6 @@ MessageListView.prototype = {
 
     render: function MessageListView__render(messages, where, messages_are_new) {
         var list = this.list; // for convenience
-        blueslip.debug("RENDERING from " + messages[0].id + " to " + messages[messages.length - 1].id);
 
         // This function processes messages into chunks with separators between them,
         // and templates them to be inserted as table rows into the DOM.

@@ -251,7 +251,6 @@ exports.activate = function (operators, opts) {
     // the message we want anyway or if the filter can't be applied
     // locally.
     if (all_msg_list.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        blueslip.debug("Got then_select_id in all_msg_list, adding all messages in activate. Then select: " + then_select_id);
         add_messages(all_msg_list.all(), narrowed_msg_list);
     }
 
@@ -273,7 +272,6 @@ exports.activate = function (operators, opts) {
 
     reset_load_more_status();
     if (! defer_selecting_closest) {
-        blueslip.debug("Now maybe selecting closest");
         maybe_select_closest();
     }
 
