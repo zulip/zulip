@@ -2,6 +2,15 @@ var admin = (function () {
 
 var exports = {};
 
+exports.show_or_hide_menu_item = function () {
+    var item = $('.admin-menu-item').expectOne();
+    if (page_params.is_admin) {
+        item.show();
+    } else {
+        item.hide();
+    }
+};
+
 function failed_listing_users(xhr, error) {
     util.destroy_loading_indicator($('#subs_page_loading_indicator'));
     ui.report_error("Error listing users or bots", xhr, $("#administration-status"));

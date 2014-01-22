@@ -966,6 +966,8 @@ $(function () {
         $('#old_password, #new_password, #confirm_password').val('');
     }
 
+    admin.show_or_hide_menu_item();
+
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
         var old_tab = $(e.relatedTarget).attr('href');

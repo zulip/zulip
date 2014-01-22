@@ -3699,6 +3699,10 @@ div.edit_bot {
     text-decoration: line-through;
 }
 
+.admin-menu-item {
+    display: none;
+}
+
 .administration {
     margin-top: 55px;
     padding-left: 15px;
