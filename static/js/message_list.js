@@ -30,7 +30,7 @@ function MessageList(table_name, filter, opts) {
 (function () {
 
 MessageList.prototype = {
-    add_messages: function MessageList_add_messages(messages, messages_are_new) {
+    add_messages: function MessageList_add_messages(messages, opts) {
         var self = this;
         var predicate = self.filter.predicate();
         var top_messages = [];
@@ -71,11 +71,12 @@ MessageList.prototype = {
             self.prepend(top_messages);
         }
         if (bottom_messages.length > 0) {
-            self.append(bottom_messages, messages_are_new);
+            self.append(bottom_messages, opts);
         }
 
         if ((self === narrowed_msg_list) && !self.empty() &&
-            (self.selected_id() === -1)) {
+            (self.selected_id() === -1) &&
+            !opts.delay_render) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
@@ -143,7 +144,8 @@ MessageList.prototype = {
                 then_scroll: false,
                 use_closest: false,
                 empty_ok: false,
-                mark_read: true
+                mark_read: true,
+                force_rerender: false
             }, opts, {
                 id: id,
                 msg_list: this,
@@ -181,7 +183,9 @@ MessageList.prototype = {
         opts.id = id;
         this._selected_id = id;
 
-        if (!opts.from_rendering) {
+        if (opts.force_rerender) {
+            this.rerender();
+        } else if (!opts.from_rendering) {
             this.view.maybe_rerender();
         }
 
@@ -348,7 +352,9 @@ MessageList.prototype = {
         });
     },
 
-    append: function MessageList_append(messages, messages_are_new) {
+    append: function MessageList_append(messages, opts) {
+        opts = _.extend({delay_render: false, messages_are_new: false}, opts);
+
         var viewable_messages;
         if (this.muting_enabled) {
             this._all_items = this._all_items.concat(messages);
@@ -367,7 +373,9 @@ MessageList.prototype = {
 
         this._add_to_hash(messages);
 
-        this.view.append(viewable_messages, messages_are_new);
+        if (!opts.delay_render) {
+            this.view.append(viewable_messages, opts.messages_are_new);
+        }
     },
 
     prepend: function MessageList_prepend(messages) {

@@ -234,7 +234,8 @@ exports.activate = function (operators, opts) {
             var then_scroll = !preserve_pre_narrowing_screen_position;
 
             narrowed_msg_list.select_id(then_select_id, {then_scroll: then_scroll,
-                                                         use_closest: true
+                                                         use_closest: true,
+                                                         force_rerender: true
                                                         });
 
             if (preserve_pre_narrowing_screen_position) {
@@ -251,7 +252,7 @@ exports.activate = function (operators, opts) {
     // the message we want anyway or if the filter can't be applied
     // locally.
     if (all_msg_list.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        add_messages(all_msg_list.all(), narrowed_msg_list);
+        add_messages(all_msg_list.all(), narrowed_msg_list, {delay_render: true});
     }
 
     var defer_selecting_closest = narrowed_msg_list.empty();
@@ -261,6 +262,7 @@ exports.activate = function (operators, opts) {
         num_after: 50,
         msg_list: narrowed_msg_list,
         cont: function (messages) {
+            ui.hide_loading_more_messages_indicator();
             if (defer_selecting_closest) {
                 maybe_select_closest();
             }
@@ -270,9 +272,11 @@ exports.activate = function (operators, opts) {
         cont_will_add_messages: false
     });
 
-    reset_load_more_status();
     if (! defer_selecting_closest) {
+        reset_load_more_status();
         maybe_select_closest();
+    } else {
+        ui.show_loading_more_messages_indicator();
     }
 
     // Put the narrow operators in the URL fragment.

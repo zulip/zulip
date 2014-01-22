@@ -648,17 +648,19 @@ function add_message_metadata(message) {
     return message;
 }
 
-function add_messages(messages, msg_list, messages_are_new) {
+function add_messages(messages, msg_list, opts) {
     if (!messages) {
         return;
     }
 
+    opts = _.extend({messages_are_new: false, delay_render: false}, opts);
+
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
 
-    msg_list.add_messages(messages, messages_are_new);
+    msg_list.add_messages(messages, opts);
 
-    if (msg_list === home_msg_list && messages_are_new) {
+    if (msg_list === home_msg_list && opts.messages_are_new) {
         _.each(messages, function (message) {
             if (message.sent_by_me) {
                 compose.mark_end_to_end_receive_time(message.id);
@@ -701,7 +703,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             });
 
             new_messages = _.map(new_messages, add_message_metadata);
-            add_messages(new_messages, msg_list, messages_are_new);
+            add_messages(new_messages, msg_list, {messages_are_new: messages_are_new});
             process_visible_unread_messages();
             notifications.possibly_notify_new_messages_outside_viewport(new_messages);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
@@ -794,12 +796,12 @@ function insert_new_messages(messages) {
 
     // You must add add messages to home_msg_list BEFORE
     // calling process_loaded_for_unread.
-    add_messages(messages, home_msg_list, true);
-    add_messages(messages, all_msg_list, true);
+    add_messages(messages, home_msg_list, {messages_are_new: true});
+    add_messages(messages, all_msg_list, {messages_are_new: true});
 
     if (narrow.active()) {
         if (narrow.filter().can_apply_locally()) {
-            add_messages(messages, narrowed_msg_list, true);
+            add_messages(messages, narrowed_msg_list, {messages_are_new: true});
             notifications.possibly_notify_new_messages_outside_viewport(messages);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
@@ -1082,11 +1084,11 @@ function process_result(messages, opts) {
     // from all_msg_list.
     if (opts.msg_list === home_msg_list) {
         process_loaded_for_unread(messages);
-        add_messages(messages, all_msg_list, false);
+        add_messages(messages, all_msg_list, {messages_are_new: false});
     }
 
     if (messages.length !== 0 && !opts.cont_will_add_messages) {
-        add_messages(messages, opts.msg_list, false);
+        add_messages(messages, opts.msg_list, {messages_are_new: false});
     }
 
     stream_list.update_streams_sidebar();
