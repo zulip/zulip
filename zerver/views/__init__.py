@@ -65,7 +65,6 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token, statsd_key
 from zerver import tornado_callbacks
 from zproject.backends import password_auth_enabled
-from guardian.shortcuts import assign_perm
 
 from confirmation.models import Confirmation
 
@@ -338,7 +337,7 @@ def accounts_register(request):
         login(request, authenticate(username=user_profile.email, use_dummy_backend=True))
 
         if first_in_realm:
-            assign_perm("administer", user_profile, user_profile.realm)
+            do_change_is_admin(user_profile, True)
             return HttpResponseRedirect(reverse('zerver.views.initial_invite_page'))
         else:
             return HttpResponseRedirect(reverse('zerver.views.home'))
