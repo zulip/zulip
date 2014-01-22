@@ -5,7 +5,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 
-from guardian.shortcuts import assign_perm, remove_perm
+from zerver.lib.actions import do_change_is_admin
 
 from zerver.models import UserProfile
 
@@ -43,14 +43,14 @@ ONLY perform this on customer request from an authorized person.
                 raise CommandError("User already has permission for this realm.")
             else:
                 if options['ack']:
-                    assign_perm('administer', profile, profile.realm)
+                    do_change_is_admin(profile, True)
                     print "Done!"
                 else:
                     print "Would have made %s an administrator for %s" % (email, profile.realm.domain)
         else:
             if profile.has_perm('administer', profile.realm):
                 if options['ack']:
-                    remove_perm('administer', profile, profile.realm)
+                    do_change_is_admin(profile, False)
                     print "Done!"
                 else:
                     print "Would have removed %s's administrator rights on %s" % (email,
