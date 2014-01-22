@@ -40,25 +40,26 @@ def send_apple_push_notification(user, alert, **extra_data):
         logging.error("Attempting to send push notification, but no connection was found. This may be because we could not find the APNS Certificate file.")
         return
 
-    tokens = [b64_to_hex(device.token) for device in
-        PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)]
+    b64_tokens = [device.token for device in PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)]
+    tokens     = [b64_to_hex(token) for token in b64_tokens]
 
-    logging.info("APNS: Sending apple push notification to devices: %s" % (tokens,))
+    logging.info("APNS: Sending apple push notification to devices: %s" % (b64_tokens,))
     message = Message(tokens, alert=alert, **extra_data)
 
     apns_client = APNs(connection)
     ret = apns_client.send(message)
     if not ret:
-       logging.warning("APNS: Failed to send push notification for clients %s" % (tokens,))
+       logging.warning("APNS: Failed to send push notification for clients %s" % (b64_tokens,))
        return
 
     for token, reason in ret.failed.items():
         code, errmsg = reason
-        logging.warning("APNS: Failed to deliver APNS notification to %s, reason: %s" % (token, errmsg))
+        b64_token = hex_to_b64(token)
+        logging.warning("APNS: Failed to deliver APNS notification to %s, reason: %s" % (b64_token, errmsg))
         if code == 8:
             # Invalid Token, remove from our database
             logging.warning("APNS: Removing token from database due to above failure")
-            PushDeviceToken.objects.get(user=user, token=hex_to_b64(token)).delete()
+            PushDeviceToken.objects.get(user=user, token=b64_token).delete()
 
     # Check failures not related to devices.
     for code, errmsg in ret.errors:
