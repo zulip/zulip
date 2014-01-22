@@ -107,12 +107,28 @@ def send_android_push_notification(user, data):
     for reg_id, msg_id in res.success.items():
         logging.info("GCM: Sent %s as %s" % (reg_id, msg_id))
 
+    # res.canonical will contain results when there are duplicate registrations for the same
+    # device. The "canonical" registration is the latest registration made by the device.
+    # Ref: http://developer.android.com/google/gcm/adv.html#canonical
     for reg_id, new_reg_id in res.canonical.items():
-        logging.info("GCM: Updating registration %s with %s" % (reg_id, new_reg_id))
+        if reg_id == new_reg_id:
+            # I'm not sure if this should happen. In any case, not really actionable.
+            logging.warning("GCM: Got canonical ref but it already matches our ID %s!" % (reg_id,))
+        elif not PushDeviceToken.objects.filter(token=new_reg_id, kind=PushDeviceToken.GCM).count():
+            # This case shouldn't happen; any time we get a canonical ref it should have been
+            # previously registered in our system.
+            #
+            # That said, recovery is easy: just update the current PDT object to use the new ID.
+            logging.warning(
+                    "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
+                    (new_reg_id, reg_id))
+            PushDeviceToken.objects.filter(
+                    token=reg_id, kind=PushDeviceToken.GCM).update(token=new_reg_id)
+        else:
+            # Since we know the new ID is registered in our system we can just drop the old one.
+            logging.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))
 
-        device = PushDeviceToken.objects.get(token=reg_id, kind=PushDeviceToken.GCM)
-        device.token = new_reg_id
-        device.save(update_fields=['token'])
+            PushDeviceToken.objects.filter(token=reg_id, kind=PushDeviceToken.GCM).delete()
 
     for reg_id in res.not_registered:
         logging.info("GCM: Removing %s" % (reg_id,))
