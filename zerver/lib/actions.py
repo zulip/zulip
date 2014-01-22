@@ -1248,9 +1248,16 @@ def do_rename_stream(realm, old_name, new_name, log=True):
     cache_delete_many(
         to_dict_cache_key_id(message.id, False) for message in messages)
 
-    notice = dict(event=dict(type="subscriptions", op="update", property="name",
-                             name=old_name, value=new_name),
-                  users=active_user_ids(realm))
+    # We will tell our users to essentially
+    # update stream.name = new_name where name = old_name
+    event = dict(
+        op="update",
+        type="stream",
+        property="name",
+        value=new_name,
+        name=old_name
+    )
+    notice = dict(event=event, users=active_user_ids(realm))
 
     tornado_callbacks.send_notification(notice)
 
@@ -1902,7 +1909,13 @@ def apply_events(state, events):
                 for p in state['realm_users']:
                     if our_person(p):
                         p.update(person)
-
+        elif event['type'] == 'stream':
+            if event['op'] == 'update':
+                # For legacy reasons, we call stream data 'subscriptions' in
+                # the state var here, for the benefit of the JS code.
+                for obj in state['subscriptions']:
+                    if obj['name'].lower() == event['name'].lower():
+                        obj[event['property']] = event['value']
         elif event['type'] == "subscriptions":
             if event['op'] in ["add"]:
                 # Convert the user_profile IDs to emails since that's what register() returns

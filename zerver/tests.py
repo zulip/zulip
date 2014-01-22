@@ -22,7 +22,8 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
     set_default_streams, get_emails_from_user_ids, one_click_unsubscribe_link, \
-    do_deactivate_user, do_reactivate_user, enqueue_welcome_emails, do_change_is_admin
+    do_deactivate_user, do_reactivate_user, enqueue_welcome_emails, do_change_is_admin, \
+    do_rename_stream
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -602,8 +603,19 @@ class StreamAdminTest(AuthedTestCase):
         do_add_subscription(user_profile, stream, no_log=True)
         do_change_is_admin(user_profile, True)
 
-        result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
         self.assert_json_success(result)
+
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            op='update',
+            type='stream',
+            property='name',
+            value='stream_name2',
+            name='stream_name1'
+        ))
 
         stream_name1_exists = Stream.objects.filter(
             name='stream_name1',
@@ -3599,6 +3611,12 @@ class EventsRegisterTest(AuthedTestCase):
         self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#[123]",
                                                 "https://realm.com/my_realm_filter/%(id)s"))
         self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#[123]"))
+
+    def test_rename_stream(self):
+        realm = get_realm('zulip.com')
+        stream, _ = create_stream_if_needed(realm, 'old_name')
+        new_name = 'stream with a brand new name'
+        self.do_test(lambda: do_rename_stream(realm, stream.name, new_name))
 
     def test_subscribe_events(self):
         self.do_test(lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream"),

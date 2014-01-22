@@ -884,6 +884,12 @@ function get_updates_success(data) {
                 update_person(event.person);
             }
             break;
+        case 'stream':
+            if (event.op === 'update') {
+                // Legacy: Stream properties are still managed by subs.js on the client side.
+                subs.update_subscription_properties(event.name, event.property, event.value);
+            }
+            break;
         case 'subscriptions':
             if (event.op === 'add') {
                 _.each(event.subscriptions, function (subscription) {
