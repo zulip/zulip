@@ -527,6 +527,22 @@ class StreamSubscribeButton(markdown.inlinepatterns.Pattern):
 
         return span
 
+class ModalLink(markdown.inlinepatterns.Pattern):
+    """
+    A pattern that allows including in-app modal links in messages.
+    """
+    def handleMatch(self, match):
+        relative_url = match.group('relative_url')
+        text = match.group('text')
+
+        a_tag = markdown.util.etree.Element("a")
+        a_tag.set("href", relative_url)
+        a_tag.set("title", relative_url)
+        a_tag.set("data-toggle", "modal")
+        a_tag.text = text
+
+        return a_tag
+
 upload_re = re.compile(r"^(?:https://%s.s3.amazonaws.com|/user_uploads/\d+)/[^/]*/([^/]*)$" % (settings.S3_BUCKET,))
 def url_filename(url):
     """Extract the filename if a URL is an uploaded file, or return the original URL"""
@@ -812,7 +828,10 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
 
         md.inlinePatterns.add('stream_subscribe_button', StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '_begin')
-
+        md.inlinePatterns.add(
+            'modal_link',
+            ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
+            '_begin')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
