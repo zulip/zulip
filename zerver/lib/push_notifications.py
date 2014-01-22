@@ -76,7 +76,8 @@ def send_apple_push_notification(user, alert, **extra_data):
 # NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
 # feedback() call can take up to 15s
 def check_apns_feedback():
-    apns_client = APNs(connection, tail_timeout=20)
+    feedback_connection = session.get_connection(settings.APNS_FEEDBACK, cert_file=settings.APNS_CERT_FILE)
+    apns_client = APNs(feedback_connection, tail_timeout=20)
 
     for token, since in apns_client.feedback():
         since_date = timestamp_to_datetime(since)
