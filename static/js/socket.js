@@ -5,10 +5,11 @@ function Socket(url) {
     this._is_reconnecting = false;
     this._reconnect_initiation_time = null;
     this._next_req_id_counter = 0;
-    this._requests = {};
     this._connection_failures = 0;
     this._reconnect_timeout_id = null;
     this._heartbeat_timeout_id = null;
+    this._localstorage_requests_key = 'zulip_socket_requests';
+    this._requests = this._localstorage_requests();
 
     var that = this;
     this._is_unloading = false;
@@ -19,6 +20,12 @@ function Socket(url) {
     $(document).on("unsuspend", function () {
         that._try_to_reconnect();
     });
+
+    // Notify any listeners that we've restored these requests from localstorage
+    // Listeners may mutate request objects in this list to affect re-send behaviour
+    if (Object.keys(this._requests).length !== 0) {
+        $(document).trigger('socket_loaded_requests.zulip', {requests: this._requests});
+    }
 
     this._supported_protocols = ['websocket', 'xdr-streaming', 'xhr-streaming',
                                  'xdr-polling', 'xhr-polling', 'jsonp-polling'];
@@ -38,6 +45,13 @@ Socket.prototype = {
                 state: 'pending'};
     },
 
+    // Note that by default messages are queued and retried across
+    // browser restarts if a restart takes place before a message
+    // is successfully transmitted.
+    // If that is the case, the success/error callbacks will not
+    // be automatically called. They can be re-added by modifying
+    // the loaded-from-localStorage request in the payload of
+    // the socket_loaded_requests.zulip event.
     send: function Socket__send(msg, success, error) {
         var request = this._make_request('request');
         request.msg = msg;
@@ -305,15 +319,57 @@ Socket.prototype = {
         }, wait_time);
     },
 
+    _localstorage_requests: function Socket__localstorage_requests() {
+        if (!localstorage.supported()) {
+            return {};
+        }
+        return JSON.parse(window.localStorage[this._localstorage_requests_key] || "{}");
+    },
+
+    _save_localstorage_requests: function Socket__save_localstorage_requests() {
+        if (!localstorage.supported()) {
+            return;
+        }
+
+        // Auth requests are always session-specific, so don't store them for later
+        var non_auth_reqs = {};
+        _.each(this._requests, function (val, key) {
+            if (val.type !== 'auth') {
+                non_auth_reqs[key] = val;
+            }
+        });
+
+        window.localStorage[this._localstorage_requests_key] = JSON.stringify(non_auth_reqs);
+    },
+
     _save_request: function Socket__save_request(request) {
         this._requests[request.req_id] = request;
+
+        if (!localstorage.supported()) {
+            return;
+        }
+
+        this._save_localstorage_requests();
     },
 
     _remove_request: function Socket__remove_request(req_id) {
         delete this._requests[req_id];
+
+        if (!localstorage.supported()) {
+            return;
+        }
+
+        this._save_localstorage_requests();
+
     },
 
     _update_request_state: function Socket__update_request_state(req_id, state) {
         this._requests[req_id].state = state;
+
+        if (!localstorage.supported()) {
+            return;
+        }
+
+        this._save_localstorage_requests();
     }
 };
