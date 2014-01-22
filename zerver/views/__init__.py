@@ -1242,7 +1242,7 @@ def add_subscriptions_backend(request, user_profile,
             else:
                 stream_msg = "a new stream `%s`" % (created_streams[0].name)
 
-            stream_buttons = ' '.join(stream_button(s.name for s in created_streams))
+            stream_buttons = ' '.join(stream_button(s.name) for s in created_streams)
             msg = ("%s just created %s. %s" % (user_profile.full_name,
                                                 stream_msg, stream_buttons))
             notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
