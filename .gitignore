@@ -20,3 +20,6 @@ coverage/
 /queue_error
 /workers.log
 .test-js-with-node.html
+digest.log
+errors.log
+manage.log
