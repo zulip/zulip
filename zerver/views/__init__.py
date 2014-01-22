@@ -37,7 +37,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
-    do_make_stream_private, do_change_default_desktop_notifications
+    do_make_stream_private, do_change_default_desktop_notifications, \
+    do_change_stream_description
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
@@ -55,7 +56,8 @@ from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
-    JsonableError, get_user_profile_by_email, REQ, require_realm_admin
+    JsonableError, get_user_profile_by_email, REQ, require_realm_admin, \
+    RequestVariableConversionError
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
     get_signed_upload_url
@@ -1105,6 +1107,14 @@ def json_make_stream_public(request, user_profile, stream_name=REQ):
 @has_request_variables
 def json_make_stream_private(request, user_profile, stream_name=REQ):
     return json_success(do_make_stream_private(user_profile.realm, stream_name))
+
+@require_realm_admin
+@has_request_variables
+def update_stream_backend(request, user_profile, stream_name,
+                          description=REQ(validator=check_string, default=None)):
+    if description is not None:
+       do_change_stream_description(user_profile.realm, stream_name, description)
+    return json_success({})
 
 def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})

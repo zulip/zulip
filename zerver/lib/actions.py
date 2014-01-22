@@ -852,6 +852,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     color=subscription.color,
                     email_address=encode_email_address(stream),
                     notifications=subscription.notifications,
+                    description=stream.description,
                     subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
     notice = dict(event=dict(type="subscriptions", op="add",
@@ -1264,6 +1265,19 @@ def do_rename_stream(realm, old_name, new_name, log=True):
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
     return {"email_address": encode_email_address(stream)}
+
+def do_change_stream_description(realm, stream_name, new_description):
+    stream = get_stream(stream_name, realm)
+    stream.description = new_description
+    stream.save(update_fields=['description'])
+
+    notice = dict(event=dict(type='stream', op='update',
+                             property='description', name=stream_name,
+                             value=new_description),
+                  users=active_user_ids(realm))
+
+    tornado_callbacks.send_notification(notice)
+    return {}
 
 def do_create_realm(domain, name, restricted_to_domain=True):
     realm = get_realm(domain)

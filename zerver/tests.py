@@ -23,7 +23,7 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
     set_default_streams, get_emails_from_user_ids, one_click_unsubscribe_link, \
     do_deactivate_user, do_reactivate_user, enqueue_welcome_emails, do_change_is_admin, \
-    do_rename_stream
+    do_rename_stream, do_change_stream_description
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -466,7 +466,7 @@ class AuthedTestCase(TestCase):
         Successful POSTs return a 200 and JSON of the form {"result": "success",
         "msg": ""}.
         """
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 200, result)
         json = ujson.loads(result.content)
         self.assertEqual(json.get("result"), "success")
         # We have a msg key for consistency with errors, but it typically has an
@@ -636,6 +636,38 @@ class StreamAdminTest(AuthedTestCase):
         stream, _ = create_stream_if_needed(realm, 'stream_name1')
 
         result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+        self.assert_json_error(result, 'Must be a realm administrator')
+
+    def test_change_stream_description(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'stream_name1')
+        do_add_subscription(user_profile, stream, no_log=True)
+        do_change_is_admin(user_profile, True)
+
+        result = self.client_patch('/json/streams/stream_name1',
+                                  {'description': ujson.dumps('Test description')})
+        self.assert_json_success(result)
+
+        stream = Stream.objects.get(
+            name='stream_name1',
+            realm=realm,
+        )
+        self.assertEqual('Test description', stream.description)
+
+    def test_change_stream_description_requires_realm_admin(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'stream_name1')
+        do_add_subscription(user_profile, stream, no_log=True)
+        do_change_is_admin(user_profile, False)
+
+        result = self.client_patch('/json/streams/stream_name1',
+                                  {'description': ujson.dumps('Test description')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
 class TestCrossRealmPMs(AuthedTestCase):
@@ -3665,6 +3697,9 @@ class EventsRegisterTest(AuthedTestCase):
         self.do_test(lambda: do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream),
                      matcher=lambda a, b: self.match_except(a, b, "unsubscribed"))
         self.do_test(lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream"),
+                     matcher=lambda a, b: self.match_with_reorder(a, b, "subscriptions"))
+        self.do_test(lambda: do_change_stream_description(get_realm('zulip.com'), 'test_stream',
+                                                          'new description'),
                      matcher=lambda a, b: self.match_with_reorder(a, b, "subscriptions"))
 
 from zerver.lib.event_queue import EventQueue

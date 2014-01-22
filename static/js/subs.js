@@ -831,6 +831,31 @@ $(function () {
         });
     });
 
+    $('#subscriptions_table').on('submit', '.change-stream-description form', function (e) {
+        e.preventDefault();
+        var $form = $(e.target);
+
+        var $sub_row = $(e.target).closest('.subscription_row');
+        var stream_name = $sub_row.find('.subscription_name').text();
+        var description = $sub_row.find('input[name="description"]').val();
+
+        $('#subscription_status').hide();
+
+        channel.patch({
+            url: '/json/streams/' + stream_name,
+            data: {
+                'description': JSON.stringify(description)
+            },
+            success: function () {
+                // The event from the server will update the rest of the UI
+                ui.report_success("The stream description has been updated!", $("#subscriptions-status"));
+            },
+            error: function (xhr) {
+                ui.report_error("Error updating the stream description", xhr, $("#subscriptions-status"));
+            }
+        });
+    });
+
     function redraw_privacy_related_stuff(sub_row, sub) {
         var html;
 
