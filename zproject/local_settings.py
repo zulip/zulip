@@ -126,7 +126,7 @@ else:
 if STAGING_DEPLOYED:
     APNS_SANDBOX = "push_sandbox"
     APNS_FEEDBACK = "feedback_sandbox"
-    APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"
+    APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
 elif DEPLOYED:
     APNS_SANDBOX = "push_production"
     APNS_FEEDBACK = "feedback_production"
