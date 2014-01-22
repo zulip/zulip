@@ -1279,12 +1279,11 @@ def do_create_realm(domain, name, restricted_to_domain=True):
         realm.save(update_fields=['notifications_stream'])
 
         # Include a welcome message in this notifications stream
-        content = """Welcome to Zulip!
+        content = """Hello, and welcome to Zulip!
 
-This is a message sent to the `zulip` stream, used for system-generated notifications.
-Feel free to reply to say hello, though I am a bot so I won't be able to respond!"""
-        msg = internal_prep_message(settings.NOTIFICATION_BOT, 'stream',
-                                     notifications_stream.name, "Welcome",
+This is a message on stream `zulip` with the topic `welcome`. We'll use this stream for system-generated notifications."""
+        msg = internal_prep_message(settings.WELCOME_BOT, 'stream',
+                                     notifications_stream.name, "welcome",
                                      content, realm=realm)
         do_send_messages([msg])
 
