@@ -6,7 +6,6 @@ from django.test.simple import DjangoTestSuiteRunner
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from guardian.shortcuts import assign_perm, remove_perm
 
 from zilencer.models import Deployment
 
@@ -23,7 +22,7 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
     set_default_streams, get_emails_from_user_ids, one_click_unsubscribe_link, \
-    do_deactivate_user, do_reactivate_user, enqueue_welcome_emails
+    do_deactivate_user, do_reactivate_user, enqueue_welcome_emails, do_change_is_admin
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -530,7 +529,7 @@ class StreamAdminTest(AuthedTestCase):
         realm = user_profile.realm
         stream, _ = create_stream_if_needed(realm, 'private_stream', invite_only=True)
 
-        assign_perm('administer', user_profile, realm)
+        do_change_is_admin(user_profile, True)
         params = {
             'stream_name': 'private_stream'
         }
@@ -539,7 +538,7 @@ class StreamAdminTest(AuthedTestCase):
 
         do_add_subscription(user_profile, stream)
 
-        assign_perm('administer', user_profile, realm)
+        do_change_is_admin(user_profile, True)
         params = {
             'stream_name': 'private_stream'
         }
@@ -555,7 +554,7 @@ class StreamAdminTest(AuthedTestCase):
         realm = user_profile.realm
         stream, _ = create_stream_if_needed(realm, 'public_stream')
 
-        assign_perm('administer', user_profile, realm)
+        do_change_is_admin(user_profile, True)
         params = {
             'stream_name': 'public_stream'
         }
@@ -571,7 +570,7 @@ class StreamAdminTest(AuthedTestCase):
         realm = user_profile.realm
         stream, _ = create_stream_if_needed(realm, 'new_stream')
         do_add_subscription(user_profile, stream, no_log=True)
-        assign_perm('administer', user_profile, realm)
+        do_change_is_admin(user_profile, True)
 
         result = self.client.delete('/json/streams/new_stream')
         self.assert_json_success(result)
@@ -601,7 +600,7 @@ class StreamAdminTest(AuthedTestCase):
         realm = user_profile.realm
         stream, _ = create_stream_if_needed(realm, 'stream_name1')
         do_add_subscription(user_profile, stream, no_log=True)
-        assign_perm('administer', user_profile, realm)
+        do_change_is_admin(user_profile, True)
 
         result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
         self.assert_json_success(result)
@@ -745,10 +744,10 @@ class TestCrossRealmPMs(AuthedTestCase):
 class PermissionTest(AuthedTestCase):
     def test_get_admin_users(self):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
-        remove_perm('administer', user_profile, user_profile.realm)
+        do_change_is_admin(user_profile, False)
         admin_users = user_profile.realm.get_admin_users()
         self.assertFalse(user_profile in admin_users)
-        assign_perm('administer', user_profile, user_profile.realm)
+        do_change_is_admin(user_profile, True)
         admin_users = user_profile.realm.get_admin_users()
         self.assertTrue(user_profile in admin_users)
 
@@ -757,7 +756,7 @@ class PermissionTest(AuthedTestCase):
         admin = get_user_profile_by_email('hamlet@zulip.com')
         user = get_user_profile_by_email('othello@zulip.com')
         realm = admin.realm
-        assign_perm('administer', admin, realm)
+        do_change_is_admin(admin, True)
 
         # Make sure we see is_admin flag in /json/users
         result = self.client.get('/json/users')
@@ -1392,7 +1391,7 @@ class ActivateTest(AuthedTestCase):
 
     def test_api(self):
         admin = get_user_profile_by_email('othello@zulip.com')
-        assign_perm('administer', admin, admin.realm)
+        do_change_is_admin(admin, True)
         self.login('othello@zulip.com')
 
         user = get_user_profile_by_email('hamlet@zulip.com')
