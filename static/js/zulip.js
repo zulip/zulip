@@ -103,6 +103,15 @@ function update_person(person) {
         }
     }
 
+    if (_.has(person, 'is_admin')) {
+        person_obj.is_admin = person.is_admin;
+
+        if (person.email === page_params.email) {
+            page_params.is_admin = person.is_admin;
+            admin.show_or_hide_menu_item();
+        }
+    }
+
     activity.set_user_statuses([]);
 
     // TODO: update sender names on messages
