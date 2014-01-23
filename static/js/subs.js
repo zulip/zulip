@@ -368,7 +368,6 @@ function populate_subscriptions(subs, subscribed) {
         sub_rows.push(sub);
     });
 
-    stream_list.build_stream_list();
     return sub_rows;
 }
 
@@ -628,6 +627,10 @@ $(function () {
     // Garbage collect data structures that were only used for initialization.
     delete page_params.subbed_info;
     delete page_params.unsubbed_info;
+
+    // We build the stream_list now.  It may get re-built again very shortly
+    // when new messages come in, but it's fairly quick.
+    stream_list.build_stream_list();
 
     $("#subscriptions_table").on("submit", "#add_new_subscription", function (e) {
         e.preventDefault();
