@@ -683,7 +683,7 @@ function hack_for_floating_recipient_bar() {
     floating_recipient.offset(offset);
 }
 
-function update_message_flag(messages, flag_name, set_flag) {
+function sync_message_flag(messages, flag_name, set_flag) {
     channel.post({
         url: '/json/update_message_flags',
         idempotent: true,
@@ -692,12 +692,12 @@ function update_message_flag(messages, flag_name, set_flag) {
                flag: flag_name}});
 }
 
-function change_message_collapse(message, collapsed) {
-    update_message_flag([message], "collapsed", collapsed);
+function sync_message_collapse(message, collapsed) {
+    sync_message_flag([message], "collapsed", collapsed);
 }
 
-function change_message_star(message, starred) {
-    update_message_flag([message], "starred", starred);
+function sync_message_star(message, starred) {
+    sync_message_flag([message], "starred", starred);
 }
 
 function toggle_star(message_id) {
@@ -728,7 +728,7 @@ function toggle_star(message_id) {
     });
 
     // Save the star change.
-    change_message_star(message, message.starred);
+    sync_message_star(message, message.starred);
 }
 
 exports.small_avatar_url = function (message) {
@@ -796,7 +796,7 @@ exports.uncollapse = function (row) {
     var content = row.find(".message_content");
     message.collapsed = false;
     content.removeClass("collapsed");
-    change_message_collapse(message, false);
+    sync_message_collapse(message, false);
 
     if (message.condensed === true) {
         // This message was condensed by the user, so re-show the
@@ -820,7 +820,7 @@ exports.collapse = function (row) {
     // [Condense] link if necessary.
     var message = current_msg_list.get(rows.id(row));
     message.collapsed = true;
-    change_message_collapse(message, true);
+    sync_message_collapse(message, true);
     row.find(".message_content").addClass("collapsed");
     show_more_link(row);
 };
@@ -835,8 +835,8 @@ exports.expand_summary_row = function (row) {
         msg.flags = _.without(msg.flags, 'force_collapse');
         msg.flags.push('force_expand');
     });
-    update_message_flag(messages, 'force_expand', true);
-    update_message_flag(messages, 'force_collapse', false);
+    sync_message_flag(messages, 'force_expand', true);
+    sync_message_flag(messages, 'force_collapse', false);
 
 
     //TODO: Avoid a full re-render
@@ -858,8 +858,8 @@ exports.collapse_recipient_group = function (row) {
         msg.flags = _.without(msg.flags, 'force_expand');
         msg.flags.push('force_collapse');
     });
-    update_message_flag(messages, 'force_collapse', true);
-    update_message_flag(messages, 'force_expand', false);
+    sync_message_flag(messages, 'force_collapse', true);
+    sync_message_flag(messages, 'force_expand', false);
 
     //TODO: Avoid a full re-render
     home_msg_list.rerender();
