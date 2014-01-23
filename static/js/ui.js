@@ -700,10 +700,10 @@ function change_message_star(message, starred) {
     update_message_flag([message], "starred", starred);
 }
 
-function toggle_star(row_id) {
+function toggle_star(message_id) {
     // Update the message object pointed to by the various message
     // lists.
-    var message = current_msg_list.get(row_id);
+    var message = current_msg_list.get(message_id);
 
     mark_message_as_read(message);
 
@@ -715,7 +715,7 @@ function toggle_star(row_id) {
         if (list === undefined) {
             return;
         }
-        var row = list.get_row(row_id);
+        var row = list.get_row(message_id);
         if (row === undefined) {
             // The row may not exist, e.g. if you star a message in the all
             // messages table from a stream that isn't in your home view.
