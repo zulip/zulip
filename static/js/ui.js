@@ -700,34 +700,43 @@ function sync_message_star(message, starred) {
     sync_message_flag([message], "starred", starred);
 }
 
-function toggle_star(message_id) {
-    // Update the message object pointed to by the various message
-    // lists.
-    var message = current_msg_list.get(message_id);
-
-    mark_message_as_read(message);
-
-    message.starred = message.starred !== true;
-
+exports.update_starred = function (message_id, starred) {
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (list) {
-        if (list === undefined) {
+    _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (msg_list) {
+        if (msg_list === undefined) {
             return;
         }
-        var row = list.get_row(message_id);
+
+        var message = msg_list.get(message_id);
+        if (message === undefined) {
+            return;
+        }
+        message.starred = starred;
+
+        var row = msg_list.get_row(message.id);
         if (row === undefined) {
             // The row may not exist, e.g. if you star a message in the all
             // messages table from a stream that isn't in your home view.
             return;
         }
-        var favorite_image = row.find(".message_star");
-        favorite_image.toggleClass("icon-vector-star").toggleClass("icon-vector-star-empty").toggleClass("empty-star");
+        var elt = row.find(".message_star");
+        if (starred) {
+            elt.addClass("icon-vector-star").removeClass("icon-vector-star-empty").removeClass("empty-star");
+        } else {
+            elt.removeClass("icon-vector-star").addClass("icon-vector-star-empty").addClass("empty-star");
+        }
         var title_state = message.starred ? "Unstar" : "Star";
-        favorite_image.attr("title", title_state + " this message");
+        elt.attr("title", title_state + " this message");
     });
+};
 
-    // Save the star change.
+function toggle_star(message_id) {
+    // Update the message object pointed to by the various message
+    // lists.
+    var message = current_msg_list.get(message_id);
+    mark_message_as_read(message);
+    exports.update_starred(message.id, message.starred !== true);
     sync_message_star(message, message.starred);
 }
 

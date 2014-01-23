@@ -919,6 +919,16 @@ function get_updates_success(data) {
             users[event.email] = event.presence;
             activity.set_user_statuses(users, event.server_timestamp);
             break;
+        case 'update_message_flags':
+            var new_value = event.operation === "add";
+            switch(event.flag) {
+            case 'starred':
+                _.each(event.messages, function (message_id) {
+                    ui.update_starred(message_id, new_value);
+                });
+                break;
+            }
+            break;
         case 'referral':
             referral.update_state(event.referrals.granted, event.referrals.used);
             break;
