@@ -2085,7 +2085,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_success(result)
 
         msg = Message.objects.latest('id')
-        self.assertEqual(msg.recipient.type_id, Recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
         expected_msg = "Hi there!  %s just created a new stream '%s'. " \
@@ -2123,7 +2123,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_success(result)
 
         msg = Message.objects.latest('id')
-        self.assertEqual(msg.recipient.type_id, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
         expected_msg = "%s just created a new stream `%s`. " \
