@@ -618,11 +618,11 @@ function inline_emails_into_subscriber_list(subs, email_dict) {
 $(function () {
     var i;
 
-    inline_emails_into_subscriber_list(page_params.stream_list, page_params.email_dict);
+    inline_emails_into_subscriber_list(page_params.subbed_info, page_params.email_dict);
     inline_emails_into_subscriber_list(page_params.unsubbed_info, page_params.email_dict);
 
     // Populate stream_info with data handed over to client-side template.
-    populate_subscriptions(page_params.stream_list, true);
+    populate_subscriptions(page_params.subbed_info, true);
     populate_subscriptions(page_params.unsubbed_info, false);
 
     $("#subscriptions_table").on("submit", "#add_new_subscription", function (e) {

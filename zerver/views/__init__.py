@@ -832,7 +832,7 @@ def home(request):
         login_page            = settings.HOME_NOT_LOGGED_IN,
         password_auth_enabled = password_auth_enabled(),
         have_initial_messages = user_has_messages,
-        stream_list           = register_ret['subscriptions'],
+        subbed_info           = register_ret['subscriptions'],
         unsubbed_info         = register_ret['unsubscribed'],
         email_dict            = register_ret['email_dict'],
         people_list           = register_ret['realm_users'],
