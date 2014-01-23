@@ -64,12 +64,6 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         if notify_info.get('send_email', False):
             queue_json_publish("missedmessage_}emails", event, lambda event: None)
 
-@cache_with_key(message_cache_key, timeout=3600*24)
-def get_message_by_id_dbwarn(message_id):
-    if not settings.TEST_SUITE:
-        logging.warning("Tornado failed to load message from memcached when delivering!")
-    return Message.objects.select_related().get(id=message_id)
-
 def receiver_is_idle(user_profile_id, realm_presences):
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
@@ -100,13 +94,14 @@ def receiver_is_idle(user_profile_id, realm_presences):
     return off_zulip or idle_too_long
 
 def process_new_message(data):
-    message = get_message_by_id_dbwarn(data['message'])
-
     realm_presences = data['presences']
     sender_queue_id = data.get('sender_queue_id', None)
-
-    message_dict_markdown = message.to_dict(True)
-    message_dict_no_markdown = message.to_dict(False)
+    message_dict_markdown = data['message_dict_markdown']
+    message_dict_no_markdown = data['message_dict_no_markdown']
+    sender_id = message_dict_markdown['sender_id']
+    message_id = message_dict_markdown['id']
+    message_type = message_dict_markdown['type']
+    sending_client = message_dict_markdown['client']
 
     # To remove duplicate clients: Maps queue ID to {'client': Client, 'flags': flags}
     send_to_clients = dict()
@@ -131,14 +126,12 @@ def process_new_message(data):
 
         # If the recipient was offline and the message was a single or group PM to him
         # or she was @-notified potentially notify more immediately
-        received_pm = message.recipient.type in (Recipient.PERSONAL, Recipient.HUDDLE) and \
-                        user_profile_id != message.sender.id
+        received_pm = message_type == "private" and user_profile_id != sender_id
         mentioned = 'mentioned' in flags
         idle = receiver_is_idle(user_profile_id, realm_presences)
         always_push_notify = user_data.get('always_push_notify', False)
         if (received_pm or mentioned) and (idle or always_push_notify):
-            event = build_offline_notification_event(user_profile_id, message.id)
-
+            event = build_offline_notification_event(user_profile_id, message_id)
             queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
             notified = dict(push_notified=True)
             # Don't send missed message emails if always_push_notify is True
@@ -185,8 +178,8 @@ def process_new_message(data):
             continue
 
         # The below prevents (Zephyr) mirroring loops.
-        if ('mirror' in message.sending_client.name and
-            message.sending_client == client.client_type):
+        if ('mirror' in sending_client and
+            sending_client.lower() == client.client_type.name.lower()):
             continue
         client.add_event(event)
 

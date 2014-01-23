@@ -358,8 +358,6 @@ def do_send_messages(messages):
         # Render Markdown etc. here and store (automatically) in
         # memcached, so that the single-threaded Tornado server
         # doesn't have to.
-        message['message'].to_dict(apply_markdown=True)
-        message['message'].to_dict(apply_markdown=False)
         user_flags = user_message_flags.get(message['message'].id, {})
         sender = message['message'].sender
         user_presences = get_status_dict(sender)
@@ -371,6 +369,8 @@ def do_send_messages(messages):
         data = dict(
             type         = 'new_message',
             message      = message['message'].id,
+            message_dict_markdown = message['message'].to_dict(apply_markdown=True),
+            message_dict_no_markdown = message['message'].to_dict(apply_markdown=False),
             presences    = presences,
             users        = [{'id': user.id,
                              'flags': user_flags.get(user.id, []),
