@@ -62,6 +62,12 @@ Socket.prototype = {
                 // The connection was somehow closed.  Our on-close handler will
                 // be called imminently and we'll retry this request upon reconnect.
                 return;
+            } else if (e instanceof Error && e.message.indexOf("NS_ERROR_NOT_CONNECTED") !== -1) {
+                // This is a rarely-occurring Firefox error.  I'm not sure
+                // whether our on-close handler will be called, so let's just
+                // call close() explicitly.
+                this._sockjs.close();
+                return;
             } else {
                 throw e;
             }
