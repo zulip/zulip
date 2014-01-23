@@ -3539,19 +3539,23 @@ class EventsRegisterTest(AuthedTestCase):
     maxDiff = None
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
 
-    def do_test(self, trigger_event, event_types=None, matcher=None):
+    def do_test(self, action, event_types=None, matcher=None):
         client = allocate_client_descriptor(self.user_profile.id, self.user_profile.realm.id,
                                             event_types,
                                             get_client("website"), True, False, 600, [])
-        initial_state = fetch_initial_state_data(self.user_profile, event_types, "")
-        trigger_event()
+        # hybrid_state = initial fetch state + re-applying events triggered by our action
+        # normal_state = do action then fetch at the end (the "normal" code path)
+        hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "")
+        action()
         events = client.event_queue.contents()
-        after_state = fetch_initial_state_data(self.user_profile, event_types, "")
-        apply_events(initial_state, events)
+        apply_events(hybrid_state, events)
+
+        normal_state = fetch_initial_state_data(self.user_profile, event_types, "")
+
         if matcher is None:
-            self.assertEqual(initial_state, after_state)
-        else:
-            matcher(initial_state, after_state)
+            matcher = self.assertEqual
+
+        matcher(hybrid_state, normal_state)
 
     def match_with_reorder(self, a, b, field):
         # We need to use an OrderedDict to turn these into strings consistently
