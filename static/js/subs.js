@@ -625,6 +625,10 @@ $(function () {
     populate_subscriptions(page_params.subbed_info, true);
     populate_subscriptions(page_params.unsubbed_info, false);
 
+    // Garbage collect data structures that were only used for initialization.
+    delete page_params.subbed_info;
+    delete page_params.unsubbed_info;
+
     $("#subscriptions_table").on("submit", "#add_new_subscription", function (e) {
         e.preventDefault();
 
