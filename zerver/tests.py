@@ -4491,6 +4491,16 @@ class BugdownTest(TestCase):
             '</p>'
         )
 
+    def test_in_app_modal_link(self):
+        msg = '!modal_link(#settings, Settings page)'
+        converted = bugdown_convert(msg)
+        self.assertEqual(
+            converted,
+            '<p>'
+            '<a data-toggle="modal" href="#settings" title="#settings">Settings page</a>'
+            '</p>'
+        )
+
 class UserPresenceTests(AuthedTestCase):
     def test_get_empty(self):
         self.login("hamlet@zulip.com")
