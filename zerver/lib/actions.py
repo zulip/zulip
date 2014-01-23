@@ -62,6 +62,7 @@ import datetime
 import os
 import platform
 import logging
+import itertools
 from collections import defaultdict
 import urllib
 import subprocess
@@ -1888,14 +1889,20 @@ def apply_events(state, events):
         elif event['type'] == "pointer":
             state['pointer'] = max(state['pointer'], event['pointer'])
         elif event['type'] == "realm_user":
-            # We handle update by just removing the old value and
-            # adding the new one.
-            if event['op'] == "remove" or event['op'] == "update":
-                person = event['person']
-                state['realm_users'] = filter(lambda p: p['email'] != person['email'],
-                                              state['realm_users'])
-            if event['op'] == "add" or event['op'] == "update":
-                state['realm_users'].append(event['person'])
+            person = event['person']
+
+            def our_person(p):
+                return p['email'] == person['email']
+
+            if event['op'] == "add":
+                state['realm_users'].append(person)
+            elif event['op'] == "remove":
+                state['realm_users'] = itertools.ifilterfalse(our_person, state['realm_users'])
+            elif event['op'] == 'update':
+                for p in state['realm_users']:
+                    if our_person(p):
+                        p.update(person)
+
         elif event['type'] == "subscriptions":
             if event['op'] in ["add"]:
                 # Convert the user_profile IDs to emails since that's what register() returns

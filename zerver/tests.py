@@ -3532,7 +3532,7 @@ class GetEventsTest(AuthedTestCase):
 
 from zerver.lib.actions import fetch_initial_state_data, apply_events, do_add_alert_words, \
     do_set_muted_topics, do_add_realm_emoji, do_remove_realm_emoji, do_remove_alert_words, \
-    do_remove_subscription, do_add_realm_filter, do_remove_realm_filter
+    do_remove_subscription, do_add_realm_filter, do_remove_realm_filter, do_change_full_name
 from zerver.lib.event_queue import allocate_client_descriptor
 from collections import OrderedDict
 class EventsRegisterTest(AuthedTestCase):
@@ -3586,6 +3586,9 @@ class EventsRegisterTest(AuthedTestCase):
 
     def test_muted_topics_events(self):
         self.do_test(lambda: do_set_muted_topics(self.user_profile, [["Denmark", "topic"]]))
+
+    def test_change_full_name(self):
+        self.do_test(lambda: do_change_full_name(self.user_profile, 'Sir Hamlet'))
 
     def test_realm_emoji_events(self):
         self.do_test(lambda: do_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
