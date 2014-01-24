@@ -212,7 +212,34 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
 def do_deactivate_stream(stream, log=True):
     user_profiles = UserProfile.objects.filter(realm=stream.realm)
     for user_profile in user_profiles:
-            do_remove_subscription(user_profile, stream)
+        do_remove_subscription(user_profile, stream)
+
+    stream.deactivated = True
+    stream.invite_only = True
+    # Preserve as much as possible the original stream name while giving it a
+    # special prefix that both indicates that the stream is deactivated and
+    # frees up the original name for reuse.
+    old_name = stream.name
+    new_name = ("!DEACTIVATED:" + old_name)[:Stream.MAX_NAME_LENGTH]
+    for i in range(20):
+        existing_deactivated_stream = get_stream(new_name, stream.realm)
+        if existing_deactivated_stream:
+            # This stream has alrady been deactivated, keep prepending !s until
+            # we have a unique stream name or you've hit a rename limit.
+            new_name = ("!" + new_name)[:Stream.MAX_NAME_LENGTH]
+        else:
+            break
+
+    # If you don't have a unique name at this point, this will fail later in the
+    # code path.
+
+    stream.name = new_name[:Stream.MAX_NAME_LENGTH]
+    stream.save()
+
+    # Remove the old stream information from memcached.
+    old_cache_key = get_stream_cache_key(old_name, stream.realm)
+    cache_delete(old_cache_key)
+
     return
 
 def do_change_user_email(user_profile, new_email):
