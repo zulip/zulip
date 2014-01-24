@@ -4442,48 +4442,6 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315459'),
                                                        make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459', media_tweet_html, """<div class="twitter-image"><a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3"><img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small"></a></div>""")))
 
-    def test_emoji(self):
-        def emoji_img(name, filename=None):
-            if filename == None:
-                filename = name[1:-1]
-            return '<img alt="%s" class="emoji" src="static/third/gemoji/images/emoji/%s.png" title="%s">' % (name, filename, name)
-
-        # Spot-check a few emoji
-        test_cases = [ (':poop:', emoji_img(':poop:')),
-                       (':hankey:', emoji_img(':hankey:')),
-                       (':whale:', emoji_img(':whale:')),
-                       (':fakeemoji:', ':fakeemoji:'),
-                       (':even faker smile:', ':even faker smile:'),
-                       ]
-
-        # Check a random sample of our 800+ emojis to make
-        # sure that bugdown builds the correct image tag.
-        emojis = bugdown.emoji_list
-        emojis = random.sample(emojis, 15)
-        for img in emojis:
-            emoji_text = ":%s:" % (img,)
-            test_cases.append((emoji_text, emoji_img(emoji_text)))
-
-        for input, expected in test_cases:
-            self.assertEqual(bugdown_convert(input), '<p>%s</p>' % expected)
-
-        # Comprehensive test of a bunch of things together
-        msg = 'test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>test ' + emoji_img(':smile:') + ' again ' + emoji_img(':poop:') + '<br>\n'
-                                  + ':) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>')
-
-        msg = ':smile:, :smile:; :smile:'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted,
-            '<p>' +
-            emoji_img(':smile:') +
-            ', ' +
-            emoji_img(':smile:') +
-            '; ' +
-            emoji_img(':smile:') +
-            '</p>')
-
     def test_realm_emoji(self):
         def emoji_img(name, url):
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, url, name)

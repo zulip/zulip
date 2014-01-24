@@ -3,10 +3,13 @@ var assert = require('assert');
 var path = require('path');
 var fs = require('fs');
 
+set_global('page_params', {realm_emoji: {}});
+
 add_dependencies({
     _: 'third/underscore/underscore.js',
     marked: 'third/marked/lib/marked.js',
-    Dict: 'js/dict.js'
+    Dict: 'js/dict.js',
+    emoji: 'js/emoji.js'
 });
 
 var doc = "";
@@ -21,10 +24,6 @@ set_global('$', function (obj) {
     // Selector usage
     return {on: function () {}};
   }
-});
-
-set_global('emoji', {
-  emojis_by_name: {emoji: 'some/url/here/emoji.png'}
 });
 
 set_global('page_params', {
@@ -116,8 +115,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
      expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n\n\n<p>thanks</p>'},
     {input: 'This is a @**Cordelia Lear** mention',
      expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
-    {input: 'This is an :emoji: message',
-     expected: '<p>This is an <img alt=":emoji:" class="emoji" src="some/url/here/emoji.png" title=":emoji:"> message</p>'},
+    {input: 'This is an :poop: message',
+     expected: '<p>This is an <img alt=":poop:" class="emoji" src="static/third/gemoji/images/emoji/poop.png" title=":poop:"> message</p>'},
     {input: 'This is a realm filter #1234 with text after it',
      expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
     {input: 'This is a realm filter with ZGROUP_123:45 groups',

@@ -30,3 +30,6 @@ exports.update_emojis(page_params.realm_emoji);
 
 return exports;
 }());
+if (typeof module !== 'undefined') {
+    module.exports = emoji;
+}
