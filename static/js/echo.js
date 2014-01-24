@@ -5,6 +5,7 @@ var exports = {};
 var waiting_for_id = {};
 var waiting_for_ack = {};
 var realm_filter_map = {};
+var realm_filter_list = [];
 var home_view_loaded = false;
 
 // Regexes that match some of our common bugdown markup
@@ -77,6 +78,30 @@ function add_message_flags(message) {
     message.flags = flags;
 }
 
+function add_subject_links(message) {
+    var subject = message.subject;
+    var links = [];
+    _.each(realm_filter_list, function (realm_filter) {
+        var pattern = realm_filter[0];
+        var url = realm_filter[1];
+        var match;
+        while ((match = pattern.exec(subject)) !== null) {
+            var current_group = 1;
+            var link_url = url;
+            _.each(match.slice(1), function (matched_group) {
+                var back_ref = "\\" + current_group;
+                link_url = link_url.replace(back_ref, matched_group);
+                current_group++;
+            });
+            links.push(link_url);
+        }
+    });
+    message.subject_links = links;
+}
+
+// For unit testing
+exports._add_subject_links = add_subject_links;
+
 function get_next_local_id() {
     var local_id_increment = 0.01;
     var latest = page_params.max_message_id;
@@ -102,6 +127,7 @@ function insert_local_message(message_request, local_id) {
     message.local_id = local_id;
     message.id = message.local_id;
     add_message_flags(message);
+    add_subject_links(message);
 
     waiting_for_id[message.local_id] = message;
     waiting_for_ack[message.local_id] = message;
@@ -314,6 +340,7 @@ function python_to_js_filter(pattern, url) {
 exports.set_realm_filters = function set_realm_filters(realm_filters) {
     // Update the marked parser with our particular set of realm filters
     realm_filter_map = {};
+    realm_filter_list = [];
 
     var marked_rules = [];
     _.each(realm_filters, function (realm_filter) {
@@ -322,6 +349,7 @@ exports.set_realm_filters = function set_realm_filters(realm_filters) {
         var js_filters = python_to_js_filter(pattern, url);
 
         realm_filter_map[js_filters[0]] = js_filters[1];
+        realm_filter_list.push([js_filters[0], js_filters[1]]);
         marked_rules.push(js_filters[0]);
     });
 

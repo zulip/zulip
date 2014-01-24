@@ -28,7 +28,8 @@ set_global('emoji', {
 });
 
 set_global('page_params', {
-  realm_filters: [["#(?P<id>[0-9]{2,8})", "https://trac.zulip.net/ticket/%(id)s"]]
+  realm_filters: [["#(?P<id>[0-9]{2,8})", "https://trac.zulip.net/ticket/%(id)s"],
+                  ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"]]
 });
 
 set_global('people_by_name_dict', Dict.from({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}}));
@@ -128,4 +129,34 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
 
     assert.equal(expected, output);
   });
+
+}());
+
+(function test_subject_links() {
+  var message = {subject: "No links here"};
+  echo._add_subject_links(message);
+  assert.equal(message.subject_links.length, []);
+
+  message = {subject: "One #123 link here"};
+  echo._add_subject_links(message);
+  assert.equal(message.subject_links.length, 1);
+  assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
+
+  message = {subject: "Two #123 #456 link here"};
+  echo._add_subject_links(message);
+  assert.equal(message.subject_links.length, 2);
+  assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
+  assert.equal(message.subject_links[1], "https://trac.zulip.net/ticket/456");
+
+  message = {subject: "New ZBUG_123 link here"};
+  echo._add_subject_links(message);
+  assert.equal(message.subject_links.length, 1);
+  assert.equal(message.subject_links[0], "https://trac2.zulip.net/ticket/123");
+
+
+  message = {subject: "New ZBUG_123 with #456 link here"};
+  echo._add_subject_links(message);
+  assert.equal(message.subject_links.length, 2);
+  assert(message.subject_links.indexOf("https://trac2.zulip.net/ticket/123") !== -1);
+  assert(message.subject_links.indexOf("https://trac.zulip.net/ticket/456") !== -1);
 }());
