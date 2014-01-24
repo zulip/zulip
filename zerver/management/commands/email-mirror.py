@@ -46,7 +46,8 @@ import posix
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import decode_email_address, convert_html_to_markdown
+from zerver.lib.actions import decode_email_address
+from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.upload import upload_message_image
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Stream, get_user_profile_by_email, UserProfile
