@@ -25,12 +25,6 @@ import datetime
 # after they are idle for 1 hour
 NOTIFY_AFTER_IDLE_HOURS = 1
 
-def update_pointer(user_profile_id, new_pointer):
-    event = dict(type='pointer', pointer=new_pointer)
-    for client in get_client_descriptors_for_user(user_profile_id):
-        if client.accepts_event(event):
-            client.add_event(event.copy())
-
 def build_offline_notification_event(user_profile_id, message_id):
     return {"user_profile_id": user_profile_id,
             "message_id": message_id,
@@ -222,8 +216,6 @@ def process_notification(data):
         process_new_message(data)
     elif data['type'] == 'update_message':
         process_update_message(data)
-    elif data['type'] == 'pointer_update':
-        update_pointer(data['user'], data['new_pointer'])
     else:
         raise JsonableError('bad notification type ' + data['type'])
 

@@ -1497,11 +1497,8 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
                                    flags=~UserMessage.flags.read)        \
                            .update(flags=F('flags').bitor(UserMessage.flags.read))
 
-    if settings.TORNADO_SERVER:
-        tornado_callbacks.send_notification(dict(
-            type            = 'pointer_update',
-            user            = user_profile.id,
-            new_pointer     = pointer))
+    event = dict(type='pointer', pointer=pointer)
+    send_event(event, [user_profile.id])
 
 def do_update_message_flags(user_profile, operation, flag, messages, all):
     flagattr = getattr(UserMessage.flags, flag)
