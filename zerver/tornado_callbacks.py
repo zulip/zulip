@@ -190,16 +190,14 @@ def process_new_message(data):
             continue
         client.add_event(event)
 
-def process_event(data):
-    event = data['event']
-    for user_profile_id in data['users']:
+def process_event(event, users):
+    for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
                 client.add_event(event.copy())
 
-def process_userdata_event(data):
-    raw_event = data['event']
-    for user_data in data['users']:
+def process_userdata_event(raw_event, users):
+    for user_data in users:
         user_profile_id = user_data['id']
         user_event = raw_event.copy() # shallow, but deep enough for our needs
         for key in user_data.keys():
@@ -211,15 +209,14 @@ def process_userdata_event(data):
                 client.add_event(user_event)
 
 def process_notification(data):
-    if data['event']['type'] in ["update_message"]:
-        process_userdata_event(data)
-    elif 'type' not in data:
-        # Generic event that doesn't need special handling
-        process_event(data)
-    elif data['type'] == 'new_message':
+    event = data['event']
+    users = data['users']
+    if event['type'] in ["update_message"]:
+        process_userdata_event(event, users)
+    elif event['type'] == "message":
         process_new_message(data)
     else:
-        raise JsonableError('bad notification type ' + data['type'])
+        process_event(event, users)
 
 # Runs in the Django process to send a notification to Tornado.
 #
