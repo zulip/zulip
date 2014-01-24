@@ -257,6 +257,10 @@ function message_hover(message_row) {
     if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
         return;
     }
+    // Don't allow on-hover editing for local-only messages
+    if (message_row.hasClass('local')) {
+        return;
+    }
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');

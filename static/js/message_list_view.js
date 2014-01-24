@@ -718,6 +718,7 @@ MessageListView.prototype = {
             }
             row.setAttribute('zid', new_id);
             row.setAttribute('id', this.table_name + new_id);
+            $(row).removeClass('local');
             this._rows[new_id] = row;
         }
     }
