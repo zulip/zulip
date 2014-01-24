@@ -151,6 +151,14 @@ function update_stream_name(sub, new_name) {
     });
 }
 
+function update_stream_description(sub, description) {
+    sub.description = description;
+
+    var sub_settings_selector = '.subscription_row[data-subscription-id=' + sub.id + ']';
+    $(sub_settings_selector + ' .subscription_description').text(description);
+    $(sub_settings_selector + ' input.description').val(description);
+}
+
 function stream_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
     var stream = sub_row.find('.subscription_name').text();
@@ -467,6 +475,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'name':
         update_stream_name(sub, value);
+        break;
+    case 'description':
+        update_stream_description(sub, value);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
