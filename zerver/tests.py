@@ -3629,7 +3629,7 @@ class EventsRegisterTest(AuthedTestCase):
         hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "")
         action()
         events = client.event_queue.contents()
-        apply_events(hybrid_state, events)
+        apply_events(hybrid_state, events, self.user_profile)
 
         normal_state = fetch_initial_state_data(self.user_profile, event_types, "")
 
@@ -3642,11 +3642,6 @@ class EventsRegisterTest(AuthedTestCase):
         # We need to use an OrderedDict to turn these into strings consistently
         self.assertEqual(set(ujson.dumps(OrderedDict(x.items())) for x in a[field]),
                          set(ujson.dumps(OrderedDict(x.items())) for x in b[field]))
-        a[field] = []
-        b[field] = []
-        self.assertEqual(a, b)
-
-    def match_except(self, a, b, field):
         a[field] = []
         b[field] = []
         self.assertEqual(a, b)
@@ -3701,7 +3696,7 @@ class EventsRegisterTest(AuthedTestCase):
         self.do_test(lambda: do_remove_subscription(get_user_profile_by_email("othello@zulip.com"), stream),
                      matcher=lambda a, b: self.match_with_reorder(a, b, "subscriptions"))
         self.do_test(lambda: do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream),
-                     matcher=lambda a, b: self.match_except(a, b, "unsubscribed"))
+                     matcher=lambda a, b: self.match_with_reorder(a, b, "unsubscribed"))
         self.do_test(lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream"),
                      matcher=lambda a, b: self.match_with_reorder(a, b, "subscriptions"))
         self.do_test(lambda: do_change_stream_description(get_realm('zulip.com'), 'test_stream',

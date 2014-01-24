@@ -1911,7 +1911,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_filters'] = realm_filters_for_domain(user_profile.realm.domain)
     return state
 
-def apply_events(state, events):
+def apply_events(state, events, user_profile):
     for event in events:
         if event['type'] == "message":
             state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
@@ -1944,23 +1944,38 @@ def apply_events(state, events):
                 # TODO: Clean up this situation
                 for item in event["subscriptions"]:
                     item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
-            if event['op'] in ["add", "remove"]:
-                subscriptions_to_filter = set(sub['name'].lower() for sub in event["subscriptions"])
-            # We add the new subscriptions to the list of streams the
-            # user is subscribed to, and also remove/add them from the
-            # list of streams the user is not subscribed to (which we
-            # are still sending on data about so that e.g. colors and
-            # the in_home_view bit are properly available for those streams)
-            #
-            # And we do the opposite filtering process for unsubscribe events.
+
+            def name(sub):
+                return sub['name'].lower()
+
             if event['op'] == "add":
+                added_names = map(name, event["subscriptions"])
+                was_added = lambda s: name(s) in added_names
+
+                # add the new subscriptions
                 state['subscriptions'] += event['subscriptions']
-                state['unsubscribed'] = filter(lambda s: s['name'].lower() not in subscriptions_to_filter,
-                                               state['unsubscribed'])
+
+                # remove them from unsubscribed if they had been there
+                state['unsubscribed'] = list(itertools.ifilterfalse(was_added, state['unsubscribed']))
+
             elif event['op'] == "remove":
-                state['unsubscribed'] += event['subscriptions']
-                state['subscriptions'] = filter(lambda s: s['name'].lower() not in subscriptions_to_filter,
-                                                state['subscriptions'])
+                removed_names = map(name, event["subscriptions"])
+                was_removed = lambda s: name(s) in removed_names
+
+                # Find the subs we are affecting.
+                removed_subs = filter(was_removed, state['subscriptions'])
+
+                # Remove our user from the subscribers of the removed subscriptions.
+                for sub in removed_subs:
+                    sub['subscribers'] = filter(lambda id: id != user_profile.id, sub['subscribers'])
+
+                # We must effectively copy the removed subscriptions from subscriptions to
+                # unsubscribe, since we only have the name in our data structure.
+                state['unsubscribed'] += removed_subs
+
+                # Now filter out the removed subscriptions from subscriptions.
+                state['subscriptions'] = list(itertools.ifilterfalse(was_removed, state['subscriptions']))
+
             elif event['op'] == 'update':
                 for sub in state['subscriptions']:
                     if sub['name'].lower() == event['name'].lower():
@@ -2017,7 +2032,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    apply_events(ret, events)
+    apply_events(ret, events, user_profile)
     if events:
         ret['last_event_id'] = events[-1]['id']
     else:
