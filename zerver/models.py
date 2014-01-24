@@ -443,6 +443,7 @@ class Stream(models.Model):
     description = models.CharField(max_length=1024, default='')
 
     date_created = models.DateTimeField(default=timezone.now)
+    deactivated = models.BooleanField(default=False)
 
     def __repr__(self):
         return (u"<Stream: %s>" % (self.name,)).encode("utf-8")
