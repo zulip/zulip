@@ -70,7 +70,7 @@ function render(template_name, args) {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
     _.each(streams, function (stream) {
-        var args = {stream: {name: stream}};
+        var args = {stream: {name: stream, invite_only: false}};
         html += render('admin_streams_list', args);
     });
     html += "</table>";

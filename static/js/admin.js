@@ -87,8 +87,8 @@ exports.setup_page = function () {
     });
 
     // Populate streams table
-    channel.post({
-        url:      '/json/get_public_streams',
+    channel.get({
+        url:      '/json/streams?include_public=true&include_subscribed=true',
         timeout:  10*1000,
         idempotent: true,
         success: populate_streams,

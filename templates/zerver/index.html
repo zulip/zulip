@@ -71,11 +71,9 @@ var page_params = {{ page_params }};
             <div class="tab-pane" id="subscriptions">
                 {% include "zerver/subscriptions.html" %}
             </div>
-            {% if is_admin %}
             <div class="tab-pane" id="administration">
                 {% include "zerver/administration.html" %}
             </div>
-            {% endif %}
             <div class="tab-pane" id="settings">
                 {% include "zerver/settings.html" %}
             </div>
