@@ -9,11 +9,12 @@ from zerver.models import get_user_profile_by_email, \
 from zerver.lib.context_managers import lockfile
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.actions import handle_missedmessage_emails, do_send_confirmation_email, \
+from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
+    clear_followup_emails_queue, send_local_email_template_with_delay
+from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, send_local_email_template_with_delay, clear_followup_emails_queue, \
-    check_send_message, extract_recipients, one_click_unsubscribe_link, \
-    enqueue_welcome_emails, handle_push_notification
+    internal_send_message, check_send_message, extract_recipients, \
+    handle_push_notification
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError

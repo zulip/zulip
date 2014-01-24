@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.template import loader
 from django.conf import settings
 
-from zerver.lib.actions import build_message_list, hashchange_encode, \
+from zerver.lib.notifications import build_message_list, hashchange_encode, \
     send_future_email, one_click_unsubscribe_link
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription

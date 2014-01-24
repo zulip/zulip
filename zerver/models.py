@@ -365,6 +365,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         # in a more complicated way, like certain realms may allow only admins to create streams.
         return True
 
+def receives_offline_notifications(user_profile):
+    return ((user_profile.enable_offline_email_notifications or
+             user_profile.enable_offline_push_notifications) and
+            not user_profile.is_bot)
+
 # Make sure we flush the UserProfile object from our memcached
 # whenever we save it.
 post_save.connect(update_user_profile_cache, sender=UserProfile)
