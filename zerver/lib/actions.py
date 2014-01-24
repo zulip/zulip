@@ -1482,6 +1482,27 @@ def update_user_presence(user_profile, client, log_time, status,
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)
 
+def do_update_pointer(user_profile, pointer, update_flags=False):
+    prev_pointer = user_profile.pointer
+    user_profile.pointer = pointer
+    user_profile.save(update_fields=["pointer"])
+
+    if update_flags:
+        # Until we handle the new read counts in the Android app
+        # natively, this is a shim that will mark as read any messages
+        # up until the pointer move
+        UserMessage.objects.filter(user_profile=user_profile,
+                                   message__id__gt=prev_pointer,
+                                   message__id__lte=pointer,
+                                   flags=~UserMessage.flags.read)        \
+                           .update(flags=F('flags').bitor(UserMessage.flags.read))
+
+    if settings.TORNADO_SERVER:
+        tornado_callbacks.send_notification(dict(
+            type            = 'pointer_update',
+            user            = user_profile.id,
+            new_pointer     = pointer))
+
 def do_update_message_flags(user_profile, operation, flag, messages, all):
     flagattr = getattr(UserMessage.flags, flag)
 

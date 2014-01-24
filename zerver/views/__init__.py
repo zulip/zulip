@@ -38,7 +38,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
     do_make_stream_private, do_change_default_desktop_notifications, \
-    do_change_stream_description
+    do_change_stream_description, do_update_pointer
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
@@ -957,26 +957,9 @@ def update_pointer_backend(request, user_profile,
     except UserMessage.DoesNotExist:
         raise JsonableError("Invalid message ID")
 
-    prev_pointer = user_profile.pointer
-    user_profile.pointer = pointer
-    user_profile.save(update_fields=["pointer"])
     request._log_data["extra"] = "[%s]" % (pointer,)
-
-    if request.client.name.lower() in ['android', "zulipandroid"]:
-        # Until we handle the new read counts in the Android app
-        # natively, this is a shim that will mark as read any messages
-        # up until the pointer move
-        UserMessage.objects.filter(user_profile=user_profile,
-                                   message__id__gt=prev_pointer,
-                                   message__id__lte=pointer,
-                                   flags=~UserMessage.flags.read)        \
-                           .update(flags=F('flags').bitor(UserMessage.flags.read))
-
-    if settings.TORNADO_SERVER:
-        tornado_callbacks.send_notification(dict(
-            type            = 'pointer_update',
-            user            = user_profile.id,
-            new_pointer     = pointer))
+    update_flags = (request.client.name.lower() in ['android', "zulipandroid"])
+    do_update_pointer(user_profile, pointer, update_flags=update_flags)
 
     return json_success()
 
