@@ -58,15 +58,17 @@
       {{/if_and}}
 
       {{#if is_admin}}
-        <div class="rename-stream">
-        <span class="sub_settings_title">Administrator settings</span>
-          <form class="form-inline">
-            <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
-            <input type="submit" name="rename" value="Rename stream" class="zulip-button red-button stream-rename-button" tabindex="-1" />
-          </form>
-        </div>
-        <div class="change-stream-privacy">
-          {{partial "change_stream_privacy"}}
+        <div class="admin-settings">
+          <span class="sub_settings_title">Administrator settings</span>
+          <div class="rename-stream">
+            <form class="form-inline">
+              <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
+              <input type="submit" name="rename" value="Rename stream" class="zulip-button red-button stream-rename-button" tabindex="-1" />
+            </form>
+          </div>
+          <div class="change-stream-privacy">
+            {{partial "change_stream_privacy"}}
+          </div>
         </div>
       {{/if}}
 

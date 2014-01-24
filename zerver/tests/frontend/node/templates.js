@@ -463,7 +463,7 @@ function render(template_name, args) {
     var span = $(html).find(".subscription_name:first");
     assert.equal(span.text(), 'devel');
 
-    span = $(html).find(".rename-stream .sub_settings_title");
+    span = $(html).find(".admin-settings .sub_settings_title");
     assert.equal(span.text(), 'Administrator settings');
 
     var div = $(html).find(".subscription-type");
