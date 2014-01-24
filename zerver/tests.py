@@ -19,6 +19,9 @@ from zerver.decorator import RespondAsynchronously, \
     RequestVariableConversionError, profiled, JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
+    fetch_initial_state_data, apply_events, do_add_alert_words, \
+    do_set_muted_topics, do_add_realm_emoji, do_remove_realm_emoji, do_remove_alert_words, \
+    do_remove_subscription, do_add_realm_filter, do_remove_realm_filter, do_change_full_name, \
     create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
     set_default_streams, get_emails_from_user_ids, one_click_unsubscribe_link, \
@@ -28,6 +31,7 @@ from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
 from zerver.lib.cache import bounce_key_prefix_for_testing
+from zerver.lib.event_queue import allocate_client_descriptor
 from zerver.lib.rate_limiter import clear_user_history
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
@@ -61,6 +65,7 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from contextlib import contextmanager
 from zerver import tornado_callbacks
+from collections import OrderedDict
 
 @contextmanager
 def stub(obj, name, f):
@@ -3610,11 +3615,6 @@ class GetEventsTest(AuthedTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
-from zerver.lib.actions import fetch_initial_state_data, apply_events, do_add_alert_words, \
-    do_set_muted_topics, do_add_realm_emoji, do_remove_realm_emoji, do_remove_alert_words, \
-    do_remove_subscription, do_add_realm_filter, do_remove_realm_filter, do_change_full_name
-from zerver.lib.event_queue import allocate_client_descriptor
-from collections import OrderedDict
 class EventsRegisterTest(AuthedTestCase):
     maxDiff = None
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
