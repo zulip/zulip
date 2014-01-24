@@ -186,7 +186,8 @@ function create_sub(stream_name, attrs) {
         subscribed: true,
         in_home_view: true,
         invite_only: false,
-        notifications: page_params.notify_for_streams_by_default
+        notifications: page_params.notify_for_streams_by_default,
+        description: ''
     });
 
     stream_data.set_subscribers(sub, subscriber_emails);
@@ -364,7 +365,8 @@ function populate_subscriptions(subs, subscribed) {
                                            invite_only: elem.invite_only,
                                            notifications: elem.notifications, subscribed: subscribed,
                                            email_address: elem.email_address,
-                                           subscribers: elem.subscribers});
+                                           subscribers: elem.subscribers,
+                                           description: elem.description});
         sub_rows.push(sub);
     });
 
@@ -375,8 +377,6 @@ exports.setup_page = function () {
     util.make_loading_indicator($('#subs_page_loading_indicator'));
 
     function populate_and_fill(public_streams) {
-        // public_streams.streams is a bunch of one-field objects; we only care about name
-        var public_stream_names = _.pluck(public_streams.streams, 'name');
 
         // Build up our list of subscribed streams from the data we already have.
         var subscribed_rows = stream_data.subscribed_subs();
@@ -389,16 +389,16 @@ exports.setup_page = function () {
 
         // Right now the back end gives us all public streams; we really only
         // need to add the ones we haven't already subscribed to.
-        var unsubscribed_stream_names = _.reject(public_stream_names, function (name) {
-            return subscribed_set.has(name);
+        var unsubscribed_streams = _.reject(public_streams.streams, function (stream) {
+            return subscribed_set.has(stream.name);
         });
 
         // Build up our list of unsubscribed rows.
         var unsubscribed_rows = [];
-        _.each(unsubscribed_stream_names, function (name) {
-            var sub = stream_data.get_sub(name);
+        _.each(unsubscribed_streams, function (stream) {
+            var sub = stream_data.get_sub(stream.name);
             if (!sub) {
-                sub = create_sub(name, {subscribed: false});
+                sub = create_sub(stream.name, _.extend({subscribed: false}, stream));
             }
             unsubscribed_rows.push(sub);
         });

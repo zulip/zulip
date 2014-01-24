@@ -2215,8 +2215,8 @@ div.floating_recipient {
     margin-right: 38px;
 }
 
-.subscription_name {
-    display: block;
+.subscription_name,
+.subscription_description {
     line-height: 1em;
     width: 100%;
     white-space: nowrap;
@@ -2224,9 +2224,13 @@ div.floating_recipient {
     text-overflow: ellipsis;
 }
 
-.subscription-name-row {
+.subscription-name-row,
+.subscription-description-row {
     line-height: 47px;
-    height: 40px;
+}
+
+.subscription-description-row {
+    font-weight: 300;
 }
 
 #add_new_subscription {
@@ -2257,7 +2261,6 @@ div.floating_recipient {
 }
 
 .subscription_header .subscription_name {
-    display: inline-block;
     width: auto;
 }
 
@@ -3749,6 +3752,9 @@ div.edit_bot {
 @media (max-width: 350px) {
     html {
         overflow-x: hidden;
+    }
+    .subscription_description {
+        display: none;
     }
 }
 

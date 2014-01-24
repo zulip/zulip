@@ -1080,7 +1080,8 @@ def get_streams_backend(request, user_profile,
             # We're including nothing, so don't bother hitting the DB.
             query = []
 
-    streams = sorted({"name": stream.name} for stream in query)
+    streams = sorted({"name": stream.name, "description": stream.description}
+                     for stream in query)
     return json_success({"streams": streams})
 
 def get_public_streams_backend(request, user_profile):

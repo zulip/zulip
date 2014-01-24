@@ -1783,7 +1783,7 @@ def gather_subscriptions_helper(user_profile):
     stream_ids = [sub["recipient__type_id"] for sub in sub_dicts]
 
     stream_dicts = Stream.objects.select_related("realm").filter(id__in=stream_ids).values(
-        "id", "name", "invite_only", "realm_id", "realm__domain", "email_token")
+        "id", "name", "invite_only", "realm_id", "realm__domain", "email_token", "description")
     stream_hash = {}
     for stream in stream_dicts:
         stream_hash[stream["id"]] = stream
@@ -1809,6 +1809,7 @@ def gather_subscriptions_helper(user_profile):
                        'invite_only': stream["invite_only"],
                        'color': sub["color"],
                        'notifications': sub["notifications"],
+                       'description': stream["description"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers

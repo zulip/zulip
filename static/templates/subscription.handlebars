@@ -7,6 +7,7 @@
       </span>
       <span class="subscription_block">
       <span class="subscription_name subscription-name-row">{{name}}</span>
+      <span class="subscription_description subscription-description-row">{{description}}</span>
       </span>
       <span class="sub_arrow"><i class="icon-vector-chevron-down"></i></span>
       <button class="zulip-button sub_unsub_button {{^subscribed}}gray-button{{/subscribed}}{{#subscribed}} green-button subscribed-button{{/subscribed}}"
@@ -64,6 +65,13 @@
             <form class="form-inline">
               <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
               <input type="submit" name="rename" value="Rename stream" class="zulip-button red-button stream-rename-button" tabindex="-1" />
+            </form>
+          </div>
+          <div class="change-stream-description">
+            <form class="form-inline">
+              <input type="hidden" name="stream_name" value="{{name}}" />
+              <input type="text" name="description" value="{{description}}" class="input-block description" tabindex="-1" />
+              <input type="submit" name="change-stream-description" value="Change stream description" class="zulip-button red-button change-stream-description-button" tabindex="-1" />
             </form>
           </div>
           <div class="change-stream-privacy">

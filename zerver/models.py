@@ -430,6 +430,7 @@ class Stream(models.Model):
     # have plenty of room for the token.
     email_token = models.CharField(
         max_length=32, default=lambda: generate_random_token(32))
+    description = models.CharField(max_length=1024, default='')
 
     date_created = models.DateTimeField(default=timezone.now)
 
