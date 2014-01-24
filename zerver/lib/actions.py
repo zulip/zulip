@@ -51,6 +51,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user, \
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 
+from zerver.tornado_callbacks import send_event
 from zerver import tornado_callbacks
 
 import DNS
@@ -88,14 +89,12 @@ def active_user_ids(realm):
     return [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
 
 def notify_created_user(user_profile):
-    notice = dict(event=dict(type="realm_user", op="add",
-                             person=dict(email=user_profile.email,
-                                         is_admin=user_profile.is_admin(),
-                                         full_name=user_profile.full_name,
-                                         is_bot=user_profile.is_bot,
-                  )),
-                  users=active_user_ids(user_profile.realm))
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="realm_user", op="add",
+                 person=dict(email=user_profile.email,
+                             is_admin=user_profile.is_admin(),
+                             full_name=user_profile.full_name,
+                             is_bot=user_profile.is_bot))
+    send_event(event, active_user_ids(user_profile.realm))
 
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True, bot=False, bot_owner=None,
@@ -178,11 +177,10 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
                    'user': user_profile.email,
                    'domain': user_profile.realm.domain})
 
-    notice = dict(event=dict(type="realm_user", op="remove",
-                             person=dict(email=user_profile.email,
-                                         full_name=user_profile.full_name)),
-                  users=active_user_ids(user_profile.realm))
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="realm_user", op="remove",
+                 person=dict(email=user_profile.email,
+                             full_name=user_profile.full_name))
+    send_event(event, active_user_ids(user_profile.realm))
 
     if _cascade:
         bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
@@ -857,10 +855,9 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     description=stream.description,
                     subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
-    notice = dict(event=dict(type="subscriptions", op="add",
-                             subscriptions=payload),
-                  users=[user_profile.id])
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="subscriptions", op="add",
+                 subscriptions=payload)
+    send_event(event, [user_profile.id])
 
 def notify_for_streams_by_default(user_profile):
     # For users in older realms and CUSTOMER19, do not generate notifications
@@ -963,11 +960,10 @@ def bulk_add_subscriptions(streams, users):
         other_user_ids = set(all_subscribed_ids) - set(new_user_ids)
         if other_user_ids:
             for user_profile in new_users:
-                notice = dict(event=dict(type="subscriptions", op="peer_add",
-                                         subscriptions=[stream.name],
-                                         user_email=user_profile.email),
-                              users=other_user_ids)
-                tornado_callbacks.send_notification(notice)
+                event = dict(type="subscriptions", op="peer_add",
+                             subscriptions=[stream.name],
+                             user_email=user_profile.email)
+                send_event(event, other_user_ids)
 
     return ([(user_profile, stream_name) for (user_profile, recipient_id, stream_name) in new_subs] +
             [(sub.user_profile, stream_name) for (sub, stream_name) in subs_to_activate],
@@ -993,11 +989,10 @@ def do_add_subscription(user_profile, stream, no_log=False):
         notify_subscriptions_added(user_profile, [(subscription, stream)], lambda stream: emails_by_stream[stream.id], no_log)
 
         user_ids = get_other_subscriber_ids(stream, user_profile.id)
-        notice = dict(event=dict(type="subscriptions", op="peer_add",
-                                 subscriptions=[stream.name],
-                                 user_email=user_profile.email),
-                      users=user_ids)
-        tornado_callbacks.send_notification(notice)
+        event = dict(type="subscriptions", op="peer_add",
+                     subscriptions=[stream.name],
+                     user_email=user_profile.email)
+        send_event(event, user_ids)
 
     return did_subscribe
 
@@ -1009,10 +1004,9 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
                    'domain': stream.realm.domain})
 
     payload = [dict(name=stream.name) for stream in streams]
-    notice = dict(event=dict(type="subscriptions", op="remove",
-                             subscriptions=payload),
-                  users=[user_profile.id])
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="subscriptions", op="remove",
+                 subscriptions=payload)
+    send_event(event, [user_profile.id])
 
     # As with a subscription add, send a 'peer subscription' notice to other
     # subscribers so they know the user unsubscribed.
@@ -1027,12 +1021,10 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
             continue
 
         stream_names = [stream.name for stream in notifications]
-        notice = dict(event=dict(type="subscriptions", op="peer_remove",
-                                 subscriptions=stream_names,
-                                 user_email=user_profile.email),
-                      users=[event_recipient.id])
-        tornado_callbacks.send_notification(notice)
-
+        event = dict(type="subscriptions", op="peer_remove",
+                     subscriptions=stream_names,
+                     user_email=user_profile.email)
+        send_event(event, [event_recipient.id])
 
 def bulk_remove_subscriptions(users, streams):
     recipients_map = bulk_get_recipients(Recipient.STREAM,
@@ -1102,14 +1094,13 @@ def do_change_subscription_property(user_profile, sub, stream_name,
     log_subscription_property_change(user_profile.email, stream_name,
                                      property_name, value)
 
-    notice = dict(event=dict(type="subscriptions",
-                             op="update",
-                             email=user_profile.email,
-                             property=property_name,
-                             value=value,
-                             name=stream_name,),
-                  users=[user_profile.id])
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="subscriptions",
+                 op="update",
+                 email=user_profile.email,
+                 property=property_name,
+                 value=value,
+                 name=stream_name)
+    send_event(event, [user_profile.id])
 
 def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     user_profile.is_active = True
@@ -1162,11 +1153,10 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'user': user_profile.email,
                    'full_name': full_name})
 
-    notice = dict(event=dict(type="realm_user", op="update",
-                             person=dict(email=user_profile.email,
-                                         full_name=user_profile.full_name)),
-                  users=active_user_ids(user_profile.realm))
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="realm_user", op="update",
+                 person=dict(email=user_profile.email,
+                             full_name=user_profile.full_name))
+    send_event(event, active_user_ids(user_profile.realm))
 
 def do_change_is_admin(user_profile, is_admin):
     if is_admin:
@@ -1174,12 +1164,10 @@ def do_change_is_admin(user_profile, is_admin):
     else:
         remove_perm('administer', user_profile, user_profile.realm)
 
-    notice = dict(event=dict(type="realm_user", op="update",
-                             person=dict(email=user_profile.email,
-                                         is_admin=is_admin)),
-                  users=active_user_ids(user_profile.realm))
-    tornado_callbacks.send_notification(notice)
-
+    event = dict(type="realm_user", op="update",
+                 person=dict(email=user_profile.email,
+                             is_admin=is_admin))
+    send_event(event, active_user_ids(user_profile.realm))
 
 def do_make_stream_public(user_profile, realm, stream_name):
     stream_name = stream_name.strip()
@@ -1260,9 +1248,7 @@ def do_rename_stream(realm, old_name, new_name, log=True):
         value=new_name,
         name=old_name
     )
-    notice = dict(event=event, users=active_user_ids(realm))
-
-    tornado_callbacks.send_notification(notice)
+    send_event(event, active_user_ids(realm))
 
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
@@ -1273,12 +1259,10 @@ def do_change_stream_description(realm, stream_name, new_description):
     stream.description = new_description
     stream.save(update_fields=['description'])
 
-    notice = dict(event=dict(type='stream', op='update',
-                             property='description', name=stream_name,
-                             value=new_description),
-                  users=active_user_ids(realm))
-
-    tornado_callbacks.send_notification(notice)
+    event = dict(type='stream', op='update',
+                 property='description', name=stream_name,
+                 value=new_description)
+    send_event(event, active_user_ids(realm))
     return {}
 
 def do_create_realm(domain, name, restricted_to_domain=True):
@@ -1435,11 +1419,10 @@ def do_update_user_activity(user_profile, client, query, log_time):
 
 def send_presence_changed(user_profile, presence):
     presence_dict = presence.to_dict()
-    notice = dict(event=dict(type="presence", email=user_profile.email,
-                             server_timestamp=time.time(),
-                             presence={presence_dict['client']: presence.to_dict()}),
-                  users=active_user_ids(user_profile.realm))
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="presence", email=user_profile.email,
+                 server_timestamp=time.time(),
+                 presence={presence_dict['client']: presence.to_dict()})
+    send_event(event, active_user_ids(user_profile.realm))
 
 @statsd_increment('user_presence')
 def do_update_user_presence(user_profile, client, log_time, status):
@@ -1552,8 +1535,7 @@ def do_update_message_flags(user_profile, operation, flag, messages, all):
              'messages': messages,
              'all': all}
     log_event(event)
-    notice = dict(event=event, users=[user_profile.id])
-    tornado_callbacks.send_notification(notice)
+    send_event(event, [user_profile.id])
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)
 
@@ -2215,11 +2197,10 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     return ret_error, ret_error_data
 
 def send_referral_event(user_profile):
-    notice = dict(event=dict(type="referral",
-                             referrals=dict(granted=user_profile.invites_granted,
-                                            used=user_profile.invites_used)),
-                  users=[user_profile.id])
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="referral",
+                 referrals=dict(granted=user_profile.invites_granted,
+                                used=user_profile.invites_used))
+    send_event(event, [user_profile.id])
 
 def do_refer_friend(user_profile, email):
     content = """Referrer: "%s" <%s>
@@ -2240,10 +2221,10 @@ Referred: %s""" % (user_profile.full_name, user_profile.email, user_profile.real
     send_referral_event(user_profile)
 
 def notify_realm_emoji(realm):
-    notice = dict(event=dict(type="realm_emoji", op="update",
-                             realm_emoji=realm.get_emoji()),
-                  users=[userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)])
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="realm_emoji", op="update",
+                 realm_emoji=realm.get_emoji())
+    user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
+    send_event(event, user_ids)
 
 def do_add_realm_emoji(realm, name, img_url):
     RealmEmoji(realm=realm, name=name, img_url=img_url).save()
@@ -2254,9 +2235,8 @@ def do_remove_realm_emoji(realm, name):
     notify_realm_emoji(realm)
 
 def notify_alert_words(user_profile, words):
-    notice = dict(event=dict(type="alert_words", alert_words=words),
-                  users=[user_profile.id])
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="alert_words", alert_words=words)
+    send_event(event, [user_profile.id])
 
 def do_add_alert_words(user_profile, alert_words):
     words = add_user_alert_words(user_profile, alert_words)
@@ -2273,16 +2253,14 @@ def do_set_alert_words(user_profile, alert_words):
 def do_set_muted_topics(user_profile, muted_topics):
     user_profile.muted_topics = ujson.dumps(muted_topics)
     user_profile.save(update_fields=['muted_topics'])
-    notice = dict(event=dict(type="muted_topics", muted_topics=muted_topics),
-                  users=[user_profile.id])
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="muted_topics", muted_topics=muted_topics)
+    send_event(event, [user_profile.id])
 
 def notify_realm_filters(realm):
     realm_filters = realm_filters_for_domain(realm.domain)
     user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
-
-    notice = dict(event=dict(type="realm_filters", realm_filters=realm_filters), users=user_ids)
-    tornado_callbacks.send_notification(notice)
+    event = dict(type="realm_filters", realm_filters=realm_filters)
+    send_event(event, user_ids)
 
 # NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:

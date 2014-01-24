@@ -242,3 +242,6 @@ def send_notification_http(data):
 
 def send_notification(data):
     return queue_json_publish("notify_tornado", data, send_notification_http)
+
+def send_event(event, users):
+    return send_notification(dict(event=event, users=users))
