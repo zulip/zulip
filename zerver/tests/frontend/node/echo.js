@@ -29,7 +29,8 @@ set_global('emoji', {
 
 set_global('page_params', {
   realm_filters: [["#(?P<id>[0-9]{2,8})", "https://trac.zulip.net/ticket/%(id)s"],
-                  ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"]]
+                  ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
+                  ["ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})", "https://zone_%(zone)s.zulip.net/ticket/%(id)s"]]
 });
 
 set_global('people_by_name_dict', Dict.from({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}}));
@@ -118,7 +119,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
     {input: 'This is an :emoji: message',
      expected: '<p>This is an <img alt=":emoji:" class="emoji" src="some/url/here/emoji.png" title=":emoji:"> message</p>'},
     {input: 'This is a realm filter #1234 with text after it',
-     expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'}
+     expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
+    {input: 'This is a realm filter with ZGROUP_123:45 groups',
+     expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'}
   ];
 
   test_cases.forEach(function (test_case) {
@@ -159,4 +162,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
   assert.equal(message.subject_links.length, 2);
   assert(message.subject_links.indexOf("https://trac2.zulip.net/ticket/123") !== -1);
   assert(message.subject_links.indexOf("https://trac.zulip.net/ticket/456") !== -1);
+
+  message = {subject: "One ZGROUP_123:45 link here"};
+  echo._add_subject_links(message);
+  assert.equal(message.subject_links.length, 1);
+  assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
 }());

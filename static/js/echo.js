@@ -314,6 +314,7 @@ function handleRealmFilter(pattern, matches) {
     _.each(matches, function (match) {
         var back_ref = "\\" + current_group;
         url = url.replace(back_ref, match);
+        current_group++;
     });
 
     return url;
@@ -333,6 +334,8 @@ function python_to_js_filter(pattern, url) {
         url = url.replace('%(' + name + ')s', '\\' + current_group);
 
         match = named_group_re.exec(pattern);
+
+        current_group++;
     }
     return [new RegExp(pattern, 'g'), url];
 }
