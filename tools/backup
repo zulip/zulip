@@ -20,7 +20,7 @@ function commit {
     git repack -da
 }
 
-cd ../message_logs
+cd message_logs
 for h in staging.zulip.net prod0.zulip.net; do
     rsync -v zulip@$h:logs/event_log/events.* .
 done
