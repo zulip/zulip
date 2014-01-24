@@ -537,6 +537,8 @@ MessageList.prototype = {
             var value = this._hash[old_id];
             delete this._hash[old_id];
             this._hash[new_id] = value;
+        } else {
+            return;
         }
 
         if (this._selected_id === old_id) {
