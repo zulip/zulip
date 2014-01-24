@@ -41,10 +41,9 @@ exports.left_side_userlist = page_params.staging || _.contains(['customer7.inval
 exports.show_autoscroll_forever_option = page_params.show_autoscroll_forever_option;
 
 // Still very beta:
-exports.local_echo = page_params.staging;
 
 exports.full_width = false; //page_params.staging;
-exports.local_echo = page_params.staging;
+exports.local_echo = false; // page_params.staging;
 
 exports.show_digest_email_setting = page_params.staging;
 
