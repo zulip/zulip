@@ -1744,8 +1744,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             'id': um.user_profile_id,
             'flags': um.flags_list()
         }
-    notice = dict(event=event, users=map(user_info, ums), type='update_message')
-    tornado_callbacks.send_notification(notice)
+    send_event(event, map(user_info, ums))
 
 def encode_email_address(stream):
     return encode_email_address_helper(stream.name, stream.email_token)
