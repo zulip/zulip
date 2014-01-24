@@ -92,6 +92,7 @@ def active_user_ids(realm):
 def notify_created_user(user_profile):
     notice = dict(event=dict(type="realm_user", op="add",
                              person=dict(email=user_profile.email,
+                                         is_admin=user_profile.is_admin(),
                                          full_name=user_profile.full_name,
                                          is_bot=user_profile.is_bot,
                   )),
@@ -1859,7 +1860,11 @@ def get_status_dict(requesting_user_profile):
 
 
 def get_realm_user_dicts(user_profile):
+    # Due to our permission model, it is advantageous to find the admin users in bulk.
+    admins = user_profile.realm.get_admin_users()
+    admin_emails = set(map(lambda up: up.email, admins))
     return [{'email'     : userdict['email'],
+             'is_admin'  : userdict['email'] in admin_emails,
              'is_bot'    : userdict['is_bot'],
              'full_name' : userdict['full_name']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]

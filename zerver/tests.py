@@ -3670,6 +3670,11 @@ class EventsRegisterTest(AuthedTestCase):
     def test_change_full_name(self):
         self.do_test(lambda: do_change_full_name(self.user_profile, 'Sir Hamlet'))
 
+    def test_change_is_admin(self):
+        # The first False is probably a noop, then we get transitions in both directions.
+        for is_admin in [False, True, False]:
+            self.do_test(lambda: do_change_is_admin(self.user_profile, is_admin))
+
     def test_realm_emoji_events(self):
         self.do_test(lambda: do_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
                                                 "https://realm.com/my_emoji"))
