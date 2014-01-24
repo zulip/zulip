@@ -25,7 +25,7 @@ from zerver.models import Message, UserProfile, Stream, \
     get_user_profile_by_email, get_stream, valid_stream_name, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
     stringify_message_dict, is_super_user, is_super_user_api, \
-    resolve_email_to_domain, get_realm
+    resolve_email_to_domain, get_realm, get_active_streams
 
 import sqlalchemy
 from sqlalchemy import func
@@ -149,8 +149,8 @@ class NarrowBuilder(object):
             else:
                 base_stream_name = stream.name
 
-            matching_streams = Stream.objects.filter(realm=self.user_profile.realm,
-                                                     name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
+            matching_streams = get_active_streams(self.user_profile.realm).filter(
+                name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
             matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
             recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
             return query.where(column("recipient_id").in_([recipient.id for recipient in recipients]))

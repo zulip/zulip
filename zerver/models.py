@@ -535,6 +535,12 @@ def get_stream_backend(stream_name, realm):
     return Stream.objects.select_related("realm").get(
         name__iexact=stream_name.strip(), realm_id=realm_id)
 
+def get_active_streams(realm):
+    """
+    Return all streams (including invite-only streams) that have not been deactivated.
+    """
+    return Stream.objects.filter(realm=realm, deactivated=False)
+
 # get_stream takes either a realm id or a realm
 def get_stream(stream_name, realm):
     try:
@@ -560,7 +566,7 @@ def bulk_get_streams(realm, stream_names):
             return []
         upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
         where_clause = "UPPER(zerver_stream.name::text) IN (%s)" % (upper_list,)
-        return Stream.objects.select_related("realm").filter(realm_id=realm_id).extra(
+        return get_active_streams(realm_id).select_related("realm").extra(
             where=[where_clause],
             params=stream_names)
 

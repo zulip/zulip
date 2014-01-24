@@ -13,8 +13,10 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     resolve_email_to_domain, email_to_username, display_recipient_cache_key, \
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
-    UserActivityInterval, get_active_user_dicts_in_realm, \
-    realm_filters_for_domain, RealmFilter, receives_offline_notifications
+    UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
+    realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
+    ScheduledJob, realm_filters_for_domain, RealmFilter
+
 from zerver.lib.avatar import get_avatar_url
 from guardian.shortcuts import assign_perm, remove_perm
 
@@ -1861,7 +1863,8 @@ def gather_subscriptions_helper(user_profile):
 
     stream_ids = [sub["recipient__type_id"] for sub in sub_dicts]
 
-    stream_dicts = Stream.objects.select_related("realm").filter(id__in=stream_ids).values(
+    stream_dicts = get_active_streams(user_profile.realm).select_related(
+        "realm").filter(id__in=stream_ids).values(
         "id", "name", "invite_only", "realm_id", "realm__domain", "email_token", "description")
     stream_hash = {}
     for stream in stream_dicts:
@@ -1870,12 +1873,18 @@ def gather_subscriptions_helper(user_profile):
     subscribed = []
     unsubscribed = []
 
-    streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts]
+    # Deactivated streams aren't in stream_hash.
+    streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts \
+                   if sub["recipient__type_id"] in stream_hash]
     streams_subscribed_map = dict((sub["recipient__type_id"], sub["active"]) for sub in sub_dicts)
     subscriber_map = bulk_get_subscriber_user_ids(streams, user_profile, streams_subscribed_map)
 
     for sub in sub_dicts:
-        stream = stream_hash[sub["recipient__type_id"]]
+        stream = stream_hash.get(sub["recipient__type_id"])
+        if not stream:
+            # This stream has been deactivated, don't include it.
+            continue
+
         subscribers = subscriber_map[stream["id"]]
 
         # Important: don't show the subscribers if the stream is invite only

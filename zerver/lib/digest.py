@@ -10,7 +10,7 @@ from django.conf import settings
 from zerver.lib.notifications import build_message_list, hashchange_encode, \
     send_future_email, one_click_unsubscribe_link
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
-    Subscription
+    Subscription, get_active_streams
 
 import logging
 
@@ -112,9 +112,8 @@ def gather_new_streams(user_profile, threshold):
     if user_profile.realm.domain == "mit.edu":
         new_streams = []
     else:
-        new_streams = list(Stream.objects.filter(
-                realm=user_profile.realm, invite_only=False,
-                date_created__gt=threshold))
+        new_streams = list(get_active_streams(user_profile.realm).filter(
+                invite_only=False, date_created__gt=threshold))
 
     base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
 
