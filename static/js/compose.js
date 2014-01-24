@@ -478,7 +478,7 @@ function clear_compose_box() {
 }
 
 exports.send_message_success = function (local_id, message_id, start_time, locally_echoed) {
-    if (! feature_flags.local_echo) {
+    if (! feature_flags.local_echo || !locally_echoed) {
         clear_compose_box();
     }
 
@@ -526,9 +526,10 @@ function send_message(request) {
             request.local_id = local_id;
         }
     }
+    var locally_echoed = local_id !== undefined;
 
     function success(data) {
-        exports.send_message_success(local_id, data.id, start_time, local_id !== undefined);
+        exports.send_message_success(local_id, data.id, start_time, locally_echoed);
     }
 
     function error(response) {
@@ -549,7 +550,7 @@ function send_message(request) {
         blueslip.error("Restarting get_updates because it was not running during send");
     }
 
-    if (feature_flags.local_echo) {
+    if (feature_flags.local_echo && locally_echoed) {
         clear_compose_box();
     }
 }
