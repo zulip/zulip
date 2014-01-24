@@ -43,7 +43,7 @@ exports.show_autoscroll_forever_option = page_params.show_autoscroll_forever_opt
 // Still very beta:
 
 exports.full_width = false; //page_params.staging;
-exports.local_echo = false; // page_params.staging;
+exports.local_echo = page_params.staging;
 
 exports.show_digest_email_setting = page_params.staging;
 
