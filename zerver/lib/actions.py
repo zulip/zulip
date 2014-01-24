@@ -1857,6 +1857,14 @@ def get_status_dict(requesting_user_profile):
 
     return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
 
+
+def get_realm_user_dicts(user_profile):
+    return [{'email'     : userdict['email'],
+             'is_bot'    : userdict['is_bot'],
+             'full_name' : userdict['full_name']}
+            for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
+
+
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
@@ -1875,10 +1883,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
     if event_types is None or "pointer" in event_types:
         state['pointer'] = user_profile.pointer
     if event_types is None or "realm_user" in event_types:
-        state['realm_users'] = [{'email'     : userdict['email'],
-                                 'is_bot'    : userdict['is_bot'],
-                                 'full_name' : userdict['full_name']}
-                                for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
+        state['realm_users'] = get_realm_user_dicts(user_profile)
     if event_types is None or "subscription" in event_types:
         subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
         state['subscriptions'] = subscriptions
