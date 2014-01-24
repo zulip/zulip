@@ -136,6 +136,10 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
         return undefined;
     }
 
+    if (narrow.active() && !narrow.filter().can_apply_locally()) {
+        return undefined;
+    }
+
     return insert_local_message(message_request, next_local_id);
 };
 
