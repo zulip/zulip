@@ -746,10 +746,10 @@ $(function () {
         // .subscription_header line-height,
         // .subscription_header padding
         var expanded_row_size = 200 + 30 + 100 + 30 + 5;
-        var cover = subrow.position().top + expanded_row_size -
-            viewport.height() + $("#top_navbar").height() - viewport.scrollTop();
+        var cover = subrow.offset().top + expanded_row_size -
+            viewport.height() + viewport.scrollTop();
         if (cover > 0) {
-            $('html, body').animate({
+            $('.app').animate({
                 scrollTop: viewport.scrollTop() + cover + 5
             });
         }
