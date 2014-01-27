@@ -342,6 +342,9 @@ function python_to_js_filter(pattern, url) {
 
 exports.set_realm_filters = function set_realm_filters(realm_filters) {
     // Update the marked parser with our particular set of realm filters
+    if (!page_params.local_echo) {
+        return;
+    }
     realm_filter_map = {};
     realm_filter_list = [];
 
