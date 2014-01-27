@@ -492,6 +492,11 @@ class AuthedTestCase(TestCase):
         """
         self.assertEqual(self.get_json_error(result), msg)
 
+    def assert_length(self, queries, count, exact=False):
+        if exact:
+            return self.assertTrue(len(queries) == count, queries)
+        return self.assertTrue(len(queries) <= count, queries)
+
     def assert_json_error_contains(self, result, msg_substring):
         self.assertIn(msg_substring, self.get_json_error(result))
 
@@ -940,7 +945,7 @@ class ActivityTest(AuthedTestCase):
         with queries_captured() as queries:
             self.client.get('/activity')
 
-        self.assertEqual(len(queries), 12)
+        self.assert_length(queries, 12)
 
 class UserProfileTest(TestCase):
     def test_get_emails_from_user_ids(self):
@@ -1034,7 +1039,7 @@ class LoginTest(AuthedTestCase):
         with queries_captured() as queries:
             self.register("test", "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertTrue(len(queries) <= 59)
+        self.assert_length(queries, 59)
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
@@ -1313,7 +1318,7 @@ class StreamMessagesTest(AuthedTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assertTrue(len(queries) <= 5)
+        self.assert_length(queries, 5)
 
     def test_message_mentions(self):
         user_profile = get_user_profile_by_email("iago@zulip.com")
@@ -1388,7 +1393,7 @@ class MessageDictTest(AuthedTestCase):
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
-        self.assertTrue(len(queries) <= 7)
+        self.assert_length(queries, 7)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
@@ -2101,7 +2106,7 @@ class SubscriptionAPITest(AuthedTestCase):
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                 add_streams, self.streams, self.test_email, self.streams + add_streams)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1, True)
 
     def test_successful_subscriptions_notifies_pm(self):
         """
@@ -2285,9 +2290,9 @@ class SubscriptionAPITest(AuthedTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
             )
-        self.assertTrue(len(queries) <= 34)
+        self.assert_length(queries, 34)
 
-        self.assertEqual(len(events), 2)
+        self.assert_length(events, 2, exact=True)
         for ev in events:
             self.assertEqual(ev['event']['op'], 'add')
             self.assertEqual(
@@ -2307,9 +2312,9 @@ class SubscriptionAPITest(AuthedTestCase):
                         streams_to_sub,
                         dict(principals=ujson.dumps([self.test_email])),
                 )
-        self.assertTrue(len(queries) <= 4)
+        self.assert_length(queries, 4)
 
-        self.assertEqual(len(events), 2)
+        self.assert_length(events, 2, True)
         add_event, add_peer_event = events
         self.assertEqual(add_event['event']['type'], 'subscriptions')
         self.assertEqual(add_event['event']['op'], 'add')
@@ -2335,7 +2340,7 @@ class SubscriptionAPITest(AuthedTestCase):
         with tornado_redirected_to_list(events):
             do_add_subscription(user_profile, stream)
 
-        self.assertEqual(len(events), 2)
+        self.assert_length(events, 2, True)
         add_event, add_peer_event = events
 
         self.assertEqual(add_event['event']['type'], 'subscriptions')
@@ -2367,8 +2372,8 @@ class SubscriptionAPITest(AuthedTestCase):
                         dict(principals=ujson.dumps(['starnine@mit.edu'])),
                 )
         # Make sure MIT does not get any tornado subscription events
-        self.assertEqual(len(events), 0)
-        self.assertTrue(len(queries) <= 5)
+        self.assert_length(events, 0, True)
+        self.assert_length(queries, 5)
 
     def test_bulk_subscribe_many(self):
         # Create a whole bunch of streams
@@ -2384,7 +2389,7 @@ class SubscriptionAPITest(AuthedTestCase):
                         dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
-        self.assertTrue(len(queries) <= 7)
+        self.assert_length(queries, 7)
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
@@ -3523,7 +3528,7 @@ class GetEventsTest(AuthedTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assertEqual(len(events), 0)
+        self.assert_length(events, 0, True)
 
         local_id = 10.01
         self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
@@ -3536,7 +3541,7 @@ class GetEventsTest(AuthedTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1, True)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
@@ -3553,7 +3558,7 @@ class GetEventsTest(AuthedTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1, True)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
@@ -3599,7 +3604,7 @@ class GetEventsTest(AuthedTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assertEqual(len(events), 0)
+        self.assert_length(events, 0, True)
 
         self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
         self.send_message(email, "Denmark", Recipient.STREAM, "hello")
@@ -3612,7 +3617,7 @@ class GetEventsTest(AuthedTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1, True)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
@@ -3863,8 +3868,8 @@ class GetProfileTest(AuthedTestCase):
             with simulated_empty_cache() as cache_queries:
                 user_profile = get_user_profile_by_email('hamlet@zulip.com')
 
-        self.assertEqual(len(queries), 1)
-        self.assertEqual(len(cache_queries), 1)
+        self.assert_length(queries, 1)
+        self.assert_length(cache_queries, 1, exact=True)
         self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
     def test_api_get_empty_profile(self):
@@ -4110,7 +4115,7 @@ class GetSubscribersTest(AuthedTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
-        self.assertTrue(len(queries) == 4)
+        self.assert_length(queries, 4, exact=True)
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
@@ -4140,7 +4145,7 @@ class GetSubscribersTest(AuthedTestCase):
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
                 self.assertTrue(len(sub["subscribers"]) == 0)
-        self.assertTrue(len(queries) == 4)
+        self.assert_length(queries, 4, exact=True)
 
     def test_nonsubscriber(self):
         """
