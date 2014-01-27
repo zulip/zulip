@@ -38,7 +38,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
     do_make_stream_private, do_change_default_desktop_notifications, \
-    do_change_stream_description, do_update_pointer
+    do_change_stream_description, do_update_pointer, do_add_default_stream
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
@@ -1072,6 +1072,11 @@ def get_streams_backend(request, user_profile,
 def get_public_streams_backend(request, user_profile):
     return get_streams_backend(request, user_profile, include_public=True,
                                include_subscribed=False, include_all_active=False)
+
+@require_realm_admin
+@has_request_variables
+def add_default_stream(request, user_profile, stream_name=REQ):
+    return json_success(do_add_default_stream(user_profile.realm, stream_name))
 
 @authenticated_json_post_view
 @require_realm_admin

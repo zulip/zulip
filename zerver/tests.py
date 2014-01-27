@@ -1044,6 +1044,15 @@ class DefaultStreamTest(AuthedTestCase):
         do_remove_default_stream(realm, 'Added Stream')
         self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
 
+    def test_api_calls(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        do_change_is_admin(user_profile, True)
+        stream_name = 'stream ADDED via api'
+        result = self.client_patch('/json/default_streams', dict(stream_name=stream_name))
+        self.assert_json_success(result)
+        self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
+
 class LoginTest(AuthedTestCase):
     """
     Logging in, registration, and logging out.
