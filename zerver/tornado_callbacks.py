@@ -93,16 +93,16 @@ def receiver_is_idle(user_profile_id, realm_presences):
 
     return off_zulip or idle_too_long
 
-def process_new_message(data):
-    realm_presences = data['presences']
-    sender_queue_id = data.get('sender_queue_id', None)
-    if "message_dict_markdown" in data:
-        message_dict_markdown = data['message_dict_markdown']
-        message_dict_no_markdown = data['message_dict_no_markdown']
+def process_new_message(event_template):
+    realm_presences = event_template['presences']
+    sender_queue_id = event_template.get('sender_queue_id', None)
+    if "message_dict_markdown" in event_template:
+        message_dict_markdown = event_template['message_dict_markdown']
+        message_dict_no_markdown = event_template['message_dict_no_markdown']
     else:
         # We can delete this and get_message_by_id_dbwarn after the
         # next prod deploy
-        message = get_message_by_id_dbwarn(data['message'])
+        message = get_message_by_id_dbwarn(event_template['message'])
         message_dict_markdown = message.to_dict(True)
         message_dict_no_markdown = message.to_dict(False)
     sender_id = message_dict_markdown['sender_id']
@@ -116,13 +116,13 @@ def process_new_message(data):
     # Extra user-specific data to include
     extra_user_data = {}
 
-    if 'stream_name' in data and not data.get("invite_only"):
-        for client in get_client_descriptors_for_realm_all_streams(data['realm_id']):
+    if 'stream_name' in event_template and not event_template.get("invite_only"):
+        for client in get_client_descriptors_for_realm_all_streams(event_template['realm_id']):
             send_to_clients[client.event_queue.id] = {'client': client, 'flags': None}
             if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
                 send_to_clients[client.event_queue.id]['is_sender'] = True
 
-    for user_data in data['users']:
+    for user_data in event_template['users']:
         user_profile_id = user_data['id']
         flags = user_data.get('flags', [])
 
@@ -138,14 +138,14 @@ def process_new_message(data):
         idle = receiver_is_idle(user_profile_id, realm_presences)
         always_push_notify = user_data.get('always_push_notify', False)
         if (received_pm or mentioned) and (idle or always_push_notify):
-            event = build_offline_notification_event(user_profile_id, message_id)
-            queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
+            notice = build_offline_notification_event(user_profile_id, message_id)
+            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
             notified = dict(push_notified=True)
             # Don't send missed message emails if always_push_notify is True
             if idle:
                 # We require RabbitMQ to do this, as we can't call the email handler
                 # from the Tornado process. So if there's no rabbitmq support do nothing
-                queue_json_publish("missedmessage_emails", event, lambda event: None)
+                queue_json_publish("missedmessage_emails", notice, lambda notice: None)
                 notified['email_notified'] = True
 
             extra_user_data[user_profile_id] = notified
@@ -168,27 +168,27 @@ def process_new_message(data):
             message_dict = message_dict_no_markdown
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
-        if "mirror" in client.client_type.name and data.get("invite_only"):
+        if "mirror" in client.client_type.name and event_template.get("invite_only"):
             message_dict = message_dict.copy()
             message_dict["invite_only_stream"] = True
 
-        event = dict(type='message', message=message_dict, flags=flags)
+        user_event = dict(type='message', message=message_dict, flags=flags)
         if extra_data is not None:
-            event.update(extra_data)
+            user_event.update(extra_data)
 
         if is_sender:
-            local_message_id = data.get('local_id', None)
+            local_message_id = event_template.get('local_id', None)
             if local_message_id is not None:
-                event["local_message_id"] = local_message_id
+                user_event["local_message_id"] = local_message_id
 
-        if not client.accepts_event(event):
+        if not client.accepts_event(user_event):
             continue
 
         # The below prevents (Zephyr) mirroring loops.
         if ('mirror' in sending_client and
             sending_client.lower() == client.client_type.name.lower()):
             continue
-        client.add_event(event)
+        client.add_event(user_event)
 
 def process_event(event, users):
     for user_profile_id in users:
@@ -196,10 +196,10 @@ def process_event(event, users):
             if client.accepts_event(event):
                 client.add_event(event.copy())
 
-def process_userdata_event(raw_event, users):
+def process_userdata_event(event_template, users):
     for user_data in users:
         user_profile_id = user_data['id']
-        user_event = raw_event.copy() # shallow, but deep enough for our needs
+        user_event = event_template.copy() # shallow, but deep enough for our needs
         for key in user_data.keys():
             if key != "id":
                 user_event[key] = user_data[key]
