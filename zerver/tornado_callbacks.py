@@ -25,7 +25,7 @@ import datetime
 # after they are idle for 1 hour
 NOTIFY_AFTER_IDLE_HOURS = 1
 
-def build_offline_notification_event(user_profile_id, message_id):
+def build_offline_notification(user_profile_id, message_id):
     return {"user_profile_id": user_profile_id,
             "message_id": message_id,
             "timestamp": time.time()}
@@ -52,11 +52,11 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
 
     for notify_info in message_ids_to_notify:
         msg_id = notify_info['message_id']
-        event = build_offline_notification_event(user_profile_id, msg_id)
+        notice = build_offline_notification(user_profile_id, msg_id)
         if notify_info.get('send_push', False):
-            queue_json_publish("missedmessage_mobile_notifications", event, lambda event: None)
+            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
         if notify_info.get('send_email', False):
-            queue_json_publish("missedmessage_}emails", event, lambda event: None)
+            queue_json_publish("missedmessage_}emails", notice, lambda notice: None)
 
 @cache_with_key(message_cache_key, timeout=3600*24)
 def get_message_by_id_dbwarn(message_id):
@@ -138,7 +138,7 @@ def process_message_event(event_template, users):
         idle = receiver_is_idle(user_profile_id, realm_presences)
         always_push_notify = user_data.get('always_push_notify', False)
         if (received_pm or mentioned) and (idle or always_push_notify):
-            notice = build_offline_notification_event(user_profile_id, message_id)
+            notice = build_offline_notification(user_profile_id, message_id)
             queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
             notified = dict(push_notified=True)
             # Don't send missed message emails if always_push_notify is True
