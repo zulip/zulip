@@ -27,7 +27,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_change_full_name, do_change_enable_desktop_notifications, do_change_is_admin, \
     do_change_enter_sends, do_change_enable_sounds, do_activate_user, do_create_user, \
     do_change_subscription_property, internal_send_message, \
-    create_stream_if_needed, gather_subscriptions, \
+    create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, bulk_add_subscriptions, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, do_set_realm_name, internal_prep_message, \
@@ -1761,7 +1761,7 @@ def deactivate_stream_backend(request, user_profile, stream_name):
     except Stream.DoesNotExist:
         return json_error('No such stream name')
 
-    if target.invite_only:
+    if target.invite_only and not subscribed_to_stream(user_profile, target):
         return json_error('Cannot administer invite-only streams this way')
 
     do_deactivate_stream(target)
