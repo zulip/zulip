@@ -1013,26 +1013,29 @@ class PublicURLTest(TestCase):
             self.fetch("post", url_set, status_code)
 
 class DefaultStreamTest(AuthedTestCase):
+    def get_default_stream_names(self, realm):
+        streams = get_default_streams_for_realm(realm)
+        stream_names = [s.name for s in streams]
+        return set(stream_names)
+
     def test_set_default_streams(self):
         realm = Realm.objects.get(domain="zulip.com")
         stream_names = ['apple', 'banana', 'Carrot Cake']
         expected_names = stream_names + ['zulip']
         set_default_streams(realm, stream_names)
-        streams = get_default_streams_for_realm(realm)
-        stream_names = [s.name for s in streams]
-        self.assertEqual(set(stream_names), set(expected_names))
+        stream_names = self.get_default_stream_names(realm)
+        self.assertEqual(stream_names, set(expected_names))
 
     def test_add_default_stream(self):
         realm = Realm.objects.get(domain="zulip.com")
-        orig_streams = set(get_default_streams_for_realm(realm))
+        orig_stream_names = self.get_default_stream_names(realm)
         do_add_default_stream(realm, 'Added Stream')
-        new_streams = set(get_default_streams_for_realm(realm))
-        added_streams = new_streams - orig_streams
-        added_stream_names = [s.name for s in added_streams]
-        self.assertEqual(added_stream_names, ['Added Stream'])
+        new_stream_names = self.get_default_stream_names(realm)
+        added_stream_names = new_stream_names - orig_stream_names
+        self.assertEqual(added_stream_names, set(['Added Stream']))
         # idempotentcy--2nd call to add_default_stream should be a noop
         do_add_default_stream(realm, 'Added Stream')
-        self.assertEqual(set(get_default_streams_for_realm(realm)), new_streams)
+        self.assertEqual(self.get_default_stream_names(realm), new_stream_names)
 
 class LoginTest(AuthedTestCase):
     """
