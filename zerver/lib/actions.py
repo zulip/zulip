@@ -86,6 +86,14 @@ def log_event(event):
 def active_user_ids(realm):
     return [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
 
+def stream_user_ids(stream):
+    subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
+                                                recipient__type_id=stream.id)
+    if stream.invite_only:
+        subscriptions = subscriptions.filter(active=True)
+
+    return [sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')]
+
 def notify_created_user(user_profile):
     event = dict(type="realm_user", op="add",
                  person=dict(email=user_profile.email,
@@ -1246,7 +1254,7 @@ def do_rename_stream(realm, old_name, new_name, log=True):
         value=new_name,
         name=old_name
     )
-    send_event(event, active_user_ids(realm))
+    send_event(event, stream_user_ids(stream))
 
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
@@ -1260,7 +1268,7 @@ def do_change_stream_description(realm, stream_name, new_description):
     event = dict(type='stream', op='update',
                  property='description', name=stream_name,
                  value=new_description)
-    send_event(event, active_user_ids(realm))
+    send_event(event, stream_user_ids(stream))
     return {}
 
 def do_create_realm(domain, name, restricted_to_domain=True):

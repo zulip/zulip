@@ -391,6 +391,8 @@ class StreamAdminTest(AuthedTestCase):
             value='stream_name2',
             name='stream_name1'
         ))
+        users = events[0]['users']
+        self.assertEqual(users, [user_profile.id])
 
         stream_name1_exists = Stream.objects.filter(
             name='stream_name1',
@@ -422,9 +424,22 @@ class StreamAdminTest(AuthedTestCase):
         do_add_subscription(user_profile, stream, no_log=True)
         do_change_is_admin(user_profile, True)
 
-        result = self.client_patch('/json/streams/stream_name1',
-                                  {'description': ujson.dumps('Test description')})
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/stream_name1',
+                                      {'description': ujson.dumps('Test description')})
         self.assert_json_success(result)
+
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            op='update',
+            type='stream',
+            property='description',
+            value='Test description',
+            name='stream_name1'
+        ))
+        users = events[0]['users']
+        self.assertEqual(users, [user_profile.id])
 
         stream = Stream.objects.get(
             name='stream_name1',
@@ -436,6 +451,7 @@ class StreamAdminTest(AuthedTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
+
         realm = user_profile.realm
         stream, _ = create_stream_if_needed(realm, 'stream_name1')
         do_add_subscription(user_profile, stream, no_log=True)
