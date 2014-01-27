@@ -41,6 +41,9 @@ var globals =
     // alert_words.js
     + ' alert_words'
 
+    // fenced_code.js
+    + ' fenced_code'
+
     // echo.js
     + ' echo'
 
