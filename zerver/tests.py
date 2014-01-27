@@ -84,10 +84,10 @@ def simulated_queue_client(client):
 
 @contextmanager
 def tornado_redirected_to_list(lst):
-    real_tornado_callbacks_process_event = tornado_callbacks.process_event
-    tornado_callbacks.process_event = lst.append
+    real_tornado_callbacks_process_notification = tornado_callbacks.process_notification
+    tornado_callbacks.process_notification = lst.append
     yield
-    tornado_callbacks.process_event = real_tornado_callbacks_process_event
+    tornado_callbacks.process_notification = real_tornado_callbacks_process_notification
 
 @contextmanager
 def simulated_empty_cache():
@@ -2290,10 +2290,10 @@ class SubscriptionAPITest(AuthedTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
             )
-        self.assert_length(queries, 34)
+        self.assert_length(queries, 37)
 
-        self.assert_length(events, 2, exact=True)
-        for ev in events:
+        self.assert_length(events, 4, exact=True)
+        for ev in filter(lambda x: 'message' not in x, events):
             self.assertEqual(ev['event']['op'], 'add')
             self.assertEqual(
                     set(ev['event']['subscriptions'][0]['subscribers']),
