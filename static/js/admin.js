@@ -71,6 +71,10 @@ function populate_streams (streams_data) {
 }
 
 exports.setup_page = function () {
+    var admin_tab = templates.render('admin_tab');
+    $("#administration").html(admin_tab);
+    $("#administration-status").hide();
+
     // create loading indicators
     util.make_loading_indicator($('#admin_page_users_loading_indicator'));
     util.make_loading_indicator($('#admin_page_bots_loading_indicator'));

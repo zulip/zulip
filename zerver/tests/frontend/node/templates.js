@@ -66,6 +66,15 @@ function render(template_name, args) {
     global.write_test_output("actions_popover_content.handlebars", html);
 }());
 
+(function admin_tab() {
+    var html = render('admin_tab');
+    var admin_features = ["admin_users_table", "admin_bots_table",
+                          "admin_streams_table", "admin_deactivated_users_table"];
+    _.each(admin_features, function (admin_feature) {
+        assert.notEqual($(html).find("#" + admin_feature).length, 0);
+    });
+}());
+
 (function admin_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
