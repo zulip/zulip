@@ -64,6 +64,12 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         if notify_info.get('send_email', False):
             queue_json_publish("missedmessage_}emails", event, lambda event: None)
 
+@cache_with_key(message_cache_key, timeout=3600*24)
+def get_message_by_id_dbwarn(message_id):
+    if not settings.TEST_SUITE:
+        logging.warning("Tornado failed to load message from memcached when delivering!")
+    return Message.objects.select_related().get(id=message_id)
+
 def receiver_is_idle(user_profile_id, realm_presences):
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
@@ -96,8 +102,15 @@ def receiver_is_idle(user_profile_id, realm_presences):
 def process_new_message(data):
     realm_presences = data['presences']
     sender_queue_id = data.get('sender_queue_id', None)
-    message_dict_markdown = data['message_dict_markdown']
-    message_dict_no_markdown = data['message_dict_no_markdown']
+    if "message_dict_markdown" in data:
+        message_dict_markdown = data['message_dict_markdown']
+        message_dict_no_markdown = data['message_dict_no_markdown']
+    else:
+        # We can delete this and get_message_by_id_dbwarn after the
+        # next prod deploy
+        message = get_message_by_id_dbwarn(data['message'])
+        message_dict_markdown = message.to_dict(True)
+        message_dict_no_markdown = message.to_dict(False)
     sender_id = message_dict_markdown['sender_id']
     message_id = message_dict_markdown['id']
     message_type = message_dict_markdown['type']
