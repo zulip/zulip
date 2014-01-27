@@ -17,6 +17,7 @@ import signal
 import tornado
 import random
 import traceback
+from zerver.decorator import RespondAsynchronously, JsonableError
 from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile
 from zerver.lib.cache_helpers import cache_with_key
@@ -25,6 +26,7 @@ from zerver.middleware import async_request_restart
 from zerver.models import get_client, Message
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import timestamp_to_datetime
 import copy
 
@@ -431,6 +433,47 @@ def setup_event_queue():
     pc.start()
 
     send_restart_events()
+
+def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
+                 queue_id, last_event_id, event_types, user_client, apply_markdown,
+                 all_public_streams, lifespan_secs, narrow, dont_block, handler):
+    was_connected = False
+    orig_queue_id = queue_id
+    extra_log_data = ""
+    if queue_id is None:
+        if dont_block:
+            client = allocate_client_descriptor(user_profile_id, user_profile_realm_id,
+                                                event_types, user_client, apply_markdown,
+                                                all_public_streams, lifespan_secs,
+                                                narrow=narrow)
+            queue_id = client.event_queue.id
+        else:
+            raise JsonableError("Missing 'queue_id' argument")
+    else:
+        if last_event_id is None:
+            raise JsonableError("Missing 'last_event_id' argument")
+        client = get_client_descriptor(queue_id)
+        if client is None:
+            raise JsonableError("Bad event queue id: %s" % (queue_id,))
+        if user_profile_id != client.user_profile_id:
+            raise JsonableError("You are not authorized to get events from this queue")
+        client.event_queue.prune(last_event_id)
+        was_connected = client.finish_current_handler()
+
+    if not client.event_queue.empty() or dont_block:
+        ret = {'events': client.event_queue.contents()}
+        if orig_queue_id is None:
+            ret['queue_id'] = queue_id
+        extra_log_data = "[%s/%s]" % (queue_id, len(ret["events"]))
+        if was_connected:
+            extra_log_data += " [was connected]"
+        return (json_success(ret), extra_log_data)
+
+    if was_connected:
+        logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
+                                                                    user_client.name))
+    client.connect_handler(handler)
+    return (RespondAsynchronously, None)
 
 # The following functions are called from Django
 
