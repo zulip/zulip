@@ -9,7 +9,8 @@ add_dependencies({
     _: 'third/underscore/underscore.js',
     marked: 'third/marked/lib/marked.js',
     Dict: 'js/dict.js',
-    emoji: 'js/emoji.js'
+    emoji: 'js/emoji.js',
+    fenced_code: 'js/fenced_code.js'
 });
 
 var doc = "";
@@ -114,7 +115,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
     {input: '1. an\n2. ordered \n3. list',
      expected: '<p>1. an</p>\n<p>2. ordered </p>\n<p>3. list</p>'},
     {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
-     expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n\n\n<p>thanks</p>'},
+     expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
     {input: 'This is a @**Cordelia Lear** mention',
      expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
     {input: 'This is an :poop: message',

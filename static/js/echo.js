@@ -31,7 +31,8 @@ exports.contains_bugdown = function contains_bugdown(content) {
 };
 
 exports.apply_markdown = function apply_markdown(content) {
-    return marked(content).trim();
+    // Our python-markdown processor appends two \n\n to input
+    return marked(content + '\n\n').trim();
 };
 
 function resend_message(message, row) {
@@ -421,6 +422,10 @@ $(function () {
         return '<br>\n';
     };
 
+    function preprocess_code_blocks(src) {
+        return fenced_code.process_fenced_code(src);
+    }
+
     // Disable ordered lists
     // We used GFM + tables, so replace the list start regex for that ruleset
     // We remove the |[\d+]\. that matches the numbering in a numbered list
@@ -439,6 +444,12 @@ $(function () {
 
     exports.set_realm_filters(page_params.realm_filters);
 
+    // Tell our fenced code preprocessor how to insert arbitrary
+    // HTML into the output. This generated HTML is safe to not escape
+    fenced_code.set_stash_func(function (html) {
+        return marked.stashHtml(html, true);
+    });
+
     marked.setOptions({
         gfm: true,
         tables: true,
@@ -451,7 +462,8 @@ $(function () {
         emojiHandler: handleEmoji,
         userMentionHandler: handleUserMentions,
         realmFilterHandler: handleRealmFilter,
-        renderer: r
+        renderer: r,
+        preprocessors: [preprocess_code_blocks]
     });
 
     function on_failed_action(action, callback) {
