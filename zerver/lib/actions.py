@@ -2284,6 +2284,10 @@ def notify_realm_filters(realm):
     notice = dict(event=dict(type="realm_filters", realm_filters=realm_filters), users=user_ids)
     tornado_callbacks.send_notification(notice)
 
+# NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
+# RegExp syntax. In addition to JS-compatible syntax, the following features are available:
+#   * Named groups will be converted to numbered groups automatically
+#   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
 def do_add_realm_filter(realm, pattern, url_format_string):
     RealmFilter(realm=realm, pattern=pattern,
                 url_format_string=url_format_string).save()

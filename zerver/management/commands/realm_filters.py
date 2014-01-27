@@ -11,6 +11,12 @@ class Command(BaseCommand):
 
 Usage: python manage.py realm_filters foo.com PATTERN URLPATTERN
 
+NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
+      RegExp syntax. In addition to JS-compatible syntax, the following features are available:
+
+      * Named groups will be converted to numbered groups automatically
+      * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
+
 Example: python manage.py realm_filters --realm=zulip.com --op=add '#(?P<id>[0-9]{2,8})' 'https://trac.humbughq.com/ticket/%(id)s'
 Example: python manage.py realm_filters --realm=zulip.com --op=remove '#(?P<id>[0-9]{2,8})'
 Example: python manage.py realm_filters --realm=zulip.com --op=show
