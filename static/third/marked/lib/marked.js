@@ -137,6 +137,20 @@ Lexer.prototype.lex = function(src) {
   return this.token(src, true);
 };
 
+var htmlStashCounter = 0;
+var htmlStashTemplate = "klzzwxhzsd:";
+var htmlStashRegex = /\bklzzwxhzsd:[0-9]+\b/;
+var htmlStash = [];
+
+function stashHtml(html, safe) {
+  var key = htmlStashTemplate + htmlStashCounter;
+  htmlStashCounter++;
+
+  htmlStash.push([key, html, safe]);
+
+  return key;
+}
+
 /**
  * Lexing
  */
@@ -991,7 +1005,9 @@ function Parser(options) {
 
 Parser.parse = function(src, options, renderer) {
   var parser = new Parser(options, renderer);
-  return parser.parse(src);
+  var out = parser.parse(src);
+  out = parser.postprocess(out);
+  return out;
 };
 
 /**
@@ -1009,6 +1025,25 @@ Parser.prototype.parse = function(src) {
 
   return out;
 };
+
+/**
+ * Post Processing - replace stashed HTML
+ **/
+ Parser.prototype.postprocess = function(output) {
+  for (var i = 0; i < htmlStash.length; i++) {
+    var stash = htmlStash[i];
+    var key = stash[0],
+        html = stash[1],
+        safe = stash[2];
+    if (!safe) {
+      html = escape(html);
+    } else {
+      html += '\n';
+    }
+    output = output.replace('<p>' + key + '</p>', html)
+  }
+  return output;
+ };
 
 /**
  * Next Token
@@ -1229,6 +1264,12 @@ function marked(src, opt, callback) {
       , pending
       , i = 0;
 
+    htmlStashCounter = 0;
+    htmlStash = [];
+    for (var k = 0; k < opt.preprocessors.length; k++) {
+      src = opt.preprocessors[k](src);
+    }
+
     try {
       tokens = Lexer.lex(src, opt)
     } catch (e) {
@@ -1281,6 +1322,11 @@ function marked(src, opt, callback) {
   }
   try {
     if (opt) opt = merge({}, marked.defaults, opt);
+    htmlStashCounter = 0;
+    htmlStash = [];
+    for (var i = 0; i < marked.defaults.preprocessors.length; i++) {
+      src = marked.defaults.preprocessors[i](src);
+    }
     return Parser.parse(Lexer.lex(src, opt), opt);
   } catch (e) {
     e.message += '\nPlease report this to https://github.com/chjj/marked.';
@@ -1316,7 +1362,8 @@ marked.defaults = {
   langPrefix: 'lang-',
   smartypants: false,
   headerPrefix: '',
-  renderer: new Renderer
+  renderer: new Renderer,
+  preprocessors: []
 };
 
 /**
@@ -1335,6 +1382,8 @@ marked.InlineLexer = InlineLexer;
 marked.inlineLexer = InlineLexer.output;
 
 marked.parse = marked;
+
+marked.stashHtml = stashHtml;
 
 if (typeof exports === 'object') {
   module.exports = marked;
