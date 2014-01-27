@@ -435,9 +435,12 @@ exports.deactivate = function () {
             // We fall back to the closest selected id, if the user has removed a
             // stream from the home view since leaving it the old selected id might
             // no longer be there
+            // Additionally, we pass empty_ok as the user may have removed **all** streams
+            // from her home view
             current_msg_list.select_id(current_msg_list.selected_id(), {
                 then_scroll: !preserve_pre_narrowing_screen_position,
-                use_closest: true
+                use_closest: true,
+                empty_ok: true
             });
 
             if (preserve_pre_narrowing_screen_position) {
