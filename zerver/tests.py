@@ -26,7 +26,7 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     do_add_realm_emoji, do_remove_realm_emoji, check_message, do_create_user, \
     set_default_streams, get_emails_from_user_ids, \
     do_deactivate_user, do_reactivate_user, do_change_is_admin, \
-    do_rename_stream, do_change_stream_description
+    do_rename_stream, do_change_stream_description, get_default_streams_for_realm
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -1010,6 +1010,16 @@ class PublicURLTest(TestCase):
             self.fetch("get", url_set, status_code)
         for status_code, url_set in post_urls.iteritems():
             self.fetch("post", url_set, status_code)
+
+class DefaultStreamTest(AuthedTestCase):
+    def test_set_default_streams(self):
+        realm = Realm.objects.get(domain="zulip.com")
+        stream_names = ['apple', 'banana', 'Carrot Cake']
+        expected_names = stream_names + ['zulip']
+        set_default_streams(realm, stream_names)
+        streams = get_default_streams_for_realm(realm)
+        stream_names = [s.name for s in streams]
+        self.assertEqual(set(stream_names), set(expected_names))
 
 class LoginTest(AuthedTestCase):
     """
