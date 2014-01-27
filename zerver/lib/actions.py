@@ -1374,9 +1374,14 @@ def set_default_streams(realm, stream_names):
                'domain': realm.domain,
                'streams': stream_names})
 
-def get_default_subs(user_profile):
+def get_default_streams_for_realm(realm):
     return [default.stream for default in
-            DefaultStream.objects.select_related("stream", "stream__realm").filter(realm=user_profile.realm)]
+            DefaultStream.objects.select_related("stream", "stream__realm").filter(realm=realm)]
+
+def get_default_subs(user_profile):
+    # Right now default streams are realm-wide.  This wrapper gives us flexibility
+    # to some day further customize how we set up default streams for new users.
+    return get_default_streams_for_realm(user_profile.realm)
 
 def do_update_user_activity_interval(user_profile, log_time):
     effective_end = log_time + datetime.timedelta(minutes=15)
