@@ -58,15 +58,14 @@
       <div id="deactivation_stream_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_stream_modal_label" aria-hidden="true">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="deactivation_stream_modal_label">Unsubscribe all from <span class="stream_name"></span></h3>
+          <h3 id="deactivation_stream_modal_label">Delete stream <span class="stream_name"></span></h3>
         </div>
         <div class="modal-body">
-          <p>Unsubscribing everyone from this stream will also remove the stream from the streams list.</p>
-          <p>Unlike user deactivation, this cannot be undone, so please exercise <strong>extreme caution</strong>.</p>
+          <p>Deleting this stream will immediately unsubscribe everyone, and the stream's content will not be recoverable. <strong>Are you sure you want to do this?</strong></p>
         </div>
         <div class="modal-footer">
           <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-          <button class="btn btn-danger" id="do_deactivate_stream_button">I have read the above, unsubscribe everyone</button>
+          <button class="btn btn-danger" id="do_deactivate_stream_button">Yes, delete this stream</button>
         </div>
       </div>
     </div>
