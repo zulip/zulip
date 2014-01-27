@@ -1053,6 +1053,11 @@ class DefaultStreamTest(AuthedTestCase):
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
 
+        # and remove it
+        result = self.client_delete('/json/default_streams', dict(stream_name=stream_name))
+        self.assert_json_success(result)
+        self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
+
 class LoginTest(AuthedTestCase):
     """
     Logging in, registration, and logging out.

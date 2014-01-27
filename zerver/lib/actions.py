@@ -1383,6 +1383,7 @@ def do_add_default_stream(realm, stream_name):
 
 def do_remove_default_stream(realm, stream_name):
     DefaultStream.objects.filter(realm=realm, stream__name=stream_name).delete()
+    return {}
 
 def get_default_streams_for_realm(realm):
     return [default.stream for default in
