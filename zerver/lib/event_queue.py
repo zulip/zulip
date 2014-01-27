@@ -21,6 +21,7 @@ from zerver.decorator import RespondAsynchronously, JsonableError
 from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile
 from zerver.lib.cache_helpers import cache_with_key
+from zerver.lib.handlers import get_handler_by_id
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 from zerver.models import get_client, Message
@@ -57,7 +58,7 @@ class ClientDescriptor(object):
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
         self.realm_id = realm_id
-        self.current_handler = None
+        self.current_handler_id = None
         self.event_queue = event_queue
         self.queue_timeout = lifespan_secs
         self.event_types = event_types
@@ -97,30 +98,32 @@ class ClientDescriptor(object):
         return ret
 
     def prepare_for_pickling(self):
-        self.current_handler = None
+        self.current_handler_id = None
         self._timeout_handle = None
 
     def add_event(self, event):
-        if self.current_handler is not None:
-            async_request_restart(self.current_handler._request)
+        if self.current_handler_id is not None:
+            handler = get_handler_by_id(self.current_handler_id)
+            async_request_restart(handler._request)
 
         self.event_queue.push(event)
         self.finish_current_handler()
 
     def finish_current_handler(self):
-        if self.current_handler is not None:
+        if self.current_handler_id is not None:
             err_msg = "Got error finishing handler for queue %s" % (self.event_queue.id,)
             try:
                 # We call async_request_restart here in case we are
                 # being finished without any events (because another
                 # get_events request has supplanted this request)
-                async_request_restart(self.current_handler._request)
-                self.current_handler._request._log_data['extra'] = "[%s/1]" % (self.event_queue.id,)
-                self.current_handler.zulip_finish(dict(result='success', msg='',
-                                                       events=self.event_queue.contents(),
-                                                       queue_id=self.event_queue.id),
-                                                  self.current_handler._request,
-                                                  apply_markdown=self.apply_markdown)
+                handler = get_handler_by_id(self.current_handler_id)
+                request = handler._request
+                async_request_restart(request)
+                request._log_data['extra'] = "[%s/1]" % (self.event_queue.id,)
+                handler.zulip_finish(dict(result='success', msg='',
+                                          events=self.event_queue.contents(),
+                                          queue_id=self.event_queue.id),
+                                     request, apply_markdown=self.apply_markdown)
             except IOError as e:
                 if e.message != 'Stream is closed':
                     logging.exception(err_msg)
@@ -149,11 +152,12 @@ class ClientDescriptor(object):
         if not hasattr(self, 'queue_timeout'):
             self.queue_timeout = IDLE_EVENT_QUEUE_TIMEOUT_SECS
 
-        return (self.current_handler is None
+        return (self.current_handler_id is None
                 and now - self.last_connection_time >= self.queue_timeout)
 
-    def connect_handler(self, handler):
-        self.current_handler = handler
+    def connect_handler(self, handler_id):
+        self.current_handler_id = handler_id
+        handler = get_handler_by_id(self.current_handler_id)
         handler.client_descriptor = self
         self.last_connection_time = time.time()
         def timeout_callback():
@@ -166,13 +170,14 @@ class ClientDescriptor(object):
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
     def disconnect_handler(self, client_closed=False):
-        if self.current_handler:
-            self.current_handler.client_descriptor = None
+        if self.current_handler_id:
+            handler = get_handler_by_id(self.current_handler_id)
+            request = handler._request
+            handler.client_descriptor = None
             if client_closed:
-                request = self.current_handler._request
                 logging.info("Client disconnected for queue %s (%s via %s)" % \
                                  (self.event_queue.id, request._email, request.client.name))
-        self.current_handler = None
+        self.current_handler_id = None
         if self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
             ioloop.remove_timeout(self._timeout_handle)
@@ -436,7 +441,7 @@ def setup_event_queue():
 
 def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
                  queue_id, last_event_id, event_types, user_client, apply_markdown,
-                 all_public_streams, lifespan_secs, narrow, dont_block, handler):
+                 all_public_streams, lifespan_secs, narrow, dont_block, handler_id):
     was_connected = False
     orig_queue_id = queue_id
     extra_log_data = ""
@@ -472,7 +477,7 @@ def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
     if was_connected:
         logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
                                                                     user_client.name))
-    client.connect_handler(handler)
+    client.connect_handler(handler_id)
     return (RespondAsynchronously, None)
 
 # The following functions are called from Django
