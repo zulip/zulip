@@ -167,3 +167,13 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
   assert.equal(message.subject_links.length, 1);
   assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
 }());
+
+(function test_message_flags() {
+  var input = "/me is testing this";
+  var message = {subject: "No links here", content: echo.apply_markdown(input), raw_content: input};
+  echo._add_message_flags(message);
+
+  assert.equal(message.flags.length, 2);
+  assert(message.flags.indexOf('read') !== -1);
+  assert(message.flags.indexOf('is_me_message') !== -1);
+}());

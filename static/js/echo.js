@@ -75,6 +75,12 @@ function add_message_flags(message) {
         flags.push("mentioned");
     }
 
+    if (message.raw_content.indexOf('/me ') === 0 &&
+        message.content.indexOf('<p>') === 0 &&
+        message.content.lastIndexOf('</p>') === message.content.length - 4) {
+        flags.push('is_me_message');
+    }
+
     message.flags = flags;
 }
 
@@ -101,6 +107,7 @@ function add_subject_links(message) {
 
 // For unit testing
 exports._add_subject_links = add_subject_links;
+exports._add_message_flags = add_message_flags;
 
 function get_next_local_id() {
     var local_id_increment = 0.01;
