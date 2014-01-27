@@ -627,6 +627,7 @@ class Message(models.Model):
             from zerver.lib import bugdown
 
         self.mentions_wildcard = False
+        self.is_me_message = False
         self.mentions_user_ids = set()
         self.user_ids_with_alert_words = set()
 
@@ -638,14 +639,11 @@ class Message(models.Model):
             domain = "mit.edu/zephyr_mirror"
         rendered_content = bugdown.convert(content, domain, self)
 
-        # For /me syntax, we pass back a /me prefix.  The JS can detect /me
-        # (no paragraph tag) and do special rendering.  We might eventually
-        # want to handle this with a flag, but it's a bit tough to deliver the
-        # flag through all code paths, given the current code structure.
+        # For /me syntax, JS can detect the is_me_message flag
+        # and do special rendering.
         if content.startswith('/me ') and '\n' not in content:
             if rendered_content.startswith('<p>') and rendered_content.endswith('</p>'):
-                rendered_content = rendered_content[3:-4]
-                return rendered_content
+                self.is_me_message = True
 
         return rendered_content
 
@@ -910,7 +908,7 @@ class UserMessage(models.Model):
     # on later
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
-                 'has_alert_word', "historical"]
+                 'has_alert_word', "historical", 'is_me_message']
     flags = BitField(flags=ALL_FLAGS, default=0)
 
     class Meta:

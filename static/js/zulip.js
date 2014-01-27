@@ -659,6 +659,7 @@ function add_message_metadata(message) {
                         message.flags.indexOf("wildcard_mentioned") !== -1;
     message.collapsed = message.flags.indexOf("collapsed") !== -1;
     message.alerted = message.flags.indexOf("has_alert_word") !== -1;
+    message.is_me_message = message.flags.indexOf("is_me_message") !== -1;
 
     switch (message.type) {
     case 'stream':

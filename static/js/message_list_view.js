@@ -273,8 +273,9 @@ MessageListView.prototype = {
             message.contains_mention = notifications.speaking_at_me(message);
             message.unread = unread.message_unread(message);
 
-            if (message.content.slice(0, 4) === "/me ") {
-                message.status_message = message.content.slice(4);
+            if (message.is_me_message) {
+                // Slice the '<p>/me ' off the front, and '</p>' off the end
+                message.status_message = message.content.slice(4 + 3, -4);
                 message.include_sender = true;
             }
             else {

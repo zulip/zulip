@@ -335,6 +335,7 @@ def do_send_messages(messages):
             wildcard = message['message'].mentions_wildcard
             mentioned_ids = message['message'].mentions_user_ids
             ids_with_alert_words = message['message'].user_ids_with_alert_words
+            is_me_message = message['message'].is_me_message
 
             for um in ums_to_create:
                 if um.user_profile.id == message['message'].sender.id and \
@@ -346,6 +347,8 @@ def do_send_messages(messages):
                     um.flags |= UserMessage.flags.mentioned
                 if um.user_profile_id in ids_with_alert_words:
                     um.flags |= UserMessage.flags.has_alert_word
+                if is_me_message:
+                    um.flags |= UserMessage.flags.is_me_message
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
         UserMessage.objects.bulk_create(ums)
