@@ -27,7 +27,7 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     set_default_streams, get_emails_from_user_ids, \
     do_deactivate_user, do_reactivate_user, do_change_is_admin, \
     do_rename_stream, do_change_stream_description, get_default_streams_for_realm, \
-    do_add_default_stream
+    do_add_default_stream, do_remove_default_stream
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -1026,7 +1026,7 @@ class DefaultStreamTest(AuthedTestCase):
         stream_names = self.get_default_stream_names(realm)
         self.assertEqual(stream_names, set(expected_names))
 
-    def test_add_default_stream(self):
+    def test_add_and_remove_default_stream(self):
         realm = Realm.objects.get(domain="zulip.com")
         orig_stream_names = self.get_default_stream_names(realm)
         do_add_default_stream(realm, 'Added Stream')
@@ -1036,6 +1036,13 @@ class DefaultStreamTest(AuthedTestCase):
         # idempotentcy--2nd call to add_default_stream should be a noop
         do_add_default_stream(realm, 'Added Stream')
         self.assertEqual(self.get_default_stream_names(realm), new_stream_names)
+
+        # start removing
+        do_remove_default_stream(realm, 'Added Stream')
+        self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
+        # idempotentcy--2nd call to remove_default_stream should be a noop
+        do_remove_default_stream(realm, 'Added Stream')
+        self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
 
 class LoginTest(AuthedTestCase):
     """
