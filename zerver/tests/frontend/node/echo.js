@@ -32,6 +32,8 @@ set_global('page_params', {
                   ["ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})", "https://zone_%(zone)s.zulip.net/ticket/%(id)s"]]
 });
 
+set_global('feature_flags', {local_echo: true});
+
 set_global('people_by_name_dict', Dict.from({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}}));
 
 var echo = require('js/echo.js');
