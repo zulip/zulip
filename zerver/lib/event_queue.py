@@ -49,14 +49,15 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor(object):
-    def __init__(self, user_profile_id, realm_id, event_queue, event_types, client_type,
-                 apply_markdown=True, all_public_streams=False, lifespan_secs=0,
-                 narrow=[]):
+    def __init__(self, user_profile_id, user_profile_email, realm_id, event_queue,
+                 event_types, client_type, apply_markdown=True,
+                 all_public_streams=False, lifespan_secs=0, narrow=[]):
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
+        self.user_profile_email = user_profile_email
         self.realm_id = realm_id
         self.current_handler_id = None
         self.event_queue = event_queue
@@ -78,6 +79,7 @@ class ClientDescriptor(object):
         # migration code in from_dict or load_event_queues to account for
         # loading event queues that lack that key.
         return dict(user_profile_id=self.user_profile_id,
+                    user_profile_email=self.user_profile_email,
                     realm_id=self.realm_id,
                     event_queue=self.event_queue.to_dict(),
                     queue_timeout=self.queue_timeout,
@@ -90,7 +92,11 @@ class ClientDescriptor(object):
 
     @classmethod
     def from_dict(cls, d):
-        ret = cls(d['user_profile_id'], d['realm_id'],
+        if 'user_profile_email' not in d:
+            # Temporary migration for the addition of the new user_profile_email field
+            from zerver.models import get_user_profile_by_id
+            d['user_profile_email'] = get_user_profile_by_id(d['user_profile_id']).email
+        ret = cls(d['user_profile_id'], d['user_profile_email'], d['realm_id'],
                   EventQueue.from_dict(d['event_queue']), d['event_types'],
                   get_client(d['client_type']), d['apply_markdown'], d['all_public_streams'],
                   d['queue_timeout'], d.get('narrow', []))
@@ -175,8 +181,9 @@ class ClientDescriptor(object):
             request = handler._request
             handler.client_descriptor = None
             if client_closed:
-                logging.info("Client disconnected for queue %s (%s via %s)" % \
-                                 (self.event_queue.id, request._email, request.client.name))
+                logging.info("Client disconnected for queue %s (%s via %s)" %
+                             (self.event_queue.id, self.user_profile_email,
+                              request.client.name))
         self.current_handler_id = None
         if self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
@@ -312,13 +319,14 @@ def add_to_client_dicts(client):
     if client.all_public_streams or client.narrow != []:
         realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
 
-def allocate_client_descriptor(user_profile_id, realm_id, event_types, client_type,
-                               apply_markdown, all_public_streams, lifespan_secs,
-                               narrow=[]):
+def allocate_client_descriptor(user_profile_id, user_profile_email, realm_id,
+                               event_types, client_type, apply_markdown,
+                               all_public_streams, lifespan_secs, narrow=[]):
     global next_queue_id
     id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
     next_queue_id += 1
-    client = ClientDescriptor(user_profile_id, realm_id, EventQueue(id), event_types, client_type,
+    client = ClientDescriptor(user_profile_id, user_profile_email, realm_id,
+                              EventQueue(id), event_types, client_type,
                               apply_markdown, all_public_streams, lifespan_secs, narrow)
     clients[id] = client
     add_to_client_dicts(client)
@@ -447,7 +455,8 @@ def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
     extra_log_data = ""
     if queue_id is None:
         if dont_block:
-            client = allocate_client_descriptor(user_profile_id, user_profile_realm_id,
+            client = allocate_client_descriptor(user_profile_id, user_profile_email,
+                                                user_profile_realm_id,
                                                 event_types, user_client, apply_markdown,
                                                 all_public_streams, lifespan_secs,
                                                 narrow=narrow)
