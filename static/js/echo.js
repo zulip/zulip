@@ -344,7 +344,23 @@ function python_to_js_filter(pattern, url) {
 
         current_group++;
     }
-    return [new RegExp(pattern, 'g'), url];
+    // Convert any python in-regex flags to RegExp flags
+    var js_flags = 'g';
+    var inline_flag_re = /\(\?([iLmsux]+)\)/;
+    match = inline_flag_re.exec(pattern);
+
+    // JS regexes only support i (case insensitivity) and m (multiline)
+    // flags, so keep those and ignore the rest
+    if (match) {
+        var py_flags = match[1].split("");
+        _.each(py_flags, function (flag) {
+            if ("im".indexOf(flag) !== -1) {
+                js_flags += flag;
+            }
+        });
+        pattern = pattern.replace(inline_flag_re, "");
+    }
+    return [new RegExp(pattern, js_flags), url];
 }
 
 exports.set_realm_filters = function set_realm_filters(realm_filters) {
