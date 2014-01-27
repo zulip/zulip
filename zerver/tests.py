@@ -7,6 +7,14 @@ from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
+from zerver.lib.test_helpers import (
+    queries_captured,
+    simulated_empty_cache,
+    simulated_queue_client,
+    stub,
+    tornado_redirected_to_list,
+)
+
 from zilencer.models import Deployment
 
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
@@ -37,7 +45,6 @@ from zerver.lib.rate_limiter import clear_user_history
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
 from zerver.lib.digest import send_digest_email
-from zerver.lib.db import TimeTrackingCursor
 from zerver.forms import not_mit_mailing_list
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
 from zerver.lib.validator import check_string, check_list, check_dict, \
@@ -65,87 +72,7 @@ from StringIO import StringIO
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from contextlib import contextmanager
-from zerver import tornado_callbacks
 from collections import OrderedDict
-
-@contextmanager
-def stub(obj, name, f):
-    old_f = getattr(obj, name)
-    setattr(obj, name, f)
-    yield
-    setattr(obj, name, old_f)
-
-@contextmanager
-def simulated_queue_client(client):
-    real_SimpleQueueClient = queue_processors.SimpleQueueClient
-    queue_processors.SimpleQueueClient = client
-    yield
-    queue_processors.SimpleQueueClient = real_SimpleQueueClient
-
-@contextmanager
-def tornado_redirected_to_list(lst):
-    real_tornado_callbacks_process_notification = tornado_callbacks.process_notification
-    tornado_callbacks.process_notification = lst.append
-    yield
-    tornado_callbacks.process_notification = real_tornado_callbacks_process_notification
-
-@contextmanager
-def simulated_empty_cache():
-    cache_queries = []
-    def my_cache_get(key, cache_name=None):
-        cache_queries.append(('get', key, cache_name))
-        return None
-
-    def my_cache_get_many(keys, cache_name=None):
-        cache_queries.append(('getmany', keys, cache_name))
-        return None
-
-    old_get = cache.cache_get
-    old_get_many = cache.cache_get_many
-    cache.cache_get = my_cache_get
-    cache.cache_get_many = my_cache_get_many
-    yield cache_queries
-    cache.cache_get = old_get
-    cache.cache_get_many = old_get_many
-
-@contextmanager
-def queries_captured():
-    '''
-    Allow a user to capture just the queries executed during
-    the with statement.
-    '''
-
-    queries = []
-
-    def wrapper_execute(self, action, sql, params=()):
-        start = time.time()
-        try:
-            return action(sql, params)
-        finally:
-            stop = time.time()
-            duration = stop - start
-            queries.append({
-                    'sql': self.mogrify(sql, params),
-                    'time': "%.3f" % duration,
-                    })
-
-    old_execute = TimeTrackingCursor.execute
-    old_executemany = TimeTrackingCursor.executemany
-
-    def cursor_execute(self, sql, params=()):
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)
-    TimeTrackingCursor.execute = cursor_execute
-
-    def cursor_executemany(self, sql, params=()):
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)
-    TimeTrackingCursor.executemany = cursor_executemany
-
-    yield queries
-
-    TimeTrackingCursor.execute = old_execute
-    TimeTrackingCursor.executemany = old_executemany
-
 
 def bail(msg):
     print '\nERROR: %s\n' % (msg,)
