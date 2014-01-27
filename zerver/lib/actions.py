@@ -50,9 +50,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user, \
      send_apple_push_notification, send_android_push_notification
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
-
 from zerver.tornado_callbacks import send_event
-from zerver import tornado_callbacks
 
 import DNS
 import ujson
@@ -364,16 +362,16 @@ def do_send_messages(messages):
             if user_profile.email in user_presences:
                 presences[user_profile.id] = user_presences[user_profile.email]
 
-        data = dict(
-            type         = 'new_message',
+        event = dict(
+            type         = 'message',
             message      = message['message'].id,
             message_dict_markdown = message['message'].to_dict(apply_markdown=True),
             message_dict_no_markdown = message['message'].to_dict(apply_markdown=False),
-            presences    = presences,
-            users        = [{'id': user.id,
-                             'flags': user_flags.get(user.id, []),
-                             'always_push_notify': always_push_notify(user)}
-                            for user in message['active_recipients']])
+            presences    = presences)
+        users = [{'id': user.id,
+                  'flags': user_flags.get(user.id, []),
+                  'always_push_notify': always_push_notify(user)}
+                 for user in message['active_recipients']]
         if message['message'].recipient.type == Recipient.STREAM:
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
@@ -383,15 +381,15 @@ def do_send_messages(messages):
             if message['stream'] is None:
                 message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
             if message['stream'].is_public():
-                data['realm_id'] = message['stream'].realm.id
-                data['stream_name'] = message['stream'].name
+                event['realm_id'] = message['stream'].realm.id
+                event['stream_name'] = message['stream'].name
             if message['stream'].invite_only:
-                data['invite_only'] = True
+                event['invite_only'] = True
         if message['local_id'] is not None:
-            data['local_id'] = message['local_id']
+            event['local_id'] = message['local_id']
         if message['sender_queue_id'] is not None:
-            data['sender_queue_id'] = message['sender_queue_id']
-        tornado_callbacks.send_notification(data)
+            event['sender_queue_id'] = message['sender_queue_id']
+        send_event(event, users)
         if (settings.ENABLE_FEEDBACK and
             message['message'].recipient.type == Recipient.PERSONAL and
             settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):

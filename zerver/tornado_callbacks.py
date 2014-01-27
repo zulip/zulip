@@ -93,7 +93,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
 
     return off_zulip or idle_too_long
 
-def process_new_message(event_template):
+def process_message_event(event_template, users):
     realm_presences = event_template['presences']
     sender_queue_id = event_template.get('sender_queue_id', None)
     if "message_dict_markdown" in event_template:
@@ -122,7 +122,7 @@ def process_new_message(event_template):
             if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
                 send_to_clients[client.event_queue.id]['is_sender'] = True
 
-    for user_data in event_template['users']:
+    for user_data in users:
         user_profile_id = user_data['id']
         flags = user_data.get('flags', [])
 
@@ -208,13 +208,13 @@ def process_userdata_event(event_template, users):
             if client.accepts_event(user_event):
                 client.add_event(user_event)
 
-def process_notification(data):
-    event = data['event']
-    users = data['users']
+def process_notification(notice):
+    event = notice['event']
+    users = notice['users']
     if event['type'] in ["update_message"]:
         process_userdata_event(event, users)
     elif event['type'] == "message":
-        process_new_message(data)
+        process_message_event(event, users)
     else:
         process_event(event, users)
 
@@ -235,4 +235,6 @@ def send_notification(data):
     return queue_json_publish("notify_tornado", data, send_notification_http)
 
 def send_event(event, users):
-    return send_notification(dict(event=event, users=users))
+    return queue_json_publish("notify_tornado",
+                              dict(event=event, users=users),
+                              send_notification_http)
