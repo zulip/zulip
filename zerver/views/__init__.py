@@ -1756,9 +1756,8 @@ def update_user_backend(request, user_profile, email,
 
 @require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_name):
-    try:
-        target = get_stream(stream_name, user_profile.realm)
-    except Stream.DoesNotExist:
+    target = get_stream(stream_name, user_profile.realm)
+    if not target:
         return json_error('No such stream name')
 
     if target.invite_only and not subscribed_to_stream(user_profile, target):
