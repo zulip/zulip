@@ -120,7 +120,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
                    % (comment['user']['login'],
                       comment['html_url']))
 
-        if comment['position'] is not None:
+        if comment['line'] is not None:
             content += " on `%s`, line %d" % (comment['path'], comment['line'])
 
         content += "\n\n~~~ quote\n%s\n~~~" % (comment['body'],)
