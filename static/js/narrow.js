@@ -149,11 +149,11 @@ exports.activate = function (operators, opts) {
         trigger: 'unknown'
     });
     if (filter.has_operator("near")) {
-        opts.then_select_id = filter.operands("near")[0];
+        opts.then_select_id = parseInt(filter.operands("near")[0], 10);
         opts.select_first_unread = false;
     }
     if (filter.has_operator("id")) {
-        opts.then_select_id = filter.operands("id")[0];
+        opts.then_select_id = parseInt(filter.operands("id")[0], 10);
         opts.select_first_unread = false;
     }
 
