@@ -1374,6 +1374,12 @@ def set_default_streams(realm, stream_names):
                'domain': realm.domain,
                'streams': stream_names})
 
+def do_add_default_stream(realm, stream_name):
+    stream, _ = create_stream_if_needed(realm, stream_name)
+    if DefaultStream.objects.filter(realm=realm, stream=stream).exists():
+        return
+    DefaultStream.objects.create(realm=realm, stream=stream)
+
 def get_default_streams_for_realm(realm):
     return [default.stream for default in
             DefaultStream.objects.select_related("stream", "stream__realm").filter(realm=realm)]
