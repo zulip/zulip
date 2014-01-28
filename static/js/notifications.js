@@ -461,6 +461,21 @@ $(function () {
     if (typeof(bridge) !== 'undefined' && window.bridge === undefined) {
         window.bridge = bridge;
     }
+
+    $(document).on('message_id_changed', function (event) {
+        var old_id = event.old_id, new_id = event.new_id;
+
+        // If a message ID that we're currently storing (as a link) has changed,
+        // update that link as well
+        _.each($('#out-of-view-notification a'), function (e) {
+            var elem = $(e);
+            var msgid = elem.data('msgid');
+
+            if (msgid === old_id) {
+                elem.data('msgid', new_id);
+            }
+        });
+    });
 });
 
 exports.register_click_handlers = function () {
