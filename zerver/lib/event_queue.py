@@ -324,16 +324,13 @@ def add_to_client_dicts(client):
     if client.all_public_streams or client.narrow != []:
         realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
 
-def allocate_client_descriptor(user_profile_id, user_profile_email, realm_id,
-                               event_types, client_type_name, apply_markdown,
-                               all_public_streams, lifespan_secs, narrow=[]):
+def allocate_client_descriptor(new_queue_data):
     global next_queue_id
-    id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
+    queue_id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
     next_queue_id += 1
-    client = ClientDescriptor(user_profile_id, user_profile_email, realm_id,
-                              EventQueue(id), event_types, client_type_name,
-                              apply_markdown, all_public_streams, lifespan_secs, narrow)
-    clients[id] = client
+    new_queue_data["event_queue"] = EventQueue(queue_id).to_dict()
+    client = ClientDescriptor.from_dict(new_queue_data)
+    clients[queue_id] = client
     add_to_client_dicts(client)
     return client
 
@@ -440,19 +437,22 @@ def setup_event_queue():
 
     send_restart_events()
 
-def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
-                 queue_id, last_event_id, event_types, client_type_name, apply_markdown,
-                 all_public_streams, lifespan_secs, narrow, dont_block, handler_id):
+def fetch_events(query):
+    queue_id = query["queue_id"]
+    dont_block = query["dont_block"]
+    last_event_id = query["last_event_id"]
+    user_profile_id = query["user_profile_id"]
+    new_queue_data = query.get("new_queue_data")
+    user_profile_email = query["user_profile_email"]
+    client_type_name = query["client_type_name"]
+    handler_id = query["handler_id"]
+
     was_connected = False
     orig_queue_id = queue_id
     extra_log_data = ""
     if queue_id is None:
         if dont_block:
-            client = allocate_client_descriptor(user_profile_id, user_profile_email,
-                                                user_profile_realm_id,
-                                                event_types, client_type_name, apply_markdown,
-                                                all_public_streams, lifespan_secs,
-                                                narrow=narrow)
+            client = allocate_client_descriptor(new_queue_data)
             queue_id = client.event_queue.id
         else:
             raise JsonableError("Missing 'queue_id' argument")
