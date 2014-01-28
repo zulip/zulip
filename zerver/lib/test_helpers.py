@@ -7,11 +7,8 @@ from zerver import tornado_callbacks
 from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
-    check_send_message,
-    create_stream_if_needed,
-    do_add_subscription,
-    get_display_recipient,
-    get_user_profile_by_email,
+    check_send_message, create_stream_if_needed, do_add_subscription,
+    get_display_recipient, get_user_profile_by_email,
 )
 
 from zerver.models import (

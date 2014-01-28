@@ -8,13 +8,8 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 
 from zerver.lib.test_helpers import (
-    find_key_by_email,
-    queries_captured,
-    simulated_empty_cache,
-    simulated_queue_client,
-    stub,
-    tornado_redirected_to_list,
-    AuthedTestCase,
+    find_key_by_email, queries_captured, simulated_empty_cache,
+    simulated_queue_client, stub, tornado_redirected_to_list, AuthedTestCase,
 )
 
 from zilencer.models import Deployment
