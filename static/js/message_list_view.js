@@ -82,7 +82,7 @@ MessageListView.prototype = {
             // Remove the trailing bookend; it'll be re-added after we do our rendering
             self.clear_trailing_bookend();
         } else if (self.selected_row().length > 0) {
-            orig_scrolltop_offset = self.selected_row().offset().top - viewport.scrollTop();
+            orig_scrolltop_offset = self.selected_row().offset().top;
         }
 
         if (where === 'top' && self.collapse_messages && this._message_groups.length > 0) {
@@ -419,7 +419,7 @@ MessageListView.prototype = {
         if (where === 'top' && list === current_msg_list && orig_scrolltop_offset !== undefined) {
             // Restore the selected row to its original position in
             // relation to the top of the window
-            viewport.scrollTop(self.selected_row().offset().top - orig_scrolltop_offset);
+            viewport.set_message_offset(orig_scrolltop_offset);
             list.reselect_selected_id();
         }
 

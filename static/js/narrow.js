@@ -176,8 +176,7 @@ exports.activate = function (operators, opts) {
     }
 
     if (!opts.select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
-        then_select_offset = current_msg_list.get_row(then_select_id).offset().top -
-            viewport.scrollTop();
+        then_select_offset = current_msg_list.get_row(then_select_id).offset().top;
     }
 
     // For legacy reasons, we need to set current_filter before calling
@@ -196,7 +195,7 @@ exports.activate = function (operators, opts) {
                 render_end: current_msg_list.view._render_win_end
             });
         }
-        current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top - viewport.scrollTop();
+        current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
     }
 
     var msg_list = new MessageList('zfilt', current_filter, {
@@ -242,8 +241,7 @@ exports.activate = function (operators, opts) {
                 // Scroll so that the selected message is in the same
                 // position in the viewport as it was prior to
                 // narrowing
-                viewport.scrollTop(narrowed_msg_list.get_row(then_select_id).offset().top
-                                   - then_select_offset);
+                viewport.set_message_offset(then_select_offset);
             }
         }
     }
@@ -447,7 +445,7 @@ exports.deactivate = function () {
                 // We scroll the user back to exactly the offset from the selected
                 // message that he was at the time that he narrowed.
                 // TODO: Make this correctly handle the case of resizing while narrowed.
-                viewport.scrollTop(current_msg_list.selected_row().offset().top - current_msg_list.pre_narrow_offset);
+                viewport.set_message_offset(current_msg_list.pre_narrow_offset);
             }
         }
     }
