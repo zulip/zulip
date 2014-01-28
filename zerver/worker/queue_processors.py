@@ -318,7 +318,7 @@ class MirrorWorker(QueueProcessingWorker):
     # who gets a digest is entirely determined by the enqueue_digest_emails
     # management command, not here.
     def consume(self, event):
-        mirror_email(email.message_from_string(event["message"]), rcpt_to=event["rcpt_to"])
+        mirror_email(email.message_from_string(event["message"].encode("utf-8")), rcpt_to=event["rcpt_to"])
 
 @assign_queue('test')
 class TestWorker(QueueProcessingWorker):
