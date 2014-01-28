@@ -27,7 +27,6 @@ from zerver.middleware import async_request_restart
 from zerver.models import get_client, Message
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import timestamp_to_datetime
 import copy
 
@@ -477,7 +476,7 @@ def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
         extra_log_data = "[%s/%s]" % (queue_id, len(ret["events"]))
         if was_connected:
             extra_log_data += " [was connected]"
-        return (json_success(ret), extra_log_data)
+        return (ret, extra_log_data)
 
     if was_connected:
         logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,

@@ -62,4 +62,5 @@ def get_events_backend(request, user_profile, handler,
     request._log_data['extra'] = log_data
     if result == RespondAsynchronously:
         handler._request = request
-    return result
+        return result
+    return json_success(result)
