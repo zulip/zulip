@@ -242,7 +242,7 @@ def all_realm_filters():
 
     return filters
 
-def update_realm_filter(sender, **kwargs):
+def flush_realm_filter(sender, **kwargs):
     realm = kwargs['instance'].realm
     cache_delete(get_realm_filters_cache_key(realm.domain))
     try:
@@ -250,8 +250,8 @@ def update_realm_filter(sender, **kwargs):
     except KeyError:
         pass
 
-post_save.connect(update_realm_filter, sender=RealmFilter)
-post_delete.connect(update_realm_filter, sender=RealmFilter)
+post_save.connect(flush_realm_filter, sender=RealmFilter)
+post_delete.connect(flush_realm_filter, sender=RealmFilter)
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Fields from models.AbstractUser minus last_name and first_name,
