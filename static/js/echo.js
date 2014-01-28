@@ -72,7 +72,9 @@ function add_message_flags(message) {
 
     // Messages that mention the sender should highlight as well
     var self_mention = 'data-user-email="' + page_params.email + '"';
-    if (message.content.indexOf(self_mention) > -1) {
+    var wildcard_mention = 'data-user-email="*"';
+    if (message.content.indexOf(self_mention) > -1 ||
+        message.content.indexOf(wildcard_mention) > -1) {
         flags.push("mentioned");
     }
 
@@ -310,6 +312,8 @@ function handleUserMentions(username) {
         var person = people_by_name_dict.get(username);
         return '<span class="user-mention" data-user-email="' + person.email + '">' +
                 '@' + person.full_name + '</span>';
+    } else if (username === 'all' || username === 'everyone') {
+        return '<span class="user-mention" data-user-email="*">' + '@' + username + '</span>';
     } else {
         return undefined;
     }

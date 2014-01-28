@@ -179,4 +179,12 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
   assert.equal(message.flags.length, 2);
   assert(message.flags.indexOf('read') !== -1);
   assert(message.flags.indexOf('is_me_message') !== -1);
+
+  input = "testing this @**all**";
+  message = {subject: "No links here", content: echo.apply_markdown(input), raw_content: input};
+  echo._add_message_flags(message);
+
+  assert.equal(message.flags.length, 2);
+  assert(message.flags.indexOf('read') !== -1);
+  assert(message.flags.indexOf('mentioned') !== -1);
 }());
