@@ -343,6 +343,18 @@ class RealmTest(AuthedTestCase):
         realm = get_realm('zulip.com')
         self.assertEqual(realm.name, new_name)
 
+    def test_admin_restrictions_for_changing_realm_name(self):
+        new_name = 'Mice will play while the cat is away'
+
+        email = 'othello@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        do_change_is_admin(user_profile, False)
+
+        req = dict(name=ujson.dumps(new_name))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Must be a realm administrator')
+
     def test_do_deactivate_realm(self):
         # The main complicated thing about deactivating realm names is updating the
         # cache, and we start by populating the cache for Hamlet, and we end
