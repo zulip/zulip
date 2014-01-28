@@ -289,7 +289,7 @@ def realm_alert_words_cache_key(realm):
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
-def update_stream_cache(sender, **kwargs):
+def flush_stream(sender, **kwargs):
     stream = kwargs['instance']
     items_for_memcached = {}
     items_for_memcached[get_stream_cache_key(stream.name, stream.realm)] = (stream,)

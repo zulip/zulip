@@ -6,7 +6,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    generic_bulk_cached_fetch, cache_set, update_stream_cache, \
+    generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
@@ -475,8 +475,8 @@ class Stream(models.Model):
                 active=True
         ).count()
 
-post_save.connect(update_stream_cache, sender=Stream)
-post_delete.connect(update_stream_cache, sender=Stream)
+post_save.connect(flush_stream, sender=Stream)
+post_delete.connect(flush_stream, sender=Stream)
 
 def valid_stream_name(name):
     return name != ""
