@@ -196,14 +196,14 @@ def get_realm_emoji_uncached(realm):
         d[row.name] = row.img_url
     return d
 
-def update_realm_emoji_cache(sender, **kwargs):
+def flush_realm_emoji(sender, **kwargs):
     realm = kwargs['instance'].realm
     cache_set(get_realm_emoji_cache_key(realm),
               get_realm_emoji_uncached(realm),
               timeout=3600*24*7)
 
-post_save.connect(update_realm_emoji_cache, sender=RealmEmoji)
-post_delete.connect(update_realm_emoji_cache, sender=RealmEmoji)
+post_save.connect(flush_realm_emoji, sender=RealmEmoji)
+post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm)
