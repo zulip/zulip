@@ -10,7 +10,6 @@ import socket
 import logging
 import ujson
 import requests
-import six.moves.cPickle as pickle
 import atexit
 import sys
 import signal
@@ -383,26 +382,19 @@ def load_event_queues():
     global clients
     start = time.time()
 
-    if os.path.exists(settings.PERSISTENT_QUEUE_FILENAME):
+    # ujson chokes on bad input pretty easily.  We separate out the actual
+    # file reading from the loading so that we don't silently fail if we get
+    # bad input.
+    try:
+        with file(settings.JSON_PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
+            json_data = stored_queues.read()
         try:
-            with file(settings.PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
-                clients = pickle.load(stored_queues)
-        except (IOError, EOFError):
-            pass
-    else:
-        # ujson chokes on bad input pretty easily.  We separate out the actual
-        # file reading from the loading so that we don't silently fail if we get
-        # bad input.
-        try:
-            with file(settings.JSON_PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
-                json_data = stored_queues.read()
-            try:
-                clients = dict((qid, ClientDescriptor.from_dict(client))
-                               for (qid, client) in ujson.loads(json_data))
-            except Exception:
-                logging.exception("Could not deserialize event queues")
-        except (IOError, EOFError):
-            pass
+            clients = dict((qid, ClientDescriptor.from_dict(client))
+                           for (qid, client) in ujson.loads(json_data))
+        except Exception:
+            logging.exception("Could not deserialize event queues")
+    except (IOError, EOFError):
+        pass
 
     for client in clients.itervalues():
         # Put code for migrations due to event queue data format changes here
@@ -423,11 +415,6 @@ def setup_event_queue():
     atexit.register(dump_event_queues)
     # Make sure we dump event queues even if we exit via signal
     signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
-
-    try:
-        os.rename(settings.PERSISTENT_QUEUE_FILENAME, "/var/tmp/event_queues.pickle.last")
-    except OSError:
-        pass
 
     try:
         os.rename(settings.JSON_PERSISTENT_QUEUE_FILENAME, "/var/tmp/event_queues.json.last")
