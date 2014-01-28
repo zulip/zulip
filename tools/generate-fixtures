@@ -21,11 +21,6 @@ fi
 
 mkdir -p zerver/fixtures
 
-# Remove time.pyc to try to prevent it from screwing people importing
-# time from inside zerver.lib.  We can drop this hack after a bit.
-rm -f zerver/lib/time.pyc
-
-
 echo "DROP SCHEMA zulip CASCADE; CREATE SCHEMA zulip;" | python manage.py dbshell --settings=zproject.test_settings
 python manage.py syncdb --noinput --settings=zproject.test_settings
 python manage.py migrate --settings=zproject.test_settings --all
