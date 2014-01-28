@@ -271,6 +271,10 @@ def flush_user_profile(sender, **kwargs):
     if kwargs['update_fields'] is None or "alert_words" in kwargs['update_fields']:
         cache_delete(realm_alert_words_cache_key(user_profile.realm))
 
+def flush_realm(realm):
+    for user in realm.get_active_users():
+        flush_user_profile(None, instance=user, update_fields=None)
+
 def realm_alert_words_cache_key(realm):
     return "realm_alert_words:%s" % (realm.domain,)
 

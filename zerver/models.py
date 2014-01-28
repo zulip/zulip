@@ -132,6 +132,9 @@ class Realm(models.Model):
             return 'administer' in candidates[user]
         return filter(is_admin, candidates)
 
+    def get_active_users(self):
+        return UserProfile.objects.filter(realm=self, is_active=True).select_related()
+
     class Meta:
         permissions = (
             ('administer', "Administer a realm"),

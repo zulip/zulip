@@ -32,7 +32,9 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     set_default_streams, get_emails_from_user_ids, \
     do_deactivate_user, do_reactivate_user, do_change_is_admin, \
     do_rename_stream, do_change_stream_description, get_default_streams_for_realm, \
-    do_add_default_stream, do_remove_default_stream
+    do_add_default_stream, do_remove_default_stream, \
+    do_rename_stream, do_change_stream_description, \
+    do_deactivate_realm
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -296,6 +298,18 @@ class ValidatorTestCase(TestCase):
 
         person = 'misconfigured data'
         self.assertEqual(check_person(person), 'This is not a valid person')
+
+class RealmTest(AuthedTestCase):
+    def test_do_deactivate_realm(self):
+        # The main complicated thing about deactivating realm names is updating the
+        # cache, and we start by populating the cache for Hamlet, and we end
+        # by checking the cache to ensure that his realm appears to be deactivated.
+        # You can make this test fail by disabling cache.flush_realm().
+        get_user_profile_by_email('hamlet@zulip.com')
+        realm = Realm.objects.get(domain='zulip.com')
+        do_deactivate_realm(realm)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertTrue(user.realm.deactivated)
 
 class StreamAdminTest(AuthedTestCase):
     def test_make_stream_public(self):

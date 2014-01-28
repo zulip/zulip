@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
-from zerver.lib.cache import flush_user_profile
+from zerver.lib.cache import flush_user_profile, flush_realm
 from zerver.lib.context_managers import lockfile
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
@@ -166,7 +166,8 @@ def do_deactivate_realm(realm):
         # bumped to the login screen, where they'll get a realm deactivation
         # notice when they try to log in.
         delete_user_sessions(user)
-        flush_user_profile(None, instance=user, update_fields=None)
+
+    flush_realm(realm)
 
 def do_deactivate_user(user_profile, log=True, _cascade=True):
     if not user_profile.is_active:
