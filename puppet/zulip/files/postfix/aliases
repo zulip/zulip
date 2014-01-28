@@ -1,0 +1,5 @@
+# This file is managed by puppet; local changes will be overridden.
+# See man 5 aliases for format
+postmaster:    root
+zulip: "|/usr/bin/python /home/zulip/deployments/current/manage.py email-mirror"
+
