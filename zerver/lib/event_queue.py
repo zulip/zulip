@@ -60,6 +60,7 @@ class ClientDescriptor(object):
         self.user_profile_email = user_profile_email
         self.realm_id = realm_id
         self.current_handler_id = None
+        self.current_client_name = None
         self.event_queue = event_queue
         self.queue_timeout = lifespan_secs
         self.event_types = event_types
@@ -146,8 +147,9 @@ class ClientDescriptor(object):
         return (self.current_handler_id is None
                 and now - self.last_connection_time >= self.queue_timeout)
 
-    def connect_handler(self, handler_id):
+    def connect_handler(self, handler_id, client_name):
         self.current_handler_id = handler_id
+        self.current_client_name = client_name
         set_descriptor_by_handler_id(handler_id, self)
         self.last_connection_time = time.time()
         def timeout_callback():
@@ -161,14 +163,13 @@ class ClientDescriptor(object):
 
     def disconnect_handler(self, client_closed=False):
         if self.current_handler_id:
-            handler = get_handler_by_id(self.current_handler_id)
-            request = handler._request
             delete_descriptor_by_handler_id(self.current_handler_id, None)
             if client_closed:
                 logging.info("Client disconnected for queue %s (%s via %s)" %
                              (self.event_queue.id, self.user_profile_email,
-                              request.client.name))
+                              self.current_client_name))
         self.current_handler_id = None
+        self.current_client_name = None
         if self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
             ioloop.remove_timeout(self._timeout_handle)
@@ -481,7 +482,7 @@ def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
     if was_connected:
         logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
                                                                     user_client.name))
-    client.connect_handler(handler_id)
+    client.connect_handler(handler_id, user_client.name)
     return (RespondAsynchronously, None)
 
 # The following functions are called from Django
