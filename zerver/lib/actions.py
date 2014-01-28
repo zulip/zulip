@@ -148,6 +148,14 @@ def delete_all_user_sessions():
 def active_humans_in_realm(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
+def do_set_realm_name(realm, name):
+    realm.name = name
+    realm.save(update_fields=['name'])
+
+def get_realm_name(domain):
+    realm = Realm.objects.get(domain=domain)
+    return realm.name
+
 def do_deactivate_realm(realm):
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to

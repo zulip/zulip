@@ -34,7 +34,7 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     do_rename_stream, do_change_stream_description, get_default_streams_for_realm, \
     do_add_default_stream, do_remove_default_stream, \
     do_rename_stream, do_change_stream_description, \
-    do_deactivate_realm
+    do_set_realm_name, get_realm_name, do_deactivate_realm
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -300,6 +300,21 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_person(person), 'This is not a valid person')
 
 class RealmTest(AuthedTestCase):
+    def assert_user_profile_cache_gets_new_name(self, email, new_realm_name):
+        user_profile = get_user_profile_by_email(email)
+        self.assertEqual(user_profile.realm.name, new_realm_name)
+
+    def test_do_set_realm_name(self):
+        # The main complicated thing about setting realm names is fighting the
+        # cache, and we start by populating the cache for Hamlet, and we end
+        # by checking the cache to ensure that the new value is there.
+        get_user_profile_by_email('hamlet@zulip.com')
+        realm = Realm.objects.get(domain='zulip.com')
+        new_name = 'Zed You Elle Eye Pea'
+        do_set_realm_name(realm, new_name)
+        self.assertEqual(get_realm_name(realm.domain), new_name)
+        self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
+
     def test_do_deactivate_realm(self):
         # The main complicated thing about deactivating realm names is updating the
         # cache, and we start by populating the cache for Hamlet, and we end
