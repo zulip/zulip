@@ -250,7 +250,7 @@ def get_stream_cache_key(stream_name, realm):
 
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
-def update_user_profile_cache(sender, **kwargs):
+def flush_user_profile(sender, **kwargs):
     user_profile = kwargs['instance']
     items_for_memcached = {}
     items_for_memcached[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
