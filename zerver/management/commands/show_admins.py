@@ -7,7 +7,7 @@ import sys
 class Command(BaseCommand):
     help = """Show the admins in a realm.
 
-Usage: ./manage.py show_admins <realm name>
+Usage: ./manage.py show_admins <realm domain>
 """
 
     def handle(self, *args, **options):
