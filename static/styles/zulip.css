@@ -1013,9 +1013,6 @@ just a temporary hack.
 .last_message .messagebox {
     border-radius: 0px 0px 3px 3px;
     border: none;
-    border-left: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-    border-right: 1px solid #ddd;
     overflow: hidden;
 }
 
@@ -1373,8 +1370,6 @@ blockquote p {
     cursor: pointer;
     vertical-align: top;
     border: none;
-    border-left: 1px solid #ddd;
-    border-right: 1px solid #ddd;
 }
 
 .messagebox-content {
