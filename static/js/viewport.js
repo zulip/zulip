@@ -23,29 +23,29 @@ exports.message_viewport_info = function () {
     var element_just_above_us = $("#tab_bar_underpadding");
 
     res.visible_top =
-        element_just_above_us.offset().top
+        element_just_above_us.position().top
         + element_just_above_us.height()
-        + $(".message_header").height();
+        + $(".message_header").outerHeight();
 
     var element_just_below_us = $("#compose");
 
     res.visible_height =
-        element_just_below_us.offset().top
-        - res.visible_top;
+        element_just_below_us.position().top
+        - element_just_above_us.position().top
+        - $(".message_header").outerHeight();
 
     return res;
 };
 
 exports.at_bottom = function () {
-    // outerHeight(true): Include margin
     var bottom = exports.scrollTop() + exports.height();
-    var window_size = $(document).height();
+    var full_height = exports.message_pane.prop('scrollHeight');
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
     // and we err on the side of saying that we are at
     // the bottom.
-    return bottom + 2 >= window_size;
+    return bottom + 2 >= full_height;
 };
 
 // This differs from at_bottom in that it only requires the bottom message to
@@ -171,12 +171,12 @@ exports.visible_messages = function (require_fully_visible) {
 };
 
 exports.scrollTop = function viewport_scrollTop (target_scrollTop) {
-    var orig_scrollTop = jwindow.scrollTop();
+    var orig_scrollTop = exports.message_pane.scrollTop();
     if (target_scrollTop === undefined) {
         return orig_scrollTop;
     }
-    var ret = jwindow.scrollTop(target_scrollTop);
-    var new_scrollTop = jwindow.scrollTop();
+    var ret = exports.message_pane.scrollTop(target_scrollTop);
+    var new_scrollTop = exports.message_pane.scrollTop();
     var space_to_scroll = $("#bottom_whitespace").offset().top - viewport.height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
@@ -189,10 +189,10 @@ exports.scrollTop = function viewport_scrollTop (target_scrollTop) {
         // fix this, we need to first scroll to some other place.
         blueslip.info("ScrollTop did nothing when scrolling to " + target_scrollTop + ", fixing...");
         // First scroll to 1 in order to clear the stuck state
-        jwindow.scrollTop(1);
+        exports.message_pane.scrollTop(1);
         // And then scroll where we intended to scroll to
-        ret = jwindow.scrollTop(target_scrollTop);
-        if (jwindow.scrollTop() === 0) {
+        ret = exports.message_pane.scrollTop(target_scrollTop);
+        if (exports.message_pane.scrollTop() === 0) {
             blueslip.info("ScrollTop fix did not work when scrolling to " + target_scrollTop +
                           "!  space_to_scroll was " + space_to_scroll);
         }
@@ -203,24 +203,24 @@ exports.scrollTop = function viewport_scrollTop (target_scrollTop) {
 function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
         compute_value: function () {
-            return dimen_func.call(jwindow);
+            return dimen_func.call(exports.message_pane);
         }
     });
     return function viewport_dimension_wrapper() {
         if (arguments.length !== 0) {
             dimensions[dimen_name].reset();
-            return dimen_func.apply(jwindow, arguments);
+            return dimen_func.apply(exports.message_pane, arguments);
         }
         return dimensions[dimen_name].get();
     };
 }
 
-exports.height = make_dimen_wrapper('height', $(window).height);
-exports.width  = make_dimen_wrapper('width',  $(window).width);
+exports.height = make_dimen_wrapper('height', $(exports.message_pane).height);
+exports.width  = make_dimen_wrapper('width',  $(exports.message_pane).width);
 
 exports.stop_auto_scrolling = function () {
     if (in_stoppable_autoscroll) {
-        $("html, body").stop();
+        exports.message_pane.stop();
     }
 };
 
@@ -236,7 +236,7 @@ exports.system_initiated_animate_scroll = function (scroll_amount) {
     suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
     var viewport_offset = exports.scrollTop();
     in_stoppable_autoscroll = true;
-    $("html, body").animate({
+    exports.message_pane.animate({
         scrollTop: viewport_offset + scroll_amount,
         always: function () {
             in_stoppable_autoscroll = false;
@@ -250,15 +250,14 @@ exports.user_initiated_animate_scroll = function (scroll_amount) {
 
     var viewport_offset = exports.scrollTop();
 
-    // We use $('html, body') because you can't animate window.scrollTop
-    // on Chrome (http://bugs.jquery.com/ticket/10419).
-    $("html, body").animate({
+    exports.message_pane.animate({
         scrollTop: viewport_offset + scroll_amount
     });
 };
 
 $(function () {
     jwindow = $(window);
+    exports.message_pane = $(".app");
     // This handler must be placed before all resize handlers in our application
     jwindow.resize(function () {
         dimensions.height.reset();
