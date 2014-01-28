@@ -248,14 +248,17 @@ def get_stream_cache_key(stream_name, realm):
     return "stream_by_realm_and_name:%s:%s" % (
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
-# Called by models.py to flush the user_profile cache whenever we save
-# a user_profile object
-def flush_user_profile(sender, **kwargs):
-    user_profile = kwargs['instance']
+def update_user_profile_caches(user_profile):
     items_for_memcached = {}
     items_for_memcached[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
     items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
     cache_set_many(items_for_memcached)
+
+# Called by models.py to flush the user_profile cache whenever we save
+# a user_profile object
+def flush_user_profile(sender, **kwargs):
+    user_profile = kwargs['instance']
+    update_user_profile_caches(user_profile)
 
     # Invalidate our active_users_in_realm info dict if any user has changed
     # name or email
