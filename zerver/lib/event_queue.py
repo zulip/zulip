@@ -460,22 +460,26 @@ def fetch_events(query):
             was_connected = client.finish_current_handler()
 
         if not client.event_queue.empty() or dont_block:
-            ret = {'events': client.event_queue.contents()}
+            response = dict(events=client.event_queue.contents(),
+                            handler_id=handler_id)
             if orig_queue_id is None:
-                ret['queue_id'] = queue_id
-            extra_log_data = "[%s/%s]" % (queue_id, len(ret["events"]))
+                response['queue_id'] = queue_id
+            extra_log_data = "[%s/%s]" % (queue_id, len(response["events"]))
             if was_connected:
                 extra_log_data += " [was connected]"
-            return (ret, extra_log_data)
+            return dict(type="response", response=response, extra_log_data=extra_log_data)
 
         if was_connected:
             logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
-                                                                    client_type_name))
+                                                                        client_type_name))
     except JsonableError as e:
+        if hasattr(e, 'to_json_error_msg') and callable(e.to_json_error_msg):
+            return dict(type="error", handler_id=handler_id,
+                        message=e.to_json_error_msg())
         raise e
 
     client.connect_handler(handler_id, client_type_name)
-    return (RespondAsynchronously, None)
+    return dict(type="async")
 
 # The following functions are called from Django
 
