@@ -304,7 +304,7 @@ class RealmTest(AuthedTestCase):
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(user_profile.realm.name, new_realm_name)
 
-    def test_do_set_realm_name(self):
+    def test_do_set_realm_name_caching(self):
         # The main complicated thing about setting realm names is fighting the
         # cache, and we start by populating the cache for Hamlet, and we end
         # by checking the cache to ensure that the new value is there.
@@ -314,6 +314,20 @@ class RealmTest(AuthedTestCase):
         do_set_realm_name(realm, new_name)
         self.assertEqual(get_realm_name(realm.domain), new_name)
         self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
+
+    def test_do_set_realm_name_events(self):
+        realm = Realm.objects.get(domain='zulip.com')
+        new_name = 'Puliz'
+        events = []
+        with tornado_redirected_to_list(events):
+            do_set_realm_name(realm, new_name)
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            type = 'realm',
+            op = 'update',
+            property = 'name',
+            value = new_name,
+        ))
 
     def test_do_deactivate_realm(self):
         # The main complicated thing about deactivating realm names is updating the

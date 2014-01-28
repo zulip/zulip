@@ -151,6 +151,13 @@ def active_humans_in_realm(realm):
 def do_set_realm_name(realm, name):
     realm.name = name
     realm.save(update_fields=['name'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='name',
+        value=name,
+    )
+    send_event(event, active_user_ids(realm))
 
 def get_realm_name(domain):
     realm = Realm.objects.get(domain=domain)
