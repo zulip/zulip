@@ -729,10 +729,23 @@ function update_message_in_all_views(message_id, callback) {
     });
 }
 
+function find_message(message_id) {
+    // Try to find the message object. It might be in the narrow list
+    // (if it was loaded when narrowed), or only in the all_msg_list
+    // (if received from the server while in a different narrow)
+    var message;
+    _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (msg_list) {
+        if (msg_list !== undefined && message === undefined) {
+            message = msg_list.get(message_id);
+        }
+    });
+    return message;
+}
+
 exports.update_starred = function (message_id, starred) {
     // Update the message object pointed to by the various message
     // lists.
-    var message = current_msg_list.get(message_id);
+    var message = find_message(message_id);
 
     mark_message_as_read(message);
 
@@ -755,7 +768,8 @@ exports.update_starred = function (message_id, starred) {
 function toggle_star(message_id) {
     // Update the message object pointed to by the various message
     // lists.
-    var message = current_msg_list.get(message_id);
+    var message = find_message(message_id);
+
     mark_message_as_read(message);
     exports.update_starred(message.id, message.starred !== true);
     sync_message_star(message, message.starred);
