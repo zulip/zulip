@@ -51,7 +51,10 @@ def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
 
     commit_stream = stream
     # in v1, we assume that the stream 'issues' exists, since we only handle issues for CUSTOMER5 and ourselves
-    issue_stream = 'issues' if user_profile.realm.domain in ('customer5.invalid', 'zulip.com') else stream
+    issue_stream = stream
+
+    if user_profile.realm.domain in ('customer5.invalid', 'zulip.com'):
+        issue_stream = 'issues'
 
     return api_github_v2(user_profile, event, payload, branches, stream, commit_stream, issue_stream, **kwargs)
 
@@ -175,9 +178,9 @@ def api_github_landing(request, user_profile, event=REQ,
     if (event == 'pull_request' and user_profile.realm.domain in ['customer18.invalid']) or exclude_pull_requests:
         return json_success()
 
-    # Only Zulip and CUSTOMER5 get issues right now
+    # Only Zulip, CUSTOMER5, and CMU get issues right now
     # TODO: is this still the desired behavior?
-    if event == 'issues' and user_profile.realm.domain not in ('zulip.com', 'customer5.invalid') or exclude_issues:
+    if event == 'issues' and user_profile.realm.domain not in ('zulip.com', 'customer5.invalid', 'customer27.invalid') or exclude_issues:
         return json_success()
 
     # CUSTOMER37 and CUSTOMER38 do not want github issues traffic, or push notifications, only pull requests.
