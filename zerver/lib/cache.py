@@ -272,7 +272,11 @@ def flush_user_profile(sender, **kwargs):
     if kwargs['update_fields'] is None or "alert_words" in kwargs['update_fields']:
         cache_delete(realm_alert_words_cache_key(user_profile.realm))
 
-def flush_realm(realm):
+# Called by models.py to flush various caches whenever we save
+# a Realm object.  The main tricky thing here is that Realm info is
+# generally cached indirectly through user_profile objects.
+def flush_realm(sender, **kwargs):
+    realm = kwargs['instance']
     users = realm.get_active_users()
     update_user_profile_caches(users)
 

@@ -4,7 +4,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
-from zerver.lib.cache import cache_with_key, flush_user_profile, \
+from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     generic_bulk_cached_fetch, cache_set, update_stream_cache, \
     display_recipient_cache_key, cache_delete, \
@@ -139,6 +139,8 @@ class Realm(models.Model):
         permissions = (
             ('administer', "Administer a realm"),
         )
+
+post_save.connect(flush_realm, sender=Realm)
 
 class RealmAlias(models.Model):
     realm = models.ForeignKey(Realm, null=True)
