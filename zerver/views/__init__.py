@@ -30,7 +30,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     create_stream_if_needed, gather_subscriptions, \
     update_user_presence, bulk_add_subscriptions, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
-    do_change_enable_digest_emails, internal_prep_message, \
+    do_change_enable_digest_emails, do_set_realm_name, internal_prep_message, \
     do_send_messages, get_default_subs, do_deactivate_user, do_reactivate_user, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
@@ -1072,6 +1072,12 @@ def get_streams_backend(request, user_profile,
 def get_public_streams_backend(request, user_profile):
     return get_streams_backend(request, user_profile, include_public=True,
                                include_subscribed=False, include_all_active=False)
+
+@require_realm_admin
+@has_request_variables
+def update_realm(request, user_profile, name=REQ(validator=check_string, default=None)):
+    # This will grow, but for now it only handles changes to realm name.
+    return json_success(do_set_realm_name(user_profile.realm, name))
 
 @require_realm_admin
 @has_request_variables

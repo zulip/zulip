@@ -158,6 +158,7 @@ def do_set_realm_name(realm, name):
         value=name,
     )
     send_event(event, active_user_ids(realm))
+    return {}
 
 def get_realm_name(domain):
     realm = Realm.objects.get(domain=domain)
