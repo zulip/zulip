@@ -57,7 +57,7 @@ def get_events_backend(request, user_profile, handler,
 
     (result, log_data) = fetch_events(
         user_profile.id, user_profile.realm_id, user_profile.email, queue_id,
-        last_event_id, event_types, user_client, apply_markdown, all_public_streams,
+        last_event_id, event_types, user_client.name, apply_markdown, all_public_streams,
         lifespan_secs, narrow, dont_block, handler.handler_id)
     request._log_data['extra'] = log_data
     if result == RespondAsynchronously:

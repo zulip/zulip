@@ -214,7 +214,7 @@ class EventsRegisterTest(AuthedTestCase):
     def do_test(self, action, event_types=None):
         client = allocate_client_descriptor(self.user_profile.id, self.user_profile.email,
                                             self.user_profile.realm.id, event_types,
-                                            get_client("website"), True, False, 600, [])
+                                            "website", True, False, 600, [])
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "")

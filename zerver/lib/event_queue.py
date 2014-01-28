@@ -23,7 +23,7 @@ from zerver.lib.cache_helpers import cache_with_key
 from zerver.lib.handlers import get_handler_by_id, finish_handler
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
-from zerver.models import get_client, Message
+from zerver.models import Message
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -48,7 +48,7 @@ HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor(object):
     def __init__(self, user_profile_id, user_profile_email, realm_id, event_queue,
-                 event_types, client_type, apply_markdown=True,
+                 event_types, client_type_name, apply_markdown=True,
                  all_public_streams=False, lifespan_secs=0, narrow=[]):
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
@@ -65,7 +65,7 @@ class ClientDescriptor(object):
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
         self.all_public_streams = all_public_streams
-        self.client_type = client_type
+        self.client_type_name = client_type_name
         self._timeout_handle = None
         self.narrow = narrow
         self.narrow_filter = build_narrow_filter(narrow)
@@ -87,7 +87,7 @@ class ClientDescriptor(object):
                     apply_markdown=self.apply_markdown,
                     all_public_streams=self.all_public_streams,
                     narrow=self.narrow,
-                    client_type=self.client_type.name)
+                    client_type=self.client_type_name)
 
     @classmethod
     def from_dict(cls, d):
@@ -97,7 +97,7 @@ class ClientDescriptor(object):
             d['user_profile_email'] = get_user_profile_by_id(d['user_profile_id']).email
         ret = cls(d['user_profile_id'], d['user_profile_email'], d['realm_id'],
                   EventQueue.from_dict(d['event_queue']), d['event_types'],
-                  get_client(d['client_type']), d['apply_markdown'], d['all_public_streams'],
+                  d['client_type'], d['apply_markdown'], d['all_public_streams'],
                   d['queue_timeout'], d.get('narrow', []))
         ret.last_connection_time = d['last_connection_time']
         return ret
@@ -156,7 +156,7 @@ class ClientDescriptor(object):
             self.add_event(dict(type='heartbeat'))
         ioloop = tornado.ioloop.IOLoop.instance()
         heartbeat_time = time.time() + HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)
-        if self.client_type.name != 'API: heartbeat test':
+        if self.client_type_name != 'API: heartbeat test':
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
     def disconnect_handler(self, client_closed=False):
@@ -314,13 +314,13 @@ def add_to_client_dicts(client):
         realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
 
 def allocate_client_descriptor(user_profile_id, user_profile_email, realm_id,
-                               event_types, client_type, apply_markdown,
+                               event_types, client_type_name, apply_markdown,
                                all_public_streams, lifespan_secs, narrow=[]):
     global next_queue_id
     id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
     next_queue_id += 1
     client = ClientDescriptor(user_profile_id, user_profile_email, realm_id,
-                              EventQueue(id), event_types, client_type,
+                              EventQueue(id), event_types, client_type_name,
                               apply_markdown, all_public_streams, lifespan_secs, narrow)
     clients[id] = client
     add_to_client_dicts(client)
@@ -430,7 +430,7 @@ def setup_event_queue():
     send_restart_events()
 
 def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
-                 queue_id, last_event_id, event_types, user_client, apply_markdown,
+                 queue_id, last_event_id, event_types, client_type_name, apply_markdown,
                  all_public_streams, lifespan_secs, narrow, dont_block, handler_id):
     was_connected = False
     orig_queue_id = queue_id
@@ -439,7 +439,7 @@ def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
         if dont_block:
             client = allocate_client_descriptor(user_profile_id, user_profile_email,
                                                 user_profile_realm_id,
-                                                event_types, user_client, apply_markdown,
+                                                event_types, client_type_name, apply_markdown,
                                                 all_public_streams, lifespan_secs,
                                                 narrow=narrow)
             queue_id = client.event_queue.id
@@ -467,8 +467,8 @@ def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
 
     if was_connected:
         logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
-                                                                    user_client.name))
-    client.connect_handler(handler_id, user_client.name)
+                                                                    client_type_name))
+    client.connect_handler(handler_id, client_type_name)
     return (RespondAsynchronously, None)
 
 # The following functions are called from Django
@@ -673,7 +673,7 @@ def process_message_event(event_template, users):
             message_dict = message_dict_no_markdown
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
-        if "mirror" in client.client_type.name and event_template.get("invite_only"):
+        if "mirror" in client.client_type_name and event_template.get("invite_only"):
             message_dict = message_dict.copy()
             message_dict["invite_only_stream"] = True
 
@@ -691,7 +691,7 @@ def process_message_event(event_template, users):
 
         # The below prevents (Zephyr) mirroring loops.
         if ('mirror' in sending_client and
-            sending_client.lower() == client.client_type.name.lower()):
+            sending_client.lower() == client.client_type_name.lower()):
             continue
         client.add_event(user_event)
 
