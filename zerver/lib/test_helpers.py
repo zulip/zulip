@@ -12,6 +12,8 @@ from zerver.lib.actions import (
     get_display_recipient,
 )
 
+from zerver.lib.handlers import allocate_handler_id
+
 from zerver.models import (
     get_realm,
     get_stream,
@@ -162,6 +164,7 @@ class DummyHandler(object):
     def __init__(self, assert_callback):
         self.assert_callback = assert_callback
         self.request = DummyTornadoRequest()
+        allocate_handler_id(self)
 
     # Mocks RequestHandler.async_callback, which wraps a callback to
     # handle exceptions.  We return the callback as-is.

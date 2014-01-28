@@ -42,7 +42,7 @@ def json_get_events(request, user_profile):
 
 @asynchronous
 @has_request_variables
-def get_events_backend(request, user_profile, handler = None,
+def get_events_backend(request, user_profile, handler,
                        user_client = REQ(converter=get_client, default=None),
                        last_event_id = REQ(converter=int, default=None),
                        queue_id = REQ(default=None),
@@ -55,11 +55,10 @@ def get_events_backend(request, user_profile, handler = None,
     if user_client is None:
         user_client = request.client
 
-    handler_id = allocate_handler_id(handler)
     (result, log_data) = fetch_events(
         user_profile.id, user_profile.realm_id, user_profile.email, queue_id,
         last_event_id, event_types, user_client, apply_markdown, all_public_streams,
-        lifespan_secs, narrow, dont_block, handler_id)
+        lifespan_secs, narrow, dont_block, handler.handler_id)
     request._log_data['extra'] = log_data
     if result == RespondAsynchronously:
         handler._request = request

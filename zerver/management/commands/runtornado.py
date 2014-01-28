@@ -22,6 +22,7 @@ from zerver.lib.debug import interactive_debug_listen
 from zerver.lib.response import json_response
 from zerver.lib.event_queue import process_notification, missedmessage_hook
 from zerver.lib.event_queue import setup_event_queue, add_client_gc_hook
+from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.queue import setup_tornado_rabbitmq
 from zerver.lib.socket import get_sockjs_router, respond_send_message
 from zerver.middleware import async_request_stop
@@ -142,6 +143,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.initLock.release()
         self._auto_finish = False
         self.client_descriptor = None
+        allocate_handler_id(self)
 
     def get(self):
         from tornado.wsgi import WSGIContainer
