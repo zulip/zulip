@@ -148,8 +148,7 @@ class ClientDescriptor(object):
 
     def connect_handler(self, handler_id):
         self.current_handler_id = handler_id
-        handler = get_handler_by_id(self.current_handler_id)
-        handler.client_descriptor = self
+        set_descriptor_by_handler_id(handler_id, self)
         self.last_connection_time = time.time()
         def timeout_callback():
             self._timeout_handle = None
@@ -164,7 +163,7 @@ class ClientDescriptor(object):
         if self.current_handler_id:
             handler = get_handler_by_id(self.current_handler_id)
             request = handler._request
-            handler.client_descriptor = None
+            delete_descriptor_by_handler_id(self.current_handler_id, None)
             if client_closed:
                 logging.info("Client disconnected for queue %s (%s via %s)" %
                              (self.event_queue.id, self.user_profile_email,
@@ -178,6 +177,17 @@ class ClientDescriptor(object):
     def cleanup(self):
         do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
                            [self.realm_id])
+
+descriptors_by_handler_id = {}
+
+def get_descriptor_by_handler_id(handler_id):
+    return descriptors_by_handler_id.get(handler_id)
+
+def set_descriptor_by_handler_id(handler_id, client_descriptor):
+    descriptors_by_handler_id[handler_id] = client_descriptor
+
+def delete_descriptor_by_handler_id(handler_id, client_descriptor):
+    del descriptors_by_handler_id[handler_id]
 
 def compute_full_event_type(event):
     if event["type"] == "update_message_flags":

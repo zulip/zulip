@@ -21,7 +21,8 @@ from tornado import ioloop
 from zerver.lib.debug import interactive_debug_listen
 from zerver.lib.response import json_response
 from zerver.lib.event_queue import process_notification, missedmessage_hook
-from zerver.lib.event_queue import setup_event_queue, add_client_gc_hook
+from zerver.lib.event_queue import setup_event_queue, add_client_gc_hook, \
+    get_descriptor_by_handler_id
 from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.queue import setup_tornado_rabbitmq
 from zerver.lib.socket import get_sockjs_router, respond_send_message
@@ -187,8 +188,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.get()
 
     def on_connection_close(self):
-        if self.client_descriptor is not None:
-            self.client_descriptor.disconnect_handler(client_closed=True)
+        client_descriptor = get_descriptor_by_handler_id(self.handler_id)
+        if client_descriptor is not None:
+            client_descriptor.disconnect_handler(client_closed=True)
 
     # Based on django.core.handlers.base: get_response
     def get_response(self, request):
