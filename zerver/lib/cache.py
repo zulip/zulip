@@ -273,7 +273,11 @@ def flush_user_profile(sender, **kwargs):
 
 def flush_realm(realm):
     for user in realm.get_active_users():
-        flush_user_profile(None, instance=user, update_fields=None)
+        update_user_profile_caches(user)
+
+    if realm.deactivated:
+        cache_delete(active_user_dicts_in_realm_cache_key(realm))
+        cache_delete(realm_alert_words_cache_key(realm))
 
 def realm_alert_words_cache_key(realm):
     return "realm_alert_words:%s" % (realm.domain,)
