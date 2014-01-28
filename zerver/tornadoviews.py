@@ -82,9 +82,13 @@ def get_events_backend(request, user_profile, handler,
             last_connection_time = time.time(),
             narrow = narrow)
 
-    (result, log_data) = fetch_events(events_query)
-    request._log_data['extra'] = log_data
-    if result == RespondAsynchronously:
+    result = fetch_events(events_query)
+    if "extra_log_data" in result:
+        request._log_data['extra'] = result["extra_log_data"]
+
+    if result["type"] == "async":
         handler._request = request
-        return result
-    return json_success(result)
+        return RespondAsynchronously
+    if result["type"] == "error":
+        return json_error(result["message"])
+    return json_success(result["response"])
