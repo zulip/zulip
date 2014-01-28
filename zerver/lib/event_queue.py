@@ -21,7 +21,7 @@ from zerver.decorator import RespondAsynchronously, JsonableError
 from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile
 from zerver.lib.cache_helpers import cache_with_key
-from zerver.lib.handlers import get_handler_by_id
+from zerver.lib.handlers import get_handler_by_id, finish_handler
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 from zerver.models import get_client, Message
@@ -119,23 +119,8 @@ class ClientDescriptor(object):
         if self.current_handler_id is not None:
             err_msg = "Got error finishing handler for queue %s" % (self.event_queue.id,)
             try:
-                # We call async_request_restart here in case we are
-                # being finished without any events (because another
-                # get_events request has supplanted this request)
-                handler = get_handler_by_id(self.current_handler_id)
-                request = handler._request
-                async_request_restart(request)
-                request._log_data['extra'] = "[%s/1]" % (self.event_queue.id,)
-                handler.zulip_finish(dict(result='success', msg='',
-                                          events=self.event_queue.contents(),
-                                          queue_id=self.event_queue.id),
-                                     request, apply_markdown=self.apply_markdown)
-            except IOError as e:
-                if e.message != 'Stream is closed':
-                    logging.exception(err_msg)
-            except AssertionError as e:
-                if e.message != 'Request closed':
-                    logging.exception(err_msg)
+                finish_handler(self.current_handler_id, self.event_queue.id,
+                               self.event_queue.contents(), self.apply_markdown)
             except Exception:
                 logging.exception(err_msg)
             finally:
