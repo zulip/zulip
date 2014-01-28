@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 from django.test import TestCase
-from django.test.simple import DjangoTestSuiteRunner
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.db.models import Q
@@ -11,6 +10,8 @@ from zerver.lib.test_helpers import (
     find_key_by_email, queries_captured, simulated_empty_cache,
     simulated_queue_client, stub, tornado_redirected_to_list, AuthedTestCase,
 )
+
+from zerver.lib.test_runner import slow
 
 from zilencer.models import Deployment
 
@@ -38,7 +39,6 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
-from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.event_queue import allocate_client_descriptor
 from zerver.lib.rate_limiter import clear_user_history
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
@@ -121,23 +121,6 @@ def find_dict(lst, k, v):
         if dct[k] == v:
             return dct
     raise Exception('Cannot find element in list where key %s == %s' % (k, v))
-
-def slow(expected_run_time, slowness_reason):
-    '''
-    This is a decorate that annotates a test as being "known
-    to be slow."  The decorator will set expected_run_time and slowness_reason
-    as atributes of the function.  Other code can use this annotation
-    as needed, e.g. to exclude these tests in "fast" mode.
-    '''
-    def decorator(f):
-        f.expected_run_time = expected_run_time
-        f.slowness_reason = slowness_reason
-        return f
-
-    return decorator
-
-def is_known_slow_test(test_method):
-    return hasattr(test_method, 'slowness_reason')
 
 API_KEYS = {}
 
@@ -5714,55 +5697,6 @@ class GCMTokenTests(AuthedTestCase):
         result = self.client.post('/json/users/me/android_gcm_reg_id', {'token':token})
         self.assert_json_success(result)
 
-def full_test_name(test):
-    test_class = test.__class__.__name__
-    test_method = test._testMethodName
-    return '%s/%s' % (test_class, test_method)
-
-def get_test_method(test):
-    return getattr(test, test._testMethodName)
-
-def enforce_timely_test_completion(test_method, test_name, delay):
-    if hasattr(test_method, 'expected_run_time'):
-        # Allow for tests to run 50% slower than normal due
-        # to random variations.
-        max_delay = 1.5 * test_method.expected_run_time
-    else:
-        max_delay = 0.180 # seconds
-
-    # Further adjustments for slow laptops:
-    max_delay = max_delay * 3
-
-    if delay > max_delay:
-        print 'Test is TOO slow: %s (%.3f s)' % (test_name, delay)
-
-def fast_tests_only():
-    return os.environ.get('FAST_TESTS_ONLY', False)
-
-def run_test(test):
-    test_method = get_test_method(test)
-
-    if fast_tests_only() and is_known_slow_test(test_method):
-        return
-
-    test_name = full_test_name(test)
-
-    bounce_key_prefix_for_testing(test_name)
-
-    print 'Running zerver.%s' % (test_name.replace("/", "."),)
-    test._pre_setup()
-
-    start_time = time.time()
-
-    test.setUp()
-    test_method()
-    test.tearDown()
-
-    delay = time.time() - start_time
-    enforce_timely_test_completion(test_method, test_name, delay)
-
-    test._post_teardown()
-
 class EmailUnsubscribeTests(AuthedTestCase):
     def test_missedmessage_unsubscribe(self):
         """
@@ -5834,20 +5768,3 @@ class EmailUnsubscribeTests(AuthedTestCase):
         self.assertEqual(0, len(ScheduledJob.objects.filter(
                 type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
-class Runner(DjangoTestSuiteRunner):
-    option_list = ()
-
-    def __init__(self, *args, **kwargs):
-        DjangoTestSuiteRunner.__init__(self, *args, **kwargs)
-
-    def run_suite(self, suite):
-        for test in suite:
-            run_test(test)
-
-    def run_tests(self, test_labels, extra_tests=None, **kwargs):
-        self.setup_test_environment()
-        suite = self.build_suite(test_labels, extra_tests)
-        self.run_suite(suite)
-        self.teardown_test_environment()
-        print 'DONE!'
-        print

@@ -189,7 +189,7 @@ ANONYMOUS_USER_ID = None
 
 AUTH_USER_MODEL = "zerver.UserProfile"
 
-TEST_RUNNER = 'zerver.tests.Runner'
+TEST_RUNNER = 'zerver.lib.test_runner.Runner'
 
 ROOT_URLCONF = 'zproject.urls'
 
