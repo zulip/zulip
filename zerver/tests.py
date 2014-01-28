@@ -122,8 +122,6 @@ def find_dict(lst, k, v):
             return dct
     raise Exception('Cannot find element in list where key %s == %s' % (k, v))
 
-API_KEYS = {}
-
 class SlowQueryTest(TestCase):
     def test_is_slow_query(self):
         self.assertFalse(is_slow_query(1.1, '/some/random/url'))
