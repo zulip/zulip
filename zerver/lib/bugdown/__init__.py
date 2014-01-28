@@ -164,6 +164,8 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
+    TWITTER_MAX_TO_PREVIEW = 3
+
 
     def is_image(self, url):
         if not settings.INLINE_IMAGE_PREVIEW:
@@ -425,7 +427,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if len(found_urls) == 0 or len(found_urls) > 5:
             return
 
-        rendered_tweet = False
+        rendered_tweet_count = 0
         embedly_urls = []
         for url in found_urls:
             dropbox = self.dropbox_image(url)
@@ -436,14 +438,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 add_a(root, url, url)
                 continue
             if get_tweet_id(url):
-                if rendered_tweet:
+                if rendered_tweet_count >= self.TWITTER_MAX_TO_PREVIEW:
                     # Only render at most one tweet per message
                     continue
                 twitter_data = self.twitter_link(url)
                 if twitter_data is None:
                     # This link is not actually a tweet known to twitter
                     continue
-                rendered_tweet = True
+                rendered_tweet_count += 1
                 div = markdown.util.etree.SubElement(root, "div")
                 div.set("class", "inline-preview-twitter")
                 div.insert(0, twitter_data)

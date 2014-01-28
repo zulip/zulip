@@ -4307,12 +4307,16 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
                                                        make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
-        # Only one should get converted
-        msg = 'http://twitter.com/wdaher/status/287977969287315456 http://twitter.com/wdaher/status/287977969287315457'
+        # A max of 3 will be converted
+        msg = 'http://twitter.com/wdaher/status/287977969287315456 http://twitter.com/wdaher/status/287977969287315457 http://twitter.com/wdaher/status/287977969287315457 http://twitter.com/wdaher/status/287977969287315457'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s %s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
+        self.assertEqual(converted, '<p>%s %s %s %s</p>\n%s%s%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
                                                           make_link('http://twitter.com/wdaher/status/287977969287315457'),
-                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+                                                          make_link('http://twitter.com/wdaher/status/287977969287315457'),
+                                                          make_link('http://twitter.com/wdaher/status/287977969287315457'),
+                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
+                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html),
+                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
 
         # Tweet has a mention in a URL, only the URL is linked
         msg = 'http://twitter.com/wdaher/status/287977969287315458'
