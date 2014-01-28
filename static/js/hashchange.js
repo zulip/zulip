@@ -25,15 +25,8 @@ exports.changehash = function (newhash) {
     }
     $(document).trigger($.Event('hashchange.zulip'));
     expected_hash = newhash;
-    // Some browsers reset scrollTop when changing the hash to "",
-    // so we save and restore it.
-    // http://stackoverflow.com/questions/4715073/window-location-hash-prevent-scrolling-to-the-top
-    var scrolltop = viewport.scrollTop();
     window.location.hash = newhash;
     util.reset_favicon();
-    if (newhash === "" || newhash === "#") {
-        viewport.scrollTop(scrolltop);
-    }
 };
 
 // Encodes an operator list into the
