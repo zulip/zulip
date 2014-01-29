@@ -1949,7 +1949,13 @@ def get_realm_user_dicts(user_profile):
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
 def fetch_initial_state_data(user_profile, event_types, queue_id):
     state = {'queue_id': queue_id}
-    if event_types is None or "message" in event_types:
+
+    if event_types is None:
+        want = lambda msg_type: True
+    else:
+        want = set(event_types).__contains__
+
+    if want('message'):
         # The client should use get_old_messages() to fetch messages
         # starting with the max_message_id.  They will get messages
         # newer than that ID via get_events()
@@ -1958,34 +1964,44 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
             state['max_message_id'] = messages[0].id
         else:
             state['max_message_id'] = -1
-    if event_types is None or "pointer" in event_types:
+
+    if want('pointer'):
         state['pointer'] = user_profile.pointer
-    if event_types is None or "realm_user" in event_types:
+
+    if want('realm_user'):
         state['realm_users'] = get_realm_user_dicts(user_profile)
-    if event_types is None or "subscription" in event_types:
+
+    if want('subscriptions'):
         subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['email_dict'] = email_dict
-    if event_types is None or "presence" in event_types:
+
+    if want('presence'):
         state['presences'] = get_status_dict(user_profile)
-    if event_types is None or "referral" in event_types:
+
+    if want('referral'):
         state['referrals'] = {'granted': user_profile.invites_granted,
                               'used': user_profile.invites_used}
-    if event_types is None or "update_message_flags" in event_types:
+
+    if want('update_message_flags'):
         # There's no initial data for message flag updates, client will
         # get any updates during a session from get_events()
         pass
-    if event_types is None or "realm_emoji" in event_types:
+
+    if want('realm_emoji'):
         state['realm_emoji'] = user_profile.realm.get_emoji()
-    if event_types is None or "alert_words" in event_types:
+
+    if want('alert_words'):
         state['alert_words'] = user_alert_words(user_profile)
-    if event_types is None or "muted_topics" in event_types:
+
+    if want('muted_topics'):
         state['muted_topics'] = ujson.loads(user_profile.muted_topics)
-    if event_types is None or "realm_filters" in event_types:
+
+    if want('realm_filters'):
         state['realm_filters'] = realm_filters_for_domain(user_profile.realm.domain)
 
-    if event_types is None or 'realm' in event_types:
+    if want('realm'):
         state['realm_name'] = user_profile.realm.name
 
     return state
