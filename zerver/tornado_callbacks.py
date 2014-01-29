@@ -56,7 +56,7 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         if notify_info.get('send_push', False):
             queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
         if notify_info.get('send_email', False):
-            queue_json_publish("missedmessage_}emails", notice, lambda notice: None)
+            queue_json_publish("missedmessage_emails", notice, lambda notice: None)
 
 @cache_with_key(message_cache_key, timeout=3600*24)
 def get_message_by_id_dbwarn(message_id):
