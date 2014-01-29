@@ -286,6 +286,11 @@ def clear_followup_emails_queue(email, mail_client=None):
             print result.get("name"), result.get("error")
     return
 
+def log_digest_event(msg):
+    import logging
+    logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
+    logging.info(msg)
+
 @uses_mandrill
 def send_future_email(recipients, email_html, email_text, subject,
                       delay=datetime.timedelta(0), sender=None,
@@ -350,9 +355,28 @@ def send_future_email(recipients, email_html, email_text, subject,
         send_time = (datetime.datetime.utcnow() + delay).__format__("%Y-%m-%d %H:%M:%S")
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool", send_at=send_time)
     problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
+
     if problems:
-        raise Exception("While sending email (%s), encountered problems with these recipients: %r"
-                        % (subject, problems))
+        for problem in problems:
+            if problem["status"] == "rejected":
+                if problem["reject_reason"] == "hard-bounce":
+                    # A hard bounce means the address doesn't exist or the
+                    # recipient mail server is completely blocking
+                    # delivery. Don't try to send further emails.
+                    if "digest-emails" in tags:
+                        from zerver.lib.actions import do_change_enable_digest_emails
+                        bounce_email = problem["email"]
+                        user_profile = get_user_profile_by_email(bounce_email)
+                        do_change_enable_digest_emails(user_profile, False)
+                        log_digest_event("%s\nTurned off digest emails for %s" % (
+                                str(problems), bounce_email))
+                        continue
+                elif problem["reject_reason"] == "soft-bounce":
+                    # A soft bounce is temporary; let it try to resolve itself.
+                    continue
+            raise Exception(
+                "While sending email (%s), encountered problems with these recipients: %r"
+                % (subject, problems))
     return
 
 def send_local_email_template_with_delay(recipients, template_prefix,
