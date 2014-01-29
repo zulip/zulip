@@ -24,9 +24,10 @@ def is_known_slow_test(test_method):
     return hasattr(test_method, 'slowness_reason')
 
 def full_test_name(test):
+    test_module = test.__module__
     test_class = test.__class__.__name__
     test_method = test._testMethodName
-    return '%s/%s' % (test_class, test_method)
+    return '%s.%s.%s' % (test_module, test_class, test_method)
 
 def get_test_method(test):
     return getattr(test, test._testMethodName)
@@ -58,7 +59,7 @@ def run_test(test):
 
     bounce_key_prefix_for_testing(test_name)
 
-    print 'Running zerver.%s' % (test_name.replace("/", "."),)
+    print 'Running', test_name
     test._pre_setup()
 
     start_time = time.time()
