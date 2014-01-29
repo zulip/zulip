@@ -1,5 +1,15 @@
 var Filter = (function () {
 
+function filter_term(operator, operand) {
+    // For legacy reasons we must represent filter_terms as tuples
+    // until we phase out all the code that assumes tuples.
+    var term = [];
+    term[0] = operator;
+    term[1] = operand;
+
+    return term;
+}
+
 function mit_edu_stream_name_match(message, operand) {
     // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
@@ -117,6 +127,8 @@ function decodeOperand(encoded, operator) {
 Filter.parse = function (str) {
     var operators   = [];
     var search_term = [];
+    var operand;
+
     var matches = str.match(/"[^"]+"|\S+/g);
     if (matches === null) {
         return operators;
@@ -131,12 +143,14 @@ Filter.parse = function (str) {
             // Looks like an operator.
             // FIXME: Should we skip unknown operator names here?
             operator = parts.shift();
-            operators.push([operator, decodeOperand(parts.join(':'), operator)]);
+            operand = decodeOperand(parts.join(':'), operator);
+            operators.push(filter_term(operator, operand));
         }
     });
     // NB: Callers of 'parse' can assume that the 'search' operator is last.
     if (search_term.length > 0) {
-        operators.push(['search', search_term.join(' ')]);
+        operand = search_term.join(' ');
+        operators.push(filter_term('search', operand));
     }
     return operators;
 };
