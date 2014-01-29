@@ -985,7 +985,7 @@ $(function () {
         last_viewport_movement_direction = delta;
     });
 
-    $(window).mousewheel(function (e, delta) {
+    viewport.message_pane.mousewheel(function (e, delta) {
         // Ignore mousewheel events if a modal is visible.  It's weird if the
         // user can scroll the main view by wheeling over the greyed-out area.
         // Similarly, ignore events on settings page etc.
@@ -1811,7 +1811,7 @@ function scroll_finish() {
 }
 
 exports.register_scroll_handler = function () {
-    $(window).scroll($.throttle(50, function (e) {
+    viewport.message_pane.scroll($.throttle(50, function (e) {
         process_visible_unread_messages();
         scroll_finish();
     }));
