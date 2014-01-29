@@ -56,9 +56,16 @@ function set_filter(operators) {
 
 (function test_operators() {
     set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
-    var canonical_operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
+    var result = narrow.operators();
+    assert.equal(result.length, 3);
+    assert.equal(result[0].operator, 'stream');
+    assert.equal(result[0].operand, 'Foo');
 
-    assert.deepEqual(narrow.operators(), canonical_operators);
+    assert.equal(result[1].operator, 'topic');
+    assert.equal(result[1].operand, 'Bar');
+
+    assert.equal(result[2].operator, 'search');
+    assert.equal(result[2].operand, 'yo');
 }());
 
 (function test_muting_enabled() {

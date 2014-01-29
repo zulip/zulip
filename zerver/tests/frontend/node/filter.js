@@ -27,7 +27,7 @@ function assert_result_matches_legacy_terms(result, terms) {
     var operators = [['stream', 'foo'], ['topic', 'bar']];
     var filter = new Filter(operators);
 
-    assert.deepEqual(filter.operators(), operators);
+    assert_result_matches_legacy_terms(filter.operators(), operators);
     assert.deepEqual(filter.operands('stream'), ['foo']);
 
     assert(filter.has_operator('stream'));
@@ -49,11 +49,11 @@ function assert_result_matches_legacy_terms(result, terms) {
 (function test_public_operators() {
     var operators = [['stream', 'foo'], ['topic', 'bar']];
     var filter = new Filter(operators);
-    assert.deepEqual(filter.public_operators(), operators);
+    assert_result_matches_legacy_terms(filter.public_operators(), operators);
 
     operators = [['in', 'all']];
     filter = new Filter(operators);
-    assert.deepEqual(filter.public_operators(), []);
+    assert_result_matches_legacy_terms(filter.public_operators(), []);
 }());
 
 (function test_canonicalizations() {
@@ -61,10 +61,18 @@ function assert_result_matches_legacy_terms(result, terms) {
     assert.equal(Filter.canonicalize_operator('Stream'), 'stream');
     assert.equal(Filter.canonicalize_operator('Subject'), 'topic');
 
-    assert.deepEqual(Filter.canonicalize_tuple(['Stream', 'Denmark']), ['stream', 'Denmark']);
+    var term;
+    term = Filter.canonicalize_tuple(['Stream', 'Denmark']);
+    assert.equal(term.operator, 'stream');
+    assert.equal(term.operand, 'Denmark');
 
-    assert.deepEqual(Filter.canonicalize_tuple(['sender', 'me']), ['sender', 'hamlet@zulip.com']);
-    assert.deepEqual(Filter.canonicalize_tuple(['pm-with', 'me']), ['pm-with', 'hamlet@zulip.com']);
+    term = Filter.canonicalize_tuple(['sender', 'me']);
+    assert.equal(term.operator, 'sender');
+    assert.equal(term.operand, 'hamlet@zulip.com');
+
+    term = Filter.canonicalize_tuple(['pm-with', 'me']);
+    assert.equal(term.operator, 'pm-with');
+    assert.equal(term.operand, 'hamlet@zulip.com');
 }());
 
 function get_predicate(operators) {

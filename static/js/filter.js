@@ -103,7 +103,7 @@ Filter.canonicalize_tuple = function (tuple) {
     }
 
     // We may want to consider allowing mixed-case operators at some point
-    return [operator, operand];
+    return filter_term(operator, operand);
 };
 
 
