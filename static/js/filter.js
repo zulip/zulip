@@ -7,6 +7,11 @@ function filter_term(operator, operand) {
     term[0] = operator;
     term[1] = operand;
 
+    // This is the new style we are phasing in.  (Yes, the same
+    // object can be treated like either a tuple or a struct.)
+    term.operator = operator;
+    term.operand = operand;
+
     return term;
 }
 

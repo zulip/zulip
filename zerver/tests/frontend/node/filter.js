@@ -13,6 +13,15 @@ set_global('page_params', {
 });
 
 var Filter = require('js/filter.js');
+var _ = global._;
+
+function assert_result_matches_legacy_terms(result, terms) {
+    result = _.map(result, function (term) {
+        // Return a legacy-style tuple.
+        return [term.operator, term.operand];
+    });
+    assert.deepEqual(result, terms);
+}
 
 (function test_basics() {
     var operators = [['stream', 'foo'], ['topic', 'bar']];
@@ -176,21 +185,26 @@ function get_predicate(operators) {
     var string;
     var operators;
 
+    function _test() {
+        var result = Filter.parse(string);
+        assert_result_matches_legacy_terms(result, operators);
+    }
+
     string ='stream:Foo topic:Bar yo';
     operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
-    assert.deepEqual(Filter.parse(string), operators);
+    _test();
 
     string = 'pm-with:leo+test@zulip.com';
     operators = [['pm-with', 'leo+test@zulip.com']];
-    assert.deepEqual(Filter.parse(string), operators);
+    _test();
 
     string = 'sender:leo+test@zulip.com';
     operators = [['sender', 'leo+test@zulip.com']];
-    assert.deepEqual(Filter.parse(string), operators);
+    _test();
 
     string = 'stream:With+Space';
     operators = [['stream', 'With Space']];
-    assert.deepEqual(Filter.parse(string), operators);
+    _test();
 }());
 
 (function test_unparse() {
