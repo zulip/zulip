@@ -1984,6 +1984,10 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['muted_topics'] = ujson.loads(user_profile.muted_topics)
     if event_types is None or "realm_filters" in event_types:
         state['realm_filters'] = realm_filters_for_domain(user_profile.realm.domain)
+
+    if event_types is None or 'realm' in event_types:
+        state['realm_name'] = user_profile.realm.name
+
     return state
 
 def apply_events(state, events, user_profile):
@@ -2013,6 +2017,9 @@ def apply_events(state, events, user_profile):
                 for obj in state['subscriptions']:
                     if obj['name'].lower() == event['name'].lower():
                         obj[event['property']] = event['value']
+        elif event['type'] == 'realm':
+            field = 'realm_' + event['property']
+            state[field] = event['value']
         elif event['type'] == "subscriptions":
             if event['op'] in ["add"]:
                 # Convert the user_profile IDs to emails since that's what register() returns

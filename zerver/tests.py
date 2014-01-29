@@ -35,7 +35,7 @@ from zerver.lib.actions import check_send_message, gather_subscriptions, \
     do_rename_stream, do_change_stream_description, get_default_streams_for_realm, \
     do_add_default_stream, do_remove_default_stream, \
     do_rename_stream, do_change_stream_description, \
-    do_set_realm_name, get_realm_name, do_deactivate_realm
+    do_set_realm_name, get_realm_name, do_deactivate_realm, do_set_realm_name
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib import cache
@@ -3646,6 +3646,9 @@ class EventsRegisterTest(AuthedTestCase):
 
     def test_change_full_name(self):
         self.do_test(lambda: do_change_full_name(self.user_profile, 'Sir Hamlet'))
+
+    def test_change_realm_name(self):
+        self.do_test(lambda: do_set_realm_name(self.user_profile.realm, 'New Realm Name'))
 
     def test_change_is_admin(self):
         # The first False is probably a noop, then we get transitions in both directions.
