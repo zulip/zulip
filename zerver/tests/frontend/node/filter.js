@@ -172,14 +172,13 @@ function get_predicate(operators) {
 
 }());
 
-(function test_parse_and_unparse() {
-    var string ='stream:Foo topic:Bar yo';
-    var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
+(function test_parse() {
+    var string;
+    var operators;
 
+    string ='stream:Foo topic:Bar yo';
+    operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
     assert.deepEqual(Filter.parse(string), operators);
-
-    string = 'stream:Foo topic:Bar yo';
-    assert.deepEqual(Filter.unparse(operators), string);
 
     string = 'pm-with:leo+test@zulip.com';
     operators = [['pm-with', 'leo+test@zulip.com']];
@@ -192,6 +191,15 @@ function get_predicate(operators) {
     string = 'stream:With+Space';
     operators = [['stream', 'With Space']];
     assert.deepEqual(Filter.parse(string), operators);
+}());
+
+(function test_unparse() {
+    var string;
+    var operators;
+
+    operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
+    string = 'stream:Foo topic:Bar yo';
+    assert.deepEqual(Filter.unparse(operators), string);
 
     operators = [['id', 50]];
     string = 'id:50';
