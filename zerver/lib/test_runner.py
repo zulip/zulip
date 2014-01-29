@@ -1,4 +1,4 @@
-from django.test.simple import DjangoTestSuiteRunner
+from django.test.runner import DiscoverRunner
 
 from zerver.lib.cache import bounce_key_prefix_for_testing
 
@@ -72,11 +72,11 @@ def run_test(test):
 
     test._post_teardown()
 
-class Runner(DjangoTestSuiteRunner):
+class Runner(DiscoverRunner):
     option_list = ()
 
     def __init__(self, *args, **kwargs):
-        DjangoTestSuiteRunner.__init__(self, *args, **kwargs)
+        DiscoverRunner.__init__(self, *args, **kwargs)
 
     def run_suite(self, suite):
         for test in suite:

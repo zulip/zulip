@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-# This is less than ideal, but I couldn't figure out Django's extremely
-# opaque test runner.  We want to split out tests into different files,
-# but it would be even better if we could run the files individually.
-from zerver.test_hooks import * # noqa
-
 from django.test import TestCase
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
