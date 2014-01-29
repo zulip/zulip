@@ -45,7 +45,7 @@ casper.then(function () {
 // Test the inline subscribe and unsubscribe in messages
 casper.then(function () {
     casper.click('a[href^="#"]');
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#$/, 'URL suggests we are on home page');
+    casper.test.assertExists('#home.tab-pane.active', 'home page is active');
 });
 
 // Test an inline subscribe button for an unsubscribed stream

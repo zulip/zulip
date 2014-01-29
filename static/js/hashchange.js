@@ -19,13 +19,23 @@ function decodeHashComponent(str) {
     return decodeURIComponent(str.replace(/\./g, '%'));
 }
 
+function set_hash(hash) {
+    if (history.pushState) {
+        console.log(window.location);
+        // Build a full URL to not have same origin problems
+        var url =  window.location.origin + window.location.pathname + hash;
+        history.pushState(null, null, url);
+    } else {
+        window.location.hash = hash;
+    }
+}
+
 exports.changehash = function (newhash) {
     if (changing_hash) {
         return;
     }
     $(document).trigger($.Event('hashchange.zulip'));
-    expected_hash = newhash;
-    window.location.hash = newhash;
+    set_hash(newhash);
     util.reset_favicon();
 };
 
@@ -115,7 +125,7 @@ function do_hashchange(from_reload) {
         if (operators === undefined) {
             // If the narrow URL didn't parse, clear
             // window.location.hash and send them to the home tab
-            window.location.hash = '';
+            set_hash('');
             activate_home_tab();
             return false;
         }
