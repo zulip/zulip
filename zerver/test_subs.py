@@ -4,10 +4,7 @@ from __future__ import absolute_import
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
-    AuthedTestCase,
-    queries_captured,
-    stub,
-    tornado_redirected_to_list
+    AuthedTestCase, queries_captured, stub, tornado_redirected_to_list
 )
 
 from zerver.decorator import (
@@ -19,27 +16,15 @@ from zerver.lib.test_runner import (
 )
 
 from zerver.models import (
-    get_display_recipient,
-    Message,
-    Realm,
-    Recipient,
-    Stream,
-    Subscription,
+    get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
     UserProfile,
 )
 
 from zerver.lib.actions import (
-    create_stream_if_needed,
-    do_add_default_stream,
-    do_add_subscription,
-    do_change_is_admin,
-    do_remove_default_stream,
-    gather_subscriptions,
-    get_default_streams_for_realm,
-    get_realm,
-    get_stream,
-    get_user_profile_by_email,
-    set_default_streams,
+    create_stream_if_needed, do_add_default_stream, do_add_subscription,
+    do_change_is_admin, do_remove_default_stream, gather_subscriptions,
+    get_default_streams_for_realm, get_realm, get_stream,
+    get_user_profile_by_email, set_default_streams,
 )
 
 import random
