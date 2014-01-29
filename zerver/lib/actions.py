@@ -1955,6 +1955,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
     else:
         want = set(event_types).__contains__
 
+    if want('alert_words'):
+        state['alert_words'] = user_alert_words(user_profile)
+
     if want('message'):
         # The client should use get_old_messages() to fetch messages
         # starting with the max_message_id.  They will get messages
@@ -1965,11 +1968,30 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         else:
             state['max_message_id'] = -1
 
+    if want('muted_topics'):
+        state['muted_topics'] = ujson.loads(user_profile.muted_topics)
+
     if want('pointer'):
         state['pointer'] = user_profile.pointer
 
+    if want('presence'):
+        state['presences'] = get_status_dict(user_profile)
+
+    if want('realm'):
+        state['realm_name'] = user_profile.realm.name
+
+    if want('realm_emoji'):
+        state['realm_emoji'] = user_profile.realm.get_emoji()
+
+    if want('realm_filters'):
+        state['realm_filters'] = realm_filters_for_domain(user_profile.realm.domain)
+
     if want('realm_user'):
         state['realm_users'] = get_realm_user_dicts(user_profile)
+
+    if want('referral'):
+        state['referrals'] = {'granted': user_profile.invites_granted,
+                              'used': user_profile.invites_used}
 
     if want('subscriptions'):
         subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
@@ -1977,32 +1999,10 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['unsubscribed'] = unsubscribed
         state['email_dict'] = email_dict
 
-    if want('presence'):
-        state['presences'] = get_status_dict(user_profile)
-
-    if want('referral'):
-        state['referrals'] = {'granted': user_profile.invites_granted,
-                              'used': user_profile.invites_used}
-
     if want('update_message_flags'):
         # There's no initial data for message flag updates, client will
         # get any updates during a session from get_events()
         pass
-
-    if want('realm_emoji'):
-        state['realm_emoji'] = user_profile.realm.get_emoji()
-
-    if want('alert_words'):
-        state['alert_words'] = user_alert_words(user_profile)
-
-    if want('muted_topics'):
-        state['muted_topics'] = ujson.loads(user_profile.muted_topics)
-
-    if want('realm_filters'):
-        state['realm_filters'] = realm_filters_for_domain(user_profile.realm.domain)
-
-    if want('realm'):
-        state['realm_name'] = user_profile.realm.name
 
     return state
 
