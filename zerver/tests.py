@@ -4519,6 +4519,14 @@ class BugdownTest(TestCase):
             '</p>'
         )
 
+    def test_mit_rendering(self):
+        msg = "**test**"
+        converted = bugdown.convert(msg, "mit.edu/zephyr_mirror")
+        self.assertEqual(
+            converted,
+            "<p>**test**</p>",
+            )
+
 class UserPresenceTests(AuthedTestCase):
     def test_get_empty(self):
         self.login("hamlet@zulip.com")

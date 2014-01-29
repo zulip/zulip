@@ -939,6 +939,8 @@ def maybe_update_realm_filters(domain):
         all_filters['default'] = []
         for domain, filters in all_filters.iteritems():
             make_realm_filters(domain, filters)
+        # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
+        make_realm_filters("mit.edu/zephyr_mirror", [])
     else:
         realm_filters = realm_filters_for_domain(domain)
         if domain not in realm_filter_data or realm_filter_data[domain] != realm_filters:
