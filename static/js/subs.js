@@ -242,7 +242,7 @@ function add_sub_to_table(sub) {
 }
 
 function format_member_list_elem(name, email) {
-    return "<tr><td class='subscriber-name'>" + name + "</td><td class='subscriber-email'>" + (email || '') + "</td></tr>";
+    return templates.render('stream_member_list_entry', {name: name, email: email});
 }
 
 function add_element_to_member_list (tb, elem) {
