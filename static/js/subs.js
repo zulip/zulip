@@ -70,13 +70,13 @@ function update_in_home_view(sub, value) {
     sub.in_home_view = value;
 
     setTimeout(function () {
-        var scroll_offset = viewport.height() / 2, saved_ypos;
+        var msg_offset, saved_ypos;
         // Save our current scroll position
         if (ui.home_tab_obscured()) {
-            saved_ypos = window.scrollY;
+            saved_ypos = viewport.scrollTop();
         } else if (home_msg_list === current_msg_list &&
                    current_msg_list.selected_row().offset() !== null) {
-            scroll_offset = current_msg_list.selected_row().offset().top - viewport.scrollTop();
+            msg_offset = current_msg_list.selected_row().offset().top;
         }
 
         home_msg_list.clear({clear_selected_id: false});
@@ -86,7 +86,7 @@ function update_in_home_view(sub, value) {
 
         // Ensure we're still at the same scroll position
         if (ui.home_tab_obscured()) {
-            window.scrollTo(0, saved_ypos);
+            viewport.scrollTop(saved_ypos);
         } else if (home_msg_list === current_msg_list) {
             // We pass use_closest to handle the case where the
             // currently selected message is being hidden from the
@@ -94,7 +94,7 @@ function update_in_home_view(sub, value) {
             home_msg_list.select_id(home_msg_list.selected_id(),
                                     {use_closest: true, empty_ok: true});
             if (current_msg_list.selected_id() !== -1) {
-                viewport.scrollTop(current_msg_list.selected_row().offset().top - scroll_offset);
+                viewport.set_message_offset(msg_offset);
             }
         }
 
