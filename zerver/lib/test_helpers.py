@@ -203,7 +203,7 @@ class AuthedTestCase(TestCase):
         realm = Realm.objects.get(domain=realm_domain)
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-        subscriptions = Subscription.objects.filter(recipient=recipient)
+        subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
 
         return [subscription.user_profile for subscription in subscriptions]
 

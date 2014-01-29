@@ -511,6 +511,106 @@ class StreamAdminTest(AuthedTestCase):
                                   {'description': ujson.dumps('Test description')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
+    def set_up_stream_for_deletion(self, stream_name, invite_only=False,
+                                   subscribed=True):
+        """
+        Create a stream for deletion by an administrator.
+        """
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        stream, _ = create_stream_if_needed(user_profile.realm, stream_name,
+                                            invite_only=invite_only)
+
+        # For testing deleting streams you aren't on.
+        if subscribed:
+            do_add_subscription(user_profile, stream, no_log=True)
+
+        do_change_is_admin(user_profile, True)
+
+        return stream
+
+    def delete_stream(self, stream, subscribed=True):
+        """
+        Delete the stream and assess the result.
+        """
+        active_name = stream.name
+
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client.delete('/json/streams/' + active_name)
+        self.assert_json_success(result)
+
+        if subscribed:
+            deletion_event = events[0]['event']
+            self.assertEqual(deletion_event, dict(
+                    op='remove',
+                    type='subscriptions',
+                    subscriptions=[{'name': active_name}]
+                    ))
+        else:
+            # You could delete the stream, but you weren't on it so you don't
+            # receive an unsubscription event.
+            self.assertEqual(events, [])
+
+        with self.assertRaises(Stream.DoesNotExist):
+            Stream.objects.get(realm=get_realm("zulip.com"), name=active_name)
+
+        # A deleted stream's name is changed, is deactivated, is invite-only,
+        # and has no subscribers.
+        deactivated_stream_name = "!DEACTIVATED:" + active_name
+        deactivated_stream = Stream.objects.get(name=deactivated_stream_name)
+        self.assertTrue(deactivated_stream.deactivated)
+        self.assertTrue(deactivated_stream.invite_only)
+        self.assertEqual(deactivated_stream.name, deactivated_stream_name)
+        subscribers = self.users_subscribed_to_stream(
+                deactivated_stream_name, "zulip.com")
+        self.assertEqual(subscribers, [])
+
+        # It doesn't show up in the list of public streams anymore.
+        result = self.client.post("/json/get_public_streams")
+        public_streams = [s["name"] for s in ujson.loads(result.content)["streams"]]
+        self.assertNotIn(active_name, public_streams)
+        self.assertNotIn(deactivated_stream_name, public_streams)
+
+        # Even if you could guess the new name, you can't subscribe to it.
+        result = self.client.post(
+            "/json/subscriptions/add",
+            {"subscriptions": ujson.dumps([{"name": deactivated_stream_name}])})
+        self.assert_json_error(
+            result, "Unable to access stream (%s)." % (deactivated_stream_name,))
+
+    def test_delete_public_stream(self):
+        """
+        When an administrator deletes a public stream, that stream is not
+        visible to users at all anymore.
+        """
+        stream = self.set_up_stream_for_deletion("newstream")
+        self.delete_stream(stream)
+
+    def test_delete_private_stream(self):
+        """
+        Administrators can delete private streams they are on.
+        """
+        stream = self.set_up_stream_for_deletion("newstream", invite_only=True)
+        self.delete_stream(stream)
+
+    def test_delete_streams_youre_not_on(self):
+        """
+        Administrators can delete public streams they aren't on, but cannot
+        delete private streams they aren't on.
+        """
+        pub_stream = self.set_up_stream_for_deletion(
+            "pubstream", subscribed=False)
+        self.delete_stream(pub_stream, subscribed=False)
+
+        priv_stream = self.set_up_stream_for_deletion(
+            "privstream", subscribed=False, invite_only=True)
+
+        result = self.client.delete('/json/streams/' + priv_stream.name)
+        self.assert_json_error(
+            result, "Cannot administer invite-only streams this way")
+
 class TestCrossRealmPMs(AuthedTestCase):
     def create_user(self, email):
         username, domain = email.split('@')
