@@ -33,7 +33,10 @@ ALTER ROLE $USERNAME SET search_path TO $SEARCH_PATH;
 EOF
 
 umask go-rw
-echo "*:*:*:$USERNAME:$PASSWORD" >> ~/.pgpass
+PGPASS_LINE="*:*:*:$USERNAME:$PASSWORD"
+if ! $(grep -q "$PGPASS_LINE" ~/.pgpass); then
+    echo $PGPASS_LINE >> ~/.pgpass
+fi
 chmod go-rw ~/.pgpass
 
 psql -h localhost postgres $USERNAME <<EOF
