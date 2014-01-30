@@ -5,6 +5,7 @@ var exports = {};
 var waiting_on_homeview_load = true;
 
 var events_stored_during_tutorial = [];
+var events_stored_while_loading = [];
 
 var get_events_xhr;
 var get_events_timeout;
@@ -33,6 +34,16 @@ function get_events_success(events) {
     if (events_stored_during_tutorial.length > 0) {
         events = events_stored_during_tutorial.concat(events);
         events_stored_during_tutorial = [];
+    }
+
+    if (waiting_on_homeview_load) {
+        events_stored_while_loading = events_stored_while_loading.concat(events);
+        return;
+    }
+
+    if (events_stored_while_loading.length > 0) {
+        events = events_stored_while_loading.concat(events);
+        events_stored_while_loading = [];
     }
 
     _.each(events, function (event) {
@@ -163,7 +174,7 @@ function get_events_success(events) {
     }
 }
 
-exports.get_events = function get_events(options) {
+function get_events(options) {
     options = _.extend({dont_block: false}, options);
 
     exports.get_events_params.pointer = furthest_read;
@@ -226,7 +237,7 @@ exports.get_events = function get_events(options) {
             get_events_timeout = setTimeout(get_events, retry_sec*1000);
         }
     });
-};
+}
 
 exports.assert_get_events_running = function assert_get_events_running(error_message) {
     if (get_events_xhr === undefined && get_events_timeout === undefined) {
@@ -236,17 +247,16 @@ exports.assert_get_events_running = function assert_get_events_running(error_mes
 };
 
 exports.restart_get_events = function restart_get_events(options) {
-    exports.get_events(options);
+    get_events(options);
 };
 
 exports.force_get_events = function force_get_events() {
-    get_events_timeout = setTimeout(exports.get_events, 0);
+    get_events_timeout = setTimeout(get_events, 0);
 };
 
 exports.home_view_loaded = function home_view_loaded() {
     waiting_on_homeview_load = false;
-    exports.get_events();
-
+    get_events_success([]);
     $(document).trigger("home_view_loaded.zulip");
 };
 
@@ -271,6 +281,7 @@ $(function () {
         get_events_failures = 0;
         exports.restart_get_events({dont_block: true});
     });
+    get_events();
 });
 
 function cleanup_event_queue() {
