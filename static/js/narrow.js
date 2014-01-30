@@ -424,9 +424,9 @@ exports.deactivate = function () {
             var first_unread = _.find(current_msg_list.all(), unread.message_unread);
             if (first_unread) {
                 current_msg_list.select_id(first_unread.id, {use_closest: true,
-                                                             then_scroll: true});
+                                                             then_scroll: true, empty_ok: true});
             } else {
-                current_msg_list.select_id(current_msg_list.last().id, {then_scroll: true});
+                current_msg_list.select_id(current_msg_list.last().id, {then_scroll: true, empty_ok: true});
             }
         } else {
             // We narrowed, but only backwards in time (ie no unread were read). Try
