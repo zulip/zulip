@@ -166,7 +166,7 @@ def extract_and_upload_attachments(message):
 def extract_and_validate(email):
     try:
         stream_name, token = decode_email_address(email)
-    except TypeError:
+    except (TypeError, ValueError):
         raise ZulipEmailForwardError("Malformed email recipient " + email)
 
     if not valid_stream(stream_name, token):
