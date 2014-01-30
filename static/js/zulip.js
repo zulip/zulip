@@ -640,7 +640,6 @@ function add_message_metadata(message) {
         }
         return cached_msg;
     }
-    server_events.get_events_params.last = Math.max(server_events.get_events_params.last || 0, message.id);
 
     var involved_people;
 
@@ -1211,9 +1210,6 @@ function main() {
         var old_id = event.old_id, new_id = event.new_id;
         if (furthest_read === old_id) {
             furthest_read = new_id;
-        }
-        if (server_events.get_events_params.pointer === old_id) {
-            server_events.get_events_params.pointer = new_id;
         }
         if (msg_metadata_cache[old_id]) {
             msg_metadata_cache[new_id] = msg_metadata_cache[old_id];

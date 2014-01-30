@@ -10,11 +10,7 @@ var events_stored_while_loading = [];
 var get_events_xhr;
 var get_events_timeout;
 var get_events_failures = 0;
-
-exports.get_events_params = {
-    pointer: -1
-};
-
+var get_events_params = {};
 
 function get_events_success(events) {
     var messages = [];
@@ -22,8 +18,8 @@ function get_events_success(events) {
     var new_pointer;
 
     _.each(events, function (event) {
-        exports.get_events_params.last_event_id = Math.max(exports.get_events_params.last_event_id,
-                                                           event.id);
+        get_events_params.last_event_id = Math.max(get_events_params.last_event_id,
+                                                   event.id);
     });
 
     if (tutorial.is_running()) {
@@ -177,11 +173,10 @@ function get_events_success(events) {
 function get_events(options) {
     options = _.extend({dont_block: false}, options);
 
-    exports.get_events_params.pointer = furthest_read;
-    exports.get_events_params.dont_block = options.dont_block || get_events_failures > 0;
-    if (exports.get_events_params.queue_id === undefined) {
-        exports.get_events_params.queue_id = page_params.event_queue_id;
-        exports.get_events_params.last_event_id = page_params.last_event_id;
+    get_events_params.dont_block = options.dont_block || get_events_failures > 0;
+    if (get_events_params.queue_id === undefined) {
+        get_events_params.queue_id = page_params.event_queue_id;
+        get_events_params.last_event_id = page_params.last_event_id;
     }
 
     if (get_events_xhr !== undefined) {
@@ -193,7 +188,7 @@ function get_events(options) {
     get_events_timeout = undefined;
     get_events_xhr = channel.post({
         url:      '/json/get_events',
-        data:     exports.get_events_params,
+        data:     get_events_params,
         idempotent: true,
         timeout:  page_params.poll_timeout,
         success: function (data) {
