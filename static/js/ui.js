@@ -749,7 +749,7 @@ exports.update_starred = function (message_id, starred) {
 
     mark_message_as_read(message);
 
-    message.starred = message.starred !== true;
+    message.starred = starred;
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
