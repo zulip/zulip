@@ -18,13 +18,15 @@ class zulip_internal::zmirror {
                        ]
   package { $zmirror_packages: ensure => "installed" }
 
-  file { '/etc/apt/sources.list.d/debathena.list':
-    ensure     => file,
-    mode       => 644,
-    owner      => "root",
-    group      => "root",
-    source     => 'puppet:///modules/zulip_internal/debathena.list',
+  apt::sources_list {'debathena':
+    location    => 'http://debathena.mit.edu/apt',
+    release     => 'wheezy',
+    repos       => 'debathena debathena-config',
+    key         => 'D1CD49BDD30B677273A75C66E4EE62700D8A9E8F',
+    key_source  => 'https://debathena.mit.edu/apt/debathena-archive.asc',
+    include_src => true,
   }
+
   file { "/etc/supervisor/conf.d/zmirror.conf":
     require => Package[supervisor],
     ensure => file,
