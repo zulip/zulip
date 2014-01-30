@@ -1,3 +1,5 @@
+var Socket = (function () {
+
 function Socket(url) {
     this.url = url;
     this._is_open = false;
@@ -375,3 +377,6 @@ Socket.prototype = {
         this._save_localstorage_requests();
     }
 };
+
+return Socket;
+}());
