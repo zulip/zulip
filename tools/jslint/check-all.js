@@ -25,7 +25,7 @@ var globals =
     + ' compose compose_fade rows hotkeys narrow reload notifications_bar search subs'
     + ' composebox_typeahead server_events typeahead_helper notifications hashchange'
     + ' invite ui util activity timerender MessageList MessageListView blueslip unread stream_list'
-    + ' message_edit tab_bar emoji popovers navigate settings'
+    + ' message_edit tab_bar emoji popovers navigate people settings'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
     + ' Filter summary admin stream_data muting WinChan muting_ui Socket channel'
 
@@ -53,7 +53,6 @@ var globals =
     // zulip.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'
     + ' add_messages'
-    + ' people_dict people_by_name_dict realm_people_dict'
     + ' keep_pointer_in_view unread_messages_read_in_narrow'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
     + ' scroll_to_selected get_private_message_recipient'
@@ -65,7 +64,6 @@ var globals =
     + ' mark_current_list_as_read message_range message_in_table process_loaded_for_unread'
     + ' mark_all_as_read message_unread process_read_messages unread_in_current_view'
     + ' fast_forward_pointer recent_subjects unread_subjects'
-    + ' add_person_in_realm remove_person update_person'
     + ' furthest_read server_furthest_read update_messages'
     + ' add_message_metadata'
     + ' mark_message_as_read batched_flag_updater'
@@ -74,7 +72,7 @@ var globals =
     + ' suppress_unread_counts'
     + ' msg_metadata_cache'
     + ' report_as_received'
-    + ' insert_new_messages process_message_for_recent_subjects reify_person'
+    + ' insert_new_messages process_message_for_recent_subjects'
     ;
 
 

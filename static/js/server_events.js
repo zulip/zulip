@@ -63,11 +63,11 @@ function get_events_success(events) {
             break;
         case 'realm_user':
             if (event.op === 'add') {
-                add_person_in_realm(event.person);
+                people.add_in_realm(event.person);
             } else if (event.op === 'remove') {
-                remove_person(event.person);
+                people.remove(event.person);
             } else if (event.op === 'update') {
-                update_person(event.person);
+                people.update(event.person);
             }
             break;
         case 'stream':

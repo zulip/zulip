@@ -1,17 +1,23 @@
 var assert = require('assert');
 
-add_dependencies({
-    _: 'third/underscore/underscore.js',
-    util: 'js/util.js',
-    Dict: 'js/dict.js'
-});
-
 set_global('$', function () {
     return {
         on: function () {
             return;
         }
     };
+});
+$.fn = {};
+$.fn.expectOne = function () {
+    assert(this.length === 1);
+    return this;
+};
+
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js',
+    Dict: 'js/dict.js',
+    people: 'js/people.js'
 });
 
 set_global('document', {
@@ -20,7 +26,8 @@ set_global('document', {
     }
 });
 
-set_global('people_dict', new global.Dict.from({
+var people = require("js/people.js");
+people.test_set_people_dict({
     'alice@zulip.com': {
         full_name: 'Alice Smith'
     },
@@ -36,7 +43,7 @@ set_global('people_dict', new global.Dict.from({
     'norbert@zulip.com': {
         full_name: 'Norbert Oswald'
     }
-}));
+});
 
 var activity = require('js/activity.js');
 

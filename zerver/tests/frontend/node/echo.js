@@ -10,6 +10,7 @@ add_dependencies({
     marked: 'third/marked/lib/marked.js',
     Dict: 'js/dict.js',
     emoji: 'js/emoji.js',
+    people: 'js/people.js',
     fenced_code: 'js/fenced_code.js'
 });
 
@@ -35,7 +36,8 @@ set_global('page_params', {
 
 set_global('feature_flags', {local_echo: true});
 
-set_global('people_by_name_dict', Dict.from({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}}));
+var people = require("js/people.js");
+people.test_set_people_name_dict({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}});
 
 var echo = require('js/echo.js');
 

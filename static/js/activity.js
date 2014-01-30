@@ -67,7 +67,7 @@ exports.full_huddle_name = function (huddle) {
     var emails = huddle.split(',');
 
     var names = _.map(emails, function (email) {
-        var person = people_dict.get(email);
+        var person = people.get_by_email(email);
         return person ? person.full_name : email;
     });
 
@@ -79,7 +79,7 @@ exports.short_huddle_name = function (huddle) {
 
     var num_to_show = 3;
     var names = _.map(emails.slice(0, num_to_show), function (email) {
-        var person = people_dict.get(email);
+        var person = people.get_by_email(email);
         return person ? person.full_name : email;
     });
     var others = emails.length - num_to_show;
@@ -127,11 +127,11 @@ function sort_users(users, presence_info) {
         // Sort equivalent PM names alphabetically
         var full_name_a = a;
         var full_name_b = b;
-        if (people_dict.has(a)) {
-            full_name_a = people_dict.get(a).full_name;
+        if (people.get_by_email(a)) {
+            full_name_a = people.get_by_email(a).full_name;
         }
-        if (people_dict.has(b)) {
-            full_name_b = people_dict.get(b).full_name;
+        if (people.get_by_email(b)) {
+            full_name_b = people.get_by_email(b).full_name;
         }
         return util.strcmp(full_name_a, full_name_b);
     });
@@ -163,7 +163,7 @@ function filter_users_by_search(users) {
     });
 
     var filtered_users = _.filter(users, function (user) {
-        var person = people_dict.get(user);
+        var person = people.get_by_email(user);
         if (!person || !person.full_name) {
             return false;
         }
@@ -189,7 +189,7 @@ function actually_update_users() {
     var users = Object.keys(presence_info);
     users = filter_users_by_search(users);
     users = _.filter(users, function (email) {
-        return people_dict.has(email);
+        return people.get_by_email(email);
     });
 
     users = sort_users(users, presence_info);
@@ -208,7 +208,7 @@ function actually_update_users() {
     function info_for(email) {
         var presence = presence_info[email];
         return {
-            name: people_dict.get(email).full_name,
+            name: people.get_by_email(email).full_name,
             email: email,
             num_unread: get_num_unread(email),
             type: presence,

@@ -548,17 +548,6 @@ function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
     });
 }
 
-function people_cmp(person1, person2) {
-    // Compares objects of the form used in people_list.
-    var name_cmp = util.strcmp(person1.full_name, person2.full_name);
-    if (name_cmp < 0) {
-        return -1;
-    } else if (name_cmp > 0) {
-        return 1;
-    }
-    return util.strcmp(person1.email, person2.email);
-}
-
 // Within the new stream modal...
 function update_announce_stream_state() {
     // If the stream is invite only, or everyone's added, disable
@@ -579,16 +568,8 @@ function update_announce_stream_state() {
 }
 
 function show_new_stream_modal() {
-    var people_minus_you_and_internal_users = [];
-    realm_people_dict.each(function (person) {
-        if (person.email !== page_params.email) {
-            people_minus_you_and_internal_users.push({"email": person.email,
-                "full_name": person.full_name});
-        }
-    });
-
     $('#people_to_add').html(templates.render('new_stream_users', {
-        users: people_minus_you_and_internal_users.sort(people_cmp)
+        users: people.get_rest_of_realm()
     }));
 
     // Make the options default to the same each time:
@@ -797,7 +778,7 @@ $(function () {
                     // mark_subscribed adds the user to the member list
                     mark_subscribed(stream);
                 } else {
-                    add_to_member_list(list, people_dict.get(principal).full_name, principal);
+                    add_to_member_list(list, people.get_by_email(principal).full_name, principal);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -961,11 +942,11 @@ $(function () {
             success: function (data) {
                 util.destroy_loading_indicator(indicator_elem);
                 var subscribers = _.map(data.subscribers, function (elem) {
-                    var person = people_dict.get(elem);
+                    var person = people.get_by_email(elem);
                     if (person === undefined) {
                         return elem;
                     }
-                    return format_member_list_elem(people_dict.get(elem).full_name, elem);
+                    return format_member_list_elem(people.get_by_email(elem).full_name, elem);
                 });
                 _.each(subscribers.sort().reverse(), function (elem) {
                     // add_element_to_member_list *prepends* the element,

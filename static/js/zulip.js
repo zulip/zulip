@@ -12,13 +12,6 @@ var home_msg_list = new MessageList('zhome',
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
 
-// The following three Dicts point to the same objects
-// All people we've seen
-var people_dict = new Dict();
-var people_by_name_dict = new Dict();
-// People in this realm
-var realm_people_dict = new Dict();
-
 var recent_subjects = new Dict({fold_case: true});
 
 var queued_mark_as_read = [];
@@ -45,93 +38,6 @@ var pointer_update_in_flight = false;
 var suppress_unread_counts = true;
 
 var waiting_on_browser_scroll = true;
-
-function add_person(person, in_realm) {
-    page_params.people_list.push(person);
-    people_dict.set(person.email, person);
-    people_by_name_dict.set(person.full_name, person);
-    person.pm_recipient_count = 0;
-}
-
-function add_person_in_realm(person) {
-    realm_people_dict.set(person.email, person);
-    add_person(person);
-}
-
-function remove_person(person) {
-    var i;
-    for (i = 0; i < page_params.people_list.length; i++) {
-        if (page_params.people_list[i].email === person.email) {
-            page_params.people_list.splice(i, 1);
-            break;
-        }
-    }
-    people_dict.del(person.email);
-    people_by_name_dict.del(person.full_name);
-    realm_people_dict.del(person.email);
-}
-
-function reify_person(person) {
-    // If a locally sent message is a PM to
-    // an out-of-realm recipient, a people_dict
-    // entry is created with simply an email address
-    // Once we've received the full person object, replace
-    // it
-    if (! people_dict.has(person.email)) {
-        return;
-    }
-
-    var old_person = people_dict.get(person.email);
-    var old_idx = page_params.people_list.indexOf(old_person);
-
-    var new_person = _.extend({}, old_person, person);
-    people_dict.set(person.email, person);
-    people_by_name_dict.set(person.full_name, person);
-    page_params.people_list[old_idx] = new_person;
-
-    if (people_by_name_dict.has(person.email)) {
-        people_by_name_dict.del(person.email);
-    }
-}
-
-function update_person(person) {
-    // Currently the only attribute that can change is full_name, so
-    // we just push out changes to that field.  As we add more things
-    // that can change, this will need to either get complicated or be
-    // replaced by MVC
-    if (! people_dict.has(person.email)) {
-        blueslip.error("Got update_person event for unexpected user",
-                       {email: person.email});
-        return;
-    }
-    var person_obj = people_dict.get(person.email);
-
-    if (_.has(person, 'full_name')) {
-        if (people_by_name_dict.has(person_obj.full_name)) {
-            people_by_name_dict.set(person.full_name, person_obj);
-            people_by_name_dict.del(person_obj.full_name);
-        }
-
-        person_obj.full_name = person.full_name;
-
-        if (person.email === page_params.email) {
-            page_params.fullname = person.full_name;
-        }
-    }
-
-    if (_.has(person, 'is_admin')) {
-        person_obj.is_admin = person.is_admin;
-
-        if (person.email === page_params.email) {
-            page_params.is_admin = person.is_admin;
-            admin.show_or_hide_menu_item();
-        }
-    }
-
-    activity.set_user_statuses([]);
-
-    // TODO: update sender names on messages
-}
 
 function within_viewport(row_offset, row_height) {
     // Returns true if a message is fully within the effectively visible
@@ -683,17 +589,17 @@ function add_message_metadata(message) {
     _.each(involved_people, function (person) {
         // Do the hasOwnProperty() call via the prototype to avoid problems
         // with keys like "hasOwnProperty"
-        if (! people_dict.has(person.email)) {
-            add_person(person);
+        if (! people.get_by_email(person.email)) {
+            people.add(person);
         }
 
-        if (people_dict.get(person.email).full_name !== person.full_name) {
-            reify_person(person);
+        if (people.get_by_email(person.email).full_name !== person.full_name) {
+            people.reify(person);
         }
 
         if (message.type === 'private' && message.sent_by_me) {
             // Track the number of PMs we've sent to this person to improve autocomplete
-            people_dict.get(person.email).pm_recipient_count += 1;
+            people.get_by_email(person.email).pm_recipient_count += 1;
         }
     });
 
@@ -1088,20 +994,6 @@ function consider_bankruptcy() {
     } else {
         enable_unread_counts();
     }
-}
-
-_.each(page_params.people_list, function (person) {
-    people_dict.set(person.email, person);
-    people_by_name_dict.set(person.full_name, person);
-    realm_people_dict.set(person.email, person);
-    person.pm_recipient_count = 0;
-});
-
-// The special account feedback@zulip.com is used for in-app
-// feedback and should always show up as an autocomplete option.
-if (! people_dict.has('feedback@zulip.com')){
-    add_person({"email": "feedback@zulip.com",
-                "full_name": "Zulip Feedback Bot"});
 }
 
 function main() {

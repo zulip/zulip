@@ -149,7 +149,7 @@ function insert_local_message(message_request, local_id) {
         var emails = message_request.private_message_recipient.split(',');
         message.display_recipient = _.map(emails, function (email) {
             email = email.trim();
-            var person = people_dict.get(email);
+            var person = people.get_by_email(email);
             if (person !== undefined) {
                 return person;
             }
@@ -239,8 +239,8 @@ exports.process_from_server = function process_from_server(messages) {
                 if (client_message.display_reply_to !== reply_to) {
                     client_message.display_reply_to = reply_to;
                     _.each(message.display_recipient, function (person) {
-                        if (people_dict.get(person.email).full_name !== person.full_name) {
-                            reify_person(person);
+                        if (people.get_by_email(person.email).full_name !== person.full_name) {
+                            people.reify(person);
                         }
                     });
                     updated = true;
@@ -308,8 +308,8 @@ function handleEmoji(emoji_name) {
 }
 
 function handleUserMentions(username) {
-    if (people_by_name_dict.get(username)) {
-        var person = people_by_name_dict.get(username);
+    var person = people.get_by_name(username);
+    if (person !== undefined) {
         return '<span class="user-mention" data-user-email="' + person.email + '">' +
                 '@' + person.full_name + '</span>';
     } else if (username === 'all' || username === 'everyone') {
