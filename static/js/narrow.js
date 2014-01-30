@@ -49,11 +49,11 @@ function collect_single(operators) {
     var seen   = new Dict();
     var result = new Dict();
     _.each(operators, function (elem) {
-        var key = elem[0];
+        var key = elem.operator;
         if (seen.has(key)) {
             result.del(key);
         } else {
-            result.set(key, elem[1]);
+            result.set(key, elem.operand);
             seen.set(key, true);
         }
     });
