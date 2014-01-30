@@ -320,7 +320,7 @@ function message_range(msg_list, start, end) {
     return all.slice(start_idx, end_idx + 1);
 }
 
-function batched_flag_updater(flag, op) {
+function batched_flag_updater(flag, op, immediate) {
     var queue = [];
     var on_success;
     var start;
@@ -349,7 +349,11 @@ function batched_flag_updater(flag, op) {
         });
     }
 
-    start = _.debounce(server_request, 1000);
+    if (immediate) {
+        start = server_request;
+    } else {
+        start = _.debounce(server_request, 1000);
+    }
 
     on_success = function on_success(data, status, jqXHR) {
         if (data ===  undefined || data.messages === undefined) {

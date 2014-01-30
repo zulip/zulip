@@ -697,7 +697,7 @@ function sync_message_flag(messages, flag_name, set_flag) {
     if (batched_updaters.hasOwnProperty(flag_key)) {
         updater = batched_updaters[flag_key];
     } else {
-        updater = batched_flag_updater(flag_name, op);
+        updater = batched_flag_updater(flag_name, op, true);
         batched_updaters[flag_key] = updater;
     }
 
