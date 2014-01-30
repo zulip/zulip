@@ -1143,12 +1143,34 @@ def json_remove_subscriptions(request, user_profile):
 
 @has_request_variables
 def remove_subscriptions_backend(request, user_profile,
-                                 streams_raw = REQ("subscriptions", validator=check_list(check_string))):
+                                 streams_raw = REQ("subscriptions", validator=check_list(check_string)),
+                                 principals = REQ(validator=check_list(check_string), default=None)):
+
+    removing_someone_else = principals and \
+        set(principals) != set((user_profile.email,))
+    if removing_someone_else and not user_profile.is_admin():
+        # You can only unsubscribe other people from a stream if you are a realm
+        # admin.
+        return json_error("This action requires administrative rights")
 
     streams, _ = list_to_streams(streams_raw, user_profile)
 
+    for stream in streams:
+        if removing_someone_else and stream.invite_only and \
+                not subscribed_to_stream(user_profile, stream):
+            # Even as an admin, you can't remove other people from an
+            # invite-only stream you're not on.
+            return json_error("Cannot administer invite-only streams this way")
+
+    if principals:
+        people_to_unsub = set(principal_to_user_profile(
+                user_profile, principal) for principal in principals)
+    else:
+        people_to_unsub = [user_profile]
+
     result = dict(removed=[], not_subscribed=[])
-    (removed, not_subscribed) = bulk_remove_subscriptions([user_profile], streams)
+    (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams)
+
     for (subscriber, stream) in removed:
         result["removed"].append(stream.name)
     for (subscriber, stream) in not_subscribed:
