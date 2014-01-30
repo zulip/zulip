@@ -183,7 +183,7 @@ Socket.prototype = {
                 // If this is a reconnect, network was probably
                 // recently interrupted, so we optimistically restart
                 // get_updates
-                restart_get_updates();
+                server_events.restart_get_updates();
             }
             that._is_open = true;
 

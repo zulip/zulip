@@ -23,7 +23,7 @@ var globals =
 
     // Modules, defined in their respective files.
     + ' compose compose_fade rows hotkeys narrow reload notifications_bar search subs'
-    + ' composebox_typeahead typeahead_helper notifications hashchange'
+    + ' composebox_typeahead server_events typeahead_helper notifications hashchange'
     + ' invite ui util activity timerender MessageList MessageListView blueslip unread stream_list'
     + ' message_edit tab_bar emoji popovers navigate settings'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
@@ -59,19 +59,21 @@ var globals =
     + ' scroll_to_selected get_private_message_recipient'
     + ' load_old_messages enable_unread_counts'
     + ' at_top_of_viewport at_bottom_of_viewport within_viewport'
-    + ' process_visible_unread_messages viewport restart_get_updates force_get_updates'
+    + ' process_visible_unread_messages mark_messages_as_read viewport '
     + ' load_more_messages reset_load_more_status have_scrolled_away_from_top'
     + ' maybe_scroll_to_selected recenter_pointer_on_display suppress_scroll_pointer_update'
     + ' mark_current_list_as_read message_range message_in_table process_loaded_for_unread'
     + ' mark_all_as_read message_unread process_read_messages unread_in_current_view'
     + ' fast_forward_pointer recent_subjects unread_subjects'
+    + ' add_person_in_realm remove_person update_person'
+    + ' furthest_read server_furthest_read update_messages'
     + ' add_message_metadata'
     + ' mark_message_as_read batched_flag_updater'
     + ' send_summarize_in_home'
     + ' send_summarize_in_stream'
     + ' suppress_unread_counts'
     + ' msg_metadata_cache'
-    + ' get_updates_xhr get_updates_timeout report_as_received'
+    + ' report_as_received'
     + ' insert_new_messages process_message_for_recent_subjects reify_person'
     ;
 

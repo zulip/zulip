@@ -1591,7 +1591,7 @@ $(function () {
         $('#logout_form').submit();
     });
     $('.restart_get_updates_button').click(function (e) {
-        restart_get_updates({dont_block: true});
+        server_events.restart_get_updates({dont_block: true});
     });
 
     $('#api_key_button').click(function (e) {
