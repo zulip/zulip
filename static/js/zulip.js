@@ -911,27 +911,27 @@ function insert_new_messages(messages) {
     stream_list.update_streams_sidebar();
 }
 
-function get_updates_success(data) {
+function get_updates_success(events) {
     var messages = [];
     var messages_to_update = [];
     var new_pointer;
 
-    _.each(data.events, function (event) {
+    _.each(events, function (event) {
         get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
                                                     event.id);
     });
 
     if (tutorial.is_running()) {
-        events_stored_during_tutorial = events_stored_during_tutorial.concat(data.events);
+        events_stored_during_tutorial = events_stored_during_tutorial.concat(events);
         return;
     }
 
     if (events_stored_during_tutorial.length > 0) {
-        data.events = events_stored_during_tutorial.concat(data.events);
+        events = events_stored_during_tutorial.concat(events);
         events_stored_during_tutorial = [];
     }
 
-    _.each(data.events, function (event) {
+    _.each(events, function (event) {
         switch (event.type) {
         case 'message':
             var msg = event.message;
@@ -1088,7 +1088,7 @@ function get_updates(options) {
             get_updates_failures = 0;
             $('#connection-error').hide();
 
-            get_updates_success(data);
+            get_updates_success(data.events);
             get_updates_timeout = setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
