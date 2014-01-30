@@ -60,6 +60,95 @@ function message_in_home(message) {
     return stream_data.in_home_view(message.stream);
 }
 
+function message_matches_search_term(message, operator, operand) {
+    switch (operator) {
+    case 'is':
+        if (operand === 'private') {
+            if (message.type !== 'private') {
+                return false;
+            }
+        } else if (operand === 'starred') {
+            if (!message.starred) {
+                return false;
+            }
+        } else if (operand === 'mentioned') {
+            if (!message.mentioned) {
+                return false;
+            }
+        } else if (operand === 'alerted') {
+            if (!message.alerted) {
+                return false;
+            }
+        }
+
+        break;
+
+    case 'in':
+        if (operand === 'home') {
+            return message_in_home(message);
+        }
+        else if (operand === 'all') {
+            break;
+        }
+        break;
+
+    case 'near':
+        break;
+
+    case 'id':
+        if (message.id.toString() !== operand) {
+            return false;
+        }
+        break;
+
+    case 'stream':
+        if (message.type !== 'stream') {
+            return false;
+        }
+
+        operand = operand.toLowerCase();
+        if (page_params.domain === "mit.edu") {
+            if (!mit_edu_stream_name_match(message, operand)) {
+                return false;
+            }
+        } else if (message.stream.toLowerCase() !== operand) {
+            return false;
+        }
+        break;
+
+    case 'topic':
+        if (message.type !== 'stream') {
+            return false;
+        }
+
+        operand = operand.toLowerCase();
+        if (page_params.domain === "mit.edu") {
+            if (!mit_edu_topic_name_match(message, operand)) {
+                return false;
+            }
+        } else if (message.subject.toLowerCase() !== operand) {
+            return false;
+        }
+        break;
+
+    case 'sender':
+        if ((message.sender_email.toLowerCase() !== operand)) {
+            return false;
+        }
+        break;
+
+    case 'pm-with':
+        if ((message.type !== 'private') ||
+            message.reply_to.toLowerCase() !== operand.split(',').sort().join(',')) {
+            return false;
+        }
+        break;
+    }
+
+    return true;
+}
+
+
 function Filter(operators) {
     if (operators === undefined) {
         this._operators = [];
@@ -254,92 +343,7 @@ Filter.prototype = {
 
         return function (message) {
             return _.all(operators, function (term) {
-                var operand = term.operand;
-                switch (term.operator) {
-                case 'is':
-                    if (operand === 'private') {
-                        if (message.type !== 'private') {
-                            return false;
-                        }
-                    } else if (operand === 'starred') {
-                        if (!message.starred) {
-                            return false;
-                        }
-                    } else if (operand === 'mentioned') {
-                        if (!message.mentioned) {
-                            return false;
-                        }
-                    } else if (operand === 'alerted') {
-                        if (!message.alerted) {
-                            return false;
-                        }
-                    }
-
-                    break;
-
-                case 'in':
-                    if (operand === 'home') {
-                        return message_in_home(message);
-                    }
-                    else if (operand === 'all') {
-                        break;
-                    }
-                    break;
-
-                case 'near':
-                    break;
-
-                case 'id':
-                    if (message.id.toString() !== operand) {
-                        return false;
-                    }
-                    break;
-
-                case 'stream':
-                    if (message.type !== 'stream') {
-                        return false;
-                    }
-
-                    operand = operand.toLowerCase();
-                    if (page_params.domain === "mit.edu") {
-                        if (!mit_edu_stream_name_match(message, operand)) {
-                            return false;
-                        }
-                    } else if (message.stream.toLowerCase() !== operand) {
-                        return false;
-                    }
-                    break;
-
-                case 'topic':
-                    if (message.type !== 'stream') {
-                        return false;
-                    }
-
-                    operand = operand.toLowerCase();
-                    if (page_params.domain === "mit.edu") {
-                        if (!mit_edu_topic_name_match(message, operand)) {
-                            return false;
-                        }
-                    } else if (message.subject.toLowerCase() !== operand) {
-                        return false;
-                    }
-                    break;
-
-                case 'sender':
-                    if ((message.sender_email.toLowerCase() !== operand)) {
-                        return false;
-                    }
-                    break;
-
-                case 'pm-with':
-                    if ((message.type !== 'private') ||
-                        message.reply_to.toLowerCase() !== operand.split(',').sort().join(',')) {
-                        return false;
-                    }
-                    break;
-                }
-
-                return true;
+                return message_matches_search_term(message, term.operator, term.operand);
             });
         };
     }
