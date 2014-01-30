@@ -242,7 +242,9 @@ function add_sub_to_table(sub) {
 }
 
 function format_member_list_elem(name, email) {
-    return templates.render('stream_member_list_entry', {name: name, email: email});
+    return templates.render('stream_member_list_entry',
+                            {name: name, email: email,
+                             displaying_for_admin: page_params.is_admin});
 }
 
 function add_element_to_member_list (tb, elem) {
@@ -591,7 +593,15 @@ exports.invite_user_to_stream = function (user_email, stream_name, success, fail
     });
 };
 
-
+exports.remove_user_from_stream = function (user_email, stream_name, success, failure) {
+    return channel.post({
+        url: "/json/subscriptions/remove",
+        data: {"subscriptions": JSON.stringify([stream_name]),
+               "principals": JSON.stringify([user_email])},
+        success: success,
+        error: failure
+    });
+};
 
 function inline_emails_into_subscriber_list(subs, email_dict) {
     // When we get subscriber lists from the back end, they are sent as user ids to
@@ -792,6 +802,44 @@ $(function () {
         }
 
         exports.invite_user_to_stream(principal, stream, invite_success, invite_failure);
+    });
+
+    $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
+        e.preventDefault();
+
+        var list_entry = $(e.target).closest("tr");
+        var principal = list_entry.children(".subscriber-email").text();
+        var sub_row = $(e.target).closest('.subscription_row');
+        var stream_name = sub_row.find('.subscription_name').text();
+        var error_elem = sub_row.find('.subscriber_list_container .alert-error');
+        var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
+
+        function removal_success(data) {
+            if (data.removed.length > 0) {
+                error_elem.addClass("hide");
+                warning_elem.addClass("hide");
+
+                // Remove the user from the subscriber list.
+                list_entry.remove();
+
+                if (principal === page_params.email) {
+                    // If you're unsubscribing yourself, mark whole
+                    // stream entry as you being unsubscribed.
+                    mark_unsubscribed(stream_name);
+                }
+            } else {
+                error_elem.addClass("hide");
+                warning_elem.removeClass("hide").text("User already not subscribed");
+            }
+        }
+
+        function removal_failure(xhr) {
+            warning_elem.addClass("hide");
+            error_elem.removeClass("hide").text("Could not remove user from this stream");
+        }
+
+        exports.remove_user_from_stream(principal, stream_name, removal_success,
+                                        removal_failure);
     });
 
     $("#subscriptions_table").on("submit", ".rename-stream form", function (e) {

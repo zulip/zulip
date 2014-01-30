@@ -2525,6 +2525,10 @@ div.floating_recipient {
     margin-left: 5px;
 }
 
+.remove-subscriber-form {
+    margin: 0px 0px 0px 0px;
+}
+
 .modal {
     overflow: hidden;
     margin-top: 0;

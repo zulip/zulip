@@ -91,7 +91,8 @@ function render(template_name, args) {
 
     // Now, as admin.
     html = render('stream_member_list_entry',
-                  {name: "King Hamlet", email: "hamlet@zulip.com", admin: true});
+                  {name: "King Hamlet", email: "hamlet@zulip.com",
+                   displaying_for_admin: true});
     _.each(everyone_items, function (item) {
         assert.equal($(html).find("." + item).length, 1);
     });
