@@ -1,5 +1,14 @@
 var Socket = (function () {
 
+var CLOSE_REASONS = {
+    'none_given':   {code: 4000, msg: "No reason provided"},
+    'no_heartbeat': {code: 4001, msg: "Missed too many heartbeats"},
+    'auth_fail':    {code: 4002, msg: "Authentication failed"},
+    'ack_timeout':  {code: 4003, msg: "ACK timeout"},
+    'cant_send':    {code: 4004, msg: "User attempted to send while Socket was not ready"},
+    'unsuspend':    {code: 4005, msg: "Got unsuspend event"}
+};
+
 function Socket(url) {
     this.url = url;
     this._is_open = false;
@@ -20,7 +29,7 @@ function Socket(url) {
     });
 
     $(document).on("unsuspend", function () {
-        that._try_to_reconnect();
+        that._try_to_reconnect({reason: 'unsuspend'});
     });
 
     // Notify any listeners that we've restored these requests from localstorage
@@ -62,7 +71,7 @@ Socket.prototype = {
         this._save_request(request);
 
         if (! this._can_send()) {
-            this._try_to_reconnect();
+            this._try_to_reconnect({reason: 'cant_send'});
             return;
         }
 
@@ -93,7 +102,7 @@ Socket.prototype = {
         var that = this;
         this._requests[request.req_id].ack_timeout_id = setTimeout(function () {
             blueslip.info("Timeout on ACK for request " + request.req_id);
-            that._try_to_reconnect();
+            that._try_to_reconnect({reason: 'ack_timeout'});
         }, 2000);
 
         try {
@@ -222,7 +231,8 @@ Socket.prototype = {
                 request.error = function (type, resp) {
                   blueslip.info("Could not authenticate with server: " + resp.msg);
                   that._connection_failures++;
-                  that._try_to_reconnect({wait_time: that._reconnect_wait_time()});
+                  that._try_to_reconnect({reason: 'auth_fail',
+                                          wait_time: that._reconnect_wait_time()});
                 };
                 that._save_request(request);
                 that._do_send(request);
@@ -245,7 +255,7 @@ Socket.prototype = {
             that._heartbeat_timeout_id = setTimeout(function () {
                 that._heartbeat_timeout_id = null;
                 blueslip.info("Missed too many hearbeats");
-                that._try_to_reconnect();
+                that._try_to_reconnect({reason: 'no_heartbeat'});
             }, 60000);
         };
 
@@ -260,6 +270,7 @@ Socket.prototype = {
                           + " (" + event.code.toString() + ", " + event.reason + ")");
             that._connection_failures++;
             that._is_reconnecting = false;
+            // We don't need to specify a reason because the Socket is already closed
             that._try_to_reconnect({wait_time: that._reconnect_wait_time()});
         };
     },
@@ -275,7 +286,7 @@ Socket.prototype = {
     },
 
     _try_to_reconnect: function Socket__try_to_reconnect(opts) {
-        opts = _.extend({wait_time: 0}, opts);
+        opts = _.extend({wait_time: 0, reason: 'none_given'}, opts);
         var that = this;
 
         var now = (new Date()).getTime();
@@ -313,7 +324,8 @@ Socket.prototype = {
         // This is a little weird because we're also called from the SockJS
         // onclose handler.  Fortunately, close() does nothing on an
         // already-closed SockJS object.
-        this._sockjs.close();
+        var close_reason = CLOSE_REASONS[opts.reason];
+        this._sockjs.close(close_reason.code, close_reason.msg);
 
         this._reconnect_timeout_id = setTimeout(function () {
             that._reconnect_timeout_id = null;
