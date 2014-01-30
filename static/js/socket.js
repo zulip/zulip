@@ -247,14 +247,15 @@ Socket.prototype = {
             }, 60000);
         };
 
-        sockjs.onclose = function Socket__sockjs_onclose() {
+        sockjs.onclose = function Socket__sockjs_onclose(event) {
             if (that._is_unloading) {
                 return;
             }
             // We've failed to handshake, but notify that the attempt finished
             $(document).trigger($.Event('websocket_postopen.zulip', {}));
 
-            blueslip.info("SockJS connection lost.  Attempting to reconnect soon.");
+            blueslip.info("SockJS connection lost.  Attempting to reconnect soon."
+                          + " (" + event.code.toString() + ", " + event.reason + ")");
             that._connection_failures++;
             that._is_reconnecting = false;
             that._try_to_reconnect(that._reconnect_wait_time());
