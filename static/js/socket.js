@@ -355,7 +355,14 @@ Socket.prototype = {
             }
         });
 
-        window.localStorage[this._localstorage_requests_key] = JSON.stringify(non_auth_reqs);
+        try {
+            window.localStorage[this._localstorage_requests_key] = JSON.stringify(non_auth_reqs);
+        } catch (e) {
+            // We can't catch a specific exception type, because browsers return different types
+            // for out of space errors. See http://chrisberkhout.com/blog/localstorage-errors/ for
+            // more details.
+            blueslip.warn("Failed to save to local storage, caught exception when saving " + e);
+        }
     },
 
     _save_request: function Socket__save_request(request) {
