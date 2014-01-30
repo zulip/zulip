@@ -244,11 +244,8 @@ exports.force_get_events = function force_get_events() {
 };
 
 exports.home_view_loaded = function home_view_loaded() {
-    if (!waiting_on_homeview_load) {
-        return;
-    }
-
     waiting_on_homeview_load = false;
+    exports.get_events();
 
     $(document).trigger("home_view_loaded.zulip");
 };

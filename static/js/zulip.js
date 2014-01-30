@@ -965,10 +965,6 @@ function get_old_messages_success(data, opts) {
 
     process_result(data.messages, opts);
     ui.resize_bottom_whitespace();
-
-    if (opts.msg_list === home_msg_list) {
-        server_events.home_view_loaded();
-    }
 }
 
 function load_old_messages(opts) {
@@ -1182,8 +1178,8 @@ function main() {
                 return;
             }
         }
-        // now start subscribing to updates
-        server_events.get_events();
+
+        server_events.home_view_loaded();
 
         // backfill more messages after the user is idle
         var backfill_batch_size = 1000;
@@ -1209,7 +1205,6 @@ function main() {
         });
     } else {
         server_events.home_view_loaded();
-        server_events.get_events();
     }
 
     $(document).on('message_id_changed', function (event) {
