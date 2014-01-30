@@ -289,6 +289,7 @@ class AuthedTestCase(TestCase):
         # We have a msg key for consistency with errors, but it typically has an
         # empty value.
         self.assertIn("msg", json)
+        return json
 
     def get_json_error(self, result):
         self.assertEqual(result.status_code, 400)
