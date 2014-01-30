@@ -115,7 +115,7 @@ exports._add_message_flags = add_message_flags;
 function get_next_local_id() {
     var local_id_increment = 0.01;
     var latest = page_params.max_message_id;
-    if (typeof all_msg_list !== 'undefined') {
+    if (typeof all_msg_list !== 'undefined' && all_msg_list.last() !== undefined) {
         latest = all_msg_list.last().id;
     }
     return truncate_precision(latest + local_id_increment);
