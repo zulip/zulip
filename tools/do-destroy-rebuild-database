@@ -1,6 +1,9 @@
 #!/bin/sh -xe
 
-echo "DROP SCHEMA zulip CASCADE; CREATE SCHEMA zulip;" | python manage.py dbshell
+psql -h localhost postgres zulip <<EOF
+DROP DATABASE IF EXISTS zulip;
+CREATE DATABASE zulip TEMPLATE zulip_base;
+EOF
 
 python manage.py syncdb --noinput
 python manage.py migrate

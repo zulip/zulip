@@ -21,7 +21,11 @@ fi
 
 mkdir -p zerver/fixtures
 
-echo "DROP SCHEMA zulip CASCADE; CREATE SCHEMA zulip;" | python manage.py dbshell --settings=zproject.test_settings
+psql -h localhost postgres zulip_test <<EOF
+DROP DATABASE IF EXISTS zulip_test;
+CREATE DATABASE zulip_test TEMPLATE zulip_test_base;
+EOF
+
 python manage.py syncdb --noinput --settings=zproject.test_settings
 python manage.py migrate --settings=zproject.test_settings --all
 migration_status "zerver/fixtures/migration-status"
