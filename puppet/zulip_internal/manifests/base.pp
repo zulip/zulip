@@ -17,13 +17,14 @@ class zulip_internal::base {
                          ]
   package { $org_base_packages: ensure => "installed" }
 
-  apt::key {"E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65":
-    source  =>  "https://zulip.com/dist/keys/ops.asc",
-  }
-
-  apt::sources_list {"zulip":
-    ensure  => present,
-    content => 'deb http://apt.zulip.com/ops wheezy main',
+  apt::source {'zulip':
+    location    => 'http://apt.zulip.com/ops',
+    release     => 'wheezy',
+    repos       => 'main',
+    key         => 'E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65',
+    key_source  => 'https://zulip.com/dist/keys/ops.asc',
+    pin         => '995',
+    include_src => true,
   }
 
   file { '/etc/apt/apt.conf.d/02periodic':

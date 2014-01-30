@@ -3,13 +3,14 @@ class zulip::enterprise {
   include zulip::app_frontend
   include zulip::postgres_appdb
 
-  apt::key {"E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65":
-    source  =>  "https://zulip.com/dist/keys/enterprise.asc",
-  }
-
-  apt::sources_list {"zulip":
-    ensure  => present,
-    content => 'deb http://apt.zulip.com/enterprise precise v1',
+  apt::source {'zulip':
+    location    => 'http://apt.zulip.com/enterprise',
+    release     => 'precise',
+    repos       => 'v1',
+    key         => 'E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65',
+    key_source  => 'https://zulip.com/dist/keys/enterprise.asc',
+    pin         => '995',
+    include_src => true,
   }
 
   file { "/etc/nginx/sites-available/zulip-enterprise":

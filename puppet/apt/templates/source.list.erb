@@ -1,0 +1,5 @@
+# <%= @name %>
+deb <% if @architecture %>[arch=<%= @architecture %>]<% end %><%= @location %> <%= @release_real %> <%= @repos %>
+<%- if @include_src then -%>
+deb-src <% if @architecture %>[arch=<%= @architecture %>]<% end %><%= @location %> <%= @release_real %> <%= @repos %>
+<%- end -%>

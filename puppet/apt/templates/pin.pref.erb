@@ -1,0 +1,22 @@
+<%-
+@pin = "release a=#{@name}" # default value
+if @pin_release.length > 0
+  options = []
+  options.push("a=#{@release}") if @release.length > 0
+  options.push("n=#{@codename}") if @codename.length > 0
+  options.push("v=#{@release_version}") if @release_version.length > 0
+  options.push("c=#{@component}") if @component.length > 0
+  options.push("o=#{@originator}") if @originator.length > 0
+  options.push("l=#{@label}") if @label.length > 0
+  @pin = "release #{options.join(', ')}"
+elsif @version.length > 0
+  @pin = "version #{@version}"
+elsif @origin.length > 0
+  @pin = "origin \"#{@origin}\""
+end
+-%>
+# <%= @name %>
+Explanation: <%= @explanation %>
+Package: <%= @packages %>
+Pin: <%= @pin %>
+Pin-Priority: <%= @priority %>

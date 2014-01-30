@@ -1,0 +1,53 @@
+// Automatically upgrade packages from these (origin:archive) pairs
+Unattended-Upgrade::Allowed-Origins {
+<% @origins.each do |origin| -%>
+	"<%= origin %>";
+<% end -%>
+};
+
+// List of packages to not update
+Unattended-Upgrade::Package-Blacklist {
+<% @blacklist.each do |package| -%>
+	"<%= package %>";
+<% end -%>
+};
+
+// This option allows you to control if on a unclean dpkg exit
+// unattended-upgrades will automatically run 
+//   dpkg --force-confold --configure -a
+// The default is true, to ensure updates keep getting installed
+Unattended-Upgrade::AutoFixInterruptedDpkg "<%= @auto_fix %>";
+
+// Split the upgrade into the smallest possible chunks so that
+// they can be interrupted with SIGUSR1. This makes the upgrade
+// a bit slower but it has the benefit that shutdown while a upgrade
+// is running is possible (with a small delay)
+Unattended-Upgrade::MinimalSteps "<%= @minimal_steps %>";
+
+// Install all unattended-upgrades when the machine is shuting down
+// instead of doing it in the background while the machine is running
+// This will (obviously) make shutdown slower
+Unattended-Upgrade::InstallOnShutdown "<%= @install_on_shutdown %>";
+
+// Send email to this address for problems or packages upgrades
+// If empty or unset then no email is sent, make sure that you
+// have a working mail setup on your system. A package that provides
+// 'mailx' must be installed.
+<% if @mail_to != "NONE" %>Unattended-Upgrade::Mail "<%= @mail_to %>";<% end %>
+
+// Set this value to "true" to get emails only on errors. Default
+// is to always send a mail if Unattended-Upgrade::Mail is set
+<% if @mail_to != "NONE" %>Unattended-Upgrade::MailOnlyOnError "<%= @mail_only_on_error %>";<% end %>
+
+// Do automatic removal of new unused dependencies after the upgrade
+// (equivalent to apt-get autoremove)
+Unattended-Upgrade::Remove-Unused-Dependencies "<%= @remove_unused %>";
+
+// Automatically reboot *WITHOUT CONFIRMATION* if a 
+// the file /var/run/reboot-required is found after the upgrade 
+Unattended-Upgrade::Automatic-Reboot "<%= @auto_reboot %>";
+
+
+// Use apt bandwidth limit feature, this example limits the download
+// speed to 70kb/sec
+<% if @dl_limit != "NONE" %>Acquire::http::Dl-Limit "<%= @dl_limit %>";<% end %>
