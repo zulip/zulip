@@ -220,7 +220,7 @@ Socket.prototype = {
                 request.error = function (type, resp) {
                   blueslip.info("Could not authenticate with server: " + resp.msg);
                   that._connection_failures++;
-                  that._try_to_reconnect(that._reconnect_wait_time());
+                  that._try_to_reconnect({wait_time: that._reconnect_wait_time()});
                 };
                 that._save_request(request);
                 that._do_send(request);
@@ -258,7 +258,7 @@ Socket.prototype = {
                           + " (" + event.code.toString() + ", " + event.reason + ")");
             that._connection_failures++;
             that._is_reconnecting = false;
-            that._try_to_reconnect(that._reconnect_wait_time());
+            that._try_to_reconnect({wait_time: that._reconnect_wait_time()});
         };
     },
 
@@ -272,10 +272,8 @@ Socket.prototype = {
         }
     },
 
-    _try_to_reconnect: function Socket__try_to_reconnect(wait_time) {
-        if (wait_time === undefined) {
-            wait_time = 0;
-        }
+    _try_to_reconnect: function Socket__try_to_reconnect(opts) {
+        opts = _.extend({wait_time: 0}, opts);
         var that = this;
 
         var now = (new Date()).getTime();
@@ -317,7 +315,7 @@ Socket.prototype = {
             blueslip.info("Attempting socket reconnect.");
             that._sockjs = new SockJS(that.url, null, {protocols_whitelist: that._supported_protocols});
             that._setup_sockjs_callbacks(that._sockjs);
-        }, wait_time);
+        }, opts.wait_time);
     },
 
     _localstorage_requests: function Socket__localstorage_requests() {
