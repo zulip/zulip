@@ -37,8 +37,6 @@ var unread_messages_read_in_narrow = false;
 var pointer_update_in_flight = false;
 var suppress_unread_counts = true;
 
-var waiting_on_browser_scroll = true;
-
 function within_viewport(row_offset, row_height) {
     // Returns true if a message is fully within the effectively visible
     // part of the viewport.
@@ -839,12 +837,6 @@ function process_result(messages, opts) {
 }
 
 function get_old_messages_success(data, opts) {
-    if (waiting_on_browser_scroll) {
-        setTimeout(function () {
-            get_old_messages_success(data, opts);
-        }, 25);
-        return;
-    }
     if (tutorial.is_running()) {
         // Don't actually process the messages until the tutorial is
         // finished, but do disable the loading indicator so it isn't
@@ -1126,35 +1118,6 @@ function main() {
     });
 }
 
-function install_main_scroll_handler() {
-    waiting_on_browser_scroll = false;
-    // Unregister this special un-throttled scroll handler.
-    $(window).unbind("scroll");
-    // Register the normal throttled scroll handler.
-    ui.register_scroll_handler();
-}
-
 $(function () {
-    // On a page load or reload, the browser will, at an idle time, scroll to
-    // the top of the page. We can't intercept this browser-induced scroll, so
-    // to make sure it doesn't in interfere with our scrolling to the correct
-    // place in your message feed, we let the browser scroll happen first.
-
-    // After some time, if we haven't seen the browser scroll, give up
-    // and call main.
-    var browser_scroll_timer = setTimeout(function () {
-        install_main_scroll_handler();
-    }, 500);
-
-    $(window).scroll(function () {
-        if (viewport.scrollTop() < viewport.height()) {
-            // This is the browser-induced scroll to the top of the
-            // page that we were waiting for. It only happens once,
-            // so stop waiting and call main.
-            install_main_scroll_handler();
-            clearTimeout(browser_scroll_timer);
-        }
-    });
-
     main();
 });

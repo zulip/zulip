@@ -1810,18 +1810,16 @@ function scroll_finish() {
     scroll_timer = setTimeout(scroll_finished, 100);
 }
 
-exports.register_scroll_handler = function () {
-    viewport.message_pane.scroll($.throttle(50, function (e) {
-        process_visible_unread_messages();
-        scroll_finish();
-    }));
-};
-
 // Save the compose content cursor position and restore when we
 // shift-tab back in (see hotkey.js).
 var saved_compose_cursor = 0;
 
 $(function () {
+    viewport.message_pane.scroll($.throttle(50, function (e) {
+        process_visible_unread_messages();
+        scroll_finish();
+    }));
+
     $('#new_message_content').blur(function () {
         saved_compose_cursor = $(this).caret().start;
     });
