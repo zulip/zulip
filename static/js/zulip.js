@@ -640,7 +640,7 @@ function add_message_metadata(message) {
         }
         return cached_msg;
     }
-    server_events.get_updates_params.last = Math.max(server_events.get_updates_params.last || 0, message.id);
+    server_events.get_events_params.last = Math.max(server_events.get_events_params.last || 0, message.id);
 
     var involved_people;
 
@@ -1183,7 +1183,7 @@ function main() {
             }
         }
         // now start subscribing to updates
-        server_events.get_updates();
+        server_events.get_events();
 
         // backfill more messages after the user is idle
         var backfill_batch_size = 1000;
@@ -1209,7 +1209,7 @@ function main() {
         });
     } else {
         server_events.home_view_loaded();
-        server_events.get_updates();
+        server_events.get_events();
     }
 
     $(document).on('message_id_changed', function (event) {
@@ -1217,8 +1217,8 @@ function main() {
         if (furthest_read === old_id) {
             furthest_read = new_id;
         }
-        if (server_events.get_updates_params.pointer === old_id) {
-            server_events.get_updates_params.pointer = new_id;
+        if (server_events.get_events_params.pointer === old_id) {
+            server_events.get_events_params.pointer = new_id;
         }
         if (msg_metadata_cache[old_id]) {
             msg_metadata_cache[new_id] = msg_metadata_cache[old_id];

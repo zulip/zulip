@@ -1590,8 +1590,8 @@ $(function () {
     $('.logout_button').click(function (e) {
         $('#logout_form').submit();
     });
-    $('.restart_get_updates_button').click(function (e) {
-        server_events.restart_get_updates({dont_block: true});
+    $('.restart_get_events_button').click(function (e) {
+        server_events.restart_get_events({dont_block: true});
     });
 
     $('#api_key_button').click(function (e) {

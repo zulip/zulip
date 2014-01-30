@@ -6,23 +6,23 @@ var waiting_on_homeview_load = true;
 
 var events_stored_during_tutorial = [];
 
-var get_updates_xhr;
-var get_updates_timeout;
-var get_updates_failures = 0;
+var get_events_xhr;
+var get_events_timeout;
+var get_events_failures = 0;
 
-exports.get_updates_params = {
+exports.get_events_params = {
     pointer: -1
 };
 
 
-function get_updates_success(events) {
+function get_events_success(events) {
     var messages = [];
     var messages_to_update = [];
     var new_pointer;
 
     _.each(events, function (event) {
-        exports.get_updates_params.last_event_id = Math.max(exports.get_updates_params.last_event_id,
-                                                    event.id);
+        exports.get_events_params.last_event_id = Math.max(exports.get_events_params.last_event_id,
+                                                           event.id);
     });
 
     if (tutorial.is_running()) {
@@ -163,38 +163,38 @@ function get_updates_success(events) {
     }
 }
 
-exports.get_updates = function get_updates(options) {
+exports.get_events = function get_events(options) {
     options = _.extend({dont_block: false}, options);
 
-    exports.get_updates_params.pointer = furthest_read;
-    exports.get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
-    if (exports.get_updates_params.queue_id === undefined) {
-        exports.get_updates_params.queue_id = page_params.event_queue_id;
-        exports.get_updates_params.last_event_id = page_params.last_event_id;
+    exports.get_events_params.pointer = furthest_read;
+    exports.get_events_params.dont_block = options.dont_block || get_events_failures > 0;
+    if (exports.get_events_params.queue_id === undefined) {
+        exports.get_events_params.queue_id = page_params.event_queue_id;
+        exports.get_events_params.last_event_id = page_params.last_event_id;
     }
 
-    if (get_updates_xhr !== undefined) {
-        get_updates_xhr.abort();
+    if (get_events_xhr !== undefined) {
+        get_events_xhr.abort();
     }
-    if (get_updates_timeout !== undefined) {
-        clearTimeout(get_updates_timeout);
+    if (get_events_timeout !== undefined) {
+        clearTimeout(get_events_timeout);
     }
-    get_updates_timeout = undefined;
-    get_updates_xhr = channel.post({
+    get_events_timeout = undefined;
+    get_events_xhr = channel.post({
         url:      '/json/get_events',
-        data:     exports.get_updates_params,
+        data:     exports.get_events_params,
         idempotent: true,
         timeout:  page_params.poll_timeout,
         success: function (data) {
-            get_updates_xhr = undefined;
-            get_updates_failures = 0;
+            get_events_xhr = undefined;
+            get_events_failures = 0;
             $('#connection-error').hide();
 
-            get_updates_success(data.events);
-            get_updates_timeout = setTimeout(get_updates, 0);
+            get_events_success(data.events);
+            get_events_timeout = setTimeout(get_events, 0);
         },
         error: function (xhr, error_type, exn) {
-            get_updates_xhr = undefined;
+            get_events_xhr = undefined;
             // If we are old enough to have messages outside of the
             // Tornado cache or if we're old enough that our message
             // queue has been garbage collected, immediately reload.
@@ -210,37 +210,37 @@ exports.get_updates = function get_updates(options) {
                 return;
             } else if (error_type === 'timeout') {
                 // Retry indefinitely on timeout.
-                get_updates_failures = 0;
+                get_events_failures = 0;
                 $('#connection-error').hide();
             } else {
-                get_updates_failures += 1;
+                get_events_failures += 1;
             }
 
-            if (get_updates_failures >= 5) {
+            if (get_events_failures >= 5) {
                 $('#connection-error').show();
             } else {
                 $('#connection-error').hide();
             }
 
-            var retry_sec = Math.min(90, Math.exp(get_updates_failures/2));
-            get_updates_timeout = setTimeout(get_updates, retry_sec*1000);
+            var retry_sec = Math.min(90, Math.exp(get_events_failures/2));
+            get_events_timeout = setTimeout(get_events, retry_sec*1000);
         }
     });
 };
 
-exports.assert_get_updates_running = function assert_get_updates_running(error_message) {
-    if (get_updates_xhr === undefined && get_updates_timeout === undefined) {
-        exports.restart_get_updates({dont_block: true});
+exports.assert_get_events_running = function assert_get_events_running(error_message) {
+    if (get_events_xhr === undefined && get_events_timeout === undefined) {
+        exports.restart_get_events({dont_block: true});
         blueslip.error(error_message);
     }
 };
 
-exports.restart_get_updates = function restart_get_updates(options) {
-    exports.get_updates(options);
+exports.restart_get_events = function restart_get_events(options) {
+    exports.get_events(options);
 };
 
-exports.force_get_updates = function force_get_updates() {
-    get_updates_timeout = setTimeout(exports.get_updates, 0);
+exports.force_get_events = function force_get_events() {
+    get_events_timeout = setTimeout(exports.get_events, 0);
 };
 
 exports.home_view_loaded = function home_view_loaded() {
@@ -269,10 +269,10 @@ setInterval(function () {
 
 $(function () {
     $(document).on('unsuspend', function () {
-        // Immediately poll for new updates on unsuspend
-        blueslip.log("Restarting get_updates due to unsuspend");
-        get_updates_failures = 0;
-        exports.restart_get_updates({dont_block: true});
+        // Immediately poll for new events on unsuspend
+        blueslip.log("Restarting get_events due to unsuspend");
+        get_events_failures = 0;
+        exports.restart_get_events({dont_block: true});
     });
 });
 

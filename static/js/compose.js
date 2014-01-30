@@ -490,8 +490,8 @@ exports.send_message_success = function (local_id, message_id, start_time, local
 
     setTimeout(function () {
         if (exports.send_times_data[message_id].received === undefined) {
-            blueslip.error("Restarting get_updates due to delayed receipt of sent message " + message_id);
-            server_events.restart_get_updates();
+            blueslip.error("Restarting get_events due to delayed receipt of sent message " + message_id);
+            server_events.restart_get_events();
         }
     }, 5000);
 };
@@ -544,7 +544,7 @@ function send_message(request) {
     }
 
     exports.transmit_message(request, success, error);
-    server_events.assert_get_updates_running("Restarting get_updates because it was not running during send");
+    server_events.assert_get_events_running("Restarting get_events because it was not running during send");
 
     if (feature_flags.local_echo && locally_echoed) {
         clear_compose_box();

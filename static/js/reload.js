@@ -48,7 +48,7 @@ function preserve_state(send_after_reload) {
 }
 
 // Check if we're doing a compose-preserving reload.  This must be
-// done before the first call to get_updates
+// done before the first call to get_events
 $(function () {
     var location = window.location.toString();
     var fragment = location.substring(location.indexOf('#') + 1);

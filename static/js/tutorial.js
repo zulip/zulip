@@ -327,7 +327,7 @@ function finale() {
     is_running = false;
     current_msg_list.clear();
     // Force a check on new events before we re-render the message list.
-    server_events.force_get_updates();
+    server_events.force_get_events();
     stream_data.set_stream_info(real_stream_info);
     util.show_first_run_message();
     current_msg_list.rerender();
