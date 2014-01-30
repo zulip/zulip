@@ -308,6 +308,9 @@ Socket.prototype = {
         this._is_authenticated = false;
         this._is_reconnecting = true;
         this._reconnect_initiation_time = now;
+        // This is a little weird because we're also called from the SockJS
+        // onclose handler.  Fortunately, close() does nothing on an
+        // already-closed SockJS object.
         this._sockjs.close();
 
         this._reconnect_timeout_id = setTimeout(function () {
