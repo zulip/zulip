@@ -456,6 +456,7 @@ def update_message_flags(request, user_profile,
                       messages=REQ('messages', validator=check_list(check_int)),
                       operation=REQ('op'), flag=REQ('flag'),
                       all=REQ('all', converter=json_to_bool, default=False)):
+    request._log_data["extra"] = "[%s %s]" % (operation, flag)
     do_update_message_flags(user_profile, operation, flag, messages, all)
     return json_success({'result': 'success',
                          'messages': messages,
