@@ -130,6 +130,10 @@ function get_predicate(operators) {
     assert(predicate({id: 5}));
     assert(!predicate({id: 6}));
 
+    predicate = get_predicate([['id', 5], ['topic', 'lunch']]);
+    assert(predicate({type: 'stream', id: 5, subject: 'lunch'}));
+    assert(!predicate({type: 'stream', id: 5, subject: 'dinner'}));
+
     predicate = get_predicate([['sender', 'Joe@example.com']]);
     assert(predicate({sender_email: 'JOE@example.com'}));
     assert(!predicate({sender_email: 'steve@foo.com'}));

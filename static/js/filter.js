@@ -295,7 +295,10 @@ Filter.prototype = {
                     break;
 
                 case 'id':
-                    return message.id.toString() === operand;
+                    if (message.id.toString() !== operand) {
+                        return false;
+                    }
+                    break;
 
                 case 'stream':
                     if (message.type !== 'stream') {
