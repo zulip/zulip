@@ -116,18 +116,20 @@ function maybe_report_narrow_time(msg_list) {
 
 }
 
-exports.activate = function (operators, opts) {
+exports.activate = function (raw_operators, opts) {
     var start_time = new Date();
     // most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
     notifications.clear_compose_notifications();
 
-    if (operators.length === 0) {
+    if (raw_operators.length === 0) {
         return exports.deactivate();
     }
-    var filter = new Filter(operators);
-    blueslip.debug("Narrowed", {operators: _.map(filter.operators(),
-                                                 function (e) { return e[0]; }),
+    var filter = new Filter(raw_operators);
+    var operators = filter.operators();
+
+    blueslip.debug("Narrowed", {operators: _.map(operators,
+                                                 function (e) { return e.operator; }),
                                 trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id(),
                                 previous_is_summarized: current_msg_list.is_summarized_message(
