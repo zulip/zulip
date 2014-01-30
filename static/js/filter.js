@@ -200,29 +200,29 @@ Filter.prototype = {
     public_operators: function Filter_public_operators() {
         var safe_to_return = _.filter(this._operators, function (value) {
             // Filter out the "in" keyword and the embedded narrow (if any).
-            return value[0] !== 'in' && !(page_params.narrow_stream !== undefined &&
-                                          value[0] === "stream" &&
-                                          value[1].toLowerCase() === page_params.narrow_stream.toLowerCase());
+            return value.operator !== 'in' && !(page_params.narrow_stream !== undefined &&
+                                                value.operator === "stream" &&
+                                                value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase());
         });
         return safe_to_return;
     },
 
     operands: function Filter_get_operands(operator) {
         return _.chain(this._operators)
-            .filter(function (elem) { return elem[0] === operator; })
-            .map(function (elem) { return elem[1]; })
+            .filter(function (elem) { return elem.operator === operator; })
+            .map(function (elem) { return elem.operand; })
             .value();
     },
 
     has_operand: function Filter_has_operand(operator, operand) {
         return _.any(this._operators, function (elem) {
-            return elem[0] === operator && elem[1] === operand;
+            return elem.operator === operator && elem.operand === operand;
         });
     },
 
     has_operator: function Filter_has_operator(operator) {
         return _.any(this._operators, function (elem) {
-            return elem[0] === operator;
+            return elem.operator === operator;
         });
     },
 
@@ -259,8 +259,8 @@ Filter.prototype = {
                 // * "return false" if the value does not match
                 // * "break" if there is a match
                 // If you "return true", you circumvent all future operators
-                operand = operators[i][1];
-                switch (operators[i][0]) {
+                operand = operators[i].operand;
+                switch (operators[i].operator) {
                 case 'is':
                     if (operand === 'private') {
                         if (message.type !== 'private') {
