@@ -1,4 +1,4 @@
-#/bin/sh -xe
+#!/bin/bash -xe
 
 ROOT_POSTGRES="sudo -u postgres psql"
 DEFAULT_DB=""
