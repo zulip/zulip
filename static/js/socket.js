@@ -247,7 +247,7 @@ Socket.prototype = {
             }
         };
 
-        sockjs.onheartbeat = function Socket__socjks_onheartbeat() {
+        sockjs.onheartbeat = function Socket__sockjs_onheartbeat() {
             if (that._heartbeat_timeout_id !== null) {
                 clearTimeout(that._heartbeat_timeout_id);
                 that._heartbeat_timeout_id = null;
