@@ -132,8 +132,8 @@ def main():
 class Command(BaseCommand):
     help = __doc__
 
-    def handle(self, **options):
-        rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", None)
+    def handle(self, *args, **options):
+        rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", args[0] if len(args) else None)
         if rcpt_to is not None:
             try:
                 extract_and_validate(rcpt_to)
