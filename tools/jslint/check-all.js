@@ -51,13 +51,12 @@ var globals =
     + ' localstorage'
 
     // zulip.js
-    + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'
+    + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list'
     + ' add_messages'
     + ' keep_pointer_in_view unread_messages_read_in_narrow'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
     + ' scroll_to_selected get_private_message_recipient'
     + ' load_old_messages enable_unread_counts'
-    + ' at_top_of_viewport at_bottom_of_viewport within_viewport'
     + ' process_visible_unread_messages mark_messages_as_read viewport '
     + ' load_more_messages reset_load_more_status have_scrolled_away_from_top'
     + ' maybe_scroll_to_selected recenter_pointer_on_display suppress_scroll_pointer_update'
