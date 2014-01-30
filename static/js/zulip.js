@@ -942,7 +942,7 @@ function load_more_messages(msg_list) {
         oldest_message_id = msg_list.first().id;
     }
     load_old_messages({
-        anchor: oldest_message_id,
+        anchor: oldest_message_id.toFixed(),
         num_before: batch_size,
         num_after: 0,
         msg_list: msg_list,
@@ -1060,7 +1060,7 @@ function main() {
             var latest_id = messages[messages.length-1].id;
             if (latest_id < page_params.max_message_id) {
                 load_old_messages({
-                    anchor: latest_id,
+                    anchor: latest_id.toFixed(),
                     num_before: 0,
                     num_after: 400,
                     msg_list: home_msg_list,
