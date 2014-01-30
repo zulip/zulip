@@ -64,42 +64,31 @@ function message_matches_search_term(message, operator, operand) {
     switch (operator) {
     case 'is':
         if (operand === 'private') {
-            if (message.type !== 'private') {
-                return false;
-            }
+            return (message.type === 'private');
         } else if (operand === 'starred') {
-            if (!message.starred) {
-                return false;
-            }
+            return message.starred;
         } else if (operand === 'mentioned') {
-            if (!message.mentioned) {
-                return false;
-            }
+            return message.mentioned;
         } else if (operand === 'alerted') {
-            if (!message.alerted) {
-                return false;
-            }
+            return message.alerted;
         }
-
-        break;
+        return true; // is:whatever returns true
 
     case 'in':
         if (operand === 'home') {
             return message_in_home(message);
         }
         else if (operand === 'all') {
-            break;
+            return true;
         }
-        break;
+        return true; // in:whatever returns true
 
     case 'near':
-        break;
+        // this is all handled server side
+        return true;
 
     case 'id':
-        if (message.id.toString() !== operand) {
-            return false;
-        }
-        break;
+        return (message.id.toString() === operand);
 
     case 'stream':
         if (message.type !== 'stream') {
@@ -108,13 +97,10 @@ function message_matches_search_term(message, operator, operand) {
 
         operand = operand.toLowerCase();
         if (page_params.domain === "mit.edu") {
-            if (!mit_edu_stream_name_match(message, operand)) {
-                return false;
-            }
-        } else if (message.stream.toLowerCase() !== operand) {
-            return false;
+            return mit_edu_stream_name_match(message, operand);
+        } else {
+            return (message.stream.toLowerCase() === operand);
         }
-        break;
 
     case 'topic':
         if (message.type !== 'stream') {
@@ -123,29 +109,20 @@ function message_matches_search_term(message, operator, operand) {
 
         operand = operand.toLowerCase();
         if (page_params.domain === "mit.edu") {
-            if (!mit_edu_topic_name_match(message, operand)) {
-                return false;
-            }
-        } else if (message.subject.toLowerCase() !== operand) {
-            return false;
+            return mit_edu_topic_name_match(message, operand);
+        } else {
+            return (message.subject.toLowerCase() === operand);
         }
-        break;
 
     case 'sender':
-        if ((message.sender_email.toLowerCase() !== operand)) {
-            return false;
-        }
-        break;
+        return (message.sender_email.toLowerCase() === operand);
 
     case 'pm-with':
-        if ((message.type !== 'private') ||
-            message.reply_to.toLowerCase() !== operand.split(',').sort().join(',')) {
-            return false;
-        }
-        break;
+        return (message.type === 'private') &&
+            (message.reply_to.toLowerCase() === operand.split(',').sort().join(','));
     }
 
-    return true;
+    return true; // unknown operators return true (effectively ignored)
 }
 
 
