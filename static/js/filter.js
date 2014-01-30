@@ -253,14 +253,9 @@ Filter.prototype = {
         // build JavaScript code in a string and then eval() it.
 
         return function (message) {
-            var operand, i, index;
-            for (i = 0; i < operators.length; i++) {
-                // Inside this loop, the correct protocol for a test is to
-                // * "return false" if the value does not match
-                // * "break" if there is a match
-                // If you "return true", you circumvent all future operators
-                operand = operators[i].operand;
-                switch (operators[i].operator) {
+            return _.all(operators, function (term) {
+                var operand = term.operand;
+                switch (term.operator) {
                 case 'is':
                     if (operand === 'private') {
                         if (message.type !== 'private') {
@@ -343,10 +338,9 @@ Filter.prototype = {
                     }
                     break;
                 }
-            }
 
-            // All filters passed.
-            return true;
+                return true;
+            });
         };
     }
 };
