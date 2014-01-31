@@ -125,6 +125,7 @@ exports.replace_emoji_with_text = function (element) {
 };
 
 function copy_handler(e) {
+    console.log(e);
     var selection = window.getSelection();
     var i, range, ranges = [], startc, endc, initial_end_tr, start_id, end_id, row, message;
     var start_data, end_data;

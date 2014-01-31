@@ -715,8 +715,6 @@ td.pointer {
     text-align: left;
 }
 
-
-
 .message_time {
     display: inline-block;
     font-weight: normal;
@@ -732,11 +730,15 @@ td.pointer {
     text-align: right;
 }
 
+.message_time.status-time {
+    line-height: 35px;
+}
+
 .message_controls {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -78px;
+    right: -50px;
 }
 
 .include-sender .message_controls {
@@ -1128,16 +1130,22 @@ just a temporary hack.
 }
 
 .sender-status {
-    display: block;
-    margin-left: 35px;
-    margin-top: -24px;
-    padding-bottom: 20px;
+    display: inline-block;
+    padding-bottom: 22px;
+    vertical-align: top;
+    height: 35px;
+    line-height: 35px;
+    font-size: 13px;
+    position: relative;
 }
 
 .sender-status .sender_name {
     font-weight: bold;
     position: static;
-    vertical-align: bottom;
+    vertical-align: top;
+    line-height: 35px;
+    margin-right: 3px;
+    font-size: 13px;
 }
 
 .sender_name_hovered .sender_name {
@@ -1227,7 +1235,7 @@ a.message_label_clickable:hover {
 }
 
 .include-sender .messagebox-border {
-    margin-top: 8px;
+    padding-top: 6px;
 }
 
 .include-sender .message_top_line {
@@ -1392,7 +1400,7 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 1px 85px 1px 16px;
+    padding: 1px 55px 1px 16px;
 }
 
 .messagebox p {
@@ -2013,7 +2021,7 @@ input.recipient_box {
     width: auto;
     float: none;
     overflow: hidden;
-    border-right: 1px solid #e4e4e4;
+    border-right: 1px solid #dadada;
     height: 40px;
 }
 
@@ -3152,6 +3160,7 @@ div.edit_bot {
 .message_edit {
     display: none;
     margin-top: 5px;
+    margin-left: 47px;
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
@@ -3159,9 +3168,12 @@ div.edit_bot {
     width: auto;
     float: left;
     font-size: 80%;
+    vertical-align: top;
+    padding-top: 0px;
+    margin-right: 10px;
 }
 #message_edit_form .edit-controls {
-    margin-left: 28px; /* Match .message_content padding less 7px textarea padding and border */
+    margin-left: 35px; /* Match .message_content padding less 7px textarea padding and border */
     margin-right: -7px;
 }
 #message_edit_form textarea {
