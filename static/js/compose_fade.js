@@ -21,7 +21,7 @@ exports.set_focused_recipient = function (msg_type) {
         focused_recipient.subject = $('#subject').val();
     } else {
         // Normalize the recipient list so it matches the one used when
-        // adding the message (see add_message_metadata(), zulip.js).
+        // adding the message (see message_store.add_message_metadata()).
         focused_recipient.reply_to = util.normalize_recipients(
                 $('#private_message_recipient').val());
     }

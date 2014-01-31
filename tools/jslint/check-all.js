@@ -25,7 +25,7 @@ var globals =
     + ' compose compose_fade rows hotkeys narrow reload notifications_bar search subs'
     + ' composebox_typeahead server_events typeahead_helper notifications hashchange'
     + ' invite ui util activity timerender MessageList MessageListView blueslip unread stream_list'
-    + ' message_edit tab_bar emoji popovers navigate people settings'
+    + ' message_edit tab_bar emoji popovers navigate people settings message_store'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
     + ' Filter summary admin stream_data muting WinChan muting_ui Socket channel'
     + ' message_flags'
@@ -53,22 +53,14 @@ var globals =
 
     // zulip.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list'
-    + ' add_messages'
     + ' keep_pointer_in_view unread_messages_read_in_narrow'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
     + ' scroll_to_selected get_private_message_recipient'
-    + ' load_old_messages '
     + ' viewport '
-    + ' load_more_messages reset_load_more_status have_scrolled_away_from_top'
+    + ' have_scrolled_away_from_top'
     + ' maybe_scroll_to_selected recenter_pointer_on_display suppress_scroll_pointer_update'
-    + ' message_range message_in_table'
-    + ' message_unread unread_in_current_view'
     + ' fast_forward_pointer recent_subjects unread_subjects'
-    + ' furthest_read server_furthest_read update_messages'
-    + ' add_message_metadata'
-    + ' msg_metadata_cache'
-    + ' report_as_received'
-    + ' insert_new_messages process_message_for_recent_subjects'
+    + ' furthest_read server_furthest_read'
     ;
 
 

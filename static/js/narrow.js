@@ -252,11 +252,11 @@ exports.activate = function (raw_operators, opts) {
     // the message we want anyway or if the filter can't be applied
     // locally.
     if (all_msg_list.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        add_messages(all_msg_list.all(), narrowed_msg_list, {delay_render: true});
+        message_store.add_messages(all_msg_list.all(), narrowed_msg_list, {delay_render: true});
     }
 
     var defer_selecting_closest = narrowed_msg_list.empty();
-    load_old_messages({
+    message_store.load_old_messages({
         anchor: then_select_id.toFixed(),
         num_before: 50,
         num_after: 50,
@@ -273,7 +273,7 @@ exports.activate = function (raw_operators, opts) {
     });
 
     if (! defer_selecting_closest) {
-        reset_load_more_status();
+        message_store.reset_load_more_status();
         maybe_select_closest();
     } else {
         ui.show_loading_more_messages_indicator();
@@ -317,7 +317,7 @@ exports.by = function (operator, operand, opts) {
 
 exports.by_subject = function (target_id, opts) {
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
-    var original = msg_metadata_cache[target_id];
+    var original = message_store.msg_metadata_cache[target_id];
     if (original.type !== 'stream') {
         // Only stream messages have subjects, but the
         // user wants us to narrow in some way.
@@ -336,7 +336,7 @@ exports.by_subject = function (target_id, opts) {
 exports.by_recipient = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
-    var message = msg_metadata_cache[target_id];
+    var message = message_store.msg_metadata_cache[target_id];
     unread.mark_message_as_read(message);
     switch (message.type) {
     case 'private':
@@ -361,7 +361,7 @@ exports.by_id = function (target_id, opts) {
 
 exports.by_conversation_and_time = function (target_id, opts) {
     var args = [["near", target_id]];
-    var original = msg_metadata_cache[target_id];
+    var original = message_store.msg_metadata_cache[target_id];
     opts = _.defaults({}, opts, {then_select_id: target_id});
 
     if (original.type !== 'stream') {
@@ -402,7 +402,7 @@ exports.deactivate = function () {
     ui.condense_and_collapse($("#zhome tr.message_row"));
 
     $('#search_query').val('');
-    reset_load_more_status();
+    message_store.reset_load_more_status();
     hashchange.save_narrow();
 
     if (current_msg_list.selected_id() !== -1) {

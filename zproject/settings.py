@@ -555,6 +555,7 @@ JS_SPECS = {
             'js/alert_words.js',
             'js/alert_words_ui.js',
             'js/people.js',
+            'js/message_store.js',
             'js/server_events.js',
             'js/zulip.js',
             'js/activity.js',

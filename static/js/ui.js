@@ -1763,7 +1763,7 @@ function scroll_finished() {
         if (viewport.scrollTop() === 0 &&
             have_scrolled_away_from_top) {
             have_scrolled_away_from_top = false;
-            load_more_messages(current_msg_list);
+            message_store.load_more_messages(current_msg_list);
         } else if (!have_scrolled_away_from_top) {
             have_scrolled_away_from_top = true;
         }

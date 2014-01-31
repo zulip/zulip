@@ -157,7 +157,7 @@ function insert_local_message(message_request, local_id) {
         });
     }
 
-    insert_new_messages([message]);
+    message_store.insert_new_messages([message]);
     return message.local_id;
 }
 
@@ -182,9 +182,9 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
 exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
     message.raw_content = raw_content;
     if (new_topic !== undefined) {
-        process_message_for_recent_subjects(message, true);
+        message_store.process_message_for_recent_subjects(message, true);
         message.subject = new_topic;
-        process_message_for_recent_subjects(message);
+        message_store.process_message_for_recent_subjects(message);
     }
 
     message.content = exports.apply_markdown(raw_content);
@@ -247,7 +247,7 @@ exports.process_from_server = function process_from_server(messages) {
                 }
             }
             locally_processed_ids.push(client_message.id);
-            report_as_received(client_message);
+            message_store.report_as_received(client_message);
             delete waiting_for_ack[client_message.id];
             return false;
         }

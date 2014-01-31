@@ -82,7 +82,7 @@ function update_in_home_view(sub, value) {
         home_msg_list.clear({clear_selected_id: false});
 
         // Recreate the home_msg_list with the newly filtered all_msg_list
-        add_messages(all_msg_list.all(), home_msg_list);
+        message_store.add_messages(all_msg_list.all(), home_msg_list);
 
         // Ensure we're still at the same scroll position
         if (ui.home_tab_obscured()) {

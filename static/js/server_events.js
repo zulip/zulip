@@ -123,7 +123,7 @@ function get_events_success(events) {
                 break;
             case 'read':
                 var msgs_to_update = _.map(event.messages, function (message_id) {
-                    return msg_metadata_cache[message_id];
+                    return message_store.msg_metadata_cache[message_id];
                 });
                 unread.mark_messages_as_read(msgs_to_update, {from: "server"});
                 break;
@@ -150,7 +150,7 @@ function get_events_success(events) {
 
     if (messages.length !== 0) {
         messages = echo.process_from_server(messages);
-        insert_new_messages(messages);
+        message_store.insert_new_messages(messages);
     }
 
     if (new_pointer !== undefined
@@ -166,7 +166,7 @@ function get_events_success(events) {
     }
 
     if (messages_to_update.length !== 0) {
-        update_messages(messages_to_update);
+        message_store.update_messages(messages_to_update);
     }
 }
 
