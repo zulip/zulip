@@ -40,7 +40,12 @@ $(function () {
             $("#success").show();
         },
         error: function (xhr, error_type, xhn) {
-            $("#error").show();
+            if (xhr.status === 403) {
+                // You tried signing up with a domain that already uses Zulip!
+                $("#group-already-uses-zulip").show();
+            } else {
+                $("#error").show();
+            }
         },
         complete: function (xhr, statusText) {
             $("#beta-signup").removeAttr('disabled').text("Sign up");

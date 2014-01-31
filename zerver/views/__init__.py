@@ -201,17 +201,32 @@ def principal_to_user_profile(agent, principal):
 @has_request_variables
 def beta_signup_submission(request, name=REQ, email=REQ,
                            company=REQ, count=REQ, product=REQ):
+
+    domain = resolve_email_to_domain(email)
+    realm = get_realm(domain)
+
     content = """Name: %s
 Email: %s
 Company: %s
 # users: %s
 Currently using: %s""" % (name, email, company, count, product,)
+
     subject = "Interest in Zulip: %s" % (company,)
+    if realm:
+        subject = "(Realm already exists) " + subject
+
     from_email = '"%s" <zulip+signups@zulip.com>' % (name,)
     to_email = '"Zulip Signups" <zulip+signups@zulip.com>'
     headers = {'Reply-To' : '"%s" <%s>' % (name, email,)}
     msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
     msg.send()
+
+    if realm:
+        # This domain already uses Zulip, so they probably meant to
+        # register. Send them a registration link.
+        send_registration_completion_email(email, request)
+        return json_error("Your group is already signed up!", status=403)
+
     return json_success()
 
 @require_post
@@ -698,16 +713,23 @@ def accounts_home_with_domain(request, domain):
     else:
         return HttpResponseRedirect(reverse('zerver.views.accounts_home'))
 
+def send_registration_completion_email(email, request):
+    """
+    Send an email with a confirmation link to the provided e-mail so the user
+    can complete their registration.
+    """
+    prereg_user = create_preregistration_user(email, request)
+    context = {'support_email': settings.ZULIP_ADMINISTRATOR,
+               'enterprise': settings.ENTERPRISE}
+    Confirmation.objects.send_confirmation(prereg_user, email,
+                                           additional_context=context)
+
 def accounts_home(request):
     if request.method == 'POST':
         form = create_homepage_form(request, user_info=request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            prereg_user = create_preregistration_user(email, request)
-            context = {'support_email': settings.ZULIP_ADMINISTRATOR,
-                       'enterprise': settings.ENTERPRISE}
-            Confirmation.objects.send_confirmation(prereg_user, email,
-                                                   additional_context=context)
+            send_registration_completion_email(email, request)
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
             email = request.POST['email']
