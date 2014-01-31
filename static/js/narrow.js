@@ -147,6 +147,7 @@ exports.activate = function (raw_operators, opts) {
     opts = _.defaults({}, opts, {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
+        first_unread_from_server: false,
         change_hash: true,
         trigger: 'unknown'
     });
@@ -159,12 +160,9 @@ exports.activate = function (raw_operators, opts) {
         opts.select_first_unread = false;
     }
 
-    if (opts.then_select_id === -1) {
-        // If we're loading the page via a narrowed URL, we may not
-        // have setup the home view yet.  In that case, use the
-        // initial pointer.  We can remove this code if we later move
-        // to a model where home_msg_list.selected_id() is always
-        // initialized early.
+    if (opts.then_select_id === -1 && !opts.first_unread_from_server) {
+        // According to old comments, this shouldn't happen anymore
+        blueslip.warning("Setting then_select_id to page_params.initial_pointer.");
         opts.then_select_id = page_params.initial_pointer;
         opts.select_first_unread = false;
     }
@@ -261,6 +259,7 @@ exports.activate = function (raw_operators, opts) {
         num_before: 50,
         num_after: 50,
         msg_list: narrowed_msg_list,
+        use_first_unread_anchor: opts.first_unread_from_server,
         cont: function (messages) {
             ui.hide_loading_more_messages_indicator();
             if (defer_selecting_closest) {

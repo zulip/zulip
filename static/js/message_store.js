@@ -429,6 +429,9 @@ exports.load_old_messages = function load_old_messages(opts) {
     if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
         data.narrow = JSON.stringify(page_params.narrow);
     }
+    if (opts.use_first_unread_anchor) {
+        data.use_first_unread_anchor = true;
+    }
 
     channel.post({
         url:      '/json/get_old_messages',

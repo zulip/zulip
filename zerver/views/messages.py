@@ -295,6 +295,7 @@ def get_old_messages_backend(request, user_profile,
                              num_before = REQ(converter=to_non_negative_int),
                              num_after = REQ(converter=to_non_negative_int),
                              narrow = REQ('narrow', converter=narrow_parameter, default=None),
+                             use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
                              apply_markdown=REQ(default=True,
                                                 converter=ujson.loads)):
     include_history = False
@@ -310,7 +311,7 @@ def get_old_messages_backend(request, user_profile,
             if operator == "is":
                 include_history = False
 
-    if include_history:
+    if include_history and not use_first_unread_anchor:
         query = select([column("id").label("message_id")], None, "zerver_message")
         inner_msg_id_col = literal_column("zerver_message.id")
     elif narrow is None:
@@ -358,6 +359,16 @@ def get_old_messages_backend(request, user_profile,
     else:
         num_before += num_extra_messages
 
+    sa_conn = get_sqlalchemy_connection()
+    if use_first_unread_anchor:
+        first_unread_query = query.where(column("flags").op("&")(UserMessage.flags.read.mask) == 0)
+        first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
+        first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
+        if len(first_unread_result) > 0:
+            anchor = first_unread_result[0][0]
+        else:
+            anchor = 10000000000000000
+
     before_query = None
     after_query = None
     if num_before != 0:
@@ -382,7 +393,6 @@ def get_old_messages_backend(request, user_profile,
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
     # This is a hack to tag the query we use for testing
     query = query.prefix_with("/* get_old_messages */")
-    sa_conn = get_sqlalchemy_connection()
     query_result = list(sa_conn.execute(query).fetchall())
 
     # The following is a little messy, but ensures that the code paths

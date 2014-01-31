@@ -110,6 +110,7 @@ function do_hashchange() {
                 return false;
             }
             narrow.activate(operators, {
+                first_unread_from_server: true,
                 select_first_unread: true,
                 change_hash:    false,  // already set
                 trigger: 'hash change'
