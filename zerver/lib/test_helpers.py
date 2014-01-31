@@ -118,6 +118,77 @@ def find_key_by_email(address):
         if address in message.to:
             return key_regex.search(message.body).groups()[0]
 
+def message_ids(result):
+    return set(message['id'] for message in result['messages'])
+
+def message_stream_count(user_profile):
+    return UserMessage.objects. \
+        select_related("message"). \
+        filter(user_profile=user_profile). \
+        count()
+
+def most_recent_usermessage(user_profile):
+    query = UserMessage.objects. \
+        select_related("message"). \
+        filter(user_profile=user_profile). \
+        order_by('-message')
+    return query[0] # Django does LIMIT here
+
+def most_recent_message(user_profile):
+    usermessage = most_recent_usermessage(user_profile)
+    return usermessage.message
+
+def get_user_messages(user_profile):
+    query = UserMessage.objects. \
+        select_related("message"). \
+        filter(user_profile=user_profile). \
+        order_by('message')
+    return [um.message for um in query]
+
+class DummyObject:
+    pass
+
+class DummyTornadoRequest:
+    def __init__(self):
+        self.connection = DummyObject()
+        self.connection.stream = DummyStream()
+
+class DummyHandler(object):
+    def __init__(self, assert_callback):
+        self.assert_callback = assert_callback
+        self.request = DummyTornadoRequest()
+
+    # Mocks RequestHandler.async_callback, which wraps a callback to
+    # handle exceptions.  We return the callback as-is.
+    def async_callback(self, cb):
+        return cb
+
+    def write(self, response):
+        raise NotImplemented
+
+    def zulip_finish(self, response, *ignore):
+        if self.assert_callback:
+            self.assert_callback(response)
+
+
+class DummySession(object):
+    session_key = "0"
+
+class DummyStream:
+    def closed(self):
+        return False
+
+class POSTRequestMock(object):
+    method = "POST"
+
+    def __init__(self, post_data, user_profile, assert_callback=None):
+        self.REQUEST = self.POST = post_data
+        self.user = user_profile
+        self._tornado_handler = DummyHandler(assert_callback)
+        self.session = DummySession()
+        self._log_data = {}
+        self.META = {'PATH_INFO': 'test'}
+        self._log_data = {}
 
 class AuthedTestCase(TestCase):
     # Helper because self.client.patch annoying requires you to urlencode
