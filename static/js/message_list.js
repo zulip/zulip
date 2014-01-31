@@ -501,6 +501,19 @@ MessageList.prototype = {
         return this._items;
     },
 
+    // Returns messages from the given message list in the specified range, inclusive
+    message_range: function MessageList_message_range(start, end) {
+        if (start === -1) {
+            blueslip.error("message_range given a start of -1");
+        }
+
+        var compare = function (a, b) { return a.id < b; };
+
+        var start_idx = util.lower_bound(this._items, start, compare);
+        var end_idx   = util.lower_bound(this._items, end,   compare);
+        return this._items.slice(start_idx, end_idx + 1);
+    },
+
     get_row: function (id) {
         return this.view.get_row(id);
     },

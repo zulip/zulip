@@ -356,9 +356,9 @@ function main() {
             // Mark messages between old pointer and new pointer as read
             var messages;
             if (event.id < event.previously_selected) {
-                messages = message_store.message_range(event.msg_list, event.id, event.previously_selected);
+                messages = event.msg_list.message_range(event.id, event.previously_selected);
             } else {
-                messages = message_store.message_range(event.msg_list, event.previously_selected, event.id);
+                messages = event.msg_list.message_range(event.previously_selected, event.id);
             }
             unread.mark_messages_as_read(messages, {from: 'pointer'});
         }

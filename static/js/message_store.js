@@ -12,20 +12,6 @@ exports.get = function get(message_id) {
     return msg_metadata_cache[message_id];
 };
 
-// Returns messages from the given message list in the specified range, inclusive
-exports.message_range = function message_range(msg_list, start, end) {
-    if (start === -1) {
-        blueslip.error("message_range given a start of -1");
-    }
-
-    var all = msg_list.all();
-    var compare = function (a, b) { return a.id < b; };
-
-    var start_idx = util.lower_bound(all, start, compare);
-    var end_idx   = util.lower_bound(all, end,   compare);
-    return all.slice(start_idx, end_idx + 1);
-};
-
 exports.process_message_for_recent_subjects = function process_message_for_recent_subjects(message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
