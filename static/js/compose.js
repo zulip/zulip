@@ -426,27 +426,36 @@ function maybe_report_send_times(message_id) {
                      data.rendered_content_disparity || false);
 }
 
-exports.mark_end_to_end_receive_time = function (message_id) {
+function mark_end_to_end_receive_time(message_id) {
     if (exports.send_times_data[message_id] === undefined) {
         exports.send_times_data[message_id] = {};
     }
     exports.send_times_data[message_id].received = new Date();
     maybe_report_send_times(message_id);
-};
+}
 
-exports.mark_end_to_end_display_time = function (message_id) {
+function mark_end_to_end_display_time(message_id) {
     if (exports.send_times_data[message_id] === undefined) {
         exports.send_times_data[message_id] = {};
     }
     exports.send_times_data[message_id].displayed = new Date();
     maybe_report_send_times(message_id);
-};
+}
 
 exports.mark_rendered_content_disparity = function (message_id, changed) {
     if (exports.send_times_data[message_id] === undefined) {
         exports.send_times_data[message_id] = {};
     }
     exports.send_times_data[message_id].rendered_content_disparity = changed;
+};
+
+exports.report_as_received = function report_as_received(message) {
+    if (message.sent_by_me) {
+        mark_end_to_end_receive_time(message.id);
+        setTimeout(function () {
+            mark_end_to_end_display_time(message.id);
+        }, 0);
+    }
 };
 
 function process_send_time(message_id, start_time, locally_echoed) {

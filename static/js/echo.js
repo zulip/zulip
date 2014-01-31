@@ -248,7 +248,7 @@ exports.process_from_server = function process_from_server(messages) {
                 }
             }
             locally_processed_ids.push(client_message.id);
-            message_store.report_as_received(client_message);
+            compose.report_as_received(client_message);
             delete waiting_for_ack[client_message.id];
             return false;
         }

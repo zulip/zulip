@@ -144,15 +144,6 @@ function add_message_metadata(message) {
     return message;
 }
 
-exports.report_as_received = function report_as_received(message) {
-    if (message.sent_by_me) {
-        compose.mark_end_to_end_receive_time(message.id);
-        setTimeout(function () {
-            compose.mark_end_to_end_display_time(message.id);
-        }, 0);
-    }
-};
-
 exports.add_messages = function add_messages(messages, msg_list, opts) {
     if (!messages) {
         return;
@@ -168,7 +159,7 @@ exports.add_messages = function add_messages(messages, msg_list, opts) {
     if (msg_list === home_msg_list && opts.messages_are_new) {
         _.each(messages, function (message) {
             if (message.local_id === undefined) {
-                exports.report_as_received(message);
+                compose.report_as_received(message);
             }
         });
     }
