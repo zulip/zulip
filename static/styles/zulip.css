@@ -57,21 +57,16 @@ a {
     cursor: pointer;
 }
 
-/*
-.container-fluid {
-    max-width: 1230px;
-    margin: 0px auto;
-    padding-left: 5px;
-    padding-right: 5px;
+.ztable_comp_col1 {
+    width: 10px;
 }
-*/
 
 .header {
     position: fixed;
     z-index: 100;
     width: 100%;
     background: #ffffff;
-    border-bottom: 1px solid #eeeeee;
+    border-bottom: 1px solid #dadada;
     height: 40px;
 }
 
@@ -134,8 +129,8 @@ a {
 }
 
 .app-main .column-middle {
-    border-left: 1px solid #eeeeee;
-    border-right: 1px solid #eeeeee;
+    border-left: 1px solid #dadada;
+    border-right: 1px solid #dadada;
 }
 
 .column-middle {
@@ -1493,14 +1488,16 @@ blockquote p {
 
 #compose-container {
     width: 100%;
-    max-width: 1210px;
+    max-width: 1400px;
     margin: auto;
 }
 
 .compose-content {
-    border-top: 1px solid #bbbbbb;
+    border-top: 1px solid #dadada;
+    border-left: 1px solid #dadada;
+    border-right: 1px solid #dadada;
     padding: 8px 15px 8px 10px;
-    margin-left: 260px;
+    margin-left: 250px;
     margin-right: 250px;
     position: relative;
 }
