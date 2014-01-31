@@ -1,12 +1,16 @@
 var message_store = (function () {
 
 var exports = {};
-exports.msg_metadata_cache = {};
+var msg_metadata_cache = {};
 
 var load_more_enabled = true;
 // If the browser hasn't scrolled away from the top of the page
 // since the last time that we ran load_more_messages(), we do
 // not load_more_messages().
+
+exports.get = function get(message_id) {
+    return msg_metadata_cache[message_id];
+};
 
 // Returns messages from the given message list in the specified range, inclusive
 exports.message_range = function message_range(msg_list, start, end) {
@@ -82,7 +86,7 @@ function set_topic_edit_properties(message) {
 }
 
 function add_message_metadata(message) {
-    var cached_msg = exports.msg_metadata_cache[message.id];
+    var cached_msg = exports.get(message.id);
     if (cached_msg !== undefined) {
         // Copy the match subject and content over if they exist on
         // the new message
@@ -150,7 +154,7 @@ function add_message_metadata(message) {
     });
 
     alert_words.process_message(message);
-    exports.msg_metadata_cache[message.id] = message;
+    msg_metadata_cache[message.id] = message;
     return message;
 }
 
@@ -560,9 +564,9 @@ $(function () {
         if (furthest_read === old_id) {
             furthest_read = new_id;
         }
-        if (exports.msg_metadata_cache[old_id]) {
-            exports.msg_metadata_cache[new_id] = exports.msg_metadata_cache[old_id];
-            delete exports.msg_metadata_cache[old_id];
+        if (msg_metadata_cache[old_id]) {
+            msg_metadata_cache[new_id] = msg_metadata_cache[old_id];
+            delete msg_metadata_cache[old_id];
         }
 
         // This handler cannot be in the MessageList constructor, which is the logical place

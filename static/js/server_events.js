@@ -123,7 +123,7 @@ function get_events_success(events) {
                 break;
             case 'read':
                 var msgs_to_update = _.map(event.messages, function (message_id) {
-                    return message_store.msg_metadata_cache[message_id];
+                    return message_store.get(message_id);
                 });
                 unread.mark_messages_as_read(msgs_to_update, {from: "server"});
                 break;
