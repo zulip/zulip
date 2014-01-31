@@ -135,7 +135,7 @@ function copy_handler(e) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('div.selectable_row')[0]), function (row) {
+        start_data = find_boundary_tr($(startc.parents('div.selectable_row, div.recipient_row')[0]), function (row) {
             return row.next();
         });
         if (start_data === undefined) {
