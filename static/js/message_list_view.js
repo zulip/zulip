@@ -260,8 +260,8 @@ MessageListView.prototype = {
                 // Add or update the last_edit_timestr
                 var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
                 message.last_edit_timestr =
-                    (timerender.render_date(last_edit_time))[0].outerHTML
-                    + " " + stringify_time(last_edit_time);
+                    (timerender.render_date(last_edit_time))[0].innerText
+                    + " at " + stringify_time(last_edit_time);
             }
 
             message.dom_id = table_name + message.id;

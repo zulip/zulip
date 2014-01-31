@@ -71,7 +71,7 @@ a {
     z-index: 100;
     width: 100%;
     background: #ffffff;
-    box-shadow: 0px 1px 1px -1px #c4c4c4;
+    border-bottom: 1px solid #eeeeee;
     height: 40px;
 }
 
@@ -85,7 +85,7 @@ a {
 .app-main,
 .header-main {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
     min-width: 950px;
     margin: 0px auto;
     padding: 0px;
@@ -100,8 +100,8 @@ a {
 
 .column-left,
 .column-right {
-    width: 200px;
-    max-width: 200px;
+    width: 250px;
+    max-width: 250px;
 }
 
 .column-left {
@@ -120,7 +120,7 @@ a {
 .app-main .column-right .right-sidebar {
     position: fixed;
     margin-top: 50px;
-    width: 200px;
+    width: 250px;
     z-index:99;
     padding-left: 10px;
 }
@@ -133,9 +133,14 @@ a {
     padding-left: 15px;
 }
 
+.app-main .column-middle {
+    border-left: 1px solid #eeeeee;
+    border-right: 1px solid #eeeeee;
+}
+
 .column-middle {
-    margin-right: 200px;
-    margin-left: 200px;
+    margin-right: 250px;
+    margin-left: 250px;
     position: relative;
 }
 
@@ -299,7 +304,7 @@ a:hover code {
     /* This is a little hacky, but for whatever reason, span2 in a row-fluid
        doesn't consistently take on the right width when it's in an affix, so
        we need to specify a max size. */
-    max-width: 200px;
+    max-width: 250px;
 }
 
 #left-sidebar {
@@ -646,7 +651,7 @@ ul.filters li.out_of_home_view {
      in Firefox only, for some reason; otherwise it gets
      a scrollbar */
     overflow: visible;
-    padding-left: 15px;
+    padding-left: 9px;
 }
 
 
@@ -677,14 +682,59 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
+.include-sender .message_edit_notice {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 14px;
+    margin-left: -10px;
+    position: static;
+    padding: 0px;
+    width: auto;
+}
+
+.message_edit_notice {
+    font-size: 10px;
+    color: #a1a1a1;
+    font-weight: 300;
+    line-height: 0px;
+    text-align: right;
+    width: 45px;
+    position: relative;
+    right: 11px;
+    padding-bottom: 10px;
+}
+
+.include-sender .message_edit_notice:before {
+    content: "(";
+}
+
+.include-sender .message_edit_notice:after {
+    content: ")";
+}
+
+.include-sender .message_time {
+    position: relative;
+    left: 2px;
+    line-height: 14px;
+    vertical-align: top;
+    text-align: left;
+}
+
+
+
 .message_time {
     display: inline-block;
     font-weight: normal;
     font-size: 11px;
     color: #aaa;
     vertical-align: middle;
-    padding: 0px 2px 3px 2px;
+    padding: 0px;
     font-weight: 300;
+    position: absolute;
+    width: 45px;
+    left: -11px;
+    line-height: 24px;
+    text-align: right;
 }
 
 .message_controls {
@@ -721,7 +771,7 @@ td.pointer {
 .stream_label {
     display: inline-block;
     padding: 3px 4px 2px 4px;
-    margin-left: 10px;
+    margin-left: 9px;
     font-weight: normal;
     height: 17px;
     line-height: 17px;
@@ -983,11 +1033,14 @@ just a temporary hack.
     border-right: none;
 }
 
-
-.compose_table .message_header.message_header_private_message,
-.message_header_private_message {
-    background-image: none;
+.message_header_private_message .message_label_clickable {
     background-color: #444444;
+    display: inline-block;
+    padding: 3px 4px 2px 4px;
+    font-weight: normal;
+    font-size: 14px;
+    height: 17px;
+    line-height: 17px;
 }
 
 .compose_table .message_header {
@@ -997,25 +1050,6 @@ just a temporary hack.
     border-radius: 0px;
     box-shadow: none !important;
 }
-
-.pointer_icon {
-    visibility: hidden;
-    color: #000;
-    position: absolute;
-    left: 2px;
-    top: 50%;
-    margin-top: -9px;
-}
-
-
-/* Round edges on the bottom of each message --
-   a necessary evil in the world of tables */
-.last_message .messagebox {
-    border-radius: 0px 0px 3px 3px;
-    border: none;
-    overflow: hidden;
-}
-
 
 /* Base color backgrounds for messageboxes,
    private messages, mentions, and unread messages */
@@ -1029,7 +1063,8 @@ just a temporary hack.
     position: relative;
 }
 
-.private-message .messagebox {
+.private-message .messagebox,
+.message_header_private_message .message-header-contents {
     background-color: #feffe0;
 }
 
@@ -1074,30 +1109,13 @@ just a temporary hack.
     opacity: 1;
 }
 
-.selected_message .pointer_icon {
-    visibility: visible;
-}
-
 .selected_message .messagebox {
     z-index: 1;
-    border-color: #3093c3;
-    box-shadow: 0px 0px 6px 0px #3093c3;
 }
+
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 2px 0px -1px #39afe8, inset 0px -2px 0px -1px #39afe8, inset 9px 0px 0px rgba(255,255,255,0.5);
+    box-shadow: inset 0px 0px 0px 2px #b4becb;
  }
-
- .last_message.selected_message .messagebox-content {
-    box-shadow: inset 0px 2px 0px -1px #39afe8, inset 9px 0px 0px rgba(255,255,255,0.5);
- }
-
-.selected_message .inline_profile_picture {
-    border-color: #AAA;
-}
-
-.selected_message.private-message .inline_profile_picture {
-    border-color: #AAA;
-}
 
 .message_sender {
     height: 0px;
@@ -1110,8 +1128,8 @@ just a temporary hack.
     display: inline-block;
     font-weight: bold;
     vertical-align: top;
-    position: relative;
-    top: -2px;
+    line-height: 12px;
+    font-size: 15px;
 }
 
 .sender-status {
@@ -1213,8 +1231,12 @@ a.message_label_clickable:hover {
     position: relative;
 }
 
+.include-sender .messagebox-border {
+    margin-top: 8px;
+}
+
 .include-sender .message_top_line {
-    margin-top: 5px;
+    margin-top: 6px;
 }
 
 .message-right {
@@ -1266,13 +1288,15 @@ div.focused_table {
 }
 
 .include-sender .message_content {
-    margin-top: -8px;
+    margin-top: -16px;
 }
 
 .message_content {
-    line-height: 18px;
-    padding-left: 35px; /* Also edit #message_edit_form .edit-controls */
+    line-height: 17px;
+    font-size: 13px;
+    padding-left: 46px;
     display: block;
+    position: relative;
 }
 .message_edit_content {
     line-height: 18px;
@@ -1373,7 +1397,7 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 1px 85px 1px 15px;
+    padding: 1px 85px 1px 16px;
 }
 
 .messagebox p {
@@ -1405,7 +1429,6 @@ blockquote p {
 }
 
 #send_message_form .message_content {
-    display: table-row;
     margin-right: 0px;
 }
 
@@ -1453,15 +1476,11 @@ blockquote p {
 
 .inline_profile_picture {
     display: inline-block;
-    width: 25px;
-    height: 25px;
-    margin-right: 5px;
-    background-size: 25px 25px;
-    border-radius: 25px;
-    border: 1px solid #CCC;
+    width: 35px;
+    height: 35px;
+    margin-right: 11px;
+    background-size: 35px 35px;
     vertical-align: top;
-    position: relative;
-    left: -1px;
 }
 
 #compose {
@@ -1481,8 +1500,8 @@ blockquote p {
 .compose-content {
     border-top: 1px solid #bbbbbb;
     padding: 8px 15px 8px 10px;
-    margin-left: 210px;
-    margin-right: 200px;
+    margin-left: 260px;
+    margin-right: 250px;
     position: relative;
 }
 
@@ -2087,7 +2106,7 @@ div.floating_recipient {
     border-collapse: separate;
     width: 100%;
     position: relative;
-    top: 55px;
+    top: 50px;
     /* Needs body background because the child row becomes transparent when faded */
     background: #f4f5f4;
 }
@@ -3170,10 +3189,6 @@ div.edit_bot {
     margin-left: -15px;
 }
 
-.message_edit_notice {
-    font-size: 11px;
-}
-
 .message_body_gravatar {
     width: 20px;
     height: 20px;
@@ -3186,7 +3201,8 @@ div.edit_bot {
     background-color: #eee;
     border-radius: 3px;
     padding: 0 0.2em;
-    border: 1px solid #ccc;
+    box-shadow: 0px 0px 0px 1px #ccc;
+    margin-right: 2px;
     white-space: nowrap;
     background-image: -moz-linear-gradient(top, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
     background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.1)), color-stop(100%,rgba(0,0,0,0)));
@@ -3499,7 +3515,7 @@ div.edit_bot {
 
 #home {
     margin-top: 41px;
-    padding-right: 5px;
+    padding-right: 9px;
 }
 
 #home .alert-bar-container {
@@ -3782,7 +3798,7 @@ div.edit_bot {
         padding-top: 10px;
         height: 100%;
         padding-left: 10px;
-        width: 200px;
+        width: 250px;
     }
 
     body, html,
