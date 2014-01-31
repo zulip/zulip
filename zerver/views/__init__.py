@@ -1591,7 +1591,7 @@ def api_fetch_api_key(request, username=REQ, password=REQ):
         return json_error("Your username or password is incorrect.", data={"reason": "incorrect_creds"}, status=403)
     if not user_profile.is_active:
         return json_error("Your account has been disabled.", data={"reason": "disabled"}, status=403)
-    return json_success({"api_key": user_profile.api_key})
+    return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 @authenticated_json_post_view
 @has_request_variables
