@@ -17,9 +17,20 @@ function get_events_success(events) {
     var messages_to_update = [];
     var new_pointer;
 
+    var clean_event = function clean_event (event) {
+        // Only log a whitelist of the event to remove private data
+        return _.pick(event, 'id', 'type', 'op');
+    };
+
     _.each(events, function (event) {
-        get_events_params.last_event_id = Math.max(get_events_params.last_event_id,
-                                                   event.id);
+        try {
+            get_events_params.last_event_id = Math.max(get_events_params.last_event_id,
+                                                       event.id);
+        } catch (ex) {
+            blueslip.error('Failed to update last_event_id',
+                           {event: clean_event(event)},
+                           ex.stack);
+        }
     });
 
     if (tutorial.is_running()) {
@@ -42,7 +53,7 @@ function get_events_success(events) {
         events_stored_while_loading = [];
     }
 
-    _.each(events, function (event) {
+    var dispatch_event = function dispatch_event(event) {
         switch (event.type) {
         case 'message':
             var msg = event.message;
@@ -146,11 +157,27 @@ function get_events_success(events) {
             echo.set_realm_filters(page_params.realm_filters);
             break;
         }
+    };
+
+    _.each(events, function (event) {
+        try {
+            dispatch_event(event);
+        } catch (ex1) {
+            blueslip.error('Failed to process an event',
+                           {event: clean_event(event)},
+                           ex1.stack);
+        }
     });
 
     if (messages.length !== 0) {
-        messages = echo.process_from_server(messages);
-        message_store.insert_new_messages(messages);
+        try {
+            messages = echo.process_from_server(messages);
+            message_store.insert_new_messages(messages);
+        } catch (ex2) {
+            blueslip.error('Failed to insert new messages',
+                           undefined,
+                           ex2.stack);
+        }
     }
 
     if (new_pointer !== undefined
@@ -166,7 +193,13 @@ function get_events_success(events) {
     }
 
     if (messages_to_update.length !== 0) {
-        message_store.update_messages(messages_to_update);
+        try {
+            message_store.update_messages(messages_to_update);
+        } catch (ex3) {
+            blueslip.error('Failed to update messages',
+                           undefined,
+                           ex3.stack);
+        }
     }
 }
 
@@ -192,42 +225,53 @@ function get_events(options) {
         idempotent: true,
         timeout:  page_params.poll_timeout,
         success: function (data) {
-            get_events_xhr = undefined;
-            get_events_failures = 0;
-            $('#connection-error').hide();
+            try {
+                get_events_xhr = undefined;
+                get_events_failures = 0;
+                $('#connection-error').hide();
 
-            get_events_success(data.events);
+                get_events_success(data.events);
+            } catch (ex) {
+                blueslip.error('Failed to handle get_events success',
+                               undefined,
+                               ex.stack);
+            }
             get_events_timeout = setTimeout(get_events, 0);
         },
         error: function (xhr, error_type, exn) {
-            get_events_xhr = undefined;
-            // If we are old enough to have messages outside of the
-            // Tornado cache or if we're old enough that our message
-            // queue has been garbage collected, immediately reload.
-            if ((xhr.status === 400) &&
-                ($.parseJSON(xhr.responseText).msg.indexOf("too old") !== -1 ||
-                 $.parseJSON(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
-                page_params.event_queue_expired = true;
-                reload.initiate({immediate: true});
-            }
+            try {
+                get_events_xhr = undefined;
+                // If we are old enough to have messages outside of the
+                // Tornado cache or if we're old enough that our message
+                // queue has been garbage collected, immediately reload.
+                if ((xhr.status === 400) &&
+                    ($.parseJSON(xhr.responseText).msg.indexOf("too old") !== -1 ||
+                     $.parseJSON(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
+                    page_params.event_queue_expired = true;
+                    reload.initiate({immediate: true});
+                }
 
-            if (error_type === 'abort') {
-                // Don't restart if we explicitly aborted
-                return;
-            } else if (error_type === 'timeout') {
-                // Retry indefinitely on timeout.
-                get_events_failures = 0;
-                $('#connection-error').hide();
-            } else {
-                get_events_failures += 1;
-            }
+                if (error_type === 'abort') {
+                    // Don't restart if we explicitly aborted
+                    return;
+                } else if (error_type === 'timeout') {
+                    // Retry indefinitely on timeout.
+                    get_events_failures = 0;
+                    $('#connection-error').hide();
+                } else {
+                    get_events_failures += 1;
+                }
 
-            if (get_events_failures >= 5) {
-                $('#connection-error').show();
-            } else {
-                $('#connection-error').hide();
+                if (get_events_failures >= 5) {
+                    $('#connection-error').show();
+                } else {
+                    $('#connection-error').hide();
+                }
+            } catch (ex) {
+                blueslip.error('Failed to handle get_events error',
+                               undefined,
+                               ex.stack);
             }
-
             var retry_sec = Math.min(90, Math.exp(get_events_failures/2));
             get_events_timeout = setTimeout(get_events, retry_sec*1000);
         }
