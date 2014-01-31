@@ -171,24 +171,25 @@ def api_github_landing(request, user_profile, event=REQ,
     kwargs = dict()
 
     ### realm-specific logic
-    if user_profile.realm.domain == "customer26.invalid" and short_ref:
+    domain = user_profile.realm.domain
+    if domain == "customer26.invalid" and short_ref:
         kwargs['topic_focus'] = short_ref
 
     # CUSTOMER18 has requested not to get pull request notifications
-    if (event == 'pull_request' and user_profile.realm.domain in ['customer18.invalid']) or exclude_pull_requests:
+    if (event == 'pull_request' and domain in ['customer18.invalid']) or exclude_pull_requests:
         return json_success()
 
     # Only Zulip, CUSTOMER5, and CMU get issues right now
     # TODO: is this still the desired behavior?
-    if event == 'issues' and user_profile.realm.domain not in ('zulip.com', 'customer5.invalid', 'customer27.invalid') or exclude_issues:
+    if event == 'issues' and domain not in ('zulip.com', 'customer5.invalid', 'customer27.invalid') or exclude_issues:
         return json_success()
 
     # CUSTOMER37 and CUSTOMER38 do not want github issues traffic, or push notifications, only pull requests.
-    if event in ('issues', 'issue_comment', 'push') and user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
+    if event in ('issues', 'issue_comment', 'push') and domain in ('customer37.invalid', 'customer38.invalid'):
         return json_success()
 
     # CUSTOMER23 doesn't want synchronize events for pull_requests
-    if event == "pull_request" and payload['action'] == "synchronize" and user_profile.realm.domain == "customer23.invalid":
+    if event == "pull_request" and payload['action'] == "synchronize" and domain == "customer23.invalid":
         return json_success()
 
     ### Zulip-specific logic
@@ -208,7 +209,7 @@ def api_github_landing(request, user_profile, event=REQ,
         # Long-term, this will be replaced by some GitHub configuration
         # option of which branches to notify on.
         # FIXME: get CUSTOMER18 to use the branch whitelist
-        if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'zulip.com']:
+        if short_ref != 'master' and domain in ['customer18.invalid', 'zulip.com']:
             return json_success()
 
         # If we are given a whitelist of branches, then we silently ignore
@@ -225,7 +226,7 @@ def api_github_landing(request, user_profile, event=REQ,
     # customer14.invalid has a stream per GitHub project and wants the topic to
     # always be 'GitHub'.
     # TODO: I'm not sure how to accomodate this hack into a configuration somewhere.
-    if user_profile.realm.domain == "customer14.invalid":
+    if domain == "customer14.invalid":
         subject = "GitHub"
 
     request.client = get_client("ZulipGitHubWebhook")
