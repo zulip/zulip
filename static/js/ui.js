@@ -135,7 +135,7 @@ function copy_handler(e) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('div.selectable_row, div.recipient_row')[0]), function (row) {
+        start_data = find_boundary_tr($(startc.parents('.selectable_row, .recipient_row')[0]), function (row) {
             return row.next();
         });
         if (start_data === undefined) {
@@ -147,10 +147,10 @@ function copy_handler(e) {
         // If the selection ends in the bottom whitespace, we should act as
         // though the selection ends on the final message
         if (endc.attr('id') === "bottom_whitespace") {
-            initial_end_tr = $("div.message_row:last");
+            initial_end_tr = $(".message_row:last");
             skip_same_td_check = true;
         } else {
-            initial_end_tr = $(endc.parents('div.selectable_row')[0]);
+            initial_end_tr = $(endc.parents('.selectable_row')[0]);
         }
         end_data = find_boundary_tr(initial_end_tr, function (row) {
             return row.prev();
@@ -167,7 +167,7 @@ function copy_handler(e) {
         // If the selection starts and ends in the same td,
         // we want to let the browser handle the copy-paste mostly on its own
         if (!skip_same_td_check &&
-            startc.parents('div.selectable_row>div')[0] === endc.parents('div.selectable_row>div')[0]) {
+            startc.parents('.selectable_row>div')[0] === endc.parents('.selectable_row>div')[0]) {
 
             // If the user is not running the desktop app, let the browser handle
             // the copy entirely on its own
