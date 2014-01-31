@@ -52,7 +52,7 @@ function resend_message(message, row) {
         compose.send_message_success(message.local_id, message_id, start_time, true);
 
         // Resend succeeded, so mark as no longer failed
-        all_msg_list.get(message_id).failed_request = false;
+        message_store.get(message_id).failed_request = false;
         ui.show_failed_message_success(message_id);
     }, function error(response) {
         exports.message_send_error(message.local_id, response);
@@ -271,7 +271,7 @@ exports.process_from_server = function process_from_server(messages) {
 
 exports.message_send_error = function message_send_error(local_id, error_response) {
     // Error sending message, show inline
-    all_msg_list.get(local_id).failed_request = true;
+    message_store.get(local_id).failed_request = true;
     ui.show_message_failed(local_id, error_response);
 };
 

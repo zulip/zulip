@@ -889,7 +889,7 @@ exports.expand_summary_row = function (row) {
 exports.collapse_recipient_group = function (row) {
     var message_ids = row.attr('data-messages').split(',');
     var messages = _.map(message_ids, function (id) {
-        return all_msg_list.get(id);
+        return message_store.get(id);
     });
 
     _.each(messages, function (msg){

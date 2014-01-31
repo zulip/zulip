@@ -215,7 +215,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 
 exports.update_messages = function update_messages(events) {
     _.each(events, function (event) {
-        var msg = all_msg_list.get(event.message_id);
+        var msg = exports.get(event.message_id);
         if (msg === undefined) {
             return;
         }
@@ -235,7 +235,7 @@ exports.update_messages = function update_messages(events) {
             // event.message_ids. event.message_id is still the first message
             // where the user initiated the edit.
             _.each(event.message_ids, function (id) {
-                var msg = all_msg_list.get(id);
+                var msg = message_store.get(id);
                 if (msg === undefined) {
                     return;
                 }
