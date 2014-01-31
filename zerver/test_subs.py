@@ -326,13 +326,10 @@ class StreamAdminTest(AuthedTestCase):
             {"subscriptions": ujson.dumps([stream.name]),
              "principals": ujson.dumps([other_email])})
 
-        try:
-            # If the removal was successful, check that the principal is no
-            # longer subbed.
-            self.assertNotIn(other_user_profile, self.users_subscribed_to_stream(
-                    stream_name, other_user_profile.realm.domain))
-        except AssertionError:
-            pass
+        # If the removal succeeded, then assert that Cordelia is no longer subscribed.
+        if result.status_code not in [400]:
+            subbed_users = self.users_subscribed_to_stream(stream_name, other_user_profile.realm.domain)
+            self.assertNotIn(other_user_profile, subbed_users)
 
         return result
 
