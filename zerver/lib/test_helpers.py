@@ -291,18 +291,18 @@ class AuthedTestCase(TestCase):
         self.assertIn("msg", json)
         return json
 
-    def get_json_error(self, result):
-        self.assertEqual(result.status_code, 400)
+    def get_json_error(self, result, status_code=400):
+        self.assertEqual(result.status_code, status_code)
         json = ujson.loads(result.content)
         self.assertEqual(json.get("result"), "error")
         return json['msg']
 
-    def assert_json_error(self, result, msg):
+    def assert_json_error(self, result, msg, status_code=400):
         """
-        Invalid POSTs return a 400 and JSON of the form {"result": "error",
-        "msg": "reason"}.
+        Invalid POSTs return an error status code and JSON of the form
+        {"result": "error", "msg": "reason"}.
         """
-        self.assertEqual(self.get_json_error(result), msg)
+        self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
     def assert_length(self, queries, count, exact=False):
         if exact:

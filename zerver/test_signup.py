@@ -81,6 +81,49 @@ class PublicURLTest(TestCase):
         for status_code, url_set in post_urls.iteritems():
             self.fetch("post", url_set, status_code)
 
+class SignupTest(AuthedTestCase):
+    def test_signup_page_looks_right(self):
+        """
+        Requesting /signup/ returns a successful status code and the expected
+        text.
+        """
+        result = self.client.get("/signup/")
+        self.assertEquals(result.status_code, 200)
+        self.assertIn("Does your company already use Zulip?", result.content)
+        self.assertIn("I'm looking forward to it!", result.content)
+
+    def test_signup_for_new_realm(self):
+        """
+        You sign up a new group by sending company information to the sign-me-up
+        endpoint.
+        """
+        result = self.client.post("/signup/sign-me-up",
+                                  {"name": "King Hamlet",
+                                   "email": "hamlet@denmark.com",
+                                   "company": "Denmark",
+                                   "count": 10,
+                                   "product": "soliloquys"})
+        self.assert_json_success(result)
+
+    def test_signup_for_existing_realm(self):
+        """
+        If you try to sign up with an e-mail address from an existing group, you
+        probably meant to register, so we send you a registration confirmation
+        link.
+        """
+        result = self.client.post("/signup/sign-me-up",
+                                  {"name": "Claudius",
+                                   "email": "claudius@zulip.com",
+                                   "company": "Denmark",
+                                   "count": 10,
+                                   "product": "soliloquys"})
+        self.assert_json_error(result, "Your group is already signed up!",
+                               status_code=403)
+        from django.core.mail import outbox
+        registration_email = outbox.pop()
+        self.assertIn("To complete signup, visit this link below",
+                      registration_email.body)
+
 class LoginTest(AuthedTestCase):
     """
     Logging in, registration, and logging out.
