@@ -376,13 +376,16 @@ exports.warn = function blueslip_warn (msg, more_info) {
     }
 };
 
-exports.error = function blueslip_error (msg, more_info) {
+exports.error = function blueslip_error (msg, more_info, stack) {
     if (page_params.debug_mode) {
         throw new BlueslipError(msg, more_info);
     } else {
+        if (stack === undefined) {
+            stack = Error().stack;
+        }
         var args = build_arg_list(msg, more_info);
         logger.error.apply(logger, args);
-        report_error(msg, Error().stack, {more_info: more_info});
+        report_error(msg, stack, {more_info: more_info});
     }
 };
 
