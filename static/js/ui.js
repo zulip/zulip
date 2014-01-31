@@ -175,6 +175,13 @@ function copy_handler(e) {
                 return;
             }
 
+            // Do nothing if the user is selecting anything while editing,
+            // as in that case we want to let the browser select the
+            // text field text as usual
+            if (startc.hasClass('edit-controls')) {
+                return;
+            }
+
             // If the user is running the desktop app, we still create "div"
             // so that we can replace emoji with their text
             div.append(range.cloneContents());
