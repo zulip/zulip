@@ -687,33 +687,6 @@ function hack_for_floating_recipient_bar() {
     floating_recipient.offset(offset);
 }
 
-var batched_updaters = {};
-
-function sync_message_flag(messages, flag_name, set_flag) {
-    var op = set_flag ? 'add' : 'remove';
-    var flag_key = flag_name + '_' + op;
-    var updater;
-
-    if (batched_updaters.hasOwnProperty(flag_key)) {
-        updater = batched_updaters[flag_key];
-    } else {
-        updater = batched_flag_updater(flag_name, op, true);
-        batched_updaters[flag_key] = updater;
-    }
-
-    _.each(messages, function (message) {
-        updater(message);
-    });
-}
-
-function sync_message_collapse(message, collapsed) {
-    sync_message_flag([message], "collapsed", collapsed);
-}
-
-function sync_message_star(message, starred) {
-    sync_message_flag([message], "starred", starred);
-}
-
 function update_message_in_all_views(message_id, callback) {
     _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (list) {
         if (list === undefined) {
@@ -772,7 +745,7 @@ function toggle_star(message_id) {
 
     mark_message_as_read(message);
     exports.update_starred(message.id, message.starred !== true);
-    sync_message_star(message, message.starred);
+    message_flags.send_starred([message], message.starred);
 }
 
 var local_messages_to_show = [];
@@ -871,7 +844,7 @@ exports.uncollapse = function (row) {
     var content = row.find(".message_content");
     message.collapsed = false;
     content.removeClass("collapsed");
-    sync_message_collapse(message, false);
+    message_flags.send_collapsed([message], false);
 
     if (message.condensed === true) {
         // This message was condensed by the user, so re-show the
@@ -895,7 +868,7 @@ exports.collapse = function (row) {
     // [Condense] link if necessary.
     var message = current_msg_list.get(rows.id(row));
     message.collapsed = true;
-    sync_message_collapse(message, true);
+    message_flags.send_collapsed([message], true);
     row.find(".message_content").addClass("collapsed");
     show_more_link(row);
 };
@@ -910,9 +883,8 @@ exports.expand_summary_row = function (row) {
         msg.flags = _.without(msg.flags, 'force_collapse');
         msg.flags.push('force_expand');
     });
-    sync_message_flag(messages, 'force_expand', true);
-    sync_message_flag(messages, 'force_collapse', false);
-
+    message_flags.send_force_expand(messages, true);
+    message_flags.send_force_collapse(messages, false);
 
     //TODO: Avoid a full re-render
     home_msg_list.rerender();
@@ -933,8 +905,8 @@ exports.collapse_recipient_group = function (row) {
         msg.flags = _.without(msg.flags, 'force_expand');
         msg.flags.push('force_collapse');
     });
-    sync_message_flag(messages, 'force_collapse', true);
-    sync_message_flag(messages, 'force_expand', false);
+    message_flags.send_force_expand(messages, false);
+    message_flags.send_force_collapse(messages, true);
 
     //TODO: Avoid a full re-render
     home_msg_list.rerender();

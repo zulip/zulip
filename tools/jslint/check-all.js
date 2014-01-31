@@ -28,6 +28,7 @@ var globals =
     + ' message_edit tab_bar emoji popovers navigate people settings'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
     + ' Filter summary admin stream_data muting WinChan muting_ui Socket channel'
+    + ' message_flags'
 
     // colorspace.js
     + ' colorspace'
@@ -65,9 +66,7 @@ var globals =
     + ' fast_forward_pointer recent_subjects unread_subjects'
     + ' furthest_read server_furthest_read update_messages'
     + ' add_message_metadata'
-    + ' mark_message_as_read batched_flag_updater'
-    + ' send_summarize_in_home'
-    + ' send_summarize_in_stream'
+    + ' mark_message_as_read'
     + ' suppress_unread_counts'
     + ' msg_metadata_cache'
     + ' report_as_received'

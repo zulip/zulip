@@ -8,12 +8,12 @@ var exports = {};
 function mark_summarized(message) {
     if (narrow.narrowed_by_reply()) {
         // Narrowed to a topic or PM recipient
-        send_summarize_in_stream(message);
+        message_flags.send_summarize_in_stream(message);
     }
 
     if (narrow.active() && !narrow.narrowed_to_search()) {
         // Narrowed to anything except a search
-        send_summarize_in_home(message);
+        message_flags.send_summarize_in_home(message);
     }
 }
 

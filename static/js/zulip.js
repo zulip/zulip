@@ -204,75 +204,6 @@ function message_range(msg_list, start, end) {
     return all.slice(start_idx, end_idx + 1);
 }
 
-function batched_flag_updater(flag, op, immediate) {
-    var queue = [];
-    var on_success;
-    var start;
-
-    function server_request() {
-        // Wait for server IDs before sending flags
-        var real_msgs = _.filter(queue, function (msg) {
-            return msg.local_id === undefined;
-        });
-        var real_msg_ids = _.map(real_msgs, function (msg) {
-            return msg.id;
-        });
-
-        if (real_msg_ids.length === 0) {
-            start();
-            return;
-        }
-
-        channel.post({
-            url:      '/json/update_message_flags',
-            idempotent: true,
-            data:     {messages: JSON.stringify(real_msg_ids),
-                       op:       op,
-                       flag:     flag},
-            success:  on_success
-        });
-    }
-
-    if (immediate) {
-        start = server_request;
-    } else {
-        start = _.debounce(server_request, 1000);
-    }
-
-    on_success = function on_success(data, status, jqXHR) {
-        if (data ===  undefined || data.messages === undefined) {
-            return;
-        }
-
-        queue = _.filter(queue, function (message) {
-            return data.messages.indexOf(message.id) === -1;
-        });
-
-        if (queue.length > 0) {
-            start();
-        }
-    };
-
-    function add(message) {
-        if (message.flags === undefined) {
-            message.flags = [];
-        }
-        if (op === 'add')  {
-            message.flags.push(flag);
-        } else {
-            message.flags = _.without(message.flags, flag);
-        }
-        queue.push(message);
-        start();
-    }
-
-    return add;
-}
-
-var send_read = batched_flag_updater('read', 'add');
-var send_summarize_in_stream = batched_flag_updater('summarize_in_stream', 'add');
-var send_summarize_in_home = batched_flag_updater('summarize_in_home', 'add');
-
 function update_unread_counts() {
     if (suppress_unread_counts) {
         return;
@@ -336,7 +267,7 @@ function mark_messages_as_read(messages, options) {
         }
 
         if (options.from !== "server") {
-            send_read(message);
+            message_flags.send_read(message);
         }
         summary.maybe_mark_summarized(message);
 
