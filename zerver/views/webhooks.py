@@ -187,6 +187,10 @@ def api_github_landing(request, user_profile, event=REQ,
     if event in ('issues', 'issue_comment', 'push') and user_profile.realm.domain in ('customer37.invalid', 'customer38.invalid'):
         return json_success()
 
+    # CUSTOMER23 doesn't want synchronize events for pull_requests
+    if event == "pull_request" and payload['action'] == "synchronize" and user_profile.realm.domain == "customer23.invalid":
+        return json_success()
+
     ### Zulip-specific logic
 
     # We currently handle push, pull_request, issues, issue_comment, commit_comment
