@@ -31,7 +31,7 @@ exports.down = function (with_centering) {
         // always returns a message.
         var current_msg_table = rows.get_table(current_msg_list.table_name);
         viewport.scrollTop(current_msg_table.outerHeight(true) - viewport.height() * 0.1);
-        mark_current_list_as_read();
+        unread.mark_current_list_as_read();
     }
 };
 
@@ -48,7 +48,7 @@ exports.to_end = function () {
     last_viewport_movement_direction = 1;
     current_msg_list.select_id(next_id, {then_scroll: true,
                                          from_scroll: true});
-    mark_current_list_as_read();
+    unread.mark_current_list_as_read();
 };
 
 exports.page_up = function () {
@@ -63,7 +63,7 @@ exports.page_up = function () {
 exports.page_down = function () {
     if (viewport.at_bottom() && !current_msg_list.empty()) {
         current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
-        mark_current_list_as_read();
+        unread.mark_current_list_as_read();
     }
     else {
         ui.page_down_the_right_amount();

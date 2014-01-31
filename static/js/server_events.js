@@ -125,7 +125,7 @@ function get_events_success(events) {
                 var msgs_to_update = _.map(event.messages, function (message_id) {
                     return msg_metadata_cache[message_id];
                 });
-                mark_messages_as_read(msgs_to_update, {from: "server"});
+                unread.mark_messages_as_read(msgs_to_update, {from: "server"});
                 break;
             }
             break;

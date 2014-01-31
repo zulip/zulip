@@ -423,7 +423,7 @@ $(function () {
                 stream_li.addClass('active-filter');
             }
             rebuild_recent_subjects(op_stream[0], subject);
-            process_visible_unread_messages();
+            unread.process_visible();
         }
         var op_pm = event.filter.operands('pm-with');
         if (op_pm.length === 1) {

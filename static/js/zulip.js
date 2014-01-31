@@ -204,111 +204,14 @@ function message_range(msg_list, start, end) {
     return all.slice(start_idx, end_idx + 1);
 }
 
-function update_unread_counts() {
-    if (suppress_unread_counts) {
-        return;
-    }
-
-    // Pure computation:
-    var res = unread.get_counts();
-
-    // Side effects from here down:
-    // This updates some DOM elements directly, so try to
-    // avoid excessive calls to this.
-    stream_list.update_dom_with_unread_counts(res);
-    notifications.update_title_count(res.home_unread_messages);
-    notifications.update_pm_count(res.private_message_count);
-    notifications_bar.update(res.home_unread_messages);
-}
-
-function enable_unread_counts() {
-    suppress_unread_counts = false;
-    update_unread_counts();
-}
-
-function mark_all_as_read(cont) {
-    _.each(all_msg_list.all(), function (msg) {
-        msg.flags = msg.flags || [];
-        msg.flags.push('read');
-    });
-    unread.declare_bankruptcy();
-    update_unread_counts();
-
-    channel.post({
-        url:      '/json/update_message_flags',
-        idempotent: true,
-        data:     {messages: JSON.stringify([]),
-                   all:      true,
-                   op:       'add',
-                   flag:     'read'},
-        success:  cont});
-}
-
+// Moving this to unread.js is a little messy because there is already
+// an unread.process_loaded_messages (which this calls)
 function process_loaded_for_unread(messages) {
     activity.process_loaded_messages(messages);
     activity.update_huddles();
     unread.process_loaded_messages(messages);
-    update_unread_counts();
+    unread.update_unread_counts();
     ui.resize_page_components();
-}
-
-// Takes a list of messages and marks them as read
-function mark_messages_as_read(messages, options) {
-    options = options || {};
-    var processed = false;
-
-    _.each(messages, function (message) {
-        if (!unread.message_unread(message)) {
-            // Don't do anything if the message is already read.
-            return;
-        }
-        if (current_msg_list === narrowed_msg_list) {
-            unread_messages_read_in_narrow = true;
-        }
-
-        if (options.from !== "server") {
-            message_flags.send_read(message);
-        }
-        summary.maybe_mark_summarized(message);
-
-        message.unread = false;
-        unread.process_read_message(message, options);
-        home_msg_list.show_message_as_read(message, options);
-        all_msg_list.show_message_as_read(message, options);
-        if (narrowed_msg_list) {
-            narrowed_msg_list.show_message_as_read(message, options);
-        }
-        notifications.close_notification(message);
-        processed = true;
-    });
-
-    if (processed) {
-        update_unread_counts();
-    }
-}
-
-function mark_message_as_read(message, options) {
-    mark_messages_as_read([message], options);
-}
-
-// If we ever materially change the algorithm for this function, we
-// may need to update notifications.received_messages as well.
-function process_visible_unread_messages(update_cursor) {
-    if (! notifications.window_has_focus()) {
-        return;
-    }
-
-    if (feature_flags.mark_read_at_bottom) {
-        if (viewport.bottom_message_visible()) {
-            mark_current_list_as_read();
-        }
-    } else {
-        mark_messages_as_read(viewport.visible_messages(true));
-    }
-}
-
-function mark_current_list_as_read(options) {
-    mark_messages_as_read(current_msg_list.all(), options);
 }
 
 function respond_to_message(opts) {
@@ -323,7 +226,7 @@ function respond_to_message(opts) {
         return;
     }
 
-    mark_message_as_read(message);
+    unread.mark_message_as_read(message);
 
     var stream = '';
     var subject = '';
@@ -588,7 +491,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 
             new_messages = _.map(new_messages, add_message_metadata);
             add_messages(new_messages, msg_list, {messages_are_new: messages_are_new});
-            process_visible_unread_messages();
+            unread.process_visible();
             notifications.possibly_notify_new_messages_outside_viewport(new_messages);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -663,7 +566,7 @@ function update_messages(events) {
     if (current_msg_list === narrowed_msg_list) {
         narrowed_msg_list.rerender();
     }
-    update_unread_counts();
+    unread.update_unread_counts();
     stream_list.update_streams_sidebar();
 }
 
@@ -679,7 +582,7 @@ function insert_new_messages(messages) {
     }
 
     // You must add add messages to home_msg_list BEFORE
-    // calling process_loaded_for_unread.
+    // calling unread.process_loaded_messages.
     add_messages(messages, home_msg_list, {messages_are_new: true});
     add_messages(messages, all_msg_list, {messages_are_new: true});
 
@@ -695,7 +598,7 @@ function insert_new_messages(messages) {
         notifications.possibly_notify_new_messages_outside_viewport(messages);
     }
 
-    process_loaded_for_unread(messages);
+    unread.process_loaded_messages(messages);
 
     if (narrow.narrowed_by_reply()) {
         // If you send a message when narrowed to a recipient, move the
@@ -720,7 +623,7 @@ function insert_new_messages(messages) {
         }
     }
 
-    process_visible_unread_messages();
+    unread.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
 }
@@ -741,7 +644,7 @@ function process_result(messages, opts) {
     // the all_msg_list as well, as the home_msg_list is reconstructed
     // from all_msg_list.
     if (opts.msg_list === home_msg_list) {
-        process_loaded_for_unread(messages);
+        unread.process_loaded_messages(messages);
         add_messages(messages, all_msg_list, {messages_are_new: false});
     }
 
@@ -873,7 +776,7 @@ function fast_forward_pointer() {
         idempotent: true,
         data: {email: page_params.email},
         success: function (data) {
-            mark_all_as_read(function () {
+            unread.mark_all_as_read(function () {
                 furthest_read = data.max_message_id;
                 unconditionally_send_pointer_update().then(function () {
                     ui.change_tab_to('#home');
@@ -892,7 +795,7 @@ function consider_bankruptcy() {
 
     if (!page_params.furthest_read_time) {
         // We've never read a message.
-        enable_unread_counts();
+        unread.enable();
         return;
     }
 
@@ -904,7 +807,7 @@ function consider_bankruptcy() {
         $('#bankruptcy-unread-count').html(unread_info);
         $('#bankruptcy').modal('show');
     } else {
-        enable_unread_counts();
+        unread.enable();
     }
 }
 
@@ -950,7 +853,7 @@ function main() {
             } else {
                 messages = message_range(event.msg_list, event.previously_selected, event.id);
             }
-            mark_messages_as_read(messages, {from: 'pointer'});
+            unread.mark_messages_as_read(messages, {from: 'pointer'});
         }
     });
 

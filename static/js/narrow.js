@@ -324,7 +324,7 @@ exports.by_subject = function (target_id, opts) {
         exports.by_recipient(target_id, opts);
         return;
     }
-    mark_message_as_read(original);
+    unread.mark_message_as_read(original);
     opts = _.defaults({}, opts, {then_select_id: target_id});
     exports.activate([
             ['stream',  original.stream],
@@ -337,7 +337,7 @@ exports.by_recipient = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var message = msg_metadata_cache[target_id];
-    mark_message_as_read(message);
+    unread.mark_message_as_read(message);
     switch (message.type) {
     case 'private':
         exports.by('pm-with', message.reply_to, opts);

@@ -720,7 +720,7 @@ exports.update_starred = function (message_id, starred) {
     // lists.
     var message = find_message(message_id);
 
-    mark_message_as_read(message);
+    unread.mark_message_as_read(message);
 
     message.starred = starred;
 
@@ -743,7 +743,7 @@ function toggle_star(message_id) {
     // lists.
     var message = find_message(message_id);
 
-    mark_message_as_read(message);
+    unread.mark_message_as_read(message);
     exports.update_starred(message.id, message.starred !== true);
     message_flags.send_starred([message], message.starred);
 }
@@ -1712,7 +1712,7 @@ $(function () {
     });
 
     $(".bankruptcy_button").click(function (e) {
-        enable_unread_counts();
+        unread.enable();
     });
 
     $('#yes-bankrupt').click(function (e) {
@@ -1769,9 +1769,9 @@ function scroll_finished() {
         }
         // When the window scrolls, it may cause some messages to
         // enter the screen and become read.  Calling
-        // process_visible_unread_messages will update necessary
+        // unread.process_visible will update necessary
         // data structures and DOM elements.
-        setTimeout(process_visible_unread_messages, 0);
+        setTimeout(unread.process_visible, 0);
     }
 }
 
@@ -1788,7 +1788,7 @@ var saved_compose_cursor = 0;
 
 $(function () {
     viewport.message_pane.scroll($.throttle(50, function (e) {
-        process_visible_unread_messages();
+        unread.process_visible();
         scroll_finish();
     }));
 

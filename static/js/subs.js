@@ -105,7 +105,7 @@ function update_in_home_view(sub, value) {
         suppress_scroll_pointer_update = true;
 
         if (! home_msg_list.empty()) {
-            process_loaded_for_unread(home_msg_list.all());
+            unread.process_loaded_messages(home_msg_list.all());
         }
     }, 0);
 
@@ -297,7 +297,7 @@ function mark_subscribed(stream_name, attrs) {
 
     // Update unread counts as the new stream in sidebar might
     // need its unread counts re-calculated
-    process_loaded_for_unread(all_msg_list.all());
+    unread.process_loaded_messages(all_msg_list.all());
 
     $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
 }
