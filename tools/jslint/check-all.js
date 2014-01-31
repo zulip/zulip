@@ -128,7 +128,7 @@ process.argv.forEach(function (filepath) {
         if (filepath.indexOf('zerver/tests/frontend/') !== -1) {
             // Include '$' and browser globals because we use them inside
             // casper.evaluate
-            options.predef = ['casper', '$', 'document', 'window', 'set_global', 'add_dependencies', 'assert'];
+            options.predef = ['casper', '$', 'document', 'window', 'set_global', 'add_dependencies', 'patch_builtin', 'assert'];
         } else {
             options.predef = [];
         }

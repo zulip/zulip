@@ -17,10 +17,17 @@ var tests = fs.readdirSync(__dirname)
 tests.sort();
 
 var dependencies = [];
+var old_builtins = {};
 
 global.set_global = function (name, val) {
     global[name] = val;
     dependencies.push(name);
+    return val;
+};
+
+global.patch_builtin = function (name, val) {
+    old_builtins[name] = global[name];
+    global[name] = val;
     return val;
 };
 
@@ -97,6 +104,8 @@ tests.forEach(function (filename) {
         delete global[name];
     });
     dependencies = [];
+    _.extend(global, old_builtins);
+    old_builtins = {};
 });
 
 console.info("To see more output, open " + output_fn);
