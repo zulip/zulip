@@ -35,7 +35,6 @@ var furthest_read = -1;
 var server_furthest_read = -1;
 var unread_messages_read_in_narrow = false;
 var pointer_update_in_flight = false;
-var suppress_unread_counts = true;
 
 function keep_pointer_in_view() {
     // See recenter_view() for related logic to keep the pointer onscreen.

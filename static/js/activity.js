@@ -195,7 +195,7 @@ function actually_update_users() {
     users = sort_users(users, presence_info);
 
     function get_num_unread(email) {
-        if (suppress_unread_counts) {
+        if (unread.suppress_unread_counts) {
             return 0;
         }
         return unread.num_unread_for_person(email);

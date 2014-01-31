@@ -5,6 +5,7 @@ var exports = {};
 var unread_mentioned = new Dict();
 var unread_subjects = new Dict({fold_case: true});
 var unread_privates = new Dict();
+exports.suppress_unread_counts = true;
 
 exports.message_unread = function (message) {
     if (message === undefined) {
@@ -172,7 +173,7 @@ exports.num_unread_for_person = function (email) {
 };
 
 exports.update_unread_counts = function () {
-    if (suppress_unread_counts) {
+    if (exports.suppress_unread_counts) {
         return;
     }
 
@@ -189,7 +190,7 @@ exports.update_unread_counts = function () {
 };
 
 exports.enable = function enable() {
-    suppress_unread_counts = false;
+    exports.suppress_unread_counts = false;
     exports.update_unread_counts();
 };
 

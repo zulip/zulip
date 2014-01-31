@@ -66,7 +66,6 @@ var globals =
     + ' fast_forward_pointer recent_subjects unread_subjects'
     + ' furthest_read server_furthest_read update_messages'
     + ' add_message_metadata'
-    + ' suppress_unread_counts'
     + ' msg_metadata_cache'
     + ' report_as_received'
     + ' insert_new_messages process_message_for_recent_subjects'
