@@ -262,7 +262,7 @@ img.screenshot{
     margin: auto;
     margin-bottom: 20px;
     text-align: center;
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 .portico-page h1 {
@@ -610,11 +610,15 @@ a.bottom-signup-button {
     margin-bottom: -54px;
 }
 
-.signup-page-bottom {
+.signup-page-bottom, .signup-page-top {
     width: 100%;
     max-width: 600px;
     text-align: center;
     margin: auto;
+}
+
+.signup-page-top {
+    margin-top: 10px;
 }
 
 .signup-signature {
