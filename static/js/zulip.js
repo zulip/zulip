@@ -308,6 +308,16 @@ function consider_bankruptcy() {
     }
 }
 
+// This is annoying to move to unread.js because the natural name
+// would be unread.process_loaded_messages, which this calls
+function process_loaded_for_unread(messages) {
+    activity.process_loaded_messages(messages);
+    activity.update_huddles();
+    unread.process_loaded_messages(messages);
+    unread.update_unread_counts();
+    ui.resize_page_components();
+}
+
 function main() {
     activity.set_user_statuses(page_params.initial_presences,
                                page_params.initial_servertime);

@@ -323,7 +323,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
         notifications.possibly_notify_new_messages_outside_viewport(messages);
     }
 
-    unread.process_loaded_messages(messages);
+    process_loaded_for_unread(messages);
 
     if (narrow.narrowed_by_reply()) {
         // If you send a message when narrowed to a recipient, move the
@@ -369,7 +369,7 @@ function process_result(messages, opts) {
     // the all_msg_list as well, as the home_msg_list is reconstructed
     // from all_msg_list.
     if (opts.msg_list === home_msg_list) {
-        unread.process_loaded_messages(messages);
+        process_loaded_for_unread(messages);
         exports.add_messages(messages, all_msg_list, {messages_are_new: false});
     }
 

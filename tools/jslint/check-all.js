@@ -56,7 +56,7 @@ var globals =
     + ' keep_pointer_in_view unread_messages_read_in_narrow'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
     + ' scroll_to_selected get_private_message_recipient'
-    + ' viewport '
+    + ' viewport process_loaded_for_unread'
     + ' have_scrolled_away_from_top'
     + ' maybe_scroll_to_selected recenter_pointer_on_display suppress_scroll_pointer_update'
     + ' fast_forward_pointer recent_subjects unread_subjects'
