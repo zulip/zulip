@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 function migration_status {
-    ./manage.py migrate --list | sed 's/*/ /' > "$1"
+    ./manage.py migrate --list --settings=zproject.test_settings | sed 's/*/ /' > "$1"
 }
 
 template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='zulip_test_template';" | python manage.py dbshell --settings=zproject.test_settings | grep -q "1 row"; echo $?)
