@@ -1,7 +1,7 @@
 var message_store = (function () {
 
 var exports = {};
-var msg_metadata_cache = {};
+var stored_messages = {};
 
 var load_more_enabled = true;
 // If the browser hasn't scrolled away from the top of the page
@@ -9,7 +9,7 @@ var load_more_enabled = true;
 // not load_more_messages().
 
 exports.get = function get(message_id) {
-    return msg_metadata_cache[message_id];
+    return stored_messages[message_id];
 };
 
 exports.process_message_for_recent_subjects = function process_message_for_recent_subjects(message, remove_message) {
@@ -140,7 +140,7 @@ function add_message_metadata(message) {
     });
 
     alert_words.process_message(message);
-    msg_metadata_cache[message.id] = message;
+    stored_messages[message.id] = message;
     return message;
 }
 
@@ -541,9 +541,9 @@ $(function () {
         if (furthest_read === old_id) {
             furthest_read = new_id;
         }
-        if (msg_metadata_cache[old_id]) {
-            msg_metadata_cache[new_id] = msg_metadata_cache[old_id];
-            delete msg_metadata_cache[old_id];
+        if (stored_messages[old_id]) {
+            stored_messages[new_id] = stored_messages[old_id];
+            delete stored_messages[old_id];
         }
 
         // This handler cannot be in the MessageList constructor, which is the logical place
