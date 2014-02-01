@@ -8,10 +8,6 @@ set_global('$', function () {
     };
 });
 $.fn = {};
-$.fn.expectOne = function () {
-    assert(this.length === 1);
-    return this;
-};
 
 add_dependencies({
     _: 'third/underscore/underscore.js',
