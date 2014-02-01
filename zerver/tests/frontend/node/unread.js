@@ -8,9 +8,7 @@
 // dependencies (except _).
 
 add_dependencies({
-    _: 'third/underscore/underscore.js',
-    muting: 'js/muting.js',
-    Dict: 'js/dict.js'
+    muting: 'js/muting.js'
 });
 
 var stream_data = require('js/stream_data.js');

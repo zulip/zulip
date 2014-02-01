@@ -1,9 +1,5 @@
 var assert = require('assert');
 
-add_dependencies({
-    _: 'third/underscore/underscore.js'
-});
-
 set_global('page_params', {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+'],
     email: 'tester@zulip.com'

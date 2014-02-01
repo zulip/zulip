@@ -1,10 +1,5 @@
 var assert = require('assert');
 
-add_dependencies({
-    _: 'third/underscore/underscore.js',
-    Dict: 'js/dict.js'
-});
-
 var ct = require('js/composebox_typeahead.js');
 
 var people_in_realm = [{email: 'othello@zulip.com', full_name: "Othello, Moor of Venice"},

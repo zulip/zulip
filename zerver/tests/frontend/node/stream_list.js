@@ -3,8 +3,6 @@ var assert = require('assert');
 set_global('$', function () {});
 
 add_dependencies({
-    _: 'third/underscore/underscore',
-    Dict: 'js/dict',
     Handlebars: 'handlebars',
     templates: 'js/templates',
     muting: 'js/muting',

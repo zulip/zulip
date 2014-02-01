@@ -1,9 +1,5 @@
 var assert = require('assert');
 
-add_dependencies({
-    _: 'third/underscore/underscore.js'
-});
-
 set_global('$', function (f) {});
 
 var stream_color = require('js/stream_color.js');

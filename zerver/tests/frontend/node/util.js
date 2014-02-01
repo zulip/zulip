@@ -1,7 +1,6 @@
 var assert = require('assert');
 
 add_dependencies({
-    _: 'third/underscore/underscore.js',
     util: 'js/util.js'
 });
 

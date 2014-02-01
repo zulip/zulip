@@ -1,9 +1,6 @@
-add_dependencies({
-    _: 'third/underscore/underscore.js'
-});
-
 var _ = global._;
-var Dict = require('js/dict.js');
+var Dict = global.Dict;
+
 var assert = require('assert');
 
 set_global('blueslip', {});

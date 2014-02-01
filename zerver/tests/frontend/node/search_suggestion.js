@@ -8,9 +8,7 @@
 var assert = require('assert');
 
 add_dependencies({
-    _: 'third/underscore/underscore.js',
     util: 'js/util.js',
-    Dict: 'js/dict.js',
     Handlebars: 'handlebars',
     Filter: 'js/filter.js',
     typeahead_helper: 'js/typeahead_helper.js',

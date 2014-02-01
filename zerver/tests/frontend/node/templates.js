@@ -2,7 +2,6 @@ var assert = require('assert');
 
 add_dependencies({
     Handlebars: 'handlebars',
-    _: 'third/underscore/underscore',
     templates: 'js/templates'
 });
 

@@ -1,6 +1,9 @@
 var fs = require('fs');
-var _ = require('third/underscore/underscore.js');
 var Handlebars = require('handlebars');
+
+global.Dict = require('js/dict');
+global._ = require('third/underscore/underscore.js');
+var _ = global._;
 
 // Run all the JS scripts in our test directory.  Tests do NOT run
 // in isolation.

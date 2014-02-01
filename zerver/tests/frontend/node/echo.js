@@ -6,9 +6,7 @@ var fs = require('fs');
 set_global('page_params', {realm_emoji: {}});
 
 add_dependencies({
-    _: 'third/underscore/underscore.js',
     marked: 'third/marked/lib/marked.js',
-    Dict: 'js/dict.js',
     emoji: 'js/emoji.js',
     people: 'js/people.js',
     fenced_code: 'js/fenced_code.js'

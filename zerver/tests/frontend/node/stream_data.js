@@ -1,8 +1,6 @@
 var assert = require('assert');
 
 add_dependencies({
-    _: 'third/underscore/underscore.js',
-    Dict: 'js/dict.js',
     stream_color: 'js/stream_color.js'
 });
 

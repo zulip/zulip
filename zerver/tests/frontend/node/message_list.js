@@ -5,9 +5,7 @@
 var assert = require('assert');
 
 add_dependencies({
-    _: 'third/underscore/underscore.js',
     util: 'js/util.js',
-    Dict: 'js/dict.js',
     muting: 'js/muting.js',
     MessageListView: 'js/message_list_view.js'
 });

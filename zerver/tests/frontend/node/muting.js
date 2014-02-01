@@ -1,10 +1,5 @@
 var assert = require('assert');
 
-add_dependencies({
-    _: 'third/underscore/underscore.js',
-    Dict: 'js/dict.js'
-});
-
 set_global('page_params', {
     domain: 'zulip.com'
 });
