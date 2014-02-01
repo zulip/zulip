@@ -65,7 +65,7 @@ var output_fn = '.test-js-with-node.html';
     data += '<link href="./static/styles/thirdparty-fonts.css" rel="stylesheet">\n';
     data += '<link href="./static/third/bootstrap/css/bootstrap.css" rel="stylesheet">\n';
     data += '<style type="text/css">.collapse {height: inherit}</style>\n';
-    data += '<style type="text/css">body {width: 500px; margin: auto}</style>\n';
+    data += '<style type="text/css">body {width: 500px; margin: auto; overflow: scroll}</style>\n';
     data += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
     data += '<h1>Output of node unit tests</h1>\n';
     fs.writeFileSync(output_fn, data);
