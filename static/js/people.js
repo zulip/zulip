@@ -52,7 +52,7 @@ exports.get_rest_of_realm = function get_rest_of_realm() {
     return people_minus_you.sort(people_cmp);
 };
 
-exports.add = function add(person, in_realm) {
+exports.add = function add(person) {
     page_params.people_list.push(person);
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
