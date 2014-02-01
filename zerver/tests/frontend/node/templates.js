@@ -419,6 +419,8 @@ function render(template_name, args) {
     _.each(admin_items, function (item) {
         assert.equal($(html).find("." + item).length, 1);
     });
+
+    global.write_test_output("stream_member_list_entry.handlebars", html);
 }());
 
 (function stream_sidebar_actions() {
