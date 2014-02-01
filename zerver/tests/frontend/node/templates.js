@@ -74,32 +74,6 @@ function render(template_name, args) {
     });
 }());
 
-(function stream_member_list_entry() {
-    var everyone_items = ["subscriber-name", "subscriber-email"];
-    var admin_items = ["remove-subscriber-button"];
-
-    // First, as non-admin.
-    var html = render('stream_member_list_entry',
-                      {name: "King Hamlet", email: "hamlet@zulip.com"});
-    _.each(everyone_items, function (item) {
-        assert.equal($(html).find("." + item).length, 1);
-    });
-    _.each(admin_items, function (item) {
-        assert.equal($(html).find("." + item).length, 0);
-    });
-
-    // Now, as admin.
-    html = render('stream_member_list_entry',
-                  {name: "King Hamlet", email: "hamlet@zulip.com",
-                   displaying_for_admin: true});
-    _.each(everyone_items, function (item) {
-        assert.equal($(html).find("." + item).length, 1);
-    });
-    _.each(admin_items, function (item) {
-        assert.equal($(html).find("." + item).length, 1);
-    });
-}());
-
 (function admin_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
@@ -419,6 +393,32 @@ function render(template_name, args) {
 
     var li = $(html).find("li.expanded_subject:first");
     assert.equal(li.attr('data-name'), 'lunch');
+}());
+
+(function stream_member_list_entry() {
+    var everyone_items = ["subscriber-name", "subscriber-email"];
+    var admin_items = ["remove-subscriber-button"];
+
+    // First, as non-admin.
+    var html = render('stream_member_list_entry',
+                      {name: "King Hamlet", email: "hamlet@zulip.com"});
+    _.each(everyone_items, function (item) {
+        assert.equal($(html).find("." + item).length, 1);
+    });
+    _.each(admin_items, function (item) {
+        assert.equal($(html).find("." + item).length, 0);
+    });
+
+    // Now, as admin.
+    html = render('stream_member_list_entry',
+                  {name: "King Hamlet", email: "hamlet@zulip.com",
+                   displaying_for_admin: true});
+    _.each(everyone_items, function (item) {
+        assert.equal($(html).find("." + item).length, 1);
+    });
+    _.each(admin_items, function (item) {
+        assert.equal($(html).find("." + item).length, 1);
+    });
 }());
 
 (function stream_sidebar_actions() {
