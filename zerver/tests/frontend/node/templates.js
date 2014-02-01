@@ -72,6 +72,7 @@ function render(template_name, args) {
     _.each(admin_features, function (admin_feature) {
         assert.notEqual($(html).find("#" + admin_feature).length, 0);
     });
+    global.write_test_output("admin_tab.handlebars", html);
 }());
 
 (function admin_streams_list() {
