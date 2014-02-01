@@ -92,7 +92,6 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
 (function test_marked_shared() {
   var tests = bugdown_data.regular_tests;
   tests.forEach(function (test) {
-    console.log("Doing " + test.name);
     var output = echo.apply_markdown(test.input);
 
     if (test.bugdown_matches_marked) {
