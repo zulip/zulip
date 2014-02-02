@@ -118,7 +118,7 @@ class StreamAdminTest(AuthedTestCase):
             result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
         self.assert_json_success(result)
 
-        event = events[0]['event']
+        event = events[1]['event']
         self.assertEqual(event, dict(
             op='update',
             type='stream',
@@ -126,7 +126,7 @@ class StreamAdminTest(AuthedTestCase):
             value='stream_name2',
             name='stream_name1'
         ))
-        users = events[0]['users']
+        users = events[1]['users']
         self.assertEqual(users, [user_profile.id])
 
         stream_name1_exists = Stream.objects.filter(

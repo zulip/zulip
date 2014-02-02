@@ -237,7 +237,8 @@ class EventsRegisterTest(AuthedTestCase):
     def test_rename_stream(self):
         realm = get_realm('zulip.com')
         stream, _ = create_stream_if_needed(realm, 'old_name')
-        new_name = 'stream with a brand new name'
+        new_name = u'stream with a brand new name'
+        self.subscribe_to_stream(self.user_profile.email, stream.name)
         self.do_test(lambda: do_rename_stream(realm, stream.name, new_name))
 
     def test_subscribe_events(self):

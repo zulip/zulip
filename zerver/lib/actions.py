@@ -1288,21 +1288,33 @@ def do_rename_stream(realm, old_name, new_name, log=True):
         to_dict_cache_key_id(message.id, True) for message in messages)
     cache_delete_many(
         to_dict_cache_key_id(message.id, False) for message in messages)
+    new_email = encode_email_address(stream)
 
     # We will tell our users to essentially
     # update stream.name = new_name where name = old_name
-    event = dict(
-        op="update",
-        type="stream",
-        property="name",
-        value=new_name,
-        name=old_name
-    )
-    send_event(event, stream_user_ids(stream))
+    # and update stream.email = new_email where name = old_name.
+    # We could optimize this by trying to send one message, but the
+    # client code really wants one property update at a time, and
+    # updating stream names is a pretty infrequent operation.
+    # More importantly, we want to key these updates by id, not name,
+    # since id is the immutable primary key, and obviously name is not.
+    data_updates = [
+        ['email_address', new_email],
+        ['name', new_name],
+    ]
+    for property, value in data_updates:
+        event = dict(
+            op="update",
+            type="stream",
+            property=property,
+            value=value,
+            name=old_name
+        )
+        send_event(event, stream_user_ids(stream))
 
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
-    return {"email_address": encode_email_address(stream)}
+    return {"email_address": new_email}
 
 def do_change_stream_description(realm, stream_name, new_description):
     stream = get_stream(stream_name, realm)
