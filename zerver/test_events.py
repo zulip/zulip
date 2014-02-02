@@ -179,6 +179,7 @@ class EventsRegisterTest(AuthedTestCase):
         hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "")
         action()
         events = client.event_queue.contents()
+        self.assertTrue(len(events) > 0)
         apply_events(hybrid_state, events, self.user_profile)
 
         normal_state = fetch_initial_state_data(self.user_profile, event_types, "")
