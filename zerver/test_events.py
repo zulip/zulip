@@ -22,6 +22,7 @@ from zerver.lib.actions import (
     do_rename_stream,
     do_set_muted_topics,
     do_set_realm_name,
+    do_update_pointer,
     fetch_initial_state_data,
 )
 
@@ -199,8 +200,7 @@ class EventsRegisterTest(AuthedTestCase):
         self.do_test(lambda: self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello"))
 
     def test_pointer_events(self):
-        self.login('hamlet@zulip.com')
-        self.do_test(lambda: self.client.post("/json/update_pointer", {"pointer": 150}))
+        self.do_test(lambda: do_update_pointer(self.user_profile, 1500))
 
     def test_register_events(self):
         self.do_test(lambda: self.register("test1", "test1"),
