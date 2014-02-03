@@ -118,14 +118,32 @@ TWITTER_ACCESS_TOKEN_SECRET = ''
 # to that stream.  Emails received at the per-stream email address
 # will be converted into a Zulip message
 
+# There are two ways to make use of local email mirroring:
+#  1. Local delivery: A MTA runs locally and passes mail directly to Zulip
+#  2. Polling: Checks an IMAP inbox every minute for new messages.
+
+# A Puppet manifest for local delivery via Postfix is available in
+# puppet/zulip/manifests/postfix_localmail.pp. To use the manifest, add it to
+# puppet_classes in /etc/zulip/zulip.conf. This manifest assumes you'll receive
+# mail addressed to the hostname of your Zulip server.
+#
+# Users of other mail servers will need to configure it to pass mail to the
+# email mirror; see `python manage.py email-mirror --help` for details.
+
 # The email address pattern to use for auto-generated stream emails
 # The %s will be replaced with a unique token, and the resulting email
 # must be delivered to the EMAIL_GATEWAY_IMAP_FOLDER of the
-# EMAIL_GATEWAY_LOGIN account below.
+# EMAIL_GATEWAY_LOGIN account below, or piped in to the email-mirror management
+# command as indicated above.
 #
 # Example: zulip+%s@example.com
 EMAIL_GATEWAY_PATTERN = ""
 
+
+# The following options are relevant if you're using mail polling.
+#
+# A sample cron job for mail polling is available at puppet/zulip/files/cron.d/email-mirror
+#
 # The Zulip username of the bot that the email pattern should post as.
 # Example: emailgateway@example.com
 EMAIL_GATEWAY_BOT = ""
