@@ -311,15 +311,6 @@ function process_hotkey(e) {
             return true;
     }
 
-    if (current_msg_list.on_expandable_row()) {
-        switch (event_name) {
-            case 'enter':
-                ui.expand_summary_row(current_msg_list.selected_row().expectOne());
-                return true;
-        }
-        return false;
-    }
-
     // Shortcuts that operate on a message
     switch (event_name) {
         case 'message_actions':

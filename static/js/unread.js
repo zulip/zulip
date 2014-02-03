@@ -229,7 +229,6 @@ exports.mark_messages_as_read = function mark_messages_as_read (messages, option
         if (options.from !== "server") {
             message_flags.send_read(message);
         }
-        summary.maybe_mark_summarized(message);
 
         message.unread = false;
         unread.process_read_message(message, options);

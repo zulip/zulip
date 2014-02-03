@@ -73,9 +73,6 @@ MessageListView.prototype = {
         var current_group = [];
         var new_message_groups = [];
 
-        var summary_group = {};
-        var has_summary = false;
-        var summary_start_id = 0;
         var self = this;
 
         if (where === "bottom") {
@@ -109,11 +106,6 @@ MessageListView.prototype = {
             var last_row = table.find('div[zid]:last');
             last_message_id = rows.id(last_row);
             prev = self.get_message(last_message_id);
-
-            if (last_row.is('.summary_row')) {
-                // Don't group with a summary, but don't put separators before the new message
-                prev = _.pick(prev, 'timestamp', 'historical');
-            }
         }
 
         function set_template_properties(message) {
@@ -122,28 +114,6 @@ MessageListView.prototype = {
                 message.color_class = stream_color.get_color_class(message.background_color);
                 message.invite_only = stream_data.get_invite_only(message.stream);
             }
-        }
-
-        function finish_summary() {
-            var first = true;
-
-            _.each(summary_group, function (summary_row) {
-                summary_row.count = summary_row.messages.length;
-                summary_row.message_ids = _.pluck(summary_row.messages, 'id').join(' ');
-                if (first) {
-                    summary_row.include_bookend = true;
-                    first = false;
-                }
-                set_template_properties(summary_row);
-                messages_to_render.push(summary_row);
-                prev = summary_row;
-            });
-
-            prev.include_footer = true;
-
-            has_summary = false;
-            summary_group = {};
-            prev = _.pick(prev, 'timestamp', 'historical');
         }
 
         function finish_group() {
@@ -161,53 +131,6 @@ MessageListView.prototype = {
             message.include_footer    = false;
 
             add_display_time(message, prev);
-
-            if (has_summary && message.show_date) {
-                finish_summary();
-            }
-
-            var summary_adjective = list.summary_adjective(message);
-
-            if (summary_adjective) {
-                if (prev) {
-                    prev.include_footer = true;
-                }
-
-                var key = util.recipient_key(message);
-                if (summary_group[key] === undefined) {
-                    // Start building a new summary row for messages from this recipient.
-                    //
-                    // Ugly: handlebars renderer only takes messages. We don't want to modify
-                    // the original message, so we make a fake message based on the real one
-                    // that will trigger the right part of the handlebars template and won't
-                    // show the content, date, etc. from the real message.
-                    var fake_message = _.extend(_.pick(message,
-                        'timestamp', 'show_date', 'historical', 'stream',
-                        'is_stream', 'subject', 'display_recipient', 'display_reply_to'), {
-                        is_summary: true,
-                        include_footer: false,
-                        include_bookend: false,
-                        first_message_id: message.id,
-                        summary_adjective: summary_adjective,
-                        messages: [message]
-                    });
-                    if (message.stream) {
-                        fake_message.stream_url = narrow.by_stream_uri(message.stream);
-                        fake_message.topic_url = narrow.by_stream_subject_uri(message.stream, message.subject);
-                    } else {
-                        fake_message.pm_with_url = narrow.pm_with_uri(message.reply_to);
-                    }
-
-                    summary_group[key] = fake_message;
-                } else {
-                    summary_group[key].messages.push(message);
-                }
-                has_summary = true;
-                prev = message;
-                return;
-            } else if (has_summary) {
-                finish_summary();
-            }
 
             if (util.same_recipient(prev, message) && self.collapse_messages &&
                prev.historical === message.historical && !message.show_date) {
@@ -297,10 +220,6 @@ MessageListView.prototype = {
             prev.include_footer = true;
         }
 
-        if (has_summary) {
-            finish_summary();
-        }
-
         if (messages_to_render.length === 0) {
             return;
         }
@@ -323,11 +242,7 @@ MessageListView.prototype = {
             var row = $(elem);
 
             // Save DOM elements by id into self._rows for O(1) lookup
-            if (row.hasClass('summary_row')) {
-                _.each(row.attr('data-messages').split(' '), function (id) {
-                    self._rows[id] = elem;
-                });
-            } else if (row.hasClass('message_row')) {
+            if (row.hasClass('message_row')) {
                 self._rows[row.attr('zid')] = elem;
             }
 
@@ -673,10 +588,6 @@ MessageListView.prototype = {
 
     selected_row: function MessageListView_selected_row() {
         return this.get_row(this.list.selected_id());
-    },
-
-    is_expandable_row: function MessageListView_is_expandable_row(row) {
-        return row.hasClass('summary_row');
     },
 
     get_message: function MessageListView_get_message(id) {

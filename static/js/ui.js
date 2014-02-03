@@ -862,50 +862,6 @@ exports.collapse = function (row) {
     show_more_link(row);
 };
 
-exports.expand_summary_row = function (row) {
-    var message_ids = row.attr('data-messages').split(' ');
-    var messages = _.map(message_ids, function (id) {
-        return current_msg_list.get(id);
-    });
-
-    _.each(messages, function (msg){
-        msg.flags = _.without(msg.flags, 'force_collapse');
-        msg.flags.push('force_expand');
-    });
-    message_flags.send_force_expand(messages, true);
-    message_flags.send_force_collapse(messages, false);
-
-    //TODO: Avoid a full re-render
-    home_msg_list.rerender();
-    if (current_msg_list !== home_msg_list) {
-        current_msg_list.rerender();
-    }
-
-    current_msg_list.select_id(message_ids[0]);
-};
-
-exports.collapse_recipient_group = function (row) {
-    var message_ids = row.attr('data-messages').split(',');
-    var messages = _.map(message_ids, function (id) {
-        return message_store.get(id);
-    });
-
-    _.each(messages, function (msg){
-        msg.flags = _.without(msg.flags, 'force_expand');
-        msg.flags.push('force_collapse');
-    });
-    message_flags.send_force_expand(messages, false);
-    message_flags.send_force_collapse(messages, true);
-
-    //TODO: Avoid a full re-render
-    home_msg_list.rerender();
-    if (current_msg_list !== home_msg_list) {
-        current_msg_list.rerender();
-    }
-
-    current_msg_list.select_id(message_ids[0]);
-};
-
 /* EXPERIMENTS */
 
 /* This method allows an advanced user to use the console
@@ -1244,17 +1200,6 @@ $(function () {
 
     if (!feature_flags.left_side_userlist) {
         $("#navbar-buttons").addClass("right-userlist");
-    }
-
-    if (feature_flags.summarize_read_while_narrowed) {
-        $("#main_div").on("click", ".summary_row  .messages-expand", function (e) {
-            exports.expand_summary_row($(e.target).closest('.summary_row').expectOne());
-            e.stopImmediatePropagation();
-        });
-        $("#main_div").on("click", ".recipient_row .messages-collapse", function (e) {
-            exports.collapse_recipient_group($(e.target).closest('.recipient_row').expectOne());
-            e.stopImmediatePropagation();
-        });
     }
 
     function is_clickable_message_element(target) {

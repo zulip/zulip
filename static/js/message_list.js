@@ -2,8 +2,7 @@
 function MessageList(table_name, filter, opts) {
     _.extend(this, {
         collapse_messages: true,
-        muting_enabled: true,
-        summarize_read: false
+        muting_enabled: true
     }, opts);
     this.view = new MessageListView(this, table_name, this.collapse_messages);
 
@@ -23,7 +22,6 @@ function MessageList(table_name, filter, opts) {
     this.narrowed = this.table_name === "zfilt";
 
     this.num_appends = 0;
-    this.min_id_exempted_from_summaries = -1;
 
     return this;
 }
@@ -205,10 +203,6 @@ MessageList.prototype = {
         return this.get_row(this._selected_id);
     },
 
-    on_expandable_row: function MessageList_on_expandable_row() {
-        return this.view.is_expandable_row(this.selected_row());
-    },
-
     closest_id: function MessageList_closest_id(id) {
         var items = this._items;
 
@@ -279,34 +273,6 @@ MessageList.prototype = {
         });
     },
 
-    is_summarized_message: function (message) {
-        if (!feature_flags.summarize_read_while_narrowed ||
-            message === undefined || message.flags === undefined) {
-            return false;
-        }
-        if (message.id >= this.min_id_exempted_from_summaries) {
-            return false;
-        }
-        if (this.summarize_read === 'home') {
-            return message.flags.indexOf('summarize_in_home') !== -1;
-        } else if (this.summarize_read === 'stream' ) {
-            return message.flags.indexOf('summarize_in_stream') !== -1;
-        } else {
-            return false;
-        }
-    },
-
-    summary_adjective: function (message) {
-        if (_.contains(message.flags, 'force_collapse')) {
-            return 'collapsed';
-        } else if (!_.contains(message.flags, 'force_expand')) {
-            if (this.is_summarized_message(message)) {
-                return 'read';
-            }
-        }
-        return null;
-    },
-
     selected_idx: function MessageList_selected_idx() {
         return util.lower_bound(this._items, this._selected_id,
                                 function (a, b) { return a.id < b; });
@@ -341,11 +307,6 @@ MessageList.prototype = {
         }
     },
 
-    start_summary_exemption: function MessageList_start_summary_exemption() {
-        var num_exempt = 8;
-        this.min_id_exempted_from_summaries = this.nth_most_recent_id(num_exempt);
-    },
-
     unmuted_messages: function MessageList_unmuted_messages(messages) {
         return _.reject(messages, function (message) {
             return muting.is_topic_muted(message.stream, message.subject) &&
@@ -365,11 +326,6 @@ MessageList.prototype = {
         }
         this._items = this._items.concat(viewable_messages);
 
-        if (this.num_appends === 0) {
-            // We can't figure out which messages need to be exempt from
-            // summarization until we get the first batch of messages.
-            this.start_summary_exemption();
-        }
         this.num_appends += 1;
 
         this._add_to_hash(messages);
@@ -556,10 +512,6 @@ MessageList.prototype = {
 
         if (this._selected_id === old_id) {
             this._selected_id = new_id;
-        }
-
-        if (this.min_id_exempted_from_summaries === old_id) {
-            this.min_id_exempted_from_summaries = new_id;
         }
 
         // If this message is now out of order, re-order and re-render

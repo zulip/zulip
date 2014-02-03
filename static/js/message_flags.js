@@ -69,8 +69,6 @@ function batched_updater(flag, op, immediate) {
 }
 
 exports.send_read = batched_updater('read', 'add');
-exports.send_summarize_in_stream = batched_updater('summarize_in_stream', 'add');
-exports.send_summarize_in_home = batched_updater('summarize_in_home', 'add');
 
 function send_flag(messages, flag_name, set_flag) {
     var op = set_flag ? 'add' : 'remove';

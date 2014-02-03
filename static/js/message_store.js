@@ -279,14 +279,6 @@ exports.update_messages = function update_messages(events) {
 exports.insert_new_messages = function insert_new_messages(messages) {
     messages = _.map(messages, add_message_metadata);
 
-    if (feature_flags.summarize_read_while_narrowed) {
-        _.each(messages, function (message) {
-            if (message.sent_by_me) {
-                summary.maybe_mark_summarized(message);
-            }
-        });
-    }
-
     // You must add add messages to home_msg_list BEFORE
     // calling unread.process_loaded_messages.
     exports.add_messages(messages, home_msg_list, {messages_are_new: true});

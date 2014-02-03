@@ -153,9 +153,7 @@ exports.activate = function (raw_operators, opts) {
     blueslip.debug("Narrowed", {operators: _.map(operators,
                                                  function (e) { return e.operator; }),
                                 trigger: opts ? opts.trigger : undefined,
-                                previous_id: current_msg_list.selected_id(),
-                                previous_is_summarized: current_msg_list.is_summarized_message(
-                                    current_msg_list.get(current_msg_list.selected_id()))});
+                                previous_id: current_msg_list.selected_id()});
 
     var had_message_content = compose.has_message_content();
 
@@ -230,8 +228,7 @@ exports.activate = function (raw_operators, opts) {
 
     var msg_list = new MessageList('zfilt', current_filter, {
         collapse_messages: ! current_filter.is_search(),
-        muting_enabled: muting_enabled,
-        summarize_read: this.summary_enabled()
+        muting_enabled: muting_enabled
     });
     msg_list.start_time = start_time;
 
@@ -447,13 +444,6 @@ exports.deactivate = function () {
             empty_ok: true
         };
 
-        if (feature_flags.summarize_read_while_narrowed) {
-            // TODO: avoid a full re-render
-            // Necessary to replace messages read in the narrow with summary blocks
-            current_msg_list.start_summary_exemption();
-            current_msg_list.rerender();
-        }
-
         // We fall back to the closest selected id, if the user has removed a
         // stream from the home view since leaving it the old selected id might
         // no longer be there
@@ -624,30 +614,6 @@ exports.narrowed_to_search = function () {
 
 exports.muting_enabled = function () {
     return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() && !exports.narrowed_to_pms());
-};
-
-exports.summary_enabled = function () {
-    if (!feature_flags.summarize_read_while_narrowed) {
-        return false;
-    }
-
-    if (current_filter === undefined){
-        return 'home'; // Home view, but this shouldn't run anyway
-    }
-
-    var operators = current_filter.operators();
-
-    if (operators.length === 1 && (
-        current_filter.has_operand("in", "home") ||
-        current_filter.has_operand("in", "all"))) {
-        return 'home';
-    }
-
-    if (operators.length === 1 && (
-        current_filter.operands("stream").length === 1 ||
-        current_filter.has_operand("is", "private"))) {
-        return 'stream';
-    }
 };
 
 return exports;

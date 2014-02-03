@@ -55,7 +55,6 @@ exports.fade_at_stream_granularity = page_params.staging;
 exports.fade_users_when_composing = true;
 exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
-exports.summarize_read_while_narrowed = false;
 exports.clicking_notification_causes_narrow = true;
 exports.use_socket = true;
 

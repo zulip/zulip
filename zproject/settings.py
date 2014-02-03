@@ -513,7 +513,6 @@ JS_SPECS = {
             'third/marked/lib/marked.js',
             'templates/compiled.js',
             'js/feature_flags.js',
-            'js/summary.js',
             'js/util.js',
             'js/dict.js',
             'js/localstorage.js',
