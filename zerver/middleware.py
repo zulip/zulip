@@ -92,8 +92,9 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         statsd_path = statsd_path.encode('ascii', errors='ignore')
     blacklisted_requests = ['do_confirm', 'accounts.login.openid', 'send_confirm',
                             'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
-                            'password/reset', 'static', 'json/bots', 'json/users', 'json/streams',
-                            'accounts/unsubscribe', 'apple-touch-icon', 'emoji']
+                            'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
+                            'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
+                            'upload_file', 'realm_activity', 'user_activity']
     suppress_statsd = any((blacklisted in statsd_path for blacklisted in blacklisted_requests))
 
     time_delta = -1
