@@ -65,25 +65,24 @@
         </div>
         {% endif %}
 
-        <div id="user_avatar_file_input_error" class="text-error"></div>
-        <div class="control-group">
-          <div class="controls">
-            <div id="user_avatar_file"></div>
-            <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="Upload avatar" />
-            <button class="btn" id="user_avatar_upload_button">Customize avatar</button>
-            <p>
-              <img id="user-settings-avatar" src="{{ avatar_url }}" />
-            </p>
-            <div id="upload_avatar_spinner"></div>
-          </div>
-        </div>
-
         <div class="control-group">
           <div class="controls">
             <input type="submit" name="change_settings"
                    value="Save changes" class="btn btn-big btn-primary" />
           </div>
         </div>
+
+        <div class="user-avatar-section">
+          <p>
+            <img id="user-settings-avatar" src="{{ avatar_url }}" />
+          </p>
+          <div id="user_avatar_file_input_error" class="text-error"></div>
+          <div id="user_avatar_file"></div>
+          <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="Upload avatar" />
+          <div id="upload_avatar_spinner"></div>
+          <button class="btn" id="user_avatar_upload_button">Customize avatar</button>
+        </div>
+
       </form>
 
     </div>

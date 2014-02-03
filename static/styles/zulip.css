@@ -2978,8 +2978,13 @@ div.edit_bot {
     margin-right: 20px;
 }
 
-.upload_avatar_spinner {
+#upload_avatar_spinner {
     font-size: 14px;
+    margin: auto;
+}
+
+.user-avatar-section {
+    text-align: center;
 }
 
 .edit_bot_avatar_clear_button,
