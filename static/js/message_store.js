@@ -72,7 +72,7 @@ function set_topic_edit_properties(message) {
 }
 
 function add_message_metadata(message) {
-    var cached_msg = exports.get(message.id);
+    var cached_msg = stored_messages[message.id];
     if (cached_msg !== undefined) {
         // Copy the match subject and content over if they exist on
         // the new message
@@ -215,7 +215,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 
 exports.update_messages = function update_messages(events) {
     _.each(events, function (event) {
-        var msg = exports.get(event.message_id);
+        var msg = stored_messages[event.message_id];
         if (msg === undefined) {
             return;
         }
