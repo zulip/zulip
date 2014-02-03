@@ -1,7 +1,6 @@
 class zulip_internal::staging_app_frontend {
   include zulip_internal::base
   include zulip_internal::app_frontend
-  include zulip::postfix_localmail
 
   file { "/etc/nginx/sites-available/zulip-staging":
     require => Package["nginx-full"],
@@ -17,9 +16,6 @@ class zulip_internal::staging_app_frontend {
     ensure => 'link',
     target => '/etc/nginx/sites-available/zulip-staging',
     notify => Service["nginx"],
-  }
-  file { "/etc/cron.d/email-mirror":
-    ensure => absent,
   }
   file { "/etc/cron.d/active-user-stats":
     ensure => file,
