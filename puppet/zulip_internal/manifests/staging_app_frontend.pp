@@ -1,6 +1,7 @@
 class zulip_internal::staging_app_frontend {
   include zulip_internal::base
   include zulip_internal::app_frontend
+  include zulip::postfix_localmail
 
   file { "/etc/nginx/sites-available/zulip-staging":
     require => Package["nginx-full"],

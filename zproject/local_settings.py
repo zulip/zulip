@@ -161,9 +161,13 @@ else:
     EMAIL_GATEWAY_IMAP_FOLDER = "Test"
 
 # The email address pattern to use for auto-generated stream emails
-# The %s will be replaced with a unique token, and the resulting email
-# must be delivered to the Inbox of the EMAIL_GATEWAY_LOGIN account above
-EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
+# The %s will be replaced with a unique token.
+if STAGING_DEPLOYED:
+    EMAIL_GATEWAY_PATTERN = "%s@streams.staging.zulip.com"
+elif DEPLOYED:
+    EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
+else:
+    EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST
 
 SSO_APPEND_DOMAIN = None
 
