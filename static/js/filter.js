@@ -1,16 +1,16 @@
 var Filter = (function () {
 
-function filter_term(operator, operand) {
+function filter_term(opts) {
     // For legacy reasons we must represent filter_terms as tuples
     // until we phase out all the code that assumes tuples.
     var term = [];
-    term[0] = operator;
-    term[1] = operand;
+    term[0] = opts.operator;
+    term[1] = opts.operand;
 
     // This is the new style we are phasing in.  (Yes, the same
     // object can be treated like either a tuple or a struct.)
-    term.operator = operator;
-    term.operand = operand;
+    term.operator = opts.operator;
+    term.operand = opts.operand;
 
     return term;
 }
@@ -169,7 +169,10 @@ Filter.canonicalize_tuple = function (tuple) {
     }
 
     // We may want to consider allowing mixed-case operators at some point
-    return filter_term(operator, operand);
+    return filter_term({
+        operator: operator,
+        operand: operand
+    });
 };
 
 
@@ -198,7 +201,9 @@ function decodeOperand(encoded, operator) {
 Filter.parse = function (str) {
     var operators   = [];
     var search_term = [];
+    var operator;
     var operand;
+    var term;
 
     var matches = str.match(/"[^"]+"|\S+/g);
     if (matches === null) {
@@ -215,13 +220,16 @@ Filter.parse = function (str) {
             // FIXME: Should we skip unknown operator names here?
             operator = parts.shift();
             operand = decodeOperand(parts.join(':'), operator);
-            operators.push(filter_term(operator, operand));
+            term = filter_term({operator: operator, operand: operand});
+            operators.push(term);
         }
     });
     // NB: Callers of 'parse' can assume that the 'search' operator is last.
     if (search_term.length > 0) {
+        operator = 'search';
         operand = search_term.join(' ');
-        operators.push(filter_term('search', operand));
+        term = filter_term({operator: operator, operand: operand});
+        operators.push(term);
     }
     return operators;
 };
