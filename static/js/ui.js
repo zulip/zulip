@@ -164,27 +164,11 @@ function copy_handler(e) {
             skip_same_td_check = true;
         }
 
-        // If the selection starts and ends in the same td,
-        // we want to let the browser handle the copy-paste mostly on its own
+        // we should let the browser handle the copy-paste entirely on its own
+        // (In this case, there is no need for our special copy code)
         if (!skip_same_td_check &&
             startc.parents('.selectable_row>div')[0] === endc.parents('.selectable_row>div')[0]) {
-
-            // If the user is not running the desktop app, let the browser handle
-            // the copy entirely on its own
-            if (window.bridge === undefined) {
-                return;
-            }
-
-            // Do nothing if the user is selecting anything while editing,
-            // as in that case we want to let the browser select the
-            // text field text as usual
-            if (startc.hasClass('edit-controls')) {
-                return;
-            }
-
-            // If the user is running the desktop app, we still create "div"
-            // so that we can replace emoji with their text
-            div.append(range.cloneContents());
+            return;
         }
         else {
 
