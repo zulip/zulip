@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+# This script is only meant to be run from run-dev.py, which sets up the
+# environment correctly and passes the correct arguments for manage.py.  It is a
+# separate script so that the import from zerver.worker.queue_processors (which
+# is slow) can be done in parallel with the rest of the work in bringing up the
+# dev server.
+
+import sys
+import os
+import subprocess
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from zerver.worker.queue_processors import get_active_worker_queues
+
+queues = get_active_worker_queues()
+
+args = ' '.join(sys.argv[1:])
+for queue in queues:
+    subprocess.Popen('python manage.py process_queue %s %s' %(args, queue), shell=True)

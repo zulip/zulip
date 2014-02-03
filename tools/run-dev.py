@@ -37,10 +37,6 @@ parser.add_option('--test',
     action='store_true', dest='test',
     help='Use the testing database and ports')
 
-parser.add_option('--minimal',
-    action='store_true', dest='minimal',
-    help='Start only "essential" workers')
-
 (options, args) = parser.parse_args()
 
 base_port   = 9991
@@ -78,16 +74,8 @@ os.setpgrp()
 cmds = ['python manage.py runserver --nostatic %s localhost:%d'
           % (manage_args, django_port),
         'python manage.py runtornado %s localhost:%d'
-          % (manage_args, tornado_port)]
-
-if options.minimal:
-    queues = ['message_sender', 'user_presence']
-else:
-    from zerver.worker.queue_processors import get_active_worker_queues
-    queues = get_active_worker_queues()
-
-for queue in queues:
-    cmds.append('python manage.py process_queue %s %s' %(manage_args, queue))
+          % (manage_args, tornado_port),
+        './tools/run-dev-queue-processors %s' % (manage_args)]
 
 for cmd in cmds:
     subprocess.Popen(cmd, shell=True)
