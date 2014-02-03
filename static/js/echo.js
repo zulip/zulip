@@ -118,7 +118,7 @@ function get_next_local_id() {
     if (typeof all_msg_list !== 'undefined' && all_msg_list.last() !== undefined) {
         latest = all_msg_list.last().id;
     }
-    return truncate_precision(latest + local_id_increment);
+    return Math.max(0, truncate_precision(latest + local_id_increment));
 }
 
 function insert_local_message(message_request, local_id) {
