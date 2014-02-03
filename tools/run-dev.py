@@ -75,7 +75,8 @@ cmds = ['python manage.py runserver --nostatic %s localhost:%d'
           % (manage_args, django_port),
         'python manage.py runtornado %s localhost:%d'
           % (manage_args, tornado_port),
-        './tools/run-dev-queue-processors %s' % (manage_args)]
+        './tools/run-dev-queue-processors %s' % (manage_args),
+        './puppet/zulip/files/postgresql/process_fts_updates']
 
 for cmd in cmds:
     subprocess.Popen(cmd, shell=True)
