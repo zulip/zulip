@@ -145,7 +145,7 @@ Filter.canonicalize_operator = function (operator) {
     }
 };
 
-Filter.canonicalize_tuple = function (tuple) {
+Filter.canonicalize_term = function (tuple) {
     var operator = tuple[0];
     var operand = tuple[1];
 
@@ -310,7 +310,7 @@ Filter.prototype = {
 
     _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
         return _.map(operators_mixed_case, function (tuple) {
-            return Filter.canonicalize_tuple(tuple);
+            return Filter.canonicalize_term(tuple);
         });
     },
 

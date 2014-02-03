@@ -58,15 +58,15 @@ function assert_result_matches_legacy_terms(result, terms) {
     assert.equal(Filter.canonicalize_operator('Subject'), 'topic');
 
     var term;
-    term = Filter.canonicalize_tuple(['Stream', 'Denmark']);
+    term = Filter.canonicalize_term(['Stream', 'Denmark']);
     assert.equal(term.operator, 'stream');
     assert.equal(term.operand, 'Denmark');
 
-    term = Filter.canonicalize_tuple(['sender', 'me']);
+    term = Filter.canonicalize_term(['sender', 'me']);
     assert.equal(term.operator, 'sender');
     assert.equal(term.operand, 'hamlet@zulip.com');
 
-    term = Filter.canonicalize_tuple(['pm-with', 'me']);
+    term = Filter.canonicalize_term(['pm-with', 'me']);
     assert.equal(term.operator, 'pm-with');
     assert.equal(term.operand, 'hamlet@zulip.com');
 }());
