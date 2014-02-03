@@ -226,8 +226,9 @@ def realm_summary_table(realm_minutes):
 
     # Count active sites
     def meets_goal(row):
-        # We don't count toward company goals for obvious reasons, and
-        # customer4.invalid is essentially a dup for users.customer4.invalid.
+        # The wdaher.com realm doesn't count toward company goals for
+        # obvious reasons, and customer4.invalid is essentially a dup
+        # for users.customer4.invalid.
         if row['domain'] in ['customer4.invalid', 'wdaher.com']:
             return False
         return row['active_user_count'] >= 5
