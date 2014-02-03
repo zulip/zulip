@@ -2,8 +2,6 @@
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
 
-var assert = require('assert');
-
 add_dependencies({
     util: 'js/util.js',
     muting: 'js/muting.js',

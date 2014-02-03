@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 set_global('page_params', {
     domain: 'zulip.com'
 });

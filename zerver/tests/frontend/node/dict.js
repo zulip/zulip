@@ -1,8 +1,6 @@
 var _ = global._;
 var Dict = global.Dict;
 
-var assert = require('assert');
-
 set_global('blueslip', {});
 
 (function test_basic() {

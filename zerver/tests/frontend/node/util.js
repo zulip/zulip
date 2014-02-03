@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 add_dependencies({
     util: 'js/util.js'
 });

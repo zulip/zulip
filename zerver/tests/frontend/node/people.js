@@ -1,4 +1,3 @@
-var assert = require('assert');
 var people = require("js/people.js");
 
 set_global('page_params', {

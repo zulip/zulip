@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 set_global('$', function () {});
 
 add_dependencies({

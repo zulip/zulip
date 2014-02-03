@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 add_dependencies({
     stream_color: 'js/stream_color.js'
 });

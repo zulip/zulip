@@ -5,8 +5,6 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies.
 
-var assert = require('assert');
-
 add_dependencies({
     util: 'js/util.js',
     Handlebars: 'handlebars',

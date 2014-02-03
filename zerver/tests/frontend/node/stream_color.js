@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 set_global('$', function (f) {});
 
 var stream_color = require('js/stream_color.js');

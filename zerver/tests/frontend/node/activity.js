@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 set_global('$', function () {
     return {
         on: function () {

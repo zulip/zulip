@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates'

@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 add_dependencies({
     stream_data: 'js/stream_data.js',
     Filter: 'js/filter.js'

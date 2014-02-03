@@ -1,5 +1,3 @@
-var assert = require('assert');
-
 var ct = require('js/composebox_typeahead.js');
 
 var people_in_realm = [{email: 'othello@zulip.com', full_name: "Othello, Moor of Venice"},

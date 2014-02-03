@@ -1,3 +1,4 @@
+global.assert = require('assert');
 var fs = require('fs');
 var Handlebars = require('handlebars');
 

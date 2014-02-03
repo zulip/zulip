@@ -21,7 +21,6 @@ set_global('stream_data', stream_data);
 var Dict = global.Dict;
 var muting = global.muting;
 var unread = require('js/unread.js');
-var assert = require('assert');
 
 var narrow = {};
 global.narrow = narrow;
