@@ -51,12 +51,13 @@ def get_realm_day_counts():
         from zerver_message m
         join zerver_userprofile up on up.id = m.sender_id
         join zerver_realm r on r.id = up.realm_id
+        join zerver_client c on c.id = m.sending_client_id
         where
             (not up.is_bot)
         and
             pub_date > now()::date - interval '8 day'
         and
-            r.domain not in ('zulip.com', 'mit.edu')
+            c.name not in ('zephyr_mirror', 'ZulipMonitoring')
         group by
             r.domain,
             age
@@ -172,7 +173,7 @@ def realm_summary_table(realm_minutes):
             ) at_risk_counts
             ON at_risk_counts.realm_id = realm.id
         WHERE
-            realm.domain not in ('zulip.com', 'customer4.invalid', 'wdaher.com')
+            realm.domain not in ('customer4.invalid', 'wdaher.com')
         AND EXISTS (
                 SELECT *
                 FROM zerver_useractivity ua
@@ -227,7 +228,7 @@ def realm_summary_table(realm_minutes):
     def meets_goal(row):
         # We don't count toward company goals for obvious reasons, and
         # customer4.invalid is essentially a dup for users.customer4.invalid.
-        if row['domain'] in ['zulip.com', 'customer4.invalid', 'wdaher.com']:
+        if row['domain'] in ['customer4.invalid', 'wdaher.com']:
             return False
         return row['active_user_count'] >= 5
 
