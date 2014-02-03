@@ -197,6 +197,18 @@
       "input": ":smile:, :smile:; :smile:",
       "expected_output": "<p><img alt=\":smile:\" class=\"emoji\" src=\"static/third/gemoji/images/emoji/smile.png\" title=\":smile:\">, <img alt=\":smile:\" class=\"emoji\" src=\"static/third/gemoji/images/emoji/smile.png\" title=\":smile:\">; <img alt=\":smile:\" class=\"emoji\" src=\"static/third/gemoji/images/emoji/smile.png\" title=\":smile:\"></p>",
       "bugdown_matches_marked": true
+    },
+    {
+      "name": "safe_html",
+      "input": "<h1>stay normal</h1> thanks",
+      "expected_output": "<p>&lt;h1&gt;stay normal&lt;/h1&gt; thanks</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "safe_html_in_code",
+      "input": "~~~\n<h1>stay normal</h1>",
+      "expected_output": "<div class=\"codehilite\"><pre>&lt;h1&gt;stay normal&lt;/h1&gt;\n</pre></div>",
+      "bugdown_matches_marked": true
     }
   ],
   "linkify_tests": [

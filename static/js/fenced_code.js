@@ -23,6 +23,10 @@ var stash_func = function (text) {
     return text;
 };
 
+var escape_func = function (text) {
+    return text;
+};
+
 function wrap_code(code) {
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
@@ -30,7 +34,7 @@ function wrap_code(code) {
     while (code.length > 2 && code.substr(code.length - 2) === '\n\n') {
         code = code.substring(0, code.length - 1);
     }
-    return '<div class="codehilite"><pre>' + code + '</pre></div>\n';
+    return '<div class="codehilite"><pre>' + escape_func(code) + '</pre></div>\n';
 }
 
 function wrap_quote(text) {
@@ -49,6 +53,10 @@ function wrap_quote(text) {
 
 exports.set_stash_func = function (stash_handler) {
     stash_func = stash_handler;
+};
+
+exports.set_escape_func = function (escape) {
+    escape_func = escape;
 };
 
 exports.process_fenced_code = function (content) {

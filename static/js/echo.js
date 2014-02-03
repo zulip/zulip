@@ -453,6 +453,7 @@ $(function () {
     fenced_code.set_stash_func(function (html) {
         return marked.stashHtml(html, true);
     });
+    fenced_code.set_escape_func(escape);
 
     marked.setOptions({
         gfm: true,
