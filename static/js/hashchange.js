@@ -66,7 +66,7 @@ function parse_narrow(hash) {
         try {
             var operator = decodeHashComponent(hash[i]);
             var operand  = decodeHashComponent(hash[i+1] || '');
-            operators.push([operator, operand]);
+            operators.push({operator: operator, operand: operand});
         } catch (err) {
             return undefined;
         }
