@@ -145,9 +145,10 @@ Filter.canonicalize_operator = function (operator) {
     }
 };
 
-Filter.canonicalize_term = function (tuple) {
-    var operator = tuple[0];
-    var operand = tuple[1];
+Filter.canonicalize_term = function (opts) {
+    // Legacy code may still call use with a tuple of [operator, operand].
+    var operator = opts.operator || opts[0];
+    var operand = opts.operand || opts[1];
 
     operator = Filter.canonicalize_operator(operator);
 

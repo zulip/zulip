@@ -42,6 +42,17 @@ function assert_result_matches_legacy_terms(result, terms) {
     assert(! filter.can_apply_locally());
 }());
 
+(function test_new_style_operators() {
+    var term = {
+        operator: 'stream',
+        operand: 'foo'
+    };
+    var operators = [term];
+    var filter = new Filter(operators);
+
+    assert.deepEqual(filter.operands('stream'), ['foo']);
+}());
+
 (function test_public_operators() {
     var operators = [['stream', 'foo'], ['topic', 'bar']];
     var filter = new Filter(operators);
