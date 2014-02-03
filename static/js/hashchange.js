@@ -38,8 +38,12 @@ exports.operators_to_hash = function (operators) {
     if (operators !== undefined) {
         hash = '#narrow';
         _.each(operators, function (elem) {
-            hash += '/' + hashchange.encodeHashComponent(elem[0])
-                  + '/' + hashchange.encodeHashComponent(elem[1]);
+            // Support legacy tuples.
+            var operator = elem.operator || elem[0];
+            var operand = elem.operand || elem[1];
+
+            hash += '/' + hashchange.encodeHashComponent(operator)
+                  + '/' + hashchange.encodeHashComponent(operand);
         });
     }
 
