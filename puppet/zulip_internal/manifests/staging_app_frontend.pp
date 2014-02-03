@@ -18,11 +18,7 @@ class zulip_internal::staging_app_frontend {
     notify => Service["nginx"],
   }
   file { "/etc/cron.d/email-mirror":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/email-mirror",
+    ensure => absent,
   }
   file { "/etc/cron.d/active-user-stats":
     ensure => file,

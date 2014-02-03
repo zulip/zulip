@@ -101,6 +101,14 @@ class zulip_internal::prod_app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip_internal/cron.d/send-digest-emails",
   }
+  file { "/etc/cron.d/email-mirror":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/email-mirror",
+  }
+
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem
 }
