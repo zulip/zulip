@@ -64,12 +64,16 @@ function render(template_name, args) {
 }());
 
 (function admin_tab() {
-    var html = render('admin_tab');
+    var args = {
+        realm_name: 'Zulip'
+    };
+    var html = render('admin_tab', args);
     var admin_features = ["admin_users_table", "admin_bots_table",
                           "admin_streams_table", "admin_deactivated_users_table"];
     _.each(admin_features, function (admin_feature) {
         assert.notEqual($(html).find("#" + admin_feature).length, 0);
     });
+    assert.equal($(html).find("input.admin-realm-name").val(), 'Zulip');
     global.write_test_output("admin_tab.handlebars", html);
 }());
 

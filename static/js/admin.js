@@ -163,6 +163,30 @@ exports.setup_page = function () {
         });
     });
 
+    $(".administration").on("submit", "form.admin-realm-name", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var new_name = $("input.admin-realm-name").val();
+
+        var url = "/json/realm";
+        var data = {
+            name: JSON.stringify(new_name)
+        };
+        var status = $(".admin-realm-name .admin-realm-name-status").expectOne();
+
+        channel.patch({
+            url: url,
+            data: data,
+            success: function () {
+                ui.report_success("Name changed!", status);
+            },
+            error: function (xhr, error) {
+                ui.report_error("Failed!", xhr, status);
+            }
+        });
+    });
+
     $(".admin_user_table").on("click", ".make-admin", function (e) {
         e.preventDefault();
         e.stopPropagation();

@@ -3783,6 +3783,10 @@ div.edit_bot {
     padding-left: 15px;
 }
 
+.admin-realm-name-status {
+    display: none;
+}
+
 li.show-more-topics a {
     font-size: 75%;
 }

@@ -72,6 +72,12 @@ function get_events_success(events) {
         case 'update_message':
             messages_to_update.push(event);
             break;
+        case 'realm':
+            if (event.op === 'update' && event.property === 'name') {
+                page_params.realm_name = event.value;
+                notifications.redraw_title();
+            }
+            break;
         case 'realm_user':
             if (event.op === 'add') {
                 people.add_in_realm(event.person);

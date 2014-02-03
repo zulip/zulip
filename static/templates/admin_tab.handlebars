@@ -3,6 +3,24 @@
     <div class="administration">
       <div class="alert" id="administration-status"></div>
       <h1>Administration</h1>
+
+      <form class="admin-realm-name form-horizontal">
+        <div class="control-group admin-realm-name">
+          <div class="alert admin-realm-name-status"></div>
+          <label for="realm_name" class="control-label">Realm name</label>
+          <div class="controls">
+            <input type="text" name="realm_name" class="admin-realm-name"
+                   value="{{ realm_name }}" />
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <input type="submit" class="btn" value="Save" />
+          </div>
+        </div>
+      </form>
+
       <h2>Users</h2>
       <table class="table table-condensed table-striped">
         <tbody id="admin_users_table" class="admin_user_table">
