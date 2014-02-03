@@ -107,7 +107,14 @@ if (window.bridge !== undefined) {
     window.bridge.updateCount(0);
 }
 
-exports.update_title_count = function (new_message_count) {
+var new_message_count;
+
+exports.update_title_count = function (count) {
+    new_message_count = count;
+    exports.redraw_title();
+};
+
+exports.redraw_title = function () {
     // Update window title and favicon to reflect unread messages in current view
     var n;
 
