@@ -77,3 +77,10 @@ def check_dict(required_keys):
         return None
 
     return f
+
+def equals(expected_val):
+    def f(var_name, val):
+        if val != expected_val:
+            return '%s != %r (%r is wrong)' % (var_name, expected_val, val)
+        return None
+    return f

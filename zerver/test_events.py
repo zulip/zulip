@@ -28,6 +28,11 @@ from zerver.lib.actions import (
 
 from zerver.lib.event_queue import allocate_client_descriptor
 from zerver.lib.test_helpers import AuthedTestCase, POSTRequestMock
+from zerver.lib.validator import (
+    check_bool, check_dict, check_int, check_list, check_string,
+    equals,
+)
+
 from zerver.tornadoviews import get_events_backend
 
 from collections import OrderedDict
@@ -184,6 +189,11 @@ class EventsRegisterTest(AuthedTestCase):
 
         normal_state = fetch_initial_state_data(self.user_profile, event_types, "")
         self.match_states(hybrid_state, normal_state)
+        return events
+
+    def assert_on_error(self, error):
+        if error:
+            raise AssertionError(error)
 
     def match_states(self, state1, state2):
         def normalize(state):
@@ -236,17 +246,109 @@ class EventsRegisterTest(AuthedTestCase):
         stream, _ = create_stream_if_needed(realm, 'old_name')
         new_name = u'stream with a brand new name'
         self.subscribe_to_stream(self.user_profile.email, stream.name)
-        self.do_test(lambda: do_rename_stream(realm, stream.name, new_name))
+
+        action = lambda: do_rename_stream(realm, stream.name, new_name)
+        events = self.do_test(action)
+
+        schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('update')),
+            ('property', equals('email_address')),
+            ('value', check_string),
+            ('name', equals('old_name')),
+        ])
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('update')),
+            ('property', equals('name')),
+            ('value', equals(new_name)),
+            ('name', equals('old_name')),
+        ])
+        error = schema_checker('events[1]', events[1])
+        self.assert_on_error(error)
 
     def test_subscribe_events(self):
-        self.do_test(lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream"))
-        self.do_test(lambda: self.subscribe_to_stream("othello@zulip.com", "test_stream"))
+        subscription_schema_checker = check_list(
+            check_dict([
+                ('color', check_string),
+                ('description', check_string),
+                ('email_address', check_string),
+                ('invite_only', check_bool),
+                ('in_home_view', check_bool),
+                ('name', check_string),
+                ('notifications', check_bool),
+                ('subscribers', check_list(check_int)),
+            ])
+        )
+        add_schema_checker = check_dict([
+            ('type', equals('subscriptions')),
+            ('op', equals('add')),
+            ('subscriptions', subscription_schema_checker),
+        ])
+        remove_schema_checker = check_dict([
+            ('type', equals('subscriptions')),
+            ('op', equals('remove')),
+            ('subscriptions', check_list(
+                check_dict([
+                    ('name', equals('test_stream')),
+                ]),
+            )),
+        ])
+        peer_add_schema_checker = check_dict([
+            ('type', equals('subscriptions')),
+            ('op', equals('peer_add')),
+            ('user_email', check_string),
+            ('subscriptions', check_list(check_string)),
+        ])
+        peer_remove_schema_checker = check_dict([
+            ('type', equals('subscriptions')),
+            ('op', equals('peer_remove')),
+            ('user_email', check_string),
+            ('subscriptions', check_list(check_string)),
+        ])
+        stream_update_schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('update')),
+            ('property', equals('description')),
+            ('value', check_string),
+            ('name', check_string),
+        ])
+
+        def action(): self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
+        events = self.do_test(action)
+        error = add_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        def action(): self.subscribe_to_stream("othello@zulip.com", "test_stream")
+        events = self.do_test(action)
+        error = peer_add_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
         stream = get_stream("test_stream", self.user_profile.realm)
-        self.do_test(lambda: do_remove_subscription(get_user_profile_by_email("othello@zulip.com"), stream))
-        self.do_test(lambda: do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream))
-        self.do_test(lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream"))
-        self.do_test(lambda: do_change_stream_description(get_realm('zulip.com'), 'test_stream',
-                                                          'new description'))
+
+        def action(): do_remove_subscription(get_user_profile_by_email("othello@zulip.com"), stream)
+        events = self.do_test(action)
+        error = peer_remove_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        def action(): do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream)
+        events = self.do_test(action)
+        error = remove_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        def action(): self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
+        events = self.do_test(action)
+        error = add_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        def action(): do_change_stream_description(get_realm('zulip.com'), 'test_stream', 'new description')
+        events = self.do_test(action)
+        error = stream_update_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
 
 from zerver.lib.event_queue import EventQueue
 class EventQueueTest(TestCase):
