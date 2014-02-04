@@ -22,7 +22,7 @@ class zulip_internal::staging_app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/cron.d/email-mirror",
+    source => "puppet:///modules/zulip/cron.d/email-mirror",
   }
   file { "/etc/cron.d/active-user-stats":
     ensure => file,
