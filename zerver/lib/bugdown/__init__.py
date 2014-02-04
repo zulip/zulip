@@ -887,7 +887,16 @@ class Bugdown(markdown.Extension):
             for k in md.inlinePatterns.keys():
                 if k not in ["autolink"]:
                     del md.inlinePatterns[k]
-
+            for k in md.treeprocessors.keys():
+                if k not in ["inline_interesting_links"]:
+                    del md.treeprocessors[k]
+            for k in md.preprocessors.keys():
+                del md.preprocessors[k]
+            for k in md.postprocessors.keys():
+                del md.postprocessors[k]
+            for k in md.parser.blockprocessors.keys():
+                if k not in ["paragraph"]:
+                    del md.parser.blockprocessors[k]
 
 md_engines = {}
 realm_filter_data = {}

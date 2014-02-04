@@ -380,4 +380,10 @@ class BugdownTest(TestCase):
             converted,
             "<p>**test**</p>",
             )
+        msg = "* test"
+        converted = bugdown.convert(msg, "mit.edu/zephyr_mirror")
+        self.assertEqual(
+            converted,
+            "<p>* test</p>",
+            )
 
