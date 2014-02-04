@@ -7,6 +7,7 @@ from django.template import RequestContext, loader
 
 from zerver.decorator import has_request_variables, REQ, json_to_dict
 from zerver.lib.actions import internal_send_message
+from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.models import get_realm, get_user_profile_by_email, resolve_email_to_domain, \
@@ -16,11 +17,10 @@ from error_notify import notify_server_error, notify_browser_error
 from django.core.mail import send_mail
 from django.conf import settings
 import time
-import redis
 
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
-client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+client = get_redis_client()
 
 def has_enough_time_expired_since_last_message(sender_email, min_delay):
     # This function returns a boolean, but it also has the side effect

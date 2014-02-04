@@ -10,7 +10,6 @@ import tornado.ioloop
 import ujson
 import logging
 import time
-import redis
 
 from zerver.models import UserProfile, get_user_profile_by_id, get_client
 from zerver.lib.queue import queue_json_publish
@@ -20,6 +19,7 @@ from zerver.lib.utils import statsd
 from zerver.lib.event_queue import get_client_descriptor
 from zerver.middleware import record_request_start_data, record_request_stop_data, \
     record_request_restart_data, write_log_line, format_timedelta
+from zerver.lib.redis_utils import get_redis_client
 
 logger = logging.getLogger('zulip.socket')
 
@@ -57,7 +57,7 @@ def register_connection(id, conn):
 def deregister_connection(conn):
     del connections[conn.client_id]
 
-redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+redis_client = get_redis_client()
 
 def req_redis_key(req_id):
     return 'socket_req_status:%s' % (req_id,)

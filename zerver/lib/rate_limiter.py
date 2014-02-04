@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from zerver.lib.redis_utils import get_redis_client
 
 import redis
 import time
@@ -11,7 +12,7 @@ from itertools import izip
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
 # http://blog.domaintools.com/2013/04/rate-limiting-with-redis/
 
-client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES
 def _rules_for_user(user):
     if user.rate_limits != "":

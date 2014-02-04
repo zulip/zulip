@@ -22,6 +22,7 @@ from zerver.lib.socket import req_redis_key
 from confirmation.models import Confirmation
 from zerver.lib.db import reset_queries
 from django.core.mail import EmailMessage
+from zerver.lib.redis_utils import get_redis_client
 
 import os
 import sys
@@ -32,7 +33,6 @@ import time
 import datetime
 import logging
 import simplejson
-import redis
 import StringIO
 
 def assign_queue(queue_name, enabled=True):
@@ -262,7 +262,7 @@ class SlowQueryWorker(QueueProcessingWorker):
 class MessageSenderWorker(QueueProcessingWorker):
     def __init__(self):
         super(MessageSenderWorker, self).__init__()
-        self.redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+        self.redis_client = get_redis_client()
         self.handler = BaseHandler()
         self.handler.load_middleware()
 
