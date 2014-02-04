@@ -5,6 +5,9 @@ var is_running = false;
 var event_handlers = {};
 var deferred_work = [];
 
+// Keep track of where we are for handling resizing.
+var current_popover_info;
+
 // We'll temporarily set stream colors for the streams we use in the demo
 // tutorial messages.
 var real_stream_info;
@@ -293,6 +296,8 @@ function maybe_tweak_placement(placement) {
 }
 
 function create_and_show_popover(target_div, placement, title, content_template) {
+    $(".popover").remove();
+    target_div.popover("destroy");
     target_div.popover({
         placement: placement,
         title: templates.render("tutorial_title", {title: title,
@@ -381,21 +386,22 @@ function finale() {
     }
 }
 
-function reply() {
-    var spotlight_message = rows.first_visible().prev(".recipient_row");
-    create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
-                            "Replying", "tutorial_reply");
-
-    var my_popover = $("#tutorial-reply").closest(".popover");
-    my_popover.offset({left: my_popover.offset().left - 10});
-
-    $("#tutorial-reply-next").click(function () {
-        spotlight_message.popover("destroy");
-        finale();
-    }).focus();
+function update_popover_info(popover_func) {
+    current_popover_info = popover_func;
 }
 
-function home() {
+function box_first_message() {
+    var spotlight_message = rows.first_visible();
+    var bar = spotlight_message.prev(".recipient_row");
+    var x = bar.offset().left;
+    var y = bar.offset().top;
+    var message_height = bar.height() + spotlight_message.height();
+    var message_width = bar.width();
+
+    box(x, y, message_width, message_height);
+}
+
+function box_messagelist() {
     var spotlight_message = rows.first_visible().prev(".recipient_row");
     var x = spotlight_message.offset().left;
     var y = spotlight_message.offset().top;
@@ -405,11 +411,33 @@ function home() {
     });
 
     box(x, y, spotlight_message.width(), height);
+}
+
+function reply() {
+    var spotlight_message = rows.first_visible().prev(".recipient_row");
+    box_messagelist();
+    create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
+                            "Replying", "tutorial_reply");
+
+    var my_popover = $("#tutorial-reply").closest(".popover");
+    my_popover.offset({left: my_popover.offset().left - 10});
+    update_popover_info(reply, spotlight_message);
+
+    $("#tutorial-reply-next").click(function () {
+        spotlight_message.popover("destroy");
+        finale();
+    }).focus();
+}
+
+function home() {
+    var spotlight_message = rows.first_visible().prev(".recipient_row");
+    box_messagelist();
     create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
                             "Narrowing", "tutorial_home");
 
     var my_popover = $("#tutorial-home").closest(".popover");
     my_popover.offset({left: my_popover.offset().left - 10});
+    update_popover_info(home, spotlight_message);
 
     $("#tutorial-home-next").click(function () {
         spotlight_message.popover("destroy");
@@ -421,6 +449,7 @@ function subject() {
     var spotlight_message = rows.first_visible();
     var bar = spotlight_message.prev(".recipient_row");
     var placement = maybe_tweak_placement("bottom");
+    box_first_message();
     create_and_show_popover(bar, placement, "Topics", "tutorial_subject");
 
     var my_popover = $("#tutorial-subject").closest(".popover");
@@ -429,6 +458,7 @@ function subject() {
     } else {
         my_popover.offset({left: bar.offset().left + 194});
     }
+    update_popover_info(subject, bar);
 
     $("#tutorial-subject-next").click(function () {
         bar.popover("destroy");
@@ -439,6 +469,7 @@ function subject() {
 function stream() {
     var bar = rows.first_visible().prev(".recipient_row");
     var placement = maybe_tweak_placement("bottom");
+    box_first_message();
     create_and_show_popover(bar, placement, "Streams", "tutorial_stream");
 
     var my_popover = $("#tutorial-stream").closest(".popover");
@@ -447,6 +478,7 @@ function stream() {
     } else { // Smaller screen, popover is to the right of the stream label.
         my_popover.offset({left: bar.offset().left + 98});
     }
+    update_popover_info(stream, bar);
 
     $("#tutorial-stream-next").click(function () {
         bar.popover("destroy");
@@ -458,20 +490,15 @@ function welcome() {
     // Grey out everything.
     $('#top-screen').css({opacity: 0.7, width: $(document).width(),
                           height: $(document).height()});
-
     var spotlight_message = rows.first_visible();
     var bar = spotlight_message.prev(".recipient_row");
-    var x = bar.offset().left;
-    var y = bar.offset().top;
-    var message_height = bar.height() + spotlight_message.height();
-    var message_width = bar.width();
-
-    box(x, y, message_width, message_height);
+    box_first_message();
     create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome",
                             "tutorial_message");
 
     var my_popover = $("#tutorial-message").closest(".popover");
     my_popover.offset({left: my_popover.offset().left - 10});
+    update_popover_info(welcome, bar);
 
     $("#tutorial-message-next").click(function () {
         bar.popover("destroy");
@@ -500,6 +527,11 @@ exports.initialize = function () {
     if (page_params.needs_tutorial) {
         exports.start();
     }
+    $(window).resize($.debounce(100, function () {
+        if (current_popover_info !== undefined) {
+            current_popover_info();
+        }
+    }));
 };
 
 return exports;
