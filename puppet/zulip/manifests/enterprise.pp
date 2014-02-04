@@ -2,6 +2,7 @@ class zulip::enterprise {
   include zulip::base
   include zulip::app_frontend
   include zulip::postgres_appdb
+  include zulip::redis
 
   apt::source {'zulip':
     location    => 'http://apt.zulip.com/enterprise',

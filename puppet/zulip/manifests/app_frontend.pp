@@ -45,7 +45,6 @@ class zulip::app_frontend {
                     # Needed to parse source maps for error reporting
                     "python-sourcemap",
                     # Needed for redis
-                    "redis-server",
                     "python-redis",
                     # Needed for S3 file uploads
                     "python-boto",
@@ -124,18 +123,6 @@ class zulip::app_frontend {
     owner => "zulip",
     group => "zulip",
     mode => 755,
-  }
-  file { "/etc/redis/redis.conf":
-    require => Package[redis-server],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/redis/redis.conf",
-  }
-  service { 'redis-server':
-    ensure     => running,
-    subscribe  => File['/etc/redis/redis.conf'],
   }
   service { 'memcached':
     ensure     => running,
