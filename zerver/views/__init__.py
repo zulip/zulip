@@ -226,6 +226,12 @@ Currently using: %s""" % (name, email, company, count, product,)
         # register. Send them a registration link.
         send_registration_completion_email(email, request)
         return json_error("Your group is already signed up!", status=403)
+    else:
+        internal_send_message(
+            settings.NOTIFICATION_BOT, "stream", "interest", company,
+            "`%s <%s>` at %s is interested in switching from `%s` (%s users)" % (
+                name, email, company, product, count)
+            )
 
     return json_success()
 
