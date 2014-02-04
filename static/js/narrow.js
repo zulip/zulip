@@ -408,6 +408,12 @@ exports.deactivate = function () {
         var preserve_pre_narrowing_screen_position =
             (current_msg_list.selected_row().length > 0) &&
             (current_msg_list.pre_narrow_offset !== undefined);
+        var message_id_to_select;
+        var select_opts = {
+            then_scroll: true,
+            use_closest: true,
+            empty_ok: true
+        };
 
         if (feature_flags.summarize_read_while_narrowed) {
             // TODO: avoid a full re-render
@@ -416,39 +422,33 @@ exports.deactivate = function () {
             current_msg_list.rerender();
         }
 
+        // We fall back to the closest selected id, if the user has removed a
+        // stream from the home view since leaving it the old selected id might
+        // no longer be there
+        // Additionally, we pass empty_ok as the user may have removed **all** streams
+        // from her home view
         if (unread_messages_read_in_narrow) {
             // We read some unread messages in a narrow. Instead of going back to
             // where we were before the narrow, go to our first unread message (or
             // the bottom of the feed, if there are no unread messages).
             var first_unread = _.find(current_msg_list.all(), unread.message_unread);
             if (first_unread) {
-                current_msg_list.select_id(first_unread.id, {use_closest: true,
-                                                             then_scroll: true, empty_ok: true});
+                message_id_to_select = first_unread.id;
             } else {
-                current_msg_list.select_id(current_msg_list.last().id, {then_scroll: true, empty_ok: true});
+                message_id_to_select = current_msg_list.last().id;
             }
         } else {
             // We narrowed, but only backwards in time (ie no unread were read). Try
             // to go back to exactly where we were before narrowing.
-
-            // We fall back to the closest selected id, if the user has removed a
-            // stream from the home view since leaving it the old selected id might
-            // no longer be there
-            // Additionally, we pass empty_ok as the user may have removed **all** streams
-            // from her home view
-            current_msg_list.select_id(current_msg_list.selected_id(), {
-                then_scroll: !preserve_pre_narrowing_screen_position,
-                use_closest: true,
-                empty_ok: true
-            });
-
             if (preserve_pre_narrowing_screen_position) {
                 // We scroll the user back to exactly the offset from the selected
                 // message that he was at the time that he narrowed.
                 // TODO: Make this correctly handle the case of resizing while narrowed.
-                viewport.set_message_offset(current_msg_list.pre_narrow_offset);
+                select_opts.target_scroll_offset = current_msg_list.pre_narrow_offset;
             }
+            message_id_to_select = current_msg_list.selected_id();
         }
+        current_msg_list.select_id(message_id_to_select, select_opts);
     }
 
     compose_fade.update_message_list();
