@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Zulip hook for Mercurial changeset pushes.
-# Copyright © 2012-2013 Zulip, Inc.
+# Copyright © 2012-2014 Zulip, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

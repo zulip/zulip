@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2013 Zulip, Inc
+* Copyright (c) 2014 Zulip, Inc
 */
 
 package org.zulip.jira
