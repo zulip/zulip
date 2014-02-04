@@ -143,6 +143,7 @@ MessageList.prototype = {
     select_id: function MessageList_select_id(id, opts) {
         opts = _.extend({
                 then_scroll: false,
+                target_scroll_offset: undefined,
                 use_closest: false,
                 empty_ok: false,
                 mark_read: true,

@@ -490,7 +490,8 @@ $(function () {
         // a stream from the home before already
         if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
             home_msg_list.select_id(page_params.initial_pointer,
-                {then_scroll: true, use_closest: true});
+                                    {then_scroll: true, use_closest: true,
+                                     target_scroll_offset: page_params.initial_offset});
         }
 
         // catch the user up

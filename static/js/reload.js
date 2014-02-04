@@ -37,6 +37,10 @@ function preserve_state(send_after_reload) {
     if (pointer !== -1) {
         url += "+pointer=" + pointer;
     }
+    var row = current_msg_list.selected_row();
+    if (row.length > 0) {
+        url += "+offset=" + row.offset().top;
+    }
 
     var oldhash = window.location.hash;
     if (oldhash.length !== 0 && oldhash[0] === '#') {
@@ -87,6 +91,10 @@ $(function () {
     if (pointer) {
         page_params.orig_initial_pointer = page_params.initial_pointer;
         page_params.initial_pointer = pointer;
+    }
+    var offset = parseInt(vars.offset, 10);
+    if (offset) {
+        page_params.initial_offset = offset;
     }
 
     activity.new_user_input = false;

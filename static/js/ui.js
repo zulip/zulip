@@ -1469,12 +1469,15 @@ $(function () {
                     found_in_dom: row_from_dom.length
                 });
             }
-
-            // Scroll to place the message within the current view;
-            // but if this is the initial placement of the pointer,
-            // just place it in the very center
-            recenter_view(row, {from_scroll: event.from_scroll,
-                                force_center: event.previously_selected === -1});
+            if (event.target_scroll_offset !== undefined) {
+                viewport.set_message_offset(event.target_scroll_offset);
+            } else {
+                // Scroll to place the message within the current view;
+                // but if this is the initial placement of the pointer,
+                // just place it in the very center
+                recenter_view(row, {from_scroll: event.from_scroll,
+                                    force_center: event.previously_selected === -1});
+            }
         }
     });
 
