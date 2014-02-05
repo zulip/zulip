@@ -25,14 +25,6 @@ exports.delete_sub = function (stream_name) {
     stream_info.del(stream_name);
 };
 
-exports.set_stream_info = function (new_stream_info) {
-    stream_info = new_stream_info;
-};
-
-exports.get_stream_info = function () {
-    return stream_info;
-};
-
 exports.subscribed_subs = function () {
     return _.where(stream_info.values(), {subscribed: true});
 };

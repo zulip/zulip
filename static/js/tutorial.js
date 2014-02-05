@@ -10,8 +10,8 @@ var current_popover_info;
 
 // We'll temporarily set stream colors for the streams we use in the demo
 // tutorial messages.
-var real_stream_info;
-var tutorial_stream_info = Dict.from({"engineering": {"color": "#76ce90"}});
+var real_default_color;
+var tutorial_default_color = '#76ce90';
 
 // Each message object contains the minimal information necessary for it to be
 // processed by our system for adding messages to your feed.
@@ -333,7 +333,7 @@ function finale() {
     current_msg_list.clear();
     // Force a check on new events before we re-render the message list.
     server_events.force_get_events();
-    stream_data.set_stream_info(real_stream_info);
+    stream_color.default_color = real_default_color;
     util.show_first_run_message();
     current_msg_list.rerender();
     enable_event_handlers();
@@ -513,8 +513,8 @@ exports.start = function () {
     narrow.deactivate();
 
     // Set temporarly colors for the streams used in the tutorial.
-    real_stream_info = stream_data.get_stream_info();
-    stream_data.set_stream_info(tutorial_stream_info);
+    real_default_color = stream_color.default_color;
+    stream_color.default_color = tutorial_default_color;
     // Add the fake messages to the feed and get started.
     current_msg_list.add_and_rerender(fake_messages);
     disable_event_handlers();

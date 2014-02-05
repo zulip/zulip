@@ -54,17 +54,6 @@ var stream_data = require('js/stream_data.js');
     assert(!stream_data.is_subscribed('social'));
 }());
 
-(function test_get_and_set() {
-    stream_data.clear_subscriptions();
-    stream_data.add_sub('Denmark', {name: 'Denmark', subscribed: true});
-    assert.deepEqual(stream_data.subscribed_streams(), ['Denmark']);
-    var info = stream_data.get_stream_info();
-    stream_data.clear_subscriptions();
-    assert.deepEqual(stream_data.subscribed_streams(), []);
-    stream_data.set_stream_info(info);
-    assert.deepEqual(stream_data.subscribed_streams(), ['Denmark']);
-}());
-
 (function test_subscribers() {
     stream_data.clear_subscriptions();
     var sub = {name: 'Rome', subscribed: true};
