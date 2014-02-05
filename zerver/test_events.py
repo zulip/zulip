@@ -317,34 +317,34 @@ class EventsRegisterTest(AuthedTestCase):
             ('name', check_string),
         ])
 
-        def action(): self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
+        action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
         events = self.do_test(action)
         error = add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        def action(): self.subscribe_to_stream("othello@zulip.com", "test_stream")
+        action = lambda: self.subscribe_to_stream("othello@zulip.com", "test_stream")
         events = self.do_test(action)
         error = peer_add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         stream = get_stream("test_stream", self.user_profile.realm)
 
-        def action(): do_remove_subscription(get_user_profile_by_email("othello@zulip.com"), stream)
+        action = lambda: do_remove_subscription(get_user_profile_by_email("othello@zulip.com"), stream)
         events = self.do_test(action)
         error = peer_remove_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        def action(): do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream)
+        action = lambda: do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream)
         events = self.do_test(action)
         error = remove_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        def action(): self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
+        action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
         events = self.do_test(action)
         error = add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        def action(): do_change_stream_description(get_realm('zulip.com'), 'test_stream', 'new description')
+        action = lambda: do_change_stream_description(get_realm('zulip.com'), 'test_stream', 'new description')
         events = self.do_test(action)
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
