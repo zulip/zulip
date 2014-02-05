@@ -284,9 +284,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_offline_push_notifications = models.BooleanField(default=True)
     enable_digest_emails = models.BooleanField(default=True)
 
-
     # UI vars
-    enter_sends = models.NullBooleanField(default=False)
+    enter_sends = models.NullBooleanField(default=True)
     autoscroll_forever = models.BooleanField(default=False)
 
     # Hours to wait before sending another email to a user
