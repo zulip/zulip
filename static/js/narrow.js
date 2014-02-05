@@ -162,7 +162,7 @@ exports.activate = function (raw_operators, opts) {
 
     if (opts.then_select_id === -1 && !opts.first_unread_from_server) {
         // According to old comments, this shouldn't happen anymore
-        blueslip.warning("Setting then_select_id to page_params.initial_pointer.");
+        blueslip.warn("Setting then_select_id to page_params.initial_pointer.");
         opts.then_select_id = page_params.initial_pointer;
         opts.select_first_unread = false;
     }
