@@ -94,6 +94,43 @@
       <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>Notifications <i class="tiny icon-vector-question-sign" id="notification-docs"></i></div>
       <div class="alert" id="notify-settings-status"></div>
       <div class="notification-settings-form">
+        <h4>Stream messages</h4>
+
+        <p>Unless I say otherwise for a particular stream, I want:</p>
+
+        <div class="control-group">
+          <div class="controls">
+            <input type="checkbox" name="enable_stream_desktop_notifications"
+                   id="enable_stream_desktop_notifications"
+                   {% if user_profile.enable_stream_desktop_notifications %}
+                   checked="yes"
+                   {% endif %} />
+          </div>
+          <label for="enable_stream_desktop_notifications" class="control-label">
+            Desktop notifications
+          </label>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <input type="checkbox" name="enable_stream_sounds" id="enable_stream_sounds"
+                   {% if user_profile.enable_stream_sounds %}
+                   checked="yes"
+                   {% endif %} />
+          </div>
+          <label for="enable_stream_sounds" class="control-label">
+            Audible notifications
+          </label>
+        </div>
+
+        <p class="notification-settings-note">Change notification settings for
+        individual streams on your <a href="/#subscriptions">Streams
+        page</a>.</p>
+
+        <h4>Private messages and @-mentions</h4>
+
+        <p>I want:</p>
+
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
@@ -142,6 +179,10 @@
           </label>
         </div>
 
+        <h4>Other notifications</h4>
+
+        <p>I want:</p>
+
         <div class="control-group" id="digest_container">
           <div class="controls">
             <input type="checkbox" name="enable_digest_emails" id="enable_digest_emails"
@@ -153,8 +194,6 @@
             Digest emails when I'm away
           </label>
         </div>
-
-        <p class="notification-settings-note">Change notification settings for individual streams on your <a href="/#subscriptions">Streams page</a>.</p>
 
         <div class="control-group">
           <div class="controls notification-submission">

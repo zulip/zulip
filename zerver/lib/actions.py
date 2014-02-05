@@ -1373,6 +1373,24 @@ This is a message on stream `zulip` with the topic `welcome`. We'll use this str
                                   "signups", domain, signup_message)
     return (realm, created)
 
+def do_change_enable_stream_desktop_notifications(user_profile,
+                                                  enable_stream_desktop_notifications,
+                                                  log=True):
+    user_profile.enable_stream_desktop_notifications = enable_stream_desktop_notifications
+    user_profile.save(update_fields=["enable_stream_desktop_notifications"])
+    if log:
+        log_event({'type': 'enable_stream_desktop_notifications_changed',
+                   'user': user_profile.email,
+                   'enable_stream_desktop_notifications': enable_stream_desktop_notifications})
+
+def do_change_enable_stream_sounds(user_profile, enable_stream_sounds, log=True):
+    user_profile.enable_stream_sounds = enable_stream_sounds
+    user_profile.save(update_fields=["enable_stream_sounds"])
+    if log:
+        log_event({'type': 'enable_stream_sounds_changed',
+                   'user': user_profile.email,
+                   'enable_stream_sounds': enable_stream_sounds})
+
 def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications, log=True):
     user_profile.enable_desktop_notifications = enable_desktop_notifications
     user_profile.save(update_fields=["enable_desktop_notifications"])

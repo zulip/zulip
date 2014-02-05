@@ -38,6 +38,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
     do_make_stream_private, do_change_default_desktop_notifications, \
+    do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_change_stream_description, do_update_pointer, do_add_default_stream, do_remove_default_stream
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -879,14 +880,22 @@ def home(request):
         needs_tutorial        = needs_tutorial,
         first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
-        desktop_notifications_enabled = desktop_notifications_enabled,
         notifications_stream  = notifications_stream,
+
+        # Stream message notification settings:
+        stream_desktop_notifications_enabled =
+            user_profile.enable_stream_desktop_notifications,
+        stream_sounds_enabled = user_profile.enable_stream_sounds,
+
+        # Private message and @-mention notification settings:
+        desktop_notifications_enabled = desktop_notifications_enabled,
         sounds_enabled =
             user_profile.enable_sounds,
         enable_offline_email_notifications =
             user_profile.enable_offline_email_notifications,
         enable_offline_push_notifications =
             user_profile.enable_offline_push_notifications,
+
         enable_digest_emails  = user_profile.enable_digest_emails,
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
@@ -1466,8 +1475,13 @@ def json_change_settings(request, user_profile,
 @authenticated_json_post_view
 @has_request_variables
 def json_change_notify_settings(request, user_profile,
-                                # enable_desktop_notification needs to default to False
-                                # because browsers POST nothing for an unchecked checkbox
+                                # Notifications default to False because
+                                # browsers POST nothing for an unchecked
+                                # checkbox.
+                                enable_stream_desktop_notifications=REQ(converter=lambda x: x == "on",
+                                                              default=False),
+                                enable_stream_sounds=REQ(converter=lambda x: x == "on",
+                                                              default=False),
                                 enable_desktop_notifications=REQ(converter=lambda x: x == "on",
                                                               default=False),
                                 enable_sounds=REQ(converter=lambda x: x == "on",
@@ -1480,6 +1494,19 @@ def json_change_notify_settings(request, user_profile,
                                                          default=False)):
 
     result = {}
+
+    # Stream notification settings.
+
+    if user_profile.enable_stream_desktop_notifications != enable_stream_desktop_notifications:
+        do_change_enable_stream_desktop_notifications(
+            user_profile, enable_stream_desktop_notifications)
+        result['enable_stream_desktop_notifications'] = enable_stream_desktop_notifications
+
+    if user_profile.enable_stream_sounds != enable_stream_sounds:
+        do_change_enable_stream_sounds(user_profile, enable_stream_sounds)
+        result['enable_stream_sounds'] = enable_stream_sounds
+
+    # PM and @-mention settings.
 
     if user_profile.enable_desktop_notifications != enable_desktop_notifications:
         do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)

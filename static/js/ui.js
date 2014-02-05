@@ -1084,6 +1084,17 @@ $(function () {
             var message = "Updated notification settings!";
             var result = $.parseJSON(xhr.responseText);
 
+            // Stream notification settings.
+
+            if (result.enable_stream_desktop_notifications !== undefined) {
+                page_params.stream_desktop_notifications_enabled = result.enable_stream_desktop_notifications;
+            }
+            if (result.enable_stream_sounds !== undefined) {
+                page_params.stream_sounds_enabled = result.enable_stream_sounds;
+            }
+
+            // PM and @-mention notification settings.
+
             if (result.enable_desktop_notifications !== undefined) {
                 page_params.desktop_notifications_enabled = result.enable_desktop_notifications;
             }
@@ -1098,6 +1109,8 @@ $(function () {
             if (result.enable_offline_push_notifications !== undefined) {
                 page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
             }
+
+            // Other notification settings.
 
             if (result.enable_digest_emails !== undefined) {
                 page_params.enable_digest_emails = result.enable_digest_emails;
