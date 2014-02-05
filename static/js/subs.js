@@ -358,6 +358,7 @@ function populate_subscriptions(subs, subscribed) {
                                            invite_only: elem.invite_only,
                                            notifications: elem.notifications, subscribed: subscribed,
                                            email_address: elem.email_address,
+                                           stream_id: elem.stream_id,
                                            subscribers: elem.subscribers,
                                            description: elem.description});
         sub_rows.push(sub);

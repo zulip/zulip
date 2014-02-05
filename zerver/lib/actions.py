@@ -897,6 +897,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
 
     # Send a notification to the user who subscribed.
     payload = [dict(name=stream.name,
+                    stream_id=stream.id,
                     in_home_view=subscription.in_home_view,
                     invite_only=stream.invite_only,
                     color=subscription.color,
@@ -1912,6 +1913,7 @@ def gather_subscriptions_helper(user_profile):
                        'invite_only': stream["invite_only"],
                        'color': sub["color"],
                        'notifications': sub["notifications"],
+                       'stream_id': stream["id"],
                        'description': stream["description"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:

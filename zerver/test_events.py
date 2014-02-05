@@ -280,6 +280,7 @@ class EventsRegisterTest(AuthedTestCase):
                 ('in_home_view', check_bool),
                 ('name', check_string),
                 ('notifications', check_bool),
+                ('stream_id', check_int),
                 ('subscribers', check_list(check_int)),
             ])
         )
