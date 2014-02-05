@@ -273,14 +273,29 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     last_pointer_updater = models.CharField(max_length=64)
     realm = models.ForeignKey(Realm)
     api_key = models.CharField(max_length=32)
+
+    ### Notifications settings. ###
+
+    # Stream notifications.
+    enable_stream_desktop_notifications = models.BooleanField(default=True)
+    enable_stream_sounds = models.BooleanField(default=True)
+
+    # PM + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)
-    default_desktop_notifications = models.BooleanField(default=True)
     enable_sounds = models.BooleanField(default=True)
     enable_offline_email_notifications = models.BooleanField(default=True)
+    enable_offline_push_notifications = models.BooleanField(default=True)
+
+    enable_digest_emails = models.BooleanField(default=True)
+
+    # Old notification field superseded by existence of stream notification
+    # settings.
+    default_desktop_notifications = models.BooleanField(default=True)
+
+    ###
+
     last_reminder = models.DateTimeField(default=timezone.now, null=True)
     rate_limits = models.CharField(default="", max_length=100) # comma-separated list of range:max pairs
-    enable_offline_push_notifications = models.BooleanField(default=True)
-    enable_digest_emails = models.BooleanField(default=True)
 
     # UI vars
     enter_sends = models.NullBooleanField(default=True)
