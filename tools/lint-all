@@ -90,6 +90,10 @@ def perform_extra_js_checks(fn):
             sys.stdout.write('The keyword "function" should be followed by a space in %s line %s\n' % (fn, i+1))
             print line
             failed = True
+        if 'blueslip.warning(' in line:
+            sys.stdout.write('The module blueslip has no function warning, try using blueslip.warn on line %s' % (i+1, ))
+            print line
+            failed = True
     return failed
 
 
