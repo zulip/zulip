@@ -156,6 +156,7 @@ class Migration(SchemaMigration):
         u'zerver.stream': {
             'Meta': {'unique_together': "(('name', 'realm'),)", 'object_name': 'Stream'},
             'date_created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'description': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '1024'}),
             'deactivated': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'email_token': ('django.db.models.fields.CharField', [], {'default': "'5caed8498492a450ad69f8a167990c07'", 'max_length': '32'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
