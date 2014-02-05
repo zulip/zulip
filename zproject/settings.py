@@ -295,6 +295,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'AUTH_LDAP_SERVER_URI': "",
                     'EXTERNAL_URI_SCHEME': "https://",
                     'GOOGLE_CLIENT_ID': '',
+                    'REDIS_PASSWORD': None,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():

@@ -168,6 +168,12 @@ AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
 
 DROPBOX_APP_KEY = "xxxxxxxxxxxxxxx"
 
+# Redis authentication
+if STAGING_DEPLOYED or TESTING_DEPLOYED:
+    REDIS_PASSWORD = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+else:
+    REDIS_PASSWORD = None
+
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 NEW_USER_BOT = "new-user-bot@zulip.com"

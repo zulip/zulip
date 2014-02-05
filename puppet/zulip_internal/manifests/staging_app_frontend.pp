@@ -31,6 +31,17 @@ class zulip_internal::staging_app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip_internal/cron.d/clearsessions",
   }
+  file { "/etc/supervisor/conf.d/redis_tunnel.conf":
+    require => Package["supervisor", "autossh"],
+    ensure => file,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip_internal/supervisor/conf.d/redis_tunnel.conf.staging",
+    notify => Service["supervisor"],
+  }
+
+
   # Staging has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dev.pem
 }

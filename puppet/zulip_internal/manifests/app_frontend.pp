@@ -8,6 +8,8 @@ class zulip_internal::app_frontend {
                    "python-django-statsd-mozilla",
                    # Needed only for a disabled integration
                    "python-embedly",
+                   # Needed for the ssh tunnel to the redis server
+                   "autossh",
                    ]
   package { $app_packages: ensure => "installed" }
 
@@ -50,5 +52,4 @@ class zulip_internal::app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip_internal/cron.d/check-apns-tokens",
   }
-
 }
