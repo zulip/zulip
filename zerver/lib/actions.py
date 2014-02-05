@@ -912,7 +912,8 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     invite_only=stream.invite_only,
                     color=subscription.color,
                     email_address=encode_email_address(stream),
-                    notifications=subscription.notifications,
+                    desktop_notifications=subscription.desktop_notifications,
+                    audible_notifications=subscription.audible_notifications,
                     description=stream.description,
                     subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
@@ -972,7 +973,8 @@ def bulk_add_subscriptions(streams, users):
         color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
         sub_to_add = Subscription(user_profile=user_profile, active=True,
                                   color=color, recipient_id=recipient_id,
-                                  notifications=notify_for_streams_by_default(user_profile))
+                                  desktop_notifications=user_profile.enable_stream_desktop_notifications,
+                                  audible_notifications=user_profile.enable_stream_sounds)
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
     Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
@@ -1916,7 +1918,8 @@ def gather_subscriptions_helper(user_profile):
     sub_dicts = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
-        "recipient__type_id", "in_home_view", "color", "notifications", "active")
+        "recipient__type_id", "in_home_view", "color", "desktop_notifications",
+        "audible_notifications", "active")
 
     stream_ids = [sub["recipient__type_id"] for sub in sub_dicts]
 
@@ -1953,7 +1956,8 @@ def gather_subscriptions_helper(user_profile):
                        'in_home_view': sub["in_home_view"],
                        'invite_only': stream["invite_only"],
                        'color': sub["color"],
-                       'notifications': sub["notifications"],
+                       'desktop_notifications': sub["desktop_notifications"],
+                       'audible_notifications': sub["audible_notifications"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}

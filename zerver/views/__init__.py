@@ -1618,7 +1618,8 @@ def json_subscription_property(request, user_profile, stream_name=REQ,
     """
     property_converters = dict(color=lambda x: x,
                                in_home_view=json_to_bool,
-                               notifications=json_to_bool)
+                               desktop_notifications=json_to_bool,
+                               audible_notifications=json_to_bool)
     if property not in property_converters:
         return json_error("Unknown subscription property: %s" % (property,))
 

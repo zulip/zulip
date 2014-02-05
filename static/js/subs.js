@@ -119,10 +119,16 @@ exports.toggle_home = function (stream_name) {
     set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
 };
 
-function update_stream_notifications(sub, value) {
-    var in_home_view_checkbox = $("#subscription_" + sub.stream_id + " #sub_setting_notifications .sub_setting_control");
-    in_home_view_checkbox.attr('checked', value);
-    sub.notifications = value;
+function update_stream_desktop_notifications(sub, value) {
+    var desktop_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_desktop_notifications_setting .sub_setting_control");
+    desktop_notifications_checkbox.attr('checked', value);
+    sub.desktop_notifications = value;
+}
+
+function update_stream_audible_notifications(sub, value) {
+    var audible_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_audible_notifications_setting .sub_setting_control");
+    audible_notifications_checkbox.attr('checked', value);
+    sub.audible_notifications = value;
 }
 
 function update_stream_name(sub, new_name) {
@@ -149,13 +155,22 @@ function update_stream_description(sub, description) {
     $(sub_settings_selector + ' input.description').val(description);
 }
 
-function stream_notifications_clicked(e) {
+function stream_desktop_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
     var stream = sub_row.find('.subscription_name').text();
 
     var sub = stream_data.get_sub(stream);
-    sub.notifications = ! sub.notifications;
-    set_stream_property(stream, 'notifications', sub.notifications);
+    sub.desktop_notifications = ! sub.desktop_notifications;
+    set_stream_property(stream, 'desktop_notifications', sub.desktop_notifications);
+}
+
+function stream_audible_notifications_clicked(e) {
+    var sub_row = $(e.target).closest('.subscription_row');
+    var stream = sub_row.find('.subscription_name').text();
+
+    var sub = stream_data.get_sub(stream);
+    sub.audible_notifications = ! sub.audible_notifications;
+    set_stream_property(stream, 'audible_notifications', sub.audible_notifications);
 }
 
 exports.set_color = function (stream_name, color) {
@@ -189,7 +204,8 @@ function create_sub(stream_name, attrs) {
         subscribed: true,
         in_home_view: true,
         invite_only: false,
-        notifications: page_params.notify_for_streams_by_default,
+        desktop_notifications: page_params.desktop_notifications_enabled,
+        audible_notifications: page_params.sounds_enabled,
         description: ''
     });
 
@@ -345,12 +361,20 @@ exports.mark_sub_unsubscribed = function (sub) {
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 };
 
-exports.receives_notifications = function (stream_name) {
+exports.receives_desktop_notifications = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
     if (sub === undefined) {
         return false;
     }
-    return sub.notifications;
+    return sub.desktop_notifications;
+};
+
+exports.receives_audible_notifications = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.audible_notifications;
 };
 
 function populate_subscriptions(subs, subscribed) {
@@ -362,7 +386,9 @@ function populate_subscriptions(subs, subscribed) {
         var stream_name = elem.name;
         var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
                                            invite_only: elem.invite_only,
-                                           notifications: elem.notifications, subscribed: subscribed,
+                                           desktop_notifications: elem.desktop_notifications,
+                                           audible_notifications: elem.audible_notifications,
+                                           subscribed: subscribed,
                                            email_address: elem.email_address,
                                            stream_id: elem.stream_id,
                                            subscribers: elem.subscribers,
@@ -469,8 +495,11 @@ exports.update_subscription_properties = function (stream_name, property, value)
     case 'in_home_view':
         update_in_home_view(sub, value);
         break;
-    case 'notifications':
-        update_stream_notifications(sub, value);
+    case 'desktop_notifications':
+        update_stream_desktop_notifications(sub, value);
+        break;
+    case 'audible_notifications':
+        update_stream_audible_notifications(sub, value);
         break;
     case 'name':
         update_stream_name(sub, value);
@@ -766,7 +795,10 @@ $(function () {
         }
     });
     $("#subscriptions_table").on("click", "#sub_setting_not_in_home_view", stream_home_view_clicked);
-    $("#subscriptions_table").on("click", "#sub_setting_notifications", stream_notifications_clicked);
+    $("#subscriptions_table").on("click", "#sub_desktop_notifications_setting",
+                                 stream_desktop_notifications_clicked);
+    $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",
+                                 stream_audible_notifications_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();

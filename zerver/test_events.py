@@ -279,7 +279,8 @@ class EventsRegisterTest(AuthedTestCase):
                 ('invite_only', check_bool),
                 ('in_home_view', check_bool),
                 ('name', check_string),
-                ('notifications', check_bool),
+                ('desktop_notifications', check_bool),
+                ('audible_notifications', check_bool),
                 ('stream_id', check_int),
                 ('subscribers', check_list(check_int)),
             ])

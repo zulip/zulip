@@ -35,10 +35,17 @@
             </div>
           </li>
           <li>
-            <div id="sub_setting_notifications" class="sub_setting_checkbox">
-              <input id="notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if notifications}}checked{{/if}} />
-              <label class="subscription-control-label">Show desktop notifications<br/>for traffic on this stream</label>
+
+            <div id="sub_desktop_notifications_setting" class="sub_setting_checkbox">
+              <input id="desktop-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications}}checked{{/if}} />
+              <label class="subscription-control-label">Receive desktop <br />notifications</label>
             </div>
+
+            <div id="sub_audible_notifications_setting" class="sub_setting_checkbox">
+              <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications}}checked{{/if}} />
+              <label class="subscription-control-label">Receive audible notifications</label>
+            </div>
+
           </li>
           <li>
             <span class="sub_setting_control">
