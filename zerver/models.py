@@ -966,6 +966,12 @@ class Subscription(models.Model):
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
+
+    desktop_notifications = models.BooleanField(default=True)
+    audible_notifications = models.BooleanField(default=True)
+
+    # Combination desktop + audible notifications superseded by the
+    # above.
     notifications = models.BooleanField(default=False)
 
     class Meta:
