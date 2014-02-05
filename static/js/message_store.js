@@ -479,6 +479,10 @@ exports.load_more_messages = function load_more_messages(msg_list) {
     });
 };
 
+exports.clear = function clear() {
+    this.stored_messages = {};
+};
+
 $(function () {
     // get the initial message list
     function load_more(messages) {

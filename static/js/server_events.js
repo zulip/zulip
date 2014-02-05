@@ -327,7 +327,7 @@ $(function () {
     get_events();
 });
 
-function cleanup_event_queue() {
+exports.cleanup_event_queue = function cleanup_event_queue() {
     // Submit a request to the server to cleanup our event queue
     if (page_params.event_queue_expired === true) {
         return;
@@ -336,10 +336,10 @@ function cleanup_event_queue() {
         url:      '/json/events',
         data:     {queue_id: page_params.event_queue_id}
     });
-}
+};
 
 window.addEventListener("beforeunload", function (event) {
-    cleanup_event_queue();
+    exports.cleanup_event_queue();
 });
 
 

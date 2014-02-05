@@ -101,6 +101,14 @@ $(function () {
     hashchange.changehash(vars.oldhash);
 });
 
+function clear_message_list(msg_list) {
+    if (!msg_list) { return; }
+    msg_list.clear();
+    // Some pending ajax calls may still be processed and they to not expect an
+    // empty msg_list.
+    msg_list._items = [{id: 1}];
+}
+
 function do_reload_app(send_after_reload, save_state, message) {
     // TODO: we should completely disable the UI here
     if (save_state) {
@@ -112,7 +120,29 @@ function do_reload_app(send_after_reload, save_state, message) {
     }
     // TODO: We need a better API for showing messages.
     ui.report_message(message, $("#reloading-application"));
+    blueslip.log('Starting server requested page reload');
     reload_in_progress = true;
+    try {
+        // Unbind all the jQuery event listeners
+        $('*').off();
+
+        // Free all of the DOM
+        $("html").empty();
+
+        // Now that the DOM is empty our beforeunload callback has been
+        // removed.
+        server_events.cleanup_event_queue();
+
+        // Empty the large collections
+        clear_message_list(all_msg_list);
+        clear_message_list(home_msg_list);
+        clear_message_list(narrowed_msg_list);
+        message_store.clear();
+
+    } catch (ex) {
+        blueslip.error('Failed to cleanup before reloading',
+                       undefined, ex.stack);
+    }
     window.location.reload(true);
 }
 
