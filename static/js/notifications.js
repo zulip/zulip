@@ -215,6 +215,7 @@ function process_notification(notification) {
     var message = notification.message;
     var title = message.sender_full_name;
     var msg_count = 1;
+    var notification_source;
 
     // Convert the content to plain text, replacing emoji with their alt text
     content = $('<div/>').html(message.content);
@@ -227,9 +228,17 @@ function process_notification(notification) {
         // Remove the sender from the list of other recipients
         other_recipients = other_recipients.replace(", " + message.sender_full_name, "");
         other_recipients = other_recipients.replace(message.sender_full_name + ", ", "");
+        notification_source = 'pm';
     } else {
         key = message.sender_full_name + " to " +
               message.stream + " > " + message.subject;
+        if (message.mentioned) {
+            notification_source = 'mention';
+        } else if (message.alerted) {
+            notification_source = 'alert';
+        } else {
+            notification_source = 'stream';
+        }
     }
 
     if (content.length > 150) {
@@ -299,7 +308,7 @@ function process_notification(notification) {
         in_browser_notify(message, title, content);
     } else {
         // Shunt the message along to the desktop client
-        window.bridge.desktopNotification(title, content);
+        window.bridge.desktopNotification(title, content, notification_source);
     }
 }
 
