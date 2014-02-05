@@ -90,7 +90,7 @@ function set_filter(operators) {
     assert.equal(opts.stream, 'Foo');
     assert.equal(opts.subject, 'Bar');
 
-    stream_data.add_sub('ROME', {name: 'ROME'});
+    stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
     set_filter([['stream', 'rome']]);
 
     opts = {};

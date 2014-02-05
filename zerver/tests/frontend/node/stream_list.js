@@ -57,6 +57,7 @@ global.use_template('stream_privacy');
 
     var sub = {
         name: 'devel',
+        stream_id: 1000,
         color: 'blue',
         id: 5
     };
@@ -64,6 +65,7 @@ global.use_template('stream_privacy');
 
     sub = {
         name: 'social',
+        stream_id: 2000,
         color: 'green',
         id: 6
     };

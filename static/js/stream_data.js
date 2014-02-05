@@ -6,19 +6,26 @@ var exports = {};
 // The stream_info variable maps stream names to stream properties objects
 // Call clear_subscriptions() to initialize it.
 var stream_info;
+var subs_by_stream_id;
 
 exports.clear_subscriptions = function () {
     stream_info = new Dict({fold_case: true});
+    subs_by_stream_id = new Dict();
 };
 exports.clear_subscriptions();
 
 
 exports.add_sub = function (stream_name, sub) {
     stream_info.set(stream_name, sub);
+    subs_by_stream_id.set(sub.stream_id, sub);
 };
 
 exports.get_sub = function (stream_name) {
     return stream_info.get(stream_name);
+};
+
+exports.get_sub_by_id = function (stream_id) {
+    return subs_by_stream_id.get(stream_id);
 };
 
 exports.delete_sub = function (stream_name) {

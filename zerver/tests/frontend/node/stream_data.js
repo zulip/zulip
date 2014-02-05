@@ -11,12 +11,14 @@ var stream_data = require('js/stream_data.js');
         subscribed: false,
         color: 'blue',
         name: 'Denmark',
+        stream_id: 1,
         in_home_view: false
     };
     var social = {
         subscribed: true,
         color: 'red',
         name: 'social',
+        stream_id: 2,
         in_home_view: true,
         invite_only: true
     };
@@ -54,9 +56,25 @@ var stream_data = require('js/stream_data.js');
     assert(!stream_data.is_subscribed('social'));
 }());
 
+(function test_get_by_id() {
+    stream_data.clear_subscriptions();
+    var id = 42;
+    var sub = {
+        name: 'Denmark',
+        subscribed: true,
+        color: 'red',
+        stream_id: id
+    };
+    stream_data.add_sub('Denmark', sub);
+    sub = stream_data.get_sub('Denmark');
+    assert.equal(sub.color, 'red');
+    sub = stream_data.get_sub_by_id(id);
+    assert.equal(sub.color, 'red');
+}());
+
 (function test_subscribers() {
     stream_data.clear_subscriptions();
-    var sub = {name: 'Rome', subscribed: true};
+    var sub = {name: 'Rome', subscribed: true, stream_id: 1};
 
     stream_data.add_sub('Rome', sub);
 
