@@ -480,6 +480,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
     case 'description':
         update_stream_description(sub, value);
         break;
+    case 'email_address':
+        sub.email_address = value;
+        break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
                                                                 value: value});
