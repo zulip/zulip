@@ -1191,33 +1191,39 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_subscriptions_add_notification_default_true(self):
         """
-        The user profile default_desktop_notifications is used when creating a
-        subscription.
+        When creating a subscription, the desktop and audible notification
+        settings for that stream are derived from the global notification
+        settings.
         """
         invitee = "iago@zulip.com"
         user_profile = get_user_profile_by_email(invitee)
-        user_profile.default_desktop_notifications = True
+        user_profile.enable_stream_desktop_notifications = True
+        user_profile.enable_stream_sounds = True
         user_profile.save()
         current_stream = self.get_streams(invitee)[0]
         invite_streams = self.make_random_stream_names(current_stream)
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
         subscription = self.get_subscription(user_profile, invite_streams[0])
-        self.assertTrue(subscription.notifications)
+        self.assertTrue(subscription.desktop_notifications)
+        self.assertTrue(subscription.audible_notifications)
 
     def test_subscriptions_add_notification_default_false(self):
         """
-        The user profile default_desktop_notifications is used when creating a
-        subscription.
+        When creating a subscription, the desktop and audible notification
+        settings for that stream are derived from the global notification
+        settings.
         """
         invitee = "iago@zulip.com"
         user_profile = get_user_profile_by_email(invitee)
-        user_profile.default_desktop_notifications = False
+        user_profile.enable_stream_desktop_notifications = False
+        user_profile.enable_stream_sounds = False
         user_profile.save()
         current_stream = self.get_streams(invitee)[0]
         invite_streams = self.make_random_stream_names(current_stream)
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
         subscription = self.get_subscription(user_profile, invite_streams[0])
-        self.assertFalse(subscription.notifications)
+        self.assertFalse(subscription.desktop_notifications)
+        self.assertFalse(subscription.audible_notifications)
 
 
 class GetPublicStreamsTest(AuthedTestCase):

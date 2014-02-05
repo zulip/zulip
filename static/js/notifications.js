@@ -330,10 +330,10 @@ exports.speaking_at_me = function (message) {
 };
 
 function message_is_notifiable(message) {
-    // Based purely on message contents, can we notify the user about
-    // the message?
+    // Independent of the user's notification settings, are there
+    // properties of the message that unconditionally mean we
+    // shouldn't notify about it.
 
-    // First, does anything disqualify it from being notifiable?
     if (message.sent_by_me) {
         return false;
     }
@@ -357,19 +357,62 @@ function message_is_notifiable(message) {
         return false;
     }
 
-    // Then, do any properties make it notifiable?
-    if (message.type === "private") {
-        return true;
-    }
+    // Everything else is on the table; next filter based on notification
+    // settings.
+    return true;
+}
+
+function should_send_desktop_notification(message) {
+    // For streams, send if desktop notifications are enabled for this
+    // stream.
     if ((message.type === "stream") &&
-        subs.receives_notifications(message.stream)) {
-        return true;
-    }
-    if (alert_words.notifies(message)) {
+        subs.receives_desktop_notifications(message.stream)) {
         return true;
     }
 
-    // Nope.
+    // For PMs and @-mentions, send if desktop notifications are
+    // enabled.
+    if ((message.type === "private") &&
+        page_params.desktop_notifications_enabled) {
+        return true;
+    }
+
+    // For alert words and @-mentions, send if desktop notifications
+    // are enabled.
+    if (alert_words.notifies(message) &&
+        page_params.desktop_notifications_enabled) {
+        return true;
+    }
+
+    if (exports.speaking_at_me(message) &&
+        page_params.desktop_notifications_enabled) {
+        return true;
+    }
+
+    return false;
+}
+
+function should_send_audible_notification(message) {
+    // For streams, ding if sounds are enabled for this stream.
+    if ((message.type === "stream") &&
+        subs.receives_audible_notifications(message.stream)) {
+        return true;
+    }
+
+    // For PMs and @-mentions, ding if sounds are enabled.
+    if ((message.type === "private") && page_params.sounds_enabled) {
+        return true;
+    }
+
+    // For alert words and @-mentions, ding if sounds are enabled.
+    if (alert_words.notifies(message) && page_params.sounds_enabled) {
+        return true;
+    }
+
+    if (exports.speaking_at_me(message) && page_params.sounds_enabled) {
+        return true;
+    }
+
     return false;
 }
 
@@ -387,13 +430,13 @@ exports.received_messages = function (messages) {
 
         message.notification_sent = true;
 
-        if (page_params.desktop_notifications_enabled &&
+        if (should_send_desktop_notification(message) &&
             browser_desktop_notifications_on()) {
             process_notification({message: message, webkit_notify: true});
         } else {
             process_notification({message: message, webkit_notify: false});
         }
-        if (page_params.sounds_enabled && supports_sound) {
+        if (should_send_audible_notification(message) && supports_sound) {
             if (window.bridge !== undefined) {
                 window.bridge.bell();
             } else {
