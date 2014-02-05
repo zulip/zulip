@@ -64,7 +64,7 @@ function _fade_messages() {
     for (i = 0; i < visible_messages.length; i++) {
         should_fade_message = !fade_heuristic(focused_recipient, visible_messages[i]);
         var elt = current_msg_list.get_row(visible_messages[i].id);
-        var recipient_row = $(elt).prevAll(".recipient_row").first().expectOne();
+        var recipient_row = rows.get_message_recipient_row(elt);
 
         change_fade_state(elt, should_fade_message);
         change_fade_state(recipient_row, should_fade_message);
@@ -74,7 +74,7 @@ function _fade_messages() {
 
     // Defer updating all messages so that the compose box can open sooner
     setTimeout(function (expected_msg_list, expected_recipient) {
-        var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
+        var all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
 
         if (current_msg_list !== expected_msg_list ||
             !compose.composing() ||
@@ -86,13 +86,10 @@ function _fade_messages() {
 
         // Note: The below algorithm relies on the fact that all_elts is
         // sorted as it would be displayed in the message view
-        for (i = 0; i < all_elts.length; i++) {
-            var elt = $(all_elts[i]);
-            if (elt.hasClass("recipient_row")) {
-                should_fade_message = !fade_heuristic(focused_recipient, current_msg_list.get(rows.id(elt)));
-            }
-
-            change_fade_state(elt, should_fade_message);
+        for (i = 0; i < all_groups.length; i++) {
+            var group_elt = $(all_groups[i]);
+            should_fade_message = !fade_heuristic(focused_recipient, rows.recipient_from_group(group_elt));
+            change_fade_state(group_elt, should_fade_message);
         }
     }, 0, current_msg_list, compose.recipient());
 }

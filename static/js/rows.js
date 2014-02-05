@@ -13,7 +13,12 @@ exports.next_visible = function (message_row) {
     if (row.length !== 0) {
         return row;
     }
-    return message_row.nextUntil('.selectable_row').next('.selectable_row');
+    var recipient_row = exports.get_message_recipient_row(message_row);
+    var next_recipient_rows = $(recipient_row).nextAll('.recipient_row');
+    if (next_recipient_rows.length === 0) {
+        return $();
+    }
+    return $('.selectable_row:first', next_recipient_rows[0]);
 };
 
 exports.prev_visible = function (message_row) {
@@ -24,7 +29,12 @@ exports.prev_visible = function (message_row) {
     if (row.length !== 0) {
         return row;
     }
-    return message_row.prevUntil('.selectable_row').prev('.selectable_row');
+    var recipient_row = exports.get_message_recipient_row(message_row);
+    var prev_recipient_rows = $(recipient_row).prevAll('.recipient_row');
+    if (prev_recipient_rows.length === 0) {
+        return $();
+    }
+    return $('.selectable_row:last', prev_recipient_rows[0]);
 };
 
 exports.first_visible = function () {
@@ -52,11 +62,27 @@ exports.get_table = function (table_name) {
     return $('#' + table_name);
 };
 
-exports.get_closest_row = function (element) {
+exports.get_closest_group = function (element) {
     // This gets the closest message row to an element, whether it's
     // a recipient bar or message.  With our current markup,
     // this is the most reliable way to do it.
-    return $(element).closest("div.message_row, div.recipient_row");
+    return $(element).closest("div.recipient_row");
+};
+
+exports.first_message_in_group = function (message_group) {
+    return $('div.message_row:first', message_group);
+};
+
+exports.get_message_recipient_row = function (message_row) {
+    return $(message_row).parent('.recipient_row').expectOne();
+};
+
+exports.get_message_recipient_header = function (message_row) {
+    return $(message_row).parent('.recipient_row').find('.message_header').expectOne();
+};
+
+exports.recipient_from_group = function (message_group) {
+    return message_store.get(exports.id($(message_group).children('.message_row').first().expectOne()));
 };
 
 return exports;

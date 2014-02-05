@@ -278,6 +278,18 @@ MessageList.prototype = {
                                 function (a, b) { return a.id < b; });
     },
 
+    subscribed_bookend_content: function (stream_name) {
+        return "--- Subscribed to stream " + stream_name + " ---";
+    },
+
+    unsubscribed_bookend_content: function (stream_name) {
+        return "--- Unsubscribed from stream " + stream_name + " ---";
+    },
+
+    not_subscribed_bookend_content: function (stream_name) {
+        return "--- Not subscribed to stream " + stream_name + " ---";
+    },
+
     // Maintains a trailing bookend element explaining any changes in
     // your subscribed/unsubscribed status at the bottom of the
     // message list.
@@ -293,13 +305,13 @@ MessageList.prototype = {
         var trailing_bookend_content, subscribed = stream_data.is_subscribed(stream);
         if (subscribed) {
             if (this.last_message_historical) {
-                trailing_bookend_content = "--- Subscribed to stream " + stream + " ---";
+                trailing_bookend_content = this.subscribed_bookend_content(stream);
             }
         } else {
             if (!this.last_message_historical) {
-                trailing_bookend_content = "--- Unsubscribed from stream " + stream + " ---";
+                trailing_bookend_content = this.unsubscribed_bookend_content(stream);
             } else {
-                trailing_bookend_content = "--- Not subscribed to stream " + stream + " ---";
+                trailing_bookend_content = this.not_subscribed_bookend_content(stream);
             }
         }
         if (trailing_bookend_content !== undefined) {

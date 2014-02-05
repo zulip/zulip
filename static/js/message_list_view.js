@@ -22,21 +22,24 @@ function stringify_time(time) {
     return time.toString('h:mm TT');
 }
 
-function add_display_time(message, prev) {
+function same_day(earlier_msg, later_msg) {
+    var earlier_time = new XDate(earlier_msg.timestamp * 1000);
+    var later_time = new XDate(later_msg.timestamp * 1000);
+
+    return earlier_time.toDateString() === later_time.toDateString();
+}
+
+function add_display_time(group, message, prev) {
     var time = new XDate(message.timestamp * 1000);
 
     if (prev !== undefined) {
         var prev_time = new XDate(prev.timestamp * 1000);
         if (time.toDateString() !== prev_time.toDateString()) {
             // NB: show_date is HTML, inserted into the document without escaping.
-            message.show_date = (timerender.render_date(time, prev_time))[0].outerHTML;
-        } else {
-            // This is run on re-render, and must remove the date if a message
-            // from the same day is added above this one when scrolling up.
-            message.show_date = undefined;
+            group.show_date = (timerender.render_date(time, prev_time))[0].outerHTML;
         }
     } else {
-        message.show_date = (timerender.render_date(time))[0].outerHTML;
+        group.show_date = (timerender.render_date(time))[0].outerHTML;
     }
 
     if (message.timestr === undefined) {
@@ -61,16 +64,20 @@ MessageListView.prototype = {
             return;
         }
 
+        function start_group() {
+            return {messages: []};
+        }
+
         var table_name = this.table_name;
         var table = rows.get_table(table_name);
         // we we record if last_message_was_selected before updating the table
         var last_message_was_selected = rows.id(rows.last_visible()) === list.selected_id();
-        var messages_to_render = [];
         var ids_where_next_is_same_sender = {};
         var prev;
         var orig_scrolltop_offset, last_message_id;
+        var combined_messages, first_msg, last_msg;
 
-        var current_group = [];
+        var current_group = start_group();
         var new_message_groups = [];
 
         var self = this;
@@ -83,26 +90,21 @@ MessageListView.prototype = {
         }
 
         if (where === 'top' && self.collapse_messages && this._message_groups.length > 0) {
+            // Remove the top date_row, we'll re-add it after rendering
+            $('.date_row:first', table).remove();
+
             // Delete the current top message group, and add it back in with these
             // messages, in order to collapse properly.
             //
-            // This means we redraw the entire view on each update when narrowed by
+            // This means we redraw the entire view on each backfill-update when narrowed by
             // subject, which could be a problem down the line.  For now we hope
             // that subject views will not be very big.
-
             var top_group = self._message_groups[0];
-            var top_messages = [];
-            _.each(top_group, function (id) {
-                self.get_row(id).remove();
-                // Remove any date row headers for these messages
-                $('.date_row[data-zid=' + id + ']').remove();
-                top_messages.push(self.get_message(id));
-            });
-            messages = messages.concat(top_messages);
+            rows.get_message_recipient_row(this.get_row(top_group.messages[0].id)).remove();
+            messages = messages.concat(top_group.messages);
+        }
 
-            // Delete the leftover recipient label.
-            table.find('.recipient_row:first').remove();
-        } else {
+        if (where !== 'top') {
             var last_row = table.find('div[zid]:last');
             last_message_id = rows.id(last_row);
             prev = self.get_message(last_message_id);
@@ -116,51 +118,73 @@ MessageListView.prototype = {
             }
         }
 
+        function add_message_to_group(message) {
+            current_group.messages.push(message);
+        }
+
         function finish_group() {
-            if (current_group.length > 0) {
-                var message_ids = _.pluck(current_group, 'id');
-                current_group[0].message_ids = message_ids;
-                current_group[0].collapsible = feature_flags.collapsible;
-                new_message_groups.push(message_ids);
+            if (current_group.messages.length > 0) {
+                var first_message = current_group.messages[0];
+
+                current_group.message_ids = _.pluck(current_group.messages, 'id');
+
+                current_group.is_stream = first_message.is_stream;
+                current_group.is_private = first_message.is_private;
+
+                if (current_group.is_stream) {
+                    current_group.background_color = stream_data.get_color(first_message.stream);
+                    current_group.invite_only = stream_data.get_invite_only(first_message.stream);
+                    current_group.subject = first_message.subject;
+                } else if (current_group.is_private) {
+                    current_group.pm_with_url = first_message.pm_with_url;
+                    current_group.display_reply_to = first_message.display_reply_to;
+                }
+                current_group.display_recipient = first_message.display_recipient;
+                current_group.always_visible_topic_edit = first_message.always_visible_topic_edit;
+                current_group.subject_links = first_message.subject_links;
+
+                current_group.messages[current_group.messages.length - 1].include_footer = true;
+
+                new_message_groups.push(current_group);
+            }
+        }
+
+        function add_subscription_marker(group, last_msg, first_msg) {
+            if (last_msg !== undefined &&
+                first_msg.historical !== last_msg.historical) {
+                group.bookend_top = true;
+                if (first_msg.historical) {
+                    group.unsubscribed = first_msg.stream;
+                    group.bookend_content = self.list.unsubscribed_bookend_content(first_msg.stream);
+                } else {
+                    group.subscribed = first_msg.stream;
+                    group.bookend_content = self.list.subscribed_bookend_content(first_msg.stream);
+                }
             }
         }
 
         _.each(messages, function (message) {
             message.include_recipient = false;
-            message.include_bookend   = false;
             message.include_footer    = false;
 
-            add_display_time(message, prev);
-
             if (util.same_recipient(prev, message) && self.collapse_messages &&
-               prev.historical === message.historical && !message.show_date) {
-                current_group.push(message);
-                // prev is no longer the last element in this block
-                prev.include_footer = false;
+               prev.historical === message.historical && same_day(prev, message)) {
+                add_message_to_group(message);
             } else {
                 finish_group();
-                current_group = [message];
+                current_group = start_group();
+                add_message_to_group(message);
 
-                // Add a space to the table, but not for the first element.
                 message.include_recipient = true;
-                message.include_bookend   = (prev !== undefined);
-                if (prev !== undefined) {
-                    prev.include_footer = true;
-                }
                 message.subscribed = false;
                 message.unsubscribed = false;
-                if (message.include_bookend &&
-                    // This home_msg_list condition can be removed
-                    // once we filter historical messages from the
-                    // home view on the server side (which requires
-                    // having an index on UserMessage.flags)
-                    self.list !== home_msg_list &&
-                    message.historical !== prev.historical) {
-                    if (message.historical) {
-                        message.unsubscribed = message.stream;
-                    } else {
-                        message.subscribed = message.stream;
-                    }
+
+                // This home_msg_list condition can be removed
+                // once we filter historical messages from the
+                // home view on the server side (which requires
+                // having an index on UserMessage.flags)
+                if (self.list !== home_msg_list) {
+                    add_subscription_marker(current_group, prev, message);
                 }
 
                 if (message.stream) {
@@ -171,6 +195,8 @@ MessageListView.prototype = {
                 }
             }
 
+            add_display_time(current_group, message, prev);
+
             message.include_sender = true;
             if (!message.include_recipient &&
                 !prev.status_message &&
@@ -179,13 +205,7 @@ MessageListView.prototype = {
                 ids_where_next_is_same_sender[prev.id] = true;
             }
 
-            if (message.last_edit_timestamp !== undefined) {
-                // Add or update the last_edit_timestr
-                var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
-                message.last_edit_timestr =
-                    (timerender.render_date(last_edit_time))[0].innerText
-                    + " at " + stringify_time(last_edit_time);
-            }
+            self._add_msg_timestring(message);
 
             message.dom_id = table_name + message.id;
 
@@ -205,7 +225,6 @@ MessageListView.prototype = {
                 message.status_message = false;
             }
 
-            messages_to_render.push(message);
             prev = message;
             // This home_msg_list condition can be removed
             // once we filter historical messages from the
@@ -216,52 +235,49 @@ MessageListView.prototype = {
             }
         });
 
-        if (prev) {
-            prev.include_footer = true;
-        }
+        finish_group();
 
-        if (messages_to_render.length === 0) {
+        if (new_message_groups.length === 0 ||
+            new_message_groups[new_message_groups.length - 1].messages.length === 0) {
             return;
         }
 
-        finish_group();
-
         if (where === 'top') {
-            self._message_groups = new_message_groups.concat(self._message_groups);
-        } else {
-            self._message_groups = self._message_groups.concat(new_message_groups);
+            // If we prepended messages that are historical, show the subscription message
+            if (self._message_groups.length === 0 ||
+                (prev.historical !== self._message_groups[0].messages[0].historical)) {
+                if (self.list !== home_msg_list) {
+                    current_group.bookend_bottom = true;
+                    add_subscription_marker(current_group, prev, self._message_groups[0].messages[0]);
+                }
+            }
         }
 
-        var rendered_elems = $(templates.render('message', {
-            messages: messages_to_render,
-            include_layout_row: (table.find('div:first').length === 0),
-            use_match_properties: list.filter.is_search()
+        var rendered_groups = $(templates.render('message_group', {
+            message_groups: new_message_groups
         }));
 
-        _.each(rendered_elems, function (elem) {
-            var row = $(elem);
+        var rendered_messages = [];
+        _.each(rendered_groups, function (group) {
+            _.each($('div.message_row', group), function (message_row) {
+                var row = $(message_row);
 
-            // Save DOM elements by id into self._rows for O(1) lookup
-            if (row.hasClass('message_row')) {
-                self._rows[row.attr('zid')] = elem;
-            }
+                // Save DOM elements by id into self._rows for O(1) lookup
+                if (row.hasClass('message_row')) {
+                    self._rows[row.attr('zid')] = message_row;
+                }
 
-            if (! row.hasClass('message_row')) {
-                return;
-            }
-            var id = rows.id(row);
-            if (ids_where_next_is_same_sender[id]) {
-                row.find('.messagebox').addClass("next_is_same_sender");
-            }
+                if (row.hasClass('mention')) {
+                    row.find('.user-mention').each(function () {
+                        var email = $(this).attr('data-user-email');
+                        if (email === '*' || email === page_params.email) {
+                            $(this).addClass('user-mention-me');
+                        }
+                    });
+                }
 
-            if (row.hasClass('mention')) {
-                row.find('.user-mention').each(function () {
-                    var email = $(this).attr('data-user-email');
-                    if (email === '*' || email === page_params.email) {
-                        $(this).addClass('user-mention-me');
-                    }
-                });
-            }
+                rendered_messages.push(message_row);
+            });
         });
 
         // The message that was last before this batch came in has to be
@@ -274,35 +290,69 @@ MessageListView.prototype = {
             if (ids_where_next_is_same_sender[last_message_id]) {
                 row.find('.messagebox').addClass("next_is_same_sender");
             }
-            // We didn't actually rerender the original last message,
-            // but we might have set .include_footer=false for it in
-            // the above loop since it was the previous message for
-            // messages[0].  If so, we need to update the DOM.
-            if (self.get_message(last_message_id) && ! self.get_message(last_message_id).include_footer) {
-                row.removeClass('last_message');
-            }
         }
 
-        _.each(rendered_elems, function (elem){
+        _.each(rendered_messages, function (elem){
             var e = $.Event('message_rendered.zulip', {target: elem});
             $(document).trigger(e);
         });
 
-        if (where === 'top' && table.find('.ztable_layout_row').length > 0) {
-            // If we have a totally empty narrow, there may not
-            // be a .ztable_layout_row.
-            table.find('.ztable_layout_row').after(rendered_elems);
-        } else {
-            table.append(rendered_elems);
 
-            list.update_trailing_bookend();
+        function first_group_message(groups) {
+            var first_group = groups[0];
+            return first_group.messages[0];
         }
 
-        _.each(rendered_elems, function (elem) {
-            var row = $(elem);
-            if (! row.hasClass('message_row')) {
-                return;
+        function last_group_message(groups) {
+            var last_group = groups[groups.length - 1];
+            return last_group.messages[last_group.messages.length - 1];
+        }
+
+        function combine_adjacent_groups(before_list, after_list) {
+            // Given two lists of message groups,
+            // returns: one list that has the abutting groups' message list messages
+            var combined_messages = before_list[before_list.length - 1].messages.concat(after_list[0].messages);
+
+            before_list[before_list.length - 1].messages = combined_messages;
+
+            return before_list.concat(after_list.slice(1));
+        }
+
+        if (self._message_groups.length === 0) {
+            self._message_groups = new_message_groups;
+            table.append(rendered_groups);
+        } else {
+            if (where === 'top') {
+                self._message_groups = new_message_groups.concat(self._message_groups);
+                table.prepend(rendered_groups);
+            } else {
+                // When appending messages, since we're not re-rendering the whole existing last block of messages,
+                // we may have to insert the messages in the existing block. We do this if the messages would normally
+                // have been in the same group originally
+                last_msg = last_group_message(self._message_groups);
+                first_msg = first_group_message(new_message_groups);
+
+                if (self.collapse_messages && util.same_recipient(last_msg, first_msg) && same_day(last_msg, first_msg)) {
+                    self._message_groups = combine_adjacent_groups(self._message_groups, new_message_groups);
+
+                    // Pluck the merged messages out of our rendered group list, and insert them
+                    // into the existing group div
+                    var last_group = rows.get_message_recipient_row(self._rows[last_msg.id]);
+                    last_group.append($('.message_row', rendered_groups[0]).remove());
+                    rendered_groups.splice(0, 1);
+                } else {
+                    self._message_groups = self._message_groups.concat(new_message_groups);
+                }
+
+                // append the rest of the groups
+                table.append(rendered_groups);
             }
+        }
+
+        list.update_trailing_bookend();
+
+        _.each(rendered_messages, function (elem) {
+            var row = $(elem);
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
         });
@@ -311,7 +361,7 @@ MessageListView.prototype = {
         // getBoundingClientRect to work.
         // Also, the list must actually be visible.
         if (list === current_msg_list) {
-            ui.condense_and_collapse(rendered_elems);
+            ui.condense_and_collapse(rendered_messages);
         }
 
         // Must happen after anything that changes the height of messages has
@@ -343,7 +393,17 @@ MessageListView.prototype = {
         }
 
         if (list === current_msg_list && messages_are_new) {
-            self._maybe_autoscroll(rendered_elems, last_message_was_selected);
+            self._maybe_autoscroll(rendered_messages, last_message_was_selected);
+        }
+    },
+
+    _add_msg_timestring: function MessageListView__add_msg_timestring(message) {
+        if (message.last_edit_timestamp !== undefined) {
+            // Add or update the last_edit_timestr
+            var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
+            message.last_edit_timestr =
+                (timerender.render_date(last_edit_time))[0].innerText
+                + " at " + stringify_time(last_edit_time);
         }
     },
 
@@ -356,7 +416,7 @@ MessageListView.prototype = {
         var id_of_last_message_sent_by_us = -1;
 
         // C++ iterators would have made this less painful
-        _.each(rendered_elems.toArray().reverse(), function (elem) {
+        _.each(rendered_elems.reverse(), function (elem) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
             if ($(elem).is("div")) {
@@ -545,7 +605,8 @@ MessageListView.prototype = {
 
         var cur_window_size = this._render_win_end - this._render_win_start;
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
-            var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
+            var msgs_to_render_count = this._RENDER_WINDOW_SIZE - cur_window_size;
+            var slice_to_render = messages.slice(messages.length - msgs_to_render_count);
             this.render(slice_to_render, 'top', false);
             this._render_win_start -= slice_to_render.length;
         }
@@ -575,13 +636,14 @@ MessageListView.prototype = {
     },
 
     clear_trailing_bookend: function MessageListView_clear_trailing_bookend() {
-        var trailing_bookend = rows.get_table(this.table_name).find('#trailing_bookend');
+        var trailing_bookend = rows.get_table(this.table_name).find('.trailing_bookend');
         trailing_bookend.remove();
     },
 
-    render_trailing_bookend: function MessageListView_render_trailng_bookend(trailing_bookend_content) {
-        var rendered_trailing_bookend = $(templates.render('trailing_bookend', {
-            trailing_bookend: trailing_bookend_content
+    render_trailing_bookend: function MessageListView_render_trailing_bookend(trailing_bookend_content) {
+        var rendered_trailing_bookend = $(templates.render('bookend', {
+            bookend_content: trailing_bookend_content,
+            trailing: true
         }));
         rows.get_table(this.table_name).append(rendered_trailing_bookend);
     },

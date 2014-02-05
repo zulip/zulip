@@ -559,17 +559,15 @@ function render(template_name, args) {
 
 (function trailing_bookend() {
     var args = {
-        trailing_bookend: "subscribed to stream"
+        bookend_content: "subscribed to stream",
+        trailing: true
     };
     var html = '';
-    html += '<table>';
-    html += render('trailing_bookend', args);
-    html += '</table>';
+    html += render('bookend', args);
 
-    global.write_test_output("trailing_bookend.handlebars", html);
+    global.write_test_output("bookend.handlebars", html);
 
-    var td = $(html).find("td:first");
-    assert.equal(td.text().trim(), 'subscribed to stream');
+    assert.equal($(html).text().trim(), 'subscribed to stream');
 }());
 
 (function tutorial() {

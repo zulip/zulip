@@ -262,13 +262,13 @@ function box(x, y, width, height) {
     $("#clear-screen").css({opacity: 0.0, width: doc_width, height: doc_height});
 }
 
-function messages_in_viewport() {
+function message_groups_in_viewport() {
     var vp = viewport.message_viewport_info();
     var top = vp.visible_top;
     var height = vp.visible_height;
-    var last_row = rows.last_visible();
+    var last_group = rows.get_message_recipient_row(rows.last_visible());
 
-    return $.merge(last_row, last_row.prevAll()).filter(function (idx, row) {
+    return $.merge(last_group, last_group.prevAll()).filter(function (idx, row) {
         var row_offset = $(row).offset();
         return (row_offset.top > top && row_offset.top < top + height);
     });
@@ -392,29 +392,31 @@ function update_popover_info(popover_func) {
 
 function box_first_message() {
     var spotlight_message = rows.first_visible();
-    var bar = spotlight_message.prev(".recipient_row");
+    var bar = rows.get_message_recipient_row(spotlight_message);
+    var header = bar.find('.message_header');
     var x = bar.offset().left;
     var y = bar.offset().top;
-    var message_height = bar.height() + spotlight_message.height();
+    var message_height = header.height() + spotlight_message.height();
     var message_width = bar.width();
 
     box(x, y, message_width, message_height);
 }
 
 function box_messagelist() {
-    var spotlight_message = rows.first_visible().prev(".recipient_row");
-    var x = spotlight_message.offset().left;
-    var y = spotlight_message.offset().top;
+    var spotlight_message_row = rows.get_message_recipient_row(rows.first_visible());
+    var x = spotlight_message_row.offset().left;
+    var y = spotlight_message_row.offset().top;
     var height = 0;
-    _.each(messages_in_viewport(), function (row) {
+
+    _.each(message_groups_in_viewport(), function (row) {
         height += $(row).height();
     });
 
-    box(x, y, spotlight_message.width(), height);
+    box(x, y, spotlight_message_row.width(), height);
 }
 
 function reply() {
-    var spotlight_message = rows.first_visible().prev(".recipient_row");
+    var spotlight_message = rows.get_message_recipient_row(rows.first_visible());
     box_messagelist();
     create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
                             "Replying", "tutorial_reply");
@@ -430,7 +432,7 @@ function reply() {
 }
 
 function home() {
-    var spotlight_message = rows.first_visible().prev(".recipient_row");
+    var spotlight_message = rows.get_message_recipient_header(rows.first_visible());
     box_messagelist();
     create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
                             "Narrowing", "tutorial_home");
@@ -447,7 +449,7 @@ function home() {
 
 function subject() {
     var spotlight_message = rows.first_visible();
-    var bar = spotlight_message.prev(".recipient_row");
+    var bar = rows.get_message_recipient_header(spotlight_message);
     var placement = maybe_tweak_placement("bottom");
     box_first_message();
     create_and_show_popover(bar, placement, "Topics", "tutorial_subject");
@@ -467,7 +469,7 @@ function subject() {
 }
 
 function stream() {
-    var bar = rows.first_visible().prev(".recipient_row");
+    var bar = rows.get_message_recipient_header(rows.first_visible());
     var placement = maybe_tweak_placement("bottom");
     box_first_message();
     create_and_show_popover(bar, placement, "Streams", "tutorial_stream");
@@ -491,7 +493,7 @@ function welcome() {
     $('#top-screen').css({opacity: 0.7, width: $(document).width(),
                           height: $(document).height()});
     var spotlight_message = rows.first_visible();
-    var bar = spotlight_message.prev(".recipient_row");
+    var bar = rows.get_message_recipient_header(spotlight_message);
     box_first_message();
     create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome",
                             "tutorial_message");

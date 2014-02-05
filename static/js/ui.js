@@ -627,22 +627,28 @@ exports.update_floating_recipient_bar = function () {
     // Find the last message where the top of the recipient
     // row is at least partially occluded by our box.
     // Start with the pointer's current location.
-    var candidate = current_msg_list.selected_row();
+    var selected_row = current_msg_list.selected_row();
+
+    if (selected_row === undefined || selected_row.length === 0) {
+        return;
+    }
+
+    var candidate = rows.get_message_recipient_row(selected_row);
     if (candidate === undefined) {
         return;
     }
     while (true) {
-        candidate = candidate.prev();
         if (candidate.length === 0) {
             // We're at the top of the page and no labels are above us.
             hide_floating_recipient_bar();
             return;
         }
-        if (candidate.is(".focused_table .recipient_row")) {
+        if (candidate.is(".recipient_row")) {
             if (candidate.offset().top < floating_recipient_bar_bottom) {
                 break;
             }
         }
+        candidate = candidate.prev();
     }
     var current_label = candidate;
 
@@ -652,25 +658,11 @@ exports.update_floating_recipient_bar = function () {
     // Hide if the bottom of our floating stream/subject label is not
     // lower than the bottom of current_label (since that means we're
     // covering up a label that already exists).
+    var header_height = $(current_label).find('.message_header').outerHeight();
     if (floating_recipient_bar_bottom <=
-        (current_label.offset().top + current_label.outerHeight())) {
+        (current_label.offset().top + header_height)) {
         hide_floating_recipient_bar();
         return;
-    }
-
-    // Hide if our bottom is in our bookend (or one bookend-height
-    // above it). This means we're not showing any useful part of the
-    // message above us, so why bother showing the label?
-    var current_bookend = current_label.nextUntil(".bookend_tr")
-                                       .andSelf()
-                                       .next(".bookend_tr:first");
-    // (The last message currently doesn't have a bookend, which is why this might be 0).
-    if (current_bookend.length > 0) {
-        if (floating_recipient_bar_bottom >
-            (current_bookend.offset().top - current_bookend.outerHeight())) {
-            hide_floating_recipient_bar();
-            return;
-        }
     }
 
     replace_floating_recipient_bar(current_label);
@@ -1292,9 +1284,10 @@ $(function () {
     });
 
     function get_row_id_for_narrowing(narrow_link_elem) {
-        var row = rows.get_closest_row(narrow_link_elem);
+        var group = rows.get_closest_group(narrow_link_elem);
+        var msg_row = rows.first_message_in_group(group);
 
-        var nearest = current_msg_list.get(rows.id(row));
+        var nearest = current_msg_list.get(rows.id(msg_row));
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
             return selected.id;
