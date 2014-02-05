@@ -1093,9 +1093,16 @@ def get_streams_backend(request, user_profile,
             # We're including nothing, so don't bother hitting the DB.
             query = []
 
-    streams = sorted([{"name": stream.name, "description": stream.description,
-                       "invite_only": stream.invite_only} for stream in query],
-                     key=lambda elt: elt["name"])
+    def make_dict(row):
+        return dict(
+            stream_id = row.id,
+            name = row.name,
+            description = row.description,
+            invite_only = row.invite_only,
+        )
+
+    streams = [make_dict(row) for row in query]
+    streams.sort(key=lambda elt: elt["name"])
 
     return json_success({"streams": streams})
 
