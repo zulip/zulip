@@ -209,6 +209,12 @@
       "input": "~~~\n<h1>stay normal</h1>",
       "expected_output": "<div class=\"codehilite\"><pre>&lt;h1&gt;stay normal&lt;/h1&gt;\n</pre></div>",
       "bugdown_matches_marked": true
+    },
+    {
+      "name": "ulist_with_inline_code",
+      "input": "gonna take a break for a bit--all yours if you want to play around too. what I did:\n\n* install cmake\n* git clone zulip desktop\n* run `cmake-gui ..` in `c:\\zulip\\zulip-desktop\\msvcbuild`\n* hit configure/generate until it generated the msvc project (had to make a fix to some cmake files)\n* opened vs2013 \n* tried to build\n",
+      "expected_output": "<p>gonna take a break for a bit--all yours if you want to play around too. what I did:</p>\n<ul>\n<li>install cmake</li>\n<li>git clone zulip desktop</li>\n<li>run <code>cmake-gui ..</code> in <code>c:\\zulip\\zulip-desktop\\msvcbuild</code></li>\n<li>hit configure/generate until it generated the msvc project (had to make a fix to some cmake files)</li>\n<li>opened vs2013 </li>\n<li>tried to build</li>\n</ul>",
+      "bugdown_matches_marked": true
     }
   ],
   "linkify_tests": [
