@@ -95,14 +95,12 @@ function get_events_success(events) {
             break;
         case 'subscriptions':
             if (event.op === 'add') {
-                _.each(event.subscriptions, function (subscription) {
-                    $(document).trigger($.Event('subscription_add.zulip',
-                                                {subscription: subscription}));
+                _.each(event.subscriptions, function (sub) {
+                    subs.mark_subscribed(sub.name, sub);
                 });
             } else if (event.op === 'remove') {
-                _.each(event.subscriptions, function (subscription) {
-                    $(document).trigger($.Event('subscription_remove.zulip',
-                                                {subscription: subscription}));
+                _.each(event.subscriptions, function (sub) {
+                    subs.mark_unsubscribed(sub.name);
                 });
             } else if (event.op === 'update') {
                 subs.update_subscription_properties(event.name, event.property, event.value);

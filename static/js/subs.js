@@ -255,7 +255,7 @@ function add_to_member_list(tb, name, email) {
     tb.prepend(format_member_list_elem(name, email));
 }
 
-function mark_subscribed(stream_name, attrs) {
+exports.mark_subscribed = function (stream_name, attrs) {
     var sub = stream_data.get_sub(stream_name);
 
     if (sub === undefined) {
@@ -300,9 +300,9 @@ function mark_subscribed(stream_name, attrs) {
     process_loaded_for_unread(all_msg_list.all());
 
     $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
-}
+};
 
-function mark_unsubscribed(stream_name) {
+exports.mark_unsubscribed = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
 
     if (sub === undefined) {
@@ -337,16 +337,7 @@ function mark_unsubscribed(stream_name) {
     }
 
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
-}
-
-$(function () {
-    $(document).on('subscription_add.zulip', function (e) {
-        mark_subscribed(e.subscription.name, e.subscription);
-    });
-    $(document).on('subscription_remove.zulip', function (e) {
-        mark_unsubscribed(e.subscription.name);
-    });
-});
+};
 
 exports.receives_notifications = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
@@ -789,7 +780,7 @@ $(function () {
                 warning_elem.addClass("hide");
                 if (principal === page_params.email) {
                     // mark_subscribed adds the user to the member list
-                    mark_subscribed(stream);
+                    exports.mark_subscribed(stream);
                 } else {
                     add_to_member_list(list, people.get_by_email(principal).full_name, principal);
                 }
@@ -828,7 +819,7 @@ $(function () {
                 if (principal === page_params.email) {
                     // If you're unsubscribing yourself, mark whole
                     // stream entry as you being unsubscribed.
-                    mark_unsubscribed(stream_name);
+                    exports.mark_unsubscribed(stream_name);
                 }
             } else {
                 error_elem.addClass("hide");
