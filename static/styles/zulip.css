@@ -681,7 +681,7 @@ td.pointer {
     display: inline-block;
     vertical-align: top;
     line-height: 14px;
-    margin-left: -10px;
+    margin-left: 0px;
     position: static;
     padding: 0px;
     width: auto;
@@ -713,6 +713,7 @@ td.pointer {
     line-height: 14px;
     vertical-align: top;
     text-align: left;
+    width: auto;
 }
 
 .message_time {
