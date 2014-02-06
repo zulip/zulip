@@ -93,7 +93,7 @@ function get_events_success(events) {
                 subs.update_subscription_properties(event.name, event.property, event.value);
             }
             break;
-        case 'subscriptions':
+        case 'subscription':
             if (event.op === 'add') {
                 _.each(event.subscriptions, function (sub) {
                     subs.mark_subscribed(sub.name, sub);

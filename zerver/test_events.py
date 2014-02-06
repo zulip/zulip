@@ -285,12 +285,12 @@ class EventsRegisterTest(AuthedTestCase):
             ])
         )
         add_schema_checker = check_dict([
-            ('type', equals('subscriptions')),
+            ('type', equals('subscription')),
             ('op', equals('add')),
             ('subscriptions', subscription_schema_checker),
         ])
         remove_schema_checker = check_dict([
-            ('type', equals('subscriptions')),
+            ('type', equals('subscription')),
             ('op', equals('remove')),
             ('subscriptions', check_list(
                 check_dict([
@@ -299,13 +299,13 @@ class EventsRegisterTest(AuthedTestCase):
             )),
         ])
         peer_add_schema_checker = check_dict([
-            ('type', equals('subscriptions')),
+            ('type', equals('subscription')),
             ('op', equals('peer_add')),
             ('user_email', check_string),
             ('subscriptions', check_list(check_string)),
         ])
         peer_remove_schema_checker = check_dict([
-            ('type', equals('subscriptions')),
+            ('type', equals('subscription')),
             ('op', equals('peer_remove')),
             ('user_email', check_string),
             ('subscriptions', check_list(check_string)),
@@ -319,7 +319,7 @@ class EventsRegisterTest(AuthedTestCase):
         ])
 
         action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
-        events = self.do_test(action)
+        events = self.do_test(action, event_types=["subscription", "realm_user"])
         error = add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

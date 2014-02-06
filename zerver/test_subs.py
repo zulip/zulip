@@ -230,7 +230,7 @@ class StreamAdminTest(AuthedTestCase):
             deletion_event = events[0]['event']
             self.assertEqual(deletion_event, dict(
                     op='remove',
-                    type='subscriptions',
+                    type='subscription',
                     subscriptions=[{'name': active_name}]
                     ))
         else:
@@ -935,7 +935,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
         self.assert_length(events, 2, True)
         add_event, add_peer_event = events
-        self.assertEqual(add_event['event']['type'], 'subscriptions')
+        self.assertEqual(add_event['event']['type'], 'subscription')
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [get_user_profile_by_email(self.test_email).id])
         self.assertEqual(
@@ -944,7 +944,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
 
         self.assertEqual(len(add_peer_event['users']), 2)
-        self.assertEqual(add_peer_event['event']['type'], 'subscriptions')
+        self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_email'], self.test_email)
 
@@ -962,7 +962,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_length(events, 2, True)
         add_event, add_peer_event = events
 
-        self.assertEqual(add_event['event']['type'], 'subscriptions')
+        self.assertEqual(add_event['event']['type'], 'subscription')
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [get_user_profile_by_email(email3).id])
         self.assertEqual(
@@ -971,7 +971,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
 
         self.assertEqual(len(add_peer_event['users']), 3)
-        self.assertEqual(add_peer_event['event']['type'], 'subscriptions')
+        self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_email'], email3)
 

@@ -906,7 +906,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     description=stream.description,
                     subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
-    event = dict(type="subscriptions", op="add",
+    event = dict(type="subscription", op="add",
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
@@ -1011,7 +1011,7 @@ def bulk_add_subscriptions(streams, users):
         other_user_ids = set(all_subscribed_ids) - set(new_user_ids)
         if other_user_ids:
             for user_profile in new_users:
-                event = dict(type="subscriptions", op="peer_add",
+                event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
                              user_email=user_profile.email)
                 send_event(event, other_user_ids)
@@ -1040,7 +1040,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
         notify_subscriptions_added(user_profile, [(subscription, stream)], lambda stream: emails_by_stream[stream.id], no_log)
 
         user_ids = get_other_subscriber_ids(stream, user_profile.id)
-        event = dict(type="subscriptions", op="peer_add",
+        event = dict(type="subscription", op="peer_add",
                      subscriptions=[stream.name],
                      user_email=user_profile.email)
         send_event(event, user_ids)
@@ -1055,7 +1055,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
                    'domain': stream.realm.domain})
 
     payload = [dict(name=stream.name) for stream in streams]
-    event = dict(type="subscriptions", op="remove",
+    event = dict(type="subscription", op="remove",
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
@@ -1072,7 +1072,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
             continue
 
         stream_names = [stream.name for stream in notifications]
-        event = dict(type="subscriptions", op="peer_remove",
+        event = dict(type="subscription", op="peer_remove",
                      subscriptions=stream_names,
                      user_email=user_profile.email)
         send_event(event, [event_recipient.id])
@@ -1145,7 +1145,7 @@ def do_change_subscription_property(user_profile, sub, stream_name,
     log_subscription_property_change(user_profile.email, stream_name,
                                      property_name, value)
 
-    event = dict(type="subscriptions",
+    event = dict(type="subscription",
                  op="update",
                  email=user_profile.email,
                  property=property_name,
@@ -2010,7 +2010,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['referrals'] = {'granted': user_profile.invites_granted,
                               'used': user_profile.invites_used}
 
-    if want('subscriptions'):
+    if want('subscription'):
         subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
@@ -2053,7 +2053,7 @@ def apply_events(state, events, user_profile):
         elif event['type'] == 'realm':
             field = 'realm_' + event['property']
             state[field] = event['value']
-        elif event['type'] == "subscriptions":
+        elif event['type'] == "subscription":
             if event['op'] in ["add"]:
                 # Convert the user_profile IDs to emails since that's what register() returns
                 # TODO: Clean up this situation
