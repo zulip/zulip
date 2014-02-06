@@ -578,7 +578,7 @@ function replace_floating_recipient_bar(desired_label) {
         if (desired_label.children(".message_header_stream").length !== 0) {
             new_label = $("#current_label_stream");
             other_label = $("#current_label_private_message");
-            header = desired_label.children(".message_header_stream.right_part");
+            header = desired_label.children(".message_header_stream");
 
             $("#current_label_stream .message_header_colorblock").css(
                 "background-color",
@@ -587,9 +587,9 @@ function replace_floating_recipient_bar(desired_label) {
         } else {
             new_label = $("#current_label_private_message");
             other_label = $("#current_label_stream");
-            header = desired_label.children(".message_header_private_message.right_part");
+            header = desired_label.children(".message_header_private_message");
         }
-        new_label.find(".right_part").replaceWith(header.clone());
+        new_label.find(".message_header").replaceWith(header.clone());
         other_label.css('display', 'none');
         new_label.css('display', 'block');
         new_label.attr("zid", rows.id(desired_label));

@@ -832,13 +832,9 @@ td.pointer {
 .stream_topic {
     background-color: #e2e2e2;
     display: inline-block;
-    padding: 3px 4px 2px 10px;
+    padding: 3px 6px 2px 12px;
     margin-left: -5px;
     height: 17px;
-    line-height: 17px;
-}
-
-.stream-topic {
     line-height: 17px;
 }
 
