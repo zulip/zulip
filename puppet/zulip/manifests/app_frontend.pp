@@ -2,7 +2,6 @@ class zulip::app_frontend {
   include zulip::rabbit
   include zulip::nginx
   include zulip::supervisor
-  include zulip::postfix_localmail
 
   $web_packages = [ # Needed for memcached usage
                     "memcached",
