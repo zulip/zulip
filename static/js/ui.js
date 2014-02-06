@@ -125,7 +125,6 @@ exports.replace_emoji_with_text = function (element) {
 };
 
 function copy_handler(e) {
-    console.log(e);
     var selection = window.getSelection();
     var i, range, ranges = [], startc, endc, initial_end_tr, start_id, end_id, row, message;
     var start_data, end_data;
@@ -663,20 +662,6 @@ exports.update_floating_recipient_bar = function () {
 
     replace_floating_recipient_bar(current_label);
 };
-
-function hack_for_floating_recipient_bar() {
-    // So, as of this writing, Firefox respects visibility: collapse,
-    // but WebKit does not (at least, my Chrome doesn't.)  Instead it
-    // renders it basically as visibility: hidden, which leaves a
-    // slight gap that our messages peek through as they scroll
-    // by. This hack fixes this by programmatically measuring how big
-    // the gap is, and then moving our table up to compensate.
-    //var gap = $("#floating_recipient_layout_row").outerHeight(true);
-    //var floating_recipient = $(".floating_recipient");
-    //var offset = floating_recipient.offset();
-    //offset.top = offset.top - gap;
-    //floating_recipient.offset(offset);
-}
 
 function update_message_in_all_views(message_id, callback) {
     _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (list) {
@@ -1243,7 +1228,6 @@ $(function () {
     // exact right width for the floating_recipient_bar and compose
     // box, but, close enough for now.
     resizehandler();
-    hack_for_floating_recipient_bar();
 
     if (!feature_flags.left_side_userlist) {
         $("#navbar-buttons").addClass("right-userlist");
