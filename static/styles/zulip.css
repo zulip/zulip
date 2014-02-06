@@ -91,6 +91,7 @@ a {
     width: 100%;
     position: fixed;
     z-index: 98;
+    left: 0px;
 }
 
 .column-left,
@@ -2108,9 +2109,17 @@ div.floating_recipient {
     border-collapse: separate;
     width: 100%;
     position: relative;
-    top: 50px;
     /* Needs body background because the child row becomes transparent when faded */
     background: #f4f5f4;
+}
+
+.floating_recipient .message_header_private_message .message-header-contents {
+    margin-left: 10px;
+    margin-right: 8px;
+}
+
+#floating_recipient_bar {
+    top: 50px;
 }
 
 #bottom_whitespace {
