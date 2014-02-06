@@ -50,6 +50,18 @@ def resize_avatar(image_data):
 
 ### S3
 
+def get_bucket(conn, bucket_name):
+    # Calling get_bucket() with validate=True can apparently lead
+    # to expensive S3 bills:
+    #    http://www.appneta.com/blog/s3-list-get-bucket-default/
+    # The benefits of validation aren't completely clear to us, and
+    # we want to save on our bills, so we set the validate flag to False.
+    # (We think setting validate to True would cause us to fail faster
+    #  in situations where buckets don't exist, but that shouldn't be
+    #  an issue for us.)
+    bucket = conn.get_bucket(bucket_name, validate=False)
+    return bucket
+
 def upload_image_to_s3(
         bucket_name,
         file_name,
@@ -59,7 +71,8 @@ def upload_image_to_s3(
     ):
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    key = Key(conn.get_bucket(bucket_name))
+    bucket = get_bucket(conn, bucket_name)
+    key = Key(bucket)
     key.key = file_name
     key.set_metadata("user_profile_id", str(user_profile.id))
     key.set_metadata("realm_id", str(user_profile.realm.id))
