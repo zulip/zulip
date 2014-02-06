@@ -46,9 +46,8 @@ function update_table_stream_color(table, stream_name, color) {
 
     _.each(stream_labels, function (label) {
         if ($.trim($(label).text()) === stream_name) {
-            var row = $(label).closest(".recipient_row");
-            var rows = row.prev("div").nextUntil(".bookend_tr");
-            label.css("background", style);
+            $(label).css({"background": style,
+                          "border-left-color": style});
         }
     });
 }
