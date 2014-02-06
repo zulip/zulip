@@ -473,8 +473,9 @@ function pick_empty_narrow_banner() {
         return default_banner;
     }
 
-    var first_operator = current_filter.operators()[0][0];
-    var first_operand = current_filter.operators()[0][1];
+    var first_term = current_filter.operators()[0];
+    var first_operator = first_term.operator;
+    var first_operand = first_term.operand;
 
     if (first_operator === "is") {
         if (first_operand === "starred") {
