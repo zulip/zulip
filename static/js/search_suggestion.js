@@ -67,9 +67,9 @@ function describe(operators) {
     var parts = [];
 
     if (operators.length >= 2) {
-        if (operators[0][0] === 'stream' && operators[1][0] === 'topic') {
-            var stream = operators[0][1];
-            var topic = operators[1][1];
+        if (operators[0].operator === 'stream' && operators[1].operator === 'topic') {
+            var stream = operators[0].operand;
+            var topic = operators[1].operand;
             var part = 'Narrow to ' + stream + ' > ' + topic;
             parts = [part];
             operators = operators.slice(2);
@@ -77,8 +77,8 @@ function describe(operators) {
     }
 
     var more_parts = _.map(operators, function (elem) {
-        var operand = elem[1];
-        var canonicalized_operator = Filter.canonicalize_operator(elem[0]);
+        var operand = elem.operand;
+        var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator ==='is') {
             if (operand === 'private') {
                 return 'Narrow to all private messages';
@@ -113,9 +113,9 @@ function get_stream_suggestions(operators) {
         query = '';
         break;
     case 1:
-        var operand = operators[0][0];
-        query = operators[0][1];
-        if (!(operand === 'stream' || operand === 'search')) {
+        var operator = operators[0].operator;
+        query = operators[0].operand;
+        if (!(operator === 'stream' || operator === 'search')) {
             return [];
         }
         break;
@@ -135,7 +135,11 @@ function get_stream_suggestions(operators) {
         var prefix = 'Narrow to stream';
         var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
         var description = prefix + ' ' + highlighted_stream;
-        var search_string = Filter.unparse([['stream', stream]]);
+        var term = {
+            operator: 'stream',
+            operand: stream
+        };
+        var search_string = Filter.unparse([term]);
         return {description: description, search_string: search_string};
     });
 
@@ -148,12 +152,12 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
     }
 
     var ok = false;
-    if ((operators[0][0] === 'is') && (operators[0][1] === 'private')) {
+    if ((operators[0].operator === 'is') && (operators[0].operand === 'private')) {
         operators = operators.slice(1);
         ok = true;
     } else  {
         _.each(person_operator_matches, function (item) {
-            if (operators[0][0] === item) {
+            if (operators[0].operator === item) {
                 ok = true;
             }
         });
@@ -169,15 +173,15 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
         query = '';
         matching_operator = person_operator_matches[0];
     } else if (operators.length === 1) {
-        var operator = operators[0][0];
+        var operator = operators[0].operator;
 
         if (operator === 'search') {
-            query = operators[0][1];
+            query = operators[0].operand;
             matching_operator = person_operator_matches[0];
         } else {
             _.each(person_operator_matches, function (item) {
                 if (operator === item) {
-                    query = operators[0][1];
+                    query = operators[0].operand;
                     matching_operator = item;
                 }
             });
@@ -206,7 +210,11 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
     var suggestions = _.map(people, function (person) {
         var name = highlight_person(query, person);
         var description = prefix + ' ' + name;
-        var search_string = Filter.unparse([[matching_operator, person.email]]);
+        var term = {
+            operator: matching_operator,
+            operand: person.email
+        };
+        var search_string = Filter.unparse([term]);
         return {description: description, search_string: search_string};
     });
 
@@ -256,8 +264,8 @@ function get_topic_suggestions(query_operators) {
     }
 
     var last_term = query_operators.slice(-1)[0];
-    var operator = Filter.canonicalize_operator(last_term[0]);
-    var operand = last_term[1];
+    var operator = Filter.canonicalize_operator(last_term.operator);
+    var operand = last_term.operand;
     var stream;
     var guess;
     var filter;
@@ -298,7 +306,7 @@ function get_topic_suggestions(query_operators) {
             stream = filter.operands('stream')[0];
         } else {
             stream = narrow.stream();
-            query_operators.push(['stream', stream]);
+            query_operators.push({operator: 'stream', operand: stream});
         }
         break;
     default:
@@ -340,8 +348,8 @@ function get_topic_suggestions(query_operators) {
     topics.sort();
 
     return _.map(topics, function (topic) {
-        var topic_operator = ['topic', topic];
-        var operators = query_operators.concat([topic_operator]);
+        var topic_term = {operator: 'topic', operand: topic};
+        var operators = query_operators.concat([topic_term]);
         var search_string = Filter.unparse(operators);
         var description = describe(operators);
         return {description: description, search_string: search_string};

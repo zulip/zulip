@@ -230,18 +230,23 @@ function get_predicate(operators) {
     var string;
     var operators;
 
-    operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
+    operators = [
+        {operator: 'stream', operand: 'Foo'},
+        {operator: 'topic', operand: 'Bar'},
+        {operator: 'search', operand: 'yo'}
+    ];
     string = 'stream:Foo topic:Bar yo';
     assert.deepEqual(Filter.unparse(operators), string);
 
-    operators = [['id', 50]];
+    operators = [
+        {operator: 'id', operand: 50}
+    ];
     string = 'id:50';
     assert.deepEqual(Filter.unparse(operators), string);
 
-    operators = [['near', 150]];
+    operators = [
+        {operator: 'near', operand: 150}
+    ];
     string = 'near:150';
     assert.deepEqual(Filter.unparse(operators), string);
 }());
-
-
-

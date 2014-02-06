@@ -245,14 +245,14 @@ Filter.parse = function (str) {
 */
 Filter.unparse = function (operators) {
     var parts = _.map(operators, function (elem) {
-        var operator = elem[0];
-        if (operator === 'search') {
+
+        if (elem.operator === 'search') {
             // Search terms are the catch-all case.
             // All tokens that don't start with a known operator and
             // a colon are glued together to form a search term.
-            return elem[1];
+            return elem.operand;
         } else {
-            return elem[0] + ':' + encodeOperand(elem[1].toString());
+            return elem.operator + ':' + encodeOperand(elem.operand.toString());
         }
     });
     return parts.join(' ');
