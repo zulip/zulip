@@ -154,6 +154,11 @@ elif DEPLOYED:
 else:
     EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST
 
+# Email mirror configuration
+# The email of the Zulip bot that the email gateway should post as.
+EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
+
+
 SSO_APPEND_DOMAIN = None
 
 AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
