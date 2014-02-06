@@ -715,25 +715,40 @@ td.pointer {
     vertical-align: top;
     text-align: left;
     width: auto;
+    top: -1px;
 }
 
 .message_time {
     display: inline-block;
-    font-weight: normal;
     font-size: 11px;
     color: #aaa;
     vertical-align: middle;
-    padding: 0px;
+    padding: 1px;
     font-weight: 300;
     position: absolute;
-    width: 45px;
-    left: -11px;
-    line-height: 24px;
+    width: 50px;
+    left: -16px;
+    line-height: 12px;
     text-align: right;
+    top: 5px;
+    -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    transition: background-color 2.7s ease-in, color 2.7s ease-in;
+}
+
+.unread .message_time {
+    -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    background: #7cb26d;
+    color: #000;
 }
 
 .message_time.status-time {
-    line-height: 35px;
+    line-height: 14px;
+    top: 10px;
 }
 
 .message_controls {
@@ -1071,19 +1086,21 @@ just a temporary hack.
     position: relative;
 }
 
+.include-sender .unread_marker {
+    top: 26px;
+}
+
 .unread_marker {
     display: block;
     position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 16px;
+    width: 6px;
+    height: 6px;
     background: #2b8213;
-    left: -16px;
-    top: 50%;
-    margin-top: -6px;
-    box-shadow: inset 1px 1px 1px -1px #000;
-    border: 1px solid #fff;
+    left: 4px;
+    top: 9px;
     opacity: 0;
+    z-index: 10;
+    display: none;
 }
 
 .unread_marker.slow_fade {
@@ -1098,10 +1115,6 @@ just a temporary hack.
     -moz-transition: all 0.3s ease-in;
     -o-transition: all 0.3s ease-in;
     transition: all 0.3s ease-in;
-}
-
-.unread .unread_marker {
-    opacity: 1;
 }
 
 .selected_message .messagebox {
