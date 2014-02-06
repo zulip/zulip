@@ -624,7 +624,10 @@ def check_message(sender, client, message_type_name, message_to,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
     stream = None
-    if len(message_to) == 0:
+    if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
+        # Use the users default stream
+        message_to = [sender.default_sending_stream.name]
+    elif len(message_to) == 0:
         raise JsonableError("Message must have recipients")
     if len(message_content.strip()) == 0:
         raise JsonableError("Message must not be empty")

@@ -693,7 +693,7 @@ def json_send_message(request, user_profile):
 @has_request_variables
 def send_message_backend(request, user_profile,
                          message_type_name = REQ('type'),
-                         message_to = REQ('to', converter=extract_recipients),
+                         message_to = REQ('to', converter=extract_recipients, default=[]),
                          forged = REQ(default=False),
                          subject_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),

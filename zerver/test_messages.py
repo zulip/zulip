@@ -551,6 +551,27 @@ class MessagePOSTTest(AuthedTestCase):
                                                            "api-key": api_key})
         self.assert_json_success(result)
 
+    def test_api_message_with_default_to(self):
+        """
+        Sending messages without a to field should be sent to the default
+        stream for the user_profile.
+        """
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile.default_sending_stream = get_stream('Verona', user_profile.realm)
+        user_profile.save()
+        result = self.client.post("/api/v1/send_message", {"type": "stream",
+                                                           "client": "test suite",
+                                                           "content": "Test message no to",
+                                                           "subject": "Test subject",
+                                                           "email": email,
+                                                           "api-key": api_key})
+        self.assert_json_success(result)
+
+        sent_message = Message.objects.all().order_by('-id')[0]
+        self.assertEqual(sent_message.content, "Test message no to")
+
     def test_message_to_nonexistent_stream(self):
         """
         Sending a message to a nonexistent stream fails.

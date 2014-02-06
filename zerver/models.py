@@ -299,6 +299,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     last_reminder = models.DateTimeField(default=timezone.now, null=True)
     rate_limits = models.CharField(default="", max_length=100) # comma-separated list of range:max pairs
 
+    # Default streams
+    default_sending_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+')
+
     # UI vars
     enter_sends = models.NullBooleanField(default=True)
     autoscroll_forever = models.BooleanField(default=False)
