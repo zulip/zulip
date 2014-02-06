@@ -532,6 +532,41 @@
       "sorry,http://example.com/",
       "<p>sorry,%s</p>",
       "http://example.com/"
+    ],
+    [
+      "two nested parens https://zulip.com/(we_like_(to_nest_)_nest)_nest",
+      "<p>two nested parens %s</p>",
+      "https://zulip.com/(we_like_(to_nest_)_nest)_nest"
+    ],
+    [
+      "three nested parens https://zulip.com/(we_like_(to_(and_)nest_)_nest)_nest",
+      "<p>three nested parens %s</p>",
+      "https://zulip.com/(we_like_(to_(and_)nest_)_nest)_nest"
+    ],
+    [
+      "four nested parens https://zulip.com/(we_like_(to_n(e)st_)_n(es)t)_nest",
+      "<p>four nested parens %s</p>",
+      "https://zulip.com/(we_like_(to_n(e)st_)_n(es)t)_nest"
+    ],
+    [
+      "six nested parens https://zulip.com/(we_like_((t(d(o(___)o)o))o_nest_)_nest)_nest",
+      "<p>six nested parens %s</p>",
+      "https://zulip.com/(we_like_((t(d(o(___)o)o))o_nest_)_nest)_nest"
+    ],
+    [
+      "eight is too many https://zulip.com/(we_like_((t(d(o(_(1(2)1)__)o)o))o_nest_)_nest)_nest",
+      "<p>eight is too many https://zulip.com/(we_like_((t(d(o(_(1(2)1)__)o)o))o_nest_)_nest)_nest</p>",
+      ""
+    ],
+    [
+      "nested with autodetection zulip.us/(we_like_(to_n(e)st_)_n(es)t)_nest",
+      "<p>nested with autodetection %s</p>",
+      "zulip.us/(we_like_(to_n(e)st_)_n(es)t)_nest"
+    ],
+    [
+      "quora http://generate.quora.net/render?width=700&from=-4hours&until=now&height=400&bgcolor=black&lineMode=connected&title=arb%20hint%20status&target=alias(ans.hintland.hand.arb.enhint_rate%2C%22enhint%20rate%22)&target=alias(ans.hintland.hand.arb.unhint_rate%2C%22unhint%20rate%22)&target=alias(ans.hintland.hand.arb.size%2C%22hint%20size%22)&target=alias(scale(ans.vagabond.dingarb_cube_count%2C10000)%2C%22cube%20count%20x%2010K%22)&target=alias(scale(hnumbers.time.ding.gegevens.query.count%2C10)%2C%22ding%20gegevens%20query%20count%20x%2010%22)&fgcolor=white&uniq=0.44046106841415167",
+      "<p>quora %s</p>",
+      "http://generate.quora.net/render?width=700&amp;from=-4hours&amp;until=now&amp;height=400&amp;bgcolor=black&amp;lineMode=connected&amp;title=arb%20hint%20status&amp;target=alias(ans.hintland.hand.arb.enhint_rate%2C%22enhint%20rate%22)&amp;target=alias(ans.hintland.hand.arb.unhint_rate%2C%22unhint%20rate%22)&amp;target=alias(ans.hintland.hand.arb.size%2C%22hint%20size%22)&amp;target=alias(scale(ans.vagabond.dingarb_cube_count%2C10000)%2C%22cube%20count%20x%2010K%22)&amp;target=alias(scale(hnumbers.time.ding.gegevens.query.count%2C10)%2C%22ding%20gegevens%20query%20count%20x%2010%22)&amp;fgcolor=white&amp;uniq=0.44046106841415167"
     ]
   ]
 }

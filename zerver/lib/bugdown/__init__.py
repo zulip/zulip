@@ -845,6 +845,23 @@ class Bugdown(markdown.Extension):
         # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
         #
         # We detect a url either by the `https?://` or by building around the TLD.
+
+        # In lieu of having a recursive regex (which python doesn't support) to match
+        # arbitrary numbers of nested matching parenthesis, we manually build a regexp that
+        # can match up to six
+        # The inner_paren_contents chunk matches the innermore non-parenthesis-holding text,
+        # and the paren_group matches text with, optionally, a matching set of parens
+        inner_paren_contents = r"[^\s()\"]*"
+        paren_group = r"""
+                        [^\s()\"]*?            # Containing characters that won't end the URL
+                        (?: \( %s \)           # and more characters in matched parens
+                            [^\s()\"]*?        # followed by more characters
+                        )*                     # zero-or-more sets of paired parens
+                       """
+        nested_paren_chunk = paren_group
+        for i in range(6):
+            nested_paren_chunk = nested_paren_chunk % (paren_group,)
+        nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
         tlds = '|'.join(list_of_tlds())
         link_regex = r"""
             (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
@@ -858,10 +875,7 @@ class Bugdown(markdown.Extension):
                     )
                 )
                 (?:/             # A path, beginning with /
-                    [^\s()\"]*?            # Containing characters that won't end the URL
-                    (?: \( [^\s()\"]* \)   # and more characters in matched parens
-                        [^\s()\"]*?        # followed by more characters
-                    )*                     # zero-or-more sets of paired parens
+                    %s           # zero-to-6 sets of paired parens
                 )?)              # Path is optional
                 | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
             )
@@ -869,7 +883,7 @@ class Bugdown(markdown.Extension):
                 [:;\?\),\.\'\"\>]*         # Optional punctuation characters
                 (?:\Z|\s)                  # followed by whitespace or end of string
             )
-            """ % (tlds,)
+            """ % (tlds, nested_paren_chunk)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',
