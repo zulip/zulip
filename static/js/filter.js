@@ -3,9 +3,14 @@ var Filter = (function () {
 function filter_term(opts) {
     // For legacy reasons we must represent filter_terms as tuples
     // until we phase out all the code that assumes tuples.
+    // We are very close to removing the tuple code everywhere; for
+    // now, we remove the safety net on staging only.
     var term = [];
-    term[0] = opts.operator;
-    term[1] = opts.operand;
+
+    if (!feature_flags.remove_filter_tuples_safety_net) {
+        term[0] = opts.operator;
+        term[1] = opts.operand;
+    }
 
     // This is the new style we are phasing in.  (Yes, the same
     // object can be treated like either a tuple or a struct.)

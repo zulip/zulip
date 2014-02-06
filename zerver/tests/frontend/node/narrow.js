@@ -7,6 +7,10 @@ var narrow = require('js/narrow.js');
 var Filter = global.Filter;
 var stream_data = global.stream_data;
 
+set_global('feature_flags', {
+    remove_filter_tuples_safety_net: false
+});
+
 function set_filter(operators) {
     narrow._set_current_filter(new Filter(operators));
 }

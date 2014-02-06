@@ -28,6 +28,10 @@ set_global('stream_data', {
 
 set_global('narrow', {});
 
+set_global('feature_flags', {
+    remove_filter_tuples_safety_net: false
+});
+
 (function test_basic_get_suggestions() {
     var query = 'fred';
 
