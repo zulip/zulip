@@ -165,6 +165,19 @@ exports.add_messages = function add_messages(messages, msg_list, opts) {
     }
 };
 
+function server_style(operators) {
+    // Our server still accepts narrow terms in the old-school tuple
+    // format, and it will support that style for a while, since we have
+    // some legacy clients in the wild.  But soon the server will also
+    // support new-style operators, so this function is just temporary.
+    // (There are some complications in making the server support both,
+    // so even though this code is kind of throwaway, it is a safer
+    // path to the end game.)
+    return _.map(operators, function (term) {
+        return [term.operator, term.operand];
+    });
+}
+
 function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
     var ids = [];
     _.each(messages, function (elem) {
@@ -175,7 +188,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
         url:      '/json/messages_in_narrow',
         idempotent: true,
         data:     {msg_ids: JSON.stringify(ids),
-                   narrow:  JSON.stringify(narrow.public_operators())},
+                   narrow:  JSON.stringify(server_style(narrow.public_operators()))},
         timeout:  5000,
         success: function (data) {
             if (msg_list !== current_msg_list) {
@@ -405,10 +418,10 @@ exports.load_old_messages = function load_old_messages(opts) {
         if (page_params.narrow !== undefined) {
             operators = operators.concat(page_params.narrow);
         }
-        data.narrow = JSON.stringify(operators);
+        data.narrow = JSON.stringify(server_style(operators));
     }
     if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
-        data.narrow = JSON.stringify(page_params.narrow);
+        data.narrow = JSON.stringify(server_style(page_params.narrow));
     }
     if (opts.use_first_unread_anchor) {
         data.use_first_unread_anchor = true;
