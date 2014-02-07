@@ -93,12 +93,12 @@ def get_file_info(request, user_file):
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
     return uploaded_file_name, content_type
 
-def authed_upload_enabled(user_profile):
-    return user_profile.realm.domain in ('zulip.com', 'squarespace.com')
+def authed_upload_enabled(realm):
+    return realm.domain in ('zulip.com', 'squarespace.com')
 
 def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_profile, private=None):
     if private is None:
-        private = authed_upload_enabled(user_profile)
+        private = authed_upload_enabled(user_profile.realm)
     if private:
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         s3_file_name = "/".join([
