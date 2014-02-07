@@ -45,9 +45,12 @@ function update_table_stream_color(table, stream_name, color) {
     var stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
 
     _.each(stream_labels, function (label) {
-        if ($.trim($(label).text()) === stream_name) {
-            $(label).css({"background": style,
+        var $label = $(label);
+        if ($.trim($label.text()) === stream_name) {
+            $label.css({"background": style,
                           "border-left-color": style});
+            $label.removeClass(exports.color_classes);
+            $label.addClass(color_class);
         }
     });
 }

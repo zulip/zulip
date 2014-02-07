@@ -128,6 +128,7 @@ exports.colorize_tab_bar = function () {
                 }
               );
             }
+            stream_tab.removeClass(stream_color.color_classes);
             stream_tab.addClass(stream_dark);
         }
     }
