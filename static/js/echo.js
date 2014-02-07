@@ -209,7 +209,6 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
         return;
     }
 
-    blueslip.debug("Reifying ID: " + local_id + " TO " + server_id);
     message.id = server_id;
     delete message.local_id;
 
