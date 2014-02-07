@@ -307,12 +307,15 @@ exports.mark_subscribed = function (stream_name, attrs) {
 
 exports.mark_unsubscribed = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
+    exports.mark_sub_unsubscribed(sub);
+};
 
+exports.mark_sub_unsubscribed = function (sub) {
     if (sub === undefined) {
         // We don't know about this stream
         return;
     } else if (sub.subscribed) {
-        stream_list.remove_narrow_filter(stream_name, 'stream');
+        stream_list.remove_narrow_filter(sub.name, 'stream');
         sub.subscribed = false;
         button_for_sub(sub).removeClass("subscribed-button").removeClass("green-button").removeClass("red-button").text("Subscribe");
         var settings = settings_for_sub(sub);
