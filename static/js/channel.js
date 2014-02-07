@@ -1,6 +1,22 @@
 var channel = (function () {
 
 var exports = {};
+var pending_requests = [];
+
+function add_pending_request (jqXHR) {
+    pending_requests.push(jqXHR);
+    if (pending_requests.length > 50) {
+        blueslip.warn('The length of pending_requests is over 50. Most likely ' +
+                      'they are not being correctly removed.');
+    }
+}
+
+function remove_pending_request (jqXHR) {
+    var pending_request_index = _.indexOf(pending_requests, jqXHR)
+    if (pending_request_index != -1){
+        pending_requests.splice(pending_request_index, 1);
+    }
+}
 
 function call(args, idempotent) {
     // Wrap the error handlers to reload the page if we get a CSRF error
@@ -10,6 +26,8 @@ function call(args, idempotent) {
         orig_error = function () {};
     }
     args.error = function wrapped_error(xhr, error_type, xhn) {
+        remove_pending_request(xhr);
+
         if (xhr.status === 403 && $.parseJSON(xhr.responseText).msg.indexOf("CSRF Error:") !== -1) {
             reload.initiate({immediate: true});
         }
@@ -20,19 +38,30 @@ function call(args, idempotent) {
         orig_success = function () {};
     }
     args.success = function wrapped_success(data, textStatus, jqXHR) {
+        remove_pending_request(jqXHR);
+
         if (!data && idempotent) {
             // If idempotent, retry
             blueslip.log("Retrying idempotent" + args);
             setTimeout(function () {
-                $.ajax(args);
+                var jqXHR = $.ajax(args);
+                add_pending_request(jqXHR);
             }, 0);
             return;
         }
         return orig_success(data, textStatus, jqXHR);
     };
 
-    return $.ajax(args);
+    var jqXHR = $.ajax(args);
+    add_pending_request(jqXHR);
+    return jqXHR;
 }
+
+exports.abort_all = function () {
+    _.each(pending_requests, function (jqXHR) {
+        jqXHR.abort();
+    });
+};
 
 exports.get = function (options) {
     var args = _.extend({type: "GET", dataType: "json"}, options);

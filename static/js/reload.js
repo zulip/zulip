@@ -126,6 +126,9 @@ function do_reload_app(send_after_reload, save_state, message) {
         // Unbind all the jQuery event listeners
         $('*').off();
 
+        // Abort all pending ajax requests`
+        channel.abort_all();
+
         // Free all of the DOM
         $("html").empty();
 
