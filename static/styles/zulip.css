@@ -63,7 +63,7 @@ a {
 
 .header {
     position: fixed;
-    z-index: 100;
+    z-index: 101;
     width: 100%;
     background: #ffffff;
     border-bottom: 1px solid #dadada;
