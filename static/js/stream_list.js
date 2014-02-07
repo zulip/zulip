@@ -74,7 +74,8 @@ function iterate_to_find(selector, name_to_find, context) {
 // as well, we probably should consider moving them to a different file.
 function get_filter_li(type, name) {
     if (type === 'stream') {
-        return $("#stream_sidebar_" + subs.stream_id(name));
+        var sub = stream_data.get_sub(name);
+        return $("#stream_sidebar_" + sub.stream_id);
     } else if (type === "private") {
         if (name.indexOf(",") < 0) {
             return $("li.user_sidebar_entry[data-email='" + name + "']");
@@ -126,11 +127,12 @@ exports.set_in_home_view = function (stream, in_home) {
 };
 
 function build_stream_sidebar_row(name) {
+    var sub = stream_data.get_sub(name);
     var args = {name: name,
-                id: subs.stream_id(name),
+                id: sub.stream_id,
                 uri: narrow.by_stream_uri(name),
                 not_in_home_view: (stream_data.in_home_view(name) === false),
-                invite_only: stream_data.get_sub(name).invite_only,
+                invite_only: sub.invite_only,
                 color: stream_data.get_color(name)
                };
     args.dark_background = stream_color.get_color_class(args.color);

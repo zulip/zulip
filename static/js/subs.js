@@ -2,8 +2,6 @@ var subs = (function () {
 
 var exports = {};
 
-var next_sub_id = 0;
-
 function add_admin_options(sub) {
     return _.extend(sub, {
         'is_admin': page_params.is_admin,
@@ -45,7 +43,7 @@ exports.stream_id = function (stream_name) {
         blueslip.error("Tried to get subs.stream_id for a stream user is not subscribed to!");
         return 0;
     }
-    return parseInt(sub.id, 10);
+    return parseInt(sub.stream_id, 10);
 };
 
 function set_stream_property(stream_name, property, value) {
@@ -111,7 +109,7 @@ function update_in_home_view(sub, value) {
 
     stream_list.set_in_home_view(sub.name, sub.in_home_view);
 
-    var not_in_home_view_checkbox = $("#subscription_" + sub.id + " #sub_setting_not_in_home_view .sub_setting_control");
+    var not_in_home_view_checkbox = $("#subscription_" + sub.stream_id + " #sub_setting_not_in_home_view .sub_setting_control");
     not_in_home_view_checkbox.attr('checked', !value);
 }
 
@@ -122,7 +120,7 @@ exports.toggle_home = function (stream_name) {
 };
 
 function update_stream_notifications(sub, value) {
-    var in_home_view_checkbox = $("#subscription_" + sub.id + " #sub_setting_notifications .sub_setting_control");
+    var in_home_view_checkbox = $("#subscription_" + sub.stream_id + " #sub_setting_notifications .sub_setting_control");
     in_home_view_checkbox.attr('checked', value);
     sub.notifications = value;
 }
@@ -146,7 +144,7 @@ function update_stream_name(sub, new_name) {
 function update_stream_description(sub, description) {
     sub.description = description;
 
-    var sub_settings_selector = '.subscription_row[data-subscription-id=' + sub.id + ']';
+    var sub_settings_selector = '.subscription_row[data-subscription-id=' + sub.stream_id + ']';
     $(sub_settings_selector + ' .subscription_description').text(description);
     $(sub_settings_selector + ' input.description').val(description);
 }
@@ -173,6 +171,12 @@ function create_sub(stream_name, attrs) {
         return sub;
     }
 
+    if (!attrs.stream_id) {
+        // fail fast (blueslip.fatal will throw an error on our behalf)
+        blueslip.fatal("We cannot create a sub without a stream_id");
+        return; // this line is never actually reached
+    }
+
     // Our internal data structure for subscriptions is mostly plain dictionaries,
     // so we just reuse the attrs that are passed in to us, but we encapsulate how
     // we handle subscribers.
@@ -181,7 +185,6 @@ function create_sub(stream_name, attrs) {
 
     sub = _.defaults(raw_attrs, {
         name: stream_name,
-        id: next_sub_id++,
         render_subscribers: page_params.domain !== 'mit.edu' || attrs.invite_only === true,
         subscribed: true,
         in_home_view: true,
@@ -202,12 +205,12 @@ function create_sub(stream_name, attrs) {
 }
 
 function button_for_sub(sub) {
-    var id = parseInt(sub.id, 10);
+    var id = parseInt(sub.stream_id, 10);
     return $("#subscription_" + id + " .sub_unsub_button");
 }
 
 function settings_for_sub(sub) {
-    var id = parseInt(sub.id, 10);
+    var id = parseInt(sub.stream_id, 10);
     return $("#subscription_settings_" + id);
 }
 

@@ -1,7 +1,7 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
 {{#with this}}
-<div class="subscription_row" id="subscription_{{id}}" data-subscription-id="{{id}}">
-    <div class="subscription_table_elem subscription_header collapsed" data-toggle="collapse" data-target="#subscription_settings_{{id}}">
+<div class="subscription_row" id="subscription_{{stream_id}}" data-subscription-id="{{stream_id}}">
+    <div class="subscription_table_elem subscription_header collapsed" data-toggle="collapse" data-target="#subscription_settings_{{stream_id}}">
       <span class="subscription-setting-icon">
         {{partial "subscription_setting_icon"}}
       </span>
@@ -21,7 +21,7 @@
       </button>
     </div>
 
-    <div id="subscription_settings_{{id}}" class="collapse subscription_settings">
+    <div id="subscription_settings_{{stream_id}}" class="collapse subscription_settings">
       <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
         <div class="subscription-type">
           {{partial "subscription_type"}}
@@ -30,13 +30,13 @@
         <ul>
           <li>
             <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox">
-              <input id="mutestream-{{id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless in_home_view}}checked{{/unless}} />
+              <input id="mutestream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless in_home_view}}checked{{/unless}} />
               <label class="subscription-control-label">Mute stream</label>
             </div>
           </li>
           <li>
             <div id="sub_setting_notifications" class="sub_setting_checkbox">
-              <input id="notifystream-{{id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if notifications}}checked{{/if}} />
+              <input id="notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if notifications}}checked{{/if}} />
               <label class="subscription-control-label">Show desktop notifications<br/>for traffic on this stream</label>
             </div>
           </li>
@@ -51,7 +51,7 @@
       </div>
       {{#if_and subscribed email_address}}
       <div class="stream-email-box">
-          <span class="sub_settings_title">Email address <i class="icon-vector-question-sign stream-email-hint" id="email-address-hint-{{id}}"></i></span>
+          <span class="sub_settings_title">Email address <i class="icon-vector-question-sign stream-email-hint" id="email-address-hint-{{stream_id}}"></i></span>
       <div class="stream-email">
           <span class="email-address">{{email_address}}</span>
       </div>

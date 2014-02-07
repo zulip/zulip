@@ -416,7 +416,8 @@ exports.register_click_handlers = function () {
         }
 
         $(elt).popover("show");
-        var popover = $('.streams_popover[data-id=' + stream_data.get_sub(stream).id + ']');
+        var data_id = stream_data.get_sub(stream).stream_id;
+        var popover = $('.streams_popover[data-id=' + data_id + ']');
         update_spectrum(popover, function (colorpicker) {
             colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
         });

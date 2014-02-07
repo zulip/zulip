@@ -86,7 +86,7 @@ exports.set_colorpicker_color = function (colorpicker, color) {
 exports.update_stream_color = function (sub, stream_name, color, opts) {
     opts = _.defaults({}, opts, {update_historical: false});
     sub.color = color;
-    var id = parseInt(sub.id, 10);
+    var id = parseInt(sub.stream_id, 10);
     // The swatch in the subscription row header.
     $("#subscription_" + id + " .color_swatch").css('background-color', color);
     // The swatch in the color picker.
@@ -95,7 +95,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     if (opts.update_historical) {
         update_historical_message_color(stream_name, color);
     }
-    update_stream_sidebar_swatch_color(sub.id, color);
+    update_stream_sidebar_swatch_color(id, color);
     tab_bar.colorize_tab_bar();
 };
 
