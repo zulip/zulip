@@ -295,6 +295,7 @@ class EventsRegisterTest(AuthedTestCase):
             ('subscriptions', check_list(
                 check_dict([
                     ('name', equals('test_stream')),
+                    ('stream_id', check_int),
                 ]),
             )),
         ])

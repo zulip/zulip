@@ -231,7 +231,7 @@ class StreamAdminTest(AuthedTestCase):
             self.assertEqual(deletion_event, dict(
                     op='remove',
                     type='subscription',
-                    subscriptions=[{'name': active_name}]
+                    subscriptions=[{'name': active_name, 'stream_id': stream.id}]
                     ))
         else:
             # You could delete the stream, but you weren't on it so you don't

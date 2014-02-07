@@ -99,8 +99,9 @@ function get_events_success(events) {
                     subs.mark_subscribed(sub.name, sub);
                 });
             } else if (event.op === 'remove') {
-                _.each(event.subscriptions, function (sub) {
-                    subs.mark_unsubscribed(sub.name);
+                _.each(event.subscriptions, function (rec) {
+                    var sub = stream_data.get_sub_by_id(rec.stream_id);
+                    subs.mark_sub_unsubscribed(sub);
                 });
             } else if (event.op === 'update') {
                 subs.update_subscription_properties(event.name, event.property, event.value);

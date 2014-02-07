@@ -1054,7 +1054,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
                    'names': [stream.name for stream in streams],
                    'domain': stream.realm.domain})
 
-    payload = [dict(name=stream.name) for stream in streams]
+    payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove",
                  subscriptions=payload)
     send_event(event, [user_profile.id])
