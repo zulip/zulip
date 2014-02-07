@@ -143,7 +143,7 @@ def filter_footer(text):
 
     return text.partition("--")[0].strip()
 
-def extract_and_upload_attachments(message):
+def extract_and_upload_attachments(message, realm):
     attachment_links = []
 
     payload = message.get_payload()
@@ -157,7 +157,8 @@ def extract_and_upload_attachments(message):
         if filename:
             s3_url = upload_message_image(filename, content_type,
                                           part.get_payload(decode=True),
-                                          email_gateway_user)
+                                          email_gateway_user,
+                                          target_realm=realm)
             formatted_link = "[%s](%s)" % (filename, s3_url)
             attachment_links.append(formatted_link)
 
@@ -208,7 +209,7 @@ def process_message(message, rcpt_to=None):
         debug_info["to"] = to
         stream = extract_and_validate(to)
         debug_info["stream"] = stream
-        body += extract_and_upload_attachments(message)
+        body += extract_and_upload_attachments(message, stream.realm)
         if not body:
             # You can't send empty Zulips, so to avoid confusion over the
             # email forwarding failing, set a dummy message body.

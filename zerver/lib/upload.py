@@ -96,13 +96,13 @@ def get_file_info(request, user_file):
 def authed_upload_enabled(realm):
     return realm.domain in ('zulip.com', 'squarespace.com')
 
-def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_profile, private=None):
+def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_profile, private=None, target_realm=None):
     if private is None:
-        private = authed_upload_enabled(user_profile.realm)
+        private = authed_upload_enabled(target_realm if target_realm is not None else user_profile.realm)
     if private:
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         s3_file_name = "/".join([
-            str(user_profile.realm.id),
+            str(target_realm.id if target_realm is not None else user_profile.realm.id),
             random_name(18),
             sanitize_name(uploaded_file_name)
         ])
@@ -163,7 +163,7 @@ def write_local_file(type, path, file_data):
     with open(file_path, 'wb') as f:
         f.write(file_data)
 
-def upload_message_image_local(uploaded_file_name, content_type, file_data, user_profile, private=None):
+def upload_message_image_local(uploaded_file_name, content_type, file_data, user_profile, private=None, target_realm=None):
     # Split into 256 subdirectories to prevent directories from getting too big
     path = "/".join([
         str(user_profile.realm.id),
