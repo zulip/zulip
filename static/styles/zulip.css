@@ -117,7 +117,7 @@ a {
     position: fixed;
     margin-top: 50px;
     width: 250px;
-    z-index:99;
+    z-index:100;
     padding-left: 10px;
 }
 
@@ -301,10 +301,6 @@ a:hover code {
        doesn't consistently take on the right width when it's in an affix, so
        we need to specify a max size. */
     max-width: 250px;
-}
-
-#left-sidebar {
-    z-index: 4;
 }
 
 #left-sidebar .brand {
@@ -3551,7 +3547,7 @@ div.edit_bot {
     width: 100%;
     top: 41px;
     left: 0px;
-    z-index: 3;
+    z-index: 99;
 }
 
 #home .alert-bar {
@@ -3562,17 +3558,12 @@ div.edit_bot {
 }
 
 #home .alert-bar-contents {
-    background: #9bff8b;
     background: rgba(163,211,147,0.95);
-    border-bottom: 1px solid #ffffff;
-    border-right: 1px solid #ffffff;
-    border-left: 1px solid #ffffff;
-    border-radius: 2px;
     font-weight: 400;
     padding: 10px 35px 10px 10px;
     display: inline-block;
-    box-shadow: 0px 0px 4px -1px rgba(0,0,0,0.7);
     position: relative;
+    z-index: 99;
 }
 
 #home .alert-bar .alert-icon {
