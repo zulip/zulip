@@ -539,8 +539,7 @@ function render(template_name, args) {
     global.write_test_output("topic_edit_form.handlebars", html);
 
     var button = $(html).find("button:first");
-    assert.equal(button.text().trim(), 'Save');
-
+    assert.equal(button.find("i").attr("class"), 'icon-vector-ok');
 }());
 
 (function topic_sidebar_actions() {
