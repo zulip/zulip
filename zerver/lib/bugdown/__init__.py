@@ -902,12 +902,11 @@ class Bugdown(markdown.Extension):
                 if k not in ["autolink"]:
                     del md.inlinePatterns[k]
             for k in md.treeprocessors.keys():
-                if k not in ["inline_interesting_links"]:
+                if k not in ["inline_interesting_links", "inline", "rewrite_to_https"]:
                     del md.treeprocessors[k]
             for k in md.preprocessors.keys():
-                del md.preprocessors[k]
-            for k in md.postprocessors.keys():
-                del md.postprocessors[k]
+                if k not in ["custom_text_notifications"]:
+                    del md.preprocessors[k]
             for k in md.parser.blockprocessors.keys():
                 if k not in ["paragraph"]:
                     del md.parser.blockprocessors[k]

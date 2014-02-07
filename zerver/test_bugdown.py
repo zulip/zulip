@@ -386,4 +386,10 @@ class BugdownTest(TestCase):
             converted,
             "<p>* test</p>",
             )
+        msg = "https://lists.debian.org/debian-ctte/2014/02/msg00173.html"
+        converted = bugdown.convert(msg, "mit.edu/zephyr_mirror")
+        self.assertEqual(
+            converted,
+            '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
+            )
 
