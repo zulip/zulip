@@ -301,6 +301,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # Default streams
     default_sending_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+')
+    default_events_register_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+')
+    default_all_public_streams = models.BooleanField(default=False)
 
     # UI vars
     enter_sends = models.NullBooleanField(default=True)

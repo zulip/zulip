@@ -33,6 +33,8 @@ from zerver.lib.validator import (
     equals,
 )
 
+from zerver.views import _default_all_public_streams, _default_narrow
+
 from zerver.tornadoviews import get_events_backend
 
 from collections import OrderedDict
@@ -483,3 +485,73 @@ class EventQueueTest(TestCase):
                            'type': 'unknown',
                            "timestamp": "1"}])
 
+class TestEventsRegisterAllPublicStreamsDefaults(TestCase):
+    def setUp(self):
+        self.email = 'hamlet@zulip.com'
+        self.user_profile = get_user_profile_by_email(self.email)
+
+    def test_use_passed_all_public_true_default_false(self):
+        self.user_profile.default_all_public_streams = False
+        self.user_profile.save()
+        result = _default_all_public_streams(self.user_profile, True)
+        self.assertTrue(result)
+
+    def test_use_passed_all_public_true_default(self):
+        self.user_profile.default_all_public_streams = True
+        self.user_profile.save()
+        result = _default_all_public_streams(self.user_profile, True)
+        self.assertTrue(result)
+
+    def test_use_passed_all_public_false_default_false(self):
+        self.user_profile.default_all_public_streams = False
+        self.user_profile.save()
+        result = _default_all_public_streams(self.user_profile, False)
+        self.assertFalse(result)
+
+    def test_use_passed_all_public_false_default_true(self):
+        self.user_profile.default_all_public_streams = True
+        self.user_profile.save()
+        result = _default_all_public_streams(self.user_profile, False)
+        self.assertFalse(result)
+
+    def test_use_true_default_for_none(self):
+        self.user_profile.default_all_public_streams = True
+        self.user_profile.save()
+        result = _default_all_public_streams(self.user_profile, None)
+        self.assertTrue(result)
+
+    def test_use_false_default_for_none(self):
+        self.user_profile.default_all_public_streams = False
+        self.user_profile.save()
+        result = _default_all_public_streams(self.user_profile, None)
+        self.assertFalse(result)
+
+class TestEventsRegisterNarrowDefaults(TestCase):
+    def setUp(self):
+        self.email = 'hamlet@zulip.com'
+        self.user_profile = get_user_profile_by_email(self.email)
+        self.stream = get_stream('Verona', self.user_profile.realm)
+
+    def test_use_passed_narrow_no_default(self):
+        self.user_profile.default_events_register_stream_id = None
+        self.user_profile.save()
+        result = _default_narrow(self.user_profile, [('stream', 'my_stream')])
+        self.assertEqual(result, [('stream', 'my_stream')])
+
+    def test_use_passed_narrow_with_default(self):
+        self.user_profile.default_events_register_stream_id = self.stream.id
+        self.user_profile.save()
+        result = _default_narrow(self.user_profile, [('stream', 'my_stream')])
+        self.assertEqual(result, [('stream', 'my_stream')])
+
+    def test_use_default_if_narrow_is_empty(self):
+        self.user_profile.default_events_register_stream_id = self.stream.id
+        self.user_profile.save()
+        result = _default_narrow(self.user_profile, [])
+        self.assertEqual(result, [('stream', 'Verona')])
+
+    def test_use_narrow_if_default_is_none(self):
+        self.user_profile.default_events_register_stream_id = None
+        self.user_profile.save()
+        result = _default_narrow(self.user_profile, [])
+        self.assertEqual(result, [])
