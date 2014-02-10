@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import Q
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
-    has_request_variables, REQ, JsonableError, json_to_list, json_to_bool, \
+    has_request_variables, REQ, JsonableError, json_to_bool, \
     to_non_negative_int, to_non_negative_float
 from django.utils.html import escape as escape_html
 from django.views.decorators.csrf import csrf_exempt
@@ -88,10 +88,12 @@ class NarrowBuilder(object):
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
 
-    def __call__(self, query, operator, operand):
+    def __call__(self, query, term):
         # We have to be careful here because we're letting users call a method
         # by name! The prefix 'by_' prevents it from colliding with builtin
         # Python __magic__ stuff.
+        operator = term['operator']
+        operand = term['operand']
         method_name = 'by_' + operator.replace('-', '_')
         method = getattr(self, method_name, None)
         if method is None:
@@ -271,15 +273,20 @@ def narrow_parameter(json):
     if json == '{}':
         return None
 
-    data = json_to_list(json)
-    for elem in data:
+    data = ujson.loads(json)
+    if not isinstance(data, list):
+        raise ValueError("argument is not a list")
+
+    def convert_term(elem):
         if not isinstance(elem, list):
             raise ValueError("element is not a list")
         if (len(elem) != 2
             or any(not isinstance(x, str) and not isinstance(x, unicode)
                    for x in elem)):
             raise ValueError("element is not a string pair")
-    return data
+        return dict(operator=elem[0], operand=elem[1])
+
+    return map(convert_term, data)
 
 def is_public_stream(stream, realm):
     if not valid_stream_name(stream):
@@ -300,15 +307,15 @@ def get_old_messages_backend(request, user_profile,
                                                 converter=ujson.loads)):
     include_history = False
     if narrow is not None:
-        for operator, operand in narrow:
-            if operator == "stream":
-                if is_public_stream(operand, user_profile.realm):
+        for term in narrow:
+            if term['operator'] == "stream":
+                if is_public_stream(term['operand'], user_profile.realm):
                     include_history = True
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
-        for operator, operand in narrow:
-            if operator == "is":
+        for term in narrow:
+            if term['operator'] == "is":
                 include_history = False
 
     if include_history and not use_first_unread_anchor:
@@ -334,21 +341,21 @@ def get_old_messages_backend(request, user_profile,
     if narrow is not None:
         # Add some metadata to our logging data for narrows
         verbose_operators = []
-        for (operator, operand) in narrow:
-            if operator == "is":
-                verbose_operators.append("is:" + operand)
+        for term in narrow:
+            if term['operator'] == "is":
+                verbose_operators.append("is:" + term['operand'])
             else:
-                verbose_operators.append(operator)
+                verbose_operators.append(term['operator'])
         request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
 
         # Build the query for the narrow
         num_extra_messages = 0
         build = NarrowBuilder(user_profile, inner_msg_id_col)
-        for operator, operand in narrow:
-            if operator == 'search' and not is_search:
+        for term in narrow:
+            if term['operator'] == 'search' and not is_search:
                 query = query.column("subject").column("rendered_content")
                 is_search = True
-            query = build(query, operator, operand)
+            query = build(query, term)
 
     # We add 1 to the number of messages requested if no narrow was
     # specified to ensure that the resulting list always contains the
@@ -679,8 +686,8 @@ def messages_in_narrow_backend(request, user_profile,
                         literal_column("zerver_message.id")))
 
     build = NarrowBuilder(user_profile, column("message_id"))
-    for operator, operand in narrow:
-        query = build(query, operator, operand)
+    for term in narrow:
+        query = build(query, term)
 
     sa_conn = get_sqlalchemy_connection()
     query_result = list(sa_conn.execute(query).fetchall())
