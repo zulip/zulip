@@ -61,7 +61,20 @@ function set_stream_property(stream_name, property, value) {
 function stream_home_view_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
     var stream = sub_row.find('.subscription_name').text();
+    var sub = stream_data.get_sub(stream);
+    var notification_checkboxes = sub_row.find(".sub_notification_setting");
+
     subs.toggle_home(stream);
+
+    if (sub.in_home_view) {
+        sub_row.find(".mute-note").addClass("hide-mute-note");
+        notification_checkboxes.removeClass("muted-sub");
+        notification_checkboxes.find("input[type='checkbox']").removeAttr("disabled");
+    } else {
+        sub_row.find(".mute-note").removeClass("hide-mute-note");
+        notification_checkboxes.addClass("muted-sub");
+        notification_checkboxes.find("input[type='checkbox']").attr("disabled", true);
+    }
 }
 
 function update_in_home_view(sub, value) {

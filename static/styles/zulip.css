@@ -2546,6 +2546,19 @@ div.floating_recipient {
     margin: 0 30px 5px 20px;
 }
 
+.muted-sub {
+    color: #A3A3A3;
+}
+
+.mute-note {
+    font-size: 90%;
+    font-color: #525252;
+}
+
+.hide-mute-note {
+    display: none;
+}
+
 .streams_popover .sp-container {
     background: white;
     cursor: pointer;

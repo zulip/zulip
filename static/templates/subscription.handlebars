@@ -29,20 +29,23 @@
         <div class="subscription-config">
         <ul>
           <li>
-            <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox">
+            <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox sub-mute-setting">
               <input id="mutestream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless in_home_view}}checked{{/unless}} />
               <label class="subscription-control-label">Mute stream</label>
+              <p class="mute-note {{#if in_home_view}}hide-mute-note{{/if}}">Muted streams don't show up in your home view or generate notifications unless you are mentioned.</p>
             </div>
           </li>
           <li>
 
-            <div id="sub_desktop_notifications_setting" class="sub_setting_checkbox">
-              <input id="desktop-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications}}checked{{/if}} />
+            <div id="sub_desktop_notifications_setting"
+                 class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
+              <input id="desktop-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
               <label class="subscription-control-label">Receive desktop <br />notifications</label>
             </div>
 
-            <div id="sub_audible_notifications_setting" class="sub_setting_checkbox">
-              <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications}}checked{{/if}} />
+            <div id="sub_audible_notifications_setting"
+                 class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
+              <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
               <label class="subscription-control-label">Receive audible notifications</label>
             </div>
 
