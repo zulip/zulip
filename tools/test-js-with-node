@@ -12,5 +12,5 @@ if [ f$1 = fcover ]; then
 else
   # Normal testing, no coverage analysis.
   # Run the index.js test runner, which runs all the other tests.
-  $NODEJS $INDEX_JS
+  $NODEJS --stack-trace-limit=100 $INDEX_JS
 fi
