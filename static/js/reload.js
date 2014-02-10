@@ -109,19 +109,7 @@ function clear_message_list(msg_list) {
     msg_list._items = [{id: 1}];
 }
 
-function do_reload_app(send_after_reload, save_state, message) {
-    // TODO: we should completely disable the UI here
-    if (save_state) {
-        preserve_state(send_after_reload);
-    }
-
-    if (message === undefined) {
-        message = "Reloading";
-    }
-    // TODO: We need a better API for showing messages.
-    ui.report_message(message, $("#reloading-application"));
-    blueslip.log('Starting server requested page reload');
-    reload_in_progress = true;
+function cleanup_before_reload() {
     try {
         // Unbind all the jQuery event listeners
         $('*').off();
@@ -146,6 +134,27 @@ function do_reload_app(send_after_reload, save_state, message) {
         blueslip.error('Failed to cleanup before reloading',
                        undefined, ex.stack);
     }
+}
+
+function do_reload_app(send_after_reload, save_state, message) {
+    // TODO: we should completely disable the UI here
+    if (save_state) {
+        preserve_state(send_after_reload);
+    }
+
+    if (message === undefined) {
+        message = "Reloading";
+    }
+
+    // TODO: We need a better API for showing messages.
+    ui.report_message(message, $("#reloading-application"));
+    blueslip.log('Starting server requested page reload');
+    reload_in_progress = true;
+
+    if (feature_flags.cleanup_before_reload) {
+        cleanup_before_reload();
+    }
+
     window.location.reload(true);
 }
 

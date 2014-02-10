@@ -4,6 +4,8 @@ var exports = {};
 var pending_requests = [];
 
 function add_pending_request (jqXHR) {
+    if (!feature_flags.cleanup_before_reload) { return; }
+
     pending_requests.push(jqXHR);
     if (pending_requests.length > 50) {
         blueslip.warn('The length of pending_requests is over 50. Most likely ' +
@@ -12,8 +14,10 @@ function add_pending_request (jqXHR) {
 }
 
 function remove_pending_request (jqXHR) {
-    var pending_request_index = _.indexOf(pending_requests, jqXHR)
-    if (pending_request_index != -1){
+    if (!feature_flags.cleanup_before_reload) { return; }
+
+    var pending_request_index = _.indexOf(pending_requests, jqXHR);
+    if (pending_request_index !== -1){
         pending_requests.splice(pending_request_index, 1);
     }
 }
