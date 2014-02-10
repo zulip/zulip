@@ -39,8 +39,14 @@ exports.operators_to_hash = function (operators) {
         hash = '#narrow';
         _.each(operators, function (elem) {
             // Support legacy tuples.
-            var operator = elem.operator || elem[0];
-            var operand = elem.operand || elem[1];
+            var operator = elem.operator;
+            var operand = elem.operand;
+
+            if (operator === undefined) {
+                blueslip.error("Legacy tuple syntax passed into operators_to_hash.");
+                operator = elem[0];
+                operand = elem[1];
+            }
 
             hash += '/' + hashchange.encodeHashComponent(operator)
                   + '/' + hashchange.encodeHashComponent(operand);
