@@ -92,8 +92,7 @@ in a while.
 
         all_domains = Realm.objects.filter(
             deactivated=False).values_list('domain', flat=True)
-        non_digest_domains = set(("users.customer4.invalid", "mit.edu",
-                                  "customer29.invalid", "customer20.invalid"))
+        non_digest_domains = set(("mit.edu", "customer29.invalid", "customer20.invalid"))
         digest_domains = set(all_domains) - non_digest_domains
 
         deployment_domains = domains_for_this_deployment()
