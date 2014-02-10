@@ -168,7 +168,8 @@ function get_events_success(events) {
         try {
             dispatch_event(event);
         } catch (ex1) {
-            blueslip.error('Failed to process an event',
+            blueslip.error('Failed to process an event\n' +
+                           blueslip.exception_msg(ex1),
                            {event: clean_event(event)},
                            ex1.stack);
         }
@@ -179,7 +180,8 @@ function get_events_success(events) {
             messages = echo.process_from_server(messages);
             message_store.insert_new_messages(messages);
         } catch (ex2) {
-            blueslip.error('Failed to insert new messages',
+            blueslip.error('Failed to insert new messages\n' +
+                           blueslip.exception_msg(ex2),
                            undefined,
                            ex2.stack);
         }
@@ -201,7 +203,8 @@ function get_events_success(events) {
         try {
             message_store.update_messages(messages_to_update);
         } catch (ex3) {
-            blueslip.error('Failed to update messages',
+            blueslip.error('Failed to update messages\n' +
+                           blueslip.exception_msg(ex3),
                            undefined,
                            ex3.stack);
         }
@@ -237,7 +240,8 @@ function get_events(options) {
 
                 get_events_success(data.events);
             } catch (ex) {
-                blueslip.error('Failed to handle get_events success',
+                blueslip.error('Failed to handle get_events success\n' +
+                               blueslip.exception_msg(ex),
                                undefined,
                                ex.stack);
             }
@@ -273,7 +277,8 @@ function get_events(options) {
                     $('#connection-error').hide();
                 }
             } catch (ex) {
-                blueslip.error('Failed to handle get_events error',
+                blueslip.error('Failed to handle get_events error\n' +
+                               blueslip.exception_msg(ex),
                                undefined,
                                ex.stack);
             }

@@ -196,6 +196,17 @@ function BlueslipError(msg, more_info) {
 
 BlueslipError.prototype = Object.create(Error.prototype);
 
+exports.exception_msg = function blueslip_exception_msg(ex) {
+    var message = ex.message;
+    if (ex.hasOwnProperty('fileName')) {
+        message += " at " + ex.fileName;
+        if (ex.hasOwnProperty('lineNumber')) {
+            message += ":" + ex.lineNumber;
+        }
+    }
+    return message;
+};
+
 exports.wrap_function = function blueslip_wrap_function(func) {
     if (func.blueslip_wrapper !== undefined) {
         func.blueslip_wrapper_refcnt++;
@@ -215,13 +226,7 @@ exports.wrap_function = function blueslip_wrap_function(func) {
                 throw ex;
             }
 
-            var message = ex.message;
-            if (ex.hasOwnProperty('fileName')) {
-                message += " at " + ex.fileName;
-                if (ex.hasOwnProperty('lineNumber')) {
-                    message += ":" + ex.lineNumber;
-                }
-            }
+            var message = exports.exception_msg(ex);
             report_error(message, ex.stack);
             throw ex;
         }

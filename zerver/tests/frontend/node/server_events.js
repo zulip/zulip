@@ -40,6 +40,9 @@ var setup = function (results) {
         results.more_info = more_info;
         results.stack = stack;
     };
+    global.blueslip.exception_msg = function (ex) {
+        return ex.message;
+    };
 };
 
 (function test_event_dispatch_error() {
@@ -53,7 +56,8 @@ var setup = function (results) {
 
     server_events.restart_get_events();
 
-    assert.equal(results.msg, 'Failed to process an event');
+    assert.equal(results.msg, 'Failed to process an event\n' +
+                              'subs is not defined');
     assert.equal(results.more_info.event.type , 'stream');
     assert.equal(results.more_info.event.op , 'update');
     assert.equal(results.more_info.event.id , 1);
@@ -72,7 +76,8 @@ var setup = function (results) {
 
     server_events.restart_get_events();
 
-    assert.equal(results.msg, 'Failed to insert new messages');
+    assert.equal(results.msg, 'Failed to insert new messages\n' +
+                               'echo is not defined');
     assert.equal(results.more_info, undefined);
 }());
 
@@ -87,6 +92,7 @@ var setup = function (results) {
 
     server_events.restart_get_events();
 
-    assert.equal(results.msg, 'Failed to update messages');
+    assert.equal(results.msg, 'Failed to update messages\n' +
+                              'message_store is not defined');
     assert.equal(results.more_info, undefined);
 }());
