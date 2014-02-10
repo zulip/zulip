@@ -19,7 +19,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch
 from zerver.lib.query import last_n
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd
-from zerver.lib.validator import check_list, check_int
+from zerver.lib.validator import check_list, check_int, check_dict, check_string
 from zerver.models import Message, UserProfile, Stream, \
     Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, valid_stream_name, \
@@ -278,13 +278,28 @@ def narrow_parameter(json):
         raise ValueError("argument is not a list")
 
     def convert_term(elem):
-        if not isinstance(elem, list):
-            raise ValueError("element is not a list")
-        if (len(elem) != 2
-            or any(not isinstance(x, str) and not isinstance(x, unicode)
-                   for x in elem)):
-            raise ValueError("element is not a string pair")
-        return dict(operator=elem[0], operand=elem[1])
+        # We have to support a legacy tuple format.
+        if isinstance(elem, list):
+            if (len(elem) != 2
+                or any(not isinstance(x, str) and not isinstance(x, unicode)
+                       for x in elem)):
+                raise ValueError("element is not a string pair")
+            return dict(operator=elem[0], operand=elem[1])
+
+        if isinstance(elem, dict):
+            validator = check_dict([
+                ('operator', check_string),
+                ('operand', check_string),
+            ])
+
+            error = validator('elem', elem)
+            if error:
+                raise JsonableError(error)
+
+            # whitelist the fields we care about for now
+            return dict(operator=elem['operator'], operand=elem['operand'])
+
+        raise ValueError("element is not a dictionary")
 
     return map(convert_term, data)
 

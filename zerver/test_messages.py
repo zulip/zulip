@@ -602,7 +602,18 @@ class GetOldMessagesTest(AuthedTestCase):
         messages.
         """
         self.login("hamlet@zulip.com")
-        self.check_well_formed_messages_response(self.post_with_params({}))
+        result = self.post_with_params(dict())
+        self.check_well_formed_messages_response(result)
+
+        # We have to support the legacy tuple style while there are old
+        # clients around, which might include third party home-grown bots.
+        narrow = [['pm-with', 'othello@zulip.com']]
+        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
+        self.check_well_formed_messages_response(result)
+
+        narrow = [dict(operator='pm-with', operand='othello@zulip.com')]
+        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
+        self.check_well_formed_messages_response(result)
 
     def test_get_old_messages_with_narrow_pm_with(self):
         """
@@ -623,8 +634,8 @@ class GetOldMessagesTest(AuthedTestCase):
         emails = dr_emails(get_display_recipient(personals[0].recipient))
 
         self.login(me)
-        result = self.post_with_params({"narrow": ujson.dumps(
-                    [['pm-with', emails]])})
+        narrow = [dict(operator='pm-with', operand=emails)]
+        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
@@ -650,8 +661,8 @@ class GetOldMessagesTest(AuthedTestCase):
         stream_name = get_display_recipient(stream_messages[0].recipient)
         stream_id = stream_messages[0].recipient.id
 
-        result = self.post_with_params({"narrow": ujson.dumps(
-                    [['stream', stream_name]])})
+        narrow = [dict(operator='stream', operand=stream_name)]
+        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
@@ -679,8 +690,8 @@ class GetOldMessagesTest(AuthedTestCase):
         self.send_message("starnine@mit.edu", u"\u03bb-stream", Recipient.STREAM)
         self.send_message("starnine@mit.edu", u"\u03bb-stream.d", Recipient.STREAM)
 
-        result = self.post_with_params({"num_after": 2, "narrow": ujson.dumps(
-                    [['stream', u'\u03bb-stream']])})
+        narrow = [dict(operator='stream', operand=u'\u03bb-stream')]
+        result = self.post_with_params(dict(num_after=2, narrow=ujson.dumps(narrow)))
         self.check_well_formed_messages_response(result)
 
         messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
@@ -712,8 +723,8 @@ class GetOldMessagesTest(AuthedTestCase):
         self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic.d")
 
-        result = self.post_with_params({"num_after": 2, "narrow": ujson.dumps(
-                    [['topic', u'\u03bb-topic']])})
+        narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
+        result = self.post_with_params(dict(num_after=2, narrow=ujson.dumps(narrow)))
         self.check_well_formed_messages_response(result)
 
         messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
@@ -739,8 +750,8 @@ class GetOldMessagesTest(AuthedTestCase):
         self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL)
         self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM)
 
-        result = self.post_with_params({"narrow": ujson.dumps(
-                    [['sender', "othello@zulip.com"]])})
+        narrow = [dict(operator='sender', operand='othello@zulip.com')]
+        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
@@ -819,8 +830,8 @@ class GetOldMessagesTest(AuthedTestCase):
         """
         self.login("hamlet@zulip.com")
         for operator in ['', 'foo', 'stream:verona', '__init__']:
-            params = dict(anchor=0, num_before=0, num_after=0,
-                narrow=ujson.dumps([[operator, '']]))
+            narrow = [dict(operator=operator, operand='')]
+            params = dict(anchor=0, num_before=0, num_after=0, narrow=ujson.dumps(narrow))
             result = self.client.post("/json/get_old_messages", params)
             self.assert_json_error_contains(result,
                 "Invalid narrow operator: unknown operator")
