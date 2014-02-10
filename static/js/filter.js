@@ -175,6 +175,14 @@ Filter.canonicalize_term = function (opts) {
             operand = page_params.email;
         }
         break;
+    case 'search':
+        // The mac app automatically substitutes regular quotes with curly
+        // quotes when typing in the search bar.  Curly quotes don't trigger our
+        // phrase search behavior, however.  So, we replace all instances of
+        // curly quotes with regular quotes when doing a search.  This is
+        // unlikely to cause any problems and is probably what the user wants.
+        operand = operand.toString().toLowerCase().replace(/[\u201c\u201d]/g, '"');
+        break;
     default:
         operand = operand.toString().toLowerCase();
     }

@@ -98,6 +98,22 @@ function assert_same_operators(result, terms) {
     term = Filter.canonicalize_term({operator: 'pm-with', operand: 'me'});
     assert.equal(term.operator, 'pm-with');
     assert.equal(term.operand, 'hamlet@zulip.com');
+
+    term = Filter.canonicalize_term({operator: 'search', operand: 'foo'});
+    assert.equal(term.operator, 'search');
+    assert.equal(term.operand, 'foo');
+
+    term = Filter.canonicalize_term({operator: 'search', operand: 'fOO'});
+    assert.equal(term.operator, 'search');
+    assert.equal(term.operand, 'foo');
+
+    term = Filter.canonicalize_term({operator: 'search', operand: 123});
+    assert.equal(term.operator, 'search');
+    assert.equal(term.operand, '123');
+
+    term = Filter.canonicalize_term({operator: 'search', operand: 'abc “xyz”'});
+    assert.equal(term.operator, 'search');
+    assert.equal(term.operand, 'abc "xyz"');
 }());
 
 function get_predicate(operators) {
