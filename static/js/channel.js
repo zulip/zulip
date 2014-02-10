@@ -32,8 +32,17 @@ function call(args, idempotent) {
     args.error = function wrapped_error(xhr, error_type, xhn) {
         remove_pending_request(xhr);
 
-        if (xhr.status === 403 && $.parseJSON(xhr.responseText).msg.indexOf("CSRF Error:") !== -1) {
-            reload.initiate({immediate: true});
+        if (xhr.status === 403) {
+            try {
+                if ($.parseJSON(xhr.responseText).msg.indexOf("CSRF Error:") !== -1) {
+                    reload.initiate({immediate: true});
+                }
+            } catch (ex) {
+                blueslip.error('Unexpected 403 response from server',
+                               {xhr: xhr.responseText,
+                                args: args},
+                               ex.stack);
+            }
         }
         return orig_error(xhr, error_type, xhn);
     };
