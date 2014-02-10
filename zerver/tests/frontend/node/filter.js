@@ -187,11 +187,19 @@ function get_predicate(operators) {
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
 
     // Try to get the MIT regex to explode for an empty stream.
-    predicate = new Filter([['stream', ''], ['topic', 'bar']]).predicate();
+    var terms = [
+        {operator: 'stream', operand: ''},
+        {operator: 'topic', operand: 'bar'}
+    ];
+    predicate = new Filter(terms).predicate();
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 
     // Try to get the MIT regex to explode for an empty topic.
-    predicate = new Filter([['stream', 'foo'], ['topic', '']]).predicate();
+    terms = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: ''}
+    ];
+    predicate = new Filter(terms).predicate();
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 }());
 

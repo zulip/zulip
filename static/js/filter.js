@@ -151,9 +151,14 @@ Filter.canonicalize_operator = function (operator) {
 };
 
 Filter.canonicalize_term = function (opts) {
-    // Legacy code may still call use with a tuple of [operator, operand].
-    var operator = opts.operator || opts[0];
-    var operand = opts.operand || opts[1];
+    var operator = opts.operator;
+    var operand = opts.operand;
+
+    if (operator === undefined) {
+        blueslip.error("Old-style tuple operators are still in use for canonicalize_term");
+        operator = opts[0];
+        operand = opts[1];
+    }
 
     operator = Filter.canonicalize_operator(operator);
 
