@@ -509,8 +509,8 @@ $(function () {
         var stream = $(e.target).parents('ul').attr('data-stream');
         var subject = $(e.target).parents('li').attr('data-name');
 
-        narrow.activate([['stream',  stream],
-                         ['topic', subject]],
+        narrow.activate([{operator: 'stream',  operand: stream},
+                         {operator: 'topic', operand: subject}],
                         {select_first_unread: true, trigger: 'sidebar'});
 
         e.preventDefault();

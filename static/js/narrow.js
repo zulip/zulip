@@ -311,7 +311,7 @@ exports.activate = function (raw_operators, opts) {
 // Activate narrowing with a single operator.
 // This is just for syntactic convenience.
 exports.by = function (operator, operand, opts) {
-    exports.activate([[operator, operand]], opts);
+    exports.activate([{operator: operator, operand: operand}], opts);
 };
 
 exports.by_subject = function (target_id, opts) {
@@ -324,11 +324,12 @@ exports.by_subject = function (target_id, opts) {
         return;
     }
     unread.mark_message_as_read(original);
+    var search_terms = [
+        {operator: 'stream', operand: original.stream},
+        {operator: 'topic', operand: original.subject}
+    ];
     opts = _.defaults({}, opts, {then_select_id: target_id});
-    exports.activate([
-            ['stream',  original.stream],
-            ['topic', original.subject]
-        ], opts);
+    exports.activate(search_terms, opts);
 };
 
 // Called for the 'narrow by stream' hotkey.
@@ -350,24 +351,24 @@ exports.by_recipient = function (target_id, opts) {
 
 exports.by_time_travel = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
-    narrow.activate([["near", target_id]], opts);
+    narrow.activate([{operator: "near", operand: target_id}], opts);
 };
 
 exports.by_id = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
-    narrow.activate([["id", target_id]], opts);
+    narrow.activate([{operator: "id", operand: target_id}], opts);
 };
 
 exports.by_conversation_and_time = function (target_id, opts) {
-    var args = [["near", target_id]];
+    var args = [{operator: "near", operand: target_id}];
     var original = message_store.get(target_id);
     opts = _.defaults({}, opts, {then_select_id: target_id});
 
     if (original.type !== 'stream') {
-        args.push(["pm-with", original.reply_to]);
+        args.push({operator: "pm-with", operand: original.reply_to});
     } else {
-        args.push(['stream',  original.stream]);
-        args.push(['topic',  original.subject]);
+        args.push({operator: 'stream', operand: original.stream});
+        args.push({operator: 'topic', operand: original.subject});
     }
     narrow.activate(args, opts);
 };

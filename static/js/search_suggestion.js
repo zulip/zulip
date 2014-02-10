@@ -284,7 +284,7 @@ function get_topic_suggestions(query_operators) {
     // not want to suggest topics, but I feel this is a very
     // minor issue, and Filter.parse() is currently lossy
     // in terms of telling us whether they provided the operator,
-    // i.e. "foo" and "search:foo" both become [['search', 'foo']].
+    // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
     switch (operator) {
     case 'stream':
         filter = new Filter(query_operators);

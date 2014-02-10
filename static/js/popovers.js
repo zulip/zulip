@@ -347,7 +347,10 @@ exports.register_click_handlers = function () {
         var stream_name = row.attr('data-stream-name');
         var topic_name = row.attr('data-topic-name');
 
-        var operators = [['stream', stream_name], ['topic', topic_name]];
+        var operators = [
+            {operator: 'stream', operand: stream_name},
+            {operator: 'topic', operand: topic_name}
+        ];
         var opts = {select_first_unread: true, trigger: 'sidebar'};
         narrow.activate(operators, opts);
 

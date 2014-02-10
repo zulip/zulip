@@ -3,7 +3,7 @@ var all_msg_list = new MessageList(
     {muting_enabled: false}
 );
 var home_msg_list = new MessageList('zhome',
-    new Filter([["in", "home"]]),
+    new Filter([{operator: "in", operand: "home"}]),
     {
         muting_enabled: true,
         summarize_read: feature_flags.summarize_read_while_narrowed?'home':false
