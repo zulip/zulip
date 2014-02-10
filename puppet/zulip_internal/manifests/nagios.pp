@@ -1,12 +1,8 @@
 class zulip_internal::nagios {
-  include zulip_internal::base
   include zulip_internal::apache
 
   $nagios_packages = [# Packages needed for Nagios
                       "nagios3",
-                      "autossh",
-                      # Packages needed for munin
-                      "munin",
                       # Needed for check_website_response
                       "netcat",
                       ]
@@ -79,6 +75,4 @@ class zulip_internal::nagios {
   }
 
   # TODO: Install our API
-
-  # TODO: Add munin configuration
 }
