@@ -562,7 +562,7 @@ def check_stream_name(stream_name):
         raise JsonableError("Invalid stream name")
 
 def send_pm_if_empty_stream(sender, stream, stream_name):
-    if sender.realm.domain == 'mit.edu':
+    if sender.realm.domain == 'mit.edu' or sender.realm.deactivated:
         return
 
     if sender.is_bot and sender.bot_owner is not None:
