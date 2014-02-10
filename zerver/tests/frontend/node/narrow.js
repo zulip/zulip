@@ -6,12 +6,16 @@ add_dependencies({
 var narrow = require('js/narrow.js');
 var Filter = global.Filter;
 var stream_data = global.stream_data;
+var _ = global._;
 
 set_global('feature_flags', {
     remove_filter_tuples_safety_net: false
 });
 
 function set_filter(operators) {
+    operators = _.map(operators, function (op) {
+        return {operator: op[0], operand: op[1]};
+    });
     narrow._set_current_filter(new Filter(operators));
 }
 

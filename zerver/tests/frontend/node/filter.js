@@ -14,19 +14,24 @@ set_global('feature_flags', {
 var Filter = require('js/filter.js');
 var _ = global._;
 
-function assert_result_matches_legacy_terms(result, terms) {
+function assert_same_operators(result, terms) {
     result = _.map(result, function (term) {
-        // Return a legacy-style tuple.
-        return [term.operator, term.operand];
+        return {
+            operator: term.operator,
+            operand: term.operand
+        };
     });
     assert.deepEqual(result, terms);
 }
 
 (function test_basics() {
-    var operators = [['stream', 'foo'], ['topic', 'bar']];
+    var operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'bar'}
+    ];
     var filter = new Filter(operators);
 
-    assert_result_matches_legacy_terms(filter.operators(), operators);
+    assert_same_operators(filter.operators(), operators);
     assert.deepEqual(filter.operands('stream'), ['foo']);
 
     assert(filter.has_operator('stream'));
@@ -38,7 +43,11 @@ function assert_result_matches_legacy_terms(result, terms) {
     assert(!filter.is_search());
     assert(filter.can_apply_locally());
 
-    operators = [['stream', 'foo'], ['topic', 'bar'], ['search', 'pizza']];
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'bar'},
+        {operator: 'search', operand: 'pizza'}
+    ];
     filter = new Filter(operators);
 
     assert(filter.is_search());
@@ -57,13 +66,19 @@ function assert_result_matches_legacy_terms(result, terms) {
 }());
 
 (function test_public_operators() {
-    var operators = [['stream', 'foo'], ['topic', 'bar']];
-    var filter = new Filter(operators);
-    assert_result_matches_legacy_terms(filter.public_operators(), operators);
+    var operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'bar'}
+    ];
 
-    operators = [['in', 'all']];
+    var filter = new Filter(operators);
+    assert_same_operators(filter.public_operators(), operators);
+
+    operators = [
+        {operator: 'in', operand: 'all'}
+    ];
     filter = new Filter(operators);
-    assert_result_matches_legacy_terms(filter.public_operators(), []);
+    assert_same_operators(filter.public_operators(), []);
 }());
 
 (function test_canonicalizations() {
@@ -72,20 +87,23 @@ function assert_result_matches_legacy_terms(result, terms) {
     assert.equal(Filter.canonicalize_operator('Subject'), 'topic');
 
     var term;
-    term = Filter.canonicalize_term(['Stream', 'Denmark']);
+    term = Filter.canonicalize_term({operator: 'Stream', operand: 'Denmark'});
     assert.equal(term.operator, 'stream');
     assert.equal(term.operand, 'Denmark');
 
-    term = Filter.canonicalize_term(['sender', 'me']);
+    term = Filter.canonicalize_term({operator: 'sender', operand: 'me'});
     assert.equal(term.operator, 'sender');
     assert.equal(term.operand, 'hamlet@zulip.com');
 
-    term = Filter.canonicalize_term(['pm-with', 'me']);
+    term = Filter.canonicalize_term({operator: 'pm-with', operand: 'me'});
     assert.equal(term.operator, 'pm-with');
     assert.equal(term.operand, 'hamlet@zulip.com');
 }());
 
 function get_predicate(operators) {
+    operators = _.map(operators, function (op) {
+        return {operator: op[0], operand: op[1]};
+    });
     return new Filter(operators).predicate();
 }
 
@@ -169,11 +187,11 @@ function get_predicate(operators) {
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
 
     // Try to get the MIT regex to explode for an empty stream.
-    predicate = get_predicate([['stream', ''], ['topic', 'bar']]);
+    predicate = new Filter([['stream', ''], ['topic', 'bar']]).predicate();
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 
     // Try to get the MIT regex to explode for an empty topic.
-    predicate = get_predicate([['stream', 'foo'], ['topic', '']]);
+    predicate = new Filter([['stream', 'foo'], ['topic', '']]).predicate();
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 }());
 
@@ -196,7 +214,11 @@ function get_predicate(operators) {
     assert(predicate({}));
 
     // Exercise caching feature.
-    var filter = new Filter([['stream', 'Foo'], ['topic', 'bar']]);
+    var terms = [
+        {operator: 'stream', operand: 'Foo'},
+        {operator: 'topic', operand: 'bar'}
+    ];
+    var filter = new Filter(terms);
     predicate = filter.predicate();
     predicate = filter.predicate(); // get cached version
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
@@ -209,23 +231,33 @@ function get_predicate(operators) {
 
     function _test() {
         var result = Filter.parse(string);
-        assert_result_matches_legacy_terms(result, operators);
+        assert_same_operators(result, operators);
     }
 
     string ='stream:Foo topic:Bar yo';
-    operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
+    operators = [
+        {operator: 'stream', operand: 'Foo'},
+        {operator: 'topic', operand: 'Bar'},
+        {operator: 'search', operand: 'yo'}
+    ];
     _test();
 
     string = 'pm-with:leo+test@zulip.com';
-    operators = [['pm-with', 'leo+test@zulip.com']];
+    operators = [
+        {operator: 'pm-with', operand: 'leo+test@zulip.com'}
+    ];
     _test();
 
     string = 'sender:leo+test@zulip.com';
-    operators = [['sender', 'leo+test@zulip.com']];
+    operators = [
+        {operator: 'sender', operand: 'leo+test@zulip.com'}
+    ];
     _test();
 
     string = 'stream:With+Space';
-    operators = [['stream', 'With Space']];
+    operators = [
+        {operator: 'stream', operand: 'With Space'}
+    ];
     _test();
 }());
 
