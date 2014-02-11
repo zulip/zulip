@@ -131,6 +131,7 @@ Filter.canonicalize_operator = function (operator) {
 };
 
 Filter.canonicalize_term = function (opts) {
+    var negated = opts.negated;
     var operator = opts.operator;
     var operand = opts.operand;
 
@@ -169,6 +170,7 @@ Filter.canonicalize_term = function (opts) {
 
     // We may want to consider allowing mixed-case operators at some point
     return {
+        negated: negated,
         operator: operator,
         operand: operand
     };
@@ -327,7 +329,11 @@ Filter.prototype = {
 
         return function (message) {
             return _.all(operators, function (term) {
-                return message_matches_search_term(message, term.operator, term.operand);
+                var ok = message_matches_search_term(message, term.operator, term.operand);
+                if (term.negated) {
+                    ok = !ok;
+                }
+                return ok;
             });
         };
     }

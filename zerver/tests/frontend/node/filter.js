@@ -184,6 +184,17 @@ function get_predicate(operators) {
     assert(!predicate({type: 'private', reply_to: 'steve@foo.com'}));
 }());
 
+(function test_negated_predicates() {
+    var predicate;
+    var narrow;
+
+    narrow = [
+        {operator: 'stream', operand: 'social', negated: true}
+    ];
+    predicate = new Filter(narrow).predicate();
+    assert(predicate({type: 'stream', stream: 'devel'}));
+    assert(!predicate({type: 'stream', stream: 'social'}));
+}());
 
 (function test_mit_exceptions() {
     global.page_params.domain = 'mit.edu';
