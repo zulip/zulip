@@ -2,6 +2,8 @@ var settings = (function () {
 
 var exports = {};
 
+var streams = [];
+
 function add_bot_row(name, email, avatar_url, api_key) {
     var info = {
         name: name,
@@ -18,6 +20,16 @@ function add_bot_row(name, email, avatar_url, api_key) {
 function is_local_part(value, element) {
     // Adapted from Django's EmailValidator
     return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
+}
+
+function build_stream_list($select) {
+    $select.empty();
+    _.each(_.pluck(streams, 'name'), function (name) {
+        $select.append($('<option>')
+            .attr('value', name)
+            .text(name)
+        );
+    });
 }
 
 // Choose avatar stamp fairly randomly, to help get old avatars out of cache.
@@ -45,6 +57,14 @@ exports.setup_page = function () {
 
     clear_password_change();
 
+    channel.get({
+        url: '/json/streams',
+        success: function (data) {
+            streams = data.streams;
+            build_stream_list($('#create_bot_default_sending_stream'));
+        }
+    });
+
     $('#api_key_button').click(function (e) {
         if (page_params.password_auth_enabled !== false) {
             $("#get_api_key_box").show();
@@ -67,6 +87,9 @@ exports.setup_page = function () {
 
     if (feature_flags.dont_show_digest_email_setting) {
         $("#digest_container").hide();
+    }
+    if (!feature_flags.new_bot_ui) {
+        $('.new-bot-ui').hide();
     }
 
 
@@ -363,10 +386,16 @@ exports.setup_page = function () {
         submitHandler: function () {
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val();
+            var default_sending_stream = $('#create_bot_default_sending_stream').val();
             var formData = new FormData();
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('full_name', full_name);
             formData.append('short_name', short_name);
+
+            if (feature_flags.new_bot_ui) {
+                formData.append('default_sending_stream', default_sending_stream);
+            }
+
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
