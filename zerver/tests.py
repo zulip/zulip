@@ -334,7 +334,7 @@ class ActivateTest(AuthedTestCase):
 
 class BotTest(AuthedTestCase):
     def assert_num_bots_equal(self, count):
-        result = self.client.post("/json/get_bots")
+        result = self.client.get("/json/bots")
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(count, len(json['bots']))
@@ -417,7 +417,7 @@ class BotTest(AuthedTestCase):
         self.assert_json_error(result, 'Insufficient permission')
 
     def get_bot(self):
-        result = self.client.post("/json/get_bots")
+        result = self.client.get("/json/bots")
         bots = ujson.loads(result.content)['bots']
         return bots[0]
 

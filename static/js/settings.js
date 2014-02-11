@@ -71,8 +71,8 @@ $(function () {
         $("#name_change_container").hide();
     }
 
-    channel.post({
-        url: '/json/get_bots',
+    channel.get({
+        url: '/json/bots',
         idempotent: true,
         success: function (data) {
             $('#bot_table_error').hide();

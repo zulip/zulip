@@ -1955,8 +1955,7 @@ def json_create_bot(request, user_profile, full_name=REQ, short_name=REQ):
     )
     return json_success(json_result)
 
-@authenticated_json_post_view
-def json_get_bots(request, user_profile):
+def get_bots_backend(request, user_profile):
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                               bot_owner=user_profile)
     bot_profiles = bot_profiles.order_by('date_joined')
