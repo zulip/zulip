@@ -12,13 +12,14 @@ from zerver.lib.test_helpers import (
 from zerver.models import UserProfile, Recipient, \
     Realm, Client, UserActivity, \
     get_user_profile_by_email, split_email_to_domain, get_realm, \
-    get_client
+    get_client, get_stream
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
-    do_set_realm_name, get_realm_name, do_deactivate_realm
+    do_set_realm_name, get_realm_name, do_deactivate_realm, \
+    do_add_subscription, do_remove_subscription, do_make_stream_private
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
 from zerver.middleware import is_slow_query
@@ -343,13 +344,15 @@ class BotTest(AuthedTestCase):
         json = ujson.loads(result.content)
         self.assertEqual(count, len(json['bots']))
 
-    def create_bot(self):
+    def create_bot(self, **extras):
         bot_info = {
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
+        bot_info.update(extras)
         result = self.client.post("/json/bots", bot_info)
         self.assert_json_success(result)
+        return ujson.loads(result.content)
 
     def deactivate_bot(self):
         result = self.client_delete("/json/bots/hambot-bot@zulip.com")
@@ -360,6 +363,97 @@ class BotTest(AuthedTestCase):
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
+
+    def test_add_bot_with_default_sending_stream(self):
+        self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(0)
+        result = self.create_bot(default_sending_stream='Denmark')
+        self.assert_num_bots_equal(1)
+        self.assertEqual(result['default_sending_stream'], 'Denmark')
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.default_sending_stream.name, 'Denmark')
+
+    def test_add_bot_with_default_sending_stream_private_allowed(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
+        do_add_subscription(user_profile, stream)
+        do_make_stream_private(user_profile.realm, "Denmark")
+
+        self.assert_num_bots_equal(0)
+        result = self.create_bot(default_sending_stream='Denmark')
+        self.assert_num_bots_equal(1)
+        self.assertEqual(result['default_sending_stream'], 'Denmark')
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.default_sending_stream.name, 'Denmark')
+
+    def test_add_bot_with_default_sending_stream_private_denied(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
+        do_remove_subscription(user_profile, stream)
+        do_make_stream_private(user_profile.realm, "Denmark")
+
+        bot_info = {
+             'full_name': 'The Bot of Hamlet',
+             'short_name': 'hambot',
+             'default_sending_stream': 'Denmark',
+         }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Insufficient permission')
+
+    def test_add_bot_with_default_events_register_stream(self):
+        self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(0)
+        result = self.create_bot(default_events_register_stream='Denmark')
+        self.assert_num_bots_equal(1)
+        self.assertEqual(result['default_events_register_stream'], 'Denmark')
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.default_events_register_stream.name, 'Denmark')
+
+    def test_add_bot_with_default_events_register_stream_private_allowed(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
+        do_add_subscription(user_profile, stream)
+        do_make_stream_private(user_profile.realm, "Denmark")
+
+        self.assert_num_bots_equal(0)
+        result = self.create_bot(default_events_register_stream='Denmark')
+        self.assert_num_bots_equal(1)
+        self.assertEqual(result['default_events_register_stream'], 'Denmark')
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.default_events_register_stream.name, 'Denmark')
+
+    def test_add_bot_with_default_events_register_stream_private_denied(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
+        do_remove_subscription(user_profile, stream)
+        do_make_stream_private(user_profile.realm, "Denmark")
+
+        self.assert_num_bots_equal(0)
+        bot_info = {
+             'full_name': 'The Bot of Hamlet',
+             'short_name': 'hambot',
+             'default_events_register_stream': 'Denmark',
+         }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Insufficient permission')
+
+    def test_add_bot_with_default_all_public_streams(self):
+        self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(0)
+        result = self.create_bot(default_all_public_streams=ujson.dumps(True))
+        self.assert_num_bots_equal(1)
+        self.assertTrue(result['default_all_public_streams'])
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.default_all_public_streams, True)
 
     def test_deactivate_bot(self):
         self.login("hamlet@zulip.com")

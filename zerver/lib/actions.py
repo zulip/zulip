@@ -106,7 +106,9 @@ def notify_created_user(user_profile):
 
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True, bot=False, bot_owner=None,
-                   avatar_source=UserProfile.AVATAR_FROM_GRAVATAR):
+                   avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+                   default_sending_stream=None, default_events_register_stream=None,
+                   default_all_public_streams=None):
     event = {'type': 'user_created',
                'timestamp': time.time(),
                'full_name': full_name,
@@ -118,8 +120,13 @@ def do_create_user(email, password, realm, full_name, short_name,
         event['bot_owner'] = bot_owner.email
     log_event(event)
 
-    user_profile = create_user(email, password, realm, full_name, short_name,
-                               active, bot, bot_owner, avatar_source)
+    user_profile = create_user(email=email, password=password, realm=realm,
+                               full_name=full_name, short_name=short_name,
+                               active=active, bot=bot, bot_owner=bot_owner,
+                               avatar_source=avatar_source,
+                               default_sending_stream=default_sending_stream,
+                               default_events_register_stream=default_events_register_stream,
+                               default_all_public_streams=default_all_public_streams)
 
     notify_created_user(user_profile)
     return user_profile

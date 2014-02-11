@@ -1886,6 +1886,22 @@ def avatar(request, email):
     url += sep + request.META['QUERY_STRING']
     return redirect(url)
 
+def get_stream_name(stream):
+    if stream:
+        name = stream.name
+    else :
+        name = None
+    return name
+
+def stream_or_none(stream_name, realm):
+    if stream_name == '':
+        return None
+    else:
+        stream = get_stream(stream_name, realm)
+        if not stream:
+            raise JsonableError('No such stream \'%s\'' %  (stream_name, ))
+        return stream
+
 @has_request_variables
 def patch_bot_backend(request, user_profile, email, full_name=REQ):
     try:
@@ -1961,7 +1977,10 @@ def regenerate_bot_api_key(request, user_profile, email):
     return json_success(json_result)
 
 @has_request_variables
-def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ):
+def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ,
+                    default_sending_stream=REQ(default=None),
+                    default_events_register_stream=REQ(default=None),
+                    default_all_public_streams=REQ(validator=check_bool, default=None)):
     short_name += "-bot"
     email = short_name + "@" + user_profile.realm.domain
     form = CreateUserForm({'full_name': full_name, 'email': email})
@@ -1984,12 +2003,34 @@ def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ):
         upload_avatar_image(user_file, user_profile, email)
         avatar_source = UserProfile.AVATAR_FROM_USER
 
-    bot_profile = do_create_user(email, '', user_profile.realm, full_name,
-                                 short_name, True, True,
-                                 user_profile, avatar_source)
+    if default_sending_stream is not None:
+        default_sending_stream = stream_or_none(default_sending_stream, user_profile.realm)
+    if default_sending_stream and not default_sending_stream.is_public() and not \
+        subscribed_to_stream(user_profile, default_sending_stream):
+        return json_error('Insufficient permission')
+
+    if default_events_register_stream is not None:
+        default_events_register_stream = stream_or_none(default_events_register_stream,
+                                                         user_profile.realm)
+    if default_events_register_stream and not default_events_register_stream.is_public() and not \
+        subscribed_to_stream(user_profile, default_events_register_stream):
+        return json_error('Insufficient permission')
+
+
+    bot_profile = do_create_user(email=email, password='',
+                                 realm=user_profile.realm, full_name=full_name,
+                                 short_name=short_name, active=True, bot=True,
+                                 bot_owner=user_profile,
+                                 avatar_source=avatar_source,
+                                 default_sending_stream=default_sending_stream,
+                                 default_events_register_stream=default_events_register_stream,
+                                 default_all_public_streams=default_all_public_streams)
     json_result = dict(
             api_key=bot_profile.api_key,
-            avatar_url=avatar_url(bot_profile)
+            avatar_url=avatar_url(bot_profile),
+            default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
+            default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
+            default_all_public_streams=bot_profile.default_all_public_streams,
     )
     return json_success(json_result)
 
