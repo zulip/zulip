@@ -106,12 +106,15 @@ class NarrowBuilder(object):
             query = query.select_from(join(query.froms[0], "zerver_recipient",
                                            column("recipient_id") ==
                                            literal_column("zerver_recipient.id")))
-            return query.where(or_(column("type") == Recipient.PERSONAL,
-                                   column("type") == Recipient.HUDDLE))
+            cond = or_(column("type") == Recipient.PERSONAL,
+                       column("type") == Recipient.HUDDLE)
+            return query.where(cond)
         elif operand == 'starred':
-            return query.where(column("flags").op("&")(UserMessage.flags.starred.mask) != 0)
+            cond = column("flags").op("&")(UserMessage.flags.starred.mask) != 0
+            return query.where(cond)
         elif operand == 'mentioned' or operand == 'alerted':
-            return query.where(column("flags").op("&")(UserMessage.flags.mentioned.mask) != 0)
+            cond = column("flags").op("&")(UserMessage.flags.mentioned.mask) != 0
+            return query.where(cond)
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
     _alphanum = frozenset(
@@ -156,10 +159,12 @@ class NarrowBuilder(object):
                 name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
             matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
             recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
-            return query.where(column("recipient_id").in_([recipient.id for recipient in recipients]))
+            cond = column("recipient_id").in_([recipient.id for recipient in recipients])
+            return query.where(cond)
 
         recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
-        return query.where(column("recipient_id") == recipient.id)
+        cond = column("recipient_id") == recipient.id
+        return query.where(cond)
 
     def by_topic(self, query, operand):
         if self.user_profile.realm.domain == "mit.edu":
@@ -178,9 +183,11 @@ class NarrowBuilder(object):
             else:
                 regex = r'^%s(\.d)*$' % (self._pg_re_escape(base_topic),)
 
-            return query.where(column("subject").op("~*")(regex))
+            cond = column("subject").op("~*")(regex)
+            return query.where(cond)
 
-        return query.where(func.upper(column("subject")) == func.upper(literal(operand)))
+        cond = func.upper(column("subject")) == func.upper(literal(operand))
+        return query.where(cond)
 
     def by_sender(self, query, operand):
         try:
@@ -188,13 +195,15 @@ class NarrowBuilder(object):
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + operand)
 
-        return query.where(column("sender_id") == literal(sender.id))
+        cond = column("sender_id") == literal(sender.id)
+        return query.where(cond)
 
     def by_near(self, query, operand):
         return query
 
     def by_id(self, query, operand):
-        return query.where(self.msg_id_column == literal(operand))
+        cond = self.msg_id_column == literal(operand)
+        return query.where(cond)
 
     def by_pm_with(self, query, operand):
         if ',' in operand:
@@ -205,14 +214,16 @@ class NarrowBuilder(object):
                     self.user_profile, self.user_profile)
             except ValidationError:
                 raise BadNarrowOperator('unknown recipient ' + operand)
-            return query.where(column("recipient_id") == recipient.id)
+            cond = column("recipient_id") == recipient.id
+            return query.where(cond)
         else:
             # Personal message
             self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
             if operand == self.user_profile.email:
                 # Personals with self
-                return query.where(and_(column("sender_id") == self.user_profile.id,
-                                        column("recipient_id") == self_recipient.id))
+                cond = and_(column("sender_id") == self.user_profile.id,
+                            column("recipient_id") == self_recipient.id)
+                return query.where(cond)
 
             # Personals with other user; include both directions.
             try:
@@ -221,10 +232,11 @@ class NarrowBuilder(object):
                 raise BadNarrowOperator('unknown user ' + operand)
 
             narrow_recipient = get_recipient(Recipient.PERSONAL, narrow_profile.id)
-            return query.where(or_(and_(column("sender_id") == narrow_profile.id,
-                                        column("recipient_id") == self_recipient.id),
-                                   and_(column("sender_id") == self.user_profile.id,
-                                        column("recipient_id") == narrow_recipient.id)))
+            cond = or_(and_(column("sender_id") == narrow_profile.id,
+                            column("recipient_id") == self_recipient.id),
+                       and_(column("sender_id") == self.user_profile.id,
+                            column("recipient_id") == narrow_recipient.id))
+            return query.where(cond)
 
     def by_search(self, query, operand):
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
@@ -245,10 +257,12 @@ class NarrowBuilder(object):
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]
                 term = '%' + connection.ops.prep_for_like_query(term) + '%'
-                query = query.where(or_(column("content").ilike(term),
-                                        column("subject").ilike(term)))
+                cond = or_(column("content").ilike(term),
+                           column("subject").ilike(term))
+                query = query.where(cond)
 
-        return query.where(column("search_tsvector").op("@@")(tsquery))
+        cond = column("search_tsvector").op("@@")(tsquery)
+        return query.where(cond)
 
 def highlight_string(string, locs):
     highlight_start = '<span class="highlight">'
