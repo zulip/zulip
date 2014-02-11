@@ -55,7 +55,6 @@ exports.propagate_topic_edits = true;
 exports.summarize_read_while_narrowed = false;
 exports.clicking_notification_causes_narrow = true;
 exports.use_socket = true;
-exports.remove_filter_tuples_safety_net = page_params.staging;
 
 // Ready for deprecation.
 exports.collapsible = false;

@@ -7,9 +7,6 @@ set_global('page_params', {
     email: 'hamlet@zulip.com',
     domain: 'zulip.com'
 });
-set_global('feature_flags', {
-    remove_filter_tuples_safety_net: false
-});
 
 var Filter = require('js/filter.js');
 var _ = global._;

@@ -1,25 +1,5 @@
 var Filter = (function () {
 
-function filter_term(opts) {
-    // For legacy reasons we must represent filter_terms as tuples
-    // until we phase out all the code that assumes tuples.
-    // We are very close to removing the tuple code everywhere; for
-    // now, we remove the safety net on staging only.
-    var term = [];
-
-    if (!feature_flags.remove_filter_tuples_safety_net) {
-        term[0] = opts.operator;
-        term[1] = opts.operand;
-    }
-
-    // This is the new style we are phasing in.  (Yes, the same
-    // object can be treated like either a tuple or a struct.)
-    term.operator = opts.operator;
-    term.operand = opts.operand;
-
-    return term;
-}
-
 function mit_edu_stream_name_match(message, operand) {
     // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
@@ -188,10 +168,10 @@ Filter.canonicalize_term = function (opts) {
     }
 
     // We may want to consider allowing mixed-case operators at some point
-    return filter_term({
+    return {
         operator: operator,
         operand: operand
-    });
+    };
 };
 
 
@@ -239,7 +219,7 @@ Filter.parse = function (str) {
             // FIXME: Should we skip unknown operator names here?
             operator = parts.shift();
             operand = decodeOperand(parts.join(':'), operator);
-            term = filter_term({operator: operator, operand: operand});
+            term = {operator: operator, operand: operand};
             operators.push(term);
         }
     });
@@ -247,7 +227,7 @@ Filter.parse = function (str) {
     if (search_term.length > 0) {
         operator = 'search';
         operand = search_term.join(' ');
-        term = filter_term({operator: operator, operand: operand});
+        term = {operator: operator, operand: operand};
         operators.push(term);
     }
     return operators;
