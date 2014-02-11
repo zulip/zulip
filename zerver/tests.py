@@ -344,7 +344,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/create_bot", bot_info)
+        result = self.client.post("/json/bots", bot_info)
         self.assert_json_success(result)
 
     def deactivate_bot(self):
@@ -439,7 +439,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/create_bot", bot_info)
+        result = self.client.post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'full_name': 'Fred',
@@ -459,7 +459,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/create_bot", bot_info)
+        result = self.client.post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'full_name': 'Fred',

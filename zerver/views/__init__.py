@@ -1921,9 +1921,8 @@ def regenerate_bot_api_key(request, user_profile, email):
     )
     return json_success(json_result)
 
-@authenticated_json_post_view
 @has_request_variables
-def json_create_bot(request, user_profile, full_name=REQ, short_name=REQ):
+def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ):
     short_name += "-bot"
     email = short_name + "@" + user_profile.realm.domain
     form = CreateUserForm({'full_name': full_name, 'email': email})

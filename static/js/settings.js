@@ -112,7 +112,7 @@ $(function () {
             });
             $('#create_bot_button').val('Adding bot...').prop('disabled', true);
             channel.post({
-                url: '/json/create_bot',
+                url: '/json/bots',
                 data: formData,
                 cache: false,
                 processData: false,
