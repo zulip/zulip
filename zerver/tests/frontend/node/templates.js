@@ -388,14 +388,6 @@ function render(template_name, args) {
     assert.equal(title.text().trim(), 'You have a notification');
 }());
 
-(function notification_docs() {
-    var html = render('notification_docs');
-    global.write_test_output("notification_docs.handlebars", html);
-
-    var title = $(html).find("li:first");
-    assert.equal(title.text().trim(), 'a private message');
-}());
-
 (function sidebar_subject_list() {
     var args = {
         want_show_more_topics_links: true,

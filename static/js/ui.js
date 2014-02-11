@@ -1530,19 +1530,6 @@ $(function () {
         $("#api_key_button_box").hide();
     });
 
-    var notification_docs = $("#notification-docs");
-    notification_docs.popover({"placement": "right",
-                               "content": templates.render('notification_docs', {}),
-                               "trigger": "manual"});
-    $("body").on("mouseover", "#notification-docs", function (e) {
-        notification_docs.popover('show');
-        e.stopPropagation();
-    });
-    $("body").on("mouseout", "#notification-docs", function (e) {
-        notification_docs.popover('hide');
-        e.stopPropagation();
-    });
-
     $('body').on('click', '.edit_content_button', function (e) {
         var row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
         message_edit.start(row);
