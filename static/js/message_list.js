@@ -76,7 +76,6 @@ MessageList.prototype = {
         }
 
         if ((self === narrowed_msg_list) && !self.empty() &&
-            (self.selected_id() === -1) &&
             !opts.delay_render) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
