@@ -1077,61 +1077,64 @@ $(function () {
         }
     });
 
+    function update_notification_settings_success(resp, statusText, xhr, form) {
+        var message = "Updated notification settings!";
+        var result = $.parseJSON(xhr.responseText);
+
+        // Stream notification settings.
+
+        if (result.enable_stream_desktop_notifications !== undefined) {
+            page_params.stream_desktop_notifications_enabled = result.enable_stream_desktop_notifications;
+        }
+        if (result.enable_stream_sounds !== undefined) {
+            page_params.stream_sounds_enabled = result.enable_stream_sounds;
+        }
+
+        // PM and @-mention notification settings.
+
+        if (result.enable_desktop_notifications !== undefined) {
+            page_params.desktop_notifications_enabled = result.enable_desktop_notifications;
+        }
+        if (result.enable_sounds !== undefined) {
+            page_params.sounds_enabled = result.enable_sounds;
+        }
+
+        if (result.enable_offline_email_notifications !== undefined) {
+            page_params.enable_offline_email_notifications = result.enable_offline_email_notifications;
+        }
+
+        if (result.enable_offline_push_notifications !== undefined) {
+            page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
+        }
+
+        // Other notification settings.
+
+        if (result.enable_digest_emails !== undefined) {
+            page_params.enable_digest_emails = result.enable_digest_emails;
+        }
+
+        notify_settings_status.removeClass(status_classes)
+            .addClass('alert-success')
+            .text(message).stop(true).fadeTo(0,1);
+    }
+
+    function update_notification_settings_error(xhr, error_type, xhn) {
+        var response = "Error changing settings";
+        if (xhr.status.toString().charAt(0) === "4") {
+            // Only display the error response for 4XX, where we've crafted
+            // a nice response.
+            response += ": " + $.parseJSON(xhr.responseText).msg;
+        }
+
+        notify_settings_status.removeClass(status_classes)
+            .addClass('alert-error')
+            .text(response).stop(true).fadeTo(0,1);
+    }
+
     $("form.notify-settings").expectOne().ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-
-        success: function (resp, statusText, xhr, form) {
-            var message = "Updated notification settings!";
-            var result = $.parseJSON(xhr.responseText);
-
-            // Stream notification settings.
-
-            if (result.enable_stream_desktop_notifications !== undefined) {
-                page_params.stream_desktop_notifications_enabled = result.enable_stream_desktop_notifications;
-            }
-            if (result.enable_stream_sounds !== undefined) {
-                page_params.stream_sounds_enabled = result.enable_stream_sounds;
-            }
-
-            // PM and @-mention notification settings.
-
-            if (result.enable_desktop_notifications !== undefined) {
-                page_params.desktop_notifications_enabled = result.enable_desktop_notifications;
-            }
-            if (result.enable_sounds !== undefined) {
-                page_params.sounds_enabled = result.enable_sounds;
-            }
-
-            if (result.enable_offline_email_notifications !== undefined) {
-                page_params.enable_offline_email_notifications = result.enable_offline_email_notifications;
-            }
-
-            if (result.enable_offline_push_notifications !== undefined) {
-                page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
-            }
-
-            // Other notification settings.
-
-            if (result.enable_digest_emails !== undefined) {
-                page_params.enable_digest_emails = result.enable_digest_emails;
-            }
-
-            notify_settings_status.removeClass(status_classes)
-                .addClass('alert-success')
-                .text(message).stop(true).fadeTo(0,1);
-        },
-        error: function (xhr, error_type, xhn) {
-            var response = "Error changing settings";
-            if (xhr.status.toString().charAt(0) === "4") {
-                // Only display the error response for 4XX, where we've crafted
-                // a nice response.
-                response += ": " + $.parseJSON(xhr.responseText).msg;
-            }
-
-            notify_settings_status.removeClass(status_classes)
-                .addClass('alert-error')
-                .text(response).stop(true).fadeTo(0,1);
-        }
+        success: update_notification_settings_success,
+        error: update_notification_settings_error
     });
 
     if (feature_flags.show_autoscroll_forever_option) {
