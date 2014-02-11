@@ -448,6 +448,8 @@ def has_request_variables(view_func):
             if param.converter is not None and not default_assigned:
                 try:
                     val = param.converter(val)
+                except JsonableError:
+                    raise
                 except:
                     raise RequestVariableConversionError(param.post_var_name, val)
 

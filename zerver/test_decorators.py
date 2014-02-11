@@ -12,8 +12,14 @@ import ujson
 class DecoratorTestCase(TestCase):
     def test_REQ_converter(self):
 
+        def my_converter(data):
+            lst = json_to_list(data)
+            if 13 in lst:
+                raise JsonableError('13 is an unlucky number!')
+            return lst
+
         @has_request_variables
-        def get_total(request, numbers=REQ(converter=json_to_list)):
+        def get_total(request, numbers=REQ(converter=my_converter)):
             return sum(numbers)
 
         class Request:
@@ -29,6 +35,11 @@ class DecoratorTestCase(TestCase):
         with self.assertRaises(RequestVariableConversionError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), "Bad value for 'numbers': bad_value")
+
+        request.REQUEST['numbers'] = ujson.dumps([2,3,5,8,13,21])
+        with self.assertRaises(JsonableError) as cm:
+            get_total(request)
+        self.assertEqual(str(cm.exception), "13 is an unlucky number!")
 
         request.REQUEST['numbers'] = ujson.dumps([1,2,3,4,5,6])
         result = get_total(request)
