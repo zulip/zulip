@@ -332,6 +332,10 @@ class ActivateTest(AuthedTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.is_active)
 
+        # Can not deactivate a user as a bot
+        result = self.client_delete('/json/bots/hamlet@zulip.com')
+        self.assert_json_error(result, 'No such bot')
+
 class BotTest(AuthedTestCase):
     def assert_num_bots_equal(self, count):
         result = self.client.get("/json/bots")
@@ -348,7 +352,7 @@ class BotTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def deactivate_bot(self):
-        result = self.client_delete("/json/users/hambot-bot@zulip.com")
+        result = self.client_delete("/json/bots/hambot-bot@zulip.com")
         self.assert_json_success(result)
 
     def test_add_bot(self):
@@ -373,8 +377,8 @@ class BotTest(AuthedTestCase):
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
-        result = self.client_delete("/json/users/bogus-bot@zulip.com")
-        self.assert_json_error(result, 'No such user')
+        result = self.client_delete("/json/bots/bogus-bot@zulip.com")
+        self.assert_json_error(result, 'No such bot')
         self.assert_num_bots_equal(1)
 
     def test_bot_deactivation_attacks(self):
@@ -388,14 +392,20 @@ class BotTest(AuthedTestCase):
         # Hamlet's bot.
         self.login("othello@zulip.com")
 
-        result = self.client_delete("/json/users/hamlet@zulip.com")
-        self.assert_json_error(result, 'Insufficient permission')
+        # Can not deactivate a user as a bot
+        result = self.client_delete("/json/bots/hamlet@zulip.com")
+        self.assert_json_error(result, 'No such bot')
 
-        result = self.client_delete("/json/users/hambot-bot@zulip.com")
+        result = self.client_delete("/json/bots/hambot-bot@zulip.com")
         self.assert_json_error(result, 'Insufficient permission')
 
         # But we don't actually deactivate the other person's bot.
         self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(1)
+
+        # Can not deactivate a bot as a user
+        result = self.client_delete("/json/users/hambot-bot@zulip.com")
+        self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
 
     def test_bot_permissions(self):

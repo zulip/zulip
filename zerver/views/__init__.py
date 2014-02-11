@@ -1782,12 +1782,26 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                              narrow=narrow)
     return json_success(ret)
 
+
 def deactivate_user_backend(request, user_profile, email):
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
         return json_error('No such user')
+    if target.is_bot:
+        return json_error('No such user')
+    return _deactivate_user_profile_backend(request, user_profile, target)
 
+def deactivate_bot_backend(request, user_profile, email):
+    try:
+        target = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        return json_error('No such bot')
+    if not target.is_bot:
+        return json_error('No such bot')
+    return _deactivate_user_profile_backend(request, user_profile, target)
+
+def _deactivate_user_profile_backend(request, user_profile, target):
     if not user_profile.can_admin_user(target):
         return json_error('Insufficient permission')
 

@@ -144,7 +144,7 @@ $(function () {
     $("#bots_list").on("click", "button.delete_bot", function (e) {
         var email = $(e.currentTarget).data('email');
         channel.del({
-            url: '/json/users/' + encodeURIComponent(email),
+            url: '/json/bots/' + encodeURIComponent(email),
             success: function () {
                 var row = $(e.currentTarget).closest("li");
                 row.hide('slow', function () { row.remove(); });
