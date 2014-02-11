@@ -191,9 +191,9 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
     message.content = exports.apply_markdown(raw_content);
     // We don't handle unread counts since local messages must be sent by us
 
-    home_msg_list.rerender();
+    home_msg_list.view.rerender_message(message);
     if (current_msg_list === narrowed_msg_list) {
-        narrowed_msg_list.rerender();
+        narrowed_msg_list.view().rerender_message(message);
     }
     stream_list.update_streams_sidebar();
 };
@@ -219,6 +219,7 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
 exports.process_from_server = function process_from_server(messages) {
     var updated = false;
     var locally_processed_ids = [];
+    var msgs_to_rerender = [];
     messages = _.filter(messages, function (message) {
         // In case we get the sent message before we get the send ACK, reify here
         exports.reify_message_id(message.local_id, message.id);
@@ -246,6 +247,7 @@ exports.process_from_server = function process_from_server(messages) {
                     updated = true;
                 }
             }
+            msgs_to_rerender.push(client_message);
             locally_processed_ids.push(client_message.id);
             compose.report_as_received(client_message);
             delete waiting_for_ack[client_message.id];
@@ -255,10 +257,9 @@ exports.process_from_server = function process_from_server(messages) {
     });
 
     if (updated) {
-        // TODO just rerender the message, not the whole list
-        home_msg_list.rerender();
+        home_msg_list.view.rerender_messages(msgs_to_rerender);
         if (current_msg_list === narrowed_msg_list) {
-            narrowed_msg_list.rerender();
+            narrowed_msg_list.view().rerender_messages(msgs_to_rerender);
         }
     } else {
         _.each(locally_processed_ids, function (id) {

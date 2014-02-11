@@ -214,11 +214,14 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 }
 
 exports.update_messages = function update_messages(events) {
+    var msgs_to_rerender = [];
+
     _.each(events, function (event) {
         var msg = stored_messages[event.message_id];
         if (msg === undefined) {
             return;
         }
+        msgs_to_rerender.push(msg);
 
         msg.alerted = event.flags.indexOf("has_alert_word") !== -1;
         msg.mentioned = event.flags.indexOf("mentioned") !== -1 ||
@@ -268,9 +271,9 @@ exports.update_messages = function update_messages(events) {
         alert_words.process_message(msg);
     });
 
-    home_msg_list.rerender();
+    home_msg_list.view.rerender_messages(msgs_to_rerender);
     if (current_msg_list === narrowed_msg_list) {
-        narrowed_msg_list.rerender();
+        narrowed_msg_list.view().rerender_messages(msgs_to_rerender);
     }
     unread.update_unread_counts();
     stream_list.update_streams_sidebar();

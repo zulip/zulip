@@ -583,6 +583,27 @@ MessageListView.prototype = {
         }
     },
 
+    rerender_message: function MessageListView__rerender_message(message) {
+        var row = this.get_row(message.id);
+
+        if (row === undefined) {
+            blueslip.error("Cannot rerender a message that's not in this list!");
+            return;
+        }
+
+        // Re-render just this one message
+        var rendered_msg = $(templates.render('single_message', message));
+        this._rows[message.id] = rendered_msg;
+        row.replaceWith(rendered_msg);
+    },
+
+    rerender_messages: function MessageListView__rerender_messages(messages) {
+        var self = this;
+        _.each(messages, function (message) {
+            self.rerender_message(message);
+        });
+    },
+
     append: function MessageListView__append(messages, messages_are_new) {
         var cur_window_size = this._render_win_end - this._render_win_start;
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
