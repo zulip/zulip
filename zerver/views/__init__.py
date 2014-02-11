@@ -916,7 +916,7 @@ def home(request):
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic is not None:
             page_params["narrow_topic"] = narrow_topic
-        page_params["narrow"] = narrow
+        page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = initial_pointer
         page_params["initial_pointer"] = initial_pointer
         page_params["have_initial_messages"] = (initial_pointer != -1)
