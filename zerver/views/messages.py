@@ -95,6 +95,10 @@ class NarrowBuilder(object):
         # Python __magic__ stuff.
         operator = term['operator']
         operand = term['operand']
+
+        if term.get('negated', False):
+            return query
+
         method_name = 'by_' + operator.replace('-', '_')
         method = getattr(self, method_name, None)
         if method is None:
@@ -312,7 +316,11 @@ def narrow_parameter(json):
                 raise JsonableError(error)
 
             # whitelist the fields we care about for now
-            return dict(operator=elem['operator'], operand=elem['operand'])
+            return dict(
+                operator=elem['operator'],
+                operand=elem['operand'],
+                negated=elem.get('negated', False),
+            )
 
         raise ValueError("element is not a dictionary")
 

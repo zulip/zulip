@@ -202,6 +202,7 @@ function decodeOperand(encoded, operator) {
 Filter.parse = function (str) {
     var operators   = [];
     var search_term = [];
+    var negated;
     var operator;
     var operand;
     var term;
@@ -219,9 +220,16 @@ Filter.parse = function (str) {
         } else {
             // Looks like an operator.
             // FIXME: Should we skip unknown operator names here?
+            negated = false;
             operator = parts.shift();
+            if (feature_flags.negated_search) {
+                if (operator[0] === '-') {
+                    negated = true;
+                    operator = operator.slice(1);
+                }
+            }
             operand = decodeOperand(parts.join(':'), operator);
-            term = {operator: operator, operand: operand};
+            term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
         }
     });
@@ -252,7 +260,8 @@ Filter.unparse = function (operators) {
             // a colon are glued together to form a search term.
             return elem.operand;
         } else {
-            return elem.operator + ':' + encodeOperand(elem.operand.toString());
+            var sign = elem.negated ? '-' : '';
+            return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
         }
     });
     return parts.join(' ');

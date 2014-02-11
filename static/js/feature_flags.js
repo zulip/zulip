@@ -47,6 +47,7 @@ exports.local_echo = page_params.staging || is_customer4 || _.contains(['custome
 exports.cleanup_before_reload = page_params.staging;
 
 exports.show_digest_email_setting = page_params.staging;
+exports.negated_search = page_params.staging;
 
 exports.fade_at_stream_granularity = page_params.staging;
 

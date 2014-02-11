@@ -71,7 +71,8 @@ exports.operators_to_hash = function (operators) {
                 operand = elem[1];
             }
 
-            hash += '/' + hashchange.encodeHashComponent(operator)
+            var sign = elem.negated ? '-' : '';
+            hash += '/' + sign + hashchange.encodeHashComponent(operator)
                   + '/' + hashchange.encodeHashComponent(operand);
         });
     }
@@ -95,7 +96,12 @@ function parse_narrow(hash) {
         try {
             var operator = decodeHashComponent(hash[i]);
             var operand  = decodeHashComponent(hash[i+1] || '');
-            operators.push({operator: operator, operand: operand});
+            var negated = false;
+            if (operator[0] === '-') {
+                negated = true;
+                operator = operator.slice(1);
+            }
+            operators.push({negated: negated, operator: operator, operand: operand});
         } catch (err) {
             return undefined;
         }

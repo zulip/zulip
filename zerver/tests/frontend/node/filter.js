@@ -8,6 +8,8 @@ set_global('page_params', {
     domain: 'zulip.com'
 });
 
+set_global('feature_flags', {});
+
 var Filter = require('js/filter.js');
 var _ = global._;
 
