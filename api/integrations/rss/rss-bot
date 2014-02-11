@@ -136,7 +136,7 @@ def strip_tags(html):
 def compute_entry_hash(entry):
     entry_time = entry.get("published", entry.get("updated"))
     entry_id = entry.get("id", entry.get("link"))
-    return hashlib.md5(entry_id + entry_time).hexdigest()
+    return hashlib.md5(entry_id + str(entry_time)).hexdigest()
 
 def elide_subject(subject):
     MAX_TOPIC_LENGTH = 60
@@ -184,7 +184,7 @@ for feed_url in feed_urls:
         entry_hash = compute_entry_hash(entry)
         # An entry has either been published or updated.
         entry_time  = entry.get("published_parsed", entry.get("updated_parsed"))
-        if (time.time() - calendar.timegm(entry_time)) > OLDNESS_THRESHOLD * 60 * 60 * 24:
+        if entry_time is not None and (time.time() - calendar.timegm(entry_time)) > OLDNESS_THRESHOLD * 60 * 60 * 24:
             # As a safeguard against misbehaving feeds, don't try to process
             # entries older than some threshold.
             continue
