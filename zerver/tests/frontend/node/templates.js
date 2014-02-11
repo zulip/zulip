@@ -663,6 +663,15 @@ function render(template_name, args) {
     assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
 }());
 
+(function notification_docs() {
+    var html = render('propagate_notification_change');
+    global.write_test_output("propagate_notification_change.handlebars", html);
+
+    var button_area = $(html).find(".propagate-notifications-controls");
+    assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'Yes');
+    assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'No');
+}());
+
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.

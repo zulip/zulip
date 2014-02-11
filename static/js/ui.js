@@ -1155,6 +1155,54 @@ $(function () {
                                      update_notification_settings_error);
     });
 
+    function update_global_stream_setting(notification_type, new_setting) {
+        var data = {};
+        data[notification_type] = new_setting;
+        channel.post({
+            url: "/json/notify_settings/change",
+            data: data,
+            success: update_notification_settings_success,
+            error: update_notification_settings_error
+        });
+    }
+
+    function update_desktop_notification_setting(new_setting) {
+        update_global_stream_setting("enable_stream_desktop_notifications", new_setting);
+        subs.set_all_stream_desktop_notifications_to(new_setting);
+    }
+
+    function update_audible_notification_setting(new_setting) {
+        update_global_stream_setting("enable_stream_sounds", new_setting);
+        subs.set_all_stream_audible_notifications_to(new_setting);
+    }
+
+    function maybe_bulk_update_stream_notification_setting(notification_checkbox,
+                                                           propagate_setting_function) {
+        var html = templates.render("propagate_notification_change");
+        var control_group = notification_checkbox.closest(".control-group");
+        var checkbox_status = notification_checkbox.is(":checked");
+        control_group.find(".propagate_stream_notifications_change").html(html);
+        control_group.find(".yes_propagate_notifications").on("click", function (e) {
+            propagate_setting_function(checkbox_status);
+            control_group.find(".propagate_stream_notifications_change").empty();
+        });
+        control_group.find(".no_propagate_notifications").on("click", function (e) {
+            control_group.find(".propagate_stream_notifications_change").empty();
+        });
+    }
+
+    $("#enable_stream_desktop_notifications").on("click", function (e) {
+        var notification_checkbox = $("#enable_stream_desktop_notifications");
+        maybe_bulk_update_stream_notification_setting(notification_checkbox,
+                                                      update_desktop_notification_setting);
+    });
+
+    $("#enable_stream_sounds").on("click", function (e) {
+        var notification_checkbox = $("#enable_stream_sounds");
+        maybe_bulk_update_stream_notification_setting(notification_checkbox,
+                                                      update_audible_notification_setting);
+    });
+
     if (feature_flags.show_autoscroll_forever_option) {
         $("form.ui-settings").expectOne().ajaxForm({
             dataType: 'json',

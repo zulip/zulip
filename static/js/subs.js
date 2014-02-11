@@ -58,6 +58,22 @@ function set_stream_property(stream_name, property, value) {
     });
 }
 
+function set_notification_setting_for_all_streams(notification_type, new_setting) {
+    _.each(stream_data.subscribed_subs(), function (sub) {
+        if (sub[notification_type] !== new_setting) {
+            set_stream_property(sub.name, notification_type, new_setting);
+        }
+    });
+}
+
+exports.set_all_stream_desktop_notifications_to = function (new_setting) {
+    set_notification_setting_for_all_streams("desktop_notifications", new_setting);
+};
+
+exports.set_all_stream_audible_notifications_to = function (new_setting) {
+    set_notification_setting_for_all_streams("audible_notifications", new_setting);
+};
+
 function stream_home_view_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
     var stream = sub_row.find('.subscription_name').text();
