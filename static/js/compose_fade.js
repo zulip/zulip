@@ -5,6 +5,9 @@ var exports = {};
 var focused_recipient;
 var normal_display = false;
 
+var fade_heuristic = feature_flags.fade_at_stream_granularity ?
+                         util.same_major_recipient : util.same_recipient;
+
 exports.set_focused_recipient = function (msg_type) {
     if (msg_type === undefined) {
         focused_recipient = undefined;
@@ -59,7 +62,7 @@ function _fade_messages() {
 
     // Update the visible messages first, before the compose box opens
     for (i = 0; i < visible_messages.length; i++) {
-        should_fade_message = !util.same_recipient(focused_recipient, visible_messages[i]);
+        should_fade_message = !fade_heuristic(focused_recipient, visible_messages[i]);
         var elt = current_msg_list.get_row(visible_messages[i].id);
         var recipient_row = $(elt).prevAll(".recipient_row").first().expectOne();
 
@@ -86,7 +89,7 @@ function _fade_messages() {
         for (i = 0; i < all_elts.length; i++) {
             var elt = $(all_elts[i]);
             if (elt.hasClass("recipient_row")) {
-                should_fade_message = !util.same_recipient(focused_recipient, current_msg_list.get(rows.id(elt)));
+                should_fade_message = !fade_heuristic(focused_recipient, current_msg_list.get(rows.id(elt)));
             }
 
             change_fade_state(elt, should_fade_message);
@@ -234,7 +237,7 @@ exports.update_rendered_messages = function (messages, get_elements) {
     //   the recipient bar (sometimes)
     _.each(messages, function (message) {
         var elts = get_elements(message);
-        var should_fade_message = !util.same_recipient(focused_recipient, message);
+        var should_fade_message = !fade_heuristic(focused_recipient, message);
 
         _.each(elts, function (elt) {
             change_fade_state(elt, should_fade_message);

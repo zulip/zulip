@@ -48,6 +48,8 @@ exports.cleanup_before_reload = page_params.staging;
 
 exports.show_digest_email_setting = page_params.staging;
 
+exports.fade_at_stream_granularity = page_params.staging;
+
 // Still burning in...
 exports.fade_users_when_composing = true;
 exports.mark_read_at_bottom = true;
