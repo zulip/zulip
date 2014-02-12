@@ -25,12 +25,13 @@ from zerver.models import Message, UserProfile, Stream, \
     get_user_profile_by_email, get_stream, valid_stream_name, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
     stringify_message_dict, is_super_user, is_super_user_api, \
-    resolve_email_to_domain, get_realm, get_active_streams
+    resolve_email_to_domain, get_realm, get_active_streams, \
+    bulk_get_streams
 
 import sqlalchemy
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
-    or_, union_all, alias
+    or_, not_, union_all, alias
 
 import re
 import ujson
@@ -383,7 +384,24 @@ def get_old_messages_backend(request, user_profile,
 
     sa_conn = get_sqlalchemy_connection()
     if use_first_unread_anchor:
-        first_unread_query = query.where(column("flags").op("&")(UserMessage.flags.read.mask) == 0)
+        condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
+
+        # We exclude messages on muted topics when finding the first unread
+        # message in this narrow
+        muted_topics = ujson.loads(user_profile.muted_topics)
+        if muted_topics:
+            muted_streams = bulk_get_streams(user_profile.realm,
+                                             [muted[0] for muted in muted_topics])
+            muted_recipients = bulk_get_recipients(Recipient.STREAM,
+                                                   [stream.id for stream in muted_streams.itervalues()])
+            recipient_map = dict((s.name.lower(), muted_recipients[s.id].id)
+                                 for s in muted_streams.itervalues())
+            condition = and_(condition,
+                             not_(or_(*[and_(column("recipient_id") == recipient_map[muted[0].lower()],
+                                             func.upper(column("subject")) == func.upper(muted[1]))
+                                        for muted in muted_topics])))
+
+        first_unread_query = query.where(condition)
         first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
         first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
         if len(first_unread_result) > 0:
