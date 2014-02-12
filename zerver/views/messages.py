@@ -96,29 +96,34 @@ class NarrowBuilder(object):
         operator = term['operator']
         operand = term['operand']
 
-        if term.get('negated', False):
-            return query
+        negated = term.get('negated', False)
 
         method_name = 'by_' + operator.replace('-', '_')
         method = getattr(self, method_name, None)
         if method is None:
             raise BadNarrowOperator('unknown operator ' + operator)
-        return method(query, operand)
 
-    def by_is(self, query, operand):
+        if negated:
+            maybe_negate = not_
+        else:
+            maybe_negate = lambda cond: cond
+
+        return method(query, operand, maybe_negate)
+
+    def by_is(self, query, operand, maybe_negate):
         if operand == 'private':
             query = query.select_from(join(query.froms[0], "zerver_recipient",
                                            column("recipient_id") ==
                                            literal_column("zerver_recipient.id")))
             cond = or_(column("type") == Recipient.PERSONAL,
                        column("type") == Recipient.HUDDLE)
-            return query.where(cond)
+            return query.where(maybe_negate(cond))
         elif operand == 'starred':
             cond = column("flags").op("&")(UserMessage.flags.starred.mask) != 0
-            return query.where(cond)
+            return query.where(maybe_negate(cond))
         elif operand == 'mentioned' or operand == 'alerted':
             cond = column("flags").op("&")(UserMessage.flags.mentioned.mask) != 0
-            return query.where(cond)
+            return query.where(maybe_negate(cond))
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
     _alphanum = frozenset(
@@ -145,7 +150,7 @@ class NarrowBuilder(object):
                     s[i] = '\\' + c
         return ''.join(s)
 
-    def by_stream(self, query, operand):
+    def by_stream(self, query, operand, maybe_negate):
         stream = get_stream(operand, self.user_profile.realm)
         if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
@@ -164,13 +169,13 @@ class NarrowBuilder(object):
             matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
             recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
             cond = column("recipient_id").in_([recipient.id for recipient in recipients])
-            return query.where(cond)
+            return query.where(maybe_negate(cond))
 
         recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
         cond = column("recipient_id") == recipient.id
-        return query.where(cond)
+        return query.where(maybe_negate(cond))
 
-    def by_topic(self, query, operand):
+    def by_topic(self, query, operand, maybe_negate):
         if self.user_profile.realm.domain == "mit.edu":
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
@@ -188,28 +193,28 @@ class NarrowBuilder(object):
                 regex = r'^%s(\.d)*$' % (self._pg_re_escape(base_topic),)
 
             cond = column("subject").op("~*")(regex)
-            return query.where(cond)
+            return query.where(maybe_negate(cond))
 
         cond = func.upper(column("subject")) == func.upper(literal(operand))
-        return query.where(cond)
+        return query.where(maybe_negate(cond))
 
-    def by_sender(self, query, operand):
+    def by_sender(self, query, operand, maybe_negate):
         try:
             sender = get_user_profile_by_email(operand)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + operand)
 
         cond = column("sender_id") == literal(sender.id)
-        return query.where(cond)
+        return query.where(maybe_negate(cond))
 
-    def by_near(self, query, operand):
+    def by_near(self, query, operand, maybe_negate):
         return query
 
-    def by_id(self, query, operand):
+    def by_id(self, query, operand, maybe_negate):
         cond = self.msg_id_column == literal(operand)
-        return query.where(cond)
+        return query.where(maybe_negate(cond))
 
-    def by_pm_with(self, query, operand):
+    def by_pm_with(self, query, operand, maybe_negate):
         if ',' in operand:
             # Huddle
             try:
@@ -219,7 +224,7 @@ class NarrowBuilder(object):
             except ValidationError:
                 raise BadNarrowOperator('unknown recipient ' + operand)
             cond = column("recipient_id") == recipient.id
-            return query.where(cond)
+            return query.where(maybe_negate(cond))
         else:
             # Personal message
             self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
@@ -227,7 +232,7 @@ class NarrowBuilder(object):
                 # Personals with self
                 cond = and_(column("sender_id") == self.user_profile.id,
                             column("recipient_id") == self_recipient.id)
-                return query.where(cond)
+                return query.where(maybe_negate(cond))
 
             # Personals with other user; include both directions.
             try:
@@ -240,9 +245,9 @@ class NarrowBuilder(object):
                             column("recipient_id") == self_recipient.id),
                        and_(column("sender_id") == self.user_profile.id,
                             column("recipient_id") == narrow_recipient.id))
-            return query.where(cond)
+            return query.where(maybe_negate(cond))
 
-    def by_search(self, query, operand):
+    def by_search(self, query, operand, maybe_negate):
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
         ts_locs_array = func.ts_match_locs_array
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
@@ -263,10 +268,10 @@ class NarrowBuilder(object):
                 term = '%' + connection.ops.prep_for_like_query(term) + '%'
                 cond = or_(column("content").ilike(term),
                            column("subject").ilike(term))
-                query = query.where(cond)
+                query = query.where(maybe_negate(cond))
 
         cond = column("search_tsvector").op("@@")(tsquery)
-        return query.where(cond)
+        return query.where(maybe_negate(cond))
 
 def highlight_string(string, locs):
     highlight_start = '<span class="highlight">'
