@@ -21,7 +21,9 @@ function decodeHashComponent(str) {
 
 function set_hash(hash) {
     if (history.pushState) {
-        console.log(window.location);
+        if (hash === '' || hash.charAt(0) !== '#') {
+            hash = '#' + hash;
+        }
         // Build a full URL to not have same origin problems
         var url =  window.location.origin + window.location.pathname + hash;
         history.pushState(null, null, url);
