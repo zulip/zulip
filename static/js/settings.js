@@ -22,12 +22,20 @@ function is_local_part(value, element) {
     return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
 }
 
-function build_stream_list($select) {
+function build_stream_list($select, extra_options) {
+    if (extra_options === undefined) {
+        extra_options = [];
+    }
+
+    var option_list = extra_options;
+    var stream_names = _.pluck(streams, 'name');
+    option_list.push.apply(option_list, _.zip(stream_names, stream_names));
+
     $select.empty();
-    _.each(_.pluck(streams, 'name'), function (name) {
+    _.each(option_list, function (option) {
         $select.append($('<option>')
-            .attr('value', name)
-            .text(name)
+            .attr('value', option[0])
+            .text(option[1])
         );
     });
 }
@@ -62,7 +70,10 @@ exports.setup_page = function () {
         success: function (data) {
             streams = data.streams;
             build_stream_list($('#create_bot_default_sending_stream'));
-            build_stream_list($('#create_bot_default_events_register_stream'));
+            build_stream_list(
+                $('#create_bot_default_events_register_stream'),
+                [['__all_public__', 'All public streams']]
+            );
         }
     });
 
@@ -390,13 +401,20 @@ exports.setup_page = function () {
             var default_sending_stream = $('#create_bot_default_sending_stream').val();
             var default_events_register_stream = $('#create_bot_default_events_register_stream').val();
             var formData = new FormData();
+
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('full_name', full_name);
             formData.append('short_name', short_name);
 
             if (feature_flags.new_bot_ui) {
                 formData.append('default_sending_stream', default_sending_stream);
-                formData.append('default_events_register_stream', default_events_register_stream);
+                if (default_events_register_stream === '__all_public__') {
+                    formData.append('default_all_public_streams', JSON.stringify(true));
+                    formData.append('default_events_register_stream', null);
+                } else {
+                    formData.append('default_all_public_streams', JSON.stringify(false));
+                    formData.append('default_events_register_stream', default_events_register_stream);
+                }
             }
 
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
