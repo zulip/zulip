@@ -1907,7 +1907,7 @@ $(function () {
        halfSbWidth = Math.floor(sbWidth/2);
 
    if (sbWidth > 0) {
-    var frbMargin = parseInt($(".recipient-bar-main").css("margin-right"));
+    var frbMargin = parseInt($(".recipient-bar-main").css("margin-right"), 10);
 
     $(".header").css("left", "-" + sbWidth + "px");
     $(".header-main").css("left", sbWidth + "px");
@@ -1915,10 +1915,10 @@ $(function () {
     $("#compose").css("left", "-" + sbWidth + "px");
     $(".compose-content").css("left", halfSbWidth + "px");
 
-    var rbcMaxWidth = parseInt($(".recipient-bar-content").css("max-width"));
+    var rbcMaxWidth = parseInt($(".recipient-bar-content").css("max-width"), 10);
     $(".recipient-bar-content").css("max-width", (1210 + sbWidth) + "px");
 
-    var rbcMarginRight = parseInt($(".recipient-bar-main").css("margin-right"));
+    var rbcMarginRight = parseInt($(".recipient-bar-main").css("margin-right"), 10);
     $(".recipient-bar-main").css("margin-right", (210 + sbWidth) + "px");
 
     $("#user-list, #group-pm-list").css("margin-right", sbWidth + "px");
