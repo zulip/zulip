@@ -127,10 +127,8 @@ class Realm(models.Model):
 
     def get_admin_users(self):
         # This method is kind of expensive, due to our complex permissions model.
-        candidates = get_users_with_perms(self, attach_perms=True)
-        def is_admin(user):
-            return 'administer' in candidates[user]
-        return filter(is_admin, candidates)
+        candidates = get_users_with_perms(self, only_with_perms=['administer'])
+        return candidates
 
     def get_active_users(self):
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
