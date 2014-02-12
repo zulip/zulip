@@ -31,8 +31,9 @@ def one_click_unsubscribe_link(user_profile, endpoint):
 def hashchange_encode(string):
     # Do the same encoding operation as hashchange.encodeHashComponent on the
     # frontend.
+    # `safe` has a default value of "/", but we want those encoded, too.
     return urllib.quote(
-        string.encode("utf-8")).replace(".", "%2E").replace("%", ".")
+        string.encode("utf-8"), safe="").replace(".", "%2E").replace("%", ".")
 
 def pm_narrow_url(participants):
     participants.sort()
