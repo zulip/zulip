@@ -528,7 +528,8 @@ class ChangeSettingsTest(AuthedTestCase):
     def test_notify_settings(self):
         # This is basically a don't-explode test.
         self.login("hamlet@zulip.com")
-        json_result = self.client.post("/json/notify_settings/change", {})
+        json_result = self.client.post("/json/notify_settings/change",
+                                       {"enable_desktop_notifications": ujson.dumps(False)})
         self.assert_json_success(json_result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                 enable_desktop_notifications, False)

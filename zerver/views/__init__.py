@@ -1475,56 +1475,60 @@ def json_change_settings(request, user_profile,
 @authenticated_json_post_view
 @has_request_variables
 def json_change_notify_settings(request, user_profile,
-                                # Notifications default to False because
-                                # browsers POST nothing for an unchecked
-                                # checkbox.
-                                enable_stream_desktop_notifications=REQ(converter=lambda x: x == "on",
-                                                              default=False),
-                                enable_stream_sounds=REQ(converter=lambda x: x == "on",
-                                                              default=False),
-                                enable_desktop_notifications=REQ(converter=lambda x: x == "on",
-                                                              default=False),
-                                enable_sounds=REQ(converter=lambda x: x == "on",
-                                                              default=False),
-                                enable_offline_email_notifications=REQ(converter=lambda x: x == "on",
-                                                                    default=False),
-                                enable_offline_push_notifications=REQ(converter=lambda x: x == "on",
-                                                                    default=False),
-                                enable_digest_emails=REQ(converter=lambda x: x == "on",
-                                                         default=False)):
+                                enable_stream_desktop_notifications=REQ(validator=check_bool,
+                                                                        default=None),
+                                enable_stream_sounds=REQ(validator=check_bool,
+                                                         default=None),
+                                enable_desktop_notifications=REQ(validator=check_bool,
+                                                                 default=None),
+                                enable_sounds=REQ(validator=check_bool,
+                                                  default=None),
+                                enable_offline_email_notifications=REQ(validator=check_bool,
+                                                                       default=None),
+                                enable_offline_push_notifications=REQ(validator=check_bool,
+                                                                      default=None),
+                                enable_digest_emails=REQ(validator=check_bool,
+                                                         default=None)):
 
     result = {}
 
     # Stream notification settings.
 
-    if user_profile.enable_stream_desktop_notifications != enable_stream_desktop_notifications:
+    if enable_stream_desktop_notifications is not None and \
+            user_profile.enable_stream_desktop_notifications != enable_stream_desktop_notifications:
         do_change_enable_stream_desktop_notifications(
             user_profile, enable_stream_desktop_notifications)
         result['enable_stream_desktop_notifications'] = enable_stream_desktop_notifications
 
-    if user_profile.enable_stream_sounds != enable_stream_sounds:
+    if enable_stream_sounds is not None and \
+            user_profile.enable_stream_sounds != enable_stream_sounds:
         do_change_enable_stream_sounds(user_profile, enable_stream_sounds)
         result['enable_stream_sounds'] = enable_stream_sounds
 
     # PM and @-mention settings.
 
-    if user_profile.enable_desktop_notifications != enable_desktop_notifications:
+    if enable_desktop_notifications is not None and \
+            user_profile.enable_desktop_notifications != enable_desktop_notifications:
         do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)
         result['enable_desktop_notifications'] = enable_desktop_notifications
 
-    if user_profile.enable_sounds != enable_sounds:
+    if enable_sounds is not None and \
+            user_profile.enable_sounds != enable_sounds:
         do_change_enable_sounds(user_profile, enable_sounds)
         result['enable_sounds'] = enable_sounds
 
-    if user_profile.enable_offline_email_notifications != enable_offline_email_notifications:
+    if enable_offline_email_notifications is not None and \
+            user_profile.enable_offline_email_notifications != enable_offline_email_notifications:
         do_change_enable_offline_email_notifications(user_profile, enable_offline_email_notifications)
         result['enable_offline_email_notifications'] = enable_offline_email_notifications
 
-    if user_profile.enable_offline_push_notifications != enable_offline_push_notifications:
+    if enable_offline_push_notifications is not None and \
+            user_profile.enable_offline_push_notifications != enable_offline_push_notifications:
         do_change_enable_offline_push_notifications(user_profile, enable_offline_push_notifications)
         result['enable_offline_push_notifications'] = enable_offline_push_notifications
 
-    if user_profile.enable_digest_emails != enable_digest_emails:
+    if enable_digest_emails is not None and \
+            user_profile.enable_digest_emails != enable_digest_emails:
         do_change_enable_digest_emails(user_profile, enable_digest_emails)
         result['enable_digest_emails'] = enable_digest_emails
 

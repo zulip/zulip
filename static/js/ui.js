@@ -1131,10 +1131,28 @@ $(function () {
             .text(response).stop(true).fadeTo(0,1);
     }
 
-    $("form.notify-settings").expectOne().ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: update_notification_settings_success,
-        error: update_notification_settings_error
+    function post_notify_settings_changes(notification_changes, success_func,
+                                          error_func) {
+        return channel.post({
+            url: "/json/notify_settings/change",
+            data: notification_changes,
+            success: success_func,
+            error: error_func
+        });
+    }
+
+    $("#change_notification_settings").on("click", function (e) {
+        var updated_settings = {};
+        _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
+                "enable_desktop_notifications", "enable_sounds",
+                "enable_offline_email_notifications",
+                "enable_offline_push_notifications", "enable_digest_emails"],
+               function (setting) {
+                   updated_settings[setting] = $("#" + setting).is(":checked");
+               });
+        post_notify_settings_changes(updated_settings,
+                                     update_notification_settings_success,
+                                     update_notification_settings_error);
     });
 
     if (feature_flags.show_autoscroll_forever_option) {

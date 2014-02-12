@@ -88,8 +88,7 @@
     </div>
   </div>
 
-  <form action="/json/notify_settings/change" method="post"
-        class="form-horizontal notify-settings">{% csrf_token %}
+  <div>
     <div id="notification-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>Notifications</div>
       <div class="alert" id="notify-settings-status"></div>
@@ -197,14 +196,16 @@
 
         <div class="control-group">
           <div class="controls notification-submission">
-            <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
+            <input type="submit" id="change_notification_settings"
+                   name="change_notification_settings" value="Save changes"
+                   class="btn btn-big btn-primary" />
           </div>
         </div>
       </div>
 
     </div>
 
-  </form>
+  </div>
 </div>
 
 <div id="bot-settings" class="settings-section">
