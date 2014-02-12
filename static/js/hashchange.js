@@ -130,7 +130,6 @@ function do_hashchange(from_reload) {
             return false;
         }
         var narrow_opts = {
-            first_unread_from_server: true,
             select_first_unread: true,
             change_hash:    false,  // already set
             trigger: 'hash change'
