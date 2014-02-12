@@ -62,6 +62,7 @@ exports.setup_page = function () {
         success: function (data) {
             streams = data.streams;
             build_stream_list($('#create_bot_default_sending_stream'));
+            build_stream_list($('#create_bot_default_events_register_stream'));
         }
     });
 
@@ -387,6 +388,7 @@ exports.setup_page = function () {
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val();
             var default_sending_stream = $('#create_bot_default_sending_stream').val();
+            var default_events_register_stream = $('#create_bot_default_events_register_stream').val();
             var formData = new FormData();
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('full_name', full_name);
@@ -394,6 +396,7 @@ exports.setup_page = function () {
 
             if (feature_flags.new_bot_ui) {
                 formData.append('default_sending_stream', default_sending_stream);
+                formData.append('default_events_register_stream', default_events_register_stream);
             }
 
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
