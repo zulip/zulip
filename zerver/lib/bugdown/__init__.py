@@ -770,8 +770,8 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             realm_words = db_data['realm_alert_words']
             content = '\n'.join(lines).lower()
 
-            allowed_before_punctuation = "|".join([r'\s', '^', r'[\(\"]'])
-            allowed_after_punctuation = "|".join([r'\s', '$', r'[\)\"\?:.,]'])
+            allowed_before_punctuation = "|".join([r'\s', '^', r'[\(\".,\';\[]'])
+            allowed_after_punctuation = "|".join([r'\s', '$', r'[\)\"\?:.,\';\]!]'])
 
             for user_id, words in realm_words.iteritems():
                 for word in words:

@@ -17,8 +17,8 @@ exports.process_message = function (message) {
 
     _.each(exports.words, function (word) {
         var clean = escape_user_regex(word);
-        var before_punctuation = '\\s|^|>|[\\(\\"]';
-        var after_punctuation = '\\s|$|<|[\\)\\"\\?:.,]';
+        var before_punctuation = '\\s|^|>|[\\(\\".,\';\\[]';
+        var after_punctuation = '\\s|$|<|[\\)\\"\\?!:.,\';\\]!]';
 
         var regex = new RegExp('(' + before_punctuation + ')' +
                                '(' + clean + ')' +
