@@ -109,37 +109,37 @@ function do_hashchange() {
     // be #ABCD.
     var hash = window.location.hash.split("/");
     switch (hash[0]) {
-        case "#narrow":
-            ui.change_tab_to("#home");
-            var operators = parse_narrow(hash);
-            if (operators === undefined) {
-                // If the narrow URL didn't parse, clear
-                // window.location.hash and send them to the home tab
-                window.location.hash = '';
-                activate_home_tab();
-                return false;
-            }
-            narrow.activate(operators, {
-                first_unread_from_server: true,
-                select_first_unread: true,
-                change_hash:    false,  // already set
-                trigger: 'hash change'
-            });
-            ui.update_floating_recipient_bar();
-            return true;
-        case "":
-        case "#":
+    case "#narrow":
+        ui.change_tab_to("#home");
+        var operators = parse_narrow(hash);
+        if (operators === undefined) {
+            // If the narrow URL didn't parse, clear
+            // window.location.hash and send them to the home tab
+            window.location.hash = '';
             activate_home_tab();
-            break;
-        case "#subscriptions":
-            ui.change_tab_to("#subscriptions");
-            break;
-        case "#administration":
-            ui.change_tab_to("#administration");
-            break;
-        case "#settings":
-            ui.change_tab_to("#settings");
-            break;
+            return false;
+        }
+        narrow.activate(operators, {
+            first_unread_from_server: true,
+            select_first_unread: true,
+            change_hash:    false,  // already set
+            trigger: 'hash change'
+        });
+        ui.update_floating_recipient_bar();
+        return true;
+    case "":
+    case "#":
+        activate_home_tab();
+        break;
+    case "#subscriptions":
+        ui.change_tab_to("#subscriptions");
+        break;
+    case "#administration":
+        ui.change_tab_to("#administration");
+        break;
+    case "#settings":
+        ui.change_tab_to("#settings");
+        break;
     }
     return false;
 }
