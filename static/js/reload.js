@@ -33,13 +33,26 @@ function preserve_state(send_after_reload) {
         url += "+msg=" + encodeURIComponent(compose.message_content());
     }
 
-    var pointer = current_msg_list.selected_id();
+    var pointer = home_msg_list.selected_id();
     if (pointer !== -1) {
         url += "+pointer=" + pointer;
     }
-    var row = current_msg_list.selected_row();
-    if (row.length > 0) {
-        url += "+offset=" + row.offset().top;
+    var row = home_msg_list.selected_row();
+    if (!narrow.active()) {
+        if (row.length > 0) {
+            url += "+offset=" + row.offset().top;
+        }
+    } else {
+        url += "+offset=" + home_msg_list.pre_narrow_offset;
+
+        var narrow_pointer = narrowed_msg_list.selected_id();
+        if (narrow_pointer !== -1) {
+            url += "+narrow_pointer=" + narrow_pointer;
+        }
+        var narrow_row = narrowed_msg_list.selected_row();
+        if (narrow_row.length > 0) {
+            url += "+narrow_offset=" + narrow_row.offset().top;
+        }
     }
 
     var oldhash = window.location.hash;
@@ -95,6 +108,15 @@ $(function () {
     var offset = parseInt(vars.offset, 10);
     if (offset) {
         page_params.initial_offset = offset;
+    }
+
+    var narrow_pointer = parseInt(vars.narrow_pointer, 10);
+    if (narrow_pointer) {
+        page_params.initial_narrow_pointer = narrow_pointer;
+    }
+    var narrow_offset = parseInt(vars.narrow_offset, 10);
+    if (narrow_offset) {
+        page_params.initial_narrow_offset = narrow_offset;
     }
 
     activity.new_user_input = false;

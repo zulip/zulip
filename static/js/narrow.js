@@ -118,6 +118,7 @@ function maybe_report_narrow_time(msg_list) {
 
 exports.activate = function (raw_operators, opts) {
     var start_time = new Date();
+    var was_narrowed_already = exports.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
     notifications.clear_compose_notifications();
@@ -148,6 +149,7 @@ exports.activate = function (raw_operators, opts) {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
         first_unread_from_server: false,
+        from_reload: false,
         change_hash: true,
         trigger: 'unknown'
     });
@@ -167,7 +169,6 @@ exports.activate = function (raw_operators, opts) {
         opts.select_first_unread = false;
     }
 
-    var was_narrowed_already = exports.active();
     var then_select_id = opts.then_select_id;
     var then_select_offset;
 
@@ -196,6 +197,14 @@ exports.activate = function (raw_operators, opts) {
             });
         }
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
+    }
+
+    if (opts.first_unread_from_server && opts.from_reload) {
+        then_select_id = page_params.initial_narrow_pointer;
+        then_select_offset = page_params.initial_narrow_offset;
+        opts.first_unread_from_server = false;
+        opts.select_first_unread = false;
+        home_msg_list.pre_narrow_offset = page_params.initial_offset;
     }
 
     var msg_list = new MessageList('zfilt', current_filter, {

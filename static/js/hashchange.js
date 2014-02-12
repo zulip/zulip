@@ -87,7 +87,7 @@ function activate_home_tab() {
 }
 
 // Returns true if this function performed a narrow
-function do_hashchange() {
+function do_hashchange(from_reload) {
     // If window.location.hash changed because our app explicitly
     // changed it, then we don't need to do anything.
     // (This function only neds to jump into action if it changed
@@ -119,12 +119,16 @@ function do_hashchange() {
             activate_home_tab();
             return false;
         }
-        narrow.activate(operators, {
+        var narrow_opts = {
             first_unread_from_server: true,
             select_first_unread: true,
             change_hash:    false,  // already set
             trigger: 'hash change'
-        });
+        };
+        if (from_reload !== undefined && page_params.initial_narrow_pointer !== undefined) {
+            narrow_opts.from_reload = true;
+        }
+        narrow.activate(operators, narrow_opts);
         ui.update_floating_recipient_bar();
         return true;
     case "":
@@ -144,9 +148,9 @@ function do_hashchange() {
     return false;
 }
 
-function hashchanged() {
+function hashchanged(from_reload) {
     changing_hash = true;
-    var ret = do_hashchange();
+    var ret = do_hashchange(from_reload);
     changing_hash = false;
     return ret;
 }
@@ -155,7 +159,7 @@ exports.initialize = function () {
     // jQuery doesn't have a hashchange event, so we manually wrap
     // our event handler
     window.onhashchange = blueslip.wrap_function(hashchanged);
-    hashchanged();
+    hashchanged(true);
 };
 
 return exports;
