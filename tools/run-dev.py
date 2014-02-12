@@ -55,7 +55,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 proxy_port   = base_port
 django_port  = base_port+1
 tornado_port = base_port+2
-proxy_host = 'localhost:%d' % (proxy_port,)
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -83,7 +82,9 @@ for cmd in cmds:
 
 class Resource(resource.Resource):
     def getChild(self, name, request):
-        request.requestHeaders.setRawHeaders('X-Forwarded-Host', [proxy_host])
+        # Assume an HTTP 1.1 request
+        proxy_host = request.requestHeaders.getRawHeaders('Host')
+        request.requestHeaders.setRawHeaders('X-Forwarded-Host', proxy_host)
 
         if (request.uri in ['/json/get_events'] or
             request.uri.startswith('/json/events') or
