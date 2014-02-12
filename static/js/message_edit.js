@@ -111,7 +111,7 @@ function edit_message (row, raw_content) {
     edit_obj.scrolled_by = scroll_by;
     viewport.scrollTop(viewport.scrollTop() + scroll_by);
 
-    if (feature_flags.propagate_topic_edits && message.local_id !== undefined) {
+    if (feature_flags.propagate_topic_edits && message.local_id === undefined) {
         var topic_input = edit_row.find(".message_edit_topic");
         topic_input.keyup( function () {
             var new_topic = topic_input.val();
