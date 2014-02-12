@@ -95,7 +95,11 @@ class Resource(resource.Resource):
         return proxy.ReverseProxyResource('localhost', django_port, '/'+name)
 
 try:
-    reactor.listenTCP(proxy_port, server.Site(Resource()), interface='127.0.0.1')
+    try:
+        interface = sys.argv[1]
+    except IndexError:
+        interface = '127.0.0.1'
+    reactor.listenTCP(proxy_port, server.Site(Resource()), interface=interface)
     reactor.run()
 except:
     # Print the traceback before we get SIGTERM and die.
