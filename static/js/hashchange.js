@@ -20,15 +20,26 @@ function decodeHashComponent(str) {
 }
 
 function set_hash(hash) {
+    var location = window.location;
+
     if (history.pushState) {
         if (hash === '' || hash.charAt(0) !== '#') {
             hash = '#' + hash;
         }
+
+        // IE returns pathname as undefined and missing the leading /
+        var pathname = location.pathname;
+        if (pathname === undefined) {
+            pathname = '/';
+        } else if (pathname === '' || pathname.charAt(0) !== '/') {
+            pathname = '/' + pathname;
+        }
+
         // Build a full URL to not have same origin problems
-        var url =  window.location.origin + window.location.pathname + hash;
+        var url =  location.protocol + '//' + location.host + pathname + hash;
         history.pushState(null, null, url);
     } else {
-        window.location.hash = hash;
+        location.hash = hash;
     }
 }
 
