@@ -1380,50 +1380,68 @@ def do_change_enable_stream_desktop_notifications(user_profile,
                                                   log=True):
     user_profile.enable_stream_desktop_notifications = enable_stream_desktop_notifications
     user_profile.save(update_fields=["enable_stream_desktop_notifications"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'enable_stream_desktop_notifications',
+             'setting': enable_stream_desktop_notifications}
     if log:
-        log_event({'type': 'enable_stream_desktop_notifications_changed',
-                   'user': user_profile.email,
-                   'enable_stream_desktop_notifications': enable_stream_desktop_notifications})
+        log_event(event)
+    send_event(event, [user_profile.id])
 
 def do_change_enable_stream_sounds(user_profile, enable_stream_sounds, log=True):
     user_profile.enable_stream_sounds = enable_stream_sounds
     user_profile.save(update_fields=["enable_stream_sounds"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'enable_stream_sounds',
+             'setting': enable_stream_sounds}
     if log:
-        log_event({'type': 'enable_stream_sounds_changed',
-                   'user': user_profile.email,
-                   'enable_stream_sounds': enable_stream_sounds})
+        log_event(event)
+    send_event(event, [user_profile.id])
 
 def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications, log=True):
     user_profile.enable_desktop_notifications = enable_desktop_notifications
     user_profile.save(update_fields=["enable_desktop_notifications"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'enable_desktop_notifications',
+             'setting': enable_desktop_notifications}
     if log:
-        log_event({'type': 'enable_desktop_notifications_changed',
-                   'user': user_profile.email,
-                   'enable_desktop_notifications': enable_desktop_notifications})
+        log_event(event)
+    send_event(event, [user_profile.id])
 
 def do_change_enable_sounds(user_profile, enable_sounds, log=True):
     user_profile.enable_sounds = enable_sounds
     user_profile.save(update_fields=["enable_sounds"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'enable_sounds',
+             'setting': enable_sounds}
     if log:
-        log_event({'type': 'enable_sounds_changed',
-                   'user': user_profile.email,
-                   'enable_sounds': enable_sounds})
+        log_event(event)
+    send_event(event, [user_profile.id])
 
 def do_change_enable_offline_email_notifications(user_profile, offline_email_notifications, log=True):
     user_profile.enable_offline_email_notifications = offline_email_notifications
     user_profile.save(update_fields=["enable_offline_email_notifications"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'enable_offline_email_notifications',
+             'setting': offline_email_notifications}
     if log:
-        log_event({'type': 'enable_offline_email_notifications_changed',
-                   'user': user_profile.email,
-                   'enable_offline_email_notifications': offline_email_notifications})
+        log_event(event)
+    send_event(event, [user_profile.id])
 
 def do_change_enable_offline_push_notifications(user_profile, offline_push_notifications, log=True):
     user_profile.enable_offline_push_notifications = offline_push_notifications
     user_profile.save(update_fields=["enable_offline_push_notifications"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'enable_offline_push_notifications',
+             'setting': offline_push_notifications}
     if log:
-        log_event({'type': 'enable_offline_push_notifications_changed',
-                   'user': user_profile.email,
-                   'enable_offline_push_notifications': offline_push_notifications})
+        log_event(event)
+    send_event(event, [user_profile.id])
 
 def do_change_enable_digest_emails(user_profile, enable_digest_emails, log=True):
     user_profile.enable_digest_emails = enable_digest_emails
@@ -1433,10 +1451,13 @@ def do_change_enable_digest_emails(user_profile, enable_digest_emails, log=True)
         # Remove any digest emails that have been enqueued.
         clear_followup_emails_queue(user_profile.email)
 
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'enable_digest_emails',
+             'setting': enable_digest_emails}
     if log:
-        log_event({'type': 'enable_digest_emails',
-                   'user': user_profile.email,
-                   'enable_digest_emails': enable_digest_emails})
+        log_event(event)
+    send_event(event, [user_profile.id])
 
 def do_change_autoscroll_forever(user_profile, autoscroll_forever, log=True):
     user_profile.autoscroll_forever = autoscroll_forever
