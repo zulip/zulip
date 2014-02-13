@@ -352,16 +352,6 @@ function set_user_list_heights(res, usable_height, user_presences, group_pms) {
     res.group_pms_max_height = blocks[1].max_height;
 }
 
-function scrollbarWidth() {
-    $('body').prepend('<div id="outertest" style="width:200px; height:150px; position: absolute; top: 0; left: 0; overflow-x:hidden; overflow-y:scroll; background: #ff0000; visibility: hidden;"><div id="innertest" style="width:100%; height: 200px; overflow-y: visible;">&nbsp;</div></div>');
-
-    var scrollwidth = $("#outertest").outerWidth() - $("#innertest").outerWidth();
-
-    $("#outertest").remove();
-
-    return scrollwidth;
-}
-
 function get_new_heights() {
     var res = {};
     var viewport_height = viewport.height();
@@ -1901,32 +1891,6 @@ $(function () {
     }
 });
 
-// Workaround for browsers with fixed scrollbars
-$(function () {
-   var sbWidth = scrollbarWidth(),
-       halfSbWidth = Math.floor(sbWidth/2);
-
-   if (sbWidth > 0) {
-    var frbMargin = parseInt($(".recipient-bar-main").css("margin-right"));
-
-    $(".header").css("left", "-" + sbWidth + "px");
-    $(".header-main").css("left", sbWidth + "px");
-
-    $("#compose").css("left", "-" + sbWidth + "px");
-    $(".compose-content").css("left", halfSbWidth + "px");
-
-    var rbcMaxWidth = parseInt($(".recipient-bar-content").css("max-width"));
-    $(".recipient-bar-content").css("max-width", (1210 + sbWidth) + "px");
-
-    var rbcMarginRight = parseInt($(".recipient-bar-main").css("margin-right"));
-    $(".recipient-bar-main").css("margin-right", (210 + sbWidth) + "px");
-
-    $("#user-list, #group-pm-list").css("margin-right", sbWidth + "px");
-
-    $("head").append("<style type='text/css'>.left-sidebar #user-list, .left-sidebar #group-pm-list { margin-right: 0px !important; } @media (max-width: 975px) { .recipient-bar-main { margin-right: " + (20 + sbWidth) + "px !important; } } @media (max-width: 775px) { .recipient-bar-main { margin-right: " + (25 + sbWidth) + "px !important; } }</style>");
-    $("#tab_list").css("padding-right", "15px");
-   }
-});
 
 return exports;
 }());
