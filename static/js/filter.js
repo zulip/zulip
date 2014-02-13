@@ -299,19 +299,22 @@ Filter.prototype = {
 
     operands: function Filter_get_operands(operator) {
         return _.chain(this._operators)
-            .filter(function (elem) { return elem.operator === operator; })
+            .filter(function (elem) { return !elem.negated && (elem.operator === operator); })
             .map(function (elem) { return elem.operand; })
             .value();
     },
 
     has_operand: function Filter_has_operand(operator, operand) {
         return _.any(this._operators, function (elem) {
-            return elem.operator === operator && elem.operand === operand;
+            return !elem.negated && (elem.operator === operator && elem.operand === operand);
         });
     },
 
     has_operator: function Filter_has_operator(operator) {
         return _.any(this._operators, function (elem) {
+            if (elem.negated && (elem.operator !== 'search')) {
+                return false;
+            }
             return elem.operator === operator;
         });
     },

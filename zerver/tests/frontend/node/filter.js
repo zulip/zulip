@@ -33,6 +33,7 @@ function assert_same_operators(result, terms) {
 (function test_basics() {
     var operators = [
         {operator: 'stream', operand: 'foo'},
+        {operator: 'stream', operand: 'exclude_stream', negated: true},
         {operator: 'topic', operand: 'bar'}
     ];
     var filter = new Filter(operators);
@@ -44,6 +45,7 @@ function assert_same_operators(result, terms) {
     assert(!filter.has_operator('search'));
 
     assert(filter.has_operand('stream', 'foo'));
+    assert(!filter.has_operand('stream', 'exclude_stream'));
     assert(!filter.has_operand('stream', 'nada'));
 
     assert(!filter.is_search());
@@ -57,6 +59,25 @@ function assert_same_operators(result, terms) {
     filter = new Filter(operators);
 
     assert(filter.is_search());
+    assert(! filter.can_apply_locally());
+
+    // If our only stream operator is negated, then for all intents and purposes,
+    // we don't consider ourselves to have a stream operator, because we don't
+    // want to have the stream in the tab bar or unsubscribe messaging, etc.
+    operators = [
+        {operator: 'stream', operand: 'exclude', negated: true}
+    ];
+    filter = new Filter(operators);
+    assert(!filter.has_operator('stream'));
+
+    // Negated searches are just like positive searches for our purposes, since
+    // the search logic happens on the back end and we need to have can_apply_locally()
+    // be false, and we want "Search results" in the tab bar.
+    operators = [
+        {operator: 'search', operand: 'stop_word', negated: true}
+    ];
+    filter = new Filter(operators);
+    assert(filter.has_operator('search'));
     assert(! filter.can_apply_locally());
 }());
 
