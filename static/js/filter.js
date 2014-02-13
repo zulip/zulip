@@ -135,6 +135,12 @@ Filter.canonicalize_term = function (opts) {
     var operator = opts.operator;
     var operand = opts.operand;
 
+    // Make negated be explictly false for both clarity and
+    // simplifying deepEqual checks in the tests.
+    if (!negated) {
+        negated = false;
+    }
+
     if (operator === undefined) {
         blueslip.error("Old-style tuple operators are still in use for canonicalize_term");
         operator = opts[0];
@@ -237,7 +243,7 @@ Filter.parse = function (str) {
     if (search_term.length > 0) {
         operator = 'search';
         operand = search_term.join(' ');
-        term = {operator: operator, operand: operand};
+        term = {operator: operator, operand: operand, negated: false};
         operators.push(term);
     }
     return operators;

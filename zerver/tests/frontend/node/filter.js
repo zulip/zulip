@@ -14,8 +14,15 @@ var Filter = require('js/filter.js');
 var _ = global._;
 
 function assert_same_operators(result, terms) {
-    result = _.map(result, function (term) {
+    terms = _.map(result, function (term) {
+        // If negated flag is undefined, we explicitly
+        // set it to false.
+        var negated = term.negated;
+        if (!negated) {
+            negated = false;
+        }
         return {
+            negated: negated,
             operator: term.operator,
             operand: term.operand
         };
