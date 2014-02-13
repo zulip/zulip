@@ -1713,6 +1713,16 @@ def json_report_narrow_time(request, user_profile,
 
 @authenticated_json_post_view
 @has_request_variables
+def json_report_unnarrow_time(request, user_profile,
+                            initial_core=REQ(converter=to_non_negative_int),
+                            initial_free=REQ(converter=to_non_negative_int)):
+    request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
+    statsd.timing("unnarrow.initial_core.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_core)
+    statsd.timing("unnarrow.initial_free.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_free)
+    return json_success()
+
+@authenticated_json_post_view
+@has_request_variables
 def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
                       ui_message=REQ(converter=json_to_bool), user_agent=REQ,
                       href=REQ, log=REQ,

@@ -3,6 +3,7 @@ var narrow = (function () {
 var exports = {};
 
 var current_filter;
+var unnarrow_times;
 
 // A small concession to unit testing follows:
 exports._set_current_filter = function (filter) {
@@ -114,6 +115,26 @@ function maybe_report_narrow_time(msg_list) {
                        msg_list.initial_free_time - msg_list.start_time,
                        msg_list.network_time - msg_list.start_time);
 
+}
+
+function report_unnarrow_time() {
+    if (unnarrow_times === undefined ||
+        unnarrow_times.start_time === undefined ||
+        unnarrow_times.initial_core_time === undefined ||
+        unnarrow_times.initial_free_time === undefined) {
+        return;
+    }
+
+    var initial_core_time = unnarrow_times.initial_core_time - unnarrow_times.start_time;
+    var initial_free_time = unnarrow_times.initial_free_time - unnarrow_times.start_time;
+
+    channel.post({
+        url: '/json/report_unnarrow_time',
+        data: {"initial_core": initial_core_time.toString(),
+               "initial_free": initial_free_time.toString()}
+    });
+
+    unnarrow_times = {};
 }
 
 exports.activate = function (raw_operators, opts) {
@@ -386,6 +407,7 @@ exports.deactivate = function () {
     if (current_filter === undefined) {
         return;
     }
+    unnarrow_times = {start_time: new Date()};
     blueslip.debug("Unnarrowed");
 
     if (ui.actively_scrolling()) {
@@ -464,6 +486,12 @@ exports.deactivate = function () {
     compose_fade.update_message_list();
 
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
+
+    unnarrow_times.initial_core_time = new Date();
+    setTimeout(function () {
+        unnarrow_times.initial_free_time = new Date();
+        report_unnarrow_time();
+    });
 };
 
 exports.restore_home_state = function () {
