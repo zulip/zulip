@@ -347,3 +347,31 @@ function get_predicate(operators) {
     string = 'near:150';
     assert.deepEqual(Filter.unparse(operators), string);
 }());
+
+(function test_describe() {
+    var narrow;
+    var string;
+
+    narrow = [
+        {operator: 'stream', operand: 'devel'},
+        {operator: 'is', operand: 'starred'}
+    ];
+    string = 'Narrow to stream devel, Narrow to starred messages';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'stream', operand: 'devel'},
+        {operator: 'topic', operand: 'JS'}
+    ];
+    string = 'Narrow to devel > JS';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'is', operand: 'private'},
+        {operator: 'search', operand: 'lunch'}
+    ];
+    string = 'Narrow to all private messages, Search for lunch';
+    assert.equal(Filter.describe(narrow), string);
+
+}());
+
