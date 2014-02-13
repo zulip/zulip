@@ -71,7 +71,7 @@ function populate_streams (streams_data) {
 }
 
 exports.setup_page = function () {
-    var admin_tab = templates.render('admin_tab');
+    var admin_tab = templates.render('admin_tab', {realm_name: page_params.realm_name});
     $("#administration").html(admin_tab);
     $("#administration-status").hide();
 
