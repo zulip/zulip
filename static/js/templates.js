@@ -56,6 +56,23 @@ Handlebars.registerHelper('if_and', function () {
     return options.fn(this);
 });
 
+Handlebars.registerHelper('if_or', function () {
+    // Execute the conditional code if any of the conditions are true.
+    // Example usage:
+    //     {{#if_or cond1 cond2 cond3}}
+    //         <p>At least one is true</p>
+    //     {{/if_or}}
+    var options = arguments[arguments.length - 1];
+    var i;
+    for (i = 0; i < arguments.length - 1; i++) {
+        if (arguments[i]) {
+            return options.fn(this);
+
+        }
+    }
+    return options.inverse(this);
+});
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
