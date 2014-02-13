@@ -1,5 +1,3 @@
-{# Settings tab of the app. #}
-
 <h1><i class="icon-vector-wrench settings-icon"></i>Settings</h1>
 
 <div id="settings-change-box">
@@ -10,16 +8,16 @@
     <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>Your Account</div>
     <div class="account-settings-form">
       <form action="/json/settings/change" method="post"
-            class="form-horizontal your-account-settings">{% csrf_token %}
+            class="form-horizontal your-account-settings">
         <div class="control-group" id="name_change_container">
           <label for="full_name" class="control-label">Full name</label>
           <div class="controls">
             <input type="text" name="full_name" id="full_name"
-                   value="{{ user_profile.full_name }}" />
+                   value="{{ page_params.fullname }}" />
           </div>
         </div>
 
-        {% if password_auth_enabled %}
+        {{#if page_params.password_auth_enabled}}
         <div class="control-group" id="pw_change_link">
           <label for="change_password_button" class="control-label">Password</label>
           <div class="controls">
@@ -63,7 +61,7 @@
           </div>
 
         </div>
-        {% endif %}
+        {{/if}}
 
         <div class="control-group">
           <div class="controls">
@@ -74,7 +72,7 @@
 
         <div class="user-avatar-section">
           <p>
-            <img id="user-settings-avatar" src="{{ avatar_url }}" />
+            <img id="user-settings-avatar" src="{{ page_params.avatar_url }}" />
           </p>
           <div id="user_avatar_file_input_error" class="text-error"></div>
           <div id="user_avatar_file"></div>
@@ -102,9 +100,9 @@
           <div class="controls">
             <input type="checkbox" name="enable_stream_desktop_notifications"
                    id="enable_stream_desktop_notifications"
-                   {% if user_profile.enable_stream_desktop_notifications %}
+                   {{#if page_params.stream_desktop_notifications_enabled}}
                    checked="yes"
-                   {% endif %} />
+                   {{/if}} />
           </div>
           <label for="enable_stream_desktop_notifications" class="control-label">
             Desktop notifications
@@ -115,9 +113,9 @@
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_stream_sounds" id="enable_stream_sounds"
-                   {% if user_profile.enable_stream_sounds %}
+                   {{#if page_params.stream_sounds_enabled}}
                    checked="yes"
-                   {% endif %} />
+                   {{/if}} />
           </div>
           <label for="enable_stream_sounds" class="control-label">
             Audible notifications
@@ -125,9 +123,10 @@
           <div class="propagate_stream_notifications_change"></div>
         </div>
 
-        <p class="notification-settings-note">Change notification settings for
-        individual streams on your <a href="/#subscriptions">Streams
-        page</a>.</p>
+        <p class="notification-settings-note">
+          Change notification settings for individual streams on your <a
+          href="/#subscriptions">Streams page</a>.
+        </p>
 
         <h4>Private messages and @-mentions</h4>
 
@@ -136,9 +135,9 @@
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
-                   {% if user_profile.enable_desktop_notifications %}
+                   {{#if page_params.desktop_notifications_enabled}}
                    checked="yes"
-                   {% endif %} />
+                   {{/if}} />
           </div>
           <label for="enable_desktop_notifications" class="control-label">
             Desktop notifications
@@ -148,9 +147,9 @@
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_sounds" id="enable_sounds"
-                   {% if user_profile.enable_sounds %}
+                   {{#if page_params.sounds_enabled}}
                    checked="yes"
-                   {% endif %} />
+                   {{/if}} />
           </div>
           <label for="enable_sounds" class="control-label">
             Audible notifications
@@ -160,9 +159,9 @@
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
-                   {% if user_profile.enable_offline_email_notifications %}
+                   {{#if page_params.enable_offline_email_notifications}}
                    checked="yes"
-                   {% endif %} />
+                   {{/if}} />
           </div>
           <label for="enable_offline_email_notifications" class="control-label">
             Email notifications when offline
@@ -172,9 +171,9 @@
         <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
-                   {% if user_profile.enable_offline_push_notifications %}
+                   {{#if page_params.enable_offline_push_notifications}}
                    checked="yes"
-                   {% endif %} />
+                   {{/if}} />
           </div>
           <label for="enable_offline_push_notifications" class="control-label">
             Mobile push notifications when offline
@@ -188,9 +187,9 @@
         <div class="control-group" id="digest_container">
           <div class="controls">
             <input type="checkbox" name="enable_digest_emails" id="enable_digest_emails"
-                   {% if user_profile.enable_digest_emails %}
+                   {{#if page_params.enable_digest_emails}}
                    checked="yes"
-                   {% endif %} />
+                   {{/if}} />
           </div>
           <label for="enable_digest_emails" class="control-label">
             Digest emails when I'm away
@@ -235,7 +234,7 @@
           <div class="control-group">
             <label for="bot_short_name" class="control-label">Username</label>
             <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
-                   placeholder="bot_user_name" value="" />-bot@{{ user_profile.realm.domain }}
+                   placeholder="bot_user_name" value="" />-bot@{{ page_params.domain }}
             <div><label for="create_bot_short_name" generated="true" class="text-error"></label></div>
           </div>
           <div class="control-group">
@@ -273,7 +272,7 @@
     <div id="get_api_key_box">
       <p>Please re-enter your password to confirm your identity.
         (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
-      <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
+      <form action="/json/fetch_api_key" method="post" class="form-horizontal">
         <div class="control-group">
           <label for="password" class="control-label">Current password</label>
           <input type="password" autocomplete="off"
@@ -304,9 +303,8 @@
   </ul>
 </div>
 
-{% if show_autoscroll_forever_option or show_default_desktop_notifications_option%}
-<form action="/json/ui_settings/change" method="post"
-      class="form-horizontal ui-settings">{% csrf_token %}
+{{#if_or page_params.show_autoscroll_forever_option page_params.show_default_desktop_notifications_option}}
+<div class="ui-settings">
   <div id="ui-settings" class="settings-section">
     <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>Zulip Labs</div>
     <div class="alert" id="ui-settings-status"></div>
@@ -316,29 +314,29 @@
         features we're working on. Let us know what you think!
       </p>
       <div class="control-group">
-        {% if show_autoscroll_forever_option %}
+        {{#if page_params.show_autoscroll_forever_option}}
         <div class="controls">
           <input type="checkbox" name="autoscroll_forever" id="autoscroll_forever"
-                 {% if user_profile.autoscroll_forever %}
+                 {{#if page_params.autoscroll_forever}}
                  checked="yes"
-              {% endif %} />
+              {{/if}} />
         </div>
         <label for="autoscroll_forever" class="control-label">
           Always auto-scroll to new messages
         </label>
-        {% endif %}
+        {{/if}}
 
-        {% if show_default_desktop_notifications_option %}
+        {{#if page_params.show_default_desktop_notifications_option}}
         <div class="controls">
           <input type="checkbox" name="default_desktop_notifications" id="default_desktop_notifications"
-                 {% if user_profile.default_desktop_notifications %}
+                 {{#if page_params.default_desktop_notifications}}
                  checked="yes"
-              {% endif %} />
+              {{/if}} />
         </div>
         <label for="default_desktop_notifications" class="control-label">
           Enable desktop notifications for new streams
         </label>
-        {% endif %}
+        {{/if}}
 
       </div>
       <div class="control-group">
@@ -348,5 +346,5 @@
       </div>
     </div>
   </div>
-</form>
-{% endif %}
+</div>
+{{/if_or}}

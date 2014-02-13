@@ -55,8 +55,7 @@ from zerver.lib.validator import check_string, check_list, check_dict, check_int
 
 from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
-    has_request_variables, authenticated_json_view, \
-    to_non_negative_int, json_to_bool, \
+    has_request_variables, authenticated_json_view, to_non_negative_int, \
     JsonableError, get_user_profile_by_email, REQ, require_realm_admin, \
     RequestVariableConversionError
 from zerver.lib.avatar import avatar_url, get_avatar_url
@@ -913,6 +912,8 @@ def home(request):
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         autoscroll_forever = user_profile.autoscroll_forever,
         show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com", "customer31.invalid"),
+        default_desktop_notifications = user_profile.default_desktop_notifications,
+        show_default_desktop_notifications_option = user_profile.realm.domain in ("customer13.invalid", "zulip.com",),
         avatar_url            = avatar_url(user_profile)
     )
     if narrow_stream is not None:
@@ -952,8 +953,6 @@ def home(request):
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
-                                   'show_default_desktop_notifications_option': user_profile.realm.domain in ("customer13.invalid", "zulip.com",),
-                                   'show_autoscroll_forever_option': page_params["show_autoscroll_forever_option"],
                                    },
                                   context_instance=RequestContext(request))
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
@@ -1561,18 +1560,20 @@ def create_user_backend(request, user_profile, email=REQ, password=REQ,
 @authenticated_json_post_view
 @has_request_variables
 def json_change_ui_settings(request, user_profile,
-                            autoscroll_forever=REQ(converter=lambda x: x == "on",
-                                                             default=False),
-                            default_desktop_notifications=REQ(converter=lambda x: x == "on",
-                                                                        default=False)):
+                            autoscroll_forever=REQ(validator=check_bool,
+                                                   default=None),
+                            default_desktop_notifications=REQ(validator=check_bool,
+                                                              default=None)):
 
     result = {}
 
-    if user_profile.autoscroll_forever != autoscroll_forever:
+    if autoscroll_forever is not None and \
+            user_profile.autoscroll_forever != autoscroll_forever:
         do_change_autoscroll_forever(user_profile, autoscroll_forever)
         result['autoscroll_forever'] = autoscroll_forever
 
-    if user_profile.default_desktop_notifications != default_desktop_notifications:
+    if default_desktop_notifications is not None and \
+            user_profile.default_desktop_notifications != default_desktop_notifications:
         do_change_default_desktop_notifications(user_profile, default_desktop_notifications)
         result['default_desktop_notifications'] = default_desktop_notifications
 

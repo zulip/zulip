@@ -940,12 +940,6 @@ $(function () {
         e.preventDefault();
     });
 
-    function clear_password_change() {
-        // Clear the password boxes so that passwords don't linger in the DOM
-        // for an XSS attacker to find.
-        $('#old_password, #new_password, #confirm_password').val('');
-    }
-
     admin.show_or_hide_menu_item();
 
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
@@ -961,13 +955,6 @@ $(function () {
         $('.alert-success').hide();
         $('.alert-info').hide();
         $('.alert').hide();
-
-        $("#api_key_value").text("");
-        $("#get_api_key_box").hide();
-        $("#show_api_key_box").hide();
-        $("#api_key_button_box").show();
-
-        clear_password_change();
 
         // Set the URL bar title to show the sub-page you're currently on.
         var browser_url = target_tab;
@@ -1003,265 +990,14 @@ $(function () {
     // Whenever the streams page comes up (from anywhere), populate it.
     subs_link.on('shown', subs.setup_page);
 
+    // The admin and settings pages are generated client-side through
+    // templates.
+
     var admin_link = $('#gear-menu a[href="#administration"]');
     admin_link.on('shown', admin.setup_page);
 
-    $('#pw_change_link').on('click', function (e) {
-        e.preventDefault();
-        $('#pw_change_link').hide();
-        $('#pw_change_controls').show();
-    });
-
-    $('#new_password').on('change keyup', function () {
-        password_quality($('#new_password').val(), $('#pw_strength .bar'));
-    });
-
-    var settings_status = $('#settings-status').expectOne();
-    var notify_settings_status = $('#notify-settings-status').expectOne();
-    // does this make me a bad person?
-    var ui_settings_status = feature_flags.show_autoscroll_forever_option && $('#ui-settings-status').expectOne();
-
-    function settings_change_error(message) {
-        // Scroll to the top so the error message is visible.
-        // We would scroll anyway if we end up submitting the form.
-        viewport.scrollTop(0);
-        settings_status.removeClass(status_classes)
-            .addClass('alert-error')
-            .text(message).stop(true).fadeTo(0,1);
-    }
-
-    $("form.your-account-settings").expectOne().ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: function (arr, form, options) {
-            if (page_params.password_auth_enabled !== false) {
-                // FIXME: Check that the two password fields match
-                // FIXME: Use the same jQuery validation plugin as the signup form?
-                var new_pw = $('#new_password').val();
-                if (new_pw !== '') {
-                    var password_ok = password_quality(new_pw);
-                    if (password_ok === undefined) {
-                        // zxcvbn.js didn't load, for whatever reason.
-                        settings_change_error(
-                            'An internal error occurred; try reloading the page. ' +
-                            'Sorry for the trouble!');
-                        return false;
-                    } else if (!password_ok) {
-                        settings_change_error('New password is too weak');
-                        return false;
-                    }
-                }
-            }
-            return true;
-        },
-        success: function (resp, statusText, xhr, form) {
-            var message = "Updated settings!";
-            var result = $.parseJSON(xhr.responseText);
-
-            settings_status.removeClass(status_classes)
-                .addClass('alert-success')
-                .text(message).stop(true).fadeTo(0,1);
-        },
-        error: function (xhr, error_type, xhn) {
-            var response = "Error changing settings";
-            if (xhr.status.toString().charAt(0) === "4") {
-                // Only display the error response for 4XX, where we've crafted
-                // a nice response.
-                response += ": " + $.parseJSON(xhr.responseText).msg;
-            }
-            settings_change_error(response);
-        },
-        complete: function (xhr, statusText) {
-            // Whether successful or not, clear the password boxes.
-            // TODO: Clear these earlier, while the request is still pending.
-            clear_password_change();
-        }
-    });
-
-    function update_notification_settings_success(resp, statusText, xhr, form) {
-        var message = "Updated notification settings!";
-        var result = $.parseJSON(xhr.responseText);
-
-        // Stream notification settings.
-
-        if (result.enable_stream_desktop_notifications !== undefined) {
-            page_params.stream_desktop_notifications_enabled = result.enable_stream_desktop_notifications;
-        }
-        if (result.enable_stream_sounds !== undefined) {
-            page_params.stream_sounds_enabled = result.enable_stream_sounds;
-        }
-
-        // PM and @-mention notification settings.
-
-        if (result.enable_desktop_notifications !== undefined) {
-            page_params.desktop_notifications_enabled = result.enable_desktop_notifications;
-        }
-        if (result.enable_sounds !== undefined) {
-            page_params.sounds_enabled = result.enable_sounds;
-        }
-
-        if (result.enable_offline_email_notifications !== undefined) {
-            page_params.enable_offline_email_notifications = result.enable_offline_email_notifications;
-        }
-
-        if (result.enable_offline_push_notifications !== undefined) {
-            page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
-        }
-
-        // Other notification settings.
-
-        if (result.enable_digest_emails !== undefined) {
-            page_params.enable_digest_emails = result.enable_digest_emails;
-        }
-
-        notify_settings_status.removeClass(status_classes)
-            .addClass('alert-success')
-            .text(message).stop(true).fadeTo(0,1);
-    }
-
-    function update_notification_settings_error(xhr, error_type, xhn) {
-        var response = "Error changing settings";
-        if (xhr.status.toString().charAt(0) === "4") {
-            // Only display the error response for 4XX, where we've crafted
-            // a nice response.
-            response += ": " + $.parseJSON(xhr.responseText).msg;
-        }
-
-        notify_settings_status.removeClass(status_classes)
-            .addClass('alert-error')
-            .text(response).stop(true).fadeTo(0,1);
-    }
-
-    function post_notify_settings_changes(notification_changes, success_func,
-                                          error_func) {
-        return channel.post({
-            url: "/json/notify_settings/change",
-            data: notification_changes,
-            success: success_func,
-            error: error_func
-        });
-    }
-
-    $("#change_notification_settings").on("click", function (e) {
-        var updated_settings = {};
-        _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
-                "enable_desktop_notifications", "enable_sounds",
-                "enable_offline_email_notifications",
-                "enable_offline_push_notifications", "enable_digest_emails"],
-               function (setting) {
-                   updated_settings[setting] = $("#" + setting).is(":checked");
-               });
-        post_notify_settings_changes(updated_settings,
-                                     update_notification_settings_success,
-                                     update_notification_settings_error);
-    });
-
-    function update_global_stream_setting(notification_type, new_setting) {
-        var data = {};
-        data[notification_type] = new_setting;
-        channel.post({
-            url: "/json/notify_settings/change",
-            data: data,
-            success: update_notification_settings_success,
-            error: update_notification_settings_error
-        });
-    }
-
-    function update_desktop_notification_setting(new_setting) {
-        update_global_stream_setting("enable_stream_desktop_notifications", new_setting);
-        subs.set_all_stream_desktop_notifications_to(new_setting);
-    }
-
-    function update_audible_notification_setting(new_setting) {
-        update_global_stream_setting("enable_stream_sounds", new_setting);
-        subs.set_all_stream_audible_notifications_to(new_setting);
-    }
-
-    function maybe_bulk_update_stream_notification_setting(notification_checkbox,
-                                                           propagate_setting_function) {
-        var html = templates.render("propagate_notification_change");
-        var control_group = notification_checkbox.closest(".control-group");
-        var checkbox_status = notification_checkbox.is(":checked");
-        control_group.find(".propagate_stream_notifications_change").html(html);
-        control_group.find(".yes_propagate_notifications").on("click", function (e) {
-            propagate_setting_function(checkbox_status);
-            control_group.find(".propagate_stream_notifications_change").empty();
-        });
-        control_group.find(".no_propagate_notifications").on("click", function (e) {
-            control_group.find(".propagate_stream_notifications_change").empty();
-        });
-    }
-
-    $("#enable_stream_desktop_notifications").on("click", function (e) {
-        var notification_checkbox = $("#enable_stream_desktop_notifications");
-        maybe_bulk_update_stream_notification_setting(notification_checkbox,
-                                                      update_desktop_notification_setting);
-    });
-
-    $("#enable_stream_sounds").on("click", function (e) {
-        var notification_checkbox = $("#enable_stream_sounds");
-        maybe_bulk_update_stream_notification_setting(notification_checkbox,
-                                                      update_audible_notification_setting);
-    });
-
-    if (feature_flags.show_autoscroll_forever_option) {
-        $("form.ui-settings").expectOne().ajaxForm({
-            dataType: 'json',
-
-            success: function (resp, statusText, xhr, form) {
-                var message = "Updated Zulip Labs settings!";
-                var result = $.parseJSON(xhr.responseText);
-
-                if (result.autoscroll_forever !== undefined) {
-                    page_params.autoscroll_forever = result.autoscroll_forever;
-                    exports.resize_page_components();
-                }
-
-                ui_settings_status.removeClass(status_classes)
-                    .addClass('alert-success')
-                    .text(message).stop(true).fadeTo(0,1);
-            },
-            error: function (xhr, error_type, xhn) {
-                var response = "Error changing settings";
-                if (xhr.status.toString().charAt(0) === "4") {
-                    // Only display the error response for 4XX, where we've crafted
-                    // a nice response.
-                    response += ": " + $.parseJSON(xhr.responseText).msg;
-                }
-
-                ui_settings_status.removeClass(status_classes)
-                    .addClass('alert-error')
-                    .text(response).stop(true).fadeTo(0,1);
-            }
-        });
-    }
-
-    $("#get_api_key_box").hide();
-    $("#show_api_key_box").hide();
-    $("#get_api_key_box form").ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr, form) {
-            var message = "Updated settings!";
-            var result = $.parseJSON(xhr.responseText);
-            $("#get_api_key_password").val("");
-            $("#api_key_value").text(result.api_key);
-            $("#show_api_key_box").show();
-            $("#get_api_key_box").hide();
-            settings_status.hide();
-        },
-        error: function (xhr, error_type, xhn) {
-            var response = "Error getting API key";
-            if (xhr.status.toString().charAt(0) === "4") {
-                // Only display the error response for 4XX, where we've crafted
-                // a nice response.
-                response += ": " + $.parseJSON(xhr.responseText).msg;
-            }
-            settings_status.removeClass(status_classes)
-                .addClass('alert-error')
-                .text(response).stop(true).fadeTo(0,1);
-            $("#show_api_key_box").hide();
-            $("#get_api_key_box").show();
-        }
-    });
+    var settings_link = $('#gear-menu a[href="#settings"]');
+    settings_link.on('shown', settings.setup_page);
 
     // A little hackish, because it doesn't seem to totally get us the
     // exact right width for the floating_recipient_bar and compose
@@ -1587,16 +1323,6 @@ $(function () {
     });
     $('.restart_get_events_button').click(function (e) {
         server_events.restart_get_events({dont_block: true});
-    });
-
-    $('#api_key_button').click(function (e) {
-        if (page_params.password_auth_enabled !== false) {
-            $("#get_api_key_box").show();
-        } else {
-            // Skip the password prompt step
-            $("#get_api_key_box form").submit();
-        }
-        $("#api_key_button_box").hide();
     });
 
     $('body').on('click', '.edit_content_button', function (e) {
