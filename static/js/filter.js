@@ -357,14 +357,14 @@ Filter.prototype = {
     }
 };
 
-Filter.operator_to_prefix = function (operator) {
+Filter.operator_to_prefix = function (operator, negated) {
     var verb;
 
     if (operator === 'search') {
-        return 'Search for';
+        return negated ? 'Exclude' : 'Search for';
     }
 
-    verb = 'Narrow to ';
+    verb = negated ? 'Exclude ' : 'Narrow to ';
 
     switch (operator) {
     case 'stream':
@@ -400,7 +400,11 @@ Filter.describe = function (operators) {
     var parts = [];
 
     if (operators.length >= 2) {
-        if (operators[0].operator === 'stream' && operators[1].operator === 'topic') {
+        var is = function (term, expected) {
+            return (term.operator === expected) && !term.negated;
+        };
+
+        if (is(operators[0], 'stream') && is(operators[1], 'topic')) {
             var stream = operators[0].operand;
             var topic = operators[1].operand;
             var part = 'Narrow to ' + stream + ' > ' + topic;
@@ -413,7 +417,7 @@ Filter.describe = function (operators) {
         var operand = elem.operand;
         var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator ==='is') {
-            var verb = 'Narrow to ';
+            var verb = elem.negated ? 'Exclude ' : 'Narrow to ';
             if (operand === 'private') {
                 return verb + 'all private messages';
             } else if (operand === 'starred') {
@@ -424,7 +428,7 @@ Filter.describe = function (operators) {
                 return verb + 'alerted messages';
             }
         } else {
-            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator);
+            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator, elem.negated);
             if (prefix_for_operator !== '') {
                 return prefix_for_operator + ' ' + operand;
             }

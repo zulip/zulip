@@ -373,5 +373,26 @@ function get_predicate(operators) {
     string = 'Narrow to all private messages, Search for lunch';
     assert.equal(Filter.describe(narrow), string);
 
+    narrow = [
+        {operator: 'stream', operand: 'devel'},
+        {operator: 'topic', operand: 'JS', negated: true}
+    ];
+    string = 'Narrow to stream devel, Exclude topic JS';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'is', operand: 'private'},
+        {operator: 'search', operand: 'lunch', negated: true}
+    ];
+    string = 'Narrow to all private messages, Exclude lunch';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'stream', operand: 'devel'},
+        {operator: 'is', operand: 'starred', negated: true}
+    ];
+    string = 'Narrow to stream devel, Exclude starred messages';
+    assert.equal(Filter.describe(narrow), string);
+
 }());
 
