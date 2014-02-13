@@ -371,8 +371,26 @@ exports.blur_search = function () {
     $('.user-list-filter').blur();
 };
 
+function maybe_select_person (e) {
+    if (e.keyCode === 13) {
+        // Enter key was pressed
+
+        // Prevent a newline from being entered into the soon-to-be-opened composebox
+        e.preventDefault();
+
+        var topPerson = $('#user_presences li.user_sidebar_entry').first().data('email');
+        if (topPerson !== undefined) {
+            // undefined if there are no results
+            compose.start('private',
+                    {trigger: 'sidebar enter key', "private_message_recipient": topPerson});
+        }
+    }
+}
+
 $(function () {
-    $(".user-list-filter").expectOne().on('input', update_users_for_search);
+    $(".user-list-filter").expectOne()
+        .on('input', update_users_for_search)
+        .on('keydown', maybe_select_person);
 });
 
 
