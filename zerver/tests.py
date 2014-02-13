@@ -374,6 +374,16 @@ class BotTest(AuthedTestCase):
         profile = get_user_profile_by_email('hambot-bot@zulip.com')
         self.assertEqual(profile.default_sending_stream.name, 'Denmark')
 
+    def test_add_bot_with_default_sending_stream_not_subscribed(self):
+        self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(0)
+        result = self.create_bot(default_sending_stream='Rome')
+        self.assert_num_bots_equal(1)
+        self.assertEqual(result['default_sending_stream'], 'Rome')
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.default_sending_stream.name, 'Rome')
+
     def test_add_bot_with_default_sending_stream_private_allowed(self):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
@@ -556,6 +566,264 @@ class BotTest(AuthedTestCase):
 
         bot = self.get_bot()
         self.assertEqual('Fred', bot['full_name'])
+
+    def test_patch_bot_to_stream(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_sending_stream': 'Denmark',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_sending_stream = ujson.loads(result.content)['default_sending_stream']
+        self.assertEqual('Denmark', default_sending_stream)
+
+        bot = self.get_bot()
+        self.assertEqual('Denmark', bot['default_sending_stream'])
+
+    def test_patch_bot_to_stream_not_subscribed(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_sending_stream': 'Rome',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_sending_stream = ujson.loads(result.content)['default_sending_stream']
+        self.assertEqual('Rome', default_sending_stream)
+
+        bot = self.get_bot()
+        self.assertEqual('Rome', bot['default_sending_stream'])
+
+    def test_patch_bot_to_stream_none(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_sending_stream': '',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_sending_stream = ujson.loads(result.content)['default_sending_stream']
+        self.assertEqual(None, default_sending_stream)
+
+        bot = self.get_bot()
+        self.assertEqual(None, bot['default_sending_stream'])
+
+    def test_patch_bot_to_stream_private_allowed(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
+        do_add_subscription(user_profile, stream)
+        do_make_stream_private(user_profile.realm, "Denmark")
+
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_info = {
+            'default_sending_stream': 'Denmark',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_sending_stream = ujson.loads(result.content)['default_sending_stream']
+        self.assertEqual('Denmark', default_sending_stream)
+
+        bot = self.get_bot()
+        self.assertEqual('Denmark', bot['default_sending_stream'])
+
+    def test_patch_bot_to_stream_private_denied(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
+        do_remove_subscription(user_profile, stream)
+        do_make_stream_private(user_profile.realm, "Denmark")
+
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_info = {
+            'default_sending_stream': 'Denmark',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_error(result, 'Insufficient permission')
+
+    def test_patch_bot_to_stream_not_found(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_sending_stream': 'missing',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_error(result, 'No such stream \'missing\'')
+
+    def test_patch_bot_events_register_stream(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_events_register_stream': 'Denmark',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_events_register_stream = ujson.loads(result.content)['default_events_register_stream']
+        self.assertEqual('Denmark', default_events_register_stream)
+
+        bot = self.get_bot()
+        self.assertEqual('Denmark', bot['default_events_register_stream'])
+
+    def test_patch_bot_events_register_stream_allowed(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
+        do_add_subscription(user_profile, stream)
+        do_make_stream_private(user_profile.realm, "Denmark")
+
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_events_register_stream': 'Denmark',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_events_register_stream = ujson.loads(result.content)['default_events_register_stream']
+        self.assertEqual('Denmark', default_events_register_stream)
+
+        bot = self.get_bot()
+        self.assertEqual('Denmark', bot['default_events_register_stream'])
+
+    def test_patch_bot_events_register_stream_denied(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
+        do_remove_subscription(user_profile, stream)
+        do_make_stream_private(user_profile.realm, "Denmark")
+
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_events_register_stream': 'Denmark',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_error(result, 'Insufficient permission')
+
+    def test_patch_bot_events_register_stream_none(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_events_register_stream': '',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_events_register_stream = ujson.loads(result.content)['default_events_register_stream']
+        self.assertEqual(None, default_events_register_stream)
+
+        bot = self.get_bot()
+        self.assertEqual(None, bot['default_events_register_stream'])
+
+    def test_patch_bot_events_register_stream_not_found(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_events_register_stream': 'missing',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_error(result, 'No such stream \'missing\'')
+
+    def test_patch_bot_default_all_public_streams_true(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_all_public_streams': ujson.dumps(True),
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_events_register_stream = ujson.loads(result.content)['default_all_public_streams']
+        self.assertEqual(default_events_register_stream, True)
+
+        bot = self.get_bot()
+        self.assertEqual(bot['default_all_public_streams'], True)
+
+    def test_patch_bot_default_all_public_streams_false(self):
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'default_all_public_streams': ujson.dumps(False),
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        default_events_register_stream = ujson.loads(result.content)['default_all_public_streams']
+        self.assertEqual(default_events_register_stream, False)
+
+        bot = self.get_bot()
+        self.assertEqual(bot['default_all_public_streams'], False)
 
     def test_patch_bot_via_post(self):
         self.login("hamlet@zulip.com")

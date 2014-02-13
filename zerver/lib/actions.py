@@ -1289,6 +1289,44 @@ def do_change_full_name(user_profile, full_name, log=True):
                              full_name=user_profile.full_name))
     send_event(event, active_user_ids(user_profile.realm))
 
+def _default_stream_permision_check(user_profile, stream):
+    # Any user can have a None default stream
+    if stream is not None:
+        if user_profile.is_bot:
+            user = user_profile.bot_owner
+        else:
+            user = user_profile
+        if stream.invite_only and not subscribed_to_stream(user, stream):
+            raise JsonableError('Insufficient permission')
+
+def do_change_default_sending_stream(user_profile, stream, log=True):
+    _default_stream_permision_check(user_profile, stream)
+
+    user_profile.default_sending_stream = stream
+    user_profile.save(update_fields=['default_sending_stream'])
+    if log:
+        log_event({'type': 'user_change_default_sending_stream',
+                   'user': user_profile.email,
+                   'stream': str(stream)})
+
+def do_change_default_events_register_stream(user_profile, stream, log=True):
+    _default_stream_permision_check(user_profile, stream)
+
+    user_profile.default_events_register_stream = stream
+    user_profile.save(update_fields=['default_events_register_stream'])
+    if log:
+        log_event({'type': 'user_change_default_events_register_stream',
+                   'user': user_profile.email,
+                   'stream': str(stream)})
+
+def do_change_default_all_public_streams(user_profile, value, log=True):
+    user_profile.default_all_public_streams = value
+    user_profile.save(update_fields=['default_all_public_streams'])
+    if log:
+        log_event({'type': 'user_change_default_all_public_streams',
+                   'user': user_profile.email,
+                   'value': str(value)})
+
 def do_change_is_admin(user_profile, is_admin):
     if is_admin:
         assign_perm('administer', user_profile, user_profile.realm)

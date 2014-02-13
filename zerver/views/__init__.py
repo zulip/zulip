@@ -37,10 +37,13 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
-    do_make_stream_private, do_change_default_desktop_notifications, \
+    do_make_stream_private, do_add_default_stream, \
+    do_change_default_all_public_streams, do_change_default_desktop_notifications, \
+    do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
-    do_change_stream_description, do_update_pointer, do_add_default_stream, do_remove_default_stream, \
-    do_get_streams
+    do_change_stream_description, do_get_streams, do_remove_default_stream, \
+    do_update_pointer
+
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
@@ -1903,7 +1906,11 @@ def stream_or_none(stream_name, realm):
         return stream
 
 @has_request_variables
-def patch_bot_backend(request, user_profile, email, full_name=REQ):
+def patch_bot_backend(request, user_profile, email,
+                      full_name=REQ(default=None),
+                      default_sending_stream=REQ(default=None),
+                      default_events_register_stream=REQ(default=None),
+                      default_all_public_streams=REQ(default=None, validator=check_bool)):
     try:
         bot = get_user_profile_by_email(email)
     except:
@@ -1912,9 +1919,16 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
     if not user_profile.can_admin_user(bot):
         return json_error('Insufficient permission')
 
-    do_change_full_name(bot, full_name)
-
-    bot_avatar_url = None
+    if full_name is not None:
+        do_change_full_name(bot, full_name)
+    if default_sending_stream is not None:
+        stream = stream_or_none(default_sending_stream, bot.realm)
+        do_change_default_sending_stream(bot, stream)
+    if default_events_register_stream is not None:
+        stream = stream_or_none(default_events_register_stream, bot.realm)
+        do_change_default_events_register_stream(bot, stream)
+    if default_all_public_streams is not None:
+        do_change_default_all_public_streams(bot, default_all_public_streams)
 
     if len(request.FILES) == 0:
         pass
@@ -1924,13 +1938,15 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
         avatar_source = UserProfile.AVATAR_FROM_USER
         bot.avatar_source = avatar_source
         bot.save(update_fields=["avatar_source"])
-        bot_avatar_url = avatar_url(bot)
     else:
         return json_error("You may only upload one file at a time")
 
     json_result = dict(
-        full_name = full_name,
-        avatar_url = bot_avatar_url
+        full_name=bot.full_name,
+        avatar_url=avatar_url(bot),
+        default_sending_stream=get_stream_name(bot.default_sending_stream),
+        default_events_register_stream=get_stream_name(bot.default_events_register_stream),
+        default_all_public_streams=bot.default_all_public_streams,
     )
     return json_success(json_result)
 
@@ -2037,14 +2053,21 @@ def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ,
 def get_bots_backend(request, user_profile):
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                               bot_owner=user_profile)
+    bot_profiles = bot_profiles.select_related('default_sending_stream', 'default_events_register')
     bot_profiles = bot_profiles.order_by('date_joined')
 
     def bot_info(bot_profile):
+        default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
+        default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
+
         return dict(
-                username   = bot_profile.email,
-                full_name  = bot_profile.full_name,
-                api_key    = bot_profile.api_key,
-                avatar_url = avatar_url(bot_profile)
+            username=bot_profile.email,
+            full_name=bot_profile.full_name,
+            api_key=bot_profile.api_key,
+            avatar_url=avatar_url(bot_profile),
+            default_sending_stream=default_sending_stream,
+            default_events_register_stream=default_events_register_stream,
+            default_all_public_streams=bot_profile.default_all_public_streams,
         )
 
     return json_success({'bots': map(bot_info, bot_profiles)})
