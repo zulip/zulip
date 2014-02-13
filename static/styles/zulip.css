@@ -3606,6 +3606,10 @@ div.edit_bot {
     margin-top: 15px;
 }
 
+#notification-settings .notification-reminder {
+    text-align: center;
+}
+
 #notification-docs {
     color: #666666;
     font-size: 11px;
