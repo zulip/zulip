@@ -17,9 +17,7 @@ body {
 /* Common background color */
 body,
 #tab_bar_underpadding,
-.message_list,
-#compose-container,
-.message_header {
+.compose-content {
     background-color: #ffffff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
@@ -28,17 +26,17 @@ body,
    transition: background-color 200ms linear;
 }
 
-body.narrowed_view,
-.narrowed_view #tab_bar_underpadding,
-.narrowed_view .message_list,
-.narrowed_view #compose-container,
-.narrowed_view .message_header {
+body.narrowed_view {
     background-color: #effcff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
    -o-transition: background-color 200ms linear;
    -ms-transition: background-color 200ms linear;
    transition: background-color 200ms linear;
+}
+
+.narrowed_view .column-middle-inner {
+    background-color: #ffffff;
 }
 
 input,
@@ -73,7 +71,7 @@ a {
 .app {
     width: 100%;
     height: 100%;
-    overflow-y: auto;
+    overflow-y: scroll;
     z-index: 99;
 }
 
@@ -769,7 +767,7 @@ td.pointer {
 .message_header {
     vertical-align: middle;
     text-align:     left;
-
+    background: #e2e2e2;
     /* We can overflow-y if the font size gets big */
     overflow:       hidden;
     text-overflow:  ellipsis;
@@ -778,10 +776,14 @@ td.pointer {
     line-height:    14px;
 }
 
+.message_list .recipient_row {
+    margin-left: -9px;
+    margin-right: -9px;
+}
+
 .stream_label {
     display: inline-block;
     padding: 3px 4px 2px 4px;
-    margin-left: 9px;
     font-weight: normal;
     height: 17px;
     line-height: 17px;
@@ -842,7 +844,6 @@ td.pointer {
 }
 
 .stream_topic {
-    background-color: #e2e2e2;
     display: inline-block;
     padding: 3px 6px 2px 12px;
     margin-left: -5px;
@@ -1069,12 +1070,22 @@ just a temporary hack.
     position: relative;
 }
 
+.private-message .messagebox {
+    margin-left: -9px;
+    margin-right: -9px;
+}
+
+.private-message .messagebox-border {
+    margin-left: 9px;
+    margin-right: 9px;
+}
+
 .private-message .messagebox,
 .message_header_private_message .message-header-contents {
     background-color: #feffe0;
 }
 
-.mention .messagebox {
+.mention .messagebox-content {
     background-color: #ffe4e0;
 }
 
@@ -1130,10 +1141,10 @@ just a temporary hack.
 .sender_name {
     color: #333;
     display: inline-block;
-    font-weight: bold;
+    font-weight: 900;
     vertical-align: top;
     line-height: 12px;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .sender-status {
@@ -1303,7 +1314,7 @@ div.focused_table {
 
 .message_content {
     line-height: 17px;
-    font-size: 13px;
+    font-size: 14px;
     padding-left: 46px;
     display: block;
     position: relative;
@@ -2118,8 +2129,6 @@ div.floating_recipient {
     border-collapse: separate;
     width: 100%;
     position: relative;
-    /* Needs body background because the child row becomes transparent when faded */
-    background: #f4f5f4;
 }
 
 .floating_recipient .message_header_private_message .message-header-contents {
@@ -2887,7 +2896,10 @@ li.expanded_subject {
 .sub-unsub-message,
 .date_row {
     text-align: center;
-    padding-bottom: 10px; /* same as .bookend */
+    padding-bottom: 10px;
+    margin-left: -9px;
+    margin-right: -9px;
+
 }
 
 .date_row .date-direction {
@@ -2899,7 +2911,7 @@ li.expanded_subject {
     display: inline-block;
     vertical-align: middle;
     width: 33%;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #e2e2e2;
     border-bottom:1px solid #fff;
     margin: 0px 5px 0px 5px;
 }
@@ -2923,7 +2935,7 @@ li.expanded_subject {
     vertical-align: middle;
     width: 50%;
     height: 0px;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #e2e2e2;
     border-bottom: 1px solid #fff;
 }
 
