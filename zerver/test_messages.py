@@ -4,7 +4,9 @@ from django.db.models import Q
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
-from zerver.views.messages import get_old_messages_backend
+from zerver.views.messages import (
+    get_old_messages_backend, ok_to_include_history,
+)
 from zilencer.models import Deployment
 
 from zerver.lib.test_helpers import (
@@ -18,7 +20,7 @@ from zerver.lib.test_helpers import (
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Client, Message, Realm, Recipient, Stream, UserMessage, UserProfile,
-    get_display_recipient, get_recipient, get_stream, get_user_profile_by_email,
+    get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
 
 from zerver.lib.actions import (
@@ -31,6 +33,43 @@ import datetime
 import time
 import ujson
 
+class IncludeHistoryTest(AuthedTestCase):
+    def test_ok_to_include_history(self):
+        realm = get_realm('zulip.com')
+        create_stream_if_needed(realm, 'public_stream')
+
+        # Definitely forbid seeing history on private streams.
+        narrow = [
+            dict(operator='stream', operand='private_stream'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, realm))
+
+        # History doesn't apply to PMs.
+        narrow = [
+            dict(operator='is', operand='private'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, realm))
+
+        # If we are looking for something like starred messages, there is
+        # no point in searching historical messages.
+        narrow = [
+            dict(operator='stream', operand='public_stream'),
+            dict(operator='is', operand='starred'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, realm))
+
+        # simple True case
+        narrow = [
+            dict(operator='stream', operand='public_stream'),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, realm))
+
+        narrow = [
+            dict(operator='stream', operand='public_stream'),
+            dict(operator='topic', operand='whatever'),
+            dict(operator='search', operand='needle in haystack'),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, realm))
 
 class TestCrossRealmPMs(AuthedTestCase):
     def create_user(self, email):

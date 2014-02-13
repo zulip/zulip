@@ -334,6 +334,33 @@ def is_public_stream(stream, realm):
         return False
     return stream.is_public()
 
+
+def ok_to_include_history(narrow, realm):
+    # There are occasions where we need to find Message rows that
+    # have no corresponding UserMessage row, because the user is
+    # reading a public stream that might include messages that
+    # were sent while the user was not subscribed, but which they are
+    # allowed to see.  We have to be very careful about constructing
+    # queries in those situations, so this function should return True
+    # only if we are 100% sure that we're gonna add a clause to the
+    # query that narrows to a particular public stream on the user's realm.
+    # If we screw this up, then we can get into a nasty situation of
+    # polluting our narrow results with messages from other realms.
+    include_history = False
+    if narrow is not None:
+        for term in narrow:
+            if term['operator'] == "stream":
+                if is_public_stream(term['operand'], realm):
+                    include_history = True
+        # Disable historical messages if the user is narrowing on anything
+        # that's a property on the UserMessage table.  There cannot be
+        # historical messages in these cases anyway.
+        for term in narrow:
+            if term['operator'] == "is":
+                include_history = False
+
+    return include_history
+
 @has_request_variables
 def get_old_messages_backend(request, user_profile,
                              anchor = REQ(converter=int),
@@ -343,18 +370,7 @@ def get_old_messages_backend(request, user_profile,
                              use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
                              apply_markdown=REQ(default=True,
                                                 converter=ujson.loads)):
-    include_history = False
-    if narrow is not None:
-        for term in narrow:
-            if term['operator'] == "stream":
-                if is_public_stream(term['operand'], user_profile.realm):
-                    include_history = True
-        # Disable historical messages if the user is narrowing on anything
-        # that's a property on the UserMessage table.  There cannot be
-        # historical messages in these cases anyway.
-        for term in narrow:
-            if term['operator'] == "is":
-                include_history = False
+    include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
         query = select([column("id").label("message_id")], None, "zerver_message")
