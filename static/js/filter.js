@@ -357,6 +357,78 @@ Filter.prototype = {
     }
 };
 
+Filter.operator_to_prefix = function (operator) {
+    switch (operator) {
+    case 'stream':
+        return 'Narrow to stream';
+
+    case 'near':
+        return 'Narrow to messages around';
+
+    case 'id':
+        return 'Narrow to message ID';
+
+    case 'topic':
+        return 'Narrow to topic';
+
+    case 'sender':
+        return 'Narrow to messages sent by';
+
+    case 'pm-with':
+        return 'Narrow to private messages with';
+
+    case 'search':
+        return 'Search for';
+
+    case 'in':
+        return 'Narrow to messages in';
+    }
+    return '';
+};
+
+// Convert a list of operators to a human-readable description.
+Filter.describe = function (operators) {
+    if (operators.length === 0) {
+        return 'Go to Home view';
+    }
+
+    var parts = [];
+
+    if (operators.length >= 2) {
+        if (operators[0].operator === 'stream' && operators[1].operator === 'topic') {
+            var stream = operators[0].operand;
+            var topic = operators[1].operand;
+            var part = 'Narrow to ' + stream + ' > ' + topic;
+            parts = [part];
+            operators = operators.slice(2);
+        }
+    }
+
+    var more_parts = _.map(operators, function (elem) {
+        var operand = elem.operand;
+        var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
+        if (canonicalized_operator ==='is') {
+            if (operand === 'private') {
+                return 'Narrow to all private messages';
+            } else if (operand === 'starred') {
+                return 'Narrow to starred messages';
+            } else if (operand === 'mentioned') {
+                return 'Narrow to mentioned messages';
+            } else if (operand === 'alerted') {
+                return 'Narrow to alerted messages';
+            }
+        } else {
+            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator);
+            if (prefix_for_operator !== '') {
+                return prefix_for_operator + ' ' + operand;
+            }
+        }
+        return 'Narrow to (unknown operator)';
+    });
+    return parts.concat(more_parts).join(', ');
+};
+
+
 return Filter;
 
 }());

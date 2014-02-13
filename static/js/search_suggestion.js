@@ -29,77 +29,6 @@ function stream_matches_query(stream_name, q) {
     return phrase_match(stream_name, q);
 }
 
-function operator_to_prefix(operator) {
-    switch (operator) {
-    case 'stream':
-        return 'Narrow to stream';
-
-    case 'near':
-        return 'Narrow to messages around';
-
-    case 'id':
-        return 'Narrow to message ID';
-
-    case 'topic':
-        return 'Narrow to topic';
-
-    case 'sender':
-        return 'Narrow to messages sent by';
-
-    case 'pm-with':
-        return 'Narrow to private messages with';
-
-    case 'search':
-        return 'Search for';
-
-    case 'in':
-        return 'Narrow to messages in';
-    }
-    return '';
-}
-
-// Convert a list of operators to a human-readable description.
-function describe(operators) {
-    if (operators.length === 0) {
-        return 'Go to Home view';
-    }
-
-    var parts = [];
-
-    if (operators.length >= 2) {
-        if (operators[0].operator === 'stream' && operators[1].operator === 'topic') {
-            var stream = operators[0].operand;
-            var topic = operators[1].operand;
-            var part = 'Narrow to ' + stream + ' > ' + topic;
-            parts = [part];
-            operators = operators.slice(2);
-        }
-    }
-
-    var more_parts = _.map(operators, function (elem) {
-        var operand = elem.operand;
-        var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
-        if (canonicalized_operator ==='is') {
-            if (operand === 'private') {
-                return 'Narrow to all private messages';
-            } else if (operand === 'starred') {
-                return 'Narrow to starred messages';
-            } else if (operand === 'mentioned') {
-                return 'Narrow to mentioned messages';
-            } else if (operand === 'alerted') {
-                return 'Narrow to alerted messages';
-            }
-        } else {
-            var prefix_for_operator = operator_to_prefix(canonicalized_operator);
-            if (prefix_for_operator !== '') {
-                return prefix_for_operator + ' ' + operand;
-            }
-        }
-        return 'Narrow to (unknown operator)';
-    });
-    return parts.concat(more_parts).join(', ');
-}
-
 function highlight_person(query, person) {
     var hilite = typeahead_helper.highlight_query_in_phrase;
     return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
@@ -205,7 +134,7 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
     // Take top 15 people, since they're ordered by pm_recipient_count.
     people = people.slice(0, 15);
 
-    var prefix = operator_to_prefix(matching_operator);
+    var prefix = Filter.operator_to_prefix(matching_operator);
 
     var suggestions = _.map(people, function (person) {
         var name = highlight_person(query, person);
@@ -237,7 +166,7 @@ function get_person_suggestions(all_people, query, autocomplete_operator) {
 
     people.sort(typeahead_helper.compare_by_pms);
 
-    var prefix = operator_to_prefix(autocomplete_operator);
+    var prefix = Filter.operator_to_prefix(autocomplete_operator);
 
     var objs = _.map(people, function (person) {
         var name = highlight_person(query, person);
@@ -253,7 +182,7 @@ function get_default_suggestion(operators) {
     // Here we return the canonical suggestion for the full query that the
     // user typed.  (The caller passes us the parsed query as "operators".)
     var search_string = Filter.unparse(operators);
-    var description = describe(operators);
+    var description = Filter.describe(operators);
     description = Handlebars.Utils.escapeExpression(description);
     return {description: description, search_string: search_string};
 }
@@ -351,7 +280,7 @@ function get_topic_suggestions(query_operators) {
         var topic_term = {operator: 'topic', operand: topic};
         var operators = query_operators.concat([topic_term]);
         var search_string = Filter.unparse(operators);
-        var description = describe(operators);
+        var description = Filter.describe(operators);
         return {description: description, search_string: search_string};
     });
 }
@@ -370,7 +299,7 @@ function get_operator_subset_suggestions(query, operators) {
     for (i = operators.length - 1; i >= 1; --i) {
         var subset = operators.slice(0, i);
         var search_string = Filter.unparse(subset);
-        var description = describe(subset);
+        var description = Filter.describe(subset);
         var suggestion = {description: description, search_string: search_string};
         suggestions.push(suggestion);
     }
