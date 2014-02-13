@@ -358,30 +358,35 @@ Filter.prototype = {
 };
 
 Filter.operator_to_prefix = function (operator) {
+    var verb;
+
+    if (operator === 'search') {
+        return 'Search for';
+    }
+
+    verb = 'Narrow to ';
+
     switch (operator) {
     case 'stream':
-        return 'Narrow to stream';
+        return verb + 'stream';
 
     case 'near':
-        return 'Narrow to messages around';
+        return verb + 'messages around';
 
     case 'id':
-        return 'Narrow to message ID';
+        return verb + 'message ID';
 
     case 'topic':
-        return 'Narrow to topic';
+        return verb + 'topic';
 
     case 'sender':
-        return 'Narrow to messages sent by';
+        return verb + 'messages sent by';
 
     case 'pm-with':
-        return 'Narrow to private messages with';
-
-    case 'search':
-        return 'Search for';
+        return verb + 'private messages with';
 
     case 'in':
-        return 'Narrow to messages in';
+        return verb + 'messages in';
     }
     return '';
 };
@@ -408,14 +413,15 @@ Filter.describe = function (operators) {
         var operand = elem.operand;
         var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator ==='is') {
+            var verb = 'Narrow to ';
             if (operand === 'private') {
-                return 'Narrow to all private messages';
+                return verb + 'all private messages';
             } else if (operand === 'starred') {
-                return 'Narrow to starred messages';
+                return verb + 'starred messages';
             } else if (operand === 'mentioned') {
-                return 'Narrow to mentioned messages';
+                return verb + 'mentioned messages';
             } else if (operand === 'alerted') {
-                return 'Narrow to alerted messages';
+                return verb + 'alerted messages';
             }
         } else {
             var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator);
