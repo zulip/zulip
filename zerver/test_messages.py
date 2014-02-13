@@ -38,6 +38,12 @@ class IncludeHistoryTest(AuthedTestCase):
         realm = get_realm('zulip.com')
         create_stream_if_needed(realm, 'public_stream')
 
+        # Negated stream searches should not include history.
+        narrow = [
+            dict(operator='stream', operand='public_stream', negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, realm))
+
         # Definitely forbid seeing history on private streams.
         narrow = [
             dict(operator='stream', operand='private_stream'),

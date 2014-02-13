@@ -349,7 +349,7 @@ def ok_to_include_history(narrow, realm):
     include_history = False
     if narrow is not None:
         for term in narrow:
-            if term['operator'] == "stream":
+            if term['operator'] == "stream" and not term.get('negated', False):
                 if is_public_stream(term['operand'], realm):
                     include_history = True
         # Disable historical messages if the user is narrowing on anything
