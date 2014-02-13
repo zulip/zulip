@@ -1503,8 +1503,21 @@ def send_presence_changed(user_profile, presence):
                  presence={presence_dict['client']: presence.to_dict()})
     send_event(event, active_user_ids(user_profile.realm))
 
+def consolidate_client(client):
+    # The web app reports a client as 'website'
+    # The desktop app reports a client as ZulipDesktop
+    # due to it setting a custom user agent. We want both
+    # to count as web users
+
+    # Alias ZulipDesktop to website
+    if client.name in ['ZulipDesktop']:
+        return get_client('website')
+    else:
+        return client
+
 @statsd_increment('user_presence')
 def do_update_user_presence(user_profile, client, log_time, status):
+    client = consolidate_client(client)
     (presence, created) = UserPresence.objects.get_or_create(
         user_profile = user_profile,
         client = client,
