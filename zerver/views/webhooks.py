@@ -7,8 +7,9 @@ from zerver.models import UserProfile, get_client, get_user_profile_by_email
 from zerver.lib.actions import check_send_message
 from zerver.lib.notifications import  convert_html_to_markdown
 from zerver.lib.response import json_success, json_error
+from zerver.lib.validator import check_dict
 from zerver.decorator import authenticated_api_view, REQ, \
-    has_request_variables, json_to_dict, authenticated_rest_api_view, \
+    has_request_variables, authenticated_rest_api_view, \
     api_key_only_webhook_view, to_non_negative_int, ruby_boolean
 from zerver.views.messages import send_message_backend
 from django.db.models import Q
@@ -133,7 +134,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
 @authenticated_api_view
 @has_request_variables
 def api_github_landing(request, user_profile, event=REQ,
-                       payload=REQ(converter=json_to_dict),
+                       payload=REQ(validator=check_dict([])),
                        branches=REQ(default=''),
                        stream=REQ(default=''),
                        version=REQ(converter=to_non_negative_int, default=1),
@@ -609,7 +610,7 @@ def beanstalk_decoder(view_func):
 @authenticated_rest_api_view
 @has_request_variables
 def api_beanstalk_webhook(request, user_profile,
-                          payload=REQ(converter=json_to_dict)):
+                          payload=REQ(validator=check_dict([]))):
     # Beanstalk supports both SVN and git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for git repos
@@ -650,8 +651,8 @@ def api_deskdotcom_webhook(request, user_profile, data=REQ(),
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_newrelic_webhook(request, user_profile, alert=REQ(converter=json_to_dict, default=None),
-                             deployment=REQ(converter=json_to_dict, default=None)):
+def api_newrelic_webhook(request, user_profile, alert=REQ(validator=check_dict([]), default=None),
+                             deployment=REQ(validator=check_dict([]), default=None)):
     try:
         stream = request.GET['stream']
     except (AttributeError, KeyError):
@@ -678,7 +679,7 @@ def api_newrelic_webhook(request, user_profile, alert=REQ(converter=json_to_dict
 
 @authenticated_rest_api_view
 @has_request_variables
-def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_dict),
+def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dict([])),
                           stream=REQ(default='commits')):
     repository = payload['repository']
     commits = [{'id': commit['raw_node'], 'message': commit['message'],

@@ -489,9 +489,6 @@ def json_to_foo(json, type):
         raise ValueError("argument is not a %s" % (type().__class__.__name__))
     return data
 
-def json_to_dict(json):
-    return json_to_foo(json, dict)
-
 def json_to_list(json):
     return json_to_foo(json, list)
 

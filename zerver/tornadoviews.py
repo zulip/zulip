@@ -5,7 +5,7 @@ from zerver.models import get_client
 
 from zerver.decorator import asynchronous, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, json_to_dict, REQ
+    has_request_variables, REQ
 
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_bool, check_list, check_string

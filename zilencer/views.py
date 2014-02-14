@@ -5,11 +5,12 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
 
-from zerver.decorator import has_request_variables, REQ, json_to_dict
+from zerver.decorator import has_request_variables, REQ
 from zerver.lib.actions import internal_send_message
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
+from zerver.lib.validator import check_dict
 from zerver.models import get_realm, get_user_profile_by_email, resolve_email_to_domain, \
         UserProfile
 from zilencer.forms import EnterpriseToSForm
@@ -43,7 +44,7 @@ def get_ticket_number():
     return ticket_number
 
 @has_request_variables
-def submit_feedback(request, deployment, message=REQ(converter=json_to_dict)):
+def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
     domainish = message["sender_domain"]
     if get_realm("zulip.com") not in deployment.realms.all():
         domainish += " via " + deployment.name
@@ -78,7 +79,7 @@ def submit_feedback(request, deployment, message=REQ(converter=json_to_dict)):
     return HttpResponse(message['sender_email'])
 
 @has_request_variables
-def report_error(request, deployment, type=REQ, report=REQ(converter=json_to_dict)):
+def report_error(request, deployment, type=REQ, report=REQ(validator=check_dict([]))):
     report['deployment'] = deployment.name
     if type == 'browser':
         notify_browser_error(report)
