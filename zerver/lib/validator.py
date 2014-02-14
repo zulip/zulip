@@ -79,6 +79,21 @@ def check_dict(required_keys):
 
     return f
 
+def check_variable_type(allowed_type_funcs):
+    """
+    Use this validator if an argument is of a variable type (e.g. processing
+    properties that might be strings or booleans).
+
+    `allowed_type_funcs`: the check_* validator functions for the possible data
+    types for this variable.
+    """
+    def enumerated_type_check(var_name, val):
+        for func in allowed_type_funcs:
+            if not func(var_name, val):
+                return None
+        return '%s is not an allowed_type' % (var_name,)
+    return enumerated_type_check
+
 def equals(expected_val):
     def f(var_name, val):
         if val != expected_val:
