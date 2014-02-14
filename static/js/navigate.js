@@ -70,5 +70,37 @@ exports.page_down = function () {
     }
 };
 
+exports.cycle_stream = function (direction) {
+    var currentStream, nextStream;
+    if (narrow.stream() !== undefined) {
+        currentStream = stream_list.get_stream_li(narrow.stream());
+    }
+    switch (direction) {
+        case 'forward':
+            if (narrow.stream() === undefined) {
+                nextStream = $("#stream_filters").children().first();
+            } else {
+                nextStream = currentStream.next();
+                if (nextStream.length === 0) {
+                    nextStream = $("#stream_filters").children().first();
+                }
+            }
+            break;
+        case 'backward':
+            if (narrow.stream() === undefined) {
+                nextStream = $("#stream_filters").children().last();
+            } else {
+                nextStream = currentStream.prev();
+                if (nextStream.length === 0) {
+                    nextStream = $("#stream_filters").children().last();
+                }
+            }
+            break;
+        default:
+            blueslip.error("Invalid parameter to cycle_stream", {value: direction});
+    }
+    narrow.by('stream', nextStream.data('name'));
+};
+
 return exports;
 }());

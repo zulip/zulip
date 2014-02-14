@@ -67,8 +67,12 @@ function get_event_name(e) {
         return 'search';
     case 63: // '?': Show keyboard shortcuts page
         return 'show_shortcuts';
+    case 65: // 'A'
+        return 'stream_cycle_backward';
     case 67: // 'C'
         return 'compose_private_message';
+    case 68: // 'D'
+        return 'stream_cycle_forward';
     case 74: // 'J'
         return 'page_down';
     case 75: // 'K'
@@ -270,6 +274,12 @@ function process_hotkey(e) {
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
             $('#keyboard-shortcuts').modal('show');
+            return true;
+        case 'stream_cycle_backward':
+            navigate.cycle_stream('backward');
+            return true;
+        case 'stream_cycle_forward':
+            navigate.cycle_stream('forward');
             return true;
     }
 
