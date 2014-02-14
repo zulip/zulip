@@ -51,8 +51,8 @@ from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
 from zerver.lib import bugdown
 from zerver.lib.alert_words import user_alert_words
-from zerver.lib.validator import check_string, check_list, check_dict, check_int, check_bool
-
+from zerver.lib.validator import check_string, check_list, check_dict, \
+    check_int, check_bool, check_variable_type
 from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, to_non_negative_int, \
@@ -1615,33 +1615,52 @@ def get_subscription_or_die(stream_name, user_profile):
 
 @authenticated_json_view
 @has_request_variables
-def json_subscription_property(request, user_profile, stream_name=REQ,
-                               property=REQ):
+def json_subscription_property(request, user_profile, subscription_data=REQ(
+        validator=check_list(
+            check_dict([["stream", check_string],
+                        ["property", check_string],
+                        ["value", check_variable_type(
+                            [check_string, check_bool])]])))):
     """
-    This is the entry point to accessing or changing subscription
-    properties.
-    """
-    property_converters = dict(color=lambda x: x,
-                               in_home_view=json_to_bool,
-                               desktop_notifications=json_to_bool,
-                               audible_notifications=json_to_bool)
-    if property not in property_converters:
-        return json_error("Unknown subscription property: %s" % (property,))
+    This is the entry point to changing subscription properties. This
+    is a bulk endpoint: requestors always provide a subscription_data
+    list containing dictionaries for each stream of interest.
 
-    sub = get_subscription_or_die(stream_name, user_profile)[0]
-    if request.method == "GET":
-        return json_success({'stream_name': stream_name,
-                             'value': getattr(sub, property)})
-    elif request.method == "POST":
-        @has_request_variables
-        def do_set_property(request,
-                            value=REQ(converter=property_converters[property])):
-            do_change_subscription_property(user_profile, sub, stream_name,
-                                            property, value)
-        do_set_property(request)
-        return json_success()
-    else:
+    Requests are of the form:
+
+    [{"stream": "devel", "property": "in_home_view", "value": False},
+     {"stream": "devel", "property": "color", "value": "#c2c2c2"}]
+    """
+    if request.method != "POST":
         return json_error("Invalid verb")
+
+    property_converters = {"color": check_string, "in_home_view": check_bool,
+                           "desktop_notifications": check_bool,
+                           "audible_notifications": check_bool}
+    response_data = []
+
+    for change in subscription_data:
+        stream_name = change["stream"]
+        property = change["property"]
+        value = change["value"]
+
+        if property not in property_converters:
+            return json_error("Unknown subscription property: %s" % (property,))
+
+        sub = get_subscription_or_die(stream_name, user_profile)[0]
+
+        property_conversion = property_converters[property](property, value)
+        if property_conversion:
+            return json_error(property_conversion)
+
+        do_change_subscription_property(user_profile, sub, stream_name,
+                                        property, value)
+
+        response_data.append({'stream': stream_name,
+                              'property': property,
+                              'value': value})
+
+    return json_success({"subscription_data": response_data})
 
 @csrf_exempt
 @require_post

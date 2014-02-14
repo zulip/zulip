@@ -47,13 +47,10 @@ exports.stream_id = function (stream_name) {
 };
 
 function set_stream_property(stream_name, property, value) {
+    var sub_data = {stream: stream_name, property: property, value: value};
     return channel.post({
         url:      '/json/subscriptions/property',
-        data: {
-            "property": property,
-            "stream_name": stream_name,
-            "value": value
-        },
+        data: {"subscription_data": JSON.stringify([sub_data])},
         timeout:  10*1000
     });
 }

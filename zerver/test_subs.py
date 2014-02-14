@@ -457,30 +457,6 @@ class DefaultStreamTest(AuthedTestCase):
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
 
 class SubscriptionPropertiesTest(AuthedTestCase):
-
-    def test_get_stream_color(self):
-        """
-        A GET request to
-        /json/subscriptions/property?property=color+stream_name=foo returns
-        the color for stream foo.
-        """
-        test_email = "hamlet@zulip.com"
-        self.login(test_email)
-        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
-        result = self.client.get("/json/subscriptions/property",
-                                  {"property": "color",
-                                   "stream_name": subs[0]['name']})
-
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-
-        self.assertIn("stream_name", json)
-        self.assertIn("value", json)
-        self.assertIsInstance(json["stream_name"], basestring)
-        self.assertIsInstance(json["value"],  basestring)
-        self.assertEqual(json["stream_name"], subs[0]["name"])
-        self.assertEqual(json["value"], subs[0]["color"])
-
     def test_set_stream_color(self):
         """
         A POST request to /json/subscriptions/property with stream_name and
@@ -493,10 +469,11 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         sub = old_subs[0]
         stream_name = sub['name']
         new_color = "#ffffff" # TODO: ensure that this is different from old_color
-        result = self.client.post("/json/subscriptions/property",
-                                  {"property": "color",
-                                   "stream_name": stream_name,
-                                   "value": "#ffffff"})
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "color",
+                                                "stream": stream_name,
+                                                "value": "#ffffff"}])})
 
         self.assert_json_success(result)
 
@@ -520,15 +497,17 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
     def test_set_color_missing_stream_name(self):
         """
-        Updating the color property requires a stream_name.
+        Updating the color property requires a `stream` key.
         """
         test_email = "hamlet@zulip.com"
         self.login(test_email)
-        result = self.client.post("/json/subscriptions/property",
-                                  {"property": "color",
-                                   "value": "#ffffff"})
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "color",
+                                                "value": "#ffffff"}])})
 
-        self.assert_json_error(result, "Missing 'stream_name' argument")
+        self.assert_json_error(
+            result, "stream key is missing from subscription_data[0]")
 
     def test_set_color_missing_color(self):
         """
@@ -537,11 +516,13 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         test_email = "hamlet@zulip.com"
         self.login(test_email)
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
-        result = self.client.post("/json/subscriptions/property",
-                                  {"property": "color",
-                                   "stream_name": subs[0]["name"]})
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "color",
+                                                "stream": subs[0]["name"]}])})
 
-        self.assert_json_error(result, "Missing 'value' argument")
+        self.assert_json_error(
+            result, "value key is missing from subscription_data[0]")
 
     def test_set_invalid_property(self):
         """
@@ -550,9 +531,11 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         test_email = "hamlet@zulip.com"
         self.login(test_email)
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
-        result = self.client.post("/json/subscriptions/property",
-                                  {"property": "bad",
-                                   "stream_name": subs[0]["name"]})
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "bad",
+                                                "value": "bad",
+                                                "stream": subs[0]["name"]}])})
 
         self.assert_json_error(result,
                                "Unknown subscription property: bad")
