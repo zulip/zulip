@@ -767,7 +767,6 @@ td.pointer {
 .message_header {
     vertical-align: middle;
     text-align:     left;
-    background: #e2e2e2;
     /* We can overflow-y if the font size gets big */
     overflow:       hidden;
     text-overflow:  ellipsis;
@@ -2138,6 +2137,32 @@ div.floating_recipient {
 
 #floating_recipient_bar {
     top: 50px;
+}
+
+.message-header-contents {
+    background: #e2e2e2;
+}
+
+.recipient_row.sticky {
+    margin-top: 22px;
+}
+
+.sticky .message_header {
+    position: fixed;
+    z-index: 99;
+    top: 50px;
+    width: 100%;
+    left: 0px;
+}
+
+.sticky .message-header-wrapper {
+    max-width: 1400px;
+    margin: auto;
+}
+
+.sticky .message-header-contents {
+    margin-left: 250px;
+    margin-right: 251px;
 }
 
 #bottom_whitespace {
