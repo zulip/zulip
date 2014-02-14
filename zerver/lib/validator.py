@@ -49,11 +49,12 @@ def check_list(sub_validator, length=None):
         if length is not None and length != len(val):
             return '%s should have exactly %d items' % (var_name, length)
 
-        for i, item in enumerate(val):
-            vname = '%s[%d]' % (var_name, i)
-            error = sub_validator(vname, item)
-            if error:
-                return error
+        if sub_validator:
+            for i, item in enumerate(val):
+                vname = '%s[%d]' % (var_name, i)
+                error = sub_validator(vname, item)
+                if error:
+                    return error
 
         return None
     return f

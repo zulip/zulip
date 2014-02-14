@@ -55,7 +55,7 @@ from zerver.lib.validator import check_string, check_list, check_dict, check_int
 from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, \
-    to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
+    to_non_negative_int, json_to_dict, json_to_bool, \
     JsonableError, get_user_profile_by_email, REQ, require_realm_admin, \
     RequestVariableConversionError
 from zerver.lib.avatar import avatar_url, get_avatar_url
