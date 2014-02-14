@@ -536,13 +536,21 @@ def already_sent_mirrored_message_id(message):
         return messages[0].id
     return None
 
-def extract_recipients(raw_recipients):
+def extract_recipients(s):
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
     try:
-        recipients = json_to_list(raw_recipients)
+        data = ujson.loads(s)
     except ValueError:
-        recipients = [raw_recipients]
+        data = s
+
+    if isinstance(data, basestring):
+        data = data.split(',')
+
+    if not isinstance(data, list):
+        raise ValueError("Invalid data type for recipients")
+
+    recipients = data
 
     # Strip recipients, and then remove any duplicates and any that
     # are the empty string after being stripped.
