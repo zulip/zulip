@@ -300,7 +300,7 @@ def log_message(message):
 def always_push_notify(user):
     # robinhood.io asked to get push notifications for **all** notifyable
     # messages, regardless of idle status
-    return user.realm.domain in ['zulip.com', 'robinhood.io']
+    return user.realm.domain in ['robinhood.io']
 
 # Helper function. Defaults here are overriden by those set in do_send_messages
 def do_send_message(message, rendered_content = None, no_log = False, stream = None, local_id = None):
