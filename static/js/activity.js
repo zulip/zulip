@@ -98,9 +98,11 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
 
     var num_present = 0;
     _.each(emails, function (email) {
-        var status = presence_info[email];
-        if (status && (status !== 'offline')) {
-            ++num_present;
+        if (presence_info[email]) {
+            var status = presence_info[email].status;
+            if (status && (status !== 'offline')) {
+                ++num_present;
+            }
         }
     });
 
@@ -112,15 +114,15 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
 function sort_users(users, presence_info) {
     // TODO sort by unread count first, once we support that
     users.sort(function (a, b) {
-        if (presence_info[a] === 'active' && presence_info[b] !== 'active') {
+        if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
             return -1;
-        } else if (presence_info[b] === 'active' && presence_info[a] !== 'active') {
+        } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
             return 1;
         }
 
-        if (presence_info[a] === 'idle' && presence_info[b] !== 'idle') {
+        if (presence_info[a].status === 'idle' && presence_info[b].status !== 'idle') {
             return -1;
-        } else if (presence_info[b] === 'idle' && presence_info[a] !== 'idle') {
+        } else if (presence_info[b].status === 'idle' && presence_info[a].status !== 'idle') {
             return 1;
         }
 
@@ -206,7 +208,7 @@ function actually_update_users() {
     // the commit that added this comment.
 
     function info_for(email) {
-        var presence = presence_info[email];
+        var presence = presence_info[email].status;
         return {
             name: people.get_by_email(email).full_name,
             email: email,
@@ -276,7 +278,7 @@ exports.update_huddles = function () {
 
 function status_from_timestamp(baseline_time, presence) {
     if (presence.website === undefined) {
-        return 'offline';
+        return {status: 'offline'};
     }
 
     var age = baseline_time - presence.website.timestamp;
@@ -285,7 +287,7 @@ function status_from_timestamp(baseline_time, presence) {
     if (age < OFFLINE_THRESHOLD_SECS) {
         status = presence.website.status;
     }
-    return status;
+    return {status: status};
 }
 
 function focus_ping() {

@@ -43,9 +43,9 @@ var activity = require('js/activity.js');
     var users = ['alice@zulip.com', 'fred@zulip.com', 'jill@zulip.com'];
 
     var user_info = {
-        'alice@zulip.com': 'inactive',
-        'fred@zulip.com': 'active',
-        'jill@zulip.com': 'active'
+        'alice@zulip.com': {status: 'inactive'},
+        'fred@zulip.com': {status: 'active'},
+        'jill@zulip.com': {status: 'active'}
     };
 
     activity._sort_users(users, user_info);
@@ -141,10 +141,10 @@ var activity = require('js/activity.js');
     var huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
 
     var presence_list = {
-        'alice@zulip.com': 'active',
-        'fred@zulip.com': 'idle', // counts as present
+        'alice@zulip.com': {status: 'active'},
+        'fred@zulip.com': {status: 'idle'}, // counts as present
         // jill not in list
-        'mark@zulip.com': 'offline' // does not count
+        'mark@zulip.com': {status: 'offline'} // does not count
     };
 
     assert.equal(
