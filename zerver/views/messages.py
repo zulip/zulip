@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import Q
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
-    has_request_variables, REQ, JsonableError, json_to_bool, \
+    has_request_variables, REQ, JsonableError, \
     to_non_negative_int, to_non_negative_float
 from django.utils.html import escape as escape_html
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +19,8 @@ from zerver.lib.cache import generic_bulk_cached_fetch
 from zerver.lib.query import last_n
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd
-from zerver.lib.validator import check_list, check_int, check_dict, check_string
+from zerver.lib.validator import \
+    check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, \
     Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, valid_stream_name, \
@@ -548,7 +549,7 @@ def json_update_flags(request, user_profile):
 def update_message_flags(request, user_profile,
                       messages=REQ('messages', validator=check_list(check_int)),
                       operation=REQ('op'), flag=REQ('flag'),
-                      all=REQ('all', converter=json_to_bool, default=False)):
+                      all=REQ('all', validator=check_bool, default=False)):
     request._log_data["extra"] = "[%s %s]" % (operation, flag)
     do_update_message_flags(user_profile, operation, flag, messages, all)
     return json_success({'result': 'success',

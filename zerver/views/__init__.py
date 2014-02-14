@@ -50,7 +50,7 @@ from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
 from zerver.lib import bugdown
 from zerver.lib.alert_words import user_alert_words
-from zerver.lib.validator import check_string, check_list, check_dict, check_int
+from zerver.lib.validator import check_string, check_list, check_dict, check_int, check_bool
 
 from zerver.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
@@ -1012,7 +1012,7 @@ def get_profile_backend(request, user_profile):
 @authenticated_json_post_view
 @has_request_variables
 def json_change_enter_sends(request, user_profile,
-                            enter_sends=REQ('enter_sends', json_to_bool)):
+                            enter_sends=REQ('enter_sends', validator=check_bool)):
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()
 
@@ -1054,9 +1054,9 @@ def json_get_public_streams(request, user_profile):
 # i.e. public streams plus invite-only streams that the user is on
 @has_request_variables
 def get_streams_backend(request, user_profile,
-                        include_public=REQ(converter=json_to_bool, default=True),
-                        include_subscribed=REQ(converter=json_to_bool, default=True),
-                        include_all_active=REQ(converter=json_to_bool, default=False)):
+                        include_public=REQ(validator=check_bool, default=True),
+                        include_subscribed=REQ(validator=check_bool, default=True),
+                        include_all_active=REQ(validator=check_bool, default=False)):
     if include_all_active and not is_super_user_api(request):
             return json_error("User not authorized for this query")
 
@@ -1255,10 +1255,10 @@ def stream_button(stream_name):
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions",
                               validator=check_list(check_dict([['name', check_string]]))),
-                              invite_only = REQ(converter=json_to_bool, default=False),
-                              announce = REQ(converter=json_to_bool, default=False),
+                              invite_only = REQ(validator=check_bool, default=False),
+                              announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
-                              authorization_errors_fatal = REQ(converter=json_to_bool, default=True)):
+                              authorization_errors_fatal = REQ(validator=check_bool, default=True)):
 
     if not user_profile.can_create_streams():
         return json_error('User cannot create streams.')
@@ -1392,7 +1392,7 @@ def json_get_subscribers(request, user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_upload_file(request, user_profile, private=REQ(converter=json_to_bool, default=None)):
+def json_upload_file(request, user_profile, private=REQ(validator=check_bool, default=None)):
     if len(request.FILES) == 0:
         return json_error("You must specify a file to upload")
     if len(request.FILES) != 1:
@@ -1404,7 +1404,7 @@ def json_upload_file(request, user_profile, private=REQ(converter=json_to_bool, 
 
 @has_request_variables
 def get_uploaded_file(request, user_profile, realm_id, filename,
-                      redir=REQ(converter=json_to_bool, default=True)):
+                      redir=REQ(validator=check_bool, default=True)):
     if settings.LOCAL_UPLOADS_DIR is not None:
         return HttpResponseForbidden() # Should have been served by nginx
 
@@ -1641,7 +1641,7 @@ def get_status_list(requesting_user_profile):
 
 @has_request_variables
 def update_active_status_backend(request, user_profile, status=REQ,
-                                 new_user_input=REQ(converter=json_to_bool, default=False)):
+                                 new_user_input=REQ(validator=check_bool, default=False)):
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError("Invalid presence status: %s" % (status,))
@@ -1684,8 +1684,8 @@ def json_report_send_time(request, user_profile,
                           time=REQ(converter=to_non_negative_int),
                           received=REQ(converter=to_non_negative_int, default="(unknown)"),
                           displayed=REQ(converter=to_non_negative_int, default="(unknown)"),
-                          locally_echoed=REQ(converter=json_to_bool, default=False),
-                          rendered_content_disparity=REQ(converter=json_to_bool, default=False)):
+                          locally_echoed=REQ(validator=check_bool, default=False),
+                          rendered_content_disparity=REQ(validator=check_bool, default=False)):
     request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
         % (time, received, displayed, locally_echoed, rendered_content_disparity)
     statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), time)
@@ -1724,7 +1724,7 @@ def json_report_unnarrow_time(request, user_profile,
 @authenticated_json_post_view
 @has_request_variables
 def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
-                      ui_message=REQ(converter=json_to_bool), user_agent=REQ,
+                      ui_message=REQ(validator=check_bool), user_agent=REQ,
                       href=REQ, log=REQ,
                       more_info=REQ(converter=json_to_dict, default=None)):
 
@@ -1765,8 +1765,8 @@ def json_events_register(request, user_profile):
 # Does not need to be authenticated because it's called from rest_dispatch
 @has_request_variables
 def api_events_register(request, user_profile,
-                        apply_markdown=REQ(default=False, converter=json_to_bool),
-                        all_public_streams=REQ(default=False, converter=json_to_bool)):
+                        apply_markdown=REQ(default=False, validator=check_bool),
+                        all_public_streams=REQ(default=False, validator=check_bool)):
     return events_register_backend(request, user_profile,
                                    apply_markdown=apply_markdown,
                                    all_public_streams=all_public_streams)
@@ -1808,7 +1808,7 @@ def reactivate_user_backend(request, user_profile, email):
 
 @has_request_variables
 def update_user_backend(request, user_profile, email,
-                        is_admin=REQ(default=None, converter=json_to_bool)):
+                        is_admin=REQ(default=None, validator=check_bool)):
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
