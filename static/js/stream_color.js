@@ -57,6 +57,7 @@ function update_table_stream_color(table, stream_name, color) {
 
 function update_stream_sidebar_swatch_color(id, color) {
     $("#stream_sidebar_swatch_" + id).css('background-color', color);
+    $("#stream_sidebar_privacy_swatch_" + id).css('color', color);
 }
 
 function update_historical_message_color(stream_name, color) {

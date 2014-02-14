@@ -120,7 +120,8 @@ a {
 }
 
 .app-main .column-left .left-sidebar {
-    width: 190px;
+    width: 250px;
+    padding-left: 0px;
 }
 
 .app-main .column-right .right-sidebar {
@@ -340,7 +341,7 @@ a:hover code {
     color: #000;
     text-decoration: none;
     visibility: hidden;
-
+    font-size: 13px;
     margin-top: 3px;
 }
 
@@ -352,11 +353,8 @@ a:hover code {
     overflow-x: visible;
     overflow-y: hidden;
     margin: 2px 0px 0px 0px;
-    padding: 0px 10px 10px 0;
-}
-
-#stream_filters .narrow-filter {
-    padding-left: 1.5em;
+    padding: 0 0 10px 0;
+    font-weight: normal;
 }
 
 .narrow-filter {
@@ -467,22 +465,9 @@ ul.filters hr {
 
 li.active-filter,
 li.active-subject-filter {
-    font-weight: bold;
-    background: #ccd6cc;
+    font-weight: 600;
+    background: #ddedf6;
     position: relative;
-}
-
-li.active-filter:after,
-li.active-subject-filter:after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: -6px;
-    margin-top: -6px;
-    display: block;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-left: 6px solid #ccd6cc;
 }
 
 li.hidden-filter {
@@ -492,11 +477,24 @@ li.hidden-filter {
 
 ul.filters {
     margin-left: 0px;
-    padding-right: 10px;
+}
+
+.filter-icon {
+    display: inline-block;
+    width: 18px;
+    text-align: center;
+    margin-right: 5px;
 }
 
 #global_filters .global-filter {
     position: relative;
+    padding: 1px 10px;
+    font-size: 16px;
+    font-weight: 300;
+}
+
+#global_filters .global-filter i {
+    font-size: 14px;
 }
 
 .user_sidebar_entry .selectable_sidebar_block,
@@ -537,10 +535,11 @@ ul.filters {
     top: 4px;
     padding: 2px 3px 1px 3px;
     background: #80837f;
+    border-radius: 0px;
     color: #ffffff;
-    border-radius: 1px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: normal;
+    letter-spacing: 0.6px;
 }
 
 .group-pms-sidebar-entry .count {
@@ -557,7 +556,7 @@ ul.filters {
 .group-pms-sidebar-entry .count,
 #global_filters .count
 {
-    line-height: 11px;
+    line-height: 13px;
     top: 3px;
 }
 
@@ -571,8 +570,9 @@ ul.filters {
     background: #a6ada4;
     color: #ffffff;
     border-radius: 1px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: normal;
+    letter-spacing: 0.6px;
 }
 
 ul.filters i {
@@ -2370,6 +2370,7 @@ div.floating_recipient {
     line-height: 12px;
     padding-top: 4px;
     margin-right: 15px;
+    padding-left: 33px;
 }
 
 #stream_filters .subscription_block.stream-with-count {
@@ -2405,16 +2406,6 @@ div.floating_recipient {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-#stream_filters .subscription_block .icon-vector-lock {
-    display: inline-block;
-    vertical-align: middle;
-    margin-top: 0px;
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    font-size: 12px;
 }
 
 .subscription_header {
@@ -2814,25 +2805,38 @@ button.topic_edit_cancel {
 
 .streamlist_swatch {
     display: block;
-    width: 1em;
-    height: 1em;
+    width: 11px;
+    height: 11px;
     vertical-align: middle;
-    border-radius: 1em;
     float: left;
     position: absolute;
-    left: 1px;
+    left: 10px;
+    top: 5px;
+    box-shadow: inset 0px 0px 3px -2px #000;
+}
+
+.streamlist_swatch.private-stream-swatch {
+    visibility: hidden;
+}
+
+.stream-privacy {
+    position: absolute;
+    left: 11px;
     top: 3px;
+    font-size: 15px;
 }
 
 ul.expanded_subjects {
     list-style-type: none;
     font-weight: normal;
     margin-left: 0px;
+    padding-bottom: 2px;
 }
 
 li.show-more-topics,
 li.expanded_subject {
     position: relative;
+    padding-left: 33px;
 }
 
 .show-all-streams a {
@@ -3019,18 +3023,23 @@ li.expanded_subject {
     display: none;
 }
 
-#streams_header,
+#global_filters {
+    margin-bottom: 20px;
+}
+
 #topics_header,
 #userlist-header,
 #sharethelove-header,
 #group-pm-header {
-    border-top: 1px solid #ddd;
+    border-top: 1px solid #e2e2e2;
     margin-top: 5px;
     margin-right: 10px;
 }
 
-#stream_filters {
-    font-weight: normal;
+#streams_header {
+    margin-right: 0px;
+    padding-right: 6px;
+    padding-left: 10px;
 }
 
 #stream_filters .inactive_stream {

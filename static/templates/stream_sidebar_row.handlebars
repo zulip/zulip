@@ -9,7 +9,7 @@
 
     <div class="subscription_block selectable_sidebar_block" data-name="{{name}}">
 
-      <div id="stream_sidebar_swatch_{{id}}" class="streamlist_swatch"
+      <div id="stream_sidebar_swatch_{{id}}" class="streamlist_swatch{{#if invite_only}} private-stream-swatch{{/if}}"
        style="background-color: {{color}}">&nbsp;</div>
 
       <a href="{{uri}}" class="subscription_name">{{name}}
@@ -17,9 +17,11 @@
 
       <div class="count"><div class="value"></div></div>
 
-      <span class="stream-privacy">
+      {{#if invite_only}}
+      <span id="stream_sidebar_privacy_swatch_{{id}}" class="stream-privacy" style="color: {{color}}">
         {{partial "stream_privacy"}}
       </span>
+      {{/if}}
 
     </div>
     <span class="arrow stream-sidebar-arrow"><i class="icon-vector-chevron-down"></i></span>
