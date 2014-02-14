@@ -372,6 +372,11 @@ exports.escape_search = function () {
     update_users_for_search();
 };
 
+exports.initiate_search = function () {
+    var filter = $('.user-list-filter').expectOne();
+    filter.focus();
+};
+
 exports.blur_search = function () {
     $('.user-list-filter').blur();
 };

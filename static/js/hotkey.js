@@ -85,6 +85,8 @@ function get_event_name(e) {
         return 'vim_down';
     case 107: // 'k'
         return 'vim_up';
+    case 113: // 'q'
+        return 'query_users';
     case 114: // 'r': respond to message
         return 'reply_message';
     case 115: // 's'
@@ -115,7 +117,7 @@ function process_hotkey(e) {
         }
     }
 
-    if (ui.home_tab_obscured() && event_name !== 'search') {
+    if (ui.home_tab_obscured() && event_name !== 'search' && event_name !== 'query_users') {
         return false;
     }
 
@@ -259,6 +261,9 @@ function process_hotkey(e) {
             return true;
         case 'compose_private_message':
             compose.start('private', {trigger: "compose_hotkey"});
+            return true;
+        case 'query_users':
+            activity.initiate_search();
             return true;
         case 'search':
             search.initiate_search();
