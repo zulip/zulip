@@ -297,8 +297,6 @@ function render(template_name, args) {
 
     var html = render('message_group', {message_groups: groups});
 
-    assert.equal($(html).next('.recipient_row').data('messages'), "1,2");
-
     var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
     assert.equal(first_message_text, "This is message one.");
 
