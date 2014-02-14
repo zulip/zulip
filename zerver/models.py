@@ -1073,17 +1073,17 @@ class UserPresence(models.Model):
         )
 
         for row in query:
-            email = row['user_profile__email']
-            client_name = row['client__name']
-            status = row['status']
-            timestamp = row['timestamp']
-            info = UserPresence.to_presense_dict(client_name, status, timestamp)
-            user_statuses[email][client_name] = info
+            info = UserPresence.to_presence_dict(
+                    client_name=row['client__name'],
+                    status=row['status'],
+                    timestamp=row['timestamp'],
+                    )
+            user_statuses[row['user_profile__email']][row['client__name']] = info
 
         return user_statuses
 
     @staticmethod
-    def to_presense_dict(client_name, status, timestamp):
+    def to_presence_dict(client_name=None, status=None, timestamp=None):
         presence_val = UserPresence.status_to_string(status)
         timestamp = datetime_to_timestamp(timestamp)
         return dict(
@@ -1093,10 +1093,10 @@ class UserPresence(models.Model):
         )
 
     def to_dict(self):
-        return UserPresence.to_presense_dict(
-                self.client.name,
-                self.status,
-                self.timestamp
+        return UserPresence.to_presence_dict(
+                client_name=self.client.name,
+                status=self.status,
+                timestamp=self.timestamp
         )
 
     @staticmethod
