@@ -362,8 +362,13 @@ exports.searching = function () {
     return $('.user-list-filter').expectOne().is(':focus');
 };
 
-exports.clear_search = function () {
-    $('.user-list-filter').val('');
+exports.escape_search = function () {
+    var filter = $('.user-list-filter').expectOne();
+    if (filter.val() === '') {
+        filter.blur();
+        return;
+    }
+    filter.val('');
     update_users_for_search();
 };
 
