@@ -932,6 +932,10 @@ class ExtractedRecipientsTest(TestCase):
         s = '"alice@zulip.com"'
         self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com'])
 
+        # bare comma-delimited string
+        s = 'bob@zulip.com, alice@zulip.com'
+        self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com', 'bob@zulip.com'])
+
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
         self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com', 'bob@zulip.com'])

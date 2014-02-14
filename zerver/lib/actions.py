@@ -41,7 +41,7 @@ from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, cache_set_many, \
     cache_delete, cache_delete_many, message_cache_key
-from zerver.decorator import get_user_profile_by_email, json_to_list, JsonableError, \
+from zerver.decorator import get_user_profile_by_email, JsonableError, \
      statsd_increment
 from zerver.lib.event_queue import request_event_queue, get_user_events
 from zerver.lib.utils import log_statsd_event, statsd

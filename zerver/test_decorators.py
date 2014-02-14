@@ -2,10 +2,11 @@
 from django.test import TestCase
 
 from zerver.decorator import \
-    REQ, has_request_variables, json_to_list, RequestVariableMissingError, \
+    REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, JsonableError
-from zerver.lib.validator import check_string, check_list, check_dict, \
-    check_bool, check_int
+from zerver.lib.validator import (
+    check_string, check_dict, check_bool, check_int, check_list
+)
 
 import ujson
 
@@ -13,7 +14,9 @@ class DecoratorTestCase(TestCase):
     def test_REQ_converter(self):
 
         def my_converter(data):
-            lst = json_to_list(data)
+            lst = ujson.loads(data)
+            if not isinstance(lst, list):
+                raise ValueError('not a list')
             if 13 in lst:
                 raise JsonableError('13 is an unlucky number!')
             return lst
