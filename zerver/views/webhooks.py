@@ -223,12 +223,6 @@ def api_github_landing(request, user_profile, event=REQ,
     else:
         target_stream, subject, content = api_github_v1(user_profile, event, payload, branches, stream, **kwargs)
 
-    # customer14.invalid has a stream per GitHub project and wants the topic to
-    # always be 'GitHub'.
-    # TODO: I'm not sure how to accomodate this hack into a configuration somewhere.
-    if domain == "customer14.invalid":
-        subject = "GitHub"
-
     request.client = get_client("ZulipGitHubWebhook")
     return send_message_backend(request, user_profile,
                                 message_type_name="stream",
