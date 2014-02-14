@@ -17,7 +17,7 @@ from zerver.models import UserProfile, Recipient, \
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
-    do_change_is_admin, \
+    do_change_is_admin, extract_recipients, \
     do_set_realm_name, get_realm_name, do_deactivate_realm
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
@@ -917,4 +917,12 @@ class MutedTopicsTests(AuthedTestCase):
 
         user = get_user_profile_by_email(email)
         self.assertEqual(ujson.loads(user.muted_topics), [["stream2", "topic2"]])
+
+class ExtractedRecipientsTest(TestCase):
+    def test_extract_recipients(self):
+        s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
+        self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com', 'bob@zulip.com'])
+        s = 'alice@zulip.com    '
+        self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com'])
+
 

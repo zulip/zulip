@@ -537,6 +537,8 @@ def already_sent_mirrored_message_id(message):
     return None
 
 def extract_recipients(raw_recipients):
+    # We try to accept multiple incoming formats for recipients.
+    # See test_extract_recipients() for examples of what we allow.
     try:
         recipients = json_to_list(raw_recipients)
     except ValueError:
