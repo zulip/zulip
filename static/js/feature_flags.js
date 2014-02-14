@@ -54,7 +54,7 @@ exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.summarize_read_while_narrowed = false;
 exports.clicking_notification_causes_narrow = true;
-exports.use_socket = true;
+exports.use_socket = false;
 
 // Ready for deprecation.
 exports.collapsible = false;
