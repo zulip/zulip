@@ -221,7 +221,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         to_linkify = []
         # Build dicts for URLs
         for short_url, full_url in urls.items():
-            for match in re.finditer(re.escape(short_url), text):
+            for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
                 to_linkify.append({
                     'start': match.start(),
                     'end': match.end(),
@@ -232,7 +232,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         for user_mention in user_mentions:
             screen_name = user_mention['screen_name']
             mention_string = '@' + screen_name
-            for match in re.finditer(re.escape(mention_string), text):
+            for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE):
                 to_linkify.append({
                     'start': match.start(),
                     'end': match.end(),
@@ -243,7 +243,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         for media_item in media:
             short_url = media_item['url']
             expanded_url = media_item['expanded_url']
-            for match in re.finditer(re.escape(short_url), text):
+            for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
                 to_linkify.append({
                     'start': match.start(),
                     'end': match.end(),
