@@ -731,15 +731,6 @@ td.pointer {
     transition: background-color 2.7s ease-in, color 2.7s ease-in;
 }
 
-.unread .message_time {
-    -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    background: #7cb26d;
-    color: #000;
-}
-
 .message_time.status-time {
     line-height: 14px;
     top: 10px;
@@ -1092,35 +1083,47 @@ just a temporary hack.
     position: relative;
 }
 
-.include-sender .unread_marker {
-    top: 26px;
-}
-
 .unread_marker {
     display: block;
     position: absolute;
     width: 6px;
-    height: 6px;
-    background: #2b8213;
-    left: 4px;
-    top: 9px;
+    left: -9px;
     opacity: 0;
-    z-index: 10;
-    display: none;
+    z-index: 1;
+    height: 100%;
+    -webkit-transition: opacity 0.3s ease-in;
+    -moz-transition: opacity 0.3s ease-in;
+    -o-transition: opacity 0.3s ease-in;
+    transition: opacity 0.3s ease-in;
+    border-top: 2px solid #ffffff;
+}
+
+.unread-marker-fill {
+    background: #2b8213;
+    width: 6px;
+    height: 100%;
+}
+
+.unread .unread_marker {
+    -webkit-transition: opacity 0.3s ease-in;
+    -moz-transition: opacity 0.3s ease-in;
+    -o-transition: opacity 0.3s ease-in;
+    transition: opacity 0.3s ease-in;
+    opacity: 1;
 }
 
 .unread_marker.slow_fade {
-    -webkit-transition: all 2.7s ease-in;
-    -moz-transition: all 2.7s ease-in;
-    -o-transition: all 2.7s ease-in;
-    transition: all 2.7s ease-in;
+    -webkit-transition: opacity 2.7s ease-in;
+    -moz-transition: opacity 2.7s ease-in;
+    -o-transition: opacity 2.7s ease-in;
+    transition: opacity 2.7s ease-in;
 }
 
 .unread_marker.fast_fade {
-    -webkit-transition: all 0.3s ease-in;
-    -moz-transition: all 0.3s ease-in;
-    -o-transition: all 0.3s ease-in;
-    transition: all 0.3s ease-in;
+    -webkit-transition: opacity 0.3s ease-in;
+    -moz-transition: opacity 0.3s ease-in;
+    -o-transition: opacity 0.3s ease-in;
+    transition: opacity 0.3s ease-in;
 }
 
 .selected_message .messagebox {
