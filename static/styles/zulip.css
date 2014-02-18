@@ -85,6 +85,11 @@ a {
     position: relative;
 }
 
+.app-main {
+    height: 100%;
+    min-height: 100%;
+}
+
 .fixed-app {
     width: 100%;
     position: fixed;
@@ -131,6 +136,8 @@ a {
 .app-main .column-middle {
     border-left: 1px solid #dadada;
     border-right: 1px solid #dadada;
+    min-height: 100%;
+    background-color: #ffffff;
 }
 
 .column-middle {
@@ -2133,11 +2140,6 @@ div.floating_recipient {
     position: relative;
 }
 
-.floating_recipient .message_header_private_message .message-header-contents {
-    margin-left: 10px;
-    margin-right: 8px;
-}
-
 #floating_recipient_bar {
     top: 50px;
 }
@@ -3813,7 +3815,7 @@ div.edit_bot {
     }
 
     .compose-content {
-        margin-right: 10px;
+        margin-right: 0px;
     }
 
     .nav .dropdown-menu {
