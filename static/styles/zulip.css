@@ -313,6 +313,11 @@ a:hover code {
     display: table-row;
 }
 
+#left-sidebar #user-list,
+#left-sidebar #group-pm-list {
+    padding-left: 10px;
+}
+
 .edit-profile {
     font-weight: 300;
     font-size: 12px;
@@ -3833,9 +3838,6 @@ div.edit_bot {
         margin-right: 0px;
     }
 
-    .app .column-middle-inner {
-        margin-right: 15px;
-    }
 }
 
 @media (max-width: 775px) {
@@ -3883,10 +3885,13 @@ div.edit_bot {
         margin-right: 0px;
     }
 
-    .column-middle-inner,
-    .app-main .column-middle .column-middle-inner {
+    .column-middle-inner {
         margin-left:  0px;
         margin-right: 15px;
+    }
+
+    .app-main .column-middle .column-middle-inner {
+        margin-right: 0px;
     }
 
     .skinny-user-gravatar {
