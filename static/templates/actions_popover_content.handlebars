@@ -3,19 +3,14 @@
   {{#if can_edit_message}}
   <li>
     <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">
-      <i class="icon-vector-pencil"></i> Edit this message
+      <i class="icon-vector-pencil"></i> Edit
     </a>
   </li>
   {{/if}}
 
   <li>
     <a href="#" class="respond_button">
-      <i class="icon-vector-share-alt"></i>
-      {{#if message.is_stream}}
-      Reply to this topic on stream <b>{{message.stream}}</b>
-      {{else}}
-      Reply to this private message
-      {{/if}}
+      <i class="icon-vector-share-alt"></i> Reply
     </a>
   </li>
   {{#unless message.is_private}}
@@ -52,14 +47,14 @@
 
   <li>
     <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-msgid="{{message.id}}">
-      <i class="icon-vector-link"></i> Narrow to this conversation and time
+      <i class="icon-vector-link"></i> Link to this conversation
     </a>
   </li>
 
   <li>
     <a href="#" class="popover_toggle_collapse" data-msgid="{{message.id}}">
       <i class="{{#if message.collapsed}}icon-vector-plus{{else}}icon-vector-minus{{/if}}"></i>
-        {{#if message.collapsed}}Un-collapse{{else}}Collapse{{/if}} this message
+        {{#if message.collapsed}}Un-collapse{{else}}Collapse{{/if}}
     </a>
   </li>
 
