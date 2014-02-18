@@ -13,13 +13,6 @@
       <i class="icon-vector-share-alt"></i> Reply
     </a>
   </li>
-  {{#unless message.is_private}}
-  <li>
-    <a href="" class="respond_personal_button">
-      <i class="icon-vector-user"></i> Reply to <b>{{message.sender_full_name}}</b> only
-    </a>
-  </li>
-  {{/unless}}
 
   {{#if message.is_stream}}
     <li>
