@@ -72,10 +72,7 @@ exports.toggle_actions_popover = function (element, id) {
             can_edit_message: can_edit,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
-            pm_with_uri: narrow.pm_with_uri(message.sender_email),
-            stream_subject_uri: narrow.by_stream_subject_uri(message.stream, message.subject),
             near_time_uri: narrow.by_near_uri(message.id),
-            conversation_time_uri: narrow.by_conversation_and_time_uri(message),
             narrowed: narrow.active()
         };
 
@@ -456,27 +453,6 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.respond_personal_button', function (e) {
         respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
         popovers.hide_all();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $('body').on('click', '.popover_narrow_by_subject_button', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        popovers.hide_actions_popover();
-        narrow.by_subject(msgid, {trigger: 'popover'});
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $('body').on('click', '.popover_narrow_by_recipient_button', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        popovers.hide_actions_popover();
-        narrow.by_recipient(msgid, {trigger: 'popover'});
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $('body').on('click', '.popover_narrow_by_time_travel_button', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        popovers.hide_actions_popover();
-        narrow.by_time_travel(msgid, {trigger: 'popover'});
         e.stopPropagation();
         e.preventDefault();
     });

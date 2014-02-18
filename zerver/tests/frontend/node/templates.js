@@ -40,7 +40,6 @@ function render(template_name, args) {
 
 (function actions_popover_content() {
     var args = {
-        "stream_subject_uri": "/stream/subject/uri",
         "message": {
             is_stream: true,
             id: "99",
@@ -49,17 +48,15 @@ function render(template_name, args) {
             sender_full_name: "King Lear"
         },
         "can_edit_message": true,
-        "conversation_time_uri": "/conversation/time/uri",
         "can_mute_topic": true,
-        "narrowed": true,
-        "near_time_uri": "/near/time/uri"
+        "narrowed": true
     };
 
     var html = '<div style="height: 250px">';
     html += render('actions_popover_content', args);
     html += "</div>";
-    var link = $(html).find("a.popover_narrow_by_subject_button");
-    assert.equal(link.attr('href'), '/stream/subject/uri');
+    var link = $(html).find("a.respond_button");
+    assert.equal(link.text().trim(), 'Reply');
     global.write_test_output("actions_popover_content.handlebars", html);
 }());
 
