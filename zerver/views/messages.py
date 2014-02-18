@@ -466,6 +466,10 @@ def get_old_messages_backend(request, user_profile,
         after_query = query.where(inner_msg_id_col >= anchor) \
                            .order_by(inner_msg_id_col.asc()).limit(num_after)
 
+    if num_before == 0 and num_after == 0:
+        # This can happen when a narrow is specified.
+        after_query = query.where(inner_msg_id_col == anchor)
+
     if before_query is not None:
         if after_query is not None:
             query = union_all(before_query.self_group(), after_query.self_group())

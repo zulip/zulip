@@ -802,6 +802,28 @@ class GetOldMessagesTest(AuthedTestCase):
         for message in result["messages"]:
             self.assertEqual(message["sender_email"], "othello@zulip.com")
 
+    def test_get_old_messages_with_only_searching_anchor(self):
+        """
+        Test that specifying an anchor but 0 for num_before and num_after
+        returns at most 1 message.
+        """
+        self.login("cordelia@zulip.com")
+        anchor = self.send_message("cordelia@zulip.com", "Scotland", Recipient.STREAM)
+
+        narrow = [dict(operator='sender', operand='cordelia@zulip.com')]
+        result = self.post_with_params(dict(narrow=ujson.dumps(narrow),
+                                            anchor=anchor, num_before=0,
+                                            num_after=0))
+        self.check_well_formed_messages_response(result)
+        self.assertEqual(len(result['messages']), 1)
+
+        narrow = [dict(operator='is', operand='mentioned')]
+        result = self.post_with_params(dict(narrow=ujson.dumps(narrow),
+                                            anchor=anchor, num_before=0,
+                                            num_after=0))
+        self.check_well_formed_messages_response(result)
+        self.assertEqual(len(result['messages']), 0)
+
     def test_missing_params(self):
         """
         anchor, num_before, and num_after are all required
