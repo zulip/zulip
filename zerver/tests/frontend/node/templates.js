@@ -236,9 +236,8 @@ function render(template_name, args) {
     assert.equal(input.text().trim(), "devel");
 }());
 
-(function message() {
-    var messages = [
-        {
+(function single_message() {
+    var message =  {
             include_recipient: true,
             display_recipient: 'devel',
             subject: 'testing',
@@ -246,18 +245,9 @@ function render(template_name, args) {
             content: 'This is message one.',
             last_edit_timestr: '11:00',
             starred: true
-        },
-        {
-            content: 'This is message two.',
-            is_stream: true,
-            unread: true
-        }
-    ];
-    var args = {
-        messages: messages,
-        include_layout_row: true
     };
-    var html = render('message', args);
+
+    var html = render('single_message', message);
     html = '<div class="message_table focused_table" id="zfilt">' + html + '</div>';
 
     global.write_test_output("message.handlebars", html);
@@ -269,6 +259,53 @@ function render(template_name, args) {
 
     var starred_title = first_message.find(".star span").attr("title");
     assert.equal(starred_title, "Unstar this message");
+}());
+
+(function message_group() {
+    var messages = [
+        {
+            include_recipient: true,
+            display_recipient: 'devel',
+            subject: 'testing',
+            is_stream: true,
+            content: 'This is message one.',
+            last_edit_timestr: '11:00',
+            starred: true,
+            id: 1
+        },
+        {
+            content: 'This is message two.',
+            is_stream: true,
+            unread: true,
+            id: 2
+        }
+    ];
+
+    var groups = [
+        {
+            display_recipient: "support",
+            is_stream: true,
+            message_ids: [1, 2],
+            messages: messages,
+            show_date: '"<span id="timerender82">Jan&nbsp;07</span>"',
+            subject: "subj"
+        }
+    ];
+
+    global.use_template('single_message'); // partial
+    global.use_template('bookend'); // partial
+
+    var html = render('message_group', {message_groups: groups});
+
+    assert.equal($(html).next('.recipient_row').data('messages'), "1,2");
+
+    var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
+    assert.equal(first_message_text, "This is message one.");
+
+    var last_message_text = $(html).next('.recipient_row').find('div.messagebox:last .message_content').text().trim();
+    assert.equal(last_message_text, "This is message two.");
+
+    global.write_test_output("message_group.handlebars", html);
 }());
 
 (function message_edit_form() {
