@@ -159,6 +159,8 @@ function cleanup_before_reload() {
 }
 
 function do_reload_app(send_after_reload, save_state, message) {
+    if (reload_in_progress) { return; }
+
     // TODO: we should completely disable the UI here
     if (save_state) {
         preserve_state(send_after_reload);
@@ -240,6 +242,16 @@ exports.initiate = function (options) {
         $(document).on('compose_started.zulip', compose_started_handler);
     }
 };
+
+window.addEventListener('beforeunload', function () {
+    // When navigating away from the page do not try to reload.
+    // The polling get_events call will fail after we delete the event queue.
+    // When that happens we reload the page to correct the problem. If this
+    // happens before the navigation is complete the user is kept captive at
+    // zulip.
+    reload_in_progress = true;
+});
+
 
 return exports;
 }());
