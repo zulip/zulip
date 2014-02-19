@@ -344,12 +344,13 @@ function get_predicate(operators) {
     var string;
     var operators;
 
+    global.feature_flags.negated_search = true;
     operators = [
         {operator: 'stream', operand: 'Foo'},
-        {operator: 'topic', operand: 'Bar'},
+        {operator: 'topic', operand: 'Bar', negated: true},
         {operator: 'search', operand: 'yo'}
     ];
-    string = 'stream:Foo topic:Bar yo';
+    string = 'stream:Foo -topic:Bar yo';
     assert.deepEqual(Filter.unparse(operators), string);
 
     operators = [
