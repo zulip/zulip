@@ -65,6 +65,21 @@ function add_bot_row(info) {
     $('#bots_list').show();
 }
 
+function add_bot_default_streams_to_form(formData, default_sending_stream, default_events_register_stream) {
+    if (!feature_flags.new_bot_ui) { return; }
+
+    if (default_sending_stream !== '') {
+        formData.append('default_sending_stream', default_sending_stream);
+    }
+    if (default_events_register_stream === '__all_public__') {
+        formData.append('default_all_public_streams', JSON.stringify(true));
+        formData.append('default_events_register_stream', null);
+    } else if (default_events_register_stream !== '') {
+        formData.append('default_all_public_streams', JSON.stringify(false));
+        formData.append('default_events_register_stream', default_events_register_stream);
+    }
+}
+
 function is_local_part(value, element) {
     // Adapted from Django's EmailValidator
     return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
@@ -451,18 +466,7 @@ exports.setup_page = function () {
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('full_name', full_name);
             formData.append('short_name', short_name);
-
-            if (feature_flags.new_bot_ui) {
-                formData.append('default_sending_stream', default_sending_stream);
-                if (default_events_register_stream === '__all_public__') {
-                    formData.append('default_all_public_streams', JSON.stringify(true));
-                    formData.append('default_events_register_stream', null);
-                } else {
-                    formData.append('default_all_public_streams', JSON.stringify(false));
-                    formData.append('default_events_register_stream', default_events_register_stream);
-                }
-            }
-
+            add_bot_default_streams_to_form(formData, default_sending_stream, default_events_register_stream);
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
@@ -573,11 +577,15 @@ exports.setup_page = function () {
                 var email = form.data('email');
                 var full_name = form.find('.edit_bot_name').val();
                 var file_input = li.find('.edit_bot_avatar_file_input');
+                var default_sending_stream = form.find('.edit_bot_default_sending_stream').val();
+                var default_events_register_stream = form.find('.edit_bot_default_events_register_stream').val();
                 var spinner = form.find('.edit_bot_spinner');
                 var edit_button = form.find('.edit_bot_button');
                 var formData = new FormData();
-                formData.append('full_name', full_name);
+
                 formData.append('csrfmiddlewaretoken', csrf_token);
+                formData.append('full_name', full_name);
+                add_bot_default_streams_to_form(formData, default_sending_stream, default_events_register_stream);
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
                 });
