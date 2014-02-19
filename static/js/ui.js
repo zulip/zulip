@@ -402,6 +402,7 @@ function get_new_heights() {
         - parseInt(user_presences.css("marginTop"),10)
         - parseInt(user_presences.css("marginBottom"), 10)
         - $("#userlist-header").outerHeight(true)
+        - $(".user-list-filter").outerHeight(true)
         - invite_user_link_height
         - parseInt(group_pms.css("marginTop"),10)
         - parseInt(group_pms.css("marginBottom"), 10)
@@ -448,6 +449,7 @@ function left_userlist_get_new_heights() {
                                 - $("#global_filters").outerHeight(true)
                                 - $("#streams_header").outerHeight(true)
                                 - $("#userlist-header").outerHeight(true)
+                                - $(".user-list-filter").outerHeight(true)
                                 - $("#group-pm-header").outerHeight(true)
                                 - parseInt(stream_filters.css("marginBottom"),10)
                                 - parseInt(user_presences.css("marginTop"), 10)
