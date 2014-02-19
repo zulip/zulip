@@ -399,6 +399,42 @@ function get_predicate(operators) {
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
+        {operator: 'id', operand: 99}
+    ];
+    string = 'Narrow to message ID 99';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'in', operand: 'home'}
+    ];
+    string = 'Narrow to messages in home';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'is', operand: 'mentioned'}
+    ];
+    string = 'Narrow to mentioned messages';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'is', operand: 'alerted'}
+    ];
+    string = 'Narrow to alerted messages';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'is', operand: 'something_we_do_not_support'}
+    ];
+    string = 'Narrow to (unknown operator)';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'bogus', operand: 'foo'}
+    ];
+    string = 'Narrow to (unknown operator)';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
         {operator: 'stream', operand: 'devel'},
         {operator: 'topic', operand: 'JS', negated: true}
     ];
