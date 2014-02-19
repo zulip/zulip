@@ -260,9 +260,10 @@ function get_predicate(operators) {
 }());
 
 (function test_predicate_edge_cases() {
+    var predicate;
     // The code supports undefined as an operator to Filter, which results
     // in a predicate that accepts any message.
-    var predicate = get_predicate();
+    predicate = new Filter().predicate();
     assert(predicate({}));
 
     // Upstream code should prevent Filter.predicate from being called with
