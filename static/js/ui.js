@@ -329,6 +329,7 @@ function size_blocks(blocks, usable_height) {
 
     _.each(blocks, function (block) {
         var ratio = block.real_height / sum_height;
+        ratio = confine_to_range(0.05, ratio, 0.85);
         block.max_height = confine_to_range(40, usable_height * ratio, 1.2 * block.real_height);
     });
 }
