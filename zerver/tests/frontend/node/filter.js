@@ -106,6 +106,13 @@ function assert_same_operators(result, terms) {
     ];
     filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), []);
+
+    global.page_params.narrow_stream = 'default';
+    operators = [
+        {operator: 'stream', operand: 'default'}
+    ];
+    filter = new Filter(operators);
+    assert_same_operators(filter.public_operators(), []);
 }());
 
 (function test_canonicalizations() {
