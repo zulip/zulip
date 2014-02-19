@@ -193,6 +193,8 @@ function get_predicate(operators) {
     predicate = get_predicate([['in', 'home']]);
     assert(!predicate({stream: 'unsub'}));
     assert(predicate({type: 'private'}));
+    global.page_params.narrow_stream = 'kiosk';
+    assert(predicate({stream: 'kiosk'}));
 
     predicate = get_predicate([['near', 5]]);
     assert(predicate({}));
