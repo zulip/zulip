@@ -65,12 +65,6 @@ exports.operators_to_hash = function (operators) {
             var operator = elem.operator;
             var operand = elem.operand;
 
-            if (operator === undefined) {
-                blueslip.error("Legacy tuple syntax passed into operators_to_hash.");
-                operator = elem[0];
-                operand = elem[1];
-            }
-
             var sign = elem.negated ? '-' : '';
             hash += '/' + sign + hashchange.encodeHashComponent(operator)
                   + '/' + hashchange.encodeHashComponent(operand);
