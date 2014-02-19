@@ -141,12 +141,6 @@ Filter.canonicalize_term = function (opts) {
         negated = false;
     }
 
-    if (operator === undefined) {
-        blueslip.error("Old-style tuple operators are still in use for canonicalize_term");
-        operator = opts[0];
-        operand = opts[1];
-    }
-
     operator = Filter.canonicalize_operator(operator);
 
     switch (operator) {
