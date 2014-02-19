@@ -60,6 +60,44 @@ casper.waitUntilVisible('#settings-status', function () {
     casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
 });
 
+
+casper.then(function create_bot() {
+    casper.test.info('Filling out the create bot form');
+
+    casper.fill('#create_bot_form',{
+        bot_name: 'Bot 1',
+        bot_short_name: '1',
+        bot_default_sending_stream: 'Denmark',
+        bot_default_events_register_stream: 'Rome'
+    });
+
+    casper.test.info('Submiting the create bot form');
+    casper.click('#create_bot_button');
+});
+
+casper.waitUntilVisible('.open_edit_bot_form', function open_edit_bot_form() {
+    casper.test.info('Opening edit bot form');
+    casper.click('.open_edit_bot_form');
+});
+
+casper.waitUntilVisible('.edit_bot_form', function test_edit_bot_forn_values() {
+    var form_sel = 'form[data-email="1-bot@zulip.com"]';
+    casper.test.info('Testing edit bot form values');
+
+    casper.test.assertEqual(
+        common.get_form_field_value(form_sel + ' [name=bot_name]'),
+        'Bot 1'
+    );
+    casper.test.assertEqual(
+        common.get_form_field_value(form_sel + ' [name=bot_default_sending_stream]'),
+        'Denmark'
+    );
+    casper.test.assertEqual(
+        common.get_form_field_value(form_sel + ' [name=bot_default_events_register_stream]'),
+        'Rome'
+    );
+});
+
 // TODO: test the "Declare Zulip Bankruptcy option"
 
 common.then_log_out();

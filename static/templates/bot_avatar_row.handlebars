@@ -27,7 +27,7 @@
             <i class="icon-vector-trash"></i>
            </button>
         </div>
-        <div id="bot_delete_error" class="alert alert-error hide"></div>
+        <div id="bot_delete_error{{id_suffix}}" class="alert alert-error hide"></div>
     </div>
     <div class='edit_bot'>
         <form class="edit_bot_form form-horizontal" data-email="{{email}}">
@@ -35,21 +35,29 @@
             <div class="edit_bot_email">{{email}}</div>
             <div class="edit-bot-form-box">
               <div class="control-group">
-               <label for="edit_bot_name" class="control-label">Full name</label>
+               <label for="edit_bot_name{{id_suffix}}" class="control-label">Full name</label>
                <div class="controls">
-                  <input type="text" name="bot_name" class="edit_bot_name required" maxlength=50 />
-                  <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
+                  <input type="text" name="bot_name" id="edit_bot_name{{id_suffix}}" class="edit_bot_name required" maxlength=50 />
+                  <div><label for="edit_bot_name{{id_suffix}}" generated="true" class="text-error"></label></div>
                </div>
               </div>
+              <div class="control-group new-bot-ui">
+                <label for="edit_bot_default_sending_stream{{id_suffix}}" class="control-label">Send to stream</label>
+                <select name="bot_default_sending_stream" class="edit_bot_default_sending_stream" id="edit_bot_default_sending_stream{{id_suffix}}"></select>
+              </div>
+              <div class="control-group new-bot-ui">
+                <label for="edit_bot_default_events_register_stream{{id_suffix}}" class="control-label">Listen on</label>
+                <select name="bot_default_events_register_stream" class="edit_bot_default_events_register_stream" id="edit_bot_default_events_register_stream{{id_suffix}}"></select>
+              </div>
               <div class="control-group">
-               <label for="bot_avatar_file_input" class="control-label">Avatar</label>
-               <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="Upload avatar" />
+               <label for="bot_avatar_file_input{{id_suffix}}" class="control-label">Avatar</label>
+               <input type="file" id="bot_avatar_file_input{{id_suffix}}" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="Upload avatar" />
                 <div class="controls">
                   <div class="edit_bot_avatar_file"></div>
                   <button type="button" class="btn edit_bot_avatar_upload_button">Choose avatar</button>
                   <button type="button" class="btn edit_bot_avatar_clear_button">Clear avatar</button>
                 </div>
-               <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+               <div><label for="edit_bot_avatar_file{{id_suffix}}" generated="true" class="edit_bot_avatar_error text-error"></label></div>
               </div>
               <div class="control-group">
                <div class="controls">

@@ -1,18 +1,66 @@
 var settings = (function () {
 
 var exports = {};
+var _streams_defered = $.Deferred();
+var streams = _streams_defered.promise(); // promise to the full stream list
 
-var streams = [];
+function build_stream_list($select, extra_options) {
+    if (extra_options === undefined) {
+        extra_options = [];
+    }
 
-function add_bot_row(name, email, avatar_url, api_key) {
-    var info = {
-        name: name,
-        email: email,
-        avatar_url: avatar_url,
-        api_key: api_key
-    };
+    streams.done(function (stream_list) {
+        var option_list = extra_options;
+        var stream_names = _.pluck(stream_list, 'name');
+        option_list.push.apply(option_list, _.zip(stream_names, stream_names));
 
+        $select.empty();
+        _.each(option_list, function (option) {
+            $select.append($('<option>')
+                .attr('value', option[0])
+                .text(option[1])
+            );
+        });
+    });
+}
+
+function add_bot_row(info) {
+    info.id_suffix = _.uniqueId('_bot_');
     var row = $(templates.render('bot_avatar_row', info));
+    var default_sending_stream_select = row.find('select[name=bot_default_sending_stream]');
+    var default_events_register_stream_select = row.find('select[name=bot_default_events_register_stream]');
+
+    if (!feature_flags.new_bot_ui) {
+        row.find('.new-bot-ui').hide();
+    }
+
+    var to_extra_options = [];
+    if (info.default_sending_stream === null) {
+        to_extra_options.push(['', 'No default selected']);
+    }
+    build_stream_list(
+        default_sending_stream_select,
+        to_extra_options
+    );
+    default_sending_stream_select.val(
+        info.default_sending_stream,
+        to_extra_options
+    );
+
+    var events_extra_options = [['__all_public__', 'All public streams']];
+    if (info.default_events_register_stream === null && !info.default_all_public_streams) {
+        events_extra_options.unshift(['', 'No default selected']);
+    }
+    build_stream_list(
+        default_events_register_stream_select,
+        events_extra_options
+    );
+    if (info.default_all_public_streams) {
+        default_events_register_stream_select.val('__all_public__');
+    } else {
+        default_events_register_stream_select.val(info.default_events_register_stream);
+    }
+
     $('#bots_list').append(row);
     $('#bots_list').show();
 }
@@ -22,28 +70,30 @@ function is_local_part(value, element) {
     return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
 }
 
-function build_stream_list($select, extra_options) {
-    if (extra_options === undefined) {
-        extra_options = [];
-    }
-
-    var option_list = extra_options;
-    var stream_names = _.pluck(streams, 'name');
-    option_list.push.apply(option_list, _.zip(stream_names, stream_names));
-
-    $select.empty();
-    _.each(option_list, function (option) {
-        $select.append($('<option>')
-            .attr('value', option[0])
-            .text(option[1])
-        );
-    });
-}
-
 // Choose avatar stamp fairly randomly, to help get old avatars out of cache.
 exports.avatar_stamp = Math.floor(Math.random()*100);
 
 exports.setup_page = function () {
+    // To build the edit bot streams dropdown we need both the bot and stream
+    // API results. To prevent a race streams will be initialized to a promise
+    // at page load. This promise will be resolved with a list of streams after
+    // the first settings page load. build_stream_list then adds a callback to
+    // the promise, which in most cases will already be resolved.
+    if (!_streams_defered.isResolved()) {
+        channel.get({
+            url: '/json/streams',
+            success: function (data) {
+                _streams_defered.resolve(data.streams);
+
+                build_stream_list($('#create_bot_default_sending_stream'));
+                build_stream_list(
+                    $('#create_bot_default_events_register_stream'),
+                    [['__all_public__', 'All public streams']]
+                );
+            }
+        });
+    }
+
     var settings_tab = templates.render('settings_tab', {page_params: page_params});
     $("#settings").html(settings_tab);
     $("#settings-status").hide();
@@ -64,18 +114,6 @@ exports.setup_page = function () {
     }
 
     clear_password_change();
-
-    channel.get({
-        url: '/json/streams',
-        success: function (data) {
-            streams = data.streams;
-            build_stream_list($('#create_bot_default_sending_stream'));
-            build_stream_list(
-                $('#create_bot_default_events_register_stream'),
-                [['__all_public__', 'All public streams']]
-            );
-        }
-    });
 
     $('#api_key_button').click(function (e) {
         if (page_params.password_auth_enabled !== false) {
@@ -373,7 +411,15 @@ exports.setup_page = function () {
             $('#bot_table_error').hide();
 
             _.each(data.bots, function (elem) {
-                add_bot_row(elem.full_name, elem.username, elem.avatar_url, elem.api_key);
+                add_bot_row({
+                    name: elem.full_name,
+                    email: elem.username,
+                    avatar_url: elem.avatar_url,
+                    api_key: elem.api_key,
+                    default_sending_stream: elem.default_sending_stream,
+                    default_events_register_stream: elem.default_events_register_stream,
+                    default_all_public_streams: elem.default_all_public_streams
+                });
             });
         },
         error: function (xhr, error_type, xhn) {
@@ -434,12 +480,15 @@ exports.setup_page = function () {
                     $('#create_bot_button').show();
                     create_avatar_widget.clear();
 
-                    add_bot_row(
-                            full_name,
-                            short_name + "-bot@" + page_params.domain,
-                            data.avatar_url,
-                            data.api_key
-                    );
+                    add_bot_row({
+                        name: full_name,
+                        email: short_name + "-bot@" + page_params.domain,
+                        avatar_url: data.avatar_url,
+                        api_key: data.api_key,
+                        default_sending_stream: data.default_sending_stream,
+                        default_events_register_stream: data.default_events_register_stream,
+                        default_all_public_streams: data.default_all_public_streams
+                    });
                 },
                 error: function (xhr, error_type, exn) {
                     $('#bot_table_error').text(JSON.parse(xhr.responseText).msg).show();
