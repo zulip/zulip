@@ -14,7 +14,7 @@ var Filter = require('js/filter.js');
 var _ = global._;
 
 function assert_same_operators(result, terms) {
-    terms = _.map(result, function (term) {
+    terms = _.map(terms, function (term) {
         // If negated flag is undefined, we explicitly
         // set it to false.
         var negated = term.negated;
