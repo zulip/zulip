@@ -88,6 +88,13 @@ exports.reify = function reify(person) {
     }
 
     var old_person = people_dict.get(person.email);
+
+    // Don't overwrite an already-reified person. If we have
+    // a full name, we already have the full person object loaded
+    if (old_person.full_name !== undefined) {
+        return;
+    }
+
     var old_idx = page_params.people_list.indexOf(old_person);
 
     var new_person = _.extend({}, old_person, person);
