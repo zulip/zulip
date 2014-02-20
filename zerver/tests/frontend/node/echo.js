@@ -2,7 +2,9 @@
 var path = require('path');
 var fs = require('fs');
 
-set_global('page_params', {realm_emoji: {}});
+set_global('page_params', {realm_emoji: {
+  burrito: 'static/third/gemoji/images/emoji/burrito.png'
+}});
 
 add_dependencies({
     marked: 'third/marked/lib/marked.js',
@@ -116,6 +118,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fix
      expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
     {input: 'This is a @**Cordelia Lear** mention',
      expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
+    {input: 'mmm...:burrito:s',
+     expected: '<p>mmm...<img alt=\":burrito:\" class=\"emoji\" src=\"static/third/gemoji/images/emoji/burrito.png\" title=\":burrito:\">s</p>'},
     {input: 'This is an :poop: message',
      expected: '<p>This is an <img alt=":poop:" class="emoji" src="static/third/gemoji/images/emoji/poop.png" title=":poop:"> message</p>'},
     {input: 'This is a realm filter #1234 with text after it',
