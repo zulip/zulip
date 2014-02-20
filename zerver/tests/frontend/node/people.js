@@ -1,3 +1,7 @@
+add_dependencies({
+    util: 'js/util.js'
+});
+
 var people = require("js/people.js");
 
 set_global('page_params', {
@@ -39,4 +43,35 @@ set_global('activity', {
     people.remove(person);
     person = people.get_by_email(email);
     assert(!person);
+}());
+
+(function test_get_rest_of_realm() {
+    var myself = {
+        email: 'myself@example.com',
+        full_name: 'Yours Truly'
+    };
+    global.page_params.email = myself.email;
+    var alice1 = {
+        email: 'alice1@example.com',
+        full_name: 'Alice'
+    };
+    var alice2 = {
+        email: 'alice2@example.com',
+        full_name: 'Alice'
+    };
+    var bob = {
+        email: 'bob@example.com',
+        full_name: 'Bob van Roberts'
+    };
+    people.add_in_realm(myself);
+    people.add_in_realm(alice1);
+    people.add_in_realm(bob);
+    people.add_in_realm(alice2);
+    var others = people.get_rest_of_realm();
+    var expected = [
+        { email: 'alice1@example.com', full_name: 'Alice' },
+        { email: 'alice2@example.com', full_name: 'Alice' },
+        { email: 'bob@example.com', full_name: 'Bob van Roberts' }
+    ];
+    assert.deepEqual(others, expected);
 }());
