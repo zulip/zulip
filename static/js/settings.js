@@ -25,7 +25,7 @@ exports.avatar_stamp = Math.floor(Math.random()*100);
 
 $(function () {
 
-    if (!feature_flags.show_digest_email_setting) {
+    if (feature_flags.dont_show_digest_email_setting) {
         $("#digest_container").hide();
     }
 

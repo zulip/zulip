@@ -46,7 +46,9 @@ exports.full_width = false; //page_params.staging;
 exports.local_echo = page_params.staging || is_customer4 || _.contains(['customer15.invalid'], page_params.domain);
 exports.cleanup_before_reload = page_params.staging;
 
-exports.show_digest_email_setting = page_params.staging;
+// This list must match the list of domains in enqueue_digest_emails.
+exports.dont_show_digest_email_setting = _.contains(["mit.edu", "customer29.invalid", "customer20.invalid"],
+                                                    page_params.domain);
 exports.negated_search = page_params.staging;
 
 exports.fade_at_stream_granularity = page_params.staging;
