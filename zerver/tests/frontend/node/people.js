@@ -10,6 +10,9 @@ set_global('page_params', {
 set_global('activity', {
     set_user_statuses: function () {}
 });
+set_global('admin', {
+    show_or_hide_menu_item: function () {}
+});
 
 (function test_basics() {
     var full_name = 'Isaac Newton';
@@ -39,6 +42,14 @@ set_global('activity', {
     person = people.get_by_email(email);
     assert.equal(person.full_name, 'Sir Isaac');
     assert.equal(person.is_admin, true);
+
+    global.page_params.email = email;
+
+    people.update({email: email, is_admin: false});
+    assert(!global.page_params.is_admin);
+
+    people.update({email: email, full_name: 'The Godfather of Calculus'});
+    assert.equal(global.page_params.fullname, 'The Godfather of Calculus');
 
     people.remove(person);
     person = people.get_by_email(email);
