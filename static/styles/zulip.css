@@ -26,19 +26,6 @@ body,
    transition: background-color 200ms linear;
 }
 
-body.narrowed_view {
-    background-color: #effcff;
-   -webkit-transition: background-color 200ms linear;
-   -moz-transition: background-color 200ms linear;
-   -o-transition: background-color 200ms linear;
-   -ms-transition: background-color 200ms linear;
-   transition: background-color 200ms linear;
-}
-
-.narrowed_view .column-middle-inner {
-    background-color: #ffffff;
-}
-
 input,
 button,
 select,
@@ -125,7 +112,7 @@ a {
 }
 
 .app-main .column-left .left-sidebar {
-    width: 250px;
+    width: 242px;
     padding-left: 0px;
 }
 
@@ -134,8 +121,6 @@ a {
 }
 
 .app-main .column-middle {
-    border-left: 1px solid #dadada;
-    border-right: 1px solid #dadada;
     min-height: 100%;
     background-color: #ffffff;
 }
@@ -653,7 +638,6 @@ ul.filters li.out_of_home_view {
      in Firefox only, for some reason; otherwise it gets
      a scrollbar */
     overflow: visible;
-    padding-left: 9px;
 }
 
 
@@ -778,9 +762,10 @@ td.pointer {
     line-height:    14px;
 }
 
-.message_list .recipient_row {
-    margin-left: -9px;
-    margin-right: -9px;
+ .message_list .recipient_row {
+    background: #f1f1f1;
+    border: 1px solid #e2e2e2;
+    margin-bottom: 10px;
 }
 
 .stream_label {
@@ -1042,6 +1027,11 @@ just a temporary hack.
     border-right: none;
 }
 
+.floating_recipient .message_header_private_message {
+    border: 1px solid #e2e2e2;
+    border-bottom: 0px;
+}
+
 .message_header_private_message .message_label_clickable {
     background-color: #444444;
     display: inline-block;
@@ -1070,16 +1060,6 @@ just a temporary hack.
 .messagebox {
     background-color: #ffffff;
     position: relative;
-}
-
-.private-message .messagebox {
-    margin-left: -9px;
-    margin-right: -9px;
-}
-
-.private-message .messagebox-border {
-    margin-left: 9px;
-    margin-right: 9px;
 }
 
 .private-message .messagebox,
@@ -1266,10 +1246,6 @@ a.message_label_clickable:hover {
     position: relative;
 }
 
-.include-sender .messagebox-border {
-    padding-top: 6px;
-}
-
 .include-sender .message_top_line {
     margin-top: 6px;
 }
@@ -1432,7 +1408,11 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 1px 55px 1px 16px;
+    padding: 1px 55px 1px 7px;
+}
+
+.last_message .messagebox-content {
+    padding-bottom: 1px;
 }
 
 .messagebox p {
@@ -2936,9 +2916,6 @@ li.expanded_subject {
 .date_row {
     text-align: center;
     padding-bottom: 10px;
-    margin-left: -9px;
-    margin-right: -9px;
-
 }
 
 .date_row .date-direction {
@@ -3595,7 +3572,6 @@ div.edit_bot {
 
 #home {
     margin-top: 41px;
-    padding-right: 9px;
 }
 
 #home .alert-bar-container {
@@ -3820,7 +3796,7 @@ div.edit_bot {
     }
 
     .compose-content {
-        margin-right: 0px;
+        margin-right: 7px;
     }
 
     .nav .dropdown-menu {
@@ -3835,7 +3811,7 @@ div.edit_bot {
     }
 
     .column-middle {
-        margin-right: 0px;
+        margin-right: 7px;
     }
 
 }
@@ -3881,8 +3857,12 @@ div.edit_bot {
 
     .column-middle,
     .app-main .column-middle {
-        margin-left:  0px;
-        margin-right: 0px;
+        margin-left:  7px;
+        margin-right: 7px;
+    }
+
+    .header-main .column-middle {
+        margin-left: 0px;
     }
 
     .column-middle-inner {
@@ -3904,8 +3884,8 @@ div.edit_bot {
     }
 
     .compose-content {
-        margin-right:15px;
-        margin-left: 10px;
+        margin-right:7px;
+        margin-left: 7px;
     }
 
     #searchbox {

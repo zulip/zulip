@@ -591,11 +591,6 @@ function replace_floating_recipient_bar(desired_label) {
             new_label = $("#current_label_stream");
             other_label = $("#current_label_private_message");
             header = desired_label.children(".message_header_stream");
-
-            $("#current_label_stream .message_header_colorblock").css(
-                "background-color",
-                desired_label.children(".message_header_colorblock")
-                             .css("background-color"));
         } else {
             new_label = $("#current_label_private_message");
             other_label = $("#current_label_stream");
@@ -1851,7 +1846,9 @@ $(function () {
                                "margin-right": (250 + sbWidth) + "px"});
     $("#compose-container").css("max-width", (1400 + sbWidth) + "px");
 
-    $("head").append("<style> @media (max-width: 975px) { .compose-content, .header-main .column-middle { margin-right: " + sbWidth + "px !important; } } </style>");
+    $("head").append("<style> @media (max-width: 975px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
+                     "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +
+                     "</style>");
    }
 
 });
