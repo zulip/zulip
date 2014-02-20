@@ -2020,6 +2020,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
     if want('realm'):
         state['realm_name'] = user_profile.realm.name
 
+    if want('realm_domain'):
+        state['realm_domain'] = user_profile.realm.domain
+
     if want('realm_emoji'):
         state['realm_emoji'] = user_profile.realm.get_emoji()
 
