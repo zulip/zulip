@@ -212,7 +212,8 @@ set_global('narrow', {});
 }());
 
 (function test_topic_suggestions() {
-    var query = 'te';
+    var suggestions;
+    var expected;
 
     global.stream_data.subscribed_streams = function () {
         return ['office'];
@@ -223,21 +224,22 @@ set_global('narrow', {});
     };
 
     global.recent_subjects = new global.Dict.from({
-        office: [
+        'devel': [
+            {subject: 'REXX'}
+        ],
+        'office': [
             {subject: 'team'},
             {subject: 'ignore'},
             {subject: 'test'}
         ]
     }, {fold_case: true});
 
-    var suggestions = search.get_suggestions(query);
-
-    var expected = [
+    suggestions = search.get_suggestions('te');
+    expected = [
         "te",
         "stream:office topic:team",
         "stream:office topic:test"
     ];
-
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
@@ -246,6 +248,20 @@ set_global('narrow', {});
     assert.equal(describe('te'), "Search for te");
     assert.equal(describe('stream:office topic:team'), "Narrow to office > team");
 
+    suggestions = search.get_suggestions('topic:staplers stream:office');
+    expected = [
+        'topic:staplers stream:office',
+        'topic:staplers'
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = search.get_suggestions('stream:devel topic:');
+    expected = [
+        'stream:devel topic:',
+        'stream:devel topic:REXX',
+        'stream:devel'
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 }());
 
 (function test_whitespace_glitch() {
