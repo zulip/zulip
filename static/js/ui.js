@@ -1281,8 +1281,17 @@ $(function () {
     function get_row_id_for_narrowing(narrow_link_elem) {
         var group = rows.get_closest_group(narrow_link_elem);
         var msg_row = rows.first_message_in_group(group);
+        var msg_id;
 
-        var nearest = current_msg_list.get(rows.id(msg_row));
+        if (msg_row.length === 0) {
+            // If we're narrowing from the FRB, take the msg id
+            // directly from it
+            msg_id = rows.id(group);
+        } else {
+            msg_id = rows.id(msg_row);
+        }
+
+        var nearest = current_msg_list.get(msg_id);
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
             return selected.id;
