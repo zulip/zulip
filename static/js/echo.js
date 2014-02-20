@@ -193,7 +193,7 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
 
     home_msg_list.view.rerender_message(message);
     if (current_msg_list === narrowed_msg_list) {
-        narrowed_msg_list.view().rerender_message(message);
+        narrowed_msg_list.view.rerender_message(message);
     }
     stream_list.update_streams_sidebar();
 };
@@ -259,7 +259,7 @@ exports.process_from_server = function process_from_server(messages) {
     if (updated) {
         home_msg_list.view.rerender_messages(msgs_to_rerender);
         if (current_msg_list === narrowed_msg_list) {
-            narrowed_msg_list.view().rerender_messages(msgs_to_rerender);
+            narrowed_msg_list.view.rerender_messages(msgs_to_rerender);
         }
     } else {
         _.each(locally_processed_ids, function (id) {

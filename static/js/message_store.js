@@ -273,7 +273,7 @@ exports.update_messages = function update_messages(events) {
 
     home_msg_list.view.rerender_messages(msgs_to_rerender);
     if (current_msg_list === narrowed_msg_list) {
-        narrowed_msg_list.view().rerender_messages(msgs_to_rerender);
+        narrowed_msg_list.view.rerender_messages(msgs_to_rerender);
     }
     unread.update_unread_counts();
     stream_list.update_streams_sidebar();
