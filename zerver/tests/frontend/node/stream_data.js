@@ -22,16 +22,26 @@ var stream_data = require('js/stream_data.js');
         in_home_view: true,
         invite_only: true
     };
+    var test = {
+        subscribed: true,
+        color: 'yellow',
+        name: 'test',
+        stream_id: 3,
+        in_home_view: false,
+        invite_only: false
+    };
     stream_data.add_sub('Denmark', denmark);
     stream_data.add_sub('social', social);
+    assert(stream_data.all_subscribed_streams_are_in_home_view());
+    stream_data.add_sub('test', test);
+    assert(!stream_data.all_subscribed_streams_are_in_home_view());
 
     assert.equal(stream_data.get_sub('denmark'), denmark);
     assert.equal(stream_data.get_sub('Social'), social);
 
-    assert.deepEqual(stream_data.subscribed_streams(), ['social']);
-    assert.deepEqual(stream_data.get_colors(), ['red']);
-
-    assert(stream_data.all_subscribed_streams_are_in_home_view());
+    assert.deepEqual(stream_data.home_view_stream_names(), ['social']);
+    assert.deepEqual(stream_data.subscribed_streams(), ['social', 'test']);
+    assert.deepEqual(stream_data.get_colors(), ['red', 'yellow']);
 
     assert(stream_data.is_subscribed('social'));
     assert(stream_data.is_subscribed('Social'));
