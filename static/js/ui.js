@@ -599,7 +599,7 @@ function replace_floating_recipient_bar(desired_label) {
         new_label.find(".message_header").replaceWith(header.clone());
         other_label.css('display', 'none');
         new_label.css('display', 'block');
-        new_label.attr("zid", rows.id(desired_label));
+        new_label.attr("zid", rows.id(rows.first_message_in_group(desired_label)));
 
         new_label.toggleClass('faded', desired_label.hasClass('faded'));
         old_label = desired_label;
