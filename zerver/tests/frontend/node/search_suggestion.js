@@ -270,6 +270,29 @@ set_global('narrow', {});
     assert.deepEqual(suggestions.strings, expected);
 }());
 
+(function test_stream_completion() {
+    var query = 'stream:of';
+
+    global.stream_data.subscribed_streams = function () {
+        return ['office'];
+    };
+
+    global.narrow.stream = function () {
+        return;
+    };
+
+    global.recent_subjects = new global.Dict({fold_case: true});
+
+    var suggestions = search.get_suggestions(query);
+
+    var expected = [
+        "stream:of",
+        "stream:office"
+    ];
+
+    assert.deepEqual(suggestions.strings, expected);
+}());
+
 (function test_people_suggestions() {
     var query = 'te';
 
