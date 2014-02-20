@@ -310,6 +310,10 @@ set_global('narrow', {});
             full_name: 'Ted Smith'
         },
         {
+            email: 'bob@zulip.com',
+            full_name: 'Bob Terry'
+        },
+        {
             email: 'alice@zulip.com',
             full_name: 'Alice Ignore'
         }
@@ -327,7 +331,9 @@ set_global('narrow', {});
 
     var expected = [
         "te",
+        "pm-with:bob@zulip.com", // bob TErry
         "pm-with:ted@zulip.com",
+        "sender:bob@zulip.com",
         "sender:ted@zulip.com"
     ];
 
