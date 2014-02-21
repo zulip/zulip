@@ -180,34 +180,37 @@ if __name__ == '__main__':
                         format='%(levelname)-8s %(message)s')
 
     parser = optparse.OptionParser()
-    parser.add_option('--openfire',
-                      default=False,
-                      action='store_true',
-                      help="Set if Jabber server is an OpenFire server")
-    parser.add_option('--password',
-                      default=None,
-                      action='store',
-                      help="Your Jabber password")
-    parser.add_option('--jabber-domain',
-                      default=None,
-                      action='store',
-                      help="Your Jabber server")
     parser.add_option('--stream-mirror',
                       default=False,
                       action='store_true')
-    parser.add_option('--no-use-tls',
-                      default=False,
-                      action='store_true')
-    parser.add_option('--conference-domain',
-                      default=None,
-                      action='store',
-                      help="Your Jabber conference domain (E.g. conference.jabber.example.com)")
 
+    jabber_group = optparse.OptionGroup(parser, "Jabber configuration")
+    jabber_group.add_option('--openfire',
+                            default=False,
+                            action='store_true',
+                            help="Set if Jabber server is an OpenFire server")
+    jabber_group.add_option('--jabber-password',
+                            default=None,
+                            action='store',
+                            help="Your Jabber password")
+    jabber_group.add_option('--jabber-domain',
+                            default=None,
+                            action='store',
+                            help="Your Jabber server")
+    jabber_group.add_option('--no-use-tls',
+                            default=False,
+                            action='store_true')
+    jabber_group.add_option('--conference-domain',
+                            default=None,
+                            action='store',
+                            help="Your Jabber conference domain (E.g. conference.jabber.example.com)")
+
+    parser.add_option_group(jabber_group)
     parser.add_option_group(zulip.generate_option_group(parser, "zulip-"))
     (options, args) = parser.parse_args()
 
-    if options.password is None:
-        options.password = getpass.getpass("Jabber password: ")
+    if options.jabber_password is None:
+        options.jabber_password = getpass.getpass("Jabber password: ")
     if options.jabber_domain is None:
         sys.exit("Must specify a Jabber server")
 
@@ -216,7 +219,7 @@ if __name__ == '__main__':
 
     zulip = ZulipToJabberBot(email=options.zulip_email, api_key=options.zulip_api_key);
     rooms = [s['name'] for s in zulip.get_streams()['streams']]
-    xmpp = JabberToZulipBot(jabber_username, options.password, rooms,
+    xmpp = JabberToZulipBot(jabber_username, options.jabber_password, rooms,
                             openfire=options.openfire)
     xmpp.connect(use_tls=not options.no_use_tls)
     xmpp.process(block=False)
