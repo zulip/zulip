@@ -211,7 +211,7 @@ if __name__ == '__main__':
     if len(args) < 2:
         sys.exit("Usage: %s EMAIL ZULIP_APIKEY" % (sys.argv[0],));
     email = args[0]
-    ZULIP_API_KEY = args[1]
+    zulip_api_key = args[1]
     if options.password is None:
         options.password = getpass.getpass("Jabber password: ")
     if options.jabber_domain is None:
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     (username, options.zulip_domain) = email.split("@")
     jabber_username = username + '@' + options.jabber_domain
 
-    zulip = ZulipToJabberBot(email=email, api_key=ZULIP_API_KEY);
+    zulip = ZulipToJabberBot(email=email, api_key=zulip_api_key);
     rooms = [s['name'] for s in zulip.get_streams()['streams']]
     xmpp = JabberToZulipBot(jabber_username, options.password, rooms,
                             openfire=options.openfire)
