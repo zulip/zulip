@@ -95,7 +95,7 @@ class JabberToZulipBot(ClientXMPP):
             to = recipient,
             content = msg["body"],
             )
-        ret = self.zulip.send_message(zulip_message)
+        ret = self.zulip.client.send_message(zulip_message)
         if ret.get("status") != "success":
             logging.error(ret)
 
@@ -117,7 +117,7 @@ class JabberToZulipBot(ClientXMPP):
             to = stream,
             content = msg["body"],
             )
-        ret = self.zulip.send_message(zulip_message)
+        ret = self.zulip.client.send_message(zulip_message)
         if ret.get("status") != "success":
             logging.error(ret)
 
@@ -128,12 +128,10 @@ class JabberToZulipBot(ClientXMPP):
         else:
             return jid
 
-class ZulipToJabberBot(zulip.Client):
-    def __init__(self, email, api_key):
-        zulip.Client.__init__(self, email, api_key, client="jabber_mirror",
-                              site=options.zulip_site, verbose=False)
+class ZulipToJabberBot(object):
+    def __init__(self, zulip_client):
+        self.client = zulip_client
         self.jabber = None
-        self.email = email
 
     def set_jabber_client(self, client):
         self.jabber = client
@@ -143,7 +141,7 @@ class ZulipToJabberBot(zulip.Client):
             if event['type'] != 'message':
                 return
             message = event["message"]
-            if message['sender_email'] != self.email:
+            if message['sender_email'] != self.client.email:
                 return
             if message['type'] == 'stream':
                 self.stream_message(message)
@@ -163,7 +161,7 @@ class ZulipToJabberBot(zulip.Client):
 
     def private_message(self, msg):
         for recipient in msg['display_recipient']:
-            if recipient["email"] == self.email:
+            if recipient["email"] == self.client.email:
                 continue
             recip_email = recipient['email']
             username = recip_email[:recip_email.rfind(options.zulip_domain)]
@@ -217,8 +215,8 @@ if __name__ == '__main__':
     (username, options.zulip_domain) = options.zulip_email.split("@")
     jabber_username = username + '@' + options.jabber_domain
 
-    zulip = ZulipToJabberBot(email=options.zulip_email, api_key=options.zulip_api_key);
-    rooms = [s['name'] for s in zulip.get_streams()['streams']]
+    zulip = ZulipToJabberBot(zulip.init_from_options(options, "jabber_mirror"))
+    rooms = [s['name'] for s in zulip.client.get_streams()['streams']]
     xmpp = JabberToZulipBot(jabber_username, options.jabber_password, rooms,
                             openfire=options.openfire)
     xmpp.connect(use_tls=not options.no_use_tls)
@@ -227,7 +225,7 @@ if __name__ == '__main__':
     zulip.set_jabber_client(xmpp)
     try:
         logging.info("Connecting to Zulip.")
-        zulip.call_on_each_event(zulip.process_message)
+        zulip.client.call_on_each_event(zulip.process_message)
     except BaseException as e:
         logging.exception("Exception in main loop")
         xmpp.abort()
