@@ -115,7 +115,8 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
                                                      payload['ref'], payload['commits'],
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
-                                                     payload['pusher']['name'])
+                                                     payload['pusher']['name'],
+                                                     forced=payload['forced'])
     elif event == 'commit_comment':
         comment = payload['comment']
         subject = "%s: commit %s" % (topic_focus, comment['commit_id'])
@@ -254,14 +255,14 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
 
     return content
 
-def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher):
+def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None):
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = name
 
     if re.match(r'^0+$', after):
         content = "%s deleted branch %s" % (pusher,
                                             short_ref)
-    elif len(commits) == 0:
+    elif forced or (forced is None and len(commits) == 0):
         content = ("%s [force pushed](%s) to branch %s.  Head is now %s"
                    % (pusher,
                       url,
