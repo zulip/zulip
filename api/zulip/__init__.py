@@ -49,7 +49,7 @@ def _default_client():
     return "ZulipPython/" + __version__
 
 def generate_option_group(parser):
-    group = optparse.OptionGroup(parser, 'API configuration')
+    group = optparse.OptionGroup(parser, 'Zulip API configuration')
     group.add_option('--site',
                      help="Zulip Enterprise server URI (if using Zulip Enterprise)",
                      default=None)
