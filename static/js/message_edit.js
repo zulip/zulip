@@ -169,7 +169,8 @@ exports.is_editing = function (id) {
 
 exports.end = function (row) {
     var message = current_msg_list.get(rows.id(row));
-    if (currently_editing_messages[message.id] !== undefined) {
+    if (message !== undefined &&
+        currently_editing_messages[message.id] !== undefined) {
         var scroll_by = currently_editing_messages[message.id].scrolled_by;
         viewport.scrollTop(viewport.scrollTop() - scroll_by);
         delete currently_editing_messages[message.id];
