@@ -158,7 +158,7 @@ class ZulipToJabberBot(zulip.Client):
             mto   = jabber_recipient,
             mbody = msg['content'],
             mtype = 'groupchat')
-        outgoing['thread'] == u'\u1B80'
+        outgoing['thread'] = u'\u1B80'
         outgoing.send()
 
     def private_message(self, msg):
@@ -172,7 +172,7 @@ class ZulipToJabberBot(zulip.Client):
                 mto   = jabber_recipient,
                 mbody = msg['content'],
                 mtype = 'chat')
-            outgoing['thread'] == u'\u1B80'
+            outgoing['thread'] = u'\u1B80'
             outgoing.send()
 
 if __name__ == '__main__':
