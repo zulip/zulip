@@ -124,7 +124,7 @@ class JabberToZulipBot(ClientXMPP):
     def nickname_to_jid(self, room, nick):
         jid = self.plugin['xep_0045'].getJidProperty(room, nick, "jid")
         if (jid is None or jid == ''):
-            return re.sub(' ', '', nick) + "@" + options.jabber_domain
+            return nick.replace(' ', '') + "@" + options.jabber_domain
         else:
             return jid
 
