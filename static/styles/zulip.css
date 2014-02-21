@@ -760,11 +760,13 @@ td.pointer {
     white-space:    nowrap;
     font-weight:    600;
     line-height:    14px;
+    position: relative;
+    z-index: 0;
 }
 
  .message_list .recipient_row {
     background: #f1f1f1;
-    border: 1px solid #e2e2e2;
+    border-bottom: 1px solid #e2e2e2;
     margin-bottom: 10px;
 }
 
@@ -1075,47 +1077,57 @@ just a temporary hack.
     position: relative;
 }
 
+.recipient_row .message_row:first-child .unread_marker {
+    top: 0px;
+}
+
 .unread_marker {
     display: block;
     position: absolute;
-    width: 6px;
-    left: -9px;
-    opacity: 0;
+    left: -5px;
+    top: 1px;
+    padding-bottom: 2px;
+    opacity: 1;
     z-index: 1;
     height: 100%;
-    -webkit-transition: opacity 0.3s ease-in;
-    -moz-transition: opacity 0.3s ease-in;
-    -o-transition: opacity 0.3s ease-in;
-    transition: opacity 0.3s ease-in;
-    border-top: 2px solid #ffffff;
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
 }
 
 .unread-marker-fill {
     background: #2b8213;
-    width: 6px;
+    width: 4px;
     height: 100%;
+    box-shadow: inset 0px -1px 0px 0px #ffffff;
+}
+
+.last_message .unread-marker-fill {
+    box-shadow: none;
 }
 
 .unread .unread_marker {
-    -webkit-transition: opacity 0.3s ease-in;
-    -moz-transition: opacity 0.3s ease-in;
-    -o-transition: opacity 0.3s ease-in;
-    transition: opacity 0.3s ease-in;
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
     opacity: 1;
+    left: -1px;
 }
 
 .unread_marker.slow_fade {
-    -webkit-transition: opacity 2.7s ease-in;
-    -moz-transition: opacity 2.7s ease-in;
-    -o-transition: opacity 2.7s ease-in;
-    transition: opacity 2.7s ease-in;
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
 }
 
 .unread_marker.fast_fade {
-    -webkit-transition: opacity 0.3s ease-in;
-    -moz-transition: opacity 0.3s ease-in;
-    -o-transition: opacity 0.3s ease-in;
-    transition: opacity 0.3s ease-in;
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
 }
 
 .selected_message .messagebox {
@@ -1123,7 +1135,12 @@ just a temporary hack.
 }
 
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px #b4becb;
+    box-shadow: inset 0px 0px 0px 2px #b4becb,
+                      0px 0px 0px 1px #b4becb,
+                inset 2px 0px 0px 1px #b4becb,
+                      0px -1px 0px 1px #b4becb,
+                      0px 1px 0px 1px #b4becb,
+                inset -2px 0px 0px 1px #b4b4cb;
  }
 
 .message_sender {
@@ -1234,6 +1251,8 @@ a.message_label_clickable:hover {
 
 /* Brighten text because of the dark background */
 .dark_background a,
+.dark_background a:hover,
+a.dark_background:hover,
 .dark_background {
     color: #ffffff !important;
 }
@@ -1286,6 +1305,12 @@ div.message_table {
 
 .message_row {
     position: relative;
+    border-left: 1px solid #e2e2e2;
+    border-right: 1px solid #e2e2e2;
+}
+
+.message_row.selected_message {
+    z-index: 2;
 }
 
 table.compose_table {
@@ -1408,7 +1433,7 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 1px 55px 1px 7px;
+    padding: 4px 55px 1px 10px;
 }
 
 .last_message .messagebox-content {
