@@ -574,6 +574,7 @@ MessageListView.prototype = {
 
     rerender_message: function MessageListView__rerender_message(message) {
         var row = this.get_row(message.id);
+        var was_selected = this.list.selected_message() === message;
 
         if (row === undefined) {
             blueslip.error("Cannot rerender a message that's not in this list!");
@@ -584,6 +585,9 @@ MessageListView.prototype = {
         var rendered_msg = $(templates.render('single_message', message));
         this._rows[message.id] = rendered_msg;
         row.replaceWith(rendered_msg);
+        if (was_selected) {
+            this.list.select_id(message.id);
+        }
     },
 
     rerender_messages: function MessageListView__rerender_messages(messages) {
