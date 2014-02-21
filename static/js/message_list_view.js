@@ -327,6 +327,7 @@ MessageListView.prototype = {
                     // Pluck the merged messages out of our rendered group list, and insert them
                     // into the existing group div
                     var last_group = rows.get_message_recipient_row(self._rows[last_msg.id]);
+                    last_group.find('.last_message').removeClass('last_message');
                     last_group.append($('.message_row', rendered_groups[0]).remove());
                     rendered_groups.splice(0, 1);
                 } else {
