@@ -126,9 +126,9 @@ except ConfigParser.NoOptionError:
     user_id = options.twitter_id
 
 client = zulip.Client(
-    email=options.email,
-    api_key=options.api_key,
-    site=options.site,
+    email=options.zulip_email,
+    api_key=options.zulip_api_key,
+    site=options.zulip_site,
     client="ZulipTwitter/" + VERSION,
     verbose=True)
 

@@ -51,18 +51,18 @@ def _default_client():
 def generate_option_group(parser, prefix=''):
     group = optparse.OptionGroup(parser, 'Zulip API configuration')
     group.add_option('--%ssite' % (prefix,),
-                     dest="site",
+                     dest="zulip_site",
                      help="Zulip Enterprise server URI (if using Zulip Enterprise)",
                      default=None)
     group.add_option('--%sapi-key' % (prefix,),
-                     dest="api_key",
+                     dest="zulip_api_key",
                      action='store')
     group.add_option('--%suser' % (prefix,),
-                     dest='email',
+                     dest='zulip_email',
                      help='Email address of the calling bot or user.')
     group.add_option('--%sconfig-file' % (prefix,),
                      action='store',
-                     dest="config_file",
+                     dest="zulip_config_file",
                      help='Location of an ini file containing the\nabove information. (default ~/.zuliprc)')
     group.add_option('-v', '--verbose',
                      action='store_true',
@@ -70,18 +70,18 @@ def generate_option_group(parser, prefix=''):
     group.add_option('--%sclient' % (prefix,),
                      action='store',
                      default=None,
-                     dest="client",
+                     dest="zulip_client",
                      help=optparse.SUPPRESS_HELP)
     return group
 
 def init_from_options(options, client=None):
-    if options.client is not None:
-        client = options.client
+    if options.zulip_client is not None:
+        client = options.zulip_client
     elif client is None:
         client = _default_client()
-    return Client(email=options.email, api_key=options.api_key,
-                  config_file=options.config_file, verbose=options.verbose,
-                  site=options.site, client=client)
+    return Client(email=options.zulip_email, api_key=options.zulip_api_key,
+                  config_file=options.zulip_config_file, verbose=options.verbose,
+                  site=options.zulip_site, client=client)
 
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
