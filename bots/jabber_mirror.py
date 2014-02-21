@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # Copyright (C) 2013 Permabit, Inc.
-# Copyright (C) 2013-4 Zulip, Inc.
+# Copyright (C) 2013--2014 Zulip, Inc.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
