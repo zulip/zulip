@@ -33,7 +33,10 @@ import os, sys, zulip, getpass
 import re
 
 def room_to_stream(room):
-    return str(room).split("@")[0]
+    return str(room).rpartition("@")[0]
+
+def jid_to_zulip(jid):
+    return "%s@%s" % (str(jid).rpartition("@")[0], options.zulip_domain)
 
 class JabberToZulipBot(ClientXMPP):
     def __init__(self, nick, password, rooms, openfire=False):
@@ -83,8 +86,8 @@ class JabberToZulipBot(ClientXMPP):
     def private(self, msg):
         if msg["from"] == self.jid or msg['thread'] == u'\u1B80':
             return
-        sender = self.jid_to_zulip(msg["from"])
-        recipient = self.jid_to_zulip(msg["to"])
+        sender = jid_to_zulip(msg["from"])
+        recipient = jid_to_zulip(msg["to"])
 
         zulip_message = dict(
             sender = sender,
@@ -105,7 +108,7 @@ class JabberToZulipBot(ClientXMPP):
             subject = "(no topic)"
         stream = room_to_stream(msg.get_mucroom())
         jid = self.nickname_to_jid(msg.get_mucroom(), msg.get_mucnick())
-        sender = self.jid_to_zulip(jid)
+        sender = jid_to_zulip(jid)
         zulip_message = dict(
             forged = "yes",
             sender = sender,
@@ -117,9 +120,6 @@ class JabberToZulipBot(ClientXMPP):
         ret = self.zulip.send_message(zulip_message)
         if ret.get("status") != "success":
             logging.error(ret)
-
-    def jid_to_zulip(self, jid):
-        return "%s@%s" % (str(jid).split("@")[0], options.zulip_domain)
 
     def nickname_to_jid(self, room, nick):
         jid = self.plugin['xep_0045'].getJidProperty(room, nick, "jid")
