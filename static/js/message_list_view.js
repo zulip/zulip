@@ -582,6 +582,7 @@ MessageListView.prototype = {
         }
 
         // Re-render just this one message
+        this._add_msg_timestring(message);
         var rendered_msg = $(templates.render('single_message', message));
         this._rows[message.id] = rendered_msg;
         row.replaceWith(rendered_msg);
