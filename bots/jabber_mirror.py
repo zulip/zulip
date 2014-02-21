@@ -165,7 +165,9 @@ class ZulipToJabberBot(zulip.Client):
         for recipient in msg['display_recipient']:
             if recipient["email"] == self.email:
                 continue
-            jabber_recipient = recipient['email'].replace(options.zulip_domain, options.jabber_domain)
+            recip_email = recipient['email']
+            username = recip_email[:recip_email.rfind(options.zulip_domain)]
+            jabber_recipient = username + options.jabber_domain
             outgoing = self.jabber.make_message(
                 mto   = jabber_recipient,
                 mbody = msg['content'],
