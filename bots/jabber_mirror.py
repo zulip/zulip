@@ -131,7 +131,7 @@ class JabberToZulipBot(ClientXMPP):
 class ZulipToJabberBot(zulip.Client):
     def __init__(self, email, api_key):
         zulip.Client.__init__(self, email, api_key, client="jabber_mirror",
-                              site=options.zulip_server, verbose=False)
+                              site=options.zulip_site, verbose=False)
         self.jabber = None
         self.email = email
 
@@ -198,29 +198,23 @@ if __name__ == '__main__':
     parser.add_option('--no-use-tls',
                       default=False,
                       action='store_true')
-    parser.add_option('--zulip-server',
-                      default="https://api.zulip.com",
-                      action='store',
-                      help="Your Zulip API server (only needed for Zulip Enterprise)")
     parser.add_option('--conference-domain',
                       default=None,
                       action='store',
                       help="Your Jabber conference domain (E.g. conference.jabber.example.com)")
+
+    parser.add_option_group(zulip.generate_option_group(parser, "zulip-"))
     (options, args) = parser.parse_args()
 
-    if len(args) < 2:
-        sys.exit("Usage: %s EMAIL ZULIP_APIKEY" % (sys.argv[0],));
-    email = args[0]
-    zulip_api_key = args[1]
     if options.password is None:
         options.password = getpass.getpass("Jabber password: ")
     if options.jabber_domain is None:
         sys.exit("Must specify a Jabber server")
 
-    (username, options.zulip_domain) = email.split("@")
+    (username, options.zulip_domain) = options.zulip_email.split("@")
     jabber_username = username + '@' + options.jabber_domain
 
-    zulip = ZulipToJabberBot(email=email, api_key=zulip_api_key);
+    zulip = ZulipToJabberBot(email=options.zulip_email, api_key=options.zulip_api_key);
     rooms = [s['name'] for s in zulip.get_streams()['streams']]
     xmpp = JabberToZulipBot(jabber_username, options.password, rooms,
                             openfire=options.openfire)
