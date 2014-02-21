@@ -5,6 +5,13 @@
       <description>Latest updates to Zulip's Desktop App</description>
       <language>en</language>
       <item>
+         <title>Version 0.4.4</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.com/dist/apps/sso/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Fri, 21 Feb 2014 10:16:07 </pubDate>
+         <enclosure sparkle:version="0.4.4" type="application/octet-stream" url="https://zulip.com/dist/apps/sso/win/zulip-0.4.4.exe"/>
+      </item><item>
          <title>Version 0.4.3</title>
          <sparkle:releaseNotesLink>
              https://zulip.com/dist/apps/sso/win/sparkle-changelog.html

@@ -4,6 +4,13 @@
       <link>https://zulip.com/dist/apps/mac/sparkle.xml</link>
       <description>Latest updates to Zulip's Desktop Application</description>
       <language>en</language><item>
+         <title>Version 0.4.4</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.com/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Fri, 21 Feb 2014 10:15:23 </pubDate>
+         <enclosure length="8833524" sparkle:dsaSignature="MCwCFAp+Pnfc+sqi7RzO7/QHGtBtpjBlAhQjTBu0npAZfBc3PDJ7goZwTW9EIQ==" sparkle:version="0.4.4" type="application/octet-stream" url="https://zulip.com/dist/apps/mac/Zulip-0.4.4.tar.bz2"/>
+      </item><item>
          <title>Version 0.4.3</title>
          <sparkle:releaseNotesLink>
              https://zulip.com/dist/apps/mac/sparkle-changelog.html
