@@ -6,7 +6,7 @@ var exports = {};
 // that our next element is *not* a message_row, so this
 // isn't going to end up empty unless we're at the bottom or top.
 exports.next_visible = function (message_row) {
-    if (message_row === undefined) {
+    if (message_row === undefined || message_row.length === 0) {
         return $();
     }
     var row = message_row.next('.selectable_row');
@@ -22,7 +22,7 @@ exports.next_visible = function (message_row) {
 };
 
 exports.prev_visible = function (message_row) {
-    if (message_row === undefined) {
+    if (message_row === undefined || message_row.length === 0) {
         return $();
     }
     var row = message_row.prev('.selectable_row');
