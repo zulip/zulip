@@ -231,7 +231,6 @@ if __name__ == '__main__':
     try:
         logging.info("Connecting to Zulip.")
         zulip.call_on_each_event(zulip.process_message)
-        zulip.session_start()
     except BaseException as e:
         logging.exception("Exception in main loop")
         xmpp.abort()
