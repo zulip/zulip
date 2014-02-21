@@ -70,8 +70,6 @@ function _fade_messages() {
         change_fade_state(recipient_row, should_fade_message);
     }
 
-    ui.update_floating_recipient_bar();
-
     // Defer updating all messages so that the compose box can open sooner
     setTimeout(function (expected_msg_list, expected_recipient) {
         var all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
@@ -91,6 +89,8 @@ function _fade_messages() {
             should_fade_message = !fade_heuristic(focused_recipient, rows.recipient_from_group(group_elt));
             change_fade_state(group_elt, should_fade_message);
         }
+
+        ui.update_floating_recipient_bar();
     }, 0, current_msg_list, compose.recipient());
 }
 
@@ -220,7 +220,7 @@ exports.update_message_list = function () {
     }
 };
 
-exports.update_rendered_messages = function (messages, get_elements) {
+exports.update_rendered_message_groups = function (message_groups, get_element) {
     if (_want_normal_display()) {
         return;
     }
@@ -228,17 +228,11 @@ exports.update_rendered_messages = function (messages, get_elements) {
     // This loop is superficially similar to some code in _fade_messages, but an
     // important difference here is that we look at each message individually, whereas
     // the other code takes advantage of blocks beneath recipient bars.
-    //
-    // get_elements() is plural, because we can get up to two elements:
-    //   the message (always)
-    //   the recipient bar (sometimes)
-    _.each(messages, function (message) {
-        var elts = get_elements(message);
-        var should_fade_message = !fade_heuristic(focused_recipient, message);
-
-        _.each(elts, function (elt) {
-            change_fade_state(elt, should_fade_message);
-        });
+    _.each(message_groups, function (message_group) {
+        var elt = get_element(message_group);
+        var first_message = message_group.messages[0];
+        var should_fade = !fade_heuristic(focused_recipient, first_message);
+        change_fade_state(elt, should_fade);
     });
 };
 

@@ -366,20 +366,16 @@ MessageListView.prototype = {
         if (list === current_msg_list) {
             // Update the fade.
 
-            var get_elements = function (message) {
-                // We don't have a Message class, but we can at least hide the messy details
+            var get_element = function (message_group) {
+                // We don't have a MessageGroup class, but we can at least hide the messy details
                 // of rows.js from compose_fade.  We provide a callback function to be lazy--
                 // compose_fade may not actually need the elements depending on its internal
                 // state.
-                var message_row = self.get_row(message.id);
-                var lst = [message_row];
-                if (message.include_recipient) {
-                    lst.unshift(message_row.prev('.recipient_row'));
-                }
-                return lst;
+                var message_row = self.get_row(message_group.messages[0].id);
+                return rows.get_message_recipient_row(message_row);
             };
 
-            compose_fade.update_rendered_messages(messages, get_elements);
+            compose_fade.update_rendered_message_groups(new_message_groups, get_element);
         }
 
         if (list === current_msg_list && messages_are_new) {
