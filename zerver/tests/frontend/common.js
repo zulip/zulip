@@ -136,7 +136,7 @@ exports.get_rendered_messages = function (table) {
     return casper.evaluate(function (table) {
         var tbl = $('#'+table);
         return {
-            headings: $.map(tbl.find('.recipient_row'), function (elem) {
+            headings: $.map(tbl.find('.recipient_row .message-header-contents'), function (elem) {
                 return elem.innerText;
             }),
 
