@@ -48,25 +48,29 @@ API_VERSTRING = "v1/"
 def _default_client():
     return "ZulipPython/" + __version__
 
-def generate_option_group(parser):
+def generate_option_group(parser, prefix=''):
     group = optparse.OptionGroup(parser, 'Zulip API configuration')
-    group.add_option('--site',
+    group.add_option('--%ssite' % (prefix,),
+                     dest="site",
                      help="Zulip Enterprise server URI (if using Zulip Enterprise)",
                      default=None)
-    group.add_option('--api-key',
+    group.add_option('--%sapi-key' % (prefix,),
+                     dest="api_key",
                      action='store')
-    group.add_option('--user',
+    group.add_option('--%suser' % (prefix,),
                      dest='email',
                      help='Email address of the calling bot or user.')
-    group.add_option('--config-file',
+    group.add_option('--%sconfig-file' % (prefix,),
                      action='store',
+                     dest="config_file",
                      help='Location of an ini file containing the\nabove information. (default ~/.zuliprc)')
     group.add_option('-v', '--verbose',
                      action='store_true',
                      help='Provide detailed output.')
-    group.add_option('--client',
+    group.add_option('--%sclient' % (prefix,),
                      action='store',
                      default=None,
+                     dest="client",
                      help=optparse.SUPPRESS_HELP)
     return group
 
