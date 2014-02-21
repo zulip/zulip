@@ -60,7 +60,7 @@ class JabberToZulipBot(ClientXMPP):
             import ssl
             self.ssl_version = ssl.PROTOCOL_SSLv3
 
-    def setZulipClient(self, client):
+    def set_zulip_client(self, client):
         self.zulip = client
 
     def session_start(self, event):
@@ -135,7 +135,7 @@ class ZulipToJabberBot(zulip.Client):
         self.jabber = None
         self.email = email
 
-    def setJabberClient(self, client):
+    def set_jabber_client(self, client):
         self.jabber = client
 
     def process_message(self, event):
@@ -224,8 +224,8 @@ if __name__ == '__main__':
                             openfire=options.openfire)
     xmpp.connect(use_tls=not options.no_use_tls)
     xmpp.process(block=False)
-    xmpp.setZulipClient(zulip)
-    zulip.setJabberClient(xmpp)
+    xmpp.set_zulip_client(zulip)
+    zulip.set_jabber_client(xmpp)
     try:
         logging.info("Connecting to Zulip.")
         zulip.call_on_each_event(zulip.process_message)
