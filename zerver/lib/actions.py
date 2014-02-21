@@ -376,6 +376,7 @@ def do_send_messages(messages):
         message['active_recipients'] = filter(lambda user_profile: user_profile.is_active,
                                               message['recipients'])
         message['message'].maybe_render_content(None)
+        message['message'].update_calculated_fields()
 
     # Save the message receipts in the database
     user_message_flags = defaultdict(dict)

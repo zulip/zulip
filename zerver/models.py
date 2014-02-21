@@ -4,6 +4,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
+from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     generic_bulk_cached_fetch, cache_set, flush_stream, \
@@ -15,13 +16,14 @@ from zerver.lib.avatar import gravatar_hash, get_avatar_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import pre_save, post_save, post_delete
 from guardian.shortcuts import get_users_with_perms
 import zlib
 
 from bitfield import BitField
 from collections import defaultdict
 import pylibmc
+import re
 import ujson
 import logging
 
@@ -934,6 +936,31 @@ class Message(models.Model):
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
                                    'website', 'ios', 'android')) or \
                                    ('desktop app' in sending_client)
+
+    @staticmethod
+    def content_has_attachment(content):
+        return '/user_uploads/' in content
+
+    @staticmethod
+    def content_has_image(content):
+        return bool(re.search('/user_uploads/\S+\.(bmp|gif|jpg|jpeg|png|webp)', content, re.IGNORECASE))
+
+    @staticmethod
+    def content_has_link(content):
+        return 'http://' in content or 'https://' in content or '/user_uploads' in content
+
+    def update_calculated_fields(self):
+        # TODO: rendered_content could also be considered a calculated field
+        content = self.content
+        self.has_attachment = bool(Message.content_has_attachment(content))
+        self.has_image = bool(Message.content_has_image(content))
+        self.has_link = bool(Message.content_has_link(content))
+
+@receiver(pre_save, sender=Message)
+def pre_save_message(sender, **kwargs):
+    if kwargs['update_fields'] is None or "content" in kwargs['update_fields']:
+        message = kwargs['instance']
+        message.update_calculated_fields()
 
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)

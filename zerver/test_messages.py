@@ -4,6 +4,7 @@ from django.db.models import Q
 from sqlalchemy.sql import (
     and_, select, column, compiler
 )
+from django.test import TestCase
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
@@ -1276,6 +1277,25 @@ class StarTests(AuthedTestCase):
             ).order_by("id").reverse()[0]
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
+
+class AttachmentTest(TestCase):
+    def test_basics(self):
+        self.assertFalse(Message.content_has_attachment('whatever'))
+        self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
+        self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
+        self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo'))
+
+        self.assertFalse(Message.content_has_image('whatever'))
+        self.assertFalse(Message.content_has_image('yo http://foo.com'))
+        self.assertFalse(Message.content_has_image('yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo'))
+        for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp", ".JPG"]:
+            content = 'yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (ext,)
+            self.assertTrue(Message.content_has_image(content))
+
+        self.assertFalse(Message.content_has_link('whatever'))
+        self.assertTrue(Message.content_has_link('yo\n http://foo.com'))
+        self.assertTrue(Message.content_has_link('yo\n https://example.com?spam=1&eggs=2'))
+        self.assertTrue(Message.content_has_link('yo /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo'))
 
 class CheckMessageTest(AuthedTestCase):
     def test_basic_check_message_call(self):
