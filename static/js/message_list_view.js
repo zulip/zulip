@@ -110,14 +110,6 @@ MessageListView.prototype = {
             prev = self.get_message(last_message_id);
         }
 
-        function set_template_properties(message) {
-            if (message.is_stream) {
-                message.background_color = stream_data.get_color(message.stream);
-                message.color_class = stream_color.get_color_class(message.background_color);
-                message.invite_only = stream_data.get_invite_only(message.stream);
-            }
-        }
-
         function add_message_to_group(message) {
             current_group.messages.push(message);
         }
@@ -131,6 +123,7 @@ MessageListView.prototype = {
 
                 if (current_group.is_stream) {
                     current_group.background_color = stream_data.get_color(first_message.stream);
+                    current_group.color_class = stream_color.get_color_class(current_group.background_color);
                     current_group.invite_only = stream_data.get_invite_only(first_message.stream);
                     current_group.subject = first_message.subject;
                 } else if (current_group.is_private) {
@@ -208,8 +201,6 @@ MessageListView.prototype = {
             message.dom_id = table_name + message.id;
 
             message.small_avatar_url = ui.small_avatar_url(message);
-
-            set_template_properties(message);
 
             message.contains_mention = notifications.speaking_at_me(message);
             message.unread = unread.message_unread(message);
