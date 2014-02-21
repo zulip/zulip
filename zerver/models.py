@@ -615,6 +615,10 @@ class Message(models.Model):
     sending_client = models.ForeignKey(Client)
     last_edit_time = models.DateTimeField(null=True)
     edit_history = models.TextField(null=True)
+    has_attachment = models.BooleanField(default=False, db_index=True)
+    has_image = models.BooleanField(default=False, db_index=True)
+    has_link = models.BooleanField(default=False, db_index=True)
+
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.recipient)
