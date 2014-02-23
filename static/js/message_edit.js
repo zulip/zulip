@@ -97,7 +97,7 @@ function edit_message (row, raw_content) {
     form.keydown(handle_edit_keydown);
 
     currently_editing_messages[message.id] = edit_obj;
-    if (message.subject === compose.empty_subject_placeholder()) {
+    if (message.type === 'stream' && message.subject === compose.empty_subject_placeholder()) {
         edit_row.find(".message_edit_topic").focus();
     } else {
         edit_row.find(".message_edit_content").focus();
