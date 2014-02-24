@@ -377,13 +377,16 @@ def exclude_muting_conditions(user_profile):
         recipient_map = dict((s.name.lower(), muted_recipients[s.id].id)
                              for s in muted_streams.itervalues())
 
-        def mute_cond(muted):
-            stream_cond = column("recipient_id") == recipient_map[muted[0].lower()]
-            topic_cond = func.upper(column("subject")) == func.upper(muted[1])
-            return and_(stream_cond, topic_cond)
+        muted_topics = [m for m in muted_topics if m[0].lower() in recipient_map]
 
-        condition = not_(or_(*map(mute_cond, muted_topics)))
-        return [condition]
+        if muted_topics:
+            def mute_cond(muted):
+                stream_cond = column("recipient_id") == recipient_map[muted[0].lower()]
+                topic_cond = func.upper(column("subject")) == func.upper(muted[1])
+                return and_(stream_cond, topic_cond)
+
+            condition = not_(or_(*map(mute_cond, muted_topics)))
+            return [condition]
 
     return []
 

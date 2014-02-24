@@ -967,7 +967,7 @@ class GetOldMessagesTest(AuthedTestCase):
         realm = get_realm('zulip.com')
         create_stream_if_needed(realm, 'devel')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['devel', 'css']])
+        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['devel', 'css'], ['bogus', 'bogus']])
         user_profile.save()
 
         query_params = dict(
