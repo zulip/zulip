@@ -410,7 +410,7 @@ function get_message_header(message) {
     if (message.display_recipient.length > 2) {
         return "group PM with " + message.display_reply_to;
     }
-    if (message.display_recipient.length === 1) {
+    if (message.reply_to === page_params.email) {
         return "PM with yourself";
     }
     return "PM with " + message.display_reply_to;
