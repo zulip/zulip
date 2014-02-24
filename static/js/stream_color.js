@@ -43,6 +43,11 @@ function update_table_stream_color(table, stream_name, color) {
     var color_class = exports.get_color_class(color);
 
     var stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
+    var messages = table.find(".messagebox");
+
+    _.each(messages, function (message) {
+        $(message).css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
+    });
 
     _.each(stream_labels, function (label) {
         var $label = $(label);

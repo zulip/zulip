@@ -1032,6 +1032,7 @@ just a temporary hack.
 .floating_recipient .message_header_private_message {
     border: 1px solid #e2e2e2;
     border-bottom: 0px;
+    border-left: 0px;
 }
 
 .message_header_private_message .message_label_clickable {
@@ -1069,6 +1070,11 @@ just a temporary hack.
     background-color: #feffe0;
 }
 
+.message_header_private_message .message-header-contents {
+    border-right: 1px solid #e2e2e2;
+    border-top: 1px solid #e2e2e2;
+}
+
 .mention .messagebox-content {
     background-color: #ffe4e0;
 }
@@ -1084,10 +1090,10 @@ just a temporary hack.
 .unread_marker {
     display: block;
     position: absolute;
-    left: -5px;
-    top: 1px;
+    left: 2px;
+    top: 0px;
     padding-bottom: 2px;
-    opacity: 1;
+    opacity: 0;
     z-index: 1;
     height: 100%;
     -webkit-transition: all 0.3s ease-out;
@@ -1098,7 +1104,7 @@ just a temporary hack.
 
 .unread-marker-fill {
     background: #2b8213;
-    width: 4px;
+    width: 3px;
     height: 100%;
     box-shadow: inset 0px -1px 0px 0px #ffffff;
 }
@@ -1113,7 +1119,6 @@ just a temporary hack.
     -o-transition: all 0.3s ease-out;
     transition: all 0.3s ease-out;
     opacity: 1;
-    left: -1px;
 }
 
 .unread_marker.slow_fade {
@@ -1135,13 +1140,12 @@ just a temporary hack.
 }
 
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px #b4becb,
-                      0px 0px 0px 1px #b4becb,
-                inset 2px 0px 0px 1px #b4becb,
-                      0px -1px 0px 1px #b4becb,
-                      0px 1px 0px 1px #b4becb,
-                inset -2px 0px 0px 1px #b4b4cb;
- }
+    box-shadow:       0px 0px 0px 1px #4577bc,
+                inset 1px 0px 0px 1px #4577bc,
+                      0px -1px 0px 1px #4577bc,
+                      0px 1px 0px 1px #4577bc,
+                inset -1px 0px 0px 1px #4577bc;
+}
 
 .message_sender {
     height: 0px;
