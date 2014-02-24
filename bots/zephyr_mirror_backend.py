@@ -763,7 +763,7 @@ def maybe_forward_to_zephyr(message):
             logger.exception("Error forwarding message:")
 
 def zulip_to_zephyr(options):
-    # Sync messages from zephyr to zulip
+    # Sync messages from zulip to zephyr
     logger.info("Starting syncing messages.")
     while True:
         try:
