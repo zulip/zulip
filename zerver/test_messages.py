@@ -963,6 +963,36 @@ class GetOldMessagesTest(AuthedTestCase):
                 return
         self.fail("get_old_messages query not found")
 
+    def test_use_first_unread_anchor(self):
+        realm = get_realm('zulip.com')
+        create_stream_if_needed(realm, 'devel')
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['devel', 'css']])
+        user_profile.save()
+
+        query_params = dict(
+            use_first_unread_anchor='true',
+            anchor=0,
+            num_before=0,
+            num_after=0,
+            narrow='[["stream", "Scotland"]]'
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        with queries_captured() as queries:
+            get_old_messages_backend(request, user_profile)
+
+        queries = filter(lambda q: q['sql'].startswith("SELECT message_id, flags"), queries)
+
+        ids = {}
+        for stream_name in ['Scotland', 'devel']:
+            stream = get_stream(stream_name, realm)
+            ids[stream_name] = get_recipient(Recipient.STREAM, stream.id).id
+
+        cond = '''AND NOT (recipient_id = {Scotland} AND upper(subject) = upper('golf') OR recipient_id = {devel} AND upper(subject) = upper('css'))'''
+        cond = cond.format(**ids)
+        self.assertTrue(cond in queries[0]['sql'])
+
     def test_get_old_messages_queries(self):
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10},
                                                  'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = 4 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC')
