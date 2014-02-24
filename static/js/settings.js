@@ -4,23 +4,46 @@ var exports = {};
 var _streams_defered = $.Deferred();
 var streams = _streams_defered.promise(); // promise to the full stream list
 
-function build_stream_list($select, extra_options) {
-    if (extra_options === undefined) {
-        extra_options = [];
+function build_stream_list($select, extra_names) {
+    if (extra_names === undefined) {
+        extra_names = [];
     }
 
-    streams.done(function (stream_list) {
-        var option_list = extra_options;
-        var stream_names = _.pluck(stream_list, 'name');
-        option_list.push.apply(option_list, _.zip(stream_names, stream_names));
+    streams.done(function (stream_items) {
+        var build_option = function (value_name) {
+            return $('<option>')
+                .attr('value', value_name[0])
+                .text(value_name[1]);
+        };
+
+        var public_names = _.chain(stream_items)
+            .where({'invite_only': false})
+            .pluck('name')
+            .map(function (x) { return [x, x]; })
+            .value();
+        var public_options = _.chain(extra_names.concat(public_names))
+            .map(build_option)
+            .reduce(
+                function ($optgroup, option) { return $optgroup.append(option); },
+                $('<optgroup label="Public"/>')
+            )
+            .value();
+
+        var private_options = _.chain(stream_items)
+            .where({'invite_only': true})
+            .pluck('name')
+            .map(function (x) { return [x, x]; })
+            .map(build_option)
+            .reduce(
+                function ($optgroup, option) { return $optgroup.append(option); },
+                $('<optgroup label="Private"/>')
+            )
+            .value();
 
         $select.empty();
-        _.each(option_list, function (option) {
-            $select.append($('<option>')
-                .attr('value', option[0])
-                .text(option[1])
-            );
-        });
+        $select.append(public_options);
+        $select.append(private_options);
+
     });
 }
 
