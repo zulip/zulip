@@ -199,8 +199,10 @@ MessageListView.prototype = {
             self._add_msg_timestring(message);
 
             message.dom_id = table_name + message.id;
-
             message.small_avatar_url = ui.small_avatar_url(message);
+            if (message.stream !== undefined) {
+                message.background_color = stream_data.get_color(message.stream);
+            }
 
             message.contains_mention = notifications.speaking_at_me(message);
             message.unread = unread.message_unread(message);
