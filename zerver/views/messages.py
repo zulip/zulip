@@ -367,6 +367,26 @@ def ok_to_include_history(narrow, realm):
 
     return include_history
 
+def exclude_muting_conditions(user_profile):
+    muted_topics = ujson.loads(user_profile.muted_topics)
+    if muted_topics:
+        muted_streams = bulk_get_streams(user_profile.realm,
+                                         [muted[0] for muted in muted_topics])
+        muted_recipients = bulk_get_recipients(Recipient.STREAM,
+                                               [stream.id for stream in muted_streams.itervalues()])
+        recipient_map = dict((s.name.lower(), muted_recipients[s.id].id)
+                             for s in muted_streams.itervalues())
+
+        def mute_cond(muted):
+            stream_cond = column("recipient_id") == recipient_map[muted[0].lower()]
+            topic_cond = func.upper(column("subject")) == func.upper(muted[1])
+            return and_(stream_cond, topic_cond)
+
+        condition = not_(or_(*map(mute_cond, muted_topics)))
+        return [condition]
+
+    return []
+
 @has_request_variables
 def get_old_messages_backend(request, user_profile,
                              anchor = REQ(converter=int),
@@ -432,18 +452,9 @@ def get_old_messages_backend(request, user_profile,
 
         # We exclude messages on muted topics when finding the first unread
         # message in this narrow
-        muted_topics = ujson.loads(user_profile.muted_topics)
-        if muted_topics:
-            muted_streams = bulk_get_streams(user_profile.realm,
-                                             [muted[0] for muted in muted_topics])
-            muted_recipients = bulk_get_recipients(Recipient.STREAM,
-                                                   [stream.id for stream in muted_streams.itervalues()])
-            recipient_map = dict((s.name.lower(), muted_recipients[s.id].id)
-                                 for s in muted_streams.itervalues())
-            condition = and_(condition,
-                             not_(or_(*[and_(column("recipient_id") == recipient_map[muted[0].lower()],
-                                             func.upper(column("subject")) == func.upper(muted[1]))
-                                        for muted in muted_topics])))
+        muting_conditions = exclude_muting_conditions(user_profile)
+        if muting_conditions:
+            condition = and_(condition, *muting_conditions)
 
         first_unread_query = query.where(condition)
         first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
