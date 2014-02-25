@@ -9,7 +9,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
-    get_stream_cache_key, active_user_dicts_in_realm_cache_key
+    get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
+    active_bot_dicts_in_realm_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
@@ -1033,6 +1034,17 @@ def get_user_profile_by_email(email):
 def get_active_user_dicts_in_realm(realm):
      return UserProfile.objects.filter(realm=realm, is_active=True) \
                                .values('id', 'full_name', 'short_name', 'email', 'is_bot')
+
+@cache_with_key(active_bot_dicts_in_realm_cache_key, timeout=3600*24*7)
+def get_active_bot_dicts_in_realm(realm):
+     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
+                               .values('id', 'full_name', 'short_name',
+                                       'email', 'default_sending_stream__name',
+                                       'default_events_register_stream__name',
+                                       'default_all_public_streams', 'api_key',
+                                       'avatar_source') \
+                                .select_related('default_sending_stream',
+                                                'default_events_register_stream')
 
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest

@@ -15,9 +15,9 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
-    ScheduledJob, realm_filters_for_domain, RealmFilter
+    ScheduledJob, realm_filters_for_domain, RealmFilter, get_active_bot_dicts_in_realm
 
-from zerver.lib.avatar import get_avatar_url
+from zerver.lib.avatar import get_avatar_url, avatar_url
 from guardian.shortcuts import assign_perm, remove_perm
 
 from django.db import transaction, IntegrityError
@@ -96,6 +96,15 @@ def stream_user_ids(stream):
 
     return [sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')]
 
+def bot_owner_userids(user_profile):
+    is_private_bot = (
+        user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only or
+        user_profile.default_events_register_stream and user_profile.default_events_register_stream.invite_only)
+    if is_private_bot:
+        return (user_profile.bot_owner_id,)
+    else:
+        return active_user_ids(user_profile.realm)
+
 def notify_created_user(user_profile):
     event = dict(type="realm_user", op="add",
                  person=dict(email=user_profile.email,
@@ -104,18 +113,39 @@ def notify_created_user(user_profile):
                              is_bot=user_profile.is_bot))
     send_event(event, active_user_ids(user_profile.realm))
 
+def notify_created_bot(user_profile):
+
+    def stream_name(stream):
+        if not stream:
+            return None
+        return stream.name
+
+    default_sending_stream_name = stream_name(user_profile.default_sending_stream)
+    default_events_register_stream_name = stream_name(user_profile.default_events_register_stream)
+
+    event = dict(type="realm_bot", op="add",
+                 bot=dict(email=user_profile.email,
+                          full_name=user_profile.full_name,
+                          api_key=user_profile.api_key,
+                          default_sending_stream=default_sending_stream_name,
+                          default_events_register_stream=default_events_register_stream_name,
+                          default_all_public_streams=user_profile.default_all_public_streams,
+                          avatar_url=avatar_url(user_profile),
+                         ))
+    send_event(event, bot_owner_userids(user_profile))
+
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True, bot=False, bot_owner=None,
                    avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None):
     event = {'type': 'user_created',
-               'timestamp': time.time(),
-               'full_name': full_name,
-               'short_name': short_name,
-               'user': email,
-               'domain': realm.domain,
-               'bot': bot}
+             'timestamp': time.time(),
+             'full_name': full_name,
+             'short_name': short_name,
+             'user': email,
+             'domain': realm.domain,
+             'bot': bot}
     if bot:
         event['bot_owner'] = bot_owner.email
     log_event(event)
@@ -129,6 +159,8 @@ def do_create_user(email, password, realm, full_name, short_name,
                                default_all_public_streams=default_all_public_streams)
 
     notify_created_user(user_profile)
+    if bot:
+        notify_created_bot(user_profile)
     return user_profile
 
 def user_sessions(user_profile):
@@ -2131,6 +2163,16 @@ def get_realm_user_dicts(user_profile):
              'full_name' : userdict['full_name']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
+def get_realm_bot_dicts(user_profile):
+    return [{'email'     : botdict['email'],
+             'full_name' : botdict['full_name'],
+             'api_key'   : botdict['api_key'],
+             'default_sending_stream': botdict['default_sending_stream__name'],
+             'default_events_register_stream': botdict['default_events_register_stream__name'],
+             'default_all_public_streams': botdict['default_all_public_streams'],
+             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
+            }
+            for botdict in get_active_bot_dicts_in_realm(user_profile.realm)]
 
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
@@ -2181,6 +2223,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
     if want('realm_user'):
         state['realm_users'] = get_realm_user_dicts(user_profile)
 
+    if want('realm_bot'):
+        state['realm_bots'] = get_realm_bot_dicts(user_profile)
+
     if want('referral'):
         state['referrals'] = {'granted': user_profile.invites_granted,
                               'used': user_profile.invites_used}
@@ -2221,6 +2266,11 @@ def apply_events(state, events, user_profile):
                 for p in state['realm_users']:
                     if our_person(p):
                         p.update(person)
+
+        elif event['type'] == 'realm_bot':
+            if event['op'] == 'add':
+                state['realm_bots'].append(event['bot'])
+
         elif event['type'] == 'stream':
             if event['op'] == 'update':
                 # For legacy reasons, we call stream data 'subscriptions' in

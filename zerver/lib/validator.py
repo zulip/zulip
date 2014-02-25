@@ -41,6 +41,14 @@ def check_bool(var_name, val):
         return '%s is not a boolean' % (var_name,)
     return None
 
+def check_none_or(sub_validator):
+    def f(var_name, val):
+        if val is None:
+            return
+        else:
+            return sub_validator(var_name, val)
+    return f
+
 def check_list(sub_validator, length=None):
     def f(var_name, val):
         if not isinstance(val, list):

@@ -361,8 +361,27 @@ class BotTest(AuthedTestCase):
     def test_add_bot(self):
         self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
-        self.create_bot()
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.create_bot()
         self.assert_num_bots_equal(1)
+
+        event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
+        self.assertEqual(
+            dict(
+                type='realm_bot',
+                op='add',
+                bot=dict(email='hambot-bot@zulip.com',
+                     full_name='The Bot of Hamlet',
+                     api_key=result['api_key'],
+                     avatar_url=result['avatar_url'],
+                     default_sending_stream=None,
+                     default_events_register_stream=None,
+                     default_all_public_streams=False,
+                )
+            ),
+            event['event']
+        )
 
     def test_add_bot_with_default_sending_stream(self):
         self.login("hamlet@zulip.com")
@@ -392,12 +411,32 @@ class BotTest(AuthedTestCase):
         do_make_stream_private(user_profile.realm, "Denmark")
 
         self.assert_num_bots_equal(0)
-        result = self.create_bot(default_sending_stream='Denmark')
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.create_bot(default_sending_stream='Denmark')
         self.assert_num_bots_equal(1)
         self.assertEqual(result['default_sending_stream'], 'Denmark')
 
         profile = get_user_profile_by_email('hambot-bot@zulip.com')
         self.assertEqual(profile.default_sending_stream.name, 'Denmark')
+
+        event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
+        self.assertEqual(
+            dict(
+                type='realm_bot',
+                op='add',
+                bot=dict(email='hambot-bot@zulip.com',
+                     full_name='The Bot of Hamlet',
+                     api_key=result['api_key'],
+                     avatar_url=result['avatar_url'],
+                     default_sending_stream='Denmark',
+                     default_events_register_stream=None,
+                     default_all_public_streams=False,
+                )
+            ),
+            event['event']
+        )
+        self.assertEqual(event['users'], (user_profile.id,))
 
     def test_add_bot_with_default_sending_stream_private_denied(self):
         self.login("hamlet@zulip.com")
@@ -432,12 +471,32 @@ class BotTest(AuthedTestCase):
         do_make_stream_private(user_profile.realm, "Denmark")
 
         self.assert_num_bots_equal(0)
-        result = self.create_bot(default_events_register_stream='Denmark')
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.create_bot(default_events_register_stream='Denmark')
         self.assert_num_bots_equal(1)
         self.assertEqual(result['default_events_register_stream'], 'Denmark')
 
         profile = get_user_profile_by_email('hambot-bot@zulip.com')
         self.assertEqual(profile.default_events_register_stream.name, 'Denmark')
+
+        event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
+        self.assertEqual(
+            dict(
+                type='realm_bot',
+                op='add',
+                bot=dict(email='hambot-bot@zulip.com',
+                     full_name='The Bot of Hamlet',
+                     api_key=result['api_key'],
+                     avatar_url=result['avatar_url'],
+                     default_sending_stream=None,
+                     default_events_register_stream='Denmark',
+                     default_all_public_streams=False,
+                )
+            ),
+            event['event']
+        )
+        self.assertEqual(event['users'], (user_profile.id,))
 
     def test_add_bot_with_default_events_register_stream_private_denied(self):
         self.login("hamlet@zulip.com")

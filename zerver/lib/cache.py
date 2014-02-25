@@ -5,6 +5,7 @@ from functools import wraps
 from django.core.cache import cache as djcache
 from django.core.cache import get_cache
 from django.conf import settings
+from django.db.models import Q
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import time
@@ -239,6 +240,9 @@ def cache_save_user_profile(user_profile):
 def active_user_dicts_in_realm_cache_key(realm):
     return "active_user_dicts_in_realm:%s" % (realm.id,)
 
+def active_bot_dicts_in_realm_cache_key(realm):
+    return "active_bot_dicts_in_realm:%s" % (realm.id,)
+
 def get_stream_cache_key(stream_name, realm):
     from zerver.models import Realm
     if isinstance(realm, Realm):
@@ -267,6 +271,13 @@ def flush_user_profile(sender, **kwargs):
         len(set(['full_name', 'short_name', 'email', 'is_active']) & set(kwargs['update_fields'])) > 0:
         cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm))
 
+    # Invalidate our active_bots_in_realm info dict if any bot has changed
+    bot_fields = {'full_name', 'api_key', 'avatar_source',
+                  'default_all_public_streams', 'is_active',
+                  'default_sending_stream', 'default_events_register_stream'}
+    if user_profile.is_bot and (kwargs['update_fields'] is None or bot_fields & set(kwargs['update_fields'])):
+        cache_delete(active_bot_dicts_in_realm_cache_key(user_profile.realm))
+
     # Invalidate realm-wide alert words cache if any user in the realm has changed
     # alert words
     if kwargs['update_fields'] is None or "alert_words" in kwargs['update_fields']:
@@ -282,6 +293,7 @@ def flush_realm(sender, **kwargs):
 
     if realm.deactivated:
         cache_delete(active_user_dicts_in_realm_cache_key(realm))
+        cache_delete(active_bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
 
 def realm_alert_words_cache_key(realm):
@@ -290,7 +302,15 @@ def realm_alert_words_cache_key(realm):
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
 def flush_stream(sender, **kwargs):
+    from zerver.models import UserProfile
     stream = kwargs['instance']
     items_for_memcached = {}
     items_for_memcached[get_stream_cache_key(stream.name, stream.realm)] = (stream,)
     cache_set_many(items_for_memcached)
+
+    if kwargs['update_fields'] is None or 'name' in kwargs['update_fields'] and \
+       UserProfile.objects.filter(
+           Q(default_sending_stream=stream) |
+           Q(default_events_register_stream=stream)
+       ).exists():
+        cache_delete(active_bot_dicts_in_realm_cache_key(stream.realm))

@@ -870,6 +870,7 @@ def home(request):
         unsubbed_info         = register_ret['unsubscribed'],
         email_dict            = register_ret['email_dict'],
         people_list           = register_ret['realm_users'],
+        bot_list              = register_ret['realm_bots'],
         initial_pointer       = register_ret['pointer'],
         initial_presences     = register_ret['presences'],
         initial_servertime    = time.time(), # Used for calculating relative presence age

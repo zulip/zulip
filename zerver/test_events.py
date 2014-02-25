@@ -23,6 +23,7 @@ from zerver.lib.actions import (
     do_set_muted_topics,
     do_set_realm_name,
     do_update_pointer,
+    do_create_user,
     fetch_initial_state_data,
 )
 
@@ -30,7 +31,7 @@ from zerver.lib.event_queue import allocate_client_descriptor
 from zerver.lib.test_helpers import AuthedTestCase, POSTRequestMock
 from zerver.lib.validator import (
     check_bool, check_dict, check_int, check_list, check_string,
-    equals,
+    equals, check_none_or
 )
 
 from zerver.views import _default_all_public_streams, _default_narrow
@@ -202,6 +203,8 @@ class EventsRegisterTest(AuthedTestCase):
             state['realm_users'] = {u['email']: u for u in state['realm_users']}
             state['subscriptions'] = {u['name']: u for u in state['subscriptions']}
             state['unsubscribed'] = {u['name']: u for u in state['unsubscribed']}
+            if 'realm_bots' in state:
+                state['realm_bots'] = {u['email']: u for u in state['realm_bots']}
         normalize(state1)
         normalize(state2)
         self.assertEqual(state1, state2)
@@ -242,6 +245,27 @@ class EventsRegisterTest(AuthedTestCase):
         self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#[123]",
                                                 "https://realm.com/my_realm_filter/%(id)s"))
         self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#[123]"))
+
+    def test_create_bot(self):
+        bot_created_checker = check_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('add')),
+            ('bot', check_dict([
+                ('email', check_string),
+                ('full_name', check_string),
+                ('api_key', check_string),
+                ('default_sending_stream', check_none_or(check_string)),
+                ('default_events_register_stream', check_none_or(check_string)),
+                ('default_all_public_streams', check_bool),
+                ('avatar_url', check_string),
+            ])),
+        ])
+
+        action = lambda: do_create_user('test-bot@zulip.com', '123', get_realm('zulip.com'),
+                                        'Test Bot', 'test', bot=True, bot_owner=self.user_profile)
+        events = self.do_test(action)
+        error = bot_created_checker('events[1]', events[1])
+        self.assert_on_error(error)
 
     def test_rename_stream(self):
         realm = get_realm('zulip.com')
@@ -353,7 +377,6 @@ class EventsRegisterTest(AuthedTestCase):
         events = self.do_test(action)
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
-
 
 from zerver.lib.event_queue import EventQueue
 class EventQueueTest(TestCase):
