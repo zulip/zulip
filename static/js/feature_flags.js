@@ -49,7 +49,7 @@ exports.cleanup_before_reload = page_params.staging;
 // This list must match the list of domains in enqueue_digest_emails.
 exports.dont_show_digest_email_setting = _.contains(["mit.edu", "customer29.invalid", "customer20.invalid"],
                                                     page_params.domain);
-exports.negated_search = page_params.staging;
+exports.negated_search = page_params.staging || _.contains(['randomfish.org'], page_params.domain);
 
 exports.fade_at_stream_granularity = page_params.staging;
 
