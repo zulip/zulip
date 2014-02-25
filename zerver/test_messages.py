@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from django.db.models import Q
+from sqlalchemy.sql import (
+    select, column, compiler
+)
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
 from zerver.views.messages import (
+    exclude_muting_conditions, get_sqlalchemy_connection,
     get_old_messages_backend, ok_to_include_history,
 )
 from zilencer.models import Deployment
@@ -31,7 +35,22 @@ from zerver.lib.actions import (
 
 import datetime
 import time
+import re
 import ujson
+
+
+def get_sqlalchemy_query_params(query):
+    dialect = get_sqlalchemy_connection().dialect
+    comp = compiler.SQLCompiler(dialect, query)
+    comp.compile()
+    return comp.params
+
+def fix_ws(s):
+    return re.sub('\s+', ' ', str(s)).strip()
+
+def get_recipient_id_for_stream_name(realm, stream_name):
+    stream = get_stream(stream_name, realm)
+    return get_recipient(Recipient.STREAM, stream.id).id
 
 class IncludeHistoryTest(AuthedTestCase):
     def test_ok_to_include_history(self):
@@ -992,6 +1011,31 @@ class GetOldMessagesTest(AuthedTestCase):
         cond = '''AND NOT (recipient_id = {Scotland} AND upper(subject) = upper('golf'))'''
         cond = cond.format(**ids)
         self.assertTrue(cond in queries[0]['sql'])
+
+    def test_exclude_muting_conditions(self):
+        realm = get_realm('zulip.com')
+        create_stream_if_needed(realm, 'devel')
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['devel', 'css'], ['bogus', 'bogus']])
+        user_profile.save()
+
+        narrow = [
+            dict(operator='stream', operand='Scotland'),
+        ]
+
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        query = select([column("id").label("message_id")], None, "zerver_message")
+        query = query.where(*muting_conditions)
+        expected_query = '''
+            SELECT id AS message_id
+            FROM zerver_message
+            WHERE NOT (recipient_id = :recipient_id_1 AND upper(subject) = upper(:upper_1))
+            '''
+        self.assertEqual(fix_ws(query), fix_ws(expected_query))
+        params = get_sqlalchemy_query_params(query)
+
+        self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Scotland'))
+        self.assertEqual(params['upper_1'], 'golf')
 
     def test_get_old_messages_queries(self):
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10},
