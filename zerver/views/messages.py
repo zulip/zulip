@@ -367,9 +367,21 @@ def ok_to_include_history(narrow, realm):
 
     return include_history
 
-def exclude_muting_conditions(user_profile):
+def get_stream_name_from_narrow(narrow):
+    for term in narrow:
+        if term['operator'] == 'stream':
+            return term['operand'].lower()
+    return None
+
+def exclude_muting_conditions(user_profile, narrow):
+    stream_name = get_stream_name_from_narrow(narrow)
     muted_topics = ujson.loads(user_profile.muted_topics)
     if muted_topics:
+        if stream_name is not None:
+            muted_topics = [m for m in muted_topics if m[0].lower() == stream_name]
+            if not muted_topics:
+                return []
+
         muted_streams = bulk_get_streams(user_profile.realm,
                                          [muted[0] for muted in muted_topics])
         muted_recipients = bulk_get_recipients(Recipient.STREAM,
@@ -455,7 +467,7 @@ def get_old_messages_backend(request, user_profile,
 
         # We exclude messages on muted topics when finding the first unread
         # message in this narrow
-        muting_conditions = exclude_muting_conditions(user_profile)
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
         if muting_conditions:
             condition = and_(condition, *muting_conditions)
 

@@ -985,11 +985,11 @@ class GetOldMessagesTest(AuthedTestCase):
         queries = filter(lambda q: q['sql'].startswith("SELECT message_id, flags"), queries)
 
         ids = {}
-        for stream_name in ['Scotland', 'devel']:
+        for stream_name in ['Scotland']:
             stream = get_stream(stream_name, realm)
             ids[stream_name] = get_recipient(Recipient.STREAM, stream.id).id
 
-        cond = '''AND NOT (recipient_id = {Scotland} AND upper(subject) = upper('golf') OR recipient_id = {devel} AND upper(subject) = upper('css'))'''
+        cond = '''AND NOT (recipient_id = {Scotland} AND upper(subject) = upper('golf'))'''
         cond = cond.format(**ids)
         self.assertTrue(cond in queries[0]['sql'])
 
