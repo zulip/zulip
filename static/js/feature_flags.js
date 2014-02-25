@@ -43,7 +43,6 @@ exports.show_autoscroll_forever_option = page_params.show_autoscroll_forever_opt
 // Still very beta:
 
 exports.full_width = false; //page_params.staging;
-exports.local_echo = page_params.staging || is_customer4 || _.contains(['customer15.invalid'], page_params.domain);
 exports.cleanup_before_reload = page_params.staging;
 
 // This list must match the list of domains in enqueue_digest_emails.
@@ -59,6 +58,7 @@ exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;
 exports.use_socket = true;
+exports.local_echo = true;
 
 // Ready for deprecation.
 exports.collapsible = false;
