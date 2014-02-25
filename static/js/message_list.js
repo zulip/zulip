@@ -549,7 +549,7 @@ MessageList.prototype = {
                 if (self.muting_enabled) {
                     self._all_items.sort(message_sort_func);
                 }
-                self.view.rerender_the_whole_thing();
+                self.view.rerender_preserving_scrolltop();
             }
         }, 0);
     }
