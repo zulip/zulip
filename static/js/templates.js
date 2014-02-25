@@ -19,10 +19,21 @@ exports.render = function (name, arg) {
 // Furthermore, waiting for DOM ready would introduce race conditions with
 // other DOM-ready callbacks that attempt to render templates.
 
-// Regular Handlebars partials require pre-registering.  This allows us
-// to treat any template as a partial.
-Handlebars.registerHelper('partial', function (template_name, context) {
-    return new Handlebars.SafeString(exports.render(template_name, this));
+// Regular Handlebars partials require pre-registering.  This allows us to treat
+// any template as a partial.  We also allow the partial to be passed additional
+// named arguments.  Arguments should alternate between strings which will be
+// used as the name and the associated value.
+Handlebars.registerHelper('partial', function (template_name) {
+    var extra_data = {};
+    var args_len = arguments.length;
+    var i;
+
+    for (i = 1; i < args_len - 2; i += 2) {
+        extra_data[arguments[i]] = arguments[i + 1];
+    }
+    var data = _.extend({}, this, extra_data);
+
+    return new Handlebars.SafeString(exports.render(template_name, data));
 });
 
 Handlebars.registerHelper('plural', function (condition, one, other) {
