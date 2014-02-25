@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from django.db.models import Q
 from sqlalchemy.sql import (
-    select, column, compiler
+    and_, select, column, compiler
 )
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
@@ -23,7 +23,7 @@ from zerver.lib.test_helpers import (
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Client, Message, Realm, Recipient, Stream, UserMessage, UserProfile,
+    Client, Message, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile,
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
 
@@ -51,6 +51,13 @@ def fix_ws(s):
 def get_recipient_id_for_stream_name(realm, stream_name):
     stream = get_stream(stream_name, realm)
     return get_recipient(Recipient.STREAM, stream.id).id
+
+def mute_stream(realm, user_profile, stream_name):
+    stream = Stream.objects.get(realm=realm, name=stream_name)
+    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
+    subscription.in_home_view = False
+    subscription.save()
 
 class IncludeHistoryTest(AuthedTestCase):
     def test_ok_to_include_history(self):
@@ -1036,6 +1043,27 @@ class GetOldMessagesTest(AuthedTestCase):
 
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Scotland'))
         self.assertEqual(params['upper_1'], 'golf')
+
+        mute_stream(realm, user_profile, 'Verona')
+        narrow = []
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        query = select([column("id")], None, "zerver_message")
+        query = query.where(and_(*muting_conditions))
+
+        expected_query = '''
+            SELECT id
+            FROM zerver_message
+            WHERE recipient_id NOT IN (:recipient_id_1)
+            AND NOT
+               (recipient_id = :recipient_id_2 AND upper(subject) = upper(:upper_1) OR
+                recipient_id = :recipient_id_3 AND upper(subject) = upper(:upper_2))'''
+        self.assertEqual(fix_ws(query), fix_ws(expected_query))
+        params = get_sqlalchemy_query_params(query)
+        self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Verona'))
+        self.assertEqual(params['recipient_id_2'], get_recipient_id_for_stream_name(realm, 'Scotland'))
+        self.assertEqual(params['upper_1'], 'golf')
+        self.assertEqual(params['recipient_id_3'], get_recipient_id_for_stream_name(realm, 'devel'))
+        self.assertEqual(params['upper_2'], 'css')
 
     def test_get_old_messages_queries(self):
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10},

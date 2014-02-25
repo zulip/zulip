@@ -21,7 +21,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
-from zerver.models import Message, UserProfile, Stream, \
+from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, valid_stream_name, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
@@ -374,13 +374,26 @@ def get_stream_name_from_narrow(narrow):
     return None
 
 def exclude_muting_conditions(user_profile, narrow):
+    conditions = []
     stream_name = get_stream_name_from_narrow(narrow)
+
+    if stream_name is None:
+        rows = Subscription.objects.filter(
+            user_profile=user_profile,
+            active=True,
+            in_home_view=False,
+            recipient__type=Recipient.STREAM
+        ).values('recipient_id')
+        muted_recipient_ids = map(lambda row: row['recipient_id'], rows)
+        condition = not_(column("recipient_id").in_(muted_recipient_ids))
+        conditions.append(condition)
+
     muted_topics = ujson.loads(user_profile.muted_topics)
     if muted_topics:
         if stream_name is not None:
             muted_topics = [m for m in muted_topics if m[0].lower() == stream_name]
             if not muted_topics:
-                return []
+                return conditions
 
         muted_streams = bulk_get_streams(user_profile.realm,
                                          [muted[0] for muted in muted_topics])
@@ -398,9 +411,9 @@ def exclude_muting_conditions(user_profile, narrow):
                 return and_(stream_cond, topic_cond)
 
             condition = not_(or_(*map(mute_cond, muted_topics)))
-            return [condition]
+            return conditions + [condition]
 
-    return []
+    return conditions
 
 @has_request_variables
 def get_old_messages_backend(request, user_profile,
