@@ -1848,7 +1848,8 @@ $(function () {
     $(".fixed-app .column-middle").css("margin-left", (250 + sbWidth) + "px");
 
     $(".column-right").css("right", sbWidth + "px");
-    $(".app-main .right-sidebar").css("padding-left", (10 + sbWidth) + "px");
+    $(".app-main .right-sidebar").css({"margin-left": (sbWidth) + "px",
+                                       "width": (250 - sbWidth) + "px"});
 
     $("#compose").css("left", "-" + sbWidth + "px");
     $(".compose-content").css({"left": sbWidth + "px",
