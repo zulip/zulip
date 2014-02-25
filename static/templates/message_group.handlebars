@@ -37,7 +37,7 @@
             <a class="message_label_clickable narrows_by_subject"
                href="{{topic_url}}"
                title="Narrow to stream &quot;{{display_recipient}}&quot;, topic &quot;{{subject}}&quot;">
-              {{#if ../../../../../use_match_properties}}
+              {{#if ../../../use_match_properties}}
                 {{{match_subject}}}
               {{else}}
                 {{subject}}
@@ -82,7 +82,7 @@
   {{/if}}
   {{#each messages}}
   {{#with this}}
-    {{partial "single_message"}}
+    {{partial "single_message" "use_match_properties" ../../../../use_match_properties}}
   {{/with}}
   {{/each}}
 </div>

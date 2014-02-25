@@ -126,6 +126,7 @@ MessageListView.prototype = {
                     current_group.color_class = stream_color.get_color_class(current_group.background_color);
                     current_group.invite_only = stream_data.get_invite_only(first_message.stream);
                     current_group.subject = first_message.subject;
+                    current_group.match_subject = first_message.match_subject;
                 } else if (current_group.is_private) {
                     current_group.pm_with_url = first_message.pm_with_url;
                     current_group.display_reply_to = first_message.display_reply_to;
@@ -245,7 +246,8 @@ MessageListView.prototype = {
         }
 
         var rendered_groups = $(templates.render('message_group', {
-            message_groups: new_message_groups
+            message_groups: new_message_groups,
+            use_match_properties: self.list.filter.is_search()
         }));
 
         var rendered_messages = [];

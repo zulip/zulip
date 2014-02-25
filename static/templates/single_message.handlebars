@@ -30,7 +30,7 @@
             </div>
           </div>
         </div>
-        <div class="message_content">{{#unless status_message}}{{#if match_content}}{{{match_content}}}{{else}}{{{content}}}{{/if}}{{/unless}}</div>
+        <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{match_content}}}{{else}}{{{content}}}{{/if}}{{/unless}}</div>
         {{#if last_edit_timestr}}
           {{#unless include_sender}}
           <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">EDITED</div>
