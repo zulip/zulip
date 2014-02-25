@@ -405,8 +405,7 @@ MessageList.prototype = {
             });
         }
 
-        this.view.rerender_the_whole_thing();
-        this.select_id(this.selected_id(), {use_closest: true, empty_ok: true});
+        this.rerender();
     },
 
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
