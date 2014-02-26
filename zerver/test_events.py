@@ -177,6 +177,22 @@ class GetEventsTest(AuthedTestCase):
 class EventsRegisterTest(AuthedTestCase):
     maxDiff = None
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
+    bot = get_user_profile_by_email("welcome-bot@zulip.com")
+
+    def create_bot(self):
+        return do_create_user('test-bot@zulip.com', '123',
+                              get_realm('zulip.com'), 'Test Bot', 'test',
+                              bot=True, bot_owner=self.user_profile)
+
+    def build_update_checker(self, field_name, check):
+        return check_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('update')),
+            ('bot', check_dict([
+                ('email', check_string),
+                (field_name, check),
+            ])),
+        ])
 
     def do_test(self, action, event_types=None):
         client = allocate_client_descriptor(self.user_profile.id, self.user_profile.realm.id,
@@ -265,6 +281,12 @@ class EventsRegisterTest(AuthedTestCase):
                                         'Test Bot', 'test', bot=True, bot_owner=self.user_profile)
         events = self.do_test(action)
         error = bot_created_checker('events[1]', events[1])
+        self.assert_on_error(error)
+
+    def test_change_bot_full_name(self):
+        action = lambda: do_change_full_name(self.bot, 'New Bot Name')
+        events = self.do_test(action)
+        error = self.build_update_checker('full_name', check_string)('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_rename_stream(self):

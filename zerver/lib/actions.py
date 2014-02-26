@@ -1316,10 +1316,14 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'user': user_profile.email,
                    'full_name': full_name})
 
-    event = dict(type="realm_user", op="update",
-                 person=dict(email=user_profile.email,
-                             full_name=user_profile.full_name))
-    send_event(event, active_user_ids(user_profile.realm))
+    payload = dict(email=user_profile.email,
+                   full_name=user_profile.full_name)
+    send_event(dict(type='realm_user', op='update', person=payload),
+               active_user_ids(user_profile.realm))
+    if user_profile.is_bot:
+        send_event(dict(type='realm_bot', op='update', bot=payload),
+                   bot_owner_userids(user_profile))
+
 
 def _default_stream_permision_check(user_profile, stream):
     # Any user can have a None default stream
@@ -2270,6 +2274,11 @@ def apply_events(state, events, user_profile):
         elif event['type'] == 'realm_bot':
             if event['op'] == 'add':
                 state['realm_bots'].append(event['bot'])
+
+            if event['op'] == 'update':
+                for bot in state['realm_bots']:
+                    if bot['email'] == event['bot']['email']:
+                        bot.update(event['bot'])
 
         elif event['type'] == 'stream':
             if event['op'] == 'update':
