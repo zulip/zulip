@@ -31,6 +31,7 @@ from confirmation.models import Confirmation
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
+from zerver.lib.create_user import random_api_key
 from zerver.lib.initial_password import initial_password
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.lib.cache_helpers import cache_save_message
@@ -1324,6 +1325,13 @@ def do_change_full_name(user_profile, full_name, log=True):
         send_event(dict(type='realm_bot', op='update', bot=payload),
                    bot_owner_userids(user_profile))
 
+def do_regenerate_api_key(user_profile, log=True):
+    user_profile.api_key = random_api_key()
+    user_profile.save(update_fields=["api_key"])
+
+    if log:
+        log_event({'type': 'user_change_api_key',
+                   'user': user_profile.email})
 
 def _default_stream_permision_check(user_profile, stream):
     # Any user can have a None default stream

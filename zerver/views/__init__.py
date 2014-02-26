@@ -37,12 +37,12 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
     notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
     do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
-    do_make_stream_private, do_add_default_stream, \
-    do_change_default_all_public_streams, do_change_default_desktop_notifications, \
+    do_add_default_stream, do_change_default_all_public_streams, \
+    do_change_default_desktop_notifications, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
-    do_change_stream_description, do_get_streams, do_remove_default_stream, \
-    do_update_pointer
+    do_change_stream_description, do_get_streams, do_make_stream_private, \
+    do_regenerate_api_key, do_remove_default_stream, do_update_pointer
 
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -1969,8 +1969,7 @@ def json_set_avatar(request, user_profile):
 
 @has_request_variables
 def regenerate_api_key(request, user_profile):
-    user_profile.api_key = random_api_key()
-    user_profile.save(update_fields=["api_key"])
+    do_regenerate_api_key(user_profile)
     json_result = dict(
         api_key = user_profile.api_key
     )
@@ -1986,8 +1985,7 @@ def regenerate_bot_api_key(request, user_profile, email):
     if not user_profile.can_admin_user(bot):
         return json_error('Insufficient permission')
 
-    bot.api_key = random_api_key()
-    bot.save(update_fields=["api_key"])
+    do_regenerate_api_key(bot)
     json_result = dict(
         api_key = bot.api_key
     )
