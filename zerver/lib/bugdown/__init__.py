@@ -178,12 +178,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return False
 
     def dropbox_image(self, url):
-        if not self.is_image(url):
-            return None
         parsed_url = urlparse.urlparse(url)
-        if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')) \
-                and (parsed_url.path.startswith('/s/') or parsed_url.path.startswith('/sh/')):
-            return "%s?dl=1" % (url,)
+        if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')):
+            if self.is_image(url) and (parsed_url.path.startswith('/s/')
+                                       or parsed_url.path.startswith('/sh/')):
+                return "%s?dl=1" % (url,)
+            if parsed_url.path.startswith('/sc/'):
+                # /sc/ is generally speaking a photo album, so let's unconditionally try to preview it
+                return "%s?dl=1" % (url,)
         return None
 
     def youtube_image(self, url):
