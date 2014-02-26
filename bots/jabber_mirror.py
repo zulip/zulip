@@ -66,7 +66,7 @@ class JabberToZulipBot(ClientXMPP):
     def session_start(self, event):
         self.get_roster()
         self.send_presence()
-        if options.stream_mirror and options.conference_domain is not None:
+        if options.mode == "public" and options.conference_domain is not None:
             for room in self.rooms:
                 self.plugin['xep_0045'].joinMUC(room + "@" + options.conference_domain,
                                                 self.nick)
@@ -178,9 +178,15 @@ if __name__ == '__main__':
                         format='%(levelname)-8s %(message)s')
 
     parser = optparse.OptionParser()
-    parser.add_option('--stream-mirror',
-                      default=False,
-                      action='store_true')
+    parser.add_option('--mode',
+                      default="personal",
+                      action='store',
+                      help= \
+'''Which mode to run in.  Valid options are "personal" and "public".  In
+"personal" mode, the mirror uses an individual users' credentials and mirrors
+all messages they send on Zulip to Jabber and all private Jabber messages to
+Zulip.  In "public" mode, the mirror uses the credentials for a dedicated mirror
+user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
 
     jabber_group = optparse.OptionGroup(parser, "Jabber configuration")
     jabber_group.add_option('--openfire',
@@ -205,11 +211,15 @@ if __name__ == '__main__':
     jabber_group.add_option('--conference-domain',
                             default=None,
                             action='store',
-                            help="Your Jabber conference domain (E.g. conference.jabber.example.com)")
+                            help="Your Jabber conference domain (E.g. conference.jabber.example.com).  "
+                            + "Only required when running in \"public\" mode.")
 
     parser.add_option_group(jabber_group)
     parser.add_option_group(zulip.generate_option_group(parser, "zulip-"))
     (options, args) = parser.parse_args()
+
+    if options.mode not in ('public', 'personal'):
+        sys.exit("Bad value for --mode: must be one of 'public' or 'personal'")
 
     if options.jabber_password is None:
         options.jabber_password = getpass.getpass("Jabber password: ")
