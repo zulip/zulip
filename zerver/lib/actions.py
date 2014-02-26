@@ -1349,6 +1349,13 @@ def do_change_avatar_source(user_profile, avatar_source, log=True):
                    'user': user_profile.email,
                    'avatar_source': avatar_source})
 
+    if user_profile.is_bot:
+        send_event(dict(type='realm_bot',
+                        op='update',
+                        bot=dict(email=user_profile.email,
+                                avatar_url=avatar_url(user_profile),)),
+                    bot_owner_userids(user_profile))
+
 def _default_stream_permision_check(user_profile, stream):
     # Any user can have a None default stream
     if stream is not None:
