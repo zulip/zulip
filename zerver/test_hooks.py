@@ -88,6 +88,7 @@ Adding a comment. Oh, what a comment it is!
         self.assertEqual(msg.subject, "BUG-7: More cowbell polease")
         self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-7](http://lfranchi.com:8080/browse/BUG-7) (assigned to @**Othello, the Moor of Venice**):
 
+* Changed resolution from **Fixed** to **None**
 * Changed status from **Resolved** to **Reopened**
 
 Re-opened yeah!
@@ -101,6 +102,7 @@ Re-opened yeah!
 
 * Changed status from **Open** to **Resolved**
 * Changed assignee from **None** to @**Othello, the Moor of Venice**
+* Changed resolution from **None** to **Fixed**
 
 Fixed it, finally!
 """)
@@ -136,6 +138,14 @@ Fixed it, finally!
 
 
 Making a comment, @**Othello, the Moor of Venice** is watching this issue
+""")
+
+    def test_priority_updated(self):
+        msg = self.send_jira_message('updated_priority')
+        self.assertEqual(msg.subject, "TEST-1: Fix That")
+        self.assertEqual(msg.content, """Leonardo Franchi [Administrator] **updated** [TEST-1](https://zulipp.atlassian.net/browse/TEST-1) (assigned to **leo@zulip.com**):
+
+* Changed priority from **Critical** to **Major**
 """)
 
 class BeanstalkHookTests(AuthedTestCase):

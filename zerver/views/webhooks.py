@@ -413,8 +413,9 @@ def api_jira_webhook(request, user_profile):
                 if field == 'assignee' and assignee_mention != '':
                     targetFieldString = assignee_mention
 
-                if field in ('status', 'assignee'):
-                    content += "* Changed %s from **%s** to %s\n" % (field, item.get('fromString'), targetFieldString)
+                fromFieldString = item.get('fromString')
+                if targetFieldString or fromFieldString:
+                    content += "* Changed %s from **%s** to %s\n" % (field, fromFieldString, targetFieldString)
 
         if comment != '':
             comment = convert_jira_markup(comment, user_profile.realm)
