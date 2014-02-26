@@ -169,7 +169,7 @@ function _visible_divs(selected_row, row_min_height, row_to_output, div_class, r
 exports.visible_groups = function (require_fully_visible) {
     var selected_row = current_msg_list.selected_row();
     if (selected_row === undefined || selected_row.length === 0) {
-        return;
+        return [];
     }
 
     var selected_group = rows.get_message_recipient_row(selected_row);
