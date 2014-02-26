@@ -66,7 +66,7 @@ class JabberToZulipBot(ClientXMPP):
     def session_start(self, event):
         self.get_roster()
         self.send_presence()
-        if options.mode == "public" and options.conference_domain is not None:
+        if options.mode == "public":
             for room in self.rooms:
                 self.plugin['xep_0045'].joinMUC(room + "@" + options.conference_domain,
                                                 self.nick)
@@ -220,6 +220,9 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
 
     if options.mode not in ('public', 'personal'):
         sys.exit("Bad value for --mode: must be one of 'public' or 'personal'")
+
+    if options.mode == 'public' and options.conference_domain is None:
+        sys.exit("--conference-domain is required when running in 'public' mode")
 
     if options.jabber_password is None:
         options.jabber_password = getpass.getpass("Jabber password: ")
