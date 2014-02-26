@@ -24,6 +24,7 @@ from zerver.lib.actions import (
     do_set_realm_name,
     do_update_pointer,
     do_create_user,
+    do_regenerate_api_key,
     fetch_initial_state_data,
 )
 
@@ -287,6 +288,12 @@ class EventsRegisterTest(AuthedTestCase):
         action = lambda: do_change_full_name(self.bot, 'New Bot Name')
         events = self.do_test(action)
         error = self.build_update_checker('full_name', check_string)('events[1]', events[1])
+        self.assert_on_error(error)
+
+    def test_regenerate_bot_api_key(self):
+        action = lambda: do_regenerate_api_key(self.bot)
+        events = self.do_test(action)
+        error = self.build_update_checker('api_key', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_rename_stream(self):

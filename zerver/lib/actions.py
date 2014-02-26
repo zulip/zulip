@@ -1333,6 +1333,13 @@ def do_regenerate_api_key(user_profile, log=True):
         log_event({'type': 'user_change_api_key',
                    'user': user_profile.email})
 
+    if user_profile.is_bot:
+        send_event(dict(type='realm_bot',
+                        op='update',
+                        bot=dict(email=user_profile.email,
+                                api_key=user_profile.api_key,)),
+                    bot_owner_userids(user_profile))
+
 def _default_stream_permision_check(user_profile, stream):
     # Any user can have a None default stream
     if stream is not None:
