@@ -1042,9 +1042,10 @@ def get_active_bot_dicts_in_realm(realm):
                                        'email', 'default_sending_stream__name',
                                        'default_events_register_stream__name',
                                        'default_all_public_streams', 'api_key',
-                                       'avatar_source') \
+                                       'bot_owner__email', 'avatar_source') \
                                 .select_related('default_sending_stream',
-                                                'default_events_register_stream')
+                                                'default_events_register_stream',
+                                                'bot_owner')
 
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest

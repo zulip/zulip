@@ -571,6 +571,7 @@ JS_SPECS = {
             'js/emoji.js',
             'js/referral.js',
             'js/custom_markdown.js',
+            'js/bot_data.js',
         ],
         'output_filename': 'min/app.js'
     },

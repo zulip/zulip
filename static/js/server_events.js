@@ -87,6 +87,15 @@ function get_events_success(events) {
                 people.update(event.person);
             }
             break;
+        case 'realm_bot':
+            if (event.op === 'add') {
+                bot_data.add(event.bot);
+            } else if (event.op === 'remove') {
+                bot_data.remove(event.bot.email);
+            } else if (event.op === 'update') {
+                bot_data.update(event.bot.email, event.bot);
+            }
+            break;
         case 'stream':
             if (event.op === 'update') {
                 // Legacy: Stream properties are still managed by subs.js on the client side.

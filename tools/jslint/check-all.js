@@ -28,7 +28,7 @@ var globals =
     + ' message_edit tab_bar emoji popovers navigate people settings alert_words_ui message_store'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
     + ' Filter summary admin stream_data muting WinChan muting_ui Socket channel'
-    + ' message_flags'
+    + ' message_flags bot_data'
 
     // colorspace.js
     + ' colorspace'

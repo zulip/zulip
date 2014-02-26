@@ -132,6 +132,7 @@ def notify_created_bot(user_profile):
                           default_events_register_stream=default_events_register_stream_name,
                           default_all_public_streams=user_profile.default_all_public_streams,
                           avatar_url=avatar_url(user_profile),
+                          owner=user_profile.bot_owner.email,
                          ))
     send_event(event, bot_owner_userids(user_profile))
 
@@ -2237,6 +2238,7 @@ def get_realm_bot_dicts(user_profile):
              'default_sending_stream': botdict['default_sending_stream__name'],
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],
+             'owner': botdict['bot_owner__email'],
              'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
             }
             for botdict in get_active_bot_dicts_in_realm(user_profile.realm)]
