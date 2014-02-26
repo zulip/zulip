@@ -1,6 +1,7 @@
 from django.test.runner import DiscoverRunner
 
 from zerver.lib.cache import bounce_key_prefix_for_testing
+from zerver.views.messages import get_sqlalchemy_connection
 
 import os
 import time
@@ -86,6 +87,10 @@ class Runner(DiscoverRunner):
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         self.setup_test_environment()
         suite = self.build_suite(test_labels, extra_tests)
+        # We have to do the next line to avoid flaky scenarios where we
+        # run a single test and getting an SA connection causes data from
+        # a Django connection to be rolled back mid-test.
+        get_sqlalchemy_connection()
         self.run_suite(suite)
         self.teardown_test_environment()
         print 'DONE!'
