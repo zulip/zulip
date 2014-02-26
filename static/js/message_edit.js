@@ -6,7 +6,14 @@ var currently_editing_messages = {};
 //returns true if the edit task should end.
 exports.save = function (row) {
     var msg_list = current_msg_list;
-    var message = current_msg_list.get(rows.id(row));
+    var message_row;
+
+    if (row.hasClass('recipient_row')) {
+        message_row = rows.first_message_in_group(row);
+    } else {
+        message_row = row;
+    }
+    var message = current_msg_list.get(rows.id(message_row));
     var changed = false;
 
     var new_content = row.find(".message_edit_content").val();
@@ -155,7 +162,7 @@ exports.start_topic_edit = function (recipient_row) {
     var form = $(templates.render('topic_edit_form'));
     current_msg_list.show_edit_topic(recipient_row, form);
     form.keydown(handle_edit_keydown);
-    var message = current_msg_list.get(rows.id(recipient_row));
+    var message = current_msg_list.get(rows.id(rows.first_message_in_group(recipient_row)));
     var topic = message.subject;
     if (topic === compose.empty_subject_placeholder()) {
         topic = '';

@@ -215,6 +215,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 
 exports.update_messages = function update_messages(events) {
     var msgs_to_rerender = [];
+    var topic_edited = false;
 
     _.each(events, function (event) {
         var msg = stored_messages[event.message_id];
@@ -237,6 +238,7 @@ exports.update_messages = function update_messages(events) {
             // A topic edit may affect multiple messages, listed in
             // event.message_ids. event.message_id is still the first message
             // where the user initiated the edit.
+            topic_edited = true;
             _.each(event.message_ids, function (id) {
                 var msg = message_store.get(id);
                 if (msg === undefined) {
@@ -271,9 +273,18 @@ exports.update_messages = function update_messages(events) {
         alert_words.process_message(msg);
     });
 
-    home_msg_list.view.rerender_messages(msgs_to_rerender);
-    if (current_msg_list === narrowed_msg_list) {
-        narrowed_msg_list.view.rerender_messages(msgs_to_rerender);
+    // If a topic was edited, we re-render the whole view to get any propagated edits
+    // to be updated
+    if (topic_edited) {
+        home_msg_list.rerender();
+        if (current_msg_list === narrowed_msg_list) {
+            narrowed_msg_list.rerender();
+        }
+    } else {
+        home_msg_list.view.rerender_messages(msgs_to_rerender);
+        if (current_msg_list === narrowed_msg_list) {
+            narrowed_msg_list.view.rerender_messages(msgs_to_rerender);
+        }
     }
     unread.update_unread_counts();
     stream_list.update_streams_sidebar();
