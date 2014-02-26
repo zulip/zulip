@@ -133,6 +133,7 @@ MessageListView.prototype = {
                 }
                 current_group.display_recipient = first_message.display_recipient;
                 current_group.always_visible_topic_edit = first_message.always_visible_topic_edit;
+                current_group.on_hover_topic_edit = first_message.on_hover_topic_edit;
                 current_group.subject_links = first_message.subject_links;
 
                 current_group.messages[current_group.messages.length - 1].include_footer = true;
