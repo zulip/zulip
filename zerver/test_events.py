@@ -26,6 +26,7 @@ from zerver.lib.actions import (
     do_create_user,
     do_regenerate_api_key,
     do_change_avatar_source,
+    do_change_default_all_public_streams,
     fetch_initial_state_data,
 )
 
@@ -301,6 +302,12 @@ class EventsRegisterTest(AuthedTestCase):
         action = lambda: do_change_avatar_source(self.bot, self.bot.AVATAR_FROM_USER)
         events = self.do_test(action)
         error = self.build_update_checker('avatar_url', check_string)('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_bot_default_all_public_streams(self):
+        action = lambda: do_change_default_all_public_streams(self.bot, True)
+        events = self.do_test(action)
+        error = self.build_update_checker('default_all_public_streams', check_bool)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_rename_stream(self):

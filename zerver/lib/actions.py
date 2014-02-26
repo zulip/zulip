@@ -1393,6 +1393,12 @@ def do_change_default_all_public_streams(user_profile, value, log=True):
         log_event({'type': 'user_change_default_all_public_streams',
                    'user': user_profile.email,
                    'value': str(value)})
+    if user_profile.is_bot:
+        send_event(dict(type='realm_bot',
+                        op='update',
+                        bot=dict(email=user_profile.email,
+                                default_all_public_streams=user_profile.default_all_public_streams,)),
+                    bot_owner_userids(user_profile))
 
 def do_change_is_admin(user_profile, is_admin):
     if is_admin:
