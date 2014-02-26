@@ -1395,6 +1395,16 @@ def do_change_default_events_register_stream(user_profile, stream, log=True):
         log_event({'type': 'user_change_default_events_register_stream',
                    'user': user_profile.email,
                    'stream': str(stream)})
+    if user_profile.is_bot:
+        if stream:
+            stream_name = stream.name
+        else:
+            stream_name = None
+        send_event(dict(type='realm_bot',
+                        op='update',
+                        bot=dict(email=user_profile.email,
+                                 default_events_register_stream=stream_name,)),
+                    bot_owner_userids(user_profile))
 
 def do_change_default_all_public_streams(user_profile, value, log=True):
     user_profile.default_all_public_streams = value
