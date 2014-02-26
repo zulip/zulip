@@ -45,8 +45,8 @@ function _display_users_normally() {
     $('.user_sidebar_entry').removeClass('faded').removeClass('unfaded');
 }
 
-function change_fade_state(elt, should_fade_message) {
-    if (should_fade_message) {
+function change_fade_state(elt, should_fade_group) {
+    if (should_fade_group) {
         elt.removeClass("unfaded").addClass("faded");
     } else {
         elt.removeClass("faded").addClass("unfaded");
@@ -54,23 +54,22 @@ function change_fade_state(elt, should_fade_message) {
 }
 
 function _fade_messages() {
-    var i;
-    var should_fade_message = false;
-    var visible_messages = viewport.visible_messages(false);
+    var i, first_message, first_row;
+    var should_fade_group = false;
+    var visible_groups = viewport.visible_groups(false);
 
     normal_display = false;
 
     // Update the visible messages first, before the compose box opens
-    for (i = 0; i < visible_messages.length; i++) {
-        should_fade_message = !fade_heuristic(focused_recipient, visible_messages[i]);
-        var elt = current_msg_list.get_row(visible_messages[i].id);
-        var recipient_row = rows.get_message_recipient_row(elt);
+    for (i = 0; i < visible_groups.length; i++) {
+        first_row = rows.first_message_in_group(visible_groups[i]);
+        first_message = current_msg_list.get(rows.id(first_row));
+        should_fade_group = !fade_heuristic(focused_recipient, first_message);
 
-        change_fade_state(elt, should_fade_message);
-        change_fade_state(recipient_row, should_fade_message);
+        change_fade_state($(visible_groups[i]), should_fade_group);
     }
 
-    // Defer updating all messages so that the compose box can open sooner
+    // Defer updating all message groups so that the compose box can open sooner
     setTimeout(function (expected_msg_list, expected_recipient) {
         var all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
 
@@ -80,14 +79,14 @@ function _fade_messages() {
             return;
         }
 
-        should_fade_message = false;
+        should_fade_group = false;
 
         // Note: The below algorithm relies on the fact that all_elts is
         // sorted as it would be displayed in the message view
         for (i = 0; i < all_groups.length; i++) {
             var group_elt = $(all_groups[i]);
-            should_fade_message = !fade_heuristic(focused_recipient, rows.recipient_from_group(group_elt));
-            change_fade_state(group_elt, should_fade_message);
+            should_fade_group = !fade_heuristic(focused_recipient, rows.recipient_from_group(group_elt));
+            change_fade_state(group_elt, should_fade_group);
         }
 
         ui.update_floating_recipient_bar();
