@@ -114,15 +114,16 @@ function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
     }
 }
 
-function add_to_visible_messages(candidates, visible_messages,
+function add_to_visible(candidates, visible,
                                  top_of_feed, bottom_of_feed,
-                                 require_fully_visible) {
+                                 require_fully_visible,
+                                 row_to_id) {
     _.every(candidates, function (row) {
         var row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
         if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed,
                                 require_fully_visible)) {
-            visible_messages.push(current_msg_list.get(rows.id($(row))));
+            visible.push(row_to_id(row));
             return true;
         } else {
             return false;
@@ -142,32 +143,54 @@ var bottom_of_feed = new util.CachedValue({
     }
 });
 
-exports.visible_messages = function (require_fully_visible) {
+function _visible_divs(selected_row, row_min_height, row_to_output, div_class, require_fully_visible) {
     // Note that when using getBoundingClientRect() we are getting offsets
     // relative to the visible window, but when using jQuery's offset() we are
     // getting offsets relative to the full scrollable window. You can't try to
     // compare heights from these two methods.
-
-    var selected = current_msg_list.selected_message();
     var height = bottom_of_feed.get() - top_of_feed.get();
-
-    // Being simplistic about this, the smallest message is 25 px high.
-    var selected_row = current_msg_list.selected_row();
-    var num_neighbors = Math.floor(height / 25);
+    var num_neighbors = Math.floor(height / row_min_height);
 
     // We do this explicitly without merges and without recalculating
     // the feed bounds to keep this computation as cheap as possible.
-    var visible_messages = [];
-    var messages_above_pointer = selected_row.prevAll("div.message_row[zid]:lt(" + num_neighbors + ")");
-    var messages_below_pointer = selected_row.nextAll("div.message_row[zid]:lt(" + num_neighbors + ")");
-    add_to_visible_messages(selected_row, visible_messages,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible);
-    add_to_visible_messages(messages_above_pointer, visible_messages,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible);
-    add_to_visible_messages(messages_below_pointer, visible_messages,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible);
+    var visible = [];
+    var above_pointer = selected_row.prevAll("div." + div_class + ":lt(" + num_neighbors + ")");
+    var below_pointer = selected_row.nextAll("div." + div_class + ":lt(" + num_neighbors + ")");
+    add_to_visible(selected_row, visible,
+                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
+    add_to_visible(above_pointer, visible,
+                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
+    add_to_visible(below_pointer, visible,
+                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
 
-    return visible_messages;
+    return visible;
+}
+
+exports.visible_groups = function (require_fully_visible) {
+    var selected_row = current_msg_list.selected_row();
+    if (selected_row === undefined || selected_row.length === 0) {
+        return;
+    }
+
+    var selected_group = rows.get_message_recipient_row(selected_row);
+
+    function get_row(row) {
+        return row;
+    }
+
+    // Being simplistic about this, the smallest group is about 75 px high.
+    return _visible_divs(selected_group, 75, get_row, "recipient_row", require_fully_visible);
+};
+
+exports.visible_messages = function (require_fully_visible) {
+    var selected_row = current_msg_list.selected_row();
+
+    function row_to_id(row) {
+        return current_msg_list.get(rows.id($(row)));
+    }
+
+    // Being simplistic about this, the smallest message is 25 px high.
+    return _visible_divs(selected_row, 25, row_to_id, "message_row", require_fully_visible);
 };
 
 exports.scrollTop = function viewport_scrollTop (target_scrollTop) {
