@@ -1,54 +1,18 @@
 from __future__ import absolute_import
 
-import email
 import logging
-import os
 import re
-import sys
 
 from email.header import decode_header
 
 from django.conf import settings
 
-from zerver.lib.actions import decode_email_address
+from zerver.lib.actions import decode_email_address, internal_send_message
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.upload import upload_message_image
-from zerver.models import Stream, get_user_profile_by_email, UserProfile
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../api"))
-import zulip
+from zerver.models import Stream
 
 logger = logging.getLogger(__name__)
-
-email_gateway_user = None
-api_key = None
-try:
-    email_gateway_user = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
-    api_key = email_gateway_user.api_key
-except UserProfile.DoesNotExist:
-    print "No configured %s user" % (settings.EMAIL_GATEWAY_BOT,)
-    sys.exit(1)
-
-
-if settings.DEPLOYED:
-    prod_api_client = zulip.Client(
-            client="ZulipEmailMirror/0.1",
-            site="https://zulip.com",
-            email=settings.EMAIL_GATEWAY_BOT,
-            api_key=api_key)
-
-
-    api_client = zulip.Client(
-            client="ZulipEmailMirror/0.1",
-            site=settings.EXTERNAL_API_URI,
-            email=settings.EMAIL_GATEWAY_BOT,
-            api_key=api_key)
-else:
-    api_client = prod_api_client = zulip.Client(
-            client="ZulipEmailMirror/0.1",
-            site=settings.EXTERNAL_API_URI,
-            email=settings.EMAIL_GATEWAY_BOT,
-            api_key=api_key)
 
 def redact_stream(error_message):
     domain = settings.EMAIL_GATEWAY_PATTERN.rsplit('@')[-1]
@@ -84,22 +48,13 @@ class ZulipEmailForwardError(Exception):
     pass
 
 def send_zulip(stream, topic, content):
-    if stream.realm.domain != 'zulip.com' and not settings.ENTERPRISE:
-        client = prod_api_client
-    else:
-        client = api_client
-
-    message_data = {
-        "type": "stream",
-        "content": content[:2000],
-        "subject": topic[:60],
-        "to": stream.name,
-        "domain": stream.realm.domain
-        }
-
-    response = client.send_message(message_data)
-    if response["result"] != "success":
-        raise ZulipEmailForwardError(response["msg"])
+    internal_send_message(
+            settings.EMAIL_GATEWAY_BOT,
+            "stream",
+            stream.name,
+            topic[:60],
+            content[:2000],
+            stream.realm)
 
 def valid_stream(stream_name, token):
     try:
@@ -157,7 +112,7 @@ def extract_and_upload_attachments(message, realm):
         if filename:
             s3_url = upload_message_image(filename, content_type,
                                           part.get_payload(decode=True),
-                                          email_gateway_user,
+                                          settings.EMAIL_GATEWAY_BOT,
                                           target_realm=realm)
             formatted_link = "[%s](%s)" % (filename, s3_url)
             attachment_links.append(formatted_link)
