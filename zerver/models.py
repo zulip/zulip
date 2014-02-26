@@ -1069,27 +1069,40 @@ class UserPresence(models.Model):
                 'client__name',
                 'status',
                 'timestamp',
-                'user_profile__email'
+                'user_profile__email',
+                'user_profile__id',
+                'user_profile__enable_offline_push_notifications',
         )
+
+        mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
+                user__realm_id=1,
+                user__is_active=True,
+                user__is_bot=False,
+        ).distinct("user").values("user")]
+
 
         for row in query:
             info = UserPresence.to_presence_dict(
                     client_name=row['client__name'],
                     status=row['status'],
                     timestamp=row['timestamp'],
+                    push_enabled=row['user_profile__enable_offline_push_notifications'],
+                    has_push_devices=row['user_profile__id'] in mobile_user_ids
                     )
             user_statuses[row['user_profile__email']][row['client__name']] = info
 
         return user_statuses
 
     @staticmethod
-    def to_presence_dict(client_name=None, status=None, timestamp=None):
+    def to_presence_dict(client_name=None, status=None, timestamp=None, push_enabled=None,
+            has_push_devices=None):
         presence_val = UserPresence.status_to_string(status)
         timestamp = datetime_to_timestamp(timestamp)
         return dict(
                 client=client_name,
                 status=presence_val,
-                timestamp=timestamp
+                timestamp=timestamp,
+                pushable=(push_enabled and has_push_devices),
         )
 
     def to_dict(self):
