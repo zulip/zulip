@@ -29,6 +29,7 @@ from zerver.lib.actions import (
     do_change_default_all_public_streams,
     do_change_default_sending_stream,
     do_change_default_events_register_stream,
+    do_deactivate_user,
     fetch_initial_state_data,
 )
 
@@ -184,8 +185,8 @@ class EventsRegisterTest(AuthedTestCase):
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
     bot = get_user_profile_by_email("welcome-bot@zulip.com")
 
-    def create_bot(self):
-        return do_create_user('test-bot@zulip.com', '123',
+    def create_bot(self, email):
+        return do_create_user(email, '123',
                               get_realm('zulip.com'), 'Test Bot', 'test',
                               bot=True, bot_owner=self.user_profile)
 
@@ -281,9 +282,7 @@ class EventsRegisterTest(AuthedTestCase):
                 ('avatar_url', check_string),
             ])),
         ])
-
-        action = lambda: do_create_user('test-bot@zulip.com', '123', get_realm('zulip.com'),
-                                        'Test Bot', 'test', bot=True, bot_owner=self.user_profile)
+        action = lambda: self.create_bot('test-bot@zulip.com')
         events = self.do_test(action)
         error = bot_created_checker('events[1]', events[1])
         self.assert_on_error(error)
@@ -324,6 +323,21 @@ class EventsRegisterTest(AuthedTestCase):
         action = lambda: do_change_default_events_register_stream(self.bot, stream)
         events = self.do_test(action)
         error = self.build_update_checker('default_events_register_stream', check_string)('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_do_deactivate_user(self):
+        bot_deactivate_checker = check_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('remove')),
+            ('bot', check_dict([
+                ('email', check_string),
+                ('full_name', check_string),
+            ])),
+        ])
+        bot = self.create_bot('foo-bot@zulip.com')
+        action = lambda: do_deactivate_user(bot)
+        events = self.do_test(action)
+        error = bot_deactivate_checker('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_rename_stream(self):

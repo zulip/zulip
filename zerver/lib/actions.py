@@ -245,6 +245,12 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
                              full_name=user_profile.full_name))
     send_event(event, active_user_ids(user_profile.realm))
 
+    if user_profile.is_bot:
+        event = dict(type="realm_bot", op="remove",
+                     bot=dict(email=user_profile.email,
+                              full_name=user_profile.full_name))
+        send_event(event, bot_owner_userids(user_profile))
+
     if _cascade:
         bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                                   bot_owner=user_profile)
@@ -2331,6 +2337,10 @@ def apply_events(state, events, user_profile):
         elif event['type'] == 'realm_bot':
             if event['op'] == 'add':
                 state['realm_bots'].append(event['bot'])
+
+            if event['op'] == 'remove':
+                email = event['bot']['email']
+                state['realm_bots'] = [b for b in state['realm_bots'] if b['email'] != email]
 
             if event['op'] == 'update':
                 for bot in state['realm_bots']:
