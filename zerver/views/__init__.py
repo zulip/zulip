@@ -42,7 +42,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_regenerate_api_key, do_remove_default_stream, do_update_pointer
+    do_regenerate_api_key, do_remove_default_stream, do_update_pointer, \
+    do_change_avatar_source
 
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -1937,8 +1938,7 @@ def patch_bot_backend(request, user_profile, email,
         user_file = request.FILES.values()[0]
         upload_avatar_image(user_file, user_profile, bot.email)
         avatar_source = UserProfile.AVATAR_FROM_USER
-        bot.avatar_source = avatar_source
-        bot.save(update_fields=["avatar_source"])
+        do_change_avatar_source(bot, avatar_source)
     else:
         return json_error("You may only upload one file at a time")
 
@@ -1958,8 +1958,7 @@ def json_set_avatar(request, user_profile):
 
     user_file = request.FILES.values()[0]
     upload_avatar_image(user_file, user_profile, user_profile.email)
-    user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
-    user_profile.save(update_fields=["avatar_source"])
+    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_USER)
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(

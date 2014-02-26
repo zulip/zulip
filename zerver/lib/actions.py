@@ -1340,6 +1340,15 @@ def do_regenerate_api_key(user_profile, log=True):
                                 api_key=user_profile.api_key,)),
                     bot_owner_userids(user_profile))
 
+def do_change_avatar_source(user_profile, avatar_source, log=True):
+    user_profile.avatar_source = avatar_source
+    user_profile.save(update_fields=["avatar_source"])
+
+    if log:
+        log_event({'type': 'user_change_avatar_source',
+                   'user': user_profile.email,
+                   'avatar_source': avatar_source})
+
 def _default_stream_permision_check(user_profile, stream):
     # Any user can have a None default stream
     if stream is not None:
