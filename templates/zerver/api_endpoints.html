@@ -41,14 +41,14 @@
             <dd>{{ return.1 }}</dd>
         {% endfor %}
         </dl>
-        {%if blurb.example_request %}
+        {% if blurb.example_request %}
         <h3>Example request</h3>
         {% for lang, req in blurb.example_request.items %}
             <div class="example_request {{ lang }}">
                 {{ req }}
             </div>
         {% endfor %}{% endif %}
-        {%if blurb.rendered_response %}
+        {% if blurb.rendered_response %}
         <h3>Example response</h3>
         <div class="example_response">
             {{ blurb.rendered_response }}
