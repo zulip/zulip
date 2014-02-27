@@ -88,25 +88,29 @@ def validate(fn, check_indent=True):
     if state.depth != 0:
         return state.matcher("(NO TAG)")
 
-git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
+def check_our_files():
+    git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
 
-# Check all our handlebars templates.
-templates = [fn for fn in git_files if fn.endswith('.handlebars')]
-assert len(templates) >= 10 # sanity check that we are actually doing work
-for fn in templates:
-    validate(fn)
+    # Check all our handlebars templates.
+    templates = [fn for fn in git_files if fn.endswith('.handlebars')]
+    assert len(templates) >= 10 # sanity check that we are actually doing work
+    for fn in templates:
+        validate(fn)
 
-# Django templates are pretty messy now, so we do minimal checking.
-templates = sorted([fn for fn in git_files if fn.endswith('.html') and 'templates' in fn])
+    # Django templates are pretty messy now, so we do minimal checking.
+    templates = sorted([fn for fn in git_files if fn.endswith('.html') and 'templates' in fn])
 
-def ok(fn):
-    if 'api.html' in fn: return False
-    if 'base.html' in fn: return False
-    return True
+    def ok(fn):
+        if 'api.html' in fn: return False
+        if 'base.html' in fn: return False
+        return True
 
-templates = filter(ok, templates)
+    templates = filter(ok, templates)
 
 
-assert len(templates) >= 10 # sanity check that we are actually doing work
-for fn in templates:
-    validate(fn, check_indent=False)
+    assert len(templates) >= 10 # sanity check that we are actually doing work
+    for fn in templates:
+        validate(fn, check_indent=False)
+
+if __name__ == '__main__':
+    check_our_files()
