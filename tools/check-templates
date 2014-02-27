@@ -67,20 +67,24 @@ def validate(fn, check_indent=True):
 
     while state.i < len(text):
 
-        c = text[state.i]
-        if c == '<':
+        # HTML tags
+        if looking_at("<") and not looking_at("</"):
             s = get_html_tag(text, state.i)
-            if s.startswith('</'):
-                end_tag = s[2:-1]
-                state.matcher(end_tag)
-            else:
-                tag = s[1:-1].split()[0]
-                ignore = s.startswith('<!--') or s.endswith('/>') or tag in ['meta', '!DOCTYPE']
-                if not ignore:
-                    start_tag_matcher(s, tag)
+            tag = s[1:-1].split()[0]
+            ignore = s.startswith('<!--') or s.endswith('/>') or tag in ['meta', '!DOCTYPE']
+            if not ignore:
+                start_tag_matcher(s, tag)
             advance(len(s))
             continue
 
+        if looking_at("</"):
+            s = get_html_tag(text, state.i)
+            end_tag = s[2:-1]
+            state.matcher(end_tag)
+            advance(len(s))
+            continue
+
+        # Handlebar tags
         if looking_at("{{#") or looking_at("{{^"):
             s = get_handlebars_tag(text, state.i)
             tag = s[3:-2].split()[0]
