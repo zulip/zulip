@@ -68,12 +68,7 @@ def validate(fn, check_indent=True):
             break
         c = text[state.i]
         if c == '<':
-            end = state.i + 1
-            while end < len(text) and text[end] != '>':
-                end += 1
-            if text[end] != '>':
-                raise Exception('Tag missing >')
-            s = text[state.i:end+1]
+            s = get_html_tag(text, state.i)
             if s.startswith('</'):
                 state.matcher(s)
             else:
@@ -87,6 +82,15 @@ def validate(fn, check_indent=True):
 
     if state.depth != 0:
         return state.matcher("(NO TAG)")
+
+def get_html_tag(text, i):
+    end = i + 1
+    while end < len(text) and text[end] != '>':
+        end += 1
+    if text[end] != '>':
+        raise Exception('Tag missing >')
+    s = text[i:end+1]
+    return s
 
 def check_our_files():
     git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
