@@ -11,6 +11,7 @@ from zerver.lib.test_runner import slow
 from zerver.views.messages import (
     exclude_muting_conditions, get_sqlalchemy_connection,
     get_old_messages_backend, ok_to_include_history,
+    NarrowBuilder,
 )
 from zilencer.models import Deployment
 
@@ -59,6 +60,41 @@ def mute_stream(realm, user_profile, stream_name):
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.in_home_view = False
     subscription.save()
+
+class NarrowBuilderTest(AuthedTestCase):
+    def test_add_term(self):
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        builder = NarrowBuilder(user_profile, column('id'))
+        raw_query = select([column("id")], None, "zerver_message")
+
+        def check(term, where_clause):
+            query = builder.add_term(raw_query, term)
+            self.assertTrue(where_clause in str(query))
+
+        term = dict(operator='stream', operand='Scotland')
+        check(term, 'WHERE recipient_id = :recipient_id_1')
+
+        term = dict(operator='is', operand='private')
+        check(term, 'WHERE type = :type_1 OR type = :type_2')
+
+        for operand in ['starred', 'mentioned', 'alerted']:
+            term = dict(operator='is', operand=operand)
+            check(term, 'WHERE (flags & :flags_1) != :param_1')
+
+        term = dict(operator='topic', operand='lunch')
+        check(term, 'WHERE upper(subject) = upper(:param_1)')
+
+        term = dict(operator='sender', operand='othello@zulip.com')
+        check(term, 'WHERE sender_id = :param_1')
+
+        term = dict(operator='pm-with', operand='othello@zulip.com')
+        check(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
+
+        term = dict(operator='id', operand=555)
+        check(term, 'WHERE id = :param_1')
+
+        term = dict(operator='search', operand='"french fries"')
+        check(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
 class IncludeHistoryTest(AuthedTestCase):
     def test_ok_to_include_history(self):
