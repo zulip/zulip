@@ -90,7 +90,7 @@ class NarrowBuilder(object):
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
 
-    def __call__(self, query, term):
+    def add_term(self, query, term):
         # We have to be careful here because we're letting users call a method
         # by name! The prefix 'by_' prevents it from colliding with builtin
         # Python __magic__ stuff.
@@ -458,12 +458,12 @@ def get_old_messages_backend(request, user_profile,
 
         # Build the query for the narrow
         num_extra_messages = 0
-        build = NarrowBuilder(user_profile, inner_msg_id_col)
+        builder = NarrowBuilder(user_profile, inner_msg_id_col)
         for term in narrow:
             if term['operator'] == 'search' and not is_search:
                 query = query.column("subject").column("rendered_content")
                 is_search = True
-            query = build(query, term)
+            query = builder.add_term(query, term)
 
     # We add 1 to the number of messages requested if no narrow was
     # specified to ensure that the resulting list always contains the
@@ -805,9 +805,9 @@ def messages_in_narrow_backend(request, user_profile,
                         literal_column("zerver_usermessage.message_id") ==
                         literal_column("zerver_message.id")))
 
-    build = NarrowBuilder(user_profile, column("message_id"))
+    builder = NarrowBuilder(user_profile, column("message_id"))
     for term in narrow:
-        query = build(query, term)
+        query = builder.add_term(query, term)
 
     sa_conn = get_sqlalchemy_connection()
     query_result = list(sa_conn.execute(query).fetchall())
