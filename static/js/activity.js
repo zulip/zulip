@@ -13,6 +13,14 @@ var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 /* Mark users as offline after 140 seconds since their last checkin */
 var OFFLINE_THRESHOLD_SECS = 140;
 
+// Testing
+exports._OFFLINE_THRESHOLD_SECS = OFFLINE_THRESHOLD_SECS;
+
+var MOBILE_DEVICES = ["Android", "IOS"];
+
+function is_mobile(device) {
+    return MOBILE_DEVICES.indexOf(device) !== -1;
+}
 
 var presence_descriptions = {
     active: 'is active',
@@ -40,6 +48,7 @@ $("html").on("mousemove", function () {
 var presence_info = {};
 
 var huddle_timestamps = new Dict();
+
 
 exports.process_loaded_messages = function (messages) {
     _.each(messages, function (message) {
@@ -222,7 +231,8 @@ function actually_update_users() {
             email: email,
             num_unread: get_num_unread(email),
             type: presence,
-            type_desc: presence_descriptions[presence]
+            type_desc: presence_descriptions[presence],
+            mobile: presence_info[email].mobile
         };
     }
 
@@ -285,18 +295,44 @@ exports.update_huddles = function () {
 };
 
 function status_from_timestamp(baseline_time, presence) {
-    if (presence.website === undefined) {
-        return {status: 'offline'};
-    }
-
-    var age = baseline_time - presence.website.timestamp;
-
     var status = 'offline';
-    if (age < OFFLINE_THRESHOLD_SECS) {
-        status = presence.website.status;
-    }
-    return {status: status};
+    var mobileAvailable = false;
+    var nonmobileAvailable = false;
+    _.each(presence, function (device_presence, device) {
+        var age = baseline_time - device_presence.timestamp;
+        if (is_mobile(device)) {
+            mobileAvailable = device_presence.pushable || mobileAvailable;
+        }
+        if (age < OFFLINE_THRESHOLD_SECS) {
+            switch (device_presence.status) {
+                case 'active':
+                    if (is_mobile(device)) {
+                        mobileAvailable = true;
+                    } else {
+                        nonmobileAvailable = true;
+                    }
+                    status = device_presence.status;
+                    break;
+                case 'idle':
+                    if (status !== 'active') {
+                        status = device_presence.status;
+                    }
+                    break;
+                case 'offline':
+                    if (status !== 'active' && status !== 'idle') {
+                        status = device_presence.status;
+                    }
+                    break;
+                default:
+                    blueslip.error('Unexpected status', {'presence_object': device_presence, 'device': device}, undefined);
+            }
+        }
+    });
+    return {status: status, mobile: !nonmobileAvailable && mobileAvailable };
 }
+
+// For testing
+exports._status_from_timestamp = status_from_timestamp;
 
 function focus_ping() {
     channel.post({

@@ -444,6 +444,18 @@ a:hover code {
     border-color: gray;
 }
 
+.user-device-indicator {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    float: left;
+    position: relative;
+    top: 5px;
+    margin-right: 0.5em;
+    content: "";
+}
+
 #user_presences a, #group-pms a {
     color: #333;
 }

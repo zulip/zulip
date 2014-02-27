@@ -825,6 +825,9 @@ a .icon-vector-flip-vertical:before {
 .icon-vector-lemon:before {
   content: "\f094";
 }
+.icon-vector-mobile:before {
+  content: "\f10b";
+}
 .icon-vector-phone:before {
   content: "\f095";
 }

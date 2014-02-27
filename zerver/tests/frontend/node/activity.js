@@ -153,3 +153,64 @@ var activity = require('js/activity.js');
     );
 }());
 
+
+(function test_on_mobile_property() {
+    var base_time = 500;
+    var presence = {
+        website: {
+            status: "active",
+            timestamp: base_time
+        }
+    };
+    var status = activity._status_from_timestamp(
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence
+    );
+    assert.equal(status.mobile, false);
+
+    presence.Android = {
+        status: "active",
+        timestamp: base_time + activity._OFFLINE_THRESHOLD_SECS / 2,
+        pushable: false
+    };
+    status = activity._status_from_timestamp(
+        base_time + activity._OFFLINE_THRESHOLD_SECS, presence
+    );
+    assert.equal(status.mobile, true);
+    assert.equal(status.status, "active");
+
+    status = activity._status_from_timestamp(
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence
+    );
+    assert.equal(status.mobile, false);
+    assert.equal(status.status, "active");
+
+    status = activity._status_from_timestamp(
+        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence
+    );
+    assert.equal(status.mobile, false);
+    assert.equal(status.status, "offline");
+
+    presence.Android = {
+        status: "idle",
+        timestamp: base_time + activity._OFFLINE_THRESHOLD_SECS / 2,
+        pushable: true
+    };
+    status = activity._status_from_timestamp(
+        base_time + activity._OFFLINE_THRESHOLD_SECS, presence
+    );
+    assert.equal(status.mobile, true);
+    assert.equal(status.status, "idle");
+
+    status = activity._status_from_timestamp(
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence
+    );
+    assert.equal(status.mobile, false);
+    assert.equal(status.status, "active");
+
+    status = activity._status_from_timestamp(
+        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence
+    );
+    assert.equal(status.mobile, true);
+    assert.equal(status.status, "offline");
+
+}());
