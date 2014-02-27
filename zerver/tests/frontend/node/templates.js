@@ -266,15 +266,16 @@ function render(template_name, args) {
         {
             include_recipient: true,
             display_recipient: 'devel',
-            subject: 'testing',
             is_stream: true,
             content: 'This is message one.',
+            match_content: 'This is message one.',
             last_edit_timestr: '11:00',
             starred: true,
             id: 1
         },
         {
             content: 'This is message two.',
+            match_content: 'This is message <span class="highlight">two</span>.',
             is_stream: true,
             unread: true,
             id: 2
@@ -288,7 +289,8 @@ function render(template_name, args) {
             message_ids: [1, 2],
             messages: messages,
             show_date: '"<span id="timerender82">Jan&nbsp;07</span>"',
-            subject: "subj"
+            subject: 'two messages',
+            match_subject: '<span class="highlight">two</span> messages'
         }
     ];
 
@@ -296,13 +298,16 @@ function render(template_name, args) {
     global.use_template('recipient_row'); // partial
     global.use_template('bookend'); // partial
 
-    var html = render('message_group', {message_groups: groups});
+    var html = render('message_group', {message_groups: groups, use_match_properties: true});
 
     var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
     assert.equal(first_message_text, "This is message one.");
 
-    var last_message_text = $(html).next('.recipient_row').find('div.messagebox:last .message_content').text().trim();
-    assert.equal(last_message_text, "This is message two.");
+    var last_message_html = $(html).next('.recipient_row').find('div.messagebox:last .message_content').html().trim();
+    assert.equal(last_message_html, 'This is message <span class="highlight">two</span>.');
+
+    var highlighted_subject_word = $(html).find('a.narrows_by_subject .highlight').text();
+    assert.equal(highlighted_subject_word, 'two');
 
     global.write_test_output("message_group.handlebars", html);
 }());
