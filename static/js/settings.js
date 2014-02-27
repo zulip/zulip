@@ -108,6 +108,21 @@ function is_local_part(value, element) {
     return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
 }
 
+function render_bots() {
+    $('#bots_list').empty();
+    _.each(bot_data.get_editable(), function (elem) {
+        add_bot_row({
+            name: elem.full_name,
+            email: elem.email,
+            avatar_url: elem.avatar_url,
+            api_key: elem.api_key,
+            default_sending_stream: elem.default_sending_stream,
+            default_events_register_stream: elem.default_events_register_stream,
+            default_all_public_streams: elem.default_all_public_streams
+        });
+    });
+}
+
 // Choose avatar stamp fairly randomly, to help get old avatars out of cache.
 exports.avatar_stamp = Math.floor(Math.random()*100);
 
@@ -442,28 +457,10 @@ exports.setup_page = function () {
         $("#name_change_container").hide();
     }
 
-    channel.get({
-        url: '/json/bots',
-        idempotent: true,
-        success: function (data) {
-            $('#bot_table_error').hide();
 
-            _.each(data.bots, function (elem) {
-                add_bot_row({
-                    name: elem.full_name,
-                    email: elem.username,
-                    avatar_url: elem.avatar_url,
-                    api_key: elem.api_key,
-                    default_sending_stream: elem.default_sending_stream,
-                    default_events_register_stream: elem.default_events_register_stream,
-                    default_all_public_streams: elem.default_all_public_streams
-                });
-            });
-        },
-        error: function (xhr, error_type, xhn) {
-            $('#bot_table_error').text("Could not fetch bots list").show();
-        }
-    });
+    // TODO: render bots xxxx
+    render_bots();
+    $(document).on('zulip.bot_data_changed', render_bots);
 
     $.validator.addMethod("bot_local_part",
                           function (value, element) {
@@ -506,16 +503,6 @@ exports.setup_page = function () {
                     $('#create_bot_short_name').val('');
                     $('#create_bot_button').show();
                     create_avatar_widget.clear();
-
-                    add_bot_row({
-                        name: full_name,
-                        email: short_name + "-bot@" + page_params.domain,
-                        avatar_url: data.avatar_url,
-                        api_key: data.api_key,
-                        default_sending_stream: data.default_sending_stream,
-                        default_events_register_stream: data.default_events_register_stream,
-                        default_all_public_streams: data.default_all_public_streams
-                    });
                 },
                 error: function (xhr, error_type, exn) {
                     $('#bot_table_error').text(JSON.parse(xhr.responseText).msg).show();
