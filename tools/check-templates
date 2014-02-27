@@ -29,7 +29,7 @@ def validate(fn, check_indent=True):
         old_matcher = state.matcher
         def f(end_tag):
             problem = None
-            if start_tag != end_tag[2:-1]:
+            if not matching_tags(start_tag, end_tag):
                 problem = 'Mismatched tag.'
             elif check_indent and state.line > start_line + 1 and state.col != start_col:
                 problem = 'Bad indentation.'
@@ -91,6 +91,9 @@ def get_html_tag(text, i):
         raise Exception('Tag missing >')
     s = text[i:end+1]
     return s
+
+def matching_tags(start_tag, end_tag):
+    return start_tag == end_tag[2:-1]
 
 def check_our_files():
     git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
