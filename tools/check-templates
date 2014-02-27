@@ -24,7 +24,10 @@ def validate(fn, check_indent=True):
         start_line = state.line
         start_col = state.col
         state.depth += 1
-        tag = s[1:-1]
+        if s[0] == '<':
+            tag = s[1:-1]
+        elif s[0] == '{':
+            tag = s[3:-2]
         start_tag = tag.split()[0]
         old_matcher = state.matcher
         def f(end_tag):
@@ -63,6 +66,9 @@ def validate(fn, check_indent=True):
             else:
                 state.col += 1
 
+    def looking_at(s):
+        return text[state.i:state.i+len(s)] == s
+
     while True:
         if state.i >= len(text):
             break
@@ -78,10 +84,32 @@ def validate(fn, check_indent=True):
                     start_tag_matcher(s)
             advance(len(s))
             continue
+
+        if looking_at("{{#") or looking_at("{{^"):
+            s = get_handlebars_tag(text, state.i)
+            start_tag_matcher(s)
+            advance(len(s))
+            continue
+
+        if looking_at("{{/"):
+            s = get_handlebars_tag(text, state.i)
+            state.matcher(s)
+            advance(len(s))
+            continue
+
         advance(1)
 
     if state.depth != 0:
         return state.matcher("(NO TAG)")
+
+def get_handlebars_tag(text, i):
+    end = i + 2
+    while end < len(text) -1 and text[end] != '}':
+        end += 1
+    if text[end] != '}' or text[end+1] != '}':
+        raise Exception('Tag missing }}')
+    s = text[i:end+2]
+    return s
 
 def get_html_tag(text, i):
     end = i + 1
@@ -93,7 +121,10 @@ def get_html_tag(text, i):
     return s
 
 def matching_tags(start_tag, end_tag):
-    return start_tag == end_tag[2:-1]
+    if end_tag[0] == '<':
+        return start_tag == end_tag[2:-1]
+    if end_tag[0] == '{':
+        return start_tag == end_tag[3:-2]
 
 def check_our_files():
     git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
