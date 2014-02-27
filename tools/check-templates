@@ -20,19 +20,15 @@ def validate(fn, check_indent=True):
                 line %d, col %d
             ''' % (fn, end_tag, state.line, state.col))
 
-    def start_tag_matcher(s):
+    def start_tag_matcher(s, start_tag):
         start_line = state.line
         start_col = state.col
         state.depth += 1
-        if s[0] == '<':
-            tag = s[1:-1]
-        elif s[0] == '{':
-            tag = s[3:-2]
-        start_tag = tag.split()[0]
+
         old_matcher = state.matcher
         def f(end_tag):
             problem = None
-            if not matching_tags(start_tag, end_tag):
+            if start_tag != end_tag:
                 problem = 'Mismatched tag.'
             elif check_indent and state.line > start_line + 1 and state.col != start_col:
                 problem = 'Bad indentation.'
@@ -76,24 +72,27 @@ def validate(fn, check_indent=True):
         if c == '<':
             s = get_html_tag(text, state.i)
             if s.startswith('</'):
-                state.matcher(s)
+                end_tag = s[2:-1]
+                state.matcher(end_tag)
             else:
                 tag = s[1:-1].split()[0]
                 ignore = s.startswith('<!--') or s.endswith('/>') or tag in ['meta', '!DOCTYPE']
                 if not ignore:
-                    start_tag_matcher(s)
+                    start_tag_matcher(s, tag)
             advance(len(s))
             continue
 
         if looking_at("{{#") or looking_at("{{^"):
             s = get_handlebars_tag(text, state.i)
-            start_tag_matcher(s)
+            tag = s[3:-2].split()[0]
+            start_tag_matcher(s, tag)
             advance(len(s))
             continue
 
         if looking_at("{{/"):
             s = get_handlebars_tag(text, state.i)
-            state.matcher(s)
+            end_tag = s[3:-2]
+            state.matcher(end_tag)
             advance(len(s))
             continue
 
@@ -119,12 +118,6 @@ def get_html_tag(text, i):
         raise Exception('Tag missing >')
     s = text[i:end+1]
     return s
-
-def matching_tags(start_tag, end_tag):
-    if end_tag[0] == '<':
-        return start_tag == end_tag[2:-1]
-    if end_tag[0] == '{':
-        return start_tag == end_tag[3:-2]
 
 def check_our_files():
     git_files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
