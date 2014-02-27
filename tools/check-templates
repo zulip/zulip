@@ -65,9 +65,8 @@ def validate(fn, check_indent=True):
     def looking_at(s):
         return text[state.i:state.i+len(s)] == s
 
-    while True:
-        if state.i >= len(text):
-            break
+    while state.i < len(text):
+
         c = text[state.i]
         if c == '<':
             s = get_html_tag(text, state.i)
