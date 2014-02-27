@@ -1,4 +1,20 @@
-set_global('$', function () {});
+var _ = global._;
+
+set_global('$', function () {
+    return {trigger: function () {}};
+});
+set_global('document', null);
+
+var page_params = {
+    is_admin: false,
+    email: 'owner@zulip.com'
+};
+set_global('page_params', page_params);
+
+var patched_underscore = _.clone(_);
+patched_underscore.debounce = function (f) { return(f); };
+global.patch_builtin('_', patched_underscore);
+
 
 var bot_data = require('js/bot_data.js');
 
@@ -44,5 +60,42 @@ var bot_data = require('js/bot_data.js');
         bot = bot_data.get('bot1@zulip.com');
         assert.equal(undefined, bot);
     }());
+
+    (function test_owner_can_admin() {
+        var bot;
+
+        bot_data.add(_.extend({owner: 'owner@zulip.com'}, test_bot));
+
+        bot = bot_data.get('bot1@zulip.com');
+        assert(bot.can_admin);
+
+        bot_data.add(_.extend({owner: 'notowner@zulip.com'}, test_bot));
+
+        bot = bot_data.get('bot1@zulip.com');
+        assert.equal(false, bot.can_admin);
+    }());
+
+    (function test_admin_can_admin() {
+        var bot;
+        page_params.is_admin = true;
+
+        bot_data.add(test_bot);
+
+        bot = bot_data.get('bot1@zulip.com');
+        assert(bot.can_admin);
+
+        page_params.is_admin = false;
+    }());
+
+    (function test_get_editable() {
+        var can_admin;
+
+        bot_data.add(_.extend({}, test_bot, {owner: 'owner@zulip.com'}));
+        bot_data.add(_.extend({}, test_bot, {email: 'bot2@zulip.com'}));
+
+        can_admin = _.pluck(bot_data.get_editable(), 'email');
+        assert.deepEqual(['bot1@zulip.com'], can_admin);
+    }());
+
 
 }());
