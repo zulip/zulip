@@ -99,10 +99,37 @@ def validate(fn, check_indent=True):
             advance(len(s))
             continue
 
+        # Django tags
+        if looking_at("{% ") and not looking_at("{% end"):
+            s = get_django_tag(text, state.i)
+            tag = s[3:-2].split()[0]
+            if is_django_block_tag(tag):
+                start_tag_matcher(s, tag)
+            advance(len(s))
+            continue
+
+        if looking_at("{% end"):
+            s = get_django_tag(text, state.i)
+            end_tag = s[6:-3]
+            state.matcher(end_tag)
+            advance(len(s))
+            continue
+
         advance(1)
 
     if state.depth != 0:
         return state.matcher("(NO TAG)")
+
+def is_django_block_tag(tag):
+    return tag in [
+        'autoescape',
+        'block',
+        'comment',
+        'for',
+        'if',
+        'ifequal',
+        'verbatim',
+    ]
 
 def get_handlebars_tag(text, i):
     end = i + 2
@@ -110,6 +137,15 @@ def get_handlebars_tag(text, i):
         end += 1
     if text[end] != '}' or text[end+1] != '}':
         raise Exception('Tag missing }}')
+    s = text[i:end+2]
+    return s
+
+def get_django_tag(text, i):
+    end = i + 2
+    while end < len(text) -1 and text[end] != '%':
+        end += 1
+    if text[end] != '%' or text[end+1] != '}':
+        raise Exception('Tag missing %}')
     s = text[i:end+2]
     return s
 
