@@ -435,6 +435,7 @@ PIPELINE_CSS = {
         'source_filenames': (
             'third/bootstrap-notify/css/bootstrap-notify.css',
             'third/spectrum/spectrum.css',
+            'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
             'styles/zulip.css',
             'styles/pygments.css',
             'styles/thirdparty-fonts.css',
@@ -505,6 +506,7 @@ JS_SPECS = {
             'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
+            'third/jquery-perfect-scrollbar/js/perfect-scrollbar.js',
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
             'third/winchan/winchan.js',

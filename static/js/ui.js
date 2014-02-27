@@ -1830,6 +1830,12 @@ $(function () {
     }
 });
 
+$(function () {
+    $("#stream_filters").perfectScrollbar({
+        suppressScrollX: true
+    });
+});
+
 // Workaround for browsers with fixed scrollbars
 $(function () {
 

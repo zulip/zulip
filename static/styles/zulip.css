@@ -352,15 +352,21 @@ a:hover code {
     margin: 2px 0px 0px 0px;
     padding: 0 0 10px 0;
     font-weight: normal;
+    position: relative;
+}
+
+#stream_filters .ps-scrollbar-y-rail {
+    right: 0px !important;
+    width: 4px !important;
+}
+
+#stream_filters .ps-scrollbar-y {
+    width: 4px !important;
 }
 
 .narrow-filter {
     display: block;
     position: relative;
-}
-
-#stream_filters:hover {
-    overflow-y: auto;
 }
 
 #stream_filters li:hover {
@@ -3054,7 +3060,6 @@ li.expanded_subject {
 
 #streams_header {
     margin-right: 0px;
-    padding-right: 6px;
     padding-left: 10px;
 }
 
