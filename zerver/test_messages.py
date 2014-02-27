@@ -63,6 +63,7 @@ def mute_stream(realm, user_profile, stream_name):
 
 class NarrowBuilderTest(AuthedTestCase):
     def test_add_term(self):
+        realm = get_realm('zulip.com')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         builder = NarrowBuilder(user_profile, column('id'))
         raw_query = select([column("id")], None, "zerver_message")
@@ -104,6 +105,10 @@ class NarrowBuilderTest(AuthedTestCase):
 
         term = dict(operator='has', operand='link')
         check(term, 'WHERE has_link')
+
+        mute_stream(realm, user_profile, 'Verona')
+        term = dict(operator='in', operand='home')
+        check(term, 'WHERE recipient_id NOT IN (:recipient_id_1)')
 
 class IncludeHistoryTest(AuthedTestCase):
     def test_ok_to_include_history(self):

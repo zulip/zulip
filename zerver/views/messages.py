@@ -118,6 +118,15 @@ class NarrowBuilder(object):
         cond = column(col_name)
         return query.where(maybe_negate(cond))
 
+    def by_in(self, query, operand, maybe_negate):
+        if operand == 'home':
+            conditions = exclude_muting_conditions(self.user_profile, [])
+            return query.where(and_(*conditions))
+        elif operand == 'all':
+            return query
+
+        raise BadNarrowOperator("unknown 'in' operand " + operand)
+
     def by_is(self, query, operand, maybe_negate):
         if operand == 'private':
             query = query.select_from(join(query.froms[0], "zerver_recipient",
