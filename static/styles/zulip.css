@@ -2391,7 +2391,7 @@ div.floating_recipient {
 }
 
 #stream_filters .subscription_block {
-    padding-bottom: 4px;
+    padding-bottom: 3px;
     line-height: 12px;
     padding-top: 4px;
     margin-right: 15px;
@@ -2409,6 +2409,10 @@ div.floating_recipient {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+#stream_filters .subscription_name {
+    display: inline-block;
 }
 
 .subscription-name-row,
