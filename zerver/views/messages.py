@@ -615,7 +615,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     elif request.client.name == "irc_mirror":
         user_check = same_realm_irc_user
         fullname_function = compute_irc_user_fullname
-    elif request.client.name == "jabber_mirror":
+    elif request.client.name in ("jabber_mirror", "JabberMirror"):
         user_check = same_realm_user
         fullname_function = compute_jabber_user_fullname
     else:
@@ -708,7 +708,7 @@ def send_message_backend(request, user_profile,
         if not realm:
             return json_error("Unknown domain " + domain)
 
-    if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror"]:
+    if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
         #
         # For private messages, the message must be (1) both sent and

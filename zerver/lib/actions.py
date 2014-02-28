@@ -662,7 +662,7 @@ def check_message(sender, client, message_type_name, message_to,
             raise JsonableError("Not authorized to send to stream '%s'" % (stream.name,))
 
     elif message_type_name == 'private':
-        mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror"]
+        mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]
         not_forged_mirror_message = mirror_message and not forged
         try:
             recipient = recipient_for_emails(message_to, not_forged_mirror_message,
