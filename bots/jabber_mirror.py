@@ -154,7 +154,11 @@ class ZulipToJabberBot(object):
             logging.exception("Exception forwarding Zulip => Jabber")
 
     def stream_message(self, msg):
-        room = stream_to_room(msg['display_recipient'])
+        stream = msg['display_recipient']
+        if not stream.endswith("/xmpp"):
+            return
+
+        room = stream_to_room(stream)
         jabber_recipient = "%s@%s" % (room, options.conference_domain)
         outgoing = self.jabber.make_message(
             mto   = jabber_recipient,
