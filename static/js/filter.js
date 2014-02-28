@@ -288,10 +288,10 @@ Filter.prototype = {
 
     public_operators: function Filter_public_operators() {
         var safe_to_return = _.filter(this._operators, function (value) {
-            // Filter out the "in" keyword and the embedded narrow (if any).
-            return value.operator !== 'in' && !(page_params.narrow_stream !== undefined &&
-                                                value.operator === "stream" &&
-                                                value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase());
+            // Filter out the embedded narrow (if any).
+            return !(page_params.narrow_stream !== undefined &&
+                     value.operator === "stream" &&
+                     value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase());
         });
         return safe_to_return;
     },

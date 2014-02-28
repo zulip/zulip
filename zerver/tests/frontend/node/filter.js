@@ -95,17 +95,12 @@ function assert_same_operators(result, terms) {
 (function test_public_operators() {
     var operators = [
         {operator: 'stream', operand: 'foo'},
+        {operator: 'in', operand: 'all'},
         {operator: 'topic', operand: 'bar'}
     ];
 
     var filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), operators);
-
-    operators = [
-        {operator: 'in', operand: 'all'}
-    ];
-    filter = new Filter(operators);
-    assert_same_operators(filter.public_operators(), []);
 
     global.page_params.narrow_stream = 'default';
     operators = [
