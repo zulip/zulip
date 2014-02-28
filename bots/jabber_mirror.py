@@ -32,6 +32,8 @@ from sleekxmpp.exceptions import IqError, IqTimeout
 import os, sys, zulip, getpass
 import re
 
+__version__ = "1.1"
+
 def room_to_stream(room):
     return str(room).rpartition("@")[0]
 
@@ -237,7 +239,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     # This won't work for open realms
     options.zulip_domain = options.zulip_email.partition('@')[-1]
 
-    zulip = ZulipToJabberBot(zulip.init_from_options(options, "jabber_mirror"))
+    zulip = ZulipToJabberBot(zulip.init_from_options(options, "JabberMirror/" + __version__))
     rooms = [s['name'] for s in zulip.client.get_streams()['streams']]
     xmpp = JabberToZulipBot(options.jabber_username, options.jabber_domain,
                             options.jabber_password, rooms,
