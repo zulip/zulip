@@ -35,7 +35,10 @@ import re
 __version__ = "1.1"
 
 def room_to_stream(room):
-    return str(room).rpartition("@")[0]
+    return str(room).rpartition("@")[0] + "/xmpp"
+
+def stream_to_room(stream):
+    return stream.rpartition("/xmpp")[0]
 
 def jid_to_zulip(jid):
     return "%s@%s" % (str(jid).rpartition("@")[0], options.zulip_domain)
@@ -151,7 +154,8 @@ class ZulipToJabberBot(object):
             logging.exception("Exception forwarding Zulip => Jabber")
 
     def stream_message(self, msg):
-        jabber_recipient = "%s@%s" % (msg['display_recipient'], options.conference_domain)
+        room = stream_to_room(msg['display_recipient'])
+        jabber_recipient = "%s@%s" % (room, options.conference_domain)
         outgoing = self.jabber.make_message(
             mto   = jabber_recipient,
             mbody = msg['content'],
