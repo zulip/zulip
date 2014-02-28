@@ -347,20 +347,24 @@ a:hover code {
 }
 
 #stream_filters {
-    overflow-x: visible;
-    overflow-y: hidden;
-    margin: 2px 0px 10px 0px;
+    overflow-x: hidden;
+    overflow-y: visible;
+    margin: 2px 0px 2px 0px;
     padding: 0;
     font-weight: normal;
+}
+
+#stream-filters-container {
+    overflow-y: hidden;
     position: relative;
 }
 
-#stream_filters .ps-scrollbar-y-rail {
+#stream-filters-container .ps-scrollbar-y-rail {
     right: 0px !important;
     width: 4px !important;
 }
 
-#stream_filters .ps-scrollbar-y {
+#stream-filters-container .ps-scrollbar-y {
     width: 4px !important;
 }
 

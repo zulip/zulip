@@ -539,9 +539,11 @@ exports.resize_page_components = function () {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     exports.resize_bottom_whitespace(h);
-    $("#stream_filters").css('max-height', h.stream_filters_max_height);
+    $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
     $("#user_presences").css('max-height', h.user_presences_max_height);
     $("#group-pms").css('max-height', h.group_pms_max_height);
+
+    $('#stream-filters-container').perfectScrollbar('update');
 };
 
 var _old_width = $(window).width();
@@ -1831,7 +1833,7 @@ $(function () {
 });
 
 $(function () {
-    $("#stream_filters").perfectScrollbar({
+    $("#stream-filters-container").perfectScrollbar({
         suppressScrollX: true,
         useKeyboard: false
     });
