@@ -493,7 +493,6 @@ exports.resize_bottom_whitespace = function (h) {
 exports.resize_page_components = function () {
     var composebox = $("#compose");
     var floating_recipient_bar = $("#floating_recipient_bar");
-    var tab_bar_under = $("#tab_bar_underpadding");
     var desired_width;
     if (exports.home_tab_obscured() === 'other_tab') {
         desired_width = $("div.tab-pane.active").outerWidth();

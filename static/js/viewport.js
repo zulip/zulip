@@ -20,19 +20,16 @@ exports.message_viewport_info = function () {
 
     var res = {};
 
-    var element_just_above_us = $("#tab_bar_underpadding");
+    var element_just_above_us = $(".floating_recipient");
 
-    res.visible_top =
-        element_just_above_us.position().top
-        + element_just_above_us.height()
-        + $(".message_header").outerHeight();
+    res.visible_top = element_just_above_us.offset().top
+        + element_just_above_us.outerHeight();
 
     var element_just_below_us = $("#compose");
 
     res.visible_height =
         element_just_below_us.position().top
-        - element_just_above_us.position().top
-        - $(".message_header").outerHeight();
+        - res.visible_top;
 
     return res;
 };
@@ -133,7 +130,7 @@ function add_to_visible(candidates, visible,
 
 var top_of_feed = new util.CachedValue({
     compute_value: function () {
-        return $("#tab_bar_underpadding")[0].getBoundingClientRect().bottom;
+        return $(".floating_recipient").offset().top + $(".floating_recipient").outerHeight();
     }
 });
 
