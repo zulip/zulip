@@ -16,7 +16,7 @@ var OFFLINE_THRESHOLD_SECS = 140;
 // Testing
 exports._OFFLINE_THRESHOLD_SECS = OFFLINE_THRESHOLD_SECS;
 
-var MOBILE_DEVICES = ["Android", "IOS"];
+var MOBILE_DEVICES = ["Android", "ZulipiOS", "ios"];
 
 function is_mobile(device) {
     return MOBILE_DEVICES.indexOf(device) !== -1;
