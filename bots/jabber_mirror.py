@@ -82,7 +82,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.exception("Error forwarding Jabber => Zulip")
 
     def private(self, msg):
-        if options.mode == 'personal' or msg['thread'] == u'\u1B80':
+        if options.mode == 'public' or msg['thread'] == u'\u1B80':
             return
         sender = jid_to_zulip(msg["from"])
         recipient = jid_to_zulip(msg["to"])
