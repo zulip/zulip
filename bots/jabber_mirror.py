@@ -51,8 +51,8 @@ class JabberToZulipBot(ClientXMPP):
         self.zulip = None
         self.use_ipv6 = False
 
-        # Jabber chatroom support.
-        self.register_plugin('xep_0045')
+        self.register_plugin('xep_0045') # Jabber chatrooms
+        self.register_plugin('xep_0199') # XMPP Ping
 
         if openfire:
             # OpenFire Jabber servers use a different SSL protocol version
