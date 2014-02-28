@@ -100,7 +100,11 @@ MessageListView.prototype = {
             // subject, which could be a problem down the line.  For now we hope
             // that subject views will not be very big.
             var top_group = self._message_groups[0];
-            rows.get_message_recipient_row(this.get_row(top_group.messages[0].id)).remove();
+            var top_row = this.get_row(top_group.messages[0].id);
+            if (top_row.length !== 0) {
+                rows.get_message_recipient_row(top_row).remove();
+            }
+
             messages = messages.concat(top_group.messages);
         }
 
