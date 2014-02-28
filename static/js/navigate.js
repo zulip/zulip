@@ -78,21 +78,21 @@ exports.cycle_stream = function (direction) {
     switch (direction) {
         case 'forward':
             if (narrow.stream() === undefined) {
-                nextStream = $("#stream_filters").children().first();
+                nextStream = $("#stream_filters").children('.narrow-filter').first();
             } else {
-                nextStream = currentStream.next();
+                nextStream = currentStream.next('.narrow-filter');
                 if (nextStream.length === 0) {
-                    nextStream = $("#stream_filters").children().first();
+                    nextStream = $("#stream_filters").children('.narrow-filter').first();
                 }
             }
             break;
         case 'backward':
             if (narrow.stream() === undefined) {
-                nextStream = $("#stream_filters").children().last();
+                nextStream = $("#stream_filters").children('.narrow-filter').last();
             } else {
-                nextStream = currentStream.prev();
+                nextStream = currentStream.prev('.narrow-filter');
                 if (nextStream.length === 0) {
-                    nextStream = $("#stream_filters").children().last();
+                    nextStream = $("#stream_filters").children('.narrow-filter').last();
                 }
             }
             break;
