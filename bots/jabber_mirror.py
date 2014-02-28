@@ -236,7 +236,10 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     xmpp = JabberToZulipBot(options.jabber_username, options.jabber_domain,
                             options.jabber_password, rooms,
                             openfire=options.openfire)
-    xmpp.connect(use_tls=not options.no_use_tls)
+
+    if not xmpp.connect(use_tls=not options.no_use_tls):
+        sys.exit("Unable to connect to Jabber server")
+
     xmpp.set_zulip_client(zulip)
     zulip.set_jabber_client(xmpp)
 
