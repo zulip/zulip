@@ -1832,7 +1832,8 @@ $(function () {
 
 $(function () {
     $("#stream_filters").perfectScrollbar({
-        suppressScrollX: true
+        suppressScrollX: true,
+        useKeyboard: false
     });
 });
 
