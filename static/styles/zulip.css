@@ -1146,11 +1146,11 @@ just a temporary hack.
 }
 
 .selected_message .messagebox-content {
-    box-shadow:       0px 0px 0px 1px #4577bc,
-                inset 1px 0px 0px 1px #4577bc,
-                      0px -1px 0px 1px #4577bc,
-                      0px 1px 0px 1px #4577bc,
-                inset -1px 0px 0px 1px #4577bc;
+    box-shadow: inset 0px 0px 0px 2px #4577bc,
+                     -1px -1px 0px 0px #4577bc,
+                      1px 1px 0px 0px #4577bc,
+                     -1px 1px 0px 0px #4577bc,
+                      1px -1px 0px 0px #4577bc;
 }
 
 .message_sender {
