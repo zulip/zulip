@@ -131,6 +131,8 @@ MessageListView.prototype = {
                     current_group.invite_only = stream_data.get_invite_only(first_message.stream);
                     current_group.subject = first_message.subject;
                     current_group.match_subject = first_message.match_subject;
+                    current_group.stream_url = first_message.stream_url;
+                    current_group.topic_url = first_message.topic_url;
                 } else if (current_group.is_private) {
                     current_group.pm_with_url = first_message.pm_with_url;
                     current_group.display_reply_to = first_message.display_reply_to;
