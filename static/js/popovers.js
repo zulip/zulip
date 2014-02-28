@@ -72,7 +72,7 @@ exports.toggle_actions_popover = function (element, id) {
             can_edit_message: can_edit,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
-            near_time_uri: narrow.by_near_uri(message.id),
+            conversation_time_uri: narrow.by_conversation_and_time_uri(message),
             narrowed: narrow.active()
         };
 
