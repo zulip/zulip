@@ -172,9 +172,6 @@ class ZulipToJabberBot(object):
             outgoing.send()
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO,
-                        format='%(levelname)-8s %(message)s')
-
     parser = optparse.OptionParser()
     parser.add_option('--mode',
                       default="personal",
@@ -185,6 +182,12 @@ if __name__ == '__main__':
 all messages they send on Zulip to Jabber and all private Jabber messages to
 Zulip.  In "public" mode, the mirror uses the credentials for a dedicated mirror
 user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
+    parser.add_option('-d', '--debug',
+                      help='set logging to DEBUG',
+                      action='store_const',
+                      dest='log_level',
+                      const=logging.DEBUG,
+                      default=logging.INFO)
 
     jabber_group = optparse.OptionGroup(parser, "Jabber configuration")
     jabber_group.add_option('--openfire',
@@ -215,6 +218,9 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     parser.add_option_group(jabber_group)
     parser.add_option_group(zulip.generate_option_group(parser, "zulip-"))
     (options, args) = parser.parse_args()
+
+    logging.basicConfig(level=options.log_level,
+                        format='%(levelname)-8s %(message)s')
 
     if options.mode not in ('public', 'personal'):
         sys.exit("Bad value for --mode: must be one of 'public' or 'personal'")
