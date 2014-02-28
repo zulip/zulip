@@ -23,6 +23,21 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# The following is a table showing which kinds of messages are handled by the
+# mirror in each mode:
+#
+#     Message origin/type --> |  Jabber  |   Zulip
+#  Mode/sender-,              +-----+----+--------+----
+#              V              | MUC | PM | stream | PM
+# --------------+-------------+-----+----+--------+----
+#               | other sender|     | x  |        |
+# personal mode +-------------+-----+----+--------+----
+#               | self sender |     | x  |   x    | x
+# ------------- +-------------+-----+----+--------+----
+#               | other sender|  x  |    |        |
+# public mode   +-------------+-----+----+--------+----
+#               | self sender |     |    |        |
+
 import logging
 import threading
 import optparse
