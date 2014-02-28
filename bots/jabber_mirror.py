@@ -39,9 +39,9 @@ def jid_to_zulip(jid):
     return "%s@%s" % (str(jid).rpartition("@")[0], options.zulip_domain)
 
 class JabberToZulipBot(ClientXMPP):
-    def __init__(self, nick, password, rooms, openfire=False):
+    def __init__(self, nick, domain, password, rooms, openfire=False):
         self.nick = nick
-        jid = "%s/zulip" % (nick,)
+        jid = "%s@%s/jabber_mirror" % (nick, domain)
         ClientXMPP.__init__(self, jid, password)
         self.password = password
         self.rooms = rooms
@@ -51,9 +51,8 @@ class JabberToZulipBot(ClientXMPP):
         self.zulip = None
         self.use_ipv6 = False
 
-        if options.conference_domain is not None:
-            # Jabber chatroom support.
-            self.register_plugin('xep_0045')
+        # Jabber chatroom support.
+        self.register_plugin('xep_0045')
 
         if openfire:
             # OpenFire Jabber servers use a different SSL protocol version
@@ -66,10 +65,9 @@ class JabberToZulipBot(ClientXMPP):
     def session_start(self, event):
         self.get_roster()
         self.send_presence()
-        if options.mode == "public":
-            for room in self.rooms:
-                self.plugin['xep_0045'].joinMUC(room + "@" + options.conference_domain,
-                                                self.nick)
+        for room in self.rooms:
+            muc_jid = room + "@" + options.conference_domain
+            self.plugin['xep_0045'].joinMUC(muc_jid, self.nick)
 
     def message(self, msg):
         try:
@@ -84,7 +82,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.exception("Error forwarding Jabber => Zulip")
 
     def private(self, msg):
-        if msg["from"] == self.jid or msg['thread'] == u'\u1B80':
+        if options.mode == 'personal' or msg['thread'] == u'\u1B80':
             return
         sender = jid_to_zulip(msg["from"])
         recipient = jid_to_zulip(msg["to"])
@@ -100,7 +98,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.error(ret)
 
     def group(self, msg):
-        if msg.get_mucnick() == self.nick or msg["thread"] == u'\u1B80':
+        if options.mode == 'personal' or msg["thread"] == u'\u1B80':
             return
 
         subject = msg["subject"]
@@ -229,19 +227,26 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     if options.jabber_domain is None:
         sys.exit("Must specify a Jabber server")
 
-    jabber_username = options.jabber_username + '@' + options.jabber_domain
+
+    # This won't work for open realms
+    options.zulip_domain = options.zulip_email.partition('@')[-1]
 
     zulip = ZulipToJabberBot(zulip.init_from_options(options, "jabber_mirror"))
     rooms = [s['name'] for s in zulip.client.get_streams()['streams']]
-    xmpp = JabberToZulipBot(jabber_username, options.jabber_password, rooms,
+    xmpp = JabberToZulipBot(options.jabber_username, options.jabber_domain,
+                            options.jabber_password, rooms,
                             openfire=options.openfire)
     xmpp.connect(use_tls=not options.no_use_tls)
-    xmpp.process(block=False)
     xmpp.set_zulip_client(zulip)
     zulip.set_jabber_client(xmpp)
-    try:
-        logging.info("Connecting to Zulip.")
-        zulip.client.call_on_each_event(zulip.process_message)
-    except BaseException as e:
-        logging.exception("Exception in main loop")
-        xmpp.abort()
+
+    if options.mode == 'public':
+        xmpp.process(block=True)
+    else:
+        xmpp.process(block=False)
+        try:
+            logging.info("Connecting to Zulip.")
+            zulip.client.call_on_each_event(zulip.process_message)
+        except BaseException as e:
+            logging.exception("Exception in main loop")
+            xmpp.abort()
