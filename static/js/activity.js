@@ -153,7 +153,15 @@ function focus_lost() {
 }
 
 function filter_users_by_search(users) {
-    var search_term = $(".user-list-filter").expectOne().val().trim();
+    var user_list = $(".user-list-filter");
+    if (user_list.length === 0) {
+        // We may have received an activity ping response after
+        // initiating a reload, in which case the user list may no
+        // longer be available
+        return;
+    }
+
+    var search_term = user_list.expectOne().val().trim();
 
     if (search_term === '') {
         return users;
