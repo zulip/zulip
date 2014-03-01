@@ -65,3 +65,15 @@ def add_bool_columns(db, table, cols):
     stmt = ('ALTER TABLE %s ' % (table,)) \
            + ', '.join(['ALTER %s SET NOT NULL' % (col,) for col in cols])
     timed_ddl(db, stmt)
+
+def create_index_if_nonexistant(db, table, col, index):
+    validate(table)
+    validate(col)
+    validate(index)
+    test = """SELECT relname FROM pg_class
+              WHERE relname = %s"""
+    if len(db.execute(test, params=[index])) != 0:
+        print "Not creating index '%s' because it already exists" % (index,)
+    else:
+        stmt = "CREATE INDEX %s ON %s (%s)" % (index, table, col)
+        timed_ddl(db, stmt)
