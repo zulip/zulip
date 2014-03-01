@@ -1834,7 +1834,8 @@ $(function () {
 $(function () {
     $("#stream-filters-container").perfectScrollbar({
         suppressScrollX: true,
-        useKeyboard: false
+        useKeyboard: false,
+        wheelSpeed: 20
     });
 });
 

@@ -106,9 +106,7 @@ a {
 .app-main .column-right .right-sidebar {
     position: fixed;
     margin-top: 50px;
-    width: 250px;
     z-index:100;
-    padding-left: 10px;
 }
 
 .app-main .column-left .left-sidebar {
@@ -118,6 +116,7 @@ a {
 
 .app-main .column-right .right-sidebar {
     padding-left: 15px;
+    width: 235px;
 }
 
 .app-main .column-middle {
@@ -1166,7 +1165,7 @@ just a temporary hack.
 .sender_name {
     color: #333;
     display: inline-block;
-    font-weight: 900;
+    font-weight: 700;
     vertical-align: top;
     line-height: 12px;
     font-size: 14px;
