@@ -488,6 +488,13 @@ class Stream(models.Model):
                 active=True
         ).count()
 
+    # This is stream information that is sent to clients
+    def to_dict(self):
+        return dict(name=self.name,
+                    stream_id=self.id,
+                    description=self.description,
+                    invite_only=self.invite_only)
+
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 

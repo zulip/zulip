@@ -216,6 +216,7 @@ def do_deactivate_stream(stream, log=True):
     for user_profile in user_profiles:
         do_remove_subscription(user_profile, stream)
 
+    was_invite_only = stream.invite_only
     stream.deactivated = True
     stream.invite_only = True
     # Preserve as much as possible the original stream name while giving it a
@@ -241,6 +242,13 @@ def do_deactivate_stream(stream, log=True):
     # Remove the old stream information from memcached.
     old_cache_key = get_stream_cache_key(old_name, stream.realm)
     cache_delete(old_cache_key)
+
+    if not was_invite_only:
+        stream_dict = stream.to_dict()
+        stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
+        event = dict(type="stream", op="delete",
+                     streams=[stream_dict])
+        send_event(event, active_user_ids(stream.realm))
 
     return
 
@@ -475,6 +483,10 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
         defaults={'name': stream_name, 'invite_only': invite_only})
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        if not invite_only:
+            event = dict(type="stream", op="create",
+                         streams=[stream.to_dict()])
+            send_event(event, active_user_ids(realm))
     return stream, created
 
 def recipient_for_emails(emails, not_forged_mirror_message,
@@ -977,8 +989,23 @@ def bulk_add_subscriptions(streams, users):
                                   audible_notifications=user_profile.enable_stream_sounds)
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
-    Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
-    Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in subs_to_activate]).update(active=True)
+
+    # TODO: XXX: This transaction really needs to be done at the serializeable
+    # transaction isolation level.
+    with transaction.atomic():
+        occupied_streams_before = list(get_occupied_streams(user_profile.realm))
+        Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
+        Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in subs_to_activate]).update(active=True)
+        occupied_streams_after = list(get_occupied_streams(user_profile.realm))
+
+    new_occupied_streams = [stream for stream in
+                            set(occupied_streams_after) - set(occupied_streams_before)
+                            if not stream.invite_only]
+    if new_occupied_streams:
+        event = dict(type="stream", op="occupy",
+                     streams=[stream.to_dict()
+                              for stream in new_occupied_streams])
+        send_event(event, active_user_ids(user_profile.realm))
 
     # Notify all existing users on streams that users have joined
 
@@ -1036,18 +1063,26 @@ def bulk_add_subscriptions(streams, users):
 def do_add_subscription(user_profile, stream, no_log=False):
     recipient = get_recipient(Recipient.STREAM, stream.id)
     color = pick_color(user_profile)
-    (subscription, created) = Subscription.objects.get_or_create(
-        user_profile=user_profile, recipient=recipient,
-        defaults={'active': True, 'color': color,
-                  'notifications': notify_for_streams_by_default(user_profile)})
-    did_subscribe = created
-    if not subscription.active:
-        did_subscribe = True
-        subscription.active = True
-        subscription.save(update_fields=["active"])
+    # TODO: XXX: This transaction really needs to be done at the serializeable
+    # transaction isolation level.
+    with transaction.atomic():
+        vacant_before = stream.num_subscribers() == 0
+        (subscription, created) = Subscription.objects.get_or_create(
+            user_profile=user_profile, recipient=recipient,
+            defaults={'active': True, 'color': color,
+                      'notifications': notify_for_streams_by_default(user_profile)})
+        did_subscribe = created
+        if not subscription.active:
+            did_subscribe = True
+            subscription.active = True
+            subscription.save(update_fields=["active"])
+
+    if vacant_before and did_subscribe and not stream.invite_only:
+        event = dict(type="stream", op="occupy",
+                     streams=[stream.to_dict()])
+        send_event(event, active_user_ids(user_profile.realm))
 
     if did_subscribe:
-
         emails_by_stream = {stream.id: maybe_get_subscriber_emails(stream)}
         notify_subscriptions_added(user_profile, [(subscription, stream)], lambda stream: emails_by_stream[stream.id], no_log)
 
@@ -1112,8 +1147,22 @@ def bulk_remove_subscriptions(users, streams):
         for recipient_id in recipients_to_unsub:
             not_subscribed.append((user_profile, stream_map[recipient_id]))
 
-    Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in
-                                        subs_to_deactivate]).update(active=False)
+    # TODO: XXX: This transaction really needs to be done at the serializeable
+    # transaction isolation level.
+    with transaction.atomic():
+        occupied_streams_before = list(get_occupied_streams(user_profile.realm))
+        Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in
+                                            subs_to_deactivate]).update(active=False)
+        occupied_streams_after = list(get_occupied_streams(user_profile.realm))
+
+    new_vacant_streams = [stream for stream in
+                          set(occupied_streams_before) - set(occupied_streams_after)
+                          if not stream.invite_only]
+    if new_vacant_streams:
+        event = dict(type="stream", op="vacate",
+                     streams=[stream.to_dict()
+                              for stream in new_vacant_streams])
+        send_event(event, active_user_ids(user_profile.realm))
 
     streams_by_user = defaultdict(list)
     for (sub, stream) in subs_to_deactivate:
@@ -1130,13 +1179,21 @@ def bulk_remove_subscriptions(users, streams):
 def do_remove_subscription(user_profile, stream, no_log=False):
     recipient = get_recipient(Recipient.STREAM, stream.id)
     maybe_sub = Subscription.objects.filter(user_profile=user_profile,
-                                    recipient=recipient)
+                                            recipient=recipient)
     if len(maybe_sub) == 0:
         return False
     subscription = maybe_sub[0]
     did_remove = subscription.active
     subscription.active = False
-    subscription.save(update_fields=["active"])
+    with transaction.atomic():
+        subscription.save(update_fields=["active"])
+        vacant_after = stream.num_subscribers() == 0
+
+    if vacant_after and did_remove and not stream.invite_only:
+        event = dict(type="stream", op="vacate",
+                     streams=[stream.to_dict()])
+        send_event(event, active_user_ids(user_profile.realm))
+
     if did_remove:
         notify_subscriptions_removed(user_profile, [stream], no_log)
 
@@ -2090,6 +2147,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         # get any updates during a session from get_events()
         pass
 
+    if want('stream'):
+        state['streams'] = do_get_streams(user_profile)
+
     return state
 
 def apply_events(state, events, user_profile):
@@ -2119,6 +2179,18 @@ def apply_events(state, events, user_profile):
                 for obj in state['subscriptions']:
                     if obj['name'].lower() == event['name'].lower():
                         obj[event['property']] = event['value']
+                # Also update the pure streams data
+                for stream in state['streams']:
+                    if stream['name'].lower() == event['name'].lower():
+                        prop = event['property']
+                        if prop in stream:
+                            stream[prop] = event['value']
+            elif event['op'] == "occupy":
+                state['streams'] += event['streams']
+            elif event['op'] == "vacate":
+                stream_ids = [s["stream_id"] for s in event['streams']]
+                state['streams'] = filter(lambda s: s["stream_id"] not in stream_ids,
+                                          state['streams'])
         elif event['type'] == 'realm':
             field = 'realm_' + event['property']
             state[field] = event['value']
@@ -2481,6 +2553,14 @@ def get_emails_from_user_ids(user_ids):
 def realm_aliases(realm):
     return [alias.domain for alias in realm.realmalias_set.all()]
 
+def get_occupied_streams(realm):
+    """ Get streams with subscribers """
+    subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
+    stream_ids = Recipient.objects.filter(
+        type=Recipient.STREAM, id__in=subs_filter).values('type_id')
+
+    return Stream.objects.filter(id__in=stream_ids, realm=realm, deactivated=False)
+
 def do_get_streams(user_profile, include_public=True, include_subscribed=True,
                    include_all_active=False):
     if include_all_active and not is_super_user(user_profile):
@@ -2490,14 +2570,8 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     # contractor for CUSTOMER5) and for the mit.edu realm.
     include_public = include_public and not (user_profile.public_streams_disabled or
                                              user_profile.realm.domain == "mit.edu")
-
-    # Only get streams someone is currently subscribed to
-    subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
-    stream_ids = Recipient.objects.filter(
-        type=Recipient.STREAM, id__in=subs_filter).values('type_id')
-
-    # Start out with all active streams in the realm
-    query = Stream.objects.filter(id__in = stream_ids, realm=user_profile.realm)
+    # Start out with all streams in the realm with subscribers
+    query = get_occupied_streams(user_profile.realm)
 
     if not include_all_active:
         user_subs = Subscription.objects.select_related("recipient").filter(

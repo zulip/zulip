@@ -339,15 +339,15 @@ class EventsRegisterTest(AuthedTestCase):
 
         action = lambda: do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream)
         events = self.do_test(action)
-        error = remove_schema_checker('events[0]', events[0])
+        error = remove_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
         action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
         events = self.do_test(action)
-        error = add_schema_checker('events[0]', events[0])
+        error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
-        action = lambda: do_change_stream_description(get_realm('zulip.com'), 'test_stream', 'new description')
+        action = lambda: do_change_stream_description(get_realm('zulip.com'), 'test_stream', u'new description')
         events = self.do_test(action)
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)

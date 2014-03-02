@@ -305,9 +305,12 @@ class AuthedTestCase(TestCase):
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
     def assert_length(self, queries, count, exact=False):
+        actual_count = len(queries)
         if exact:
-            return self.assertTrue(len(queries) == count, queries)
-        return self.assertTrue(len(queries) <= count, queries)
+            return self.assertTrue(actual_count == count,
+                                   "len(%s) == %s, != %s" % (queries, actual_count, count))
+        return self.assertTrue(actual_count <= count,
+                               "len(%s) == %s, > %s" % (queries, actual_count, count))
 
     def assert_json_error_contains(self, result, msg_substring):
         self.assertIn(msg_substring, self.get_json_error(result))

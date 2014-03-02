@@ -226,9 +226,9 @@ class StreamAdminTest(AuthedTestCase):
             result = self.client.delete('/json/streams/' + active_name)
         self.assert_json_success(result)
 
+        deletion_events = [e['event'] for e in events if e['event']['type'] == 'subscription']
         if subscribed:
-            deletion_event = events[0]['event']
-            self.assertEqual(deletion_event, dict(
+            self.assertEqual(deletion_events[0], dict(
                     op='remove',
                     type='subscription',
                     subscriptions=[{'name': active_name, 'stream_id': stream.id}]
@@ -236,7 +236,7 @@ class StreamAdminTest(AuthedTestCase):
         else:
             # You could delete the stream, but you weren't on it so you don't
             # receive an unsubscription event.
-            self.assertEqual(events, [])
+            self.assertEqual(deletion_events, [])
 
         with self.assertRaises(Stream.DoesNotExist):
             Stream.objects.get(realm=get_realm("zulip.com"), name=active_name)
@@ -708,7 +708,7 @@ class SubscriptionAPITest(AuthedTestCase):
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                 add_streams, self.streams, self.test_email, self.streams + add_streams)
-        self.assert_length(events, 1, True)
+        self.assert_length(events, 4, True)
 
     def test_successful_subscriptions_notifies_pm(self):
         """
@@ -892,10 +892,10 @@ class SubscriptionAPITest(AuthedTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
             )
-        self.assert_length(queries, 37)
+        self.assert_length(queries, 43)
 
-        self.assert_length(events, 4, exact=True)
-        for ev in filter(lambda x: x['event']['type'] != 'message', events):
+        self.assert_length(events, 6, exact=True)
+        for ev in filter(lambda x: x['event']['type'] not in ('message', 'stream'), events):
             self.assertEqual(ev['event']['op'], 'add')
             self.assertEqual(
                     set(ev['event']['subscriptions'][0]['subscribers']),
@@ -914,7 +914,7 @@ class SubscriptionAPITest(AuthedTestCase):
                         streams_to_sub,
                         dict(principals=ujson.dumps([self.test_email])),
                 )
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 8)
 
         self.assert_length(events, 2, True)
         add_event, add_peer_event = events
@@ -975,7 +975,7 @@ class SubscriptionAPITest(AuthedTestCase):
                 )
         # Make sure MIT does not get any tornado subscription events
         self.assert_length(events, 0, True)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 7)
 
     def test_bulk_subscribe_many(self):
         # Create a whole bunch of streams
@@ -991,7 +991,7 @@ class SubscriptionAPITest(AuthedTestCase):
                         dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
-        self.assert_length(queries, 7)
+        self.assert_length(queries, 9)
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):

@@ -152,7 +152,7 @@ class LoginTest(AuthedTestCase):
         with queries_captured() as queries:
             self.register("test", "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 59)
+        self.assert_length(queries, 67)
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
