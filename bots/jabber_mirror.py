@@ -196,6 +196,19 @@ class ZulipToJabberBot(object):
             outgoing['thread'] = u'\u1B80'
             outgoing.send()
 
+def get_rooms(zulip):
+    if options.mode == 'public':
+        stream_infos = zulip.client.get_streams()['streams']
+    else:
+        stream_infos = zulip.client.list_subscriptions()['subscriptions']
+
+    rooms = []
+    for stream_info in stream_infos:
+            stream = stream_info['name']
+            if stream.endswith("/xmpp"):
+                rooms.append(stream_to_room(stream))
+    return rooms
+
 if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('--mode',
@@ -263,9 +276,8 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     options.zulip_domain = options.zulip_email.partition('@')[-1]
 
     zulip = ZulipToJabberBot(zulip.init_from_options(options, "JabberMirror/" + __version__))
-    rooms = [s['name'] for s in zulip.client.get_streams()['streams']]
     xmpp = JabberToZulipBot(options.jabber_username, options.jabber_domain,
-                            options.jabber_password, rooms,
+                            options.jabber_password, get_rooms(zulip),
                             openfire=options.openfire)
 
     if not xmpp.connect(use_tls=not options.no_use_tls):
