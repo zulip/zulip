@@ -2480,3 +2480,54 @@ def get_emails_from_user_ids(user_ids):
 
 def realm_aliases(realm):
     return [alias.domain for alias in realm.realmalias_set.all()]
+
+def do_get_streams(user_profile, include_public=True, include_subscribed=True,
+                   include_all_active=False):
+    if include_all_active and not is_super_user(user_profile):
+        raise JsonableError("User not authorized for this query")
+
+    # Listing public streams are disabled for some users (e.g. a
+    # contractor for CUSTOMER5) and for the mit.edu realm.
+    include_public = include_public and not (user_profile.public_streams_disabled or
+                                             user_profile.realm.domain == "mit.edu")
+
+    # Only get streams someone is currently subscribed to
+    subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
+    stream_ids = Recipient.objects.filter(
+        type=Recipient.STREAM, id__in=subs_filter).values('type_id')
+
+    # Start out with all active streams in the realm
+    query = Stream.objects.filter(id__in = stream_ids, realm=user_profile.realm)
+
+    if not include_all_active:
+        user_subs = Subscription.objects.select_related("recipient").filter(
+            active=True, user_profile=user_profile,
+            recipient__type=Recipient.STREAM)
+
+        if include_subscribed:
+            recipient_check = Q(id__in=[sub.recipient.type_id for sub in user_subs])
+        if include_public:
+            invite_only_check = Q(invite_only=False)
+
+        if include_subscribed and include_public:
+            query = query.filter(recipient_check | invite_only_check)
+        elif include_public:
+            query = query.filter(invite_only_check)
+        elif include_subscribed:
+            query = query.filter(recipient_check)
+        else:
+            # We're including nothing, so don't bother hitting the DB.
+            query = []
+
+    def make_dict(row):
+        return dict(
+            stream_id = row.id,
+            name = row.name,
+            description = row.description,
+            invite_only = row.invite_only,
+        )
+
+    streams = [make_dict(row) for row in query]
+    streams.sort(key=lambda elt: elt["name"])
+
+    return streams
