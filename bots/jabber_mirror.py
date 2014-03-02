@@ -53,7 +53,7 @@ def room_to_stream(room):
     return str(room).rpartition("@")[0] + "/xmpp"
 
 def stream_to_room(stream):
-    return stream.rpartition("/xmpp")[0]
+    return stream.lower().rpartition("/xmpp")[0]
 
 def jid_to_zulip(jid):
     return "%s@%s" % (str(jid).rpartition("@")[0], options.zulip_domain)
@@ -64,7 +64,8 @@ class JabberToZulipBot(ClientXMPP):
         jid = "%s@%s/jabber_mirror" % (nick, domain)
         ClientXMPP.__init__(self, jid, password)
         self.password = password
-        self.rooms = rooms
+        self.rooms = set()
+        self.rooms_to_join = rooms
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.message)
         self.password = password
@@ -85,9 +86,24 @@ class JabberToZulipBot(ClientXMPP):
     def session_start(self, event):
         self.get_roster()
         self.send_presence()
-        for room in self.rooms:
-            muc_jid = room + "@" + options.conference_domain
-            self.plugin['xep_0045'].joinMUC(muc_jid, self.nick)
+        for room in self.rooms_to_join:
+            self.join_muc(room)
+
+    def join_muc(self, room):
+        if room in self.rooms:
+            return
+        logging.debug("Joining " + room)
+        self.rooms.add(room)
+        muc_jid = room + "@" + options.conference_domain
+        self.plugin['xep_0045'].joinMUC(muc_jid, self.nick)
+
+    def leave_muc(self, room):
+        if room not in self.rooms:
+            return
+        logging.debug("Leaving " + room)
+        self.rooms.remove(room)
+        muc_jid = room + "@" + options.conference_domain
+        self.plugin['xep_0045'].leaveMUC(muc_jid, self.nick)
 
     def message(self, msg):
         try:
@@ -154,19 +170,23 @@ class ZulipToJabberBot(object):
     def set_jabber_client(self, client):
         self.jabber = client
 
-    def process_message(self, event):
-        try:
-            if event['type'] != 'message':
-                return
+    def process_event(self, event):
+        if event['type'] == 'message':
             message = event["message"]
             if message['sender_email'] != self.client.email:
                 return
-            if message['type'] == 'stream':
-                self.stream_message(message)
-            elif message['type'] == 'private':
-                self.private_message(message)
-        except:
-            logging.exception("Exception forwarding Zulip => Jabber")
+
+            try:
+                if message['type'] == 'stream':
+                    self.stream_message(message)
+                elif message['type'] == 'private':
+                    self.private_message(message)
+            except:
+                logging.exception("Exception forwarding Zulip => Jabber")
+        elif event['type'] == 'subscription':
+            self.process_subscription(event)
+        elif event['type'] == 'stream':
+            self.process_stream(event)
 
     def stream_message(self, msg):
         stream = msg['display_recipient']
@@ -195,6 +215,30 @@ class ZulipToJabberBot(object):
                 mtype = 'chat')
             outgoing['thread'] = u'\u1B80'
             outgoing.send()
+
+    def process_subscription(self, event):
+        if event['op'] == 'add':
+            streams = [s['name'].lower() for s in event['subscriptions']]
+            streams = [s for s in streams if s.endswith("/xmpp")]
+            for stream in streams:
+                self.jabber.join_muc(stream_to_room(stream))
+        if event['op'] == 'remove':
+            streams = [s['name'].lower() for s in event['subscriptions']]
+            streams = [s for s in streams if s.endswith("/xmpp")]
+            for stream in streams:
+                self.jabber.leave_muc(stream_to_room(stream))
+
+    def process_stream(self, event):
+        if event['op'] == 'occupy':
+            streams = [s['name'].lower() for s in event['streams']]
+            streams = [s for s in streams if s.endswith("/xmpp")]
+            for stream in streams:
+                self.jabber.join_muc(stream_to_room(stream))
+        if event['op'] == 'vacate':
+            streams = [s['name'].lower() for s in event['streams']]
+            streams = [s for s in streams if s.endswith("/xmpp")]
+            for stream in streams:
+                self.jabber.leave_muc(stream_to_room(stream))
 
 def get_rooms(zulip):
     if options.mode == 'public':
@@ -286,13 +330,16 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     xmpp.set_zulip_client(zulip)
     zulip.set_jabber_client(xmpp)
 
+    xmpp.process(block=False)
     if options.mode == 'public':
-        xmpp.process(block=True)
+        event_types = ['stream']
     else:
-        xmpp.process(block=False)
-        try:
-            logging.info("Connecting to Zulip.")
-            zulip.client.call_on_each_event(zulip.process_message)
-        except BaseException as e:
-            logging.exception("Exception in main loop")
-            xmpp.abort()
+        event_types = ['message', 'subscription']
+
+    try:
+        logging.info("Connecting to Zulip.")
+        zulip.client.call_on_each_event(zulip.process_event,
+                                        event_types=event_types)
+    except BaseException as e:
+        logging.exception("Exception in main loop")
+        xmpp.abort()
