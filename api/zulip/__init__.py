@@ -29,6 +29,7 @@ import sys
 import os
 import optparse
 import platform
+import urllib
 from distutils.version import LooseVersion
 
 from ConfigParser import SafeConfigParser
@@ -245,12 +246,16 @@ class Client(object):
 
     @classmethod
     def _register(cls, name, url=None, make_request=(lambda request={}: request),
-            method="POST", **query_kwargs):
+                  method="POST", computed_url=None, **query_kwargs):
         if url is None:
             url = name
         def call(self, *args, **kwargs):
             request = make_request(*args, **kwargs)
-            return self.do_api_query(request, API_VERSTRING + url, method=method, **query_kwargs)
+            if computed_url is not None:
+                req_url = computed_url(request)
+            else:
+                req_url = url
+            return self.do_api_query(request, API_VERSTRING + req_url, method=method, **query_kwargs)
         call.func_name = name
         setattr(cls, name, call)
 
@@ -363,5 +368,8 @@ Client._register('get_members', method='GET', url='users')
 Client._register('list_subscriptions', method='GET', url='users/me/subscriptions')
 Client._register('add_subscriptions', url='users/me/subscriptions', make_request=_mk_subs)
 Client._register('remove_subscriptions', method='PATCH', url='users/me/subscriptions', make_request=_mk_rm_subs)
+Client._register('get_subscribers', method='GET',
+                 computed_url=lambda request: 'streams/%s/members' % (urllib.quote(request['stream'], safe=''),),
+                 make_request=_kwargs_to_dict)
 Client._register('render_message', method='GET', url='messages/render')
 Client._register('create_user', method='POST', url='users')
