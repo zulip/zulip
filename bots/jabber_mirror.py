@@ -63,7 +63,7 @@ class JabberToZulipBot(ClientXMPP):
     def __init__(self, jid, password, rooms, openfire=False):
         self.nick = jid.username
         if not jid.resource:
-            jid.resource = "jabber_mirror"
+            jid.resource = "zulip"
         ClientXMPP.__init__(self, jid, password)
         self.password = password
         self.rooms = set()
