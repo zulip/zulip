@@ -60,7 +60,7 @@ def jid_to_zulip(jid):
     return "%s@%s" % (jid.username, options.zulip_domain)
 
 class JabberToZulipBot(ClientXMPP):
-    def __init__(self, jid, password, rooms, openfire=False):
+    def __init__(self, jid, password, rooms):
         if jid.resource:
             self.nick = jid.resource
         else:
@@ -78,11 +78,6 @@ class JabberToZulipBot(ClientXMPP):
 
         self.register_plugin('xep_0045') # Jabber chatrooms
         self.register_plugin('xep_0199') # XMPP Ping
-
-        if openfire:
-            # OpenFire Jabber servers use a different SSL protocol version
-            import ssl
-            self.ssl_version = ssl.PROTOCOL_SSLv3
 
     def set_zulip_client(self, client):
         self.zulip = client
@@ -318,10 +313,6 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
                             action='store',
                             help="Your Jabber conference domain (E.g. conference.jabber.example.com).  "
                             + "If not specifed, \"conference.\" will be prepended to your JID's domain.")
-    jabber_group.add_option('--openfire',
-                            default=None,
-                            action='store_true',
-                            help="Set if Jabber server is an OpenFire server")
     jabber_group.add_option('--no-use-tls',
                             default=None,
                             action='store_true')
@@ -349,7 +340,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
             and config.has_option("jabber_mirror", option)):
             setattr(options, option, config.get("jabber_mirror", option))
 
-    for option in ("openfire", "no_use_tls"):
+    for option in ("no_use_tls",):
         if getattr(options, option) is None:
             if config.has_option("jabber_mirror", option):
                 setattr(options, option, config.getboolean("jabber_mirror", option))
@@ -375,8 +366,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     if options.conference_domain is None:
         options.conference_domain = "conference.%s" % (jid.domain,)
 
-    xmpp = JabberToZulipBot(jid, options.jabber_password, get_rooms(zulip),
-                            openfire=options.openfire)
+    xmpp = JabberToZulipBot(jid, options.jabber_password, get_rooms(zulip))
 
     if not xmpp.connect(use_tls=not options.no_use_tls):
         sys.exit("Unable to connect to Jabber server")
