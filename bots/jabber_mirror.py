@@ -44,6 +44,7 @@ import optparse
 
 from sleekxmpp import ClientXMPP, InvalidJID
 from sleekxmpp.exceptions import IqError, IqTimeout
+from ConfigParser import SafeConfigParser
 import os, sys, zulip, getpass
 import re
 
@@ -275,7 +276,11 @@ def get_rooms(zulip):
     return rooms
 
 if __name__ == '__main__':
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(epilog=
+'''Jabber configuration options may also be specified in the zulip configuration
+file under the jabber_mirror section.  Keys have the same name as options with
+hyphens replaced with underscores.'''
+)
     parser.add_option('--mode',
                       default="personal",
                       action='store',
@@ -325,17 +330,41 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     logging.basicConfig(level=options.log_level,
                         format='%(levelname)-8s %(message)s')
 
+    if options.zulip_config_file is None:
+        config_file = zulip.get_default_config_filename()
+    else:
+        config_file = options.zulip_config_file
+
+    config = SafeConfigParser()
+    try:
+        with file(config_file, 'r') as f:
+            config.readfp(f, config_file)
+    except IOError:
+        pass
+    for option in ("jabber_username", "jabber_password", "jabber_domain",
+                   "conference_domain"):
+        if (getattr(options, option) is None
+            and config.has_option("jabber_mirror", option)):
+            setattr(options, option, config.get("jabber_mirror", option))
+
+    for option in ("openfire", "no_use_tls"):
+        if getattr(options, option) is None:
+            if config.has_option("jabber_mirror", option):
+                setattr(options, option, config.getboolean("jabber_mirror", option))
+            else:
+                setattr(options, option, False)
+
     if options.mode not in ('public', 'personal'):
         sys.exit("Bad value for --mode: must be one of 'public' or 'personal'")
 
     if options.mode == 'public' and options.conference_domain is None:
         sys.exit("--conference-domain is required when running in 'public' mode")
 
-    if options.jabber_password is None:
-        options.jabber_password = getpass.getpass("Jabber password: ")
-    if options.jabber_domain is None:
-        sys.exit("Must specify a Jabber server")
-
+    if None in (options.jabber_username, options.jabber_password,
+                options.jabber_domain):
+        sys.exit("You must specify your Jabber username, Jabber password, and "
+                 + "Jabber domain either in the Zulip configuration file or on "
+                 + "the commandline")
 
     # This won't work for open realms
     options.zulip_domain = options.zulip_email.partition('@')[-1]
