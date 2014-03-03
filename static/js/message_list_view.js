@@ -47,6 +47,28 @@ function add_display_time(group, message, prev) {
     }
 }
 
+function populate_group_from_message(group, message) {
+    group.is_stream = message.is_stream;
+    group.is_private = message.is_private;
+
+    if (group.is_stream) {
+        group.background_color = stream_data.get_color(message.stream);
+        group.color_class = stream_color.get_color_class(group.background_color);
+        group.invite_only = stream_data.get_invite_only(message.stream);
+        group.subject = message.subject;
+        group.match_subject = message.match_subject;
+        group.stream_url = message.stream_url;
+        group.topic_url = message.topic_url;
+    } else if (group.is_private) {
+        group.pm_with_url = message.pm_with_url;
+        group.display_reply_to = message.display_reply_to;
+    }
+    group.display_recipient = message.display_recipient;
+    group.always_visible_topic_edit = message.always_visible_topic_edit;
+    group.on_hover_topic_edit = message.on_hover_topic_edit;
+    group.subject_links = message.subject_links;
+}
+
 MessageListView.prototype = {
     // Number of messages to render at a time
     _RENDER_WINDOW_SIZE: 400,
@@ -120,30 +142,8 @@ MessageListView.prototype = {
 
         function finish_group() {
             if (current_group.messages.length > 0) {
-                var first_message = current_group.messages[0];
-
-                current_group.is_stream = first_message.is_stream;
-                current_group.is_private = first_message.is_private;
-
-                if (current_group.is_stream) {
-                    current_group.background_color = stream_data.get_color(first_message.stream);
-                    current_group.color_class = stream_color.get_color_class(current_group.background_color);
-                    current_group.invite_only = stream_data.get_invite_only(first_message.stream);
-                    current_group.subject = first_message.subject;
-                    current_group.match_subject = first_message.match_subject;
-                    current_group.stream_url = first_message.stream_url;
-                    current_group.topic_url = first_message.topic_url;
-                } else if (current_group.is_private) {
-                    current_group.pm_with_url = first_message.pm_with_url;
-                    current_group.display_reply_to = first_message.display_reply_to;
-                }
-                current_group.display_recipient = first_message.display_recipient;
-                current_group.always_visible_topic_edit = first_message.always_visible_topic_edit;
-                current_group.on_hover_topic_edit = first_message.on_hover_topic_edit;
-                current_group.subject_links = first_message.subject_links;
-
+                populate_group_from_message(current_group, current_group.messages[0]);
                 current_group.messages[current_group.messages.length - 1].include_footer = true;
-
                 new_message_groups.push(current_group);
             }
         }
@@ -580,6 +580,25 @@ MessageListView.prototype = {
         }
     },
 
+    rerender_header: function MessageListView__maybe_rerender_header(messages) {
+        // Given a list of messages that are in the **same** message group,
+        // rerender the header / recipient bar of the messages
+        if (messages.length === 0) {
+            return;
+        }
+
+        var first_row = this.get_row(messages[0].id);
+        var recipient_row = rows.get_message_recipient_row(first_row);
+        var header = recipient_row.find('.message_header');
+
+        var group = {messages: messages};
+        populate_group_from_message(group, messages[0]);
+
+        var rendered_recipient_row = $(templates.render('recipient_row', group));
+
+        header.replaceWith(rendered_recipient_row);
+    },
+
     rerender_message: function MessageListView__rerender_message(message) {
         var row = this.get_row(message.id);
         var was_selected = this.list.selected_message() === message;
@@ -601,8 +620,22 @@ MessageListView.prototype = {
 
     rerender_messages: function MessageListView__rerender_messages(messages) {
         var self = this;
+        var message_groups = [];
+        var current_group = [];
         _.each(messages, function (message) {
+            if (current_group.length === 0 || util.same_recipient(current_group[current_group.length - 1], message)) {
+                current_group.push(message);
+            } else {
+                message_groups.push(current_group);
+                current_group = [];
+            }
             self.rerender_message(message);
+        });
+        if (current_group.length !== 0) {
+            message_groups.push(current_group);
+        }
+        _.each(message_groups, function (messages_in_group) {
+            self.rerender_header(messages_in_group);
         });
     },
 
