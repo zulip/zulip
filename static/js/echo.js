@@ -154,7 +154,7 @@ function insert_local_message(message_request, local_id) {
             if (person !== undefined) {
                 return person;
             }
-            return {email: email, full_name: email};
+            return {email: email, full_name: email, skeleton: true};
         });
     }
 

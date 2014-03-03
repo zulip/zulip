@@ -91,13 +91,15 @@ exports.reify = function reify(person) {
 
     // Don't overwrite an already-reified person. If we have
     // a full name, we already have the full person object loaded
-    if (old_person.full_name !== undefined) {
+    if (old_person.full_name !== undefined && !old_person.skeleton) {
         return;
     }
 
     var old_idx = page_params.people_list.indexOf(old_person);
 
     var new_person = _.extend({}, old_person, person);
+    new_person.skeleton = false;
+
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
     page_params.people_list[old_idx] = new_person;
