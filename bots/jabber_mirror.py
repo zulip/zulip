@@ -142,6 +142,10 @@ class JabberToZulipBot(ClientXMPP):
             subject = "(no topic)"
         stream = room_to_stream(msg.get_mucroom())
         jid = self.nickname_to_jid(msg.get_mucroom(), msg.get_mucnick())
+        if str(jid) == "@" + options.jabber_domain:
+            # Messages from the room itself have no nickname.  We should not try
+            # to mirror these
+            return
         sender = jid_to_zulip(jid)
         zulip_message = dict(
             forged = "yes",
