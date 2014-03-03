@@ -187,6 +187,10 @@ if __name__ == '__main__':
                             default=False,
                             action='store_true',
                             help="Set if Jabber server is an OpenFire server")
+    jabber_group.add_option('--jabber-username',
+                            default=None,
+                            action='store',
+                            help="Your Jabber username")
     jabber_group.add_option('--jabber-password',
                             default=None,
                             action='store',
@@ -212,8 +216,7 @@ if __name__ == '__main__':
     if options.jabber_domain is None:
         sys.exit("Must specify a Jabber server")
 
-    (username, options.zulip_domain) = options.zulip_email.split("@")
-    jabber_username = username + '@' + options.jabber_domain
+    jabber_username = options.jabber_username + '@' + options.jabber_domain
 
     zulip = ZulipToJabberBot(zulip.init_from_options(options, "jabber_mirror"))
     rooms = [s['name'] for s in zulip.client.get_streams()['streams']]
