@@ -55,6 +55,8 @@ sed -i 's/localhost$/localhost $hostname/' /etc/hosts
 /etc/init.d/hostname.sh start
 
 # First, install any updates from the apt repo that may be needed
+wget -O /root/ops.asc https://zulip.com/dist/keys/ops.asc
+apt-key add /root/ops.asc
 cat >/etc/apt/sources.list.d/zulip.list <<EOF2
 deb http://apt.zulip.com/ops wheezy main
 EOF2
