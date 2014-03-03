@@ -293,6 +293,7 @@ function render(template_name, args) {
     ];
 
     global.use_template('single_message'); // partial
+    global.use_template('recipient_row'); // partial
     global.use_template('bookend'); // partial
 
     var html = render('message_group', {message_groups: groups});
