@@ -293,10 +293,6 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
                       default=logging.INFO)
 
     jabber_group = optparse.OptionGroup(parser, "Jabber configuration")
-    jabber_group.add_option('--openfire',
-                            default=False,
-                            action='store_true',
-                            help="Set if Jabber server is an OpenFire server")
     jabber_group.add_option('--jabber-username',
                             default=None,
                             action='store',
@@ -309,14 +305,18 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
                             default=None,
                             action='store',
                             help="Your Jabber server")
-    jabber_group.add_option('--no-use-tls',
-                            default=False,
-                            action='store_true')
     jabber_group.add_option('--conference-domain',
                             default=None,
                             action='store',
                             help="Your Jabber conference domain (E.g. conference.jabber.example.com).  "
-                            + "Only required when running in \"public\" mode.")
+                            + "Required when running in \"public\" mode.")
+    jabber_group.add_option('--openfire',
+                            default=None,
+                            action='store_true',
+                            help="Set if Jabber server is an OpenFire server")
+    jabber_group.add_option('--no-use-tls',
+                            default=None,
+                            action='store_true')
 
     parser.add_option_group(jabber_group)
     parser.add_option_group(zulip.generate_option_group(parser, "zulip-"))
