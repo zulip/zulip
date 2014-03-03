@@ -61,8 +61,10 @@ def jid_to_zulip(jid):
 
 class JabberToZulipBot(ClientXMPP):
     def __init__(self, jid, password, rooms, openfire=False):
-        self.nick = jid.username
-        if not jid.resource:
+        if jid.resource:
+            self.nick = jid.resource
+        else:
+            self.nick = jid.username
             jid.resource = "zulip"
         ClientXMPP.__init__(self, jid, password)
         self.password = password
@@ -302,7 +304,11 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     jabber_group.add_option('--jid',
                             default=None,
                             action='store',
-                            help="Your Jabber JID")
+                            help="Your Jabber JID.  If a resource is specified, "
+                            + "it will be used as the nickname when joining MUCs.  "
+                            + "Specifying the nickname is mostly useful if you want "
+                            + "to run the public mirror from a regular user instead of "
+                            + "from a dedicated account.")
     jabber_group.add_option('--jabber-password',
                             default=None,
                             action='store',
