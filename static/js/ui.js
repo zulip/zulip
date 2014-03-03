@@ -1474,6 +1474,7 @@ $(function () {
     }
 
     // initialize other stuff
+    reload.initialize();
     composebox_typeahead.initialize();
     search.initialize();
     notifications.initialize();

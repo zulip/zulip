@@ -64,9 +64,10 @@ function preserve_state(send_after_reload) {
     window.location.replace(url);
 }
 
+
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
-$(function () {
+exports.initialize = function reload__initialize() {
     var location = window.location.toString();
     var fragment = location.substring(location.indexOf('#') + 1);
     if (fragment.search("reload:") !== 0) {
@@ -121,7 +122,7 @@ $(function () {
 
     activity.new_user_input = false;
     hashchange.changehash(vars.oldhash);
-});
+};
 
 function clear_message_list(msg_list) {
     if (!msg_list) { return; }
