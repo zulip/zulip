@@ -95,7 +95,20 @@ class JabberToZulipBot(ClientXMPP):
         logging.debug("Joining " + room)
         self.rooms.add(room)
         muc_jid = room + "@" + options.conference_domain
-        self.plugin['xep_0045'].joinMUC(muc_jid, self.nick)
+        xep0045 = self.plugin['xep_0045']
+        xep0045.joinMUC(muc_jid, self.nick, wait=True)
+
+        # Configure the room.  Really, we should only do this if the room is
+        # newly created.
+        form = None
+        try:
+            form = xep0045.getRoomConfig(muc_jid)
+        except ValueError:
+            pass
+        if form:
+            xep0045.configureRoom(muc_jid, form)
+        else:
+            logging.error("Could not configure room: " + muc_jid)
 
     def leave_muc(self, room):
         if room not in self.rooms:
