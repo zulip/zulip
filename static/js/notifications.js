@@ -430,11 +430,12 @@ exports.received_messages = function (messages) {
 
         message.notification_sent = true;
 
-        if (should_send_desktop_notification(message) &&
-            browser_desktop_notifications_on()) {
-            process_notification({message: message, webkit_notify: true});
-        } else {
-            process_notification({message: message, webkit_notify: false});
+        if (should_send_desktop_notification(message)) {
+            if (browser_desktop_notifications_on()) {
+                process_notification({message: message, webkit_notify: true});
+            } else {
+                process_notification({message: message, webkit_notify: false});
+            }
         }
         if (should_send_audible_notification(message) && supports_sound) {
             if (window.bridge !== undefined) {
