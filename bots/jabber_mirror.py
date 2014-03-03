@@ -42,7 +42,7 @@ import logging
 import threading
 import optparse
 
-from sleekxmpp import ClientXMPP, InvalidJID
+from sleekxmpp import ClientXMPP, InvalidJID, JID
 from sleekxmpp.exceptions import IqError, IqTimeout
 from ConfigParser import SafeConfigParser
 import os, sys, zulip, getpass
@@ -57,12 +57,13 @@ def stream_to_room(stream):
     return stream.lower().rpartition("/xmpp")[0]
 
 def jid_to_zulip(jid):
-    return "%s@%s" % (str(jid).rpartition("@")[0], options.zulip_domain)
+    return "%s@%s" % (jid.username, options.zulip_domain)
 
 class JabberToZulipBot(ClientXMPP):
-    def __init__(self, nick, domain, password, rooms, openfire=False):
-        self.nick = nick
-        jid = "%s@%s/jabber_mirror" % (nick, domain)
+    def __init__(self, jid, password, rooms, openfire=False):
+        self.nick = jid.username
+        if not jid.resource:
+            jid.resource = "jabber_mirror"
         ClientXMPP.__init__(self, jid, password)
         self.password = password
         self.rooms = set()
@@ -159,11 +160,12 @@ class JabberToZulipBot(ClientXMPP):
         if len(subject) == 0:
             subject = "(no topic)"
         stream = room_to_stream(msg.get_mucroom())
-        jid = self.nickname_to_jid(msg.get_mucroom(), msg.get_mucnick())
-        if str(jid) == "@" + options.jabber_domain:
+        sender_nick = msg.get_mucnick()
+        if not sender_nick:
             # Messages from the room itself have no nickname.  We should not try
             # to mirror these
             return
+        jid = self.nickname_to_jid(msg.get_mucroom(), sender_nick)
         sender = jid_to_zulip(jid)
         zulip_message = dict(
             forged = "yes",
@@ -180,7 +182,7 @@ class JabberToZulipBot(ClientXMPP):
     def nickname_to_jid(self, room, nick):
         jid = self.plugin['xep_0045'].getJidProperty(room, nick, "jid")
         if (jid is None or jid == ''):
-            return nick.replace(' ', '') + "@" + options.jabber_domain
+            return JID(local=nick.replace(' ', ''), domain=self.boundjid.domain)
         else:
             return jid
 
@@ -230,7 +232,7 @@ class ZulipToJabberBot(object):
                 continue
             recip_email = recipient['email']
             username = recip_email[:recip_email.rfind(options.zulip_domain)]
-            jabber_recipient = username + options.jabber_domain
+            jabber_recipient = username + self.jabber.boundjid.domain
             outgoing = self.jabber.make_message(
                 mto   = jabber_recipient,
                 mbody = msg['content'],
@@ -298,18 +300,14 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
                       default=logging.INFO)
 
     jabber_group = optparse.OptionGroup(parser, "Jabber configuration")
-    jabber_group.add_option('--jabber-username',
+    jabber_group.add_option('--jid',
                             default=None,
                             action='store',
-                            help="Your Jabber username")
+                            help="Your Jabber JID")
     jabber_group.add_option('--jabber-password',
                             default=None,
                             action='store',
                             help="Your Jabber password")
-    jabber_group.add_option('--jabber-domain',
-                            default=None,
-                            action='store',
-                            help="Your Jabber server")
     jabber_group.add_option('--conference-domain',
                             default=None,
                             action='store',
@@ -341,8 +339,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
             config.readfp(f, config_file)
     except IOError:
         pass
-    for option in ("jabber_username", "jabber_password", "jabber_domain",
-                   "conference_domain"):
+    for option in ("jid", "jabber_password", "conference_domain"):
         if (getattr(options, option) is None
             and config.has_option("jabber_mirror", option)):
             setattr(options, option, config.get("jabber_mirror", option))
@@ -360,18 +357,19 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     if options.mode == 'public' and options.conference_domain is None:
         sys.exit("--conference-domain is required when running in 'public' mode")
 
-    if None in (options.jabber_username, options.jabber_password,
-                options.jabber_domain):
-        sys.exit("You must specify your Jabber username, Jabber password, and "
-                 + "Jabber domain either in the Zulip configuration file or on "
-                 + "the commandline")
+    if None in (options.jid, options.jabber_password):
+        sys.exit("You must specify your Jabber JID and Jabber password either "
+                 + "in the Zulip configuration file or on the commandline")
 
     # This won't work for open realms
     options.zulip_domain = options.zulip_email.partition('@')[-1]
 
     zulip = ZulipToJabberBot(zulip.init_from_options(options, "JabberMirror/" + __version__))
-    xmpp = JabberToZulipBot(options.jabber_username, options.jabber_domain,
-                            options.jabber_password, get_rooms(zulip),
+    try:
+        jid = JID(options.jid)
+    except InvalidJID as e:
+        sys.exit("Bad JID: %s: %s" % (options.jid, e.message))
+    xmpp = JabberToZulipBot(jid, options.jabber_password, get_rooms(zulip),
                             openfire=options.openfire)
 
     if not xmpp.connect(use_tls=not options.no_use_tls):
