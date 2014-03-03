@@ -311,7 +311,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
                             default=None,
                             action='store',
                             help="Your Jabber conference domain (E.g. conference.jabber.example.com).  "
-                            + "Required when running in \"public\" mode.")
+                            + "If not specifed, \"conference.\" will be prepended to your JID's domain.")
     jabber_group.add_option('--openfire',
                             default=None,
                             action='store_true',
@@ -353,9 +353,6 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
     if options.mode not in ('public', 'personal'):
         sys.exit("Bad value for --mode: must be one of 'public' or 'personal'")
 
-    if options.mode == 'public' and options.conference_domain is None:
-        sys.exit("--conference-domain is required when running in 'public' mode")
-
     if None in (options.jid, options.jabber_password):
         sys.exit("You must specify your Jabber JID and Jabber password either "
                  + "in the Zulip configuration file or on the commandline")
@@ -368,6 +365,10 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
         jid = JID(options.jid)
     except InvalidJID as e:
         sys.exit("Bad JID: %s: %s" % (options.jid, e.message))
+
+    if options.conference_domain is None:
+        options.conference_domain = "conference.%s" % (jid.domain,)
+
     xmpp = JabberToZulipBot(jid, options.jabber_password, get_rooms(zulip),
                             openfire=options.openfire)
 
