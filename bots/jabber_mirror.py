@@ -42,7 +42,7 @@ import logging
 import threading
 import optparse
 
-from sleekxmpp import ClientXMPP
+from sleekxmpp import ClientXMPP, InvalidJID
 from sleekxmpp.exceptions import IqError, IqTimeout
 import os, sys, zulip, getpass
 import re
@@ -96,7 +96,11 @@ class JabberToZulipBot(ClientXMPP):
         self.rooms.add(room)
         muc_jid = room + "@" + options.conference_domain
         xep0045 = self.plugin['xep_0045']
-        xep0045.joinMUC(muc_jid, self.nick, wait=True)
+        try:
+            xep0045.joinMUC(muc_jid, self.nick, wait=True)
+        except InvalidJID:
+            logging.error("Could not join room: " + muc_jid)
+            return
 
         # Configure the room.  Really, we should only do this if the room is
         # newly created.
