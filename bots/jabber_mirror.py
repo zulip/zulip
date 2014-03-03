@@ -118,7 +118,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.exception("Error forwarding Jabber => Zulip")
 
     def private(self, msg):
-        if options.mode == 'public' or msg['thread'] == u'\u1B80':
+        if options.mode == 'public' or msg['thread'] == u'\u1FFFE':
             return
         sender = jid_to_zulip(msg["from"])
         recipient = jid_to_zulip(msg["to"])
@@ -134,7 +134,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.error(ret)
 
     def group(self, msg):
-        if options.mode == 'personal' or msg["thread"] == u'\u1B80':
+        if options.mode == 'personal' or msg["thread"] == u'\u1FFFE':
             return
 
         subject = msg["subject"]
@@ -199,7 +199,7 @@ class ZulipToJabberBot(object):
             mto   = jabber_recipient,
             mbody = msg['content'],
             mtype = 'groupchat')
-        outgoing['thread'] = u'\u1B80'
+        outgoing['thread'] = u'\u1FFFE'
         outgoing.send()
 
     def private_message(self, msg):
@@ -213,7 +213,7 @@ class ZulipToJabberBot(object):
                 mto   = jabber_recipient,
                 mbody = msg['content'],
                 mtype = 'chat')
-            outgoing['thread'] = u'\u1B80'
+            outgoing['thread'] = u'\u1FFFE'
             outgoing.send()
 
     def process_subscription(self, event):
