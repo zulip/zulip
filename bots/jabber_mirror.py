@@ -51,7 +51,7 @@ import re
 __version__ = "1.1"
 
 def room_to_stream(room):
-    return str(room).rpartition("@")[0] + "/xmpp"
+    return room + "/xmpp"
 
 def stream_to_room(stream):
     return stream.lower().rpartition("/xmpp")[0]
@@ -96,12 +96,12 @@ class JabberToZulipBot(ClientXMPP):
             return
         logging.debug("Joining " + room)
         self.rooms.add(room)
-        muc_jid = room + "@" + options.conference_domain
+        muc_jid = JID(local=room, domain=options.conference_domain)
         xep0045 = self.plugin['xep_0045']
         try:
             xep0045.joinMUC(muc_jid, self.nick, wait=True)
         except InvalidJID:
-            logging.error("Could not join room: " + muc_jid)
+            logging.error("Could not join room: " + str(muc_jid))
             return
 
         # Configure the room.  Really, we should only do this if the room is
@@ -114,14 +114,14 @@ class JabberToZulipBot(ClientXMPP):
         if form:
             xep0045.configureRoom(muc_jid, form)
         else:
-            logging.error("Could not configure room: " + muc_jid)
+            logging.error("Could not configure room: " + str(muc_jid))
 
     def leave_muc(self, room):
         if room not in self.rooms:
             return
         logging.debug("Leaving " + room)
         self.rooms.remove(room)
-        muc_jid = room + "@" + options.conference_domain
+        muc_jid = JID(local=room, domain=options.conference_domain)
         self.plugin['xep_0045'].leaveMUC(muc_jid, self.nick)
 
     def message(self, msg):
@@ -159,7 +159,7 @@ class JabberToZulipBot(ClientXMPP):
         subject = msg["subject"]
         if len(subject) == 0:
             subject = "(no topic)"
-        stream = room_to_stream(msg.get_mucroom())
+        stream = room_to_stream(msg['from'].local)
         sender_nick = msg.get_mucnick()
         if not sender_nick:
             # Messages from the room itself have no nickname.  We should not try
@@ -218,7 +218,7 @@ class ZulipToJabberBot(object):
             return
 
         room = stream_to_room(stream)
-        jabber_recipient = "%s@%s" % (room, options.conference_domain)
+        jabber_recipient = JID(local=room, domain=options.conference_domain)
         outgoing = self.jabber.make_message(
             mto   = jabber_recipient,
             mbody = msg['content'],
@@ -231,8 +231,7 @@ class ZulipToJabberBot(object):
             if recipient["email"] == self.client.email:
                 continue
             recip_email = recipient['email']
-            username = recip_email[:recip_email.rfind(options.zulip_domain)]
-            jabber_recipient = username + self.jabber.boundjid.domain
+            jabber_recipient = JID(recip_email, domain=self.jabber.boundjid.domain)
             outgoing = self.jabber.make_message(
                 mto   = jabber_recipient,
                 mbody = msg['content'],
