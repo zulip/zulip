@@ -84,6 +84,13 @@ def init_from_options(options, client=None):
                   config_file=options.zulip_config_file, verbose=options.verbose,
                   site=options.zulip_site, client=client)
 
+def get_default_config_filename():
+    config_file = os.path.join(os.environ["HOME"], ".zuliprc")
+    if (not os.path.exists(config_file) and
+        os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
+        raise RuntimeError("The Zulip API configuration file is now ~/.zuliprc; please run:\n\n  mv ~/.humbugrc ~/.zuliprc\n")
+    return config_file
+
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
@@ -92,10 +99,7 @@ class Client(object):
             client = _default_client()
         if None in (api_key, email):
             if config_file is None:
-                config_file = os.path.join(os.environ["HOME"], ".zuliprc")
-                if (not os.path.exists(config_file) and
-                    os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
-                    raise RuntimeError("The Zulip API configuration file is now ~/.zuliprc; please run:\n\n  mv ~/.humbugrc ~/.zuliprc\n")
+                config_file = get_default_config_filename()
             if not os.path.exists(config_file):
                 raise RuntimeError("api_key or email not specified and %s does not exist"
                                    % (config_file,))
