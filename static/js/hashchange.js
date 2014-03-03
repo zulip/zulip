@@ -149,6 +149,7 @@ function do_hashchange(from_reload) {
         };
         if (from_reload !== undefined && page_params.initial_narrow_pointer !== undefined) {
             narrow_opts.from_reload = true;
+            narrow_opts.first_unread_from_server = true;
         }
         narrow.activate(operators, narrow_opts);
         ui.update_floating_recipient_bar();
