@@ -275,21 +275,24 @@ def get_rooms(zulip):
 
 if __name__ == '__main__':
     parser = optparse.OptionParser(epilog=
-'''Jabber configuration options may also be specified in the zulip configuration
-file under the jabber_mirror section.  Keys have the same name as options with
-hyphens replaced with underscores.'''
+'''Most general and Jabber configuration options may also be specified in the
+zulip configuration file under the jabber_mirror section (exceptions are noted
+in their help sections).  Keys have the same name as options with hyphens
+replaced with underscores.  Zulip configuration options go in the api section,
+as normal.'''.replace("\n", " ")
 )
     parser.add_option('--mode',
-                      default="personal",
+                      default=None,
                       action='store',
                       help= \
 '''Which mode to run in.  Valid options are "personal" and "public".  In
 "personal" mode, the mirror uses an individual users' credentials and mirrors
 all messages they send on Zulip to Jabber and all private Jabber messages to
 Zulip.  In "public" mode, the mirror uses the credentials for a dedicated mirror
-user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
+user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
+"personal"'''.replace("\n", " "))
     parser.add_option('-d', '--debug',
-                      help='set logging to DEBUG',
+                      help='set logging to DEBUG.  Can not be set via config file.',
                       action='store_const',
                       dest='log_level',
                       const=logging.DEBUG,
@@ -335,7 +338,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
             config.readfp(f, config_file)
     except IOError:
         pass
-    for option in ("jid", "jabber_password", "conference_domain"):
+    for option in ("jid", "jabber_password", "conference_domain", "mode"):
         if (getattr(options, option) is None
             and config.has_option("jabber_mirror", option)):
             setattr(options, option, config.get("jabber_mirror", option))
@@ -346,6 +349,9 @@ user and mirrors messages sent to Jabber rooms to Zulip.'''.replace("\n", " "))
                 setattr(options, option, config.getboolean("jabber_mirror", option))
             else:
                 setattr(options, option, False)
+
+    if options.mode is None:
+        options.mode = "personal"
 
     if options.mode not in ('public', 'personal'):
         sys.exit("Bad value for --mode: must be one of 'public' or 'personal'")
