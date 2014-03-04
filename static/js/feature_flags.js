@@ -35,7 +35,7 @@ exports.mandatory_topics = _.contains([
     page_params.domain
 );
 
-exports.left_side_userlist = page_params.staging || _.contains(['customer7.invalid'], page_params.domain);
+exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domain);
 //This was set as a page_params variable already, because it's also used in
 //the settings.html django template. See zerver/views/__init__.py:home(request).
 exports.show_autoscroll_forever_option = page_params.show_autoscroll_forever_option;
