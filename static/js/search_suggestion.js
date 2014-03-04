@@ -96,7 +96,9 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
         return [];
     }
 
-    var query, matching_operator;
+    var query;
+    var matching_operator;
+    var negated = false;
 
     if (operators.length === 0) {
         query = '';
@@ -112,6 +114,7 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
                 if (operator === item) {
                     query = operators[0].operand;
                     matching_operator = item;
+                    negated = operators[0].negated;
                 }
             });
         }
@@ -134,16 +137,21 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
     // Take top 15 people, since they're ordered by pm_recipient_count.
     people = people.slice(0, 15);
 
-    var prefix = Filter.operator_to_prefix(matching_operator);
+    var prefix = Filter.operator_to_prefix(matching_operator, negated);
 
     var suggestions = _.map(people, function (person) {
-        var name = highlight_person(query, person);
-        var description = prefix + ' ' + name;
         var term = {
             operator: matching_operator,
-            operand: person.email
+            operand: person.email,
+            negated: negated
         };
-        var search_string = Filter.unparse([term]);
+        var name = highlight_person(query, person);
+        var description = prefix + ' ' + name;
+        var terms = [term];
+        if (negated) {
+            terms = [{operator: 'is', operand: 'private'}, term];
+        }
+        var search_string = Filter.unparse(terms);
         return {description: description, search_string: search_string};
     });
 
