@@ -588,6 +588,12 @@ MessageListView.prototype = {
         }
 
         var first_row = this.get_row(messages[0].id);
+
+        // We may not have the row if the stream or topic was muted
+        if (first_row.length === 0) {
+            return;
+        }
+
         var recipient_row = rows.get_message_recipient_row(first_row);
         var header = recipient_row.find('.message_header');
 
@@ -603,8 +609,8 @@ MessageListView.prototype = {
         var row = this.get_row(message.id);
         var was_selected = this.list.selected_message() === message;
 
-        if (row === undefined) {
-            blueslip.error("Cannot rerender a message that's not in this list!");
+        // We may not have the row if the stream or topic was muted
+        if (row.length === 0) {
             return;
         }
 
