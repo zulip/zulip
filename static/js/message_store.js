@@ -245,6 +245,10 @@ exports.update_messages = function update_messages(events) {
                     return;
                 }
 
+                if (msg.subject === compose.subject()) {
+                    compose.subject(event.subject);
+                }
+
                 // Remove the recent subjects entry for the old subject;
                 // must be called before we update msg.subject
                 exports.process_message_for_recent_subjects(msg, true);
