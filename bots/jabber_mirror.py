@@ -67,12 +67,10 @@ class JabberToZulipBot(ClientXMPP):
             self.nick = jid.username
             jid.resource = "zulip"
         ClientXMPP.__init__(self, jid, password)
-        self.password = password
         self.rooms = set()
         self.rooms_to_join = rooms
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.message)
-        self.password = password
         self.zulip = None
         self.use_ipv6 = False
 
