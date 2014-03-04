@@ -48,7 +48,6 @@ exports.cleanup_before_reload = page_params.staging || is_customer4;
 // This list must match the list of domains in enqueue_digest_emails.
 exports.dont_show_digest_email_setting = _.contains(["mit.edu", "customer29.invalid", "customer20.invalid"],
                                                     page_params.domain);
-exports.negated_search = page_params.staging || _.contains(['randomfish.org'], page_params.domain);
 
 exports.fade_at_stream_granularity = page_params.staging;
 
@@ -59,6 +58,7 @@ exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;
 exports.use_socket = true;
 exports.local_echo = true;
+exports.negated_search = true;
 
 // Ready for deprecation.
 exports.collapsible = false;
