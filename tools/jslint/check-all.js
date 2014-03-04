@@ -25,7 +25,7 @@ var globals =
     + ' compose compose_fade rows hotkeys narrow reload notifications_bar search subs'
     + ' composebox_typeahead server_events typeahead_helper notifications hashchange'
     + ' invite ui util activity timerender MessageList MessageListView blueslip unread stream_list'
-    + ' message_edit tab_bar emoji popovers navigate people settings message_store'
+    + ' message_edit tab_bar emoji popovers navigate people settings alert_words_ui message_store'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
     + ' Filter summary admin stream_data muting WinChan muting_ui Socket channel'
     + ' message_flags'

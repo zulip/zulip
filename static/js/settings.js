@@ -30,6 +30,8 @@ exports.setup_page = function () {
     $("#notify-settings-status").hide();
     $("#ui-settings-status").hide();
 
+    alert_words_ui.set_up_alert_words();
+
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
