@@ -206,6 +206,10 @@ def api_github_landing(request, user_profile, event=REQ,
     if event == 'issue_comment' and payload['action'] != 'created' or exclude_issues:
         return json_success()
 
+    # Filter commits traffic if requested
+    if event in ("push", "commit_comment") and exclude_commits:
+        return json_success()
+
     if event == 'push':
         # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
         # get spammed when people commit to non-master all over the place.
