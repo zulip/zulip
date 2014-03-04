@@ -16,7 +16,9 @@ add_dependencies({
 
 var search = require('js/search_suggestion.js');
 
-set_global('feature_flags', {});
+set_global('feature_flags', {
+    negated_search: true
+});
 set_global('page_params', {
     email: 'bob@zulip.com'
 });
@@ -260,6 +262,22 @@ set_global('narrow', {});
         'stream:devel topic:',
         'stream:devel topic:REXX',
         'stream:devel'
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = search.get_suggestions('stream:devel -topic:');
+    expected = [
+        'stream:devel -topic:',
+        'stream:devel -topic:REXX',
+        'stream:devel'
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = search.get_suggestions('-topic:te');
+    expected = [
+        '-topic:te',
+        'stream:office -topic:team',
+        'stream:office -topic:test'
     ];
     assert.deepEqual(suggestions.strings, expected);
 }());

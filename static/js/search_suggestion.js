@@ -195,6 +195,7 @@ function get_topic_suggestions(query_operators) {
     var last_term = query_operators.slice(-1)[0];
     var operator = Filter.canonicalize_operator(last_term.operator);
     var operand = last_term.operand;
+    var negated = (operator === 'topic') && (last_term.negated);
     var stream;
     var guess;
     var filter;
@@ -277,7 +278,7 @@ function get_topic_suggestions(query_operators) {
     topics.sort();
 
     return _.map(topics, function (topic) {
-        var topic_term = {operator: 'topic', operand: topic};
+        var topic_term = {operator: 'topic', operand: topic, negated: negated};
         var operators = query_operators.concat([topic_term]);
         var search_string = Filter.unparse(operators);
         var description = Filter.describe(operators);
