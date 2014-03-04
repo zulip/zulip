@@ -192,7 +192,8 @@ ZULIP_ADMINISTRATOR = 'support@zulip.com'
 # Also note -- the email gateway bot is automatically added.
 API_SUPER_USERS = set(["tabbott/extra@mit.edu",
                        "irc-bot@zulip.com",
-                       "bot1@customer35.invalid"])
+                       "bot1@customer35.invalid",
+                       "bot1@customer36.invalid"])
 
 ADMINS = (
     ('Zulip Error Reports', 'errors@zulip.com'),
