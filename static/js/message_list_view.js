@@ -620,9 +620,20 @@ MessageListView.prototype = {
 
     rerender_messages: function MessageListView__rerender_messages(messages) {
         var self = this;
+
+        // Only re-render the messages that are in this narrow
+        // We want to grab the message objects that belong
+        // to this list to get the right dom_id etc.
+        var own_messages = _.map(messages, function (message) {
+            return self.list.get(message.id);
+        });
+        own_messages = _.reject(own_messages, function (message) {
+            return message === undefined;
+        });
+
         var message_groups = [];
         var current_group = [];
-        _.each(messages, function (message) {
+        _.each(own_messages, function (message) {
             if (current_group.length === 0 || util.same_recipient(current_group[current_group.length - 1], message)) {
                 current_group.push(message);
             } else {
