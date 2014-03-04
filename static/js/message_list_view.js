@@ -599,7 +599,7 @@ MessageListView.prototype = {
         header.replaceWith(rendered_recipient_row);
     },
 
-    rerender_message: function MessageListView__rerender_message(message) {
+    _rerender_message: function MessageListView___rerender_message(message) {
         var row = this.get_row(message.id);
         var was_selected = this.list.selected_message() === message;
 
@@ -640,7 +640,7 @@ MessageListView.prototype = {
                 message_groups.push(current_group);
                 current_group = [];
             }
-            self.rerender_message(message);
+            self._rerender_message(message);
         });
         if (current_group.length !== 0) {
             message_groups.push(current_group);

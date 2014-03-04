@@ -191,9 +191,9 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
     message.content = exports.apply_markdown(raw_content);
     // We don't handle unread counts since local messages must be sent by us
 
-    home_msg_list.view.rerender_message(message);
+    home_msg_list.view.rerender_messages([message]);
     if (current_msg_list === narrowed_msg_list) {
-        narrowed_msg_list.view.rerender_message(message);
+        narrowed_msg_list.view.rerender_messages([message]);
     }
     stream_list.update_streams_sidebar();
 };
