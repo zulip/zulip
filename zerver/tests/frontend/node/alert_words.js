@@ -70,6 +70,6 @@ var alert_domain_message = { sender_email: 'another@zulip.com', content: '<p>now
     assert.equal(question_word_message.content, "<p>still <span class='alert-word'>alertone</span>? me</p>");
 
     alert_words.process_message(alert_domain_message);
-    assert.equal(alert_domain_message.content, '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.alerttwo.us/foo/bar</a></p>');
+    assert.equal(alert_domain_message.content, '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.<span class=\'alert-word\'>alerttwo</span>.us/foo/bar</a></p>');
 }());
 

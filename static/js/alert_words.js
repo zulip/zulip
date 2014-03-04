@@ -28,7 +28,7 @@ exports.process_message = function (message) {
 
         var regex = new RegExp('(' + before_punctuation + ')' +
                                '(' + clean + ')' +
-                               '(' + after_punctuation + ')' , 'i');
+                               '(' + after_punctuation + ')' , 'ig');
         message.content = message.content.replace(regex, function (match, before, word, after, offset, content) {
             // Don't munge URL hrefs
             var pre_match = content.substring(0, offset);
