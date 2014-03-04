@@ -407,8 +407,13 @@ function maybe_select_person (e) {
     }
 }
 
+function focus_user_filter (e) {
+    e.stopPropagation();
+}
+
 $(function () {
     $(".user-list-filter").expectOne()
+        .on('click', focus_user_filter)
         .on('input', update_users_for_search)
         .on('keydown', maybe_select_person);
 });
