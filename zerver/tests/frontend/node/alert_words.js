@@ -28,6 +28,10 @@ var alert_in_url_message = { sender_email: 'another@zulip.com', content: '<p>htt
 var question_word_message = { sender_email: 'another@zulip.com', content: '<p>still alertone? me</p>',
                             alerted: true };
 
+var alert_domain_message = { sender_email: 'another@zulip.com', content: '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.alerttwo.us/foo/bar</a></p>',
+                     alerted: true };
+
+
 (function test_notifications() {
     assert(!alert_words.notifies(regular_message));
     assert(!alert_words.notifies(own_message));
@@ -36,6 +40,7 @@ var question_word_message = { sender_email: 'another@zulip.com', content: '<p>st
     assert(!alert_words.notifies(alertwordboundary_message));
     assert(alert_words.notifies(multialert_message));
     assert(alert_words.notifies(unsafe_word_message));
+    assert(alert_words.notifies(alert_domain_message));
 }());
 
 (function test_munging() {
@@ -63,5 +68,8 @@ var question_word_message = { sender_email: 'another@zulip.com', content: '<p>st
 
     alert_words.process_message(question_word_message);
     assert.equal(question_word_message.content, "<p>still <span class='alert-word'>alertone</span>? me</p>");
+
+    alert_words.process_message(alert_domain_message);
+    assert.equal(alert_domain_message.content, '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.alerttwo.us/foo/bar</a></p>');
 }());
 

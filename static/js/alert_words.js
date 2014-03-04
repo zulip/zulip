@@ -10,6 +10,9 @@ function escape_user_regex(value) {
     return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
 }
 
+var find_href_backwards = /href=['"][\w:\/\.]+$/;
+var find_title_backwards = /title=['"][\w:\/\.]+$/;
+
 exports.process_message = function (message) {
     if (!exports.notifies(message)) {
         return;
@@ -20,11 +23,20 @@ exports.process_message = function (message) {
         var before_punctuation = '\\s|^|>|[\\(\\".,\';\\[]';
         var after_punctuation = '\\s|$|<|[\\)\\"\\?!:.,\';\\]!]';
 
+
+        var word_in_href = new RegExp(find_href_backwards + word, 'i');
+
         var regex = new RegExp('(' + before_punctuation + ')' +
                                '(' + clean + ')' +
                                '(' + after_punctuation + ')' , 'i');
-        message.content = message.content.replace(regex, function (match, before, word, after) {
-            return before + "<span class='alert-word'>" + word + "</span>" + after;
+        message.content = message.content.replace(regex, function (match, before, word, after, offset, content) {
+            // Don't munge URL hrefs
+            var pre_match = content.substring(0, offset);
+            if (find_href_backwards.exec(pre_match) || find_title_backwards.exec(pre_match)) {
+                return before + word + after;
+            } else {
+                return before + "<span class='alert-word'>" + word + "</span>" + after;
+            }
         });
     });
 };
