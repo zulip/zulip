@@ -73,12 +73,15 @@ MessageList.prototype = {
             self.append(bottom_messages, opts);
         }
 
-        if ((self === narrowed_msg_list) && !self.empty() &&
-            !opts.delay_render) {
+        if ((self === narrowed_msg_list) && !self.empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow.hide_empty_narrow_message();
+        }
+
+        if ((self === narrowed_msg_list) && !self.empty() &&
+            (self.selected_id() === -1) && !opts.delay_render) {
             // And also select the newly arrived message.
             self.select_id(self.selected_id(), {then_scroll: true, use_closest: true});
         }
