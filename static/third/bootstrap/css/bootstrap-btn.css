@@ -358,22 +358,22 @@ fieldset[disabled] .btn-link:focus {
   color: #999;
   text-decoration: none;
 }
-.btn-lg,
-.btn-group-lg > .btn {
+.btn-large,
+.btn-group-large > .btn {
   padding: 10px 16px;
   font-size: 18px;
   line-height: 1.33;
   border-radius: 6px;
 }
-.btn-sm,
-.btn-group-sm > .btn {
+.btn-small,
+.btn-group-small > .btn {
   padding: 5px 10px;
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
 }
-.btn-xs,
-.btn-group-xs > .btn {
+.btn-mini,
+.btn-group-mini > .btn {
   padding: 1px 5px;
   font-size: 12px;
   line-height: 1.5;
