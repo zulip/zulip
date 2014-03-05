@@ -547,6 +547,9 @@ def recipient_for_emails(emails, not_forged_mirror_message,
             user_profile = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
             raise ValidationError("Invalid email '%s'" % (email,))
+        if (not user_profile.is_active and not user_profile.is_mirror_dummy) or \
+                user_profile.realm.deactivated:
+            raise ValidationError("'%s' is no longer using Zulip." % (email,))
         recipient_profile_ids.add(user_profile.id)
         realm_domains.add(user_profile.realm.domain)
 
