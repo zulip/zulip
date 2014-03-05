@@ -323,7 +323,7 @@ class BugdownTest(TestCase):
             converted,
             '<p>'
             '<span class="inline-subscribe" data-stream-name="simple">'
-            '<button class="inline-subscribe-button zulip-button">Subscribe to simple</button>'
+            '<button class="inline-subscribe-button btn">Subscribe to simple</button>'
             '<span class="inline-subscribe-error"></span>'
             '</span>'
             '</p>'
@@ -336,7 +336,7 @@ class BugdownTest(TestCase):
             converted,
             '<p>'
             '<span class="inline-subscribe" data-stream-name="simple (not)">'
-            '<button class="inline-subscribe-button zulip-button">Subscribe to simple (not)</button>'
+            '<button class="inline-subscribe-button btn">Subscribe to simple (not)</button>'
             '<span class="inline-subscribe-error"></span>'
             '</span>'
             '</p>'
@@ -349,7 +349,7 @@ class BugdownTest(TestCase):
             converted,
             '<p>'
             '<span class="inline-subscribe" data-stream-name="simple">'
-            '<button class="inline-subscribe-button zulip-button">Subscribe to simple</button>'
+            '<button class="inline-subscribe-button btn">Subscribe to simple</button>'
             '<span class="inline-subscribe-error"></span>'
             '</span>'
             ' (not)</p>'
@@ -362,7 +362,7 @@ class BugdownTest(TestCase):
             converted,
             '<p>'
             '<span class="inline-subscribe" data-stream-name="simple\\">'
-            '<button class="inline-subscribe-button zulip-button">Subscribe to simple\\</button>'
+            '<button class="inline-subscribe-button btn">Subscribe to simple\\</button>'
             '<span class="inline-subscribe-error"></span>'
             '</span>'
             '</p>'

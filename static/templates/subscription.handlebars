@@ -10,7 +10,7 @@
       <span class="subscription_description subscription-description-row">{{description}}</span>
       </span>
       <span class="sub_arrow"><i class="icon-vector-chevron-down"></i></span>
-      <button class="zulip-button sub_unsub_button {{^subscribed}}gray-button{{/subscribed}}{{#subscribed}} green-button subscribed-button{{/subscribed}}"
+      <button class="btn sub_unsub_button btn-default{{#subscribed}} btn-success subscribed-button{{/subscribed}}"
               type="button" name="subscription">
         {{#subscribed}}
         Subscribed
@@ -74,14 +74,14 @@
           <div class="rename-stream">
             <form class="form-inline">
               <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
-              <input type="submit" name="rename" value="Rename stream" class="zulip-button red-button stream-rename-button" tabindex="-1" />
+              <input type="submit" name="rename" value="Rename stream" class="btn btn-danger stream-rename-button" tabindex="-1" />
             </form>
           </div>
           <div class="change-stream-description">
             <form class="form-inline">
               <input type="hidden" name="stream_name" value="{{name}}" />
               <input type="text" name="description" value="{{description}}" class="input-block description" tabindex="-1" />
-              <input type="submit" name="change-stream-description" value="Change stream description" class="zulip-button red-button change-stream-description-button" tabindex="-1" />
+              <input type="submit" name="change-stream-description" value="Change stream description" class="btn btn-danger change-stream-description-button" tabindex="-1" />
             </form>
           </div>
           <div class="change-stream-privacy">
@@ -96,7 +96,7 @@
         <div class="subscriber_list_add">
           <form class="form-inline">
             <input type="text" name="principal" placeholder="Email address" value="" class="input-block" tabindex="-1" />
-            <input type="submit" name="add_subscriber" value="Add" class="zulip-button blue-button add-subscriber-button" tabindex="-1 "/>
+            <input type="submit" name="add_subscriber" value="Add" class="btn btn-primary add-subscriber-button" tabindex="-1 "/>
           </form>
         </div>
       </div>

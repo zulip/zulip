@@ -46,14 +46,14 @@ var exports = {};
 
     function display_subscribe($button, stream_name) {
         $button.text('Subscribe to ' + stream_data.canonicalized_name(stream_name))
-            .removeClass('green-button')
-            .addClass('gray-button');
+            .removeClass('btn-success')
+            .addClass('btn-default');
     }
 
     function display_unsubscribe($button, stream_name) {
         $button.text('Unsubscribe from ' + stream_data.canonicalized_name(stream_name))
-            .removeClass('gray-button')
-            .addClass('green-button');
+            .removeClass('btn-default')
+            .addClass('btn-success');
     }
 
     function update_button_display($button, stream_name) {

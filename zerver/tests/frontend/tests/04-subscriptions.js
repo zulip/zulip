@@ -14,7 +14,7 @@ casper.then(function () {
 casper.then(function () {
     casper.test.assertTextExists('Subscribed', 'Initial subscriptions loaded');
     casper.fill('form#add_new_subscription', {stream_name: 'Waseemio'});
-    casper.click('form#add_new_subscription input.zulip-button');
+    casper.click('form#add_new_subscription input.btn');
     casper.waitForText('Waseemio');
 });
 casper.then(function () {
@@ -29,13 +29,13 @@ casper.then(function () {
 casper.then(function () {
     casper.test.assertSelectorHasText('.subscription_name', 'Waseemio', 'Subscribing to a stream');
     casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
-    casper.click('form#add_new_subscription input.zulip-button');
+    casper.click('form#add_new_subscription input.btn');
     casper.waitForText('Already subscribed');
 });
 casper.then(function () {
     casper.test.assertTextExists('Already subscribed', "Can't subscribe twice to a stream");
     casper.fill('form#add_new_subscription', {stream_name: '  '});
-    casper.click('form#add_new_subscription input.zulip-button');
+    casper.click('form#add_new_subscription input.btn');
     casper.waitForText('Error adding subscription');
 });
 casper.then(function () {

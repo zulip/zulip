@@ -524,7 +524,7 @@ class StreamSubscribeButton(markdown.inlinepatterns.Pattern):
 
         button = markdown.util.etree.SubElement(span, 'button')
         button.text = 'Subscribe to ' + stream_name
-        button.set('class', 'inline-subscribe-button zulip-button')
+        button.set('class', 'inline-subscribe-button btn')
 
         error = markdown.util.etree.SubElement(span, 'span')
         error.set('class', 'inline-subscribe-error')

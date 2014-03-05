@@ -1,10 +1,10 @@
 {{#if can_make_public}}
-  <button class="zulip-button blue-button make-stream-public-button" data-stream-name="{{name}}" tabindex="-1">
+  <button class="btn btn-primary make-stream-public-button" data-stream-name="{{name}}" tabindex="-1">
     Make stream public
   </button>
 {{/if}}
 {{#if can_make_private}}
-  <button class="zulip-button red-button make-stream-private-button" data-stream-name="{{name}}" tabindex="-1">
+  <button class="btn btn-danger make-stream-private-button" data-stream-name="{{name}}" tabindex="-1">
     Make stream private
   </button>
 {{/if}}

@@ -2571,45 +2571,11 @@ div.floating_recipient {
     margin-right: 10px;
 }
 
-.zulip-button {
-    background-image: -moz-linear-gradient(top, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.05)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.05) 0%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(top, rgba(0,0,0,0.05) 0%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(top, rgba(0,0,0,0.05) 0%,rgba(0,0,0,0) 100%); /* IE10+ */
-    background-image: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%,rgba(0,0,0,0) 100%); /* W3C */
-    background-color: #ddd;
-    color: #000;
-    border: 1px solid #fff;
-    border-radius: 3px;
-    line-height: 20px;
-    padding: 5px 8px 5px 8px;
-    outline: none;
-}
-
-.zulip-button:focus {
-    box-shadow: inset 0px 100px 0px 0px rgba(255,255,255,0.2), 0px 0px 0px 1px rgba(0,0,0,0.2);
-}
-
-.zulip-button:hover {
-    background-image: -moz-linear-gradient(top, rgba(0,0,0,0.09) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.09)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.09) 0%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(top, rgba(0,0,0,0.09) 0%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(top, rgba(0,0,0,0.09) 0%,rgba(0,0,0,0) 100%); /* IE10+ */
-    background-image: linear-gradient(to bottom, rgba(0,0,0,0.09) 0%,rgba(0,0,0,0) 100%); /* W3C */
-}
-
 .sub_unsub_button {
     min-width: 140px;
     float: right;
     margin-top: 9px;
     margin-right: 10px;
-}
-
-.green-button {
-    background-color: #006e2e; /* Old browsers */
-    color: #fff;
 }
 
 button.primary {
@@ -2634,16 +2600,6 @@ button.topic_edit_cancel {
     width: 18px;
     height: 18px;
     margin-top: -1px;
-}
-
-.red-button {
-    background-color: #cc0000;
-    color: #ffffff;
-}
-
-.blue-button {
-    background-color: #0000cc;
-    color: #ffffff;
 }
 
 .sub_arrow {

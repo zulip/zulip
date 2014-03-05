@@ -316,7 +316,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
-            button.text("Subscribed").addClass("subscribed-button").addClass("green-button");
+            button.text("Subscribed").addClass("subscribed-button").addClass("btn-success");
             // Add the user to the member list if they're currently
             // viewing the members of this stream
             if (sub.render_subscribers && settings.hasClass('in')) {
@@ -359,7 +359,7 @@ exports.mark_sub_unsubscribed = function (sub) {
     } else if (sub.subscribed) {
         stream_list.remove_narrow_filter(sub.name, 'stream');
         sub.subscribed = false;
-        button_for_sub(sub).removeClass("subscribed-button").removeClass("green-button").removeClass("red-button").text("Subscribe");
+        button_for_sub(sub).removeClass("subscribed-button").removeClass("btn-success").removeClass("btn-danger").text("Subscribe");
         var settings = settings_for_sub(sub);
         if (settings.hasClass('in')) {
             settings.collapse('hide');
@@ -756,9 +756,9 @@ $(function () {
     });
 
     $("body").on("mouseover", ".subscribed-button", function (e) {
-        $(e.target).addClass("red-button").text("Unsubscribe");
+        $(e.target).addClass("btn-danger").text("Unsubscribe");
     }).on("mouseout", ".subscribed-button", function (e) {
-        $(e.target).removeClass("red-button").text("Subscribed");
+        $(e.target).removeClass("btn-danger").text("Subscribed");
     });
 
     $("#subscriptions_table").on("click", ".email-address", function (e) {
