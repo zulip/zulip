@@ -57,7 +57,18 @@ def stream_to_room(stream):
     return stream.lower().rpartition("/xmpp")[0]
 
 def jid_to_zulip(jid):
-    return "%s@%s" % (jid.username, options.zulip_domain)
+    suffix = ''
+    if not jid.username.endswith("-bot"):
+        suffix = options.zulip_email_suffix
+    return "%s%s@%s" % (jid.username, suffix, options.zulip_domain)
+
+def zulip_to_jid(email, jabber_domain):
+    jid = JID(email, domain=jabber_domain)
+    if (options.zulip_email_suffix
+        and options.zulip_email_suffix in jid.username
+        and not jid.username.endswith("-bot")):
+        jid.username = jid.username.rpartition(options.zulip_email_suffix)[0]
+    return jid
 
 class JabberToZulipBot(ClientXMPP):
     def __init__(self, jid, password, rooms):
@@ -226,7 +237,7 @@ class ZulipToJabberBot(object):
             if recipient["email"] == self.client.email:
                 continue
             recip_email = recipient['email']
-            jabber_recipient = JID(recip_email, domain=self.jabber.boundjid.domain)
+            jabber_recipient = zulip_to_jid(recip_email, self.jabber.boundjid.domain)
             outgoing = self.jabber.make_message(
                 mto   = jabber_recipient,
                 mbody = msg['content'],
@@ -289,6 +300,16 @@ all messages they send on Zulip to Jabber and all private Jabber messages to
 Zulip.  In "public" mode, the mirror uses the credentials for a dedicated mirror
 user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
 "personal"'''.replace("\n", " "))
+    parser.add_option('--zulip-email-suffix',
+                      default=None,
+                      action='store',
+                      help= \
+'''Add the specified suffix to the local part of email addresses constructed
+from JIDs and nicks before sending requests to the Zulip server, and remove the
+suffix before sending requests to the Jabber server.  For example, specifying
+"+foo" will cause messages that are sent to the "bar" room by nickname "qux" to
+be mirrored to the "bar/xmpp" stream in Zulip by user "qux+foo@example.com". This
+option does not affect login credentials.'''.replace("\n", " "))
     parser.add_option('-d', '--debug',
                       help='set logging to DEBUG.  Can not be set via config file.',
                       action='store_const',
@@ -336,7 +357,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
             config.readfp(f, config_file)
     except IOError:
         pass
-    for option in ("jid", "jabber_password", "conference_domain", "mode"):
+    for option in ("jid", "jabber_password", "conference_domain", "mode", "zulip_email_suffix"):
         if (getattr(options, option) is None
             and config.has_option("jabber_mirror", option)):
             setattr(options, option, config.get("jabber_mirror", option))
@@ -350,6 +371,9 @@ user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
 
     if options.mode is None:
         options.mode = "personal"
+
+    if options.zulip_email_suffix is None:
+        options.zulip_email_suffix = ''
 
     if options.mode not in ('public', 'personal'):
         sys.exit("Bad value for --mode: must be one of 'public' or 'personal'")
