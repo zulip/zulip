@@ -346,8 +346,7 @@ a:hover code {
 }
 
 #stream_filters {
-    overflow-x: hidden;
-    overflow-y: visible;
+    overflow: visible;
     margin: 2px 0px 2px 0px;
     padding: 0;
     font-weight: normal;
