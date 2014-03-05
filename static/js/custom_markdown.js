@@ -67,7 +67,7 @@ var exports = {};
     $(function () {
         $('#main_div').delegate('.inline-subscribe-button', 'click', function (e) {
             var $button = $(e.target);
-            var stream_name = $button.closest('.inline-subscribe').data('stream-name');
+            var stream_name = $button.closest('.inline-subscribe').attr('data-stream-name');
             var $status_message = $button.siblings('.inline-subscribe-error');
             e.preventDefault();
             e.stopPropagation();
@@ -86,7 +86,7 @@ var exports = {};
         if ($inline_subscribe.length === 0) {
             return;
         }
-        stream_name = $inline_subscribe.data('stream-name');
+        stream_name = $inline_subscribe.attr('data-stream-name');
         $button = $inline_subscribe.find('.inline-subscribe-button');
 
         if (inline_subscribe_id_map[stream_name]) {
