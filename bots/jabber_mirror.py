@@ -389,10 +389,10 @@ option does not affect login credentials.'''.replace("\n", " "))
         sys.exit("You must specify your Jabber JID and Jabber password either "
                  + "in the Zulip configuration file or on the commandline")
 
-    # This won't work for open realms
-    options.zulip_domain = options.zulip_email.partition('@')[-1]
-
     zulip = ZulipToJabberBot(zulip.init_from_options(options, "JabberMirror/" + __version__))
+    # This won't work for open realms that don't have a consistent domain
+    options.zulip_domain = zulip.client.email.partition('@')[-1]
+
     try:
         jid = JID(options.jid)
     except InvalidJID as e:
