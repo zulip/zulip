@@ -270,10 +270,17 @@ class ZulipToJabberBot(object):
                 self.jabber.leave_muc(stream_to_room(stream))
 
 def get_rooms(zulip):
+    def get_stream_infos(key, method):
+        ret = method()
+        if ret.get("result") != "success":
+            logging.error(ret)
+            sys.exit("Could not get initial list of Zulip %s" % (key,))
+        return ret[key]
+
     if options.mode == 'public':
-        stream_infos = zulip.client.get_streams()['streams']
+        stream_infos = get_stream_infos("streams", zulip.client.get_streams)
     else:
-        stream_infos = zulip.client.list_subscriptions()['subscriptions']
+        stream_infos = get_stream_infos("subscriptions", zulip.client.list_subscriptions)
 
     rooms = []
     for stream_info in stream_infos:
