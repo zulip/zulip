@@ -299,6 +299,11 @@
       "www.google.com"
     ],
     [
+      "end with an exclamation www.google.com!",
+      "<p>end with an exclamation %s!</p>",
+      "www.google.com"
+    ],
+    [
       "http://www.guardian.co.uk/foo/bar",
       "<p>%s</p>",
       "http://www.guardian.co.uk/foo/bar"

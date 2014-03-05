@@ -882,7 +882,7 @@ class Bugdown(markdown.Extension):
                 | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
             )
             (?=                            # URL must be followed by (not included in group)
-                [:;\?\),\.\'\"\>]*         # Optional punctuation characters
+                [!:;\?\),\.\'\"\>]*         # Optional punctuation characters
                 (?:\Z|\s)                  # followed by whitespace or end of string
             )
             """ % (tlds, nested_paren_chunk)
