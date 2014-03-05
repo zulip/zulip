@@ -144,6 +144,11 @@ Filter.canonicalize_term = function (opts) {
     operator = Filter.canonicalize_operator(operator);
 
     switch (operator) {
+    case 'has':
+        // images -> image, etc.
+        operand = operand.replace(/s$/, '');
+        break;
+
     case 'stream':
         operand = stream_data.get_name(operand);
         break;
@@ -318,7 +323,7 @@ Filter.prototype = {
     },
 
     can_apply_locally: function Filter_can_apply_locally() {
-        return ! this.is_search();
+        return (!this.is_search()) && (!this.has_operator('has'));
     },
 
     _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
@@ -366,6 +371,9 @@ Filter.operator_to_prefix = function (operator, negated) {
 
     case 'near':
         return verb + 'messages around';
+
+    case 'has':
+        return verb + 'messages with one or more';
 
     case 'id':
         return verb + 'message ID';

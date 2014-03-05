@@ -148,6 +148,19 @@ function assert_same_operators(result, terms) {
     term = Filter.canonicalize_term({operator: 'search', operand: 'abc “xyz”'});
     assert.equal(term.operator, 'search');
     assert.equal(term.operand, 'abc "xyz"');
+
+    term = Filter.canonicalize_term({operator: 'has', operand: 'attachments'});
+    assert.equal(term.operator, 'has');
+    assert.equal(term.operand, 'attachment');
+
+    term = Filter.canonicalize_term({operator: 'has', operand: 'images'});
+    assert.equal(term.operator, 'has');
+    assert.equal(term.operand, 'image');
+
+    term = Filter.canonicalize_term({operator: 'has', operand: 'links'});
+    assert.equal(term.operator, 'has');
+    assert.equal(term.operand, 'link');
+
 }());
 
 function get_predicate(operators) {
@@ -453,6 +466,13 @@ function get_predicate(operators) {
         {operator: 'is', operand: 'starred', negated: true}
     ];
     string = 'Narrow to stream devel, Exclude starred messages';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'stream', operand: 'devel'},
+        {operator: 'has', operand: 'image', negated: true}
+    ];
+    string = 'Narrow to stream devel, Exclude messages with one or more image';
     assert.equal(Filter.describe(narrow), string);
 
 }());
