@@ -446,6 +446,7 @@ PIPELINE_CSS = {
     'common': {
         'source_filenames': (
             'third/bootstrap/css/bootstrap.css',
+            'third/bootstrap/css/bootstrap-btn.css',
             'third/bootstrap/css/bootstrap-responsive.css',
         ),
         'output_filename': 'min/common.css'
