@@ -632,7 +632,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
         user_check = same_realm_irc_user
         fullname_function = compute_irc_user_fullname
     elif request.client.name in ("jabber_mirror", "JabberMirror"):
-        user_check = same_realm_user
+        user_check = same_realm_jabber_user
         fullname_function = compute_jabber_user_fullname
     else:
         # Unrecognized mirroring client
@@ -677,15 +677,20 @@ def same_realm_irc_user(user_profile, email):
 
     return user_profile.realm.domain == domain.replace("irc.", "")
 
-def same_realm_user(user_profile, email):
+def same_realm_jabber_user(user_profile, email):
     try:
         validators.validate_email(email)
     except ValidationError:
         return False
 
     domain = resolve_email_to_domain(email)
+    # The ist.mit.edu realm uses mit.edu email addresses so that their accounts
+    # can receive mail.
+    if user_profile.realm.domain == 'ist.mit.edu' and domain == 'mit.edu':
+        return True
 
     return user_profile.realm.domain == domain
+
 
 @authenticated_api_view
 def api_send_message(request, user_profile):
