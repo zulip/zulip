@@ -155,7 +155,7 @@ class JabberToZulipBot(ClientXMPP):
             content = msg["body"],
             )
         ret = self.zulip.client.send_message(zulip_message)
-        if ret.get("status") != "success":
+        if ret.get("result") != "success":
             logging.error(ret)
 
     def group(self, msg):
@@ -182,7 +182,7 @@ class JabberToZulipBot(ClientXMPP):
             content = msg["body"],
             )
         ret = self.zulip.client.send_message(zulip_message)
-        if ret.get("status") != "success":
+        if ret.get("result") != "success":
             logging.error(ret)
 
     def nickname_to_jid(self, room, nick):
