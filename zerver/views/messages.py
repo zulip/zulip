@@ -626,7 +626,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
             referenced_users.add(email.lower())
 
     if request.client.name == "zephyr_mirror":
-        user_check = mit_to_mit
+        user_check = same_realm_zephyr_user
         fullname_function = compute_mit_user_fullname
     elif request.client.name == "irc_mirror":
         user_check = same_realm_irc_user
@@ -650,7 +650,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     sender = get_user_profile_by_email(sender_email)
     return (True, sender)
 
-def mit_to_mit(user_profile, email):
+def same_realm_zephyr_user(user_profile, email):
     # Are the sender and recipient both @mit.edu addresses?
     # We have to handle this specially, inferring the domain from the
     # e-mail address, because the recipient may not existing in Zulip
