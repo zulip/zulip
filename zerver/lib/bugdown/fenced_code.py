@@ -83,6 +83,7 @@ FENCE_RE = re.compile(r"""
         ) # "py" or "javascript"
         \}?
     ) # language, like ".py" or "{javascript}"
+    [ ]* # spaces
     $
     """, re.VERBOSE)
 

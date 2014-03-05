@@ -2,7 +2,7 @@
   "regular_tests": [
     {
       "name": "codeblock_hilite",
-      "input": "Hamlet said:\n~~~~.python\ndef speak(self):\n    x = 1\n~~~~",
+      "input": "Hamlet said:\n~~~~.python \ndef speak(self):\n    x = 1\n~~~~",
       "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span class=\"k\">def</span> <span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</pre></div>",
       "bugdown_matches_marked": false
     },

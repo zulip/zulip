@@ -15,6 +15,7 @@ var fencestr = "^(~{3,}|`{3,})"          + // Opening Fence
                    "\\{?\\.?"            +
                    "([a-zA-Z0-9_+-]*)"   + // Language
                    "\\}?"                +
+               "[ ]*"                    + // Spaces
                ")$";
 var fence_re = new RegExp(fencestr);
 
