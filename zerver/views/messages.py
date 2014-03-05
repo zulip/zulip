@@ -111,6 +111,13 @@ class NarrowBuilder(object):
 
         return method(query, operand, maybe_negate)
 
+    def by_has(self, query, operand, maybe_negate):
+        if operand not in ['attachment', 'image', 'link']:
+            raise BadNarrowOperator("unknown 'has' operand " + operand)
+        col_name = 'has_' + operand
+        cond = column(col_name)
+        return query.where(maybe_negate(cond))
+
     def by_is(self, query, operand, maybe_negate):
         if operand == 'private':
             query = query.select_from(join(query.froms[0], "zerver_recipient",

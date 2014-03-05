@@ -96,6 +96,15 @@ class NarrowBuilderTest(AuthedTestCase):
         term = dict(operator='search', operand='"french fries"')
         check(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
+        term = dict(operator='has', operand='attachment')
+        check(term, 'WHERE has_attachment')
+
+        term = dict(operator='has', operand='image')
+        check(term, 'WHERE has_image')
+
+        term = dict(operator='has', operand='link')
+        check(term, 'WHERE has_link')
+
 class IncludeHistoryTest(AuthedTestCase):
     def test_ok_to_include_history(self):
         realm = get_realm('zulip.com')
