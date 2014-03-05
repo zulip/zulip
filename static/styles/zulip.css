@@ -2376,7 +2376,6 @@ div.floating_recipient {
     display: inline-block;
     height: 18px;
     width: 18px;
-    border-radius: 36px;
     padding: 0;
     margin: 0 0 0 10px;
     vertical-align: middle;
@@ -2493,12 +2492,6 @@ div.floating_recipient {
     vertical-align: middle;
     line-height: 18px;
     padding: 5px;
-}
-
-.sp-replacer,
-.sp-preview,
-.sp-preview-inner {
-    border-radius: 20px;
 }
 
 .sp-preview {
