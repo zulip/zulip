@@ -153,6 +153,12 @@ def validate_api_key(role, api_key):
         raise JsonableError(reason + " for role '%s'" % (role,))
     if not profile.is_active:
         raise JsonableError("Account not active")
+    try:
+        if profile.realm.deactivated:
+            raise JsonableError("Realm for account has been deactivated")
+    except AttributeError:
+        # Deployment objects don't have realms
+        pass
     return profile
 
 # Use this for webhook views that don't get an email passed in.
