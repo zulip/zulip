@@ -43,8 +43,14 @@ function Socket(url) {
     if (page_params.test_suite) {
         this._supported_protocols = _.reject(this._supported_protocols,
                                              function (x) { return x === 'xhr-streaming'; });
+        // Don't create the SockJS on startup when running under the test suite.
+        // The first XHR request gets considered part of the page load and
+        // therefore the PhantomJS onLoadFinished handler doesn't get called
+        // until the SockJS XHR finishes, which happens at the heartbeat, 25
+        // seconds later.  The SockJS objects will be created on demand anyway.
+    } else {
+        this._create_sockjs_object();
     }
-    this._create_sockjs_object();
 }
 
 Socket.prototype = {
@@ -326,9 +332,13 @@ Socket.prototype = {
         this._reconnect_initiation_time = now;
         // This is a little weird because we're also called from the SockJS
         // onclose handler.  Fortunately, close() does nothing on an
-        // already-closed SockJS object.
-        var close_reason = CLOSE_REASONS[opts.reason];
-        this._sockjs.close(close_reason.code, close_reason.msg);
+        // already-closed SockJS object.  However, we do have to check that
+        // this._sockjs isn't undefined since it's not created immediately
+        // when running under the test suite.
+        if (this._sockjs !== undefined) {
+            var close_reason = CLOSE_REASONS[opts.reason];
+            this._sockjs.close(close_reason.code, close_reason.msg);
+        }
 
         this._reconnect_timeout_id = setTimeout(function () {
             that._reconnect_timeout_id = null;
