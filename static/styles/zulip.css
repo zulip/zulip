@@ -3426,9 +3426,7 @@ div.edit_bot {
 }
 
 #settings .bot-information-box .image {
-    border-radius: 20px;
     overflow: hidden;
-    border: 1px solid #676767;
 }
 
 #settings .settings-section .api-key-note {
