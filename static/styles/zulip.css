@@ -202,7 +202,6 @@ li,
     width: 100px;
     height: 100px;
     margin-top: 10px;
-    border-radius: 50px;
  }
 
 /* Classes for hiding and showing controls */
@@ -1509,21 +1508,6 @@ blockquote p {
 .next_is_same_sender {
     border-bottom: 0px;
     padding-bottom: 0px;
-}
-
-.profile_picture {
-    display: block;
-    float: right;
-    margin-top: 5px;
-    max-height: 15px;
-    width:  15px;
-    height: 15px;
-    cursor: pointer;
-    border-radius: 30px;
-   -moz-box-shadow:     1px 1px 1px #777 inset;
-   -webkit-box-shadow:  1px 1px 1px #777 inset;
-    box-shadow:         1px 1px 1px #777 inset;
-    background-size: 15px 15px;
 }
 
 .inline_profile_picture {
