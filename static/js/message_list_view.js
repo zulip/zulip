@@ -76,65 +76,39 @@ MessageListView.prototype = {
     // trigger a re-render
     _RENDER_THRESHOLD: 50,
 
-    render: function MessageListView__render(messages, where, messages_are_new) {
-        var list = this.list; // for convenience
-
-        // This function processes messages into chunks with separators between them,
-        // and templates them to be inserted as table rows into the DOM.
-
-        if (messages.length === 0 || this.table_name === undefined) {
-            return;
+    _add_msg_timestring: function MessageListView___add_msg_timestring(message) {
+        if (message.last_edit_timestamp !== undefined) {
+            // Add or update the last_edit_timestr
+            var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
+            message.last_edit_timestr =
+                (timerender.render_date(last_edit_time))[0].innerText
+                + " at " + stringify_time(last_edit_time);
         }
+    },
 
+    add_subscription_marker: function MessageListView__add_subscription_marker(group, last_msg, first_msg) {
+        if (last_msg !== undefined &&
+            first_msg.historical !== last_msg.historical) {
+            group.bookend_top = true;
+            if (first_msg.historical) {
+                group.unsubscribed = first_msg.stream;
+                group.bookend_content = this.list.unsubscribed_bookend_content(first_msg.stream);
+            } else {
+                group.subscribed = first_msg.stream;
+                group.bookend_content = this.list.subscribed_bookend_content(first_msg.stream);
+            }
+        }
+    },
+
+    build_message_groups: function MessageListView__build_message_groups(messages, message_id_prefix) {
         function start_group() {
             return {messages: []};
         }
 
-        var table_name = this.table_name;
-        var table = rows.get_table(table_name);
-        // we we record if last_message_was_selected before updating the table
-        var last_message_was_selected = rows.id(rows.last_visible()) === list.selected_id();
-        var ids_where_next_is_same_sender = {};
-        var prev;
-        var orig_scrolltop_offset, last_message_id;
-        var combined_messages, first_msg, last_msg;
-
+        var self = this;
         var current_group = start_group();
         var new_message_groups = [];
-
-        var self = this;
-
-        if (where === "bottom") {
-            // Remove the trailing bookend; it'll be re-added after we do our rendering
-            self.clear_trailing_bookend();
-        } else if (self.selected_row().length > 0) {
-            orig_scrolltop_offset = self.selected_row().offset().top;
-        }
-
-        if (where === 'top' && self.collapse_messages && this._message_groups.length > 0) {
-            // Remove the top date_row, we'll re-add it after rendering
-            $('.date_row:first', table).remove();
-
-            // Delete the current top message group, and add it back in with these
-            // messages, in order to collapse properly.
-            //
-            // This means we redraw the entire view on each backfill-update when narrowed by
-            // subject, which could be a problem down the line.  For now we hope
-            // that subject views will not be very big.
-            var top_group = self._message_groups[0];
-            var top_row = this.get_row(top_group.messages[0].id);
-            if (top_row.length !== 0) {
-                rows.get_message_recipient_row(top_row).remove();
-            }
-
-            messages = messages.concat(top_group.messages);
-        }
-
-        if (where !== 'top') {
-            var last_row = table.find('div[zid]:last');
-            last_message_id = rows.id(last_row);
-            prev = self.get_message(last_message_id);
-        }
+        var prev;
 
         function add_message_to_group(message) {
             current_group.messages.push(message);
@@ -145,20 +119,6 @@ MessageListView.prototype = {
                 populate_group_from_message(current_group, current_group.messages[0]);
                 current_group.messages[current_group.messages.length - 1].include_footer = true;
                 new_message_groups.push(current_group);
-            }
-        }
-
-        function add_subscription_marker(group, last_msg, first_msg) {
-            if (last_msg !== undefined &&
-                first_msg.historical !== last_msg.historical) {
-                group.bookend_top = true;
-                if (first_msg.historical) {
-                    group.unsubscribed = first_msg.stream;
-                    group.bookend_content = self.list.unsubscribed_bookend_content(first_msg.stream);
-                } else {
-                    group.subscribed = first_msg.stream;
-                    group.bookend_content = self.list.subscribed_bookend_content(first_msg.stream);
-                }
             }
         }
 
@@ -183,7 +143,7 @@ MessageListView.prototype = {
                 // home view on the server side (which requires
                 // having an index on UserMessage.flags)
                 if (self.list !== home_msg_list) {
-                    add_subscription_marker(current_group, prev, message);
+                    self.add_subscription_marker(current_group, prev, message);
                 }
 
                 if (message.stream) {
@@ -201,7 +161,6 @@ MessageListView.prototype = {
                 !prev.status_message &&
                 util.same_sender(prev, message)) {
                 message.include_sender = false;
-                ids_where_next_is_same_sender[prev.id] = true;
             }
 
             self._add_msg_timestring(message);
@@ -224,16 +183,98 @@ MessageListView.prototype = {
             }
 
             prev = message;
-            // This home_msg_list condition can be removed
-            // once we filter historical messages from the
-            // home view on the server side (which requires
-            // having an index on UserMessage.flags)
-            if (self.list !== home_msg_list) {
-                list.last_message_historical = message.historical;
-            }
         });
 
         finish_group();
+
+        return new_message_groups;
+    },
+
+    render: function MessageListView__render(messages, where, messages_are_new) {
+        // This function processes messages into chunks with separators between them,
+        // and templates them to be inserted as table rows into the DOM.
+
+        if (messages.length === 0 || this.table_name === undefined) {
+            return;
+        }
+
+        var list = this.list; // for convenience
+        var table_name = this.table_name;
+        var table = rows.get_table(table_name);
+        // we we record if last_message_was_selected before updating the table
+        var last_message_was_selected = rows.id(rows.last_visible()) === list.selected_id();
+        var orig_scrolltop_offset, last_message_id;
+        var combined_messages, first_msg, last_msg;
+
+        var self = this;
+
+        // This needs to happen before creating the groups so the old
+        // messages can be rerendered
+        if (where === 'top' && self.collapse_messages && this._message_groups.length > 0) {
+            // Remove the top date_row, we'll re-add it after rendering
+            $('.date_row:first', table).remove();
+
+            // Delete the current top message group, and add it back in with these
+            // messages, in order to collapse properly.
+            //
+            // This means we redraw the entire view on each backfill-update when narrowed by
+            // subject, which could be a problem down the line.  For now we hope
+            // that subject views will not be very big.
+            var top_group = self._message_groups[0];
+            var top_row = this.get_row(top_group.messages[0].id);
+            if (top_row.length !== 0) {
+                rows.get_message_recipient_row(top_row).remove();
+            }
+
+            messages = messages.concat(top_group.messages);
+        }
+
+        var new_message_groups = this.build_message_groups(messages, this.table_name);
+
+        // Temporary backwards compatibility values. In the past they were
+        // computed while building the message groups. Now it is a function
+        // we build them here.
+        var current_group = _.last(new_message_groups);
+        var prev = _.chain(new_message_groups)
+            .pluck('messages')
+            .flatten(true)
+            .last()
+            .value();
+        var ids_where_next_is_same_sender = _.chain(new_message_groups)
+            .pluck('messages')
+            .flatten(true)
+            .filter(function (msg) { return !msg.include_sender; })
+            .map(function (msg) { return [msg.id, true]; })
+            .object()
+            .value();
+
+        // This home_msg_list condition can be removed
+        // once we filter historical messages from the
+        // home view on the server side (which requires
+        // having an index on UserMessage.flags)
+        if (this.list !== home_msg_list) {
+            var last_message = _.chain(new_message_groups)
+                .pluck('messages')
+                .flatten(true)
+                .last();
+            list.last_message_historical = last_message.historical;
+        }
+
+
+        if (where === "bottom") {
+            // Remove the trailing bookend; it'll be re-added after we do our rendering
+            self.clear_trailing_bookend();
+        } else if (self.selected_row().length > 0) {
+            orig_scrolltop_offset = self.selected_row().offset().top;
+        }
+
+
+        if (where !== 'top') {
+            var last_row = table.find('div[zid]:last');
+            last_message_id = rows.id(last_row);
+            prev = self.get_message(last_message_id);
+        }
+
 
         if (new_message_groups.length === 0 ||
             new_message_groups[new_message_groups.length - 1].messages.length === 0) {
@@ -246,7 +287,7 @@ MessageListView.prototype = {
                 (prev.historical !== self._message_groups[0].messages[0].historical)) {
                 if (self.list !== home_msg_list) {
                     current_group.bookend_bottom = true;
-                    add_subscription_marker(current_group, prev, self._message_groups[0].messages[0]);
+                    this.add_subscription_marker(current_group, prev, self._message_groups[0].messages[0]);
                 }
             }
         }
@@ -400,15 +441,6 @@ MessageListView.prototype = {
         }
     },
 
-    _add_msg_timestring: function MessageListView__add_msg_timestring(message) {
-        if (message.last_edit_timestamp !== undefined) {
-            // Add or update the last_edit_timestr
-            var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
-            message.last_edit_timestr =
-                (timerender.render_date(last_edit_time))[0].innerText
-                + " at " + stringify_time(last_edit_time);
-        }
-    },
 
     _maybe_autoscroll: function MessageListView__maybe_autoscroll(rendered_elems, last_message_was_selected) {
         // If we are near the bottom of our feed (the bottom is visible) and can
