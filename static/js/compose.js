@@ -496,7 +496,7 @@ exports.send_message_success = function (local_id, message_id, start_time, local
 
     setTimeout(function () {
         if (exports.send_times_data[message_id].received === undefined) {
-            blueslip.error("Restarting get_events due to delayed receipt of sent message " + message_id);
+            blueslip.log("Restarting get_events due to delayed receipt of sent message " + message_id);
             server_events.restart_get_events();
         }
     }, 5000);
