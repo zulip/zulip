@@ -336,7 +336,7 @@ setInterval(function () {
     watchdog_time = new_time;
 }, 5000);
 
-$(function () {
+util.execute_early(function () {
     $(document).on('unsuspend', function () {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");

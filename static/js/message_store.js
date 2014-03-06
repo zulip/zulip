@@ -493,7 +493,7 @@ exports.clear = function clear() {
     this.stored_messages = {};
 };
 
-$(function () {
+util.execute_early(function () {
     // get the initial message list
     function load_more(messages) {
 

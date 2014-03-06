@@ -62,6 +62,13 @@ exports.initialize_casper = function (viewport) {
         }
     });
 
+    casper.on('load.finished', function () {
+        casper.evaluateOrDie(function () {
+            $(document).trigger($.Event('phantom_page_loaded'));
+            return true;
+        });
+    });
+
     casper.evaluate(function () {
         window.localStorage.clear();
     });

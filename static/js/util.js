@@ -345,6 +345,14 @@ if (typeof $ !== 'undefined') {
     };
 }
 
+exports.execute_early = function (func) {
+    if (page_params.test_suite) {
+        $(document).one('phantom_page_loaded', func);
+    } else {
+        $(func);
+    }
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {

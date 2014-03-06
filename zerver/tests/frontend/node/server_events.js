@@ -28,13 +28,13 @@ set_global('channel', {});
 set_global('home_msg_list', {
     selected_id: function () {return 1;}
 });
+set_global('page_params', {test_suite: false});
 
 
 var server_events = require('js/server_events.js');
 
 var setup = function (results) {
     server_events.home_view_loaded();
-    set_global('page_params', {});
     global.blueslip.error = function (msg, more_info, stack) {
         results.msg = msg;
         results.more_info = more_info;
