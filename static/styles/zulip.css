@@ -445,15 +445,17 @@ a:hover code {
 }
 
 .user-device-indicator {
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    float: left;
-    position: relative;
-    top: 5px;
-    margin-right: 0.5em;
-    content: "";
+    display: inline-block;
+    font-size: 20px;
+    line-height: 0px;
+    position: absolute;
+    right: 12px;
+    top: 0px;
+    color: #777777;
+}
+
+.user-with-count .user-device-indicator {
+    right: 35px;
 }
 
 #user_presences a, #group-pms a {
@@ -513,10 +515,18 @@ ul.filters {
     font-size: 14px;
 }
 
-.user_sidebar_entry .selectable_sidebar_block,
 .group-pms-sidebar-entry .selectable_sidebar_block {
     width: 235px;
     display: block;
+}
+
+.user_sidebar_entry .selectable_sidebar_block {
+    width: 218px;
+    display: block;
+}
+
+.user_sidebar_entry .selectable_sidebar_block.user-with-mobile {
+    width: 204px;
 }
 
 .group-pm-link {
@@ -531,7 +541,11 @@ ul.filters {
 }
 
 .user_sidebar_entry.user-with-count .selectable_sidebar_block {
-    width: 150px;
+    width: 200px;
+}
+
+.user_sidebar_entry.user-with-count .selectable_sidebar_block.user-with-mobile {
+    width: 180px;
 }
 
 .user_sidebar_entry.user-with-count .count {
@@ -573,7 +587,7 @@ ul.filters {
 #global_filters .count
 {
     line-height: 13px;
-    top: 3px;
+    top: 2px;
 }
 
 .subject_count {

@@ -1,9 +1,9 @@
 {{! User Presence rows }}
 {{#each users}}
 <li data-email="{{email}}" class="user_sidebar_entry {{#if num_unread}}user-with-count {{/if}}narrow-filter user_{{type}}">
-  <span class="selectable_sidebar_block">
+  <span class="selectable_sidebar_block{{#if mobile}} user-with-mobile{{/if}}">
     <span class="user-status-indicator"></span>
-    <span class="user-device-indicator{{#if mobile}} icon-vector-mobile{{/if}}"></span>
+    <span class="user-device-indicator">{{#if mobile}}<i class="icon-vector-mobile"></i>{{/if}}</span>
       <a href="#" data-email="{{email}}" data-name="{{name}}" title="{{name}} {{type_desc}}"
          class="{{#if my_fullname}} my_fullname{{/if}}">{{name}}</a>
   </span>
