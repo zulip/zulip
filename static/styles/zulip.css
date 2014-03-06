@@ -2785,9 +2785,11 @@ button.topic_edit_cancel {
 }
 
 .emoji {
-    height: 20px;
-    width: 20px;
-    vertical-align: text-bottom;
+    height: 25px;
+    width: 25px;
+    position: relative;
+    top: 3px;
+    margin-top: -7px;
 }
 
 #sending-indicator {
