@@ -2732,7 +2732,8 @@ def realm_aliases(realm):
 
 def get_occupied_streams(realm):
     """ Get streams with subscribers """
-    subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
+    subs_filter = Subscription.objects.filter(active=True, user_profile__realm=realm,
+                                              user_profile__is_active=True).values('recipient_id')
     stream_ids = Recipient.objects.filter(
         type=Recipient.STREAM, id__in=subs_filter).values('type_id')
 
