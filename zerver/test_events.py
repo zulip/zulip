@@ -190,7 +190,7 @@ class EventsRegisterTest(AuthedTestCase):
                               get_realm('zulip.com'), 'Test Bot', 'test',
                               bot=True, bot_owner=self.user_profile)
 
-    def build_update_checker(self, field_name, check):
+    def realm_bot_schema(self, field_name, check):
         return check_dict([
             ('type', equals('realm_bot')),
             ('op', equals('update')),
@@ -290,39 +290,39 @@ class EventsRegisterTest(AuthedTestCase):
     def test_change_bot_full_name(self):
         action = lambda: do_change_full_name(self.bot, 'New Bot Name')
         events = self.do_test(action)
-        error = self.build_update_checker('full_name', check_string)('events[1]', events[1])
+        error = self.realm_bot_schema('full_name', check_string)('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_regenerate_bot_api_key(self):
         action = lambda: do_regenerate_api_key(self.bot)
         events = self.do_test(action)
-        error = self.build_update_checker('api_key', check_string)('events[0]', events[0])
+        error = self.realm_bot_schema('api_key', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_avatar_source(self):
         action = lambda: do_change_avatar_source(self.bot, self.bot.AVATAR_FROM_USER)
         events = self.do_test(action)
-        error = self.build_update_checker('avatar_url', check_string)('events[0]', events[0])
+        error = self.realm_bot_schema('avatar_url', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_all_public_streams(self):
         action = lambda: do_change_default_all_public_streams(self.bot, True)
         events = self.do_test(action)
-        error = self.build_update_checker('default_all_public_streams', check_bool)('events[0]', events[0])
+        error = self.realm_bot_schema('default_all_public_streams', check_bool)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_sending_stream(self):
         stream = get_stream("Rome", self.bot.realm)
         action = lambda: do_change_default_sending_stream(self.bot, stream)
         events = self.do_test(action)
-        error = self.build_update_checker('default_sending_stream', check_string)('events[0]', events[0])
+        error = self.realm_bot_schema('default_sending_stream', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_events_register_stream(self):
         stream = get_stream("Rome", self.bot.realm)
         action = lambda: do_change_default_events_register_stream(self.bot, stream)
         events = self.do_test(action)
-        error = self.build_update_checker('default_events_register_stream', check_string)('events[0]', events[0])
+        error = self.realm_bot_schema('default_events_register_stream', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_do_deactivate_user(self):
