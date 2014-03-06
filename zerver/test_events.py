@@ -232,41 +232,161 @@ class EventsRegisterTest(AuthedTestCase):
         self.assertEqual(state1, state2)
 
     def test_send_message_events(self):
-        self.do_test(lambda: self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello"))
+        schema_checker = check_dict([
+            ('type', equals('message')),
+            ('flags', check_list(None)),
+            ('message', check_dict([
+                ('avatar_url', check_string),
+                ('client', check_string),
+                ('content', check_string),
+                ('content_type', equals('text/html')),
+                ('display_recipient', check_string),
+                ('gravatar_hash', check_string),
+                ('id', check_int),
+                ('recipient_id', check_int),
+                ('sender_domain', check_string),
+                ('sender_email', check_string),
+                ('sender_full_name', check_string),
+                ('sender_id', check_int),
+                ('sender_short_name', check_string),
+                ('subject', check_string),
+                ('subject_links', check_list(None)),
+                ('timestamp', check_int),
+                ('type', check_string),
+            ])),
+        ])
+        events = self.do_test(lambda: self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello"))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_pointer_events(self):
-        self.do_test(lambda: do_update_pointer(self.user_profile, 1500))
+        schema_checker = check_dict([
+            ('type', equals('pointer')),
+            ('pointer', check_int)
+        ])
+        events = self.do_test(lambda: do_update_pointer(self.user_profile, 1500))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_register_events(self):
-        self.do_test(lambda: self.register("test1", "test1"))
+        realm_user_add_checker = check_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('add')),
+            ('person', check_dict([
+                ('email', check_string),
+                ('full_name', check_string),
+                ('is_admin', check_bool),
+                ('is_bot', check_bool),
+            ])),
+        ])
+        stream_create_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('create')),
+            ('streams', check_list(check_dict([
+                ('description', check_string),
+                ('invite_only', check_bool),
+                ('name', check_string),
+                ('stream_id', check_int),
+            ])))
+        ])
+
+        events = self.do_test(lambda: self.register("test1", "test1"))
+        error = realm_user_add_checker('events[0]', events[0])
+        self.assert_on_error(error)
+        error = stream_create_checker('events[1]', events[1])
+        self.assert_on_error(error)
 
     def test_alert_words_events(self):
-        self.do_test(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
-        self.do_test(lambda: do_remove_alert_words(self.user_profile, ["alert_word"]))
+        alert_words_checker = check_dict([
+            ('type', equals('alert_words')),
+            ('alert_words', check_list(check_string)),
+        ])
+
+        events = self.do_test(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
+        error = alert_words_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_remove_alert_words(self.user_profile, ["alert_word"]))
+        error = alert_words_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_muted_topics_events(self):
-        self.do_test(lambda: do_set_muted_topics(self.user_profile, [["Denmark", "topic"]]))
+        muted_topics_checker = check_dict([
+            ('type', equals('muted_topics')),
+            ('muted_topics', check_list(check_list(check_string, 2))),
+        ])
+        events = self.do_test(lambda: do_set_muted_topics(self.user_profile, [["Denmark", "topic"]]))
+        error = muted_topics_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
 
     def test_change_full_name(self):
-        self.do_test(lambda: do_change_full_name(self.user_profile, 'Sir Hamlet'))
+        schema_checker = check_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict([
+                ('email', check_string),
+                ('full_name', check_string),
+            ])),
+        ])
+        events = self.do_test(lambda: do_change_full_name(self.user_profile, 'Sir Hamlet'))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_change_realm_name(self):
-        self.do_test(lambda: do_set_realm_name(self.user_profile.realm, 'New Realm Name'))
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('name')),
+            ('value', check_string),
+        ])
+        events = self.do_test(lambda: do_set_realm_name(self.user_profile.realm, 'New Realm Name'))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_change_is_admin(self):
+        schema_checker = check_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict([
+                ('email', check_string),
+                ('is_admin', check_bool),
+            ])),
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for is_admin in [False, True, False]:
-            self.do_test(lambda: do_change_is_admin(self.user_profile, is_admin))
+            events = self.do_test(lambda: do_change_is_admin(self.user_profile, is_admin))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
 
     def test_realm_emoji_events(self):
-        self.do_test(lambda: do_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
-                                                "https://realm.com/my_emoji"))
-        self.do_test(lambda: do_remove_realm_emoji(get_realm("zulip.com"), "my_emoji"))
+        schema_checker = check_dict([
+            ('type', equals('realm_emoji')),
+            ('op', equals('update')),
+            ('realm_emoji', check_dict([])),
+        ])
+        events = self.do_test(lambda: do_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
+                                                         "https://realm.com/my_emoji"))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_remove_realm_emoji(get_realm("zulip.com"), "my_emoji"))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_realm_filter_events(self):
-        self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#[123]",
-                                                "https://realm.com/my_realm_filter/%(id)s"))
+        schema_checker = check_dict([
+            ('type', equals('realm_filters')),
+            ('realm_filters', check_list(None)), # TODO: validate tuples in the list
+        ])
+        events = self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#[123]",
+                                                          "https://realm.com/my_realm_filter/%(id)s"))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
         self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#[123]"))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_create_bot(self):
         bot_created_checker = check_dict([
