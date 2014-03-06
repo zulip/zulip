@@ -44,12 +44,15 @@ function Socket(url) {
         this._supported_protocols = _.reject(this._supported_protocols,
                                              function (x) { return x === 'xhr-streaming'; });
     }
-
-    this._sockjs = new SockJS(url, null, {protocols_whitelist: this._supported_protocols});
-    this._setup_sockjs_callbacks(this._sockjs);
+    this._create_sockjs_object();
 }
 
 Socket.prototype = {
+    _create_sockjs_object: function Socket__create_sockjs_object() {
+        this._sockjs = new SockJS(this.url, null, {protocols_whitelist: this._supported_protocols});
+        this._setup_sockjs_callbacks(this._sockjs);
+    },
+
     _make_request: function Socket__make_request(type) {
         return {req_id: this._get_next_req_id(),
                 type: type,
@@ -330,8 +333,7 @@ Socket.prototype = {
         this._reconnect_timeout_id = setTimeout(function () {
             that._reconnect_timeout_id = null;
             blueslip.info("Attempting socket reconnect.");
-            that._sockjs = new SockJS(that.url, null, {protocols_whitelist: that._supported_protocols});
-            that._setup_sockjs_callbacks(that._sockjs);
+            that._create_sockjs_object();
         }, opts.wait_time);
     },
 
