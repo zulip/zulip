@@ -16,13 +16,15 @@ common.start_and_log_in();
 
 casper.then(function () {
     casper.test.info("Sending test message");
-    common.send_message('stream', {
+});
+
+common.send_message('stream', {
         stream:  'Verona',
         subject: 'stars',
         content: 'test star'
-    });
-    casper.waitForText("test star");
 });
+
+casper.waitForText("test star");
 
 casper.then(function () {
     casper.test.info("Checking star counts");

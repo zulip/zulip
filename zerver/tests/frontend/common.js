@@ -112,19 +112,18 @@ exports.send_message = function (type, params) {
         }
         casper.fill('form[action^="/json/send_message"]', params);
         casper.click('#compose-send-button');
-        casper.waitFor(function emptyComposeBox() {
-            return casper.getFormValues('form[action^="/json/send_message"]').content === '';
-        }, function () {
-            last_send_or_update = timestamp();
-        });
+    });
+    casper.waitFor(function emptyComposeBox() {
+        return casper.getFormValues('form[action^="/json/send_message"]').content === '';
+    }, function () {
+        last_send_or_update = timestamp();
     });
 };
 
 // Wait for any previous send to finish, then send a message.
 exports.wait_and_send = function (type, params) {
-    casper.waitForSelector('#compose-send-button:enabled', function () {
-        exports.send_message(type, params);
-    });
+    casper.waitForSelector('#compose-send-button:enabled');
+    exports.send_message(type, params);
 };
 
 // Get message headings (recipient rows) and bodies out of the DOM.

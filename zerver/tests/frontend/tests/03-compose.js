@@ -93,10 +93,10 @@ var recipients = ['cordelia@zulip.com', 'othello@zulip.com'];
 casper.then(function () {
     common.keypress(27);  // escape to dismiss compose box
 });
-casper.waitWhileVisible('.message_comp', function () {
-    common.send_many([
-        { recipient: recipients.join(','),
-          content:   'A huddle to check spaces' }]);
+casper.waitWhileVisible('.message_comp');
+common.send_many([
+    { recipient: recipients.join(','),
+      content:   'A huddle to check spaces' }]);
 
 casper.then(function () {
     common.keypress(27);  // escape to dismiss compose box
