@@ -22,6 +22,9 @@ function batched_updater(flag, op, immediate) {
             return;
         }
 
+        // We have some real IDs.  If there are any left in the queue when this
+        // call finishes, they will be handled in the success callback.
+
         channel.post({
             url:      '/json/update_message_flags',
             idempotent: true,
