@@ -568,9 +568,10 @@ MessageList.prototype = {
         function message_sort_func(a, b) {return a.id - b.id;}
 
         if (this._hash.hasOwnProperty(old_id)) {
-            var value = this._hash[old_id];
+            var msg = this._hash[old_id];
+            msg.dom_id = this.table_name + msg.id;
             delete this._hash[old_id];
-            this._hash[new_id] = value;
+            this._hash[new_id] = msg;
         } else {
             return;
         }
