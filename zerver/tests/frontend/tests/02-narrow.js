@@ -10,7 +10,7 @@ casper.then(function () {
     casper.test.info('Sending messages');
 });
 
-common.send_many([
+common.then_send_many([
     { stream:  'Verona', subject: 'frontend test',
       content: 'test message A' },
 

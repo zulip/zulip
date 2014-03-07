@@ -99,7 +99,7 @@ exports.check_form = function (form_selector, expected, test_name) {
     }
 };
 
-exports.send_message = function (type, params) {
+exports.then_send_message = function (type, params) {
     casper.waitForSelector('#new_message_content', function () {
         if(type === "stream") {
             casper.page.sendEvent('keypress', "c");
@@ -121,9 +121,9 @@ exports.send_message = function (type, params) {
 };
 
 // Wait for any previous send to finish, then send a message.
-exports.wait_and_send = function (type, params) {
+exports.then_wait_and_send = function (type, params) {
     casper.waitForSelector('#compose-send-button:enabled');
-    exports.send_message(type, params);
+    exports.then_send_message(type, params);
 };
 
 // Get message headings (recipient rows) and bodies out of the DOM.
@@ -166,9 +166,9 @@ exports.keypress = function (code) {
 };
 
 // Send a whole list of messages using wait_and_send.
-exports.send_many = function (msgs) {
+exports.then_send_many = function (msgs) {
     msgs.forEach(function (msg) {
-        exports.wait_and_send(
+        exports.then_wait_and_send(
             (msg.stream !== undefined) ? 'stream' : 'private',
             msg);
     });

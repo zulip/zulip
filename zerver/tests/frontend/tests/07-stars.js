@@ -18,7 +18,7 @@ casper.then(function () {
     casper.test.info("Sending test message");
 });
 
-common.send_message('stream', {
+common.then_send_message('stream', {
         stream:  'Verona',
         subject: 'stars',
         content: 'test star'

@@ -3,12 +3,12 @@ var common = require('../common.js').common;
 common.start_and_log_in();
 
 // Send a message to try replying to
-common.send_message('stream', {
+common.then_send_message('stream', {
     stream: 'Verona',
     subject: 'Reply test',
     content: "We reply to this message"
 });
-common.send_message('private', {
+common.then_send_message('private', {
     recipient: "cordelia@zulip.com",
     content: "And reply to this message"
 });
@@ -94,7 +94,7 @@ casper.then(function () {
     common.keypress(27);  // escape to dismiss compose box
 });
 casper.waitWhileVisible('.message_comp');
-common.send_many([
+common.then_send_many([
     { recipient: recipients.join(','),
       content:   'A huddle to check spaces' }]);
 

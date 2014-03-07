@@ -36,7 +36,7 @@ casper.then(function () {
 
 // Send some messages.
 
-common.send_many([
+common.then_send_many([
     { stream:  'Verona', subject: 'frontend test',
       content: 'test message A' },
 
@@ -73,7 +73,7 @@ common.wait_for_receive(function () {
     casper.test.info('Sending more messages');
 });
 
-common.send_many([
+common.then_send_many([
     { stream:  'Verona', subject: 'frontend test',
       content: 'test message D' },
 
