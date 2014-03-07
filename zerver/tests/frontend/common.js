@@ -22,6 +22,10 @@ function log_in(credentials) {
 }
 
 exports.initialize_casper = function (viewport) {
+    if (casper.zulip_initialized !== undefined) {
+        return;
+    }
+    casper.zulip_initialized = true;
     // These initialization steps will fail if they run before
     // casper.start has been called.
 
