@@ -34,7 +34,6 @@ casper.waitUntilVisible("#old_password", function () {
 casper.waitUntilVisible('#settings-status', function () {
     casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
 
-    casper.test.assertNotVisible('');
     casper.click('#api_key_button');
 });
 
