@@ -1726,7 +1726,7 @@ Casper.prototype.waitFor = function waitFor(testFx, then, onTimeout, timeout) {
                 } else {
                     self.log(f("waitFor() finished in %dms.", new Date().getTime() - start), "info");
                     if (then) {
-                        self.then(then);
+                        then.call(self, self);
                     }
                 }
                 clearInterval(interval);
