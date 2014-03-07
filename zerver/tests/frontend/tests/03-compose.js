@@ -3,15 +3,15 @@ var common = require('../common.js').common;
 common.start_and_log_in();
 
 // Send a message to try replying to
-common.then_send_message('stream', {
-    stream: 'Verona',
-    subject: 'Reply test',
-    content: "We reply to this message"
-});
-common.then_send_message('private', {
-    recipient: "cordelia@zulip.com",
-    content: "And reply to this message"
-});
+common.then_send_many([
+    { stream: 'Verona',
+      subject: 'Reply test',
+      content: "We reply to this message"
+    },
+    { recipient: "cordelia@zulip.com",
+      content: "And reply to this message"
+    }
+]);
 
 casper.waitForText("And reply to this message", function () {
     // TODO: Test opening the compose box from the left side buttons
