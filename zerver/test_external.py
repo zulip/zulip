@@ -173,10 +173,12 @@ class RateLimitTests(AuthedTestCase):
         for i in range(6):
             result = self.send_api_message(email, api_key, "some stuff %s" % (i,))
 
-        self.assertEqual(result.status_code, 403)
+        self.assertEqual(result.status_code, 429)
         json = ujson.loads(result.content)
         self.assertEqual(json.get("result"), "error")
         self.assertIn("API usage exceeded rate limit, try again in", json.get("msg"))
+        self.assertTrue('Retry-After' in result)
+        self.assertIn(result['Retry-After'], json.get("msg"))
 
         # We actually wait a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
