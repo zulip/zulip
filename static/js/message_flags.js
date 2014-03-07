@@ -18,7 +18,7 @@ function batched_updater(flag, op, immediate) {
         });
 
         if (real_msg_ids.length === 0) {
-            start();
+            setTimeout(start, 100);
             return;
         }
 
