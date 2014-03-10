@@ -1213,7 +1213,7 @@ $(function () {
 
         if (event.then_scroll) {
             if (row.length === 0) {
-                var row_from_dom = $('.message_row[zid=' + event.id  + ']');
+                var row_from_dom = current_msg_list.get_row(event.id);
                 blueslip.debug("message_selected missing selected row", {
                     previously_selected: event.previously_selected,
                     selected_id: event.id,
