@@ -222,6 +222,10 @@ function process_notification(notification) {
     ui.replace_emoji_with_text(content);
     content = content.text();
 
+    if (message.is_me_message) {
+        content = message.sender_full_name + content.slice(3);
+    }
+
     if (message.type === "private") {
         key = message.display_reply_to;
         other_recipients = message.display_reply_to;
