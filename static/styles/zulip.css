@@ -706,48 +706,39 @@ td.pointer {
 }
 
 .include-sender .message_time {
-    position: relative;
-    left: 2px;
-    line-height: 14px;
-    vertical-align: top;
-    text-align: left;
-    width: auto;
-    top: -1px;
+    top: 20px;
 }
 
 .message_time {
-    display: inline-block;
+    display: block;
     font-size: 11px;
-    color: #aaa;
+    color: #dedede;
     vertical-align: middle;
     padding: 1px;
     font-weight: 300;
     position: absolute;
-    width: 50px;
-    left: -16px;
-    line-height: 12px;
+    right: -80px;
+    line-height: 20px;
     text-align: right;
-    top: 5px;
     -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     transition: background-color 2.7s ease-in, color 2.7s ease-in;
 }
 
-.message_time.status-time {
-    line-height: 14px;
-    top: 10px;
+.status-time {
+    top: 8px !important;
 }
 
 .message_controls {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -50px;
+    right: -38px;
 }
 
 .include-sender .message_controls {
-    top: -2px;
+    top: 22px;
 }
 
 .message_data {
@@ -1037,7 +1028,6 @@ just a temporary hack.
 }
 
 .floating_recipient .message_header_private_message {
-    border: 1px solid #e2e2e2;
     border-bottom: 0px;
     border-left: 0px;
 }
@@ -1444,7 +1434,7 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 4px 55px 1px 10px;
+    padding: 4px 90px 1px 10px;
 }
 
 .last_message .messagebox-content {
