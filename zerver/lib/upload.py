@@ -94,7 +94,7 @@ def get_file_info(request, user_file):
     return uploaded_file_name, content_type
 
 def authed_upload_enabled(realm):
-    return realm.domain in ('zulip.com', 'squarespace.com', 'bargainbit.com')
+    return realm.domain in ('squarespace.com', 'bargainbit.com')
 
 def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_profile, private=None, target_realm=None):
     if private is None:
