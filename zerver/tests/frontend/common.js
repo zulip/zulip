@@ -61,6 +61,10 @@ exports.initialize_casper = function (viewport) {
             last_send_or_update = timestamp();
         }
     });
+
+    casper.evaluate(function () {
+        window.localStorage.clear();
+    });
 };
 
 exports.then_log_in = function (credentials) {
