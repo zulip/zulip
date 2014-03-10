@@ -292,9 +292,15 @@ MessageListView.prototype = {
             }
         }
 
-        _.each(rendered_messages, function (elem){
+        _.each(rendered_messages, function (elem) {
             var e = $.Event('message_rendered.zulip', {target: elem});
-            $(document).trigger(e);
+            try {
+                $(document).trigger(e);
+            } catch (ex) {
+                blueslip.error('Problem with message rendering',
+                               {message_id: rows.id($(elem))},
+                               ex.stack);
+            }
         });
 
 
