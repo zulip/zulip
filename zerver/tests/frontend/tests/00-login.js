@@ -10,7 +10,7 @@ casper.then(function () {
 
 common.then_log_in();
 
-casper.then(function () {
+casper.waitUntilVisible('#zhome', function () {
     casper.test.info('Logging out');
     casper.click('li[title="Log out"] a');
 });
