@@ -1355,6 +1355,7 @@ class AttachmentTest(TestCase):
         self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
         self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
         self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo'))
+        self.assertTrue(Message.content_has_attachment('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
         self.assertFalse(Message.content_has_image('whatever'))
         self.assertFalse(Message.content_has_image('yo http://foo.com'))
@@ -1362,11 +1363,13 @@ class AttachmentTest(TestCase):
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp", ".JPG"]:
             content = 'yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (ext,)
             self.assertTrue(Message.content_has_image(content))
+        self.assertTrue(Message.content_has_image('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
         self.assertFalse(Message.content_has_link('whatever'))
         self.assertTrue(Message.content_has_link('yo\n http://foo.com'))
         self.assertTrue(Message.content_has_link('yo\n https://example.com?spam=1&eggs=2'))
         self.assertTrue(Message.content_has_link('yo /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo'))
+        self.assertTrue(Message.content_has_link('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
 class CheckMessageTest(AuthedTestCase):
     def test_basic_check_message_call(self):

@@ -945,11 +945,11 @@ class Message(models.Model):
 
     @staticmethod
     def content_has_attachment(content):
-        return '/user_uploads/' in content
+        return re.search('[/\-]user[\-_]uploads[/\.]', content)
 
     @staticmethod
     def content_has_image(content):
-        return bool(re.search('/user_uploads/\S+\.(bmp|gif|jpg|jpeg|png|webp)', content, re.IGNORECASE))
+        return bool(re.search('[/\-]user[\-_]uploads[/\.]\S+\.(bmp|gif|jpg|jpeg|png|webp)', content, re.IGNORECASE))
 
     @staticmethod
     def content_has_link(content):
