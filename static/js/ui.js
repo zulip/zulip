@@ -1327,6 +1327,7 @@ $(function () {
 
     $('body').on('click', '.edit_content_button', function (e) {
         var row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
+        current_msg_list.select_id(rows.id(row));
         message_edit.start(row);
         e.stopPropagation();
         popovers.hide_all();
