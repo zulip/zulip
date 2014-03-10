@@ -135,7 +135,7 @@ function copy_handler(e) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('.selectable_row, .recipient_row')[0]), function (row) {
+        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), function (row) {
             return row.next();
         });
         if (start_data === undefined) {
@@ -146,7 +146,9 @@ function copy_handler(e) {
         endc = $(range.endContainer);
         // If the selection ends in the bottom whitespace, we should act as
         // though the selection ends on the final message
-        if (endc.attr('id') === "bottom_whitespace") {
+        // Chrome seems to like selecting the compose_close button
+        // when you go off the end of the last message
+        if (endc.attr('id') === "bottom_whitespace" || endc.attr('id') === "compose_close") {
             initial_end_tr = $(".message_row:last");
             skip_same_td_check = true;
         } else {
@@ -177,8 +179,8 @@ function copy_handler(e) {
                  rows.id(row) <= end_id;
                  row = rows.next_visible(row))
             {
-                if (row.prev().hasClass("recipient_row")) {
-                    content = $('<div>').text(row.prev().children(".right_part").text()
+                if (row.prev().hasClass("message_header")) {
+                    content = $('<div>').text(row.prev().text()
                                                 .replace(/\s+/g, " ")
                                                 .replace(/^\s/, "").replace(/\s$/, ""));
                     div.append($('<p>').append($('<strong>').text(content.text())));
