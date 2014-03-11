@@ -28,7 +28,6 @@ import traceback
 import signal
 
 from zephyr_mirror_backend import parse_args
-from zephyr_mirror_backend import RandomExponentialBackoff
 
 def die(signal, frame):
     # We actually want to exit, so run os._exit (so as not to be caught and restarted)
@@ -37,6 +36,9 @@ def die(signal, frame):
 signal.signal(signal.SIGINT, die)
 
 (options, args) = parse_args()
+
+sys.path[:0] = [os.path.join(options.root_path, 'api')]
+from zulip import RandomExponentialBackoff
 
 args = [os.path.join(options.root_path, "user_root", "zephyr_mirror_backend.py")]
 args.extend(sys.argv[1:])

@@ -37,38 +37,7 @@ import signal
 import logging
 import hashlib
 import tempfile
-import random
 import select
-
-class CountingBackoff(object):
-    def __init__(self, maximum_retries=10):
-        self.number_of_retries = 0
-        self.maximum_retries = maximum_retries
-
-    def keep_going(self):
-        return self.number_of_retries < self.maximum_retries
-
-    def succeed(self):
-        self.number_of_retries = 0
-
-    def fail(self):
-        self.number_of_retries = min(self.number_of_retries + 1,
-                                     self.maximum_retries)
-
-class RandomExponentialBackoff(CountingBackoff):
-    def fail(self):
-        self.number_of_retries = min(self.number_of_retries + 1,
-                                     self.maximum_retries)
-        # Exponential growth with ratio sqrt(2); compute random delay
-        # between x and 2x where x is growing exponentially
-        delay_scale = int(2 ** (self.number_of_retries / 2.0 - 1)) + 1
-        delay = delay_scale + random.randint(1, delay_scale)
-        message = "Sleeping for %ss [max %s] before retrying." % (delay, delay_scale * 2)
-        try:
-            logger.warning(message)
-        except NameError:
-            print message
-        time.sleep(delay)
 
 DEFAULT_SITE = "https://api.zulip.com"
 
@@ -478,7 +447,7 @@ def quit_failed_initialization(message):
     sys.exit(1)
 
 def zephyr_init_autoretry():
-    backoff = RandomExponentialBackoff()
+    backoff = zulip.RandomExponentialBackoff()
     while backoff.keep_going():
         try:
             # zephyr.init() tries to clear old subscriptions, and thus
@@ -493,7 +462,7 @@ def zephyr_init_autoretry():
     quit_failed_initialization("Could not initialize Zephyr library, quitting!")
 
 def zephyr_load_session_autoretry(session_path):
-    backoff = RandomExponentialBackoff()
+    backoff = zulip.RandomExponentialBackoff()
     while backoff.keep_going():
         try:
             session = file(session_path, "r").read()
@@ -508,7 +477,7 @@ def zephyr_load_session_autoretry(session_path):
     quit_failed_initialization("Could not load saved Zephyr session, quitting!")
 
 def zephyr_subscribe_autoretry(sub):
-    backoff = RandomExponentialBackoff()
+    backoff = zulip.RandomExponentialBackoff()
     while backoff.keep_going():
         try:
             zephyr.Subscriptions().add(sub)

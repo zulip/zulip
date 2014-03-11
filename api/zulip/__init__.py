@@ -30,6 +30,7 @@ import os
 import optparse
 import platform
 import urllib
+import random
 from distutils.version import LooseVersion
 
 from ConfigParser import SafeConfigParser
@@ -45,6 +46,36 @@ assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
 requests_json_is_function = callable(requests.Response.json)
 
 API_VERSTRING = "v1/"
+
+class CountingBackoff(object):
+    def __init__(self, maximum_retries=10):
+        self.number_of_retries = 0
+        self.maximum_retries = maximum_retries
+
+    def keep_going(self):
+        return self.number_of_retries < self.maximum_retries
+
+    def succeed(self):
+        self.number_of_retries = 0
+
+    def fail(self):
+        self.number_of_retries = min(self.number_of_retries + 1,
+                                     self.maximum_retries)
+
+class RandomExponentialBackoff(CountingBackoff):
+    def fail(self):
+        self.number_of_retries = min(self.number_of_retries + 1,
+                                     self.maximum_retries)
+        # Exponential growth with ratio sqrt(2); compute random delay
+        # between x and 2x where x is growing exponentially
+        delay_scale = int(2 ** (self.number_of_retries / 2.0 - 1)) + 1
+        delay = delay_scale + random.randint(1, delay_scale)
+        message = "Sleeping for %ss [max %s] before retrying." % (delay, delay_scale * 2)
+        try:
+            logger.warning(message)
+        except NameError:
+            print message
+        time.sleep(delay)
 
 def _default_client():
     return "ZulipPython/" + __version__
