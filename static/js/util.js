@@ -155,7 +155,7 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     while (len > 0) {
         step = Math.floor(len / 2);
         middle = first + step;
-        if (less(array[middle], value)) {
+        if (less(array[middle], value, middle)) {
             first = middle;
             first++;
             len = len - step - 1;
