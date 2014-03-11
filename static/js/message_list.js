@@ -207,29 +207,79 @@ MessageList.prototype = {
         return this.get_row(this._selected_id);
     },
 
+    // Returns the index where you could insert the desired ID
+    // into the message list, without disrupting the sort order
+    // This takes into account the potentially-unsorted
+    // nature of local message IDs in the message list
+    _lower_bound: function MessageList__lower_bound(id) {
+        var self = this;
+        function less_func (msg, ref_id, a_idx) {
+            if (self._is_localonly_id(msg.id)) {
+                // First non-local message before this one
+                var effective = self._next_nonlocal_message(self._items, a_idx, function (idx) { return idx - 1; });
+                if (effective) {
+                    // Turn the 10.02 in [11, 10.02, 12] into 11.02
+                    var decimal = parseFloat((msg.id % 1).toFixed(0.02));
+                    var effective_id = effective.id + decimal;
+                    return effective_id < ref_id;
+                }
+            }
+            return msg.id < ref_id;
+        }
+
+        return util.lower_bound(self._items, id, less_func);
+    },
+
     closest_id: function MessageList_closest_id(id) {
+        // We directly keep track of local-only messages,
+        // so if we're asked for one that we know we have,
+        // just return it directly
+        if (this._local_only.hasOwnProperty(id)) {
+            return id;
+        }
+
         var items = this._items;
 
         if (items.length === 0) {
             return -1;
         }
 
-        var closest = util.lower_bound(items, id,
-                                       function (a, b) {
-                                           return a.id < b;
-                                       });
+        var closest = this._lower_bound(id);
 
-        if (closest === items.length
-            || (closest !== 0
-                // We have the index at which a message with the
-                // given id would be inserted, but that isn't
-                // necessarily the index of the message that has an
-                // id that is closest to the query; it could be the
-                // previous message in the list.
-                && (id - items[closest - 1].id <
-                    items[closest].id - id)))
-        {
+        if (id === items[closest].id) {
+            return items[closest].id;
+        }
+
+        var potential_closest_matches = [];
+        if (closest > 0 && this._is_localonly_id(items[closest - 1].id)) {
+            // Since we treated all blocks of local ids as their left-most-non-local message
+            // for lower_bound purposes, find the real leftmost index (first non-local id)
+            do {
+                potential_closest_matches.push(closest);
+                closest--;
+            } while(closest > 0 && this._is_localonly_id(items[closest - 1].id));
+        }
+        potential_closest_matches.push(closest);
+
+        if (closest === items.length) {
             closest = closest - 1;
+        } else {
+            // Any of the ids that we skipped over (due to them being local-only) might be the closest ID to the desired one,
+            // in case there is no exact match.
+            potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
+            var best_match = items[closest].id;
+
+            _.each(potential_closest_matches, function (potential_idx) {
+                if (potential_idx < 0) {
+                    return;
+                }
+                var potential_match = items[potential_idx].id;
+                // If the potential id is the closest to the requested, save that one
+                if (Math.abs(id - potential_match) < Math.abs(best_match - id)) {
+                    best_match = potential_match;
+                    closest = potential_idx;
+                }
+            });
         }
         return items[closest].id;
     },
@@ -281,8 +331,7 @@ MessageList.prototype = {
     },
 
     selected_idx: function MessageList_selected_idx() {
-        return util.lower_bound(this._items, this._selected_id,
-                                function (a, b) { return a.id < b; });
+        return this._lower_bound(this._selected_id);
     },
 
     subscribed_bookend_content: function (stream_name) {
@@ -481,10 +530,8 @@ MessageList.prototype = {
             blueslip.error("message_range given a start of -1");
         }
 
-        var compare = function (a, b) { return a.id < b; };
-
-        var start_idx = util.lower_bound(this._items, start, compare);
-        var end_idx   = util.lower_bound(this._items, end,   compare);
+        var start_idx = this._lower_bound(start);
+        var end_idx   = this._lower_bound(end);
         return this._items.slice(start_idx, end_idx + 1);
     },
 

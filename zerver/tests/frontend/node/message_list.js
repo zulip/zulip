@@ -116,3 +116,53 @@ var MessageList = require('js/message_list');
     assert.equal(list.nth_most_recent_id(3), 10);
     assert.equal(list.nth_most_recent_id(4), -1);
 }());
+
+
+(function test_local_echo() {
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+    list.append([{id:10}, {id:20}, {id:30}, {id:20.02}, {id:20.03}, {id:40}, {id:50}, {id:60}]);
+    list._local_only= {20.02: {id:20.02}, 20.03: {id:20.03}};
+
+    assert.equal(list.closest_id(10), 10);
+    assert.equal(list.closest_id(20), 20);
+    assert.equal(list.closest_id(30), 30);
+    assert.equal(list.closest_id(20.02), 20.02);
+    assert.equal(list.closest_id(20.03), 20.03);
+    assert.equal(list.closest_id(29), 30);
+    assert.equal(list.closest_id(40), 40);
+    assert.equal(list.closest_id(50), 50);
+    assert.equal(list.closest_id(60), 60);
+
+    assert.equal(list.closest_id(60), 60);
+    assert.equal(list.closest_id(21), 20);
+    assert.equal(list.closest_id(29), 30);
+    assert.equal(list.closest_id(31), 30);
+    assert.equal(list.closest_id(54), 50);
+    assert.equal(list.closest_id(58), 60);
+
+
+    list = new MessageList(table, filter);
+    list.append([{id:10}, {id:20}, {id:30}, {id:20.02}, {id:20.03}, {id:40}, {id:50}, {id: 50.01}, {id: 50.02}, {id:60}]);
+    list._local_only= {20.02: {id:20.02}, 20.03: {id:20.03}, 50.01: {id: 50.01}, 50.02: {id: 50.02}};
+
+    assert.equal(list.closest_id(10), 10);
+    assert.equal(list.closest_id(20), 20);
+    assert.equal(list.closest_id(30), 30);
+    assert.equal(list.closest_id(20.02), 20.02);
+    assert.equal(list.closest_id(20.03), 20.03);
+    assert.equal(list.closest_id(40), 40);
+    assert.equal(list.closest_id(50), 50);
+    assert.equal(list.closest_id(60), 60);
+
+    assert.equal(list.closest_id(60), 60);
+    assert.equal(list.closest_id(21), 20);
+    assert.equal(list.closest_id(29), 30);
+    assert.equal(list.closest_id(31), 30);
+    assert.equal(list.closest_id(47), 50);
+    assert.equal(list.closest_id(51), 50.02);
+    assert.equal(list.closest_id(59), 60);
+    assert.equal(list.closest_id(50.01), 50.01);
+}());
