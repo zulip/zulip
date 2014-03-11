@@ -96,6 +96,10 @@ function assert_same_operators(result, terms) {
     ];
     var filter = new Filter(operators);
 
+    assert(filter.has_topic('foo', 'old topic'));
+    assert(!filter.has_topic('wrong', 'old topic'));
+    assert(!filter.has_topic('foo', 'wrong'));
+
     var new_filter = filter.filter_with_new_topic('new topic');
 
     assert.deepEqual(new_filter.operands('stream'), ['foo']);

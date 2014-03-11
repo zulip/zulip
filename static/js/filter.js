@@ -343,6 +343,10 @@ Filter.prototype = {
         return new Filter(terms);
     },
 
+    has_topic: function Filter_has_topic(stream_name, topic) {
+        return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
+    },
+
     // Build a filter function from a list of operators.
     _build_predicate: function Filter__build_predicate() {
         var operators = this._operators;
