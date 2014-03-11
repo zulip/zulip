@@ -89,6 +89,19 @@ function assert_same_operators(result, terms) {
     assert(!filter.can_apply_locally());
 }());
 
+(function test_topic_stuff() {
+    var operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'old topic'}
+    ];
+    var filter = new Filter(operators);
+
+    var new_filter = filter.filter_with_new_topic('new topic');
+
+    assert.deepEqual(new_filter.operands('stream'), ['foo']);
+    assert.deepEqual(new_filter.operands('topic'), ['new topic']);
+}());
+
 (function test_new_style_operators() {
     var term = {
         operator: 'stream',

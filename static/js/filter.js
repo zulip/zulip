@@ -332,6 +332,17 @@ Filter.prototype = {
         });
     },
 
+    filter_with_new_topic: function Filter_filter_with_new_topic(new_topic) {
+        var terms = _.map(this._operators, function (term) {
+            var new_term = _.clone(term);
+            if (new_term.operator === 'topic' && !new_term.negated) {
+                new_term.operand = new_topic;
+            }
+            return new_term;
+        });
+        return new Filter(terms);
+    },
+
     // Build a filter function from a list of operators.
     _build_predicate: function Filter__build_predicate() {
         var operators = this._operators;
