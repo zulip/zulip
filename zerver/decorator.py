@@ -489,15 +489,6 @@ def to_non_negative_float(x):
         raise ValueError("argument is negative")
     return x
 
-def json_to_foo(json, type):
-    data = ujson.loads(json)
-    if not isinstance(data, type):
-        raise ValueError("argument is not a %s" % (type().__class__.__name__))
-    return data
-
-def json_to_bool(json):
-    return json_to_foo(json, bool)
-
 def ruby_boolean(boolean):
     """ruby booleans may be "true", "false" or ""
 
