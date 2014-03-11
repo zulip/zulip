@@ -2032,6 +2032,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             raise JsonableError("Topic can't be empty")
         subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
+        event["propagate_mode"] = propagate_mode
         message.subject = subject
         event["stream_id"] = message.recipient.type_id
         event["subject"] = subject

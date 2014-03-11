@@ -271,6 +271,7 @@ class EventsRegisterTest(AuthedTestCase):
             ('orig_content', check_string),
             ('orig_rendered_content', check_string),
             ('orig_subject', check_string),
+            ('propagate_mode', check_string),
             ('rendered_content', check_string),
             ('sender', check_string),
             ('stream_id', check_int),
