@@ -77,3 +77,34 @@ def create_index_if_nonexistant(db, table, col, index):
     else:
         stmt = "CREATE INDEX %s ON %s (%s)" % (index, table, col)
         timed_ddl(db, stmt)
+
+def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
+    # tasks should be an array of (filterer, action) tuples
+    # where filterer is a function that returns a filtered QuerySet
+    # and action is a function that acts on a QuerySet
+
+    all_objects = orm['zerver.Message'].objects
+    min_id = all_objects.all().order_by('id')[0].id
+    max_id = all_objects.all().order_by('-id')[0].id
+    print "max_id = %s" % (max_id, )
+    overhead = int((max_id + 1 - min_id)/ batch_size * sleep / 60)
+    print "Expect this to take at least %d minutes, just due to sleeps alone." % (overhead,)
+
+    while min_id <= max_id:
+        lower = min_id
+        upper = min_id + batch_size - 1
+        if upper > max_id:
+            upper = max_id
+
+        print '%s about to update range %s to %s' % (time.asctime(), lower, upper)
+
+        db.start_transaction()
+        for filterer, action in tasks:
+            objects = all_objects.filter(id__range=(lower, upper))
+            targets = filterer(objects)
+            action(targets)
+        db.commit_transaction()
+
+        min_id = upper + 1
+        time.sleep(sleep)
+
