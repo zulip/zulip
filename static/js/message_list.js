@@ -11,6 +11,7 @@ function MessageList(table_name, filter, opts) {
     }
     this._items = [];
     this._hash = {};
+    this._local_only = {};
     this.table_name = table_name;
     this.filter = filter;
     this._selected_id = -1;
@@ -268,6 +269,9 @@ MessageList.prototype = {
             if (isNaN(id)) {
                 blueslip.fatal("Bad message id");
             }
+            if (self._is_localonly_id(id)) {
+                self._local_only[id] = elem;
+            }
             if (self._hash[id] !== undefined) {
                 blueslip.error("Duplicate message added to MessageList");
                 return;
@@ -488,6 +492,18 @@ MessageList.prototype = {
         return this.view.get_row(id);
     },
 
+    _is_localonly_id: function MessageList__is_localonly_id(id) {
+        return id % 1 !== 0;
+    },
+
+    _next_nonlocal_message: function MessageList__next_nonlocal_message(item_list, start_index, op) {
+        var cur_idx = start_index;
+        do {
+            cur_idx = op(cur_idx);
+        } while(item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
+        return item_list[cur_idx];
+    },
+
     change_display_recipient: function MessageList_change_display_recipient(old_recipient,
                                                                             new_recipient) {
         // This method only works for streams.
@@ -504,24 +520,19 @@ MessageList.prototype = {
         // Update our local cache that uses the old id to the new id
         function message_sort_func(a, b) {return a.id - b.id;}
 
-        function is_local_only(message) {
-            return message.id % 1 !== 0;
-        }
-
-        function next_nonlocal_message(item_list, start_index, op) {
-            var cur_idx = start_index;
-            do {
-                cur_idx = op(cur_idx);
-            } while(item_list[cur_idx] !== undefined && is_local_only(item_list[cur_idx]));
-            return item_list[cur_idx];
-        }
-
         if (this._hash.hasOwnProperty(old_id)) {
             var value = this._hash[old_id];
             delete this._hash[old_id];
             this._hash[new_id] = value;
         } else {
             return;
+        }
+
+        if (this._local_only.hasOwnProperty(old_id)) {
+            if (this._is_localonly_id(new_id)) {
+                this._local_only[new_id] = this._local_only[old_id];
+            }
+            delete this._local_only[old_id];
         }
 
         if (this._selected_id === old_id) {
@@ -541,8 +552,8 @@ MessageList.prototype = {
                 return;
             }
 
-            var next = next_nonlocal_message(self._items, index, function (idx) { return idx + 1; });
-            var prev = next_nonlocal_message(self._items, index, function (idx) { return idx - 1; });
+            var next = self._next_nonlocal_message(self._items, index, function (idx) { return idx + 1; });
+            var prev = self._next_nonlocal_message(self._items, index, function (idx) { return idx - 1; });
 
             if ((next !== undefined && current_message.id > next.id) ||
                 (prev !== undefined && current_message.id < prev.id)) {
