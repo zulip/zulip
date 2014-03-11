@@ -273,6 +273,7 @@ class EventsRegisterTest(AuthedTestCase):
             ('orig_subject', check_string),
             ('rendered_content', check_string),
             ('sender', check_string),
+            ('stream_id', check_int),
             ('subject', check_string),
             ('subject_links', check_list(None)),
             # There is also a timestamp field in the event, but we ignore it, as

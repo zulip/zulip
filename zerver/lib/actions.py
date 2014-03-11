@@ -2033,6 +2033,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
         subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
         message.subject = subject
+        event["stream_id"] = message.recipient.type_id
         event["subject"] = subject
         event['subject_links'] = bugdown.subject_links(message.sender.realm.domain.lower(), subject)
         edit_history_event["prev_subject"] = orig_subject
