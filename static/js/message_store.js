@@ -239,14 +239,15 @@ exports.update_messages = function update_messages(events) {
             // event.message_ids. event.message_id is still the first message
             // where the user initiated the edit.
             topic_edited = true;
+
+            if (event.orig_subject === compose.subject()) {
+                compose.subject(event.subject);
+            }
+
             _.each(event.message_ids, function (id) {
                 var msg = message_store.get(id);
                 if (msg === undefined) {
                     return;
-                }
-
-                if (msg.subject === compose.subject()) {
-                    compose.subject(event.subject);
                 }
 
                 // Remove the recent subjects entry for the old subject;
