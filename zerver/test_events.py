@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from zerver.models import (
     get_client, get_realm, get_stream, get_user_profile_by_email,
-    Recipient,
+    Message, Recipient,
 )
 
 from zerver.lib.actions import (
@@ -29,6 +29,7 @@ from zerver.lib.actions import (
     do_rename_stream,
     do_set_muted_topics,
     do_set_realm_name,
+    do_update_message,
     do_update_pointer,
     fetch_initial_state_data,
 )
@@ -256,6 +257,33 @@ class EventsRegisterTest(AuthedTestCase):
             ])),
         ])
         events = self.do_test(lambda: self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello"))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        schema_checker = check_dict([
+            ('type', equals('update_message')),
+            ('flags', check_list(None)),
+            ('content', check_string),
+            ('edit_timestamp', check_int),
+            ('flags', check_list(None)),
+            ('message_id', check_int),
+            ('message_ids', check_list(check_int)),
+            ('orig_content', check_string),
+            ('orig_rendered_content', check_string),
+            ('orig_subject', check_string),
+            ('rendered_content', check_string),
+            ('sender', check_string),
+            ('subject', check_string),
+            ('subject_links', check_list(None)),
+            # There is also a timestamp field in the event, but we ignore it, as
+            # it's kind of an unwanted but harmless side effect of calling log_event.
+        ])
+
+        message_id = Message.objects.order_by('-id')[0].id
+        topic = 'new_topic'
+        propagate_mode = 'change_all'
+        content = 'new content'
+        events = self.do_test(lambda: do_update_message(self.user_profile, message_id, topic, propagate_mode, content))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
