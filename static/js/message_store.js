@@ -216,6 +216,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 exports.update_messages = function update_messages(events) {
     var msgs_to_rerender = [];
     var topic_edited = false;
+    var changed_narrow = false;
 
     _.each(events, function (event) {
         var msg = stored_messages[event.message_id];
@@ -245,6 +246,8 @@ exports.update_messages = function update_messages(events) {
             // where the user initiated the edit.
             topic_edited = true;
 
+            var going_forward_change = _.indexOf(['change_later', 'change_all'], event.propagate_mode) >= 0;
+
             var stream_name = stream_data.get_sub_by_id(event.stream_id).name;
             var compose_stream_name = compose.stream_name();
 
@@ -252,6 +255,27 @@ exports.update_messages = function update_messages(events) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
                     if (event.orig_subject === compose.subject()) {
                         compose.subject(event.subject);
+                    }
+                }
+            }
+
+            if (going_forward_change) {
+                var current_id = current_msg_list.selected_id();
+                var selection_changed_topic = _.indexOf(event.message_ids, current_id) >= 0;
+
+                if (selection_changed_topic) {
+                    var current_filter = narrow.filter();
+                    if (current_filter && stream_name) {
+                        if (current_filter.has_topic(stream_name, event.orig_subject)) {
+                            var new_filter = current_filter.filter_with_new_topic(event.subject);
+                            var operators = new_filter.operators();
+                            var opts = {
+                                trigger: 'topic change',
+                                then_select_id: current_id
+                            };
+                            narrow.activate(operators, opts);
+                            changed_narrow = true;
+                        }
                     }
                 }
             }
@@ -288,9 +312,11 @@ exports.update_messages = function update_messages(events) {
     // If a topic was edited, we re-render the whole view to get any propagated edits
     // to be updated
     if (topic_edited) {
-        home_msg_list.rerender();
-        if (current_msg_list === narrowed_msg_list) {
-            narrowed_msg_list.rerender();
+        if (!changed_narrow) {
+            home_msg_list.rerender();
+            if (current_msg_list === narrowed_msg_list) {
+                narrowed_msg_list.rerender();
+            }
         }
     } else {
         home_msg_list.view.rerender_messages(msgs_to_rerender);
