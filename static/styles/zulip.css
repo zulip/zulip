@@ -1191,7 +1191,7 @@ just a temporary hack.
     vertical-align: top;
     height: 35px;
     line-height: 35px;
-    font-size: 13px;
+    font-size: 14px;
     position: relative;
 }
 
@@ -1201,7 +1201,7 @@ just a temporary hack.
     vertical-align: top;
     line-height: 35px;
     margin-right: 3px;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .sender_name_hovered .sender_name {
