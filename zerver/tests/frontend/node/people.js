@@ -67,6 +67,30 @@ set_global('admin', {
     assert.equal(person.full_name, 'Original');
 }());
 
+(function test_reify() {
+    var full_person = {
+        email: 'foo@example.com',
+        full_name: 'Foo Barson'
+    };
+
+    // If we don't have a skeleton object, this should quietly succeed.
+    people.reify(full_person);
+
+    var skeleton = {
+        email: 'foo@example.com',
+        full_name: 'foo@example.com',
+        skeleton: true
+    };
+    people.add(skeleton);
+
+    people.reify(full_person);
+    var person = people.get_by_email('foo@example.com');
+    assert.equal(person.full_name, 'Foo Barson');
+
+    // Our follow-up reify() call should also quietly succeed.
+    people.reify(full_person);
+}());
+
 (function test_get_rest_of_realm() {
     var myself = {
         email: 'myself@example.com',
