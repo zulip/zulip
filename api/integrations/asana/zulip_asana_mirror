@@ -22,11 +22,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+#
+# The "zulip_asana_mirror" script is run continuously, possibly on a work computer
+# or preferably on a server.
+#
+# When restarted, it will attempt to pick up where it left off.
+#
+# python-dateutil is a dependency for this script.
 
 import base64
 from datetime import datetime, timedelta
-import dateutil.parser
-import dateutil.tz
+
 import json
 import logging
 import os
@@ -34,6 +40,15 @@ import time
 import urllib2
 
 import sys
+
+try:
+    import dateutil.parser
+    import dateutil.tz
+except ImportError, e:
+    print >>sys.stderr, e
+    print >>sys.stderr, "Please install the python-dateutil package."
+    exit(1)
+
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_asana_config as config
 VERSION = "0.9"
