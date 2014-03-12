@@ -89,9 +89,9 @@ exports.reify = function reify(person) {
 
     var old_person = people_dict.get(person.email);
 
-    // Don't overwrite an already-reified person. If we have
-    // a full name, we already have the full person object loaded
-    if (old_person.full_name !== undefined && !old_person.skeleton) {
+    // Only overwrite skeleton objects here.  If the object
+    // had already been reified, exit early.
+    if (!old_person.skeleton) {
         return;
     }
 
