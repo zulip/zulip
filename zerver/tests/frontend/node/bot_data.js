@@ -1,11 +1,15 @@
 var _ = global._;
 
-set_global('$', function () {
+set_global('$', function (f) {
+    if (f) {
+        return f();
+    }
     return {trigger: function () {}};
 });
 set_global('document', null);
 
 var page_params = {
+    bot_list: [{email: 'bot0@zulip.com', full_name: 'Bot 0'}],
     is_admin: false,
     email: 'owner@zulip.com'
 };
@@ -17,6 +21,9 @@ global.patch_builtin('_', patched_underscore);
 
 
 var bot_data = require('js/bot_data.js');
+
+// Our startup logic should have added Bot 0 from page_params.
+assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
 
 (function () {
     var test_bot = {
