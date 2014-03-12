@@ -251,7 +251,7 @@ exports.update_messages = function update_messages(events) {
             var stream_name = stream_data.get_sub_by_id(event.stream_id).name;
             var compose_stream_name = compose.stream_name();
 
-            if (stream_name && compose_stream_name) {
+            if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
                     if (event.orig_subject === compose.subject()) {
                         compose.subject(event.subject);
