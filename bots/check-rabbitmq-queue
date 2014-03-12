@@ -50,7 +50,7 @@ now_struct = time.gmtime(now)
 # While we are sending digest emails, at 11am each weekday, the mail queues can
 # get backed up; don't alert on those.
 if not set(warn_queues) - set(("missedmessage_emails", "digest_emails")) and \
-        now_struct.tm_hour == 16 and now_struct.tm_min < 25:
+        now_struct.tm_hour == 15 and now_struct.tm_min < 25:
     status = 0
     print("%s|%s|%s|processing digests, not alerting on elevated mail queues" % (
             now, status, states[status]))
