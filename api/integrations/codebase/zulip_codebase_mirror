@@ -22,12 +22,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# The "codebase-mirror.py" script is run continuously, possibly on a work computer
-# or preferably on a server.
+# The "zulip_codebase_mirror" script is run continuously, possibly on a work
+# computer or preferably on a server.
 #
 # When restarted, it will attempt to pick up where it left off.
 #
-# You may need to install the python-requests library, as well as python-dateutil
+# python-dateutil is a dependency for this script.
 
 import requests
 import logging
@@ -37,7 +37,13 @@ import os
 
 from datetime import datetime, timedelta
 
-import dateutil.parser
+
+try:
+    import dateutil.parser
+except ImportError, e:
+    print >>sys.stderr, e
+    print >>sys.stderr, "Please install the python-dateutil package."
+    exit(1)
 
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_codebase_config as config
