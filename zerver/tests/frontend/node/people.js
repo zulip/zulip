@@ -15,6 +15,12 @@ set_global('admin', {
 });
 
 (function test_basics() {
+    var orig_person = {
+        email: 'orig@example.com',
+        full_name: 'Original'
+    };
+    people.add(orig_person);
+
     var full_name = 'Isaac Newton';
     var email = 'isaac@example.com';
     var isaac = {
@@ -51,9 +57,14 @@ set_global('admin', {
     people.update({email: email, full_name: 'The Godfather of Calculus'});
     assert.equal(global.page_params.fullname, 'The Godfather of Calculus');
 
-    people.remove(person);
+    // Now remove isaac
+    people.remove(isaac);
     person = people.get_by_email(email);
     assert(!person);
+
+    // The original person should still be there
+    person = people.get_by_email('orig@example.com');
+    assert.equal(person.full_name, 'Original');
 }());
 
 (function test_get_rest_of_realm() {
