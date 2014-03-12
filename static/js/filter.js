@@ -311,7 +311,7 @@ Filter.prototype = {
 
     has_operator: function Filter_has_operator(operator) {
         return _.any(this._operators, function (elem) {
-            if (elem.negated && (elem.operator !== 'search')) {
+            if (elem.negated && (!_.contains(['search', 'has'], elem.operator))) {
                 return false;
             }
             return elem.operator === operator;

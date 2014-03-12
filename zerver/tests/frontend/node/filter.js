@@ -78,7 +78,15 @@ function assert_same_operators(result, terms) {
     ];
     filter = new Filter(operators);
     assert(filter.has_operator('search'));
-    assert(! filter.can_apply_locally());
+    assert(!filter.can_apply_locally());
+
+    // Similar logic applies to negated "has" searches.
+    operators = [
+        {operator: 'has', operand: 'images', negated: true}
+    ];
+    filter = new Filter(operators);
+    assert(filter.has_operator('has'));
+    assert(!filter.can_apply_locally());
 }());
 
 (function test_new_style_operators() {
