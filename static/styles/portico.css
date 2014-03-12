@@ -282,26 +282,11 @@ img.screenshot{
     width: 100%;
     max-width: 600px;
     margin: auto;
-    background: #ddd, url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
-background: -moz-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%, rgba(0,0,0,0.2) 100%), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
-background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(54%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.2))), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
-background: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.2) 100%), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
-background: -o-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.2) 100%), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
-background: -ms-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.2) 100%), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
-background: radial-gradient(ellipse at center, rgba(0,0,0,0) 54%,rgba(0,0,0,0.2) 100%), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
-    background-repeat: no-repeat, repeat-x, repeat-x, repeat;
-    background-position: center, top, bottom, center;
-    background-size: 100%, 40px auto, 40px auto, auto;
-    border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
+    background: url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
+    background-repeat: repeat-x, repeat-x, repeat;
+    background-position: top, bottom, center;
+    background-size: 40px auto, 40px auto, auto;
     position: relative;
-    transform: rotate(359deg);
-   -webkit-transform: rotate(359deg);
-   -moz-transform: rotate(359deg);
-   -o-transform: rotate(359deg);
-   -ms-transform: rotate(359deg);
-   box-shadow: 0px 0px 6px rgba(0,0,0,0.5);
 }
 
 
@@ -402,18 +387,7 @@ input.text-error {
     position: fixed;
     z-index: 100;
     width: 100%;
-    background-color: #116353; /* Old browsers */
-    background: -moz-linear-gradient(top,  rgba(172,197,193,1) 0%, rgba(220,241,234,1) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(172,197,193,1)), color-stop(100%,rgba(220,241,234,1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  rgba(172,197,193,1) 0%,rgba(220,241,234,1) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  rgba(172,197,193,1) 0%,rgba(220,241,234,1) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  rgba(172,197,193,1) 0%,rgba(220,241,234,1) 100%); /* IE10+ */
-    background: linear-gradient(to bottom,  rgba(172,197,193,1) 0%,rgba(220,241,234,1) 100%); /* W3C */
-
-    background-image: url(/static/images/backgrounds/lightteal.png);
-    background-size: 180px 180px;
-
-    border-bottom: 1px solid #314945;
+    background-color: #7e98ad;
 }
 
 .footer {
@@ -424,16 +398,13 @@ input.text-error {
 
 .header-main .logo {
     display: block;
-    height: 30px;
-    padding-top: 10px;
-    padding-left: 5px;
     text-decoration: none;
     position: relative;
  }
 
  .header-main .logoimage {
-    width: 45px;
-    height: auto;
+    height: 40px;
+    width: auto;
  }
 
  .app {
@@ -442,17 +413,7 @@ input.text-error {
 }
 
 .main-headline {
-    background-color: #333;
-    background-image: url('/static/images/landing-page/hd-back2.jpg');
-    background-repeat: no-repeat;
-    background: -moz-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%, rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
-    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(54%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.6))), url('/static/images/landing-page/hd-back2.jpg'), #333;
-    background: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
-    background: -o-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
-    background: -ms-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 54%,rgba(0,0,0,0.6) 100%), url('/static/images/landing-page/hd-back2.jpg'), #333;
-    background-position: center, center, center;
-    background-size: auto, cover, auto;
+    background-color: white;
 }
 
 
@@ -484,32 +445,13 @@ input.text-error {
 }
 
 .feature-line.dark {
-    background: -moz-linear-gradient(top, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 100%), url('/static/images/backgrounds/greenfabric.png'); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.25)), color-stop(100%,rgba(0,0,0,0))), url('/static/images/backgrounds/greenfabric.png'); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, rgba(0,0,0,0.25) 0%,rgba(0,0,0,0) 100%), url('/static/images/backgrounds/greenfabric.png'); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(0,0,0,0.25) 0%,rgba(0,0,0,0) 100%), url('/static/images/backgrounds/greenfabric.png'); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(0,0,0,0.25) 0%,rgba(0,0,0,0) 100%), url('/static/images/backgrounds/greenfabric.png'); /* IE10+ */
-    background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%,rgba(0,0,0,0) 100%), url('/static/images/backgrounds/greenfabric.png'); /* W3C */
-    color: #fff;
-}
-
-.feature-line.dark a {
-    color: #ddf;
-    text-decoration: underline;
-}
-
-.feature-line.dark a:hover {
-    color: #fff;
+    background: #ddedf6;
+    color: black;
 }
 
 .feature-line.light {
-    background: -moz-linear-gradient(top, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 100%), url('/static/images/backgrounds/lightfabric.png'); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.15)), color-stop(100%,rgba(0,0,0,0))), url('/static/images/backgrounds/lightfabric.png'); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, rgba(0,0,0,0.15) 0%,rgba(0,0,0,0) 100%), url('/static/images/backgrounds/lightfabric.png'); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(0,0,0,0.15) 0%,rgba(0,0,0,0) 100%), url('/static/images/backgrounds/lightfabric.png'); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(0,0,0,0.15) 0%,rgba(0,0,0,0) 100%), url('/static/images/backgrounds/lightfabric.png'); /* IE10+ */
-    background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%,rgba(0,0,0,0) 100%), url('/static/images/backgrounds/lightfabric.png'); /* W3C */
-}
+    background: white;
+  }
 
 
 .feature-line .feature-text {
@@ -902,8 +844,7 @@ a.bottom-signup-button {
 .main-headline-text {
     display: block;
     text-align: center;
-    color: #fff;
-    text-shadow: 0px 0px 4px rgba(0,0,0,1);
+    color: black;
     font-weight: 300;
 }
 
@@ -915,7 +856,7 @@ a.bottom-signup-button {
 .main-headline-text .footnote {
     display: block;
     font-size: 18px;
-    color: #fff;
+    color: black;
     margin-top: 15px;
 }
 
@@ -923,7 +864,6 @@ a.bottom-signup-button {
     margin-top: 15px;
     margin-bottom: 15px;
     font-size: 22px;
-    box-shadow: 0px 0px 4px rgba(0,0,0,0.4);
 }
 
 .app-main,
@@ -956,20 +896,12 @@ a.bottom-signup-button {
 
 .footer-navigation li, .footer-navigation li a {
     display: inline-block;
-    color: #ddd;
     vertical-align: middle;
-}
-
-.footer-navigation li a {
-   -moz-transition: all 0.2s ease-in;
-   -webkit-transition: all 0.2s ease-in;
-   -o-transition: all 0.2s ease-in;
-    transition: all 0.2s ease-in;
+    color: black;
 }
 
 .footer-navigation li a:hover {
-    color: #fff;
-    text-decoration: none !important;
+    color: black;
 }
 
 .little-bullet {
@@ -994,7 +926,7 @@ a.bottom-signup-button {
     display: inline-block;
     padding-top: 10px;
     padding-right: 10px;
-    color: #cccccc;
+    color: black;
     font-weight: 300;
     font-size: 16px;
     margin-left: 10px;
@@ -1005,8 +937,7 @@ a.bottom-signup-button {
 }
 
 .top-links a:hover {
-    color: #ffffff;
-    text-decoration: none;
+    color: black;
 }
 
 .mixpanel-badge {

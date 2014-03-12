@@ -11,18 +11,18 @@
       </span>
       <span class="footnote">* It's also great for sharing cat pictures.</span>
         {% if not_enterprise %}
-          <a href="{% url 'signup' %}" class="main-signup-button btn btn-large btn-info">Sign up now, for free!</a>
+          <a href="{% url 'signup' %}" class="main-signup-button btn btn-large btn-primary">Sign up now, for free!</a>
         {% elif only_sso %}
-          <a href="{% url 'login-sso' %}" class="main-signup-button btn btn-large btn-info">Log in now!</a>
+          <a href="{% url 'login-sso' %}" class="main-signup-button btn btn-large btn-primary">Log in now!</a>
         {% else %}
-          <a href="{% url 'register' %}" class="main-signup-button btn btn-large btn-info">Register now!</a>
+          <a href="{% url 'register' %}" class="main-signup-button btn btn-large btn-primary">Register now!</a>
         {% endif %}
     </div>
     <img src="/static/images/landing-page/laptop-screenshot.png" class="main-image" alt="Screenshot of Zulip" />
   </div>
 </div>
 
-<div class="app feature-line light">
+<div class="app feature-line dark">
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
@@ -43,7 +43,7 @@
   </div>
 </div>
 
-<div class="app feature-line dark">
+<div class="app feature-line light">
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
@@ -64,7 +64,7 @@
   </div>
 </div>
 
-<div class="app feature-line light">
+<div class="app feature-line dark">
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
@@ -82,7 +82,7 @@
   </div>
 </div>
 
-<div class="app feature-line dark">
+<div class="app feature-line light">
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
@@ -102,7 +102,7 @@
   </div>
 </div>
 
-<div class="app feature-line light">
+<div class="app feature-line dark">
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
@@ -120,7 +120,7 @@
   </div>
 </div>
 
-<div class="app feature-line dark">
+<div class="app feature-line light">
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
@@ -138,7 +138,7 @@
   </div>
 </div>
 
-<div class="app feature-line light">
+<div class="app feature-line dark">
   <div class="app-main feature-line-container">
    <div class="platform-text">
     <span class="tagline">
@@ -174,14 +174,14 @@
   </div>
 </div>
 
-<div class="app feature-line dark">
+<div class="app feature-line light">
   <div class="app-main feature-line-container centered-content">
     {% if not_enterprise %}
-      <a href="{% url 'signup' %}" class="bottom-signup-button btn btn-large btn-info">Sign up now</a>
+      <a href="{% url 'signup' %}" class="bottom-signup-button btn btn-large btn-primary">Sign up now</a>
     {% elif only_sso %}
-      <a href="{% url 'login-sso' %}" class="bottom-signup-button btn btn-large btn-info">Log in now</a>
+      <a href="{% url 'login-sso' %}" class="bottom-signup-button btn btn-large btn-primary">Log in now</a>
     {% else %}
-      <a href="{% url 'register' %}" class="bottom-signup-button btn btn-large btn-info">Register now</a>
+      <a href="{% url 'register' %}" class="bottom-signup-button btn btn-large btn-primary">Register now</a>
     {% endif %}
   </div>
 </div>
