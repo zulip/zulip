@@ -39,10 +39,6 @@ var bot_data = (function () {
         send_change_event();
     };
 
-    exports.get_all = function bot_data__get_all() {
-        return _.values(bots);
-    };
-
     exports.get_editable = function bots_data__get_editable() {
         return _.filter(bots, function (bot) { return bot.can_admin; });
     };
