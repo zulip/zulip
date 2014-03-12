@@ -84,9 +84,15 @@ def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
     # and action is a function that acts on a QuerySet
 
     all_objects = orm['zerver.Message'].objects
-    min_id = all_objects.all().order_by('id')[0].id
+
+    try:
+        min_id = all_objects.all().order_by('id')[0].id
+    except IndexError:
+        print 'There is no work to do'
+        return
+
     max_id = all_objects.all().order_by('-id')[0].id
-    print "max_id = %s" % (max_id, )
+    print "max_id = %d" % (max_id,)
     overhead = int((max_id + 1 - min_id)/ batch_size * sleep / 60)
     print "Expect this to take at least %d minutes, just due to sleeps alone." % (overhead,)
 
