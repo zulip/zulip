@@ -234,6 +234,11 @@ exports.update_messages = function update_messages(events) {
             msg.content = event.rendered_content;
         }
 
+        var row = current_msg_list.get_row(event.message_id);
+        if (row.length > 0) {
+            message_edit.end(row);
+        }
+
         if (event.subject !== undefined) {
             // A topic edit may affect multiple messages, listed in
             // event.message_ids. event.message_id is still the first message
@@ -271,11 +276,6 @@ exports.update_messages = function update_messages(events) {
                 // be called after we update msg.subject
                 exports.process_message_for_recent_subjects(msg);
             });
-        }
-
-        var row = current_msg_list.get_row(event.message_id);
-        if (row.length > 0) {
-            message_edit.end(row);
         }
 
         msg.last_edit_timestamp = event.edit_timestamp;
