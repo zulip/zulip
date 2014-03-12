@@ -718,9 +718,9 @@ td.pointer {
     line-height: 0px;
     text-align: right;
     width: 45px;
-    position: relative;
-    right: 11px;
-    padding-bottom: 10px;
+    position: absolute;
+    left: 0px;
+    top: 16px;
 }
 
 .include-sender .message_edit_notice:before {
@@ -738,7 +738,7 @@ td.pointer {
 .message_time {
     display: block;
     font-size: 11px;
-    color: #bbbbbb;
+    color: #a1a1a1;
     vertical-align: middle;
     padding: 1px;
     font-weight: 300;
@@ -1361,6 +1361,7 @@ div.focused_table {
     display: block;
     position: relative;
 }
+
 .message_edit_content {
     line-height: 18px;
 }
