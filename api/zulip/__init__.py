@@ -48,24 +48,35 @@ requests_json_is_function = callable(requests.Response.json)
 API_VERSTRING = "v1/"
 
 class CountingBackoff(object):
-    def __init__(self, maximum_retries=10):
+    def __init__(self, maximum_retries=10, timeout_success_equivalent=None):
         self.number_of_retries = 0
         self.maximum_retries = maximum_retries
+        self.timeout_success_equivalent = timeout_success_equivalent
+        self.last_attempt_time = 0
 
     def keep_going(self):
+        self._check_success_timeout()
         return self.number_of_retries < self.maximum_retries
 
     def succeed(self):
         self.number_of_retries = 0
+        self.last_attempt_time = time.time()
 
     def fail(self):
+        self._check_success_timeout()
         self.number_of_retries = min(self.number_of_retries + 1,
                                      self.maximum_retries)
+        self.last_attempt_time = time.time()
+
+    def _check_success_timeout(self):
+        if (self.timeout_success_equivalent is not None
+            and self.last_attempt_time != 0
+            and time.time() - self.last_attempt_time > self.timeout_success_equivalent):
+            self.number_of_retries = 0
 
 class RandomExponentialBackoff(CountingBackoff):
     def fail(self):
-        self.number_of_retries = min(self.number_of_retries + 1,
-                                     self.maximum_retries)
+        super(RandomExponentialBackoff, self).fail()
         # Exponential growth with ratio sqrt(2); compute random delay
         # between x and 2x where x is growing exponentially
         delay_scale = int(2 ** (self.number_of_retries / 2.0 - 1)) + 1
