@@ -246,7 +246,7 @@ MessageList.prototype = {
 
         var closest = this._lower_bound(id);
 
-        if (id === items[closest].id) {
+        if (closest < items.length && id === items[closest].id) {
             return items[closest].id;
         }
 
