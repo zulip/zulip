@@ -610,6 +610,10 @@ MessageList.prototype = {
                     self._all_items.sort(message_sort_func);
                 }
                 self.view.rerender_preserving_scrolltop();
+
+                if (self._selected_id !== -1) {
+                    self.select_id(self._selected_id);
+                }
             }
         }, 0);
     }
