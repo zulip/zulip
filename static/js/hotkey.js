@@ -180,8 +180,8 @@ function process_hotkey(e) {
         }
     }
 
-    // Process hotkeys specially when in an input, textarea, or send button
-    if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {
+    // Process hotkeys specially when in an input, select, textarea, or send button
+    if ($('input:focus,select:focus,textarea:focus,#compose-send-button:focus').length > 0) {
         if (event_name === 'escape') {
             // If one of our typeaheads is open, do nothing so that the Esc
             // will go to close it
