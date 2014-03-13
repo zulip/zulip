@@ -393,7 +393,6 @@ input.text-error {
 .footer {
     position: static;
     height: 54px;
-    line-height: 54px;
 }
 
 .header-main .logo {
@@ -895,6 +894,7 @@ a.bottom-signup-button {
 
 .footer-navigation {
     list-style: none;
+    padding-top: 16px;
 }
 
 .footer-navigation li, .footer-navigation li a {
@@ -945,7 +945,6 @@ a.bottom-signup-button {
 
 .mixpanel-badge {
     width: 85px;
-    line-height: 54px;
     float: right;
     margin-right: 10px;
 }
