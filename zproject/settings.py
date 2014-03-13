@@ -547,6 +547,7 @@ JS_SPECS = {
             'js/floating_recipient_bar.js',
             'js/ui.js',
             'js/scroll_bar.js',
+            'js/gear_menu.js',
             'js/popovers.js',
             'js/typeahead_helper.js',
             'js/search_suggestion.js',
