@@ -62,7 +62,7 @@ exports.save = function (row) {
             }
         },
         error: function (xhr, error_type, xhn) {
-            var message = util.xhr_error_message("Error saving edit", xhr);
+            var message = channel.xhr_error_message("Error saving edit", xhr);
             row.find(".edit_error").text(message).show();
         }
     });

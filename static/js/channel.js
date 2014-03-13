@@ -110,6 +110,15 @@ exports.patch = function (options) {
     return exports.post(options, options.idempotent);
 };
 
+exports.xhr_error_message = function (message, xhr) {
+    if (xhr.status.toString().charAt(0) === "4") {
+        // Only display the error response for 4XX, where we've crafted
+        // a nice response.
+        message += ": " + $.parseJSON(xhr.responseText).msg;
+    }
+    return message;
+};
+
 return exports;
 
 }());

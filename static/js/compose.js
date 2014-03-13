@@ -373,7 +373,7 @@ function send_message_ajax(request, success, error) {
                 return;
             }
 
-            var response = util.xhr_error_message("Error sending message", xhr);
+            var response = channel.xhr_error_message("Error sending message", xhr);
             error(response);
         }
     });
