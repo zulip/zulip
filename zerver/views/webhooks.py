@@ -93,7 +93,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
     elif event == 'issue_comment':
         # Comments on both issues and pull requests come in as issue_comment events
         issue = payload['issue']
-        if issue['pull_request']['diff_url'] is None:
+        if 'pull_request' not in issue or issue['pull_request']['diff_url'] is None:
             # It's an issues comment
             target_stream = issue_stream
             noun = 'issue'
