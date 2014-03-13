@@ -85,6 +85,20 @@ exports.recipient_from_group = function (message_group) {
     return message_store.get(exports.id($(message_group).children('.message_row').first().expectOne()));
 };
 
+exports.id_for_recipient_row = function (recipient_row) {
+    // A recipient row can be either a normal recipient row, or
+    // the FRB, which is a fake recipient row. If it's a FRB, it has
+    // a 'zid' property that stores the message id it is directly over
+    var msg_row = exports.first_message_in_group(recipient_row);
+    if (msg_row.length === 0) {
+        // If we're narrowing from the FRB, take the msg id
+        // directly from it
+        return exports.id(recipient_row);
+    } else {
+        return exports.id(msg_row);
+    }
+};
+
 return exports;
 
 }());
