@@ -1,4 +1,4 @@
-<div zid="{{id}}" id="{{dom_id}}"
+<div zid="{{id}}" id="{{table_name}}{{id}}"
   class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#unread}} unread{{/unread}} {{#if local_id}}local{{/if}} selectable_row">
   <div class="unread_marker"><div class="unread-marker-fill"></div></div>
   <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}"

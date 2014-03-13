@@ -206,7 +206,6 @@ MessageListView.prototype = {
 
             self._add_msg_timestring(message);
 
-            message.dom_id = table_name + message.id;
             message.small_avatar_url = ui.small_avatar_url(message);
             if (message.stream !== undefined) {
                 message.background_color = stream_data.get_color(message.stream);
@@ -254,7 +253,8 @@ MessageListView.prototype = {
 
         var rendered_groups = $(templates.render('message_group', {
             message_groups: new_message_groups,
-            use_match_properties: self.list.filter.is_search()
+            use_match_properties: self.list.filter.is_search(),
+            table_name: self.table_name
         }));
 
         var rendered_messages = [];
@@ -623,14 +623,7 @@ MessageListView.prototype = {
         // Re-render just this one message
         this._add_msg_timestring(message);
 
-        // We have this horrible situation:
-        // 1. We share message objects between all message lists
-        // 2. Message objects have a dom_id that corresponds to **one** of the manifestations of this message (home, narrow, etc) - ugh
-        // 3. We want to re-render, when updating a message, in all views---even those that are not currently visible,
-        //    but the dom_id of the message in this case is **not** the correct dom_id to use when re-rendering
-        //
-        // As a result, we make sure to use the proper dom_id when rendering here
-        var msg_to_render = _.extend(message, {dom_id: this.table_name + message.id});
+        var msg_to_render = _.extend(message, {table_name: this.table_name});
         var rendered_msg = $(templates.render('single_message', msg_to_render));
         row.html(rendered_msg.html());
 
@@ -645,8 +638,6 @@ MessageListView.prototype = {
         var self = this;
 
         // Only re-render the messages that are in this narrow
-        // We want to grab the message objects that belong
-        // to this list to get the right dom_id etc.
         var own_messages = _.map(messages, function (message) {
             return self.list.get(message.id);
         });
