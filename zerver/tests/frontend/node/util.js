@@ -3,6 +3,7 @@ add_dependencies({
 });
 
 var util = global.util;
+var _ = global._;
 
 (function test_CachedValue() {
     var x = 5;
@@ -44,25 +45,43 @@ var util = global.util;
 }());
 
 (function test_same_recipient() {
-    assert(util.same_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'Bar'},
-        {type: 'stream', stream: 'fOO', subject: 'bar'}
+    _.each([util.same_recipient, util.same_major_recipient], function (same) {
+        assert(same(
+            {type: 'stream', stream: 'Foo', subject: 'Bar'},
+            {type: 'stream', stream: 'fOO', subject: 'bar'}
+        ));
+
+        assert(!same(
+            {type: 'stream', stream: 'Foo', subject: 'Bar'},
+            {type: 'stream', stream: 'yo', subject: 'whatever'}
+        ));
+
+        assert(same(
+            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
+            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}
+        ));
+
+        assert(!same(
+            {type: 'private', reply_to: 'fred@zulip.com'},
+            {type: 'private', reply_to: 'Fred@zulip.com'}
+        ));
+
+        assert(!same(
+            {type: 'stream', stream: 'Foo', subject: 'Bar'},
+            {type: 'private', reply_to: 'Fred@zulip.com'}
+        ));
+    });
+
+    assert(util.same_major_recipient(
+        {type: 'stream', stream: 'Foo', subject: 'sub1'},
+        {type: 'stream', stream: 'fOO', subject: 'sub2'}
     ));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'Bar'},
-        {type: 'stream', stream: 'yo', subject: 'whatever'}
+        {type: 'stream', stream: 'Foo', subject: 'sub1'},
+        {type: 'stream', stream: 'fOO', subject: 'sub2'}
     ));
 
-    assert(util.same_recipient(
-        {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
-        {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}
-    ));
-
-    assert(!util.same_recipient(
-        {type: 'private', reply_to: 'fred@zulip.com'},
-        {type: 'private', reply_to: 'Fred@zulip.com'}
-    ));
 }());
 
 (function test_robust_uri_decode() {
