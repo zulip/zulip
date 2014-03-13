@@ -581,6 +581,9 @@ MessageListView.prototype = {
         // same location as it would have been before we
         // re-rendered.
         if (selected_in_view) {
+            if (this.selected_row().length === 0 && this.list.selected_id() > -1) {
+                this.list.select_id(this.list.selected_id(), {use_closest: true});
+            }
             // Must get this.list.selected_row() again since it is now a new DOM element
             viewport.scrollTop(this.selected_row().offset().top + scrolltop_offset);
         }

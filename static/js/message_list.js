@@ -446,6 +446,7 @@ MessageList.prototype = {
             if (stored_message !== undefined) {
                 delete self._hash[stored_message];
             }
+            delete self._local_only[message.id];
         });
 
         var msg_ids_to_remove = {};
