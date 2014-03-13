@@ -413,7 +413,10 @@ input.text-error {
 }
 
 .main-headline {
-    background-color: white;
+    background-color: #bad2fa;
+    background: url("/static/images/landing-page/gg.jpg");
+    background-position: center;
+    background-size: cover;
 }
 
 
@@ -573,7 +576,7 @@ a.bottom-signup-button {
 .register-page-container,
 .portico-page-container,
 .api-page-container {
-    padding-top: 41px !important;
+    padding-top: 40px !important;
 }
 
 .hello-footer {
