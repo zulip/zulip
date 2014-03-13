@@ -570,6 +570,12 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
             new_values = change["new_values"]
             if "current_state" in old_values and "current_state" in new_values:
                 content += " from **%s** to **%s**" % (old_values["current_state"], new_values["current_state"])
+    elif event_type in ["task_create_activity", "comment_delete_activity",
+                        "task_delete_activity", "task_update_activity",
+                        "story_move_from_project_activity", "story_delete_activity",
+                        "story_move_into_project_activity"]:
+        # Known but unsupported Pivotal event types
+        pass
     else:
         logging.warning("Unknown Pivotal event type: %s" % (event_type,))
 
