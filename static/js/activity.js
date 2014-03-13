@@ -10,7 +10,9 @@ var DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 /* Time between keep-alive pings */
 var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
-/* Mark users as offline after 140 seconds since their last checkin */
+/* Mark users as offline after 140 seconds since their last checkin,
+ * Keep in sync with zerver/tornado_callbacks.py:receiver_is_idle
+ */
 var OFFLINE_THRESHOLD_SECS = 140;
 
 // Testing

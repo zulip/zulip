@@ -78,23 +78,28 @@ def receiver_is_idle(user_profile_id, realm_presences):
     if realm_presences is None or not user_profile_id in realm_presences:
         return off_zulip
 
-    # If the most recent online status from a user is >1hr in the past, we notify
-    # them regardless of whether or not they have an open window
+    # We want to find the newest "active" presence entity and compare that to the
+    # activity expiry threshold.
     user_presence = realm_presences[user_profile_id]
-    idle_too_long = False
-    newest = None
+    latest_active_timestamp = None
+    idle = False
+
     for client, status in user_presence.iteritems():
-        if newest is None or status['timestamp'] > newest['timestamp']:
-            newest = status
+        if (latest_active_timestamp is None or status['timestamp'] > latest_active_timestamp) and \
+                status['status'] == 'active':
+            latest_active_timestamp = status['timestamp']
 
-    update_time = timestamp_to_datetime(newest['timestamp'])
-    if now() - update_time > datetime.timedelta(hours=NOTIFY_AFTER_IDLE_HOURS):
-        idle_too_long = True
+    if latest_active_timestamp is None:
+        idle = True
+    else:
+        active_datetime = timestamp_to_datetime(latest_active_timestamp)
+        # 140 seconds is consistent with activity.js:OFFLINE_THRESHOLD_SECS
+        idle = now() - active_datetime > datetime.timedelta(seconds=140)
 
-    return off_zulip or idle_too_long
+    return off_zulip or idle
 
 def process_message_event(event_template, users):
-    realm_presences = event_template['presences']
+    realm_presences = {int(k): v for k, v in event_template['presences'].items()}
     sender_queue_id = event_template.get('sender_queue_id', None)
     if "message_dict_markdown" in event_template:
         message_dict_markdown = event_template['message_dict_markdown']
