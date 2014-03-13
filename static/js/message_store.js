@@ -229,7 +229,7 @@ exports.update_messages = function update_messages(events) {
         msg.mentioned = event.flags.indexOf("mentioned") !== -1 ||
                         event.flags.indexOf("wildcard_mentioned") !== -1;
 
-        ui.un_cache_message_content_height(msg.id);
+        condense.un_cache_message_content_height(msg.id);
 
         if (event.rendered_content !== undefined) {
             msg.content = event.rendered_content;

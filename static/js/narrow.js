@@ -427,7 +427,7 @@ exports.deactivate = function () {
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
     current_msg_list = home_msg_list;
-    ui.condense_and_collapse($("#zhome tr.message_row"));
+    condense.condense_and_collapse($("#zhome tr.message_row"));
 
     $('#search_query').val('');
     message_store.reset_load_more_status();

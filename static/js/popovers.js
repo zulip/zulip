@@ -478,9 +478,9 @@ exports.register_click_handlers = function () {
         popovers.hide_actions_popover();
 
         if (message.collapsed) {
-            ui.uncollapse(row);
+            condense.uncollapse(row);
         } else {
-            ui.collapse(row);
+            condense.collapse(row);
         }
 
         e.stopPropagation();

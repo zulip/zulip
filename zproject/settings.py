@@ -542,6 +542,7 @@ JS_SPECS = {
             'js/stream_data.js',
             'js/subs.js',
             'js/message_edit.js',
+            'js/condense.js',
             'js/resize.js',
             'js/ui.js',
             'js/scroll_bar.js',

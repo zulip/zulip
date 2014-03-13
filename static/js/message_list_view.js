@@ -368,7 +368,7 @@ MessageListView.prototype = {
         // getBoundingClientRect to work.
         // Also, the list must actually be visible.
         if (list === current_msg_list) {
-            ui.condense_and_collapse(rendered_messages);
+            condense.condense_and_collapse(rendered_messages);
         }
 
         // Must happen after anything that changes the height of messages has

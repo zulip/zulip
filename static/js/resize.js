@@ -237,7 +237,7 @@ exports.handler = function (e) {
 
     if (new_width !== _old_width) {
         _old_width = new_width;
-        ui.clear_message_content_height_cache();
+        condense.clear_message_content_height_cache();
     }
 
     popovers.hide_all();
