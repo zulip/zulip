@@ -732,7 +732,7 @@ td.pointer {
 }
 
 .include-sender .message_time {
-    top: 20px;
+    top: -4px;
 }
 
 .message_time {
@@ -764,7 +764,7 @@ td.pointer {
 }
 
 .include-sender .message_controls {
-    top: 22px;
+    top: -3px;
 }
 
 .message_data {
