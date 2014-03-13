@@ -135,14 +135,6 @@ exports.same_recipient = function util_same_recipient(a, b) {
     return false;
 };
 
-exports.recipient_key = function (message) {
-    if (message.type === 'stream') {
-        return message.stream.toLowerCase() + ">" + message.subject.toLowerCase();
-    } else {
-        return exports.normalize_recipients(message.reply_to);
-    }
-};
-
 exports.same_sender = function util_same_sender(a, b) {
     return ((a !== undefined) && (b !== undefined) &&
             (a.sender_email === b.sender_email));

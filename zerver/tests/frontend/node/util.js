@@ -67,20 +67,6 @@ var util = global.util;
     ));
 }());
 
-(function test_recipient_key() {
-    var message;
-
-    message = {type: 'stream', stream: 'Foo', subject: 'BAR'};
-    assert.equal(util.recipient_key(message), 'foo>bar');
-
-    global.$.trim = function (s) {
-        return s.trim();
-    };
-    message = {type: 'private', reply_to: ' bob@example.com, alice@example.com '};
-    assert.equal(util.recipient_key(message), 'alice@example.com,bob@example.com');
-
-}());
-
 (function test_robust_uri_decode() {
     assert.equal(util.robust_uri_decode('xxx%3Ayyy'), 'xxx:yyy');
     assert.equal(util.robust_uri_decode('xxx%3'), 'xxx');
