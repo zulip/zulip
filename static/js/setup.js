@@ -36,4 +36,16 @@ $(function () {
         // zxcvbn.js is pretty big, and is only needed on password change, so load it asynchronously.
         $.getScript('/static/third/zxcvbn/zxcvbn.js');
     }
+
+    if (typeof $ !== 'undefined') {
+        $.fn.expectOne = function () {
+            if (blueslip && this.length !== 1) {
+                blueslip.error("Expected one element in jQuery set, " + this.length + " found");
+            }
+            return this;
+        };
+    }
+
 });
+
+

@@ -241,15 +241,6 @@ exports.enforce_arity = function util_enforce_arity(func) {
     };
 };
 
-if (typeof $ !== 'undefined') {
-    $.fn.expectOne = function () {
-        if (blueslip && this.length !== 1) {
-            blueslip.error("Expected one element in jQuery set, " + this.length + " found");
-        }
-        return this;
-    };
-}
-
 exports.execute_early = function (func) {
     if (page_params.test_suite) {
         $(document).one('phantom_page_loaded', func);

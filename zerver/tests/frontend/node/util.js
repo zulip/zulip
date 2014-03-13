@@ -2,8 +2,6 @@ add_dependencies({
     util: 'js/util.js'
 });
 
-set_global('$', {});
-
 var util = global.util;
 
 (function test_CachedValue() {
