@@ -140,8 +140,8 @@ function cleanup_before_reload() {
         // Abort all pending ajax requests`
         channel.abort_all();
 
-        // Free all of the DOM
-        $("html").empty();
+        // Free all the DOM in the main_div
+        $("#main_div").empty();
 
         // Now that the DOM is empty our beforeunload callback has been
         // removed.
