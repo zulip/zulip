@@ -426,6 +426,9 @@ def api_jira_webhook(request, user_profile):
         if comment != '':
             comment = convert_jira_markup(comment, user_profile.realm)
             content += "\n%s\n" % (comment,)
+    elif event in ['jira:worklog_updated']:
+        # We ignore these event types
+        return json_success()
     elif 'transition' in payload:
         from_status = get_in(payload, ['transition', 'from_status'])
         to_status = get_in(payload, ['transition', 'to_status'])
@@ -433,7 +436,10 @@ def api_jira_webhook(request, user_profile):
     else:
         # Unknown event type
         if not settings.TEST_SUITE:
-            logging.warning("Got JIRA event type we don't understand: %s" % (event,))
+            if event is None:
+                logging.warning("Got JIRA event with None event type: %s" % (payload,))
+            else:
+                logging.warning("Got JIRA event type we don't understand: %s" % (event,))
         return json_error("Unknown JIRA event type")
 
     check_send_message(user_profile, get_client("ZulipJIRAWebhook"), "stream",
