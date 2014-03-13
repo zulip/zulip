@@ -544,6 +544,7 @@ JS_SPECS = {
             'js/message_edit.js',
             'js/resize.js',
             'js/ui.js',
+            'js/scroll_bar.js',
             'js/popovers.js',
             'js/typeahead_helper.js',
             'js/search_suggestion.js',
