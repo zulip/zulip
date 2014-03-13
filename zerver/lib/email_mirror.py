@@ -10,7 +10,7 @@ from django.conf import settings
 from zerver.lib.actions import decode_email_address, internal_send_message
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.upload import upload_message_image
-from zerver.models import Stream
+from zerver.models import Stream, get_user_profile_by_email
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +99,7 @@ def filter_footer(text):
     return text.partition("--")[0].strip()
 
 def extract_and_upload_attachments(message, realm):
+    user_profile = get_user_profile_by_email(settings.EMAIL_MIRROR_BOT)
     attachment_links = []
 
     payload = message.get_payload()
@@ -112,7 +113,7 @@ def extract_and_upload_attachments(message, realm):
         if filename:
             s3_url = upload_message_image(filename, content_type,
                                           part.get_payload(decode=True),
-                                          settings.EMAIL_GATEWAY_BOT,
+                                          user_profile,
                                           target_realm=realm)
             formatted_link = "[%s](%s)" % (filename, s3_url)
             attachment_links.append(formatted_link)
