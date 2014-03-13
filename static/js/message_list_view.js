@@ -635,7 +635,7 @@ MessageListView.prototype = {
         row.html(rendered_msg.html());
 
         // Make sure to take this rendered row, not the element from the dom (which might not be the current list)
-        this._rows[message.id] = row;
+        this._rows[message.id] = row[0];
         if (was_selected) {
             this.list.select_id(message.id);
         }
