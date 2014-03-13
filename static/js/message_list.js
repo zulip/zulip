@@ -569,7 +569,9 @@ MessageList.prototype = {
 
         if (this._hash.hasOwnProperty(old_id)) {
             var msg = this._hash[old_id];
-            msg.dom_id = this.table_name + msg.id;
+            if (current_msg_list === this) {
+                msg.dom_id = this.table_name + msg.id;
+            }
             delete this._hash[old_id];
             this._hash[new_id] = msg;
         } else {

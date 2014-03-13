@@ -622,9 +622,20 @@ MessageListView.prototype = {
 
         // Re-render just this one message
         this._add_msg_timestring(message);
-        var rendered_msg = $(templates.render('single_message', message));
+
+        // We have this horrible situation:
+        // 1. We share message objects between all message lists
+        // 2. Message objects have a dom_id that corresponds to **one** of the manifestations of this message (home, narrow, etc) - ugh
+        // 3. We want to re-render, when updating a message, in all views---even those that are not currently visible,
+        //    but the dom_id of the message in this case is **not** the correct dom_id to use when re-rendering
+        //
+        // As a result, we make sure to use the proper dom_id when rendering here
+        var msg_to_render = _.extend(message, {dom_id: this.table_name + message.id});
+        var rendered_msg = $(templates.render('single_message', msg_to_render));
         row.html(rendered_msg.html());
-        this._rows[message.id] = document.getElementById(message.dom_id);
+
+        // Make sure to take this rendered row, not the element from the dom (which might not be the current list)
+        this._rows[message.id] = row;
         if (was_selected) {
             this.list.select_id(message.id);
         }
