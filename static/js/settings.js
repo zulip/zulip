@@ -424,7 +424,7 @@ exports.setup_page = function () {
         });
 
         var spinner = $("#upload_avatar_spinner").expectOne();
-        util.make_loading_indicator(spinner, {text: 'Uploading avatar.'});
+        loading.make_indicator(spinner, {text: 'Uploading avatar.'});
 
         channel.post({
             url: '/json/set_avatar',
@@ -433,7 +433,7 @@ exports.setup_page = function () {
             processData: false,
             contentType: false,
             success: function (data) {
-                util.destroy_loading_indicator($("#upload_avatar_spinner"));
+                loading.destroy_indicator($("#upload_avatar_spinner"));
                 var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
                 $("#user-settings-avatar").expectOne().attr("src", url);
                 exports.avatar_stamp += 1;
@@ -599,7 +599,7 @@ exports.setup_page = function () {
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
                 });
-                util.make_loading_indicator(spinner, {text: 'Editing bot'});
+                loading.make_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
                 channel.patch({
                     url: '/json/bots/' + encodeURIComponent(email),
@@ -608,7 +608,7 @@ exports.setup_page = function () {
                     processData: false,
                     contentType: false,
                     success: function (data) {
-                        util.destroy_loading_indicator(spinner);
+                        loading.destroy_indicator(spinner);
                         errors.hide();
                         edit_button.show();
                         show_row_again();
@@ -622,7 +622,7 @@ exports.setup_page = function () {
                         }
                     },
                     error: function (xhr, error_type, exn) {
-                        util.destroy_loading_indicator(spinner);
+                        loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
                     }

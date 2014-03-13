@@ -151,7 +151,7 @@ exports.add_messages = function add_messages(messages, msg_list, opts) {
 
     opts = _.extend({messages_are_new: false, delay_render: false}, opts);
 
-    util.destroy_loading_indicator($('#page_loading_indicator'));
+    loading.destroy_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
 
     msg_list.add_messages(messages, opts);
@@ -414,7 +414,7 @@ function get_old_messages_success(data, opts) {
         // Don't actually process the messages until the tutorial is
         // finished, but do disable the loading indicator so it isn't
         // distracting in the background
-        util.destroy_loading_indicator($('#page_loading_indicator'));
+        loading.destroy_indicator($('#page_loading_indicator'));
         tutorial.defer(function () { get_old_messages_success(data, opts); });
         return;
     }

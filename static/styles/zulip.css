@@ -2210,7 +2210,7 @@ div.floating_recipient {
 
 .loading_indicator_spinner {
     /* If you change these, make sure to adjust the constants in
-     * make_loading_indicator as well */
+     * loading.make_indicator as well */
     height: 38px;
     width: 38px;
     float: left;
@@ -2218,7 +2218,7 @@ div.floating_recipient {
 
 .loading_indicator_text {
     /* If you change these, make sure to adjust the constants in
-     * make_loading_indicator as well */
+     * loading.make_indicator as well */
     margin-left: 20px;
     font-size:   33px;
     font-weight: bold;

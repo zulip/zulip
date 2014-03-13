@@ -5,7 +5,7 @@ $(function () {
     // Display loading indicator.  This disappears after the first
     // get_events completes.
     if (page_params.have_initial_messages && !page_params.needs_tutorial) {
-        util.make_loading_indicator($('#page_loading_indicator'), {text: 'Loading...'});
+        loading.make_indicator($('#page_loading_indicator'), {text: 'Loading...'});
     } else if (!page_params.needs_tutorial) {
         util.show_first_run_message();
     }

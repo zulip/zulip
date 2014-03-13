@@ -12,7 +12,7 @@ exports.show_or_hide_menu_item = function () {
 };
 
 function failed_listing_users(xhr, error) {
-    util.destroy_loading_indicator($('#subs_page_loading_indicator'));
+    loading.destroy_indicator($('#subs_page_loading_indicator'));
     ui.report_error("Error listing users or bots", xhr, $("#administration-status"));
 }
 
@@ -56,9 +56,9 @@ function populate_users (realm_people_data) {
     _.each(deactivated_users, function (user) {
         deactivated_users_table.append(templates.render("admin_user_list", {user: user}));
     });
-    util.destroy_loading_indicator($('#admin_page_users_loading_indicator'));
-    util.destroy_loading_indicator($('#admin_page_bots_loading_indicator'));
-    util.destroy_loading_indicator($('#admin_page_deactivated_users_loading_indicator'));
+    loading.destroy_indicator($('#admin_page_users_loading_indicator'));
+    loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
+    loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
 }
 
 function populate_streams (streams_data) {
@@ -67,7 +67,7 @@ function populate_streams (streams_data) {
     _.each(streams_data.streams, function (stream) {
         streams_table.append(templates.render("admin_streams_list", {stream: stream}));
     });
-    util.destroy_loading_indicator($('#admin_page_streams_loading_indicator'));
+    loading.destroy_indicator($('#admin_page_streams_loading_indicator'));
 }
 
 exports.setup_page = function () {
@@ -76,10 +76,10 @@ exports.setup_page = function () {
     $("#administration-status").hide();
 
     // create loading indicators
-    util.make_loading_indicator($('#admin_page_users_loading_indicator'));
-    util.make_loading_indicator($('#admin_page_bots_loading_indicator'));
-    util.make_loading_indicator($('#admin_page_streams_loading_indicator'));
-    util.make_loading_indicator($('#admin_page_deactivated_users_loading_indicator'));
+    loading.make_indicator($('#admin_page_users_loading_indicator'));
+    loading.make_indicator($('#admin_page_bots_loading_indicator'));
+    loading.make_indicator($('#admin_page_streams_loading_indicator'));
+    loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));
 
     // Populate users and bots tables
     channel.get({

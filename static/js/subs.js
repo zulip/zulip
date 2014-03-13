@@ -426,7 +426,7 @@ function populate_subscriptions(subs, subscribed) {
 }
 
 exports.setup_page = function () {
-    util.make_loading_indicator($('#subs_page_loading_indicator'));
+    loading.make_indicator($('#subs_page_loading_indicator'));
 
     function populate_and_fill(public_streams) {
 
@@ -482,12 +482,12 @@ exports.setup_page = function () {
             add_email_hint(row);
         });
 
-        util.destroy_loading_indicator($('#subs_page_loading_indicator'));
+        loading.destroy_indicator($('#subs_page_loading_indicator'));
         $(document).trigger($.Event('subs_page_loaded.zulip'));
     }
 
     function failed_listing(xhr, error) {
-        util.destroy_loading_indicator($('#subs_page_loading_indicator'));
+        loading.destroy_indicator($('#subs_page_loading_indicator'));
         ui.report_error("Error listing streams or subscriptions", xhr, $("#subscriptions-status"));
     }
 
@@ -1040,14 +1040,14 @@ $(function () {
         error_elem.addClass('hide');
         list.empty();
 
-        util.make_loading_indicator(indicator_elem);
+        loading.make_indicator(indicator_elem);
 
         channel.post({
             url: "/json/get_subscribers",
             idempotent: true,
             data: {stream: stream},
             success: function (data) {
-                util.destroy_loading_indicator(indicator_elem);
+                loading.destroy_indicator(indicator_elem);
                 var subscribers = _.map(data.subscribers, function (elem) {
                     var person = people.get_by_email(elem);
                     if (person === undefined) {
@@ -1063,7 +1063,7 @@ $(function () {
                 });
             },
             error: function (xhr) {
-                util.destroy_loading_indicator(indicator_elem);
+                loading.destroy_indicator(indicator_elem);
                 error_elem.removeClass("hide").text("Could not fetch subscriber list");
             }
         });

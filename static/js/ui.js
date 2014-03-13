@@ -780,7 +780,7 @@ exports.small_avatar_url = function (message) {
 var loading_more_messages_indicator_showing = false;
 exports.show_loading_more_messages_indicator = function () {
     if (! loading_more_messages_indicator_showing) {
-        util.make_loading_indicator($('#loading_more_messages_indicator'),
+        loading.make_indicator($('#loading_more_messages_indicator'),
                                     {abs_positioned: true});
         loading_more_messages_indicator_showing = true;
         hide_floating_recipient_bar();
@@ -789,7 +789,7 @@ exports.show_loading_more_messages_indicator = function () {
 
 exports.hide_loading_more_messages_indicator = function () {
     if (loading_more_messages_indicator_showing) {
-        util.destroy_loading_indicator($("#loading_more_messages_indicator"));
+        loading.destroy_indicator($("#loading_more_messages_indicator"));
         loading_more_messages_indicator_showing = false;
     }
 };
