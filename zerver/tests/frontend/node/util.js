@@ -95,6 +95,7 @@ var _ = global._;
     assert(util.array_compare([1,2,3], [1,2,3]));
     assert(!util.array_compare([1,2], [1,2,3]));
     assert(!util.array_compare([1,2,3], [1,2]));
+    assert(!util.array_compare([1,2,3,4], [1,2,3,5]));
 }());
 
 (function test_normalize_recipients() {
