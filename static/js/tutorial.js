@@ -334,7 +334,7 @@ function finale() {
     // Force a check on new events before we re-render the message list.
     server_events.force_get_events();
     stream_color.default_color = real_default_color;
-    util.show_first_run_message();
+    $('#first_run_message').show();
     current_msg_list.rerender();
     enable_event_handlers();
     _.each(deferred_work, function (callback) {

@@ -32,15 +32,6 @@ exports.set_favicon = function (url) {
     }
 };
 
-exports.show_first_run_message = function () {
-    $('#first_run_message').show();
-};
-
-exports.destroy_first_run_message = function () {
-    // A no-op if the element no longer exists
-    $('#first_run_message').remove();
-};
-
 // Like C++'s std::lower_bound.  Returns the first index at which
 // `value` could be inserted without changing the ordering.  Assumes
 // the array is sorted.

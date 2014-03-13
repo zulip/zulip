@@ -7,7 +7,7 @@ $(function () {
     if (page_params.have_initial_messages && !page_params.needs_tutorial) {
         loading.make_indicator($('#page_loading_indicator'), {text: 'Loading...'});
     } else if (!page_params.needs_tutorial) {
-        util.show_first_run_message();
+        $('#first_run_message').show();
     }
 
     // This requires that we used Django's {% csrf_token %} somewhere on the page.
