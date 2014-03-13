@@ -35,7 +35,7 @@ function _display_messages_normally() {
                                                .removeClass("faded").removeClass("unfaded");
 
     normal_display = true;
-    ui.update_floating_recipient_bar();
+    floating_recipient_bar.update();
 }
 
 function _display_users_normally() {
@@ -89,7 +89,7 @@ function _fade_messages() {
             change_fade_state(group_elt, should_fade_group);
         }
 
-        ui.update_floating_recipient_bar();
+        floating_recipient_bar.update();
     }, 0, current_msg_list, compose.recipient());
 }
 

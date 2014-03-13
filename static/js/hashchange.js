@@ -106,7 +106,7 @@ function parse_narrow(hash) {
 function activate_home_tab() {
     ui.change_tab_to("#home");
     narrow.deactivate();
-    ui.update_floating_recipient_bar();
+    floating_recipient_bar.update();
 }
 
 // Returns true if this function performed a narrow
@@ -152,7 +152,7 @@ function do_hashchange(from_reload) {
             narrow_opts.first_unread_from_server = true;
         }
         narrow.activate(operators, narrow_opts);
-        ui.update_floating_recipient_bar();
+        floating_recipient_bar.update();
         return true;
     case "":
     case "#":
