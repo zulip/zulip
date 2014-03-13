@@ -97,6 +97,10 @@ var _ = global._;
     assert(!util.array_compare([1,2,3], [1,2]));
 }());
 
+(function test_normalize_recipients() {
+    assert(util.normalize_recipients(' bob@foo.com, alice@foo.com '), 'alice@foo.com,bob@foo.com');
+}());
+
 (function test_enforce_arity() {
     function f1() {}
     var eaf1 = util.enforce_arity(f1);
