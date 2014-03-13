@@ -28,7 +28,7 @@ exports.save = function (row) {
     // just results in the in-memory message being changed
     if (message.local_id !== undefined) {
         // No changes
-        if (new_content !== message.raw_content && !new_topic) {
+        if (new_content === message.raw_content && !topic_changed) {
             return true;
         }
         echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
