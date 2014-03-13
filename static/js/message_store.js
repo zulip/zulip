@@ -434,7 +434,7 @@ function get_old_messages_success(data, opts) {
     }
 
     process_result(data.messages, opts);
-    ui.resize_bottom_whitespace();
+    resize.resize_bottom_whitespace();
 }
 
 exports.load_old_messages = function load_old_messages(opts) {

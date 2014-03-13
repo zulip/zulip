@@ -255,7 +255,7 @@ var update_users = _.throttle(actually_update_users, 5000);
 
 function actually_update_users_for_search() {
     actually_update_users();
-    ui.resize_page_components();
+    resize.resize_page_components();
 }
 
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);

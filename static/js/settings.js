@@ -664,7 +664,7 @@ exports.setup_page = function () {
 
                 if (result.autoscroll_forever !== undefined) {
                     page_params.autoscroll_forever = result.autoscroll_forever;
-                    ui.resize_page_components();
+                    resize.resize_page_components();
                 }
 
                 ui_settings_status.removeClass(status_classes)

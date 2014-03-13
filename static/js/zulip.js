@@ -311,7 +311,7 @@ function process_loaded_for_unread(messages) {
     activity.update_huddles();
     unread.process_loaded_messages(messages);
     unread.update_unread_counts();
-    ui.resize_page_components();
+    resize.resize_page_components();
 }
 
 function main() {

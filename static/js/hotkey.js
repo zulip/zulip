@@ -350,7 +350,7 @@ $(document).keydown(function (e) {
             e.preventDefault();
         }
     }
-    ui.resize_bottom_whitespace();
+    resize.resize_bottom_whitespace();
 });
 
 $(document).keypress(function (e) {
