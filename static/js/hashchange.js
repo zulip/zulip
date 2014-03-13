@@ -49,7 +49,7 @@ exports.changehash = function (newhash) {
     }
     $(document).trigger($.Event('hashchange.zulip'));
     set_hash(newhash);
-    util.reset_favicon();
+    favicon.reset();
 };
 
 // Encodes an operator list into the

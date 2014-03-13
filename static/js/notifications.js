@@ -143,7 +143,7 @@ exports.redraw_title = function () {
         } else {
             current_favicon = previous_favicon = '/static/favicon.ico?v=2';
         }
-        util.set_favicon(current_favicon);
+        favicon.set(current_favicon);
     }
 
     if (window.bridge !== undefined) {
@@ -158,11 +158,11 @@ function flash_pms() {
     // a special icon indicating that you have unread PMs.
     if (unread.get_counts().private_message_count > 0) {
         if (current_favicon === unread_pms_favicon) {
-            util.set_favicon(previous_favicon);
+            favicon.set(previous_favicon);
             current_favicon = previous_favicon;
             previous_favicon = unread_pms_favicon;
         } else {
-            util.set_favicon(unread_pms_favicon);
+            favicon.set(unread_pms_favicon);
             previous_favicon = current_favicon;
             current_favicon = unread_pms_favicon;
         }
@@ -172,7 +172,7 @@ function flash_pms() {
         flashing = false;
         // You have no more unread PMs, so back to only showing the unread
         // count.
-        util.set_favicon(current_favicon);
+        favicon.set(current_favicon);
     }
 }
 

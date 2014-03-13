@@ -550,6 +550,7 @@ JS_SPECS = {
             'js/composebox_typeahead.js',
             'js/navigate.js',
             'js/hotkey.js',
+            'js/favicon.js',
             'js/notifications.js',
             'js/hashchange.js',
             'js/invite.js',
