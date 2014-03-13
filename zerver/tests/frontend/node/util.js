@@ -102,6 +102,18 @@ var _ = global._;
     assert(util.normalize_recipients(' bob@foo.com, alice@foo.com '), 'alice@foo.com,bob@foo.com');
 }());
 
+(function test_random_int() {
+    var min = 0;
+    var max = 100;
+
+    _.times(500, function () {
+        var val = util.random_int(min, max);
+        assert(min <= val);
+        assert(val <= max);
+        assert.equal(val, Math.floor(val));
+    });
+}());
+
 (function test_enforce_arity() {
     function f1() {}
     var eaf1 = util.enforce_arity(f1);
