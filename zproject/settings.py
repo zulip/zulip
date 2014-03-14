@@ -546,6 +546,7 @@ JS_SPECS = {
             'js/resize.js',
             'js/floating_recipient_bar.js',
             'js/ui.js',
+            'js/click_handlers.js',
             'js/scroll_bar.js',
             'js/gear_menu.js',
             'js/copy_and_paste.js',
