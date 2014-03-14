@@ -21,16 +21,18 @@ set_global('unread', {message_unread: function () {}});
         if (message === undefined) {
             message = {};
         }
-        return _.defaults(message, {
-            id: _.uniqueId('test_message_'),
-            status_message: false,
-            type: 'stream',
-            stream: 'Test Stream 1',
-            subject: 'Test Subject 1',
-            sender_email: 'test@example.com',
-            timestamp: _.uniqueId(),
-            include_sender: true
-        });
+        return {
+            msg: _.defaults(message, {
+                id: _.uniqueId('test_message_'),
+                status_message: false,
+                type: 'stream',
+                stream: 'Test Stream 1',
+                subject: 'Test Subject 1',
+                sender_email: 'test@example.com',
+                timestamp: _.uniqueId(),
+                include_sender: true
+            })
+        };
     }
 
     function build_message_group(messages) {
@@ -53,14 +55,17 @@ set_global('unread', {message_unread: function () {}});
 
     function assert_message_list_equal(list1, list2) {
         assert.deepEqual(
-            _.pluck(list1, 'id'),
-            _.pluck(list2, 'id')
+            _.chain(list1).pluck('msg').pluck('id').value(),
+            _.chain(list2).pluck('msg').pluck('id').value()
         );
     }
 
     function assert_message_groups_list_equal(list1, list2) {
         function extract_message_ids(message_group) {
-            return _.pluck(message_group.messages, 'id');
+            return _.chain(message_group.messages)
+                .pluck('msg')
+                .pluck('id')
+                .value();
         }
         assert.deepEqual(
             _.map(list1, extract_message_ids),

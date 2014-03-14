@@ -2,6 +2,7 @@ function MessageListView(list, table_name, collapse_messages) {
     this.list = list;
     this.collapse_messages = collapse_messages;
     this._rows = {};
+    this._list_messages = {};
     this.table_name = table_name;
     if (this.table_name) {
         this.clear_table();
@@ -23,17 +24,31 @@ function stringify_time(time) {
 }
 
 function same_day(earlier_msg, later_msg) {
-    var earlier_time = new XDate(earlier_msg.timestamp * 1000);
-    var later_time = new XDate(later_msg.timestamp * 1000);
+    var earlier_time = new XDate(earlier_msg.msg.timestamp * 1000);
+    var later_time = new XDate(later_msg.msg.timestamp * 1000);
 
     return earlier_time.toDateString() === later_time.toDateString();
 }
 
+function same_sender(a, b) {
+    if (a === undefined || b === undefined) {
+        return false;
+    }
+    return util.same_sender(a.msg, b.msg);
+}
+
+function same_recipient(a, b) {
+    if (a === undefined || b === undefined) {
+        return false;
+    }
+    return util.same_recipient(a.msg, b.msg);
+}
+
 function add_display_time(group, message, prev) {
-    var time = new XDate(message.timestamp * 1000);
+    var time = new XDate(message.msg.timestamp * 1000);
 
     if (prev !== undefined) {
-        var prev_time = new XDate(prev.timestamp * 1000);
+        var prev_time = new XDate(prev.msg.timestamp * 1000);
         if (time.toDateString() !== prev_time.toDateString()) {
             // NB: show_date is HTML, inserted into the document without escaping.
             group.show_date = (timerender.render_date(time, prev_time))[0].outerHTML;
@@ -48,25 +63,25 @@ function add_display_time(group, message, prev) {
 }
 
 function populate_group_from_message(group, message) {
-    group.is_stream = message.is_stream;
-    group.is_private = message.is_private;
+    group.is_stream = message.msg.is_stream;
+    group.is_private = message.msg.is_private;
 
     if (group.is_stream) {
-        group.background_color = stream_data.get_color(message.stream);
+        group.background_color = stream_data.get_color(message.msg.stream);
         group.color_class = stream_color.get_color_class(group.background_color);
-        group.invite_only = stream_data.get_invite_only(message.stream);
-        group.subject = message.subject;
+        group.invite_only = stream_data.get_invite_only(message.msg.stream);
+        group.subject = message.msg.subject;
         group.match_subject = message.match_subject;
         group.stream_url = message.stream_url;
         group.topic_url = message.topic_url;
     } else if (group.is_private) {
         group.pm_with_url = message.pm_with_url;
-        group.display_reply_to = message.display_reply_to;
+        group.display_reply_to = message.msg.display_reply_to;
     }
-    group.display_recipient = message.display_recipient;
-    group.always_visible_topic_edit = message.always_visible_topic_edit;
-    group.on_hover_topic_edit = message.on_hover_topic_edit;
-    group.subject_links = message.subject_links;
+    group.display_recipient = message.msg.display_recipient;
+    group.always_visible_topic_edit = message.msg.always_visible_topic_edit;
+    group.on_hover_topic_edit = message.msg.on_hover_topic_edit;
+    group.subject_links = message.msg.subject_links;
 }
 
 MessageListView.prototype = {
@@ -77,9 +92,9 @@ MessageListView.prototype = {
     _RENDER_THRESHOLD: 50,
 
     _add_msg_timestring: function MessageListView___add_msg_timestring(message) {
-        if (message.last_edit_timestamp !== undefined) {
+        if (message.msg.last_edit_timestamp !== undefined) {
             // Add or update the last_edit_timestr
-            var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
+            var last_edit_time = new XDate(message.msg.last_edit_timestamp * 1000);
             message.last_edit_timestr =
                 (timerender.render_date(last_edit_time))[0].innerText
                 + " at " + stringify_time(last_edit_time);
@@ -88,14 +103,14 @@ MessageListView.prototype = {
 
     add_subscription_marker: function MessageListView__add_subscription_marker(group, last_msg, first_msg) {
         if (last_msg !== undefined &&
-            first_msg.historical !== last_msg.historical) {
+            first_msg.msg.historical !== last_msg.msg.historical) {
             group.bookend_top = true;
-            if (first_msg.historical) {
-                group.unsubscribed = first_msg.stream;
-                group.bookend_content = this.list.unsubscribed_bookend_content(first_msg.stream);
+            if (first_msg.msg.historical) {
+                group.unsubscribed = first_msg.msg.stream;
+                group.bookend_content = this.list.unsubscribed_bookend_content(first_msg.msg.stream);
             } else {
-                group.subscribed = first_msg.stream;
-                group.bookend_content = this.list.subscribed_bookend_content(first_msg.stream);
+                group.subscribed = first_msg.msg.stream;
+                group.bookend_content = this.list.subscribed_bookend_content(first_msg.msg.stream);
             }
         }
     },
@@ -114,7 +129,7 @@ MessageListView.prototype = {
         var prev;
 
         function add_message_to_group(message) {
-            if (util.same_sender(prev, message)) {
+            if (same_sender(prev, message)) {
                 prev.next_is_same_sender = true;
             }
             current_group.messages.push(message);
@@ -132,8 +147,8 @@ MessageListView.prototype = {
             message.include_recipient = false;
             message.include_footer    = false;
 
-            if (util.same_recipient(prev, message) && self.collapse_messages &&
-               prev.historical === message.historical && same_day(prev, message)) {
+            if (same_recipient(prev, message) && self.collapse_messages &&
+               prev.msg.historical === message.msg.historical && same_day(prev, message)) {
                 add_message_to_group(message);
             } else {
                 finish_group();
@@ -152,11 +167,11 @@ MessageListView.prototype = {
                     self.add_subscription_marker(current_group, prev, message);
                 }
 
-                if (message.stream) {
-                    message.stream_url = narrow.by_stream_uri(message.stream);
-                    message.topic_url = narrow.by_stream_subject_uri(message.stream, message.subject);
+                if (message.msg.stream) {
+                    message.stream_url = narrow.by_stream_uri(message.msg.stream);
+                    message.topic_url = narrow.by_stream_subject_uri(message.msg.stream, message.msg.subject);
                 } else {
-                    message.pm_with_url = narrow.pm_with_uri(message.reply_to);
+                    message.pm_with_url = narrow.pm_with_uri(message.msg.reply_to);
                 }
             }
 
@@ -165,23 +180,23 @@ MessageListView.prototype = {
             message.include_sender = true;
             if (!message.include_recipient &&
                 !prev.status_message &&
-                util.same_sender(prev, message)) {
+                same_sender(prev, message)) {
                 message.include_sender = false;
             }
 
             self._add_msg_timestring(message);
 
-            message.small_avatar_url = ui.small_avatar_url(message);
-            if (message.stream !== undefined) {
-                message.background_color = stream_data.get_color(message.stream);
+            message.small_avatar_url = ui.small_avatar_url(message.msg);
+            if (message.msg.stream !== undefined) {
+                message.background_color = stream_data.get_color(message.msg.stream);
             }
 
-            message.contains_mention = notifications.speaking_at_me(message);
-            message.unread = unread.message_unread(message);
+            message.contains_mention = notifications.speaking_at_me(message.msg);
+            message.unread = unread.message_unread(message.msg);
 
-            if (message.is_me_message) {
+            if (message.msg.is_me_message) {
                 // Slice the '<p>/me ' off the front, and '</p>' off the end
-                message.status_message = message.content.slice(4 + 3, -4);
+                message.status_message = message.msg.content.slice(4 + 3, -4);
                 message.include_sender = true;
             }
             else {
@@ -209,17 +224,17 @@ MessageListView.prototype = {
         var first_msg = _.first(second_group.messages);
 
         // Join two groups into one.
-        if (this.collapse_messages && util.same_recipient(last_msg, first_msg) && same_day(last_msg, first_msg) && (last_msg.historical === first_msg.historical)) {
-            if (!last_msg.status_message && !first_msg.is_me_message && util.same_sender(last_msg, first_msg)) {
+        if (this.collapse_messages && same_recipient(last_msg, first_msg) && same_day(last_msg, first_msg) && (last_msg.msg.historical === first_msg.msg.historical)) {
+            if (!last_msg.status_message && !first_msg.is_me_message && same_sender(last_msg, first_msg)) {
                 first_msg.include_sender = false;
             }
-            if (util.same_sender(last_msg, first_msg)) {
+            if (same_sender(last_msg, first_msg)) {
                 last_msg.next_is_same_sender = true;
             }
             first_group.messages = first_group.messages.concat(second_group.messages);
             return true;
         // Add a subscription marker
-        } else if (this.list !== home_msg_list && last_msg.historical !== first_msg.historical) {
+        } else if (this.list !== home_msg_list && last_msg.msg.historical !== first_msg.msg.historical) {
             first_group.bookend_bottom = true;
             this.add_subscription_marker(first_group, last_msg, first_msg);
         }
@@ -351,6 +366,12 @@ MessageListView.prototype = {
 
         var self = this;
 
+        // The messages we are being asked to render are shared with between
+        // all messages lists. To prevent having both list views overwriting
+        // each others data we will make a new message object to add data to
+        // for rendering.
+        messages = _.map(messages, function (message) { return {msg: message}; });
+
         function save_scroll_position() {
             if (orig_scrolltop_offset === undefined && self.selected_row().length > 0) {
                 orig_scrolltop_offset = self.selected_row().offset().top;
@@ -375,6 +396,9 @@ MessageListView.prototype = {
         var message_actions = this.merge_message_groups(new_message_groups, where);
         var new_dom_elements = [];
         var rendered_groups, dom_messages, last_message_row, last_group_row;
+
+        _.each(messages, function (message) { self._list_messages[message.msg.id] = message; });
+
 
         // Rerender message groups
         if (message_actions.rerender_groups.length > 0) {
@@ -424,7 +448,7 @@ MessageListView.prototype = {
         // Rerender message rows
         if (message_actions.rerender_messages.length > 0) {
             _.each(message_actions.rerender_messages, function (message) {
-                var old_row = self.get_row(message.id);
+                var old_row = self.get_row(message.msg.id);
                 var msg_to_render = _.extend(message, {table_name: this.table_name});
                 var row = $(templates.render('single_message', msg_to_render));
                 self._post_process_messages(row.get());
@@ -472,7 +496,7 @@ MessageListView.prototype = {
 
         var last_message_group = _.last(self._message_groups);
         if (last_message_group !== undefined) {
-            list.last_message_historical = _.last(last_message_group.messages).historical;
+            list.last_message_historical = _.last(last_message_group.messages).msg.historical;
         }
         list.update_trailing_bookend();
 
@@ -484,7 +508,7 @@ MessageListView.prototype = {
                 // of rows.js from compose_fade.  We provide a callback function to be lazy--
                 // compose_fade may not actually need the elements depending on its internal
                 // state.
-                var message_row = self.get_row(message_group.messages[0].id);
+                var message_row = self.get_row(message_group.messages[0].msg.id);
                 return rows.get_message_recipient_row(message_row);
             };
 
@@ -529,7 +553,7 @@ MessageListView.prototype = {
 
         // autoscroll_forever: if we're on the last message, keep us on the last message
         if (last_message_was_selected && page_params.autoscroll_forever) {
-            this.list.select_id(this.list.last().id, {from_rendering: true});
+            this.list.select_id(this.list.last().msg.id, {from_rendering: true});
             scroll_to_selected();
             this.list.reselect_selected_id();
             return;
@@ -675,14 +699,14 @@ MessageListView.prototype = {
         }
     },
 
-    rerender_header: function MessageListView__maybe_rerender_header(messages) {
+    _rerender_header: function MessageListView__maybe_rerender_header(messages) {
         // Given a list of messages that are in the **same** message group,
         // rerender the header / recipient bar of the messages
         if (messages.length === 0) {
             return;
         }
 
-        var first_row = this.get_row(messages[0].id);
+        var first_row = this.get_row(messages[0].msg.id);
 
         // We may not have the row if the stream or topic was muted
         if (first_row.length === 0) {
@@ -701,7 +725,7 @@ MessageListView.prototype = {
     },
 
     _rerender_message: function MessageListView___rerender_message(message) {
-        var row = this.get_row(message.id);
+        var row = this.get_row(message.msg.id);
         var was_selected = this.list.selected_message() === message;
 
         // We may not have the row if the stream or topic was muted
@@ -714,12 +738,11 @@ MessageListView.prototype = {
 
         var msg_to_render = _.extend(message, {table_name: this.table_name});
         var rendered_msg = $(templates.render('single_message', msg_to_render));
-        row.html(rendered_msg.html());
+        this._post_process_messages(rendered_msg.get());
+        row.replaceWith(rendered_msg);
 
-        // Make sure to take this rendered row, not the element from the dom (which might not be the current list)
-        this._rows[message.id] = row[0];
         if (was_selected) {
-            this.list.select_id(message.id);
+            this.list.select_id(message.msg.id);
         }
     },
 
@@ -733,11 +756,15 @@ MessageListView.prototype = {
         own_messages = _.reject(own_messages, function (message) {
             return message === undefined;
         });
+        // Convert messages to list messages
+        own_messages = _.map(messages, function (message) {
+            return self._list_messages[message.id];
+        });
 
         var message_groups = [];
         var current_group = [];
         _.each(own_messages, function (message) {
-            if (current_group.length === 0 || util.same_recipient(current_group[current_group.length - 1], message)) {
+            if (current_group.length === 0 || same_recipient(current_group[current_group.length - 1], message)) {
                 current_group.push(message);
             } else {
                 message_groups.push(current_group);
@@ -749,7 +776,7 @@ MessageListView.prototype = {
             message_groups.push(current_group);
         }
         _.each(message_groups, function (messages_in_group) {
-            self.rerender_header(messages_in_group);
+            self._rerender_header(messages_in_group);
         });
     },
 
@@ -800,6 +827,7 @@ MessageListView.prototype = {
         rows.get_table(this.table_name).children().detach();
         this._rows = {};
         this._message_groups = [];
+        this._list_messages = {};
     },
 
     get_row: function MessageListView_get_row(id) {
@@ -837,6 +865,13 @@ MessageListView.prototype = {
             $(row).removeClass('local');
             this._rows[new_id] = row;
         }
+
+        if (this._list_messages[old_id] !== undefined) {
+            var message = this._list_messages[old_id];
+            delete this._list_messages[old_id];
+            this._list_messages[new_id] = message;
+        }
+
     }
 };
 

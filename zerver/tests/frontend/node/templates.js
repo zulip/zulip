@@ -238,6 +238,7 @@ function render(template_name, args) {
 
 (function single_message() {
     var message =  {
+        msg: {
             include_recipient: true,
             display_recipient: 'devel',
             subject: 'testing',
@@ -245,6 +246,7 @@ function render(template_name, args) {
             content: 'This is message one.',
             last_edit_timestr: '11:00',
             starred: true
+        }
     };
 
     var html = render('single_message', message);
