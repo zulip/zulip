@@ -315,6 +315,10 @@ exports.defer = function (callback) {
     deferred_work.push(callback);
 };
 
+function update_popover_info(popover_func) {
+    current_popover_info = popover_func;
+}
+
 function finale() {
     var finale_modal = $("#tutorial-finale");
     $(".screen").css({opacity: 0.0});
@@ -331,6 +335,7 @@ function finale() {
     set_tutorial_status("finished");
     is_running = false;
     current_msg_list.clear();
+    update_popover_info(undefined);
     // Force a check on new events before we re-render the message list.
     server_events.force_get_events();
     stream_color.default_color = real_default_color;
@@ -384,10 +389,6 @@ function finale() {
             send_delayed_stream_message("social", "cute animals", "This is a message on stream `social` with the topic `cute animals`. Try uploading or pasting in some pictures. Here's a [guinea pig](https://humbug-user-uploads.s3.amazonaws.com/byqgM1qjol1mzje_KzeNRT5F/guinea.jpg) to get you started:", 75);
         }
     }
-}
-
-function update_popover_info(popover_func) {
-    current_popover_info = popover_func;
 }
 
 function box_first_message() {
