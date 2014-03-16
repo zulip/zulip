@@ -300,10 +300,8 @@ MessageListView.prototype = {
 
         var self = this;
         _.each(messages, function (message_row) {
-            if (message_row instanceof jQuery) {
-                blueslip.warn('jQuery object passed to _post_process_messages', {
-                    message_id: message_row.attr('zid')
-                });
+            if (!_.isElement(message_row)) {
+                blueslip.warn('Only DOM nodes can be passed to _post_process_messages');
             }
             var row = $(message_row);
 
@@ -429,7 +427,7 @@ MessageListView.prototype = {
                 var old_row = self.get_row(message.id);
                 var msg_to_render = _.extend(message, {table_name: this.table_name});
                 var row = $(templates.render('single_message', msg_to_render));
-                self._post_process_messages([row.get()]);
+                self._post_process_messages(row.get());
                 old_row.replaceWith(row);
                 condense.condense_and_collapse(row);
                 list.reselect_selected_id();
