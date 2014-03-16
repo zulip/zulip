@@ -28,7 +28,8 @@ set_global('unread', {message_unread: function () {}});
             stream: 'Test Stream 1',
             subject: 'Test Subject 1',
             sender_email: 'test@example.com',
-            timestamp: _.uniqueId()
+            timestamp: _.uniqueId(),
+            include_sender: true
         });
     }
 
@@ -189,6 +190,34 @@ set_global('unread', {message_unread: function () {}});
         assert_message_list_equal(result.append_messages, []);
         assert_message_list_equal(result.rerender_messages, []);
     }());
+
+    (function test_append_message_same_subject_me_message() {
+
+        var message1 = build_message();
+        var message_group1 = build_message_group([
+            message1
+        ]);
+
+        var message2 = build_message({is_me_message: true});
+        var message_group2 = build_message_group([
+            message2
+        ]);
+
+        var list = build_list([message_group1]);
+        var result = list.merge_message_groups([message_group2], 'bottom');
+
+        assert(message2.include_sender);
+        assert_message_groups_list_equal(
+            list._message_groups,
+            [build_message_group([message1, message2])]
+        );
+        assert_message_groups_list_equal(result.append_groups, []);
+        assert_message_groups_list_equal(result.prepend_groups, []);
+        assert_message_groups_list_equal(result.rerender_groups, []);
+        assert_message_list_equal(result.append_messages, [message2]);
+        assert_message_list_equal(result.rerender_messages, [message1]);
+    }());
+
 
     (function test_prepend_message_same_subject() {
 

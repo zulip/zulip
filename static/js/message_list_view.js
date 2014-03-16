@@ -210,7 +210,7 @@ MessageListView.prototype = {
 
         // Join two groups into one.
         if (this.collapse_messages && util.same_recipient(last_msg, first_msg) && same_day(last_msg, first_msg) && (last_msg.historical === first_msg.historical)) {
-            if (!last_msg.status_message && util.same_sender(last_msg, first_msg)) {
+            if (!last_msg.status_message && !first_msg.is_me_message && util.same_sender(last_msg, first_msg)) {
                 first_msg.include_sender = false;
             }
             if (util.same_sender(last_msg, first_msg)) {
