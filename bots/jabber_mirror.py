@@ -37,7 +37,7 @@ signal.signal(signal.SIGINT, die)
 args = [os.path.join(os.path.dirname(sys.argv[0]), "jabber_mirror_backend.py")]
 args.extend(sys.argv[1:])
 
-backoff = RandomExponentialBackoff()
+backoff = RandomExponentialBackoff(timeout_success_equivalent=300)
 while backoff.keep_going():
     print "Starting Jabber mirroring bot"
     try:
