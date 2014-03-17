@@ -17,27 +17,31 @@ set_global('unread', {message_unread: function () {}});
     // MessageListView has lots of DOM code, so we are going to test the mesage
     // group mearging logic on its own.
 
-    function build_message(message) {
+    function build_message_context(message, message_context) {
+        if (message_context === undefined) {
+            message_context = {};
+        }
         if (message === undefined) {
             message = {};
         }
-        return {
-            msg: _.defaults(message, {
-                id: _.uniqueId('test_message_'),
-                status_message: false,
-                type: 'stream',
-                stream: 'Test Stream 1',
-                subject: 'Test Subject 1',
-                sender_email: 'test@example.com',
-                timestamp: _.uniqueId(),
-                include_sender: true
-            })
-        };
+        message_context = _.defaults(message_context, {
+            include_sender: true
+        });
+        message_context.msg = _.defaults(message, {
+            id: _.uniqueId('test_message_'),
+            status_message: false,
+            type: 'stream',
+            stream: 'Test Stream 1',
+            subject: 'Test Subject 1',
+            sender_email: 'test@example.com',
+            timestamp: _.uniqueId()
+        });
+        return message_context;
     }
 
     function build_message_group(messages) {
         return {
-            messages: messages,
+            message_containers: messages,
             message_group_id: _.uniqueId('test_message_group_'),
             show_date: true
         };
@@ -76,7 +80,7 @@ set_global('unread', {message_unread: function () {}});
     (function test_empty_list_bottom() {
         var list = build_list([]);
         var message_group = build_message_group([
-            build_message()
+            build_message_context()
         ]);
 
         var result = list.merge_message_groups([message_group], 'bottom');
@@ -91,12 +95,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_append_message_same_subject() {
 
-        var message1 = build_message();
+        var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message();
+        var message2 = build_message_context();
         var message_group2 = build_message_group([
             message2
         ]);
@@ -117,12 +121,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_append_message_diffrent_subject() {
 
-        var message1 = build_message();
+        var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message({subject: 'Test subject 2'});
+        var message2 = build_message_context({subject: 'Test subject 2'});
         var message_group2 = build_message_group([
             message2
         ]);
@@ -144,12 +148,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_append_message_diffrent_day() {
 
-        var message1 = build_message({timestamp: 1000});
+        var message1 = build_message_context({timestamp: 1000});
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message({timestamp: 900000});
+        var message2 = build_message_context({timestamp: 900000});
         var message_group2 = build_message_group([
             message2
         ]);
@@ -171,12 +175,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_append_message_historical() {
 
-        var message1 = build_message({historical: false});
+        var message1 = build_message_context({historical: false});
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message({historical: true});
+        var message2 = build_message_context({historical: true});
         var message_group2 = build_message_group([
             message2
         ]);
@@ -198,12 +202,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_append_message_same_subject_me_message() {
 
-        var message1 = build_message();
+        var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message({is_me_message: true});
+        var message2 = build_message_context({}, {is_me_message: true});
         var message_group2 = build_message_group([
             message2
         ]);
@@ -226,12 +230,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_prepend_message_same_subject() {
 
-        var message1 = build_message();
+        var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message();
+        var message2 = build_message_context();
         var message_group2 = build_message_group([
             message2
         ]);
@@ -254,12 +258,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_prepend_message_diffrent_subject() {
 
-        var message1 = build_message();
+        var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message({subject: 'Test Subject 2'});
+        var message2 = build_message_context({subject: 'Test Subject 2'});
         var message_group2 = build_message_group([
             message2
         ]);
@@ -280,12 +284,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_prepend_message_diffrent_day() {
 
-        var message1 = build_message({timestamp: 900000});
+        var message1 = build_message_context({timestamp: 900000});
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message({timestamp: 1000});
+        var message2 = build_message_context({timestamp: 1000});
         var message_group2 = build_message_group([
             message2
         ]);
@@ -307,12 +311,12 @@ set_global('unread', {message_unread: function () {}});
 
     (function test_prepend_message_historical() {
 
-        var message1 = build_message({historical: false});
+        var message1 = build_message_context({historical: false});
         var message_group1 = build_message_group([
             message1
         ]);
 
-        var message2 = build_message({historical: true});
+        var message2 = build_message_context({historical: true});
         var message_group2 = build_message_group([
             message2
         ]);

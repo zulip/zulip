@@ -2,7 +2,7 @@ function MessageListView(list, table_name, collapse_messages) {
     this.list = list;
     this.collapse_messages = collapse_messages;
     this._rows = {};
-    this._list_messages = {};
+    this.message_containers = {};
     this.table_name = table_name;
     if (this.table_name) {
         this.clear_table();
@@ -44,8 +44,8 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
-function add_display_time(group, message, prev) {
-    var time = new XDate(message.msg.timestamp * 1000);
+function add_display_time(group, message_container, prev) {
+    var time = new XDate(message_container.msg.timestamp * 1000);
 
     if (prev !== undefined) {
         var prev_time = new XDate(prev.msg.timestamp * 1000);
@@ -57,31 +57,31 @@ function add_display_time(group, message, prev) {
         group.show_date = (timerender.render_date(time))[0].outerHTML;
     }
 
-    if (message.timestr === undefined) {
-        message.timestr = stringify_time(time);
+    if (message_container.timestr === undefined) {
+        message_container.timestr = stringify_time(time);
     }
 }
 
-function populate_group_from_message(group, message) {
-    group.is_stream = message.msg.is_stream;
-    group.is_private = message.msg.is_private;
+function populate_group_from_message_container(group, message_container) {
+    group.is_stream = message_container.msg.is_stream;
+    group.is_private = message_container.msg.is_private;
 
     if (group.is_stream) {
-        group.background_color = stream_data.get_color(message.msg.stream);
+        group.background_color = stream_data.get_color(message_container.msg.stream);
         group.color_class = stream_color.get_color_class(group.background_color);
-        group.invite_only = stream_data.get_invite_only(message.msg.stream);
-        group.subject = message.msg.subject;
-        group.match_subject = message.match_subject;
-        group.stream_url = message.stream_url;
-        group.topic_url = message.topic_url;
+        group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
+        group.subject = message_container.msg.subject;
+        group.match_subject = message_container.match_subject;
+        group.stream_url = message_container.stream_url;
+        group.topic_url = message_container.topic_url;
     } else if (group.is_private) {
-        group.pm_with_url = message.pm_with_url;
-        group.display_reply_to = message.msg.display_reply_to;
+        group.pm_with_url = message_container.pm_with_url;
+        group.display_reply_to = message_container.msg.display_reply_to;
     }
-    group.display_recipient = message.msg.display_recipient;
-    group.always_visible_topic_edit = message.msg.always_visible_topic_edit;
-    group.on_hover_topic_edit = message.msg.on_hover_topic_edit;
-    group.subject_links = message.msg.subject_links;
+    group.display_recipient = message_container.msg.display_recipient;
+    group.always_visible_topic_edit = message_container.msg.always_visible_topic_edit;
+    group.on_hover_topic_edit = message_container.msg.on_hover_topic_edit;
+    group.subject_links = message_container.msg.subject_links;
 }
 
 MessageListView.prototype = {
@@ -91,34 +91,34 @@ MessageListView.prototype = {
     // trigger a re-render
     _RENDER_THRESHOLD: 50,
 
-    _add_msg_timestring: function MessageListView___add_msg_timestring(message) {
-        if (message.msg.last_edit_timestamp !== undefined) {
+    _add_msg_timestring: function MessageListView___add_msg_timestring(message_container) {
+        if (message_container.msg.last_edit_timestamp !== undefined) {
             // Add or update the last_edit_timestr
-            var last_edit_time = new XDate(message.msg.last_edit_timestamp * 1000);
-            message.last_edit_timestr =
+            var last_edit_time = new XDate(message_container.msg.last_edit_timestamp * 1000);
+            message_container.last_edit_timestr =
                 (timerender.render_date(last_edit_time))[0].innerText
                 + " at " + stringify_time(last_edit_time);
         }
     },
 
-    add_subscription_marker: function MessageListView__add_subscription_marker(group, last_msg, first_msg) {
-        if (last_msg !== undefined &&
-            first_msg.msg.historical !== last_msg.msg.historical) {
+    add_subscription_marker: function MessageListView__add_subscription_marker(group, last_msg_container, first_msg_container) {
+        if (last_msg_container !== undefined &&
+            first_msg_container.msg.historical !== last_msg_container.msg.historical) {
             group.bookend_top = true;
-            if (first_msg.msg.historical) {
-                group.unsubscribed = first_msg.msg.stream;
-                group.bookend_content = this.list.unsubscribed_bookend_content(first_msg.msg.stream);
+            if (first_msg_container.msg.historical) {
+                group.unsubscribed = first_msg_container.msg.stream;
+                group.bookend_content = this.list.unsubscribed_bookend_content(first_msg_container.msg.stream);
             } else {
-                group.subscribed = first_msg.msg.stream;
-                group.bookend_content = this.list.subscribed_bookend_content(first_msg.msg.stream);
+                group.subscribed = first_msg_container.msg.stream;
+                group.bookend_content = this.list.subscribed_bookend_content(first_msg_container.msg.stream);
             }
         }
     },
 
-    build_message_groups: function MessageListView__build_message_groups(messages, message_id_prefix) {
+    build_message_groups: function MessageListView__build_message_groups(message_containers, message_id_prefix) {
         function start_group() {
             return {
-                messages: [],
+                message_containers: [],
                 message_group_id: _.uniqueId('message_group_')
             };
         }
@@ -128,82 +128,82 @@ MessageListView.prototype = {
         var new_message_groups = [];
         var prev;
 
-        function add_message_to_group(message) {
-            if (same_sender(prev, message)) {
+        function add_message_container_to_group(message_container) {
+            if (same_sender(prev, message_container)) {
                 prev.next_is_same_sender = true;
             }
-            current_group.messages.push(message);
+            current_group.message_containers.push(message_container);
         }
 
         function finish_group() {
-            if (current_group.messages.length > 0) {
-                populate_group_from_message(current_group, current_group.messages[0]);
-                current_group.messages[current_group.messages.length - 1].include_footer = true;
+            if (current_group.message_containers.length > 0) {
+                populate_group_from_message_container(current_group, current_group.message_containers[0]);
+                current_group.message_containers[current_group.message_containers.length - 1].include_footer = true;
                 new_message_groups.push(current_group);
             }
         }
 
-        _.each(messages, function (message) {
-            message.include_recipient = false;
-            message.include_footer    = false;
+        _.each(message_containers, function (message_container) {
+            message_container.include_recipient = false;
+            message_container.include_footer    = false;
 
-            if (same_recipient(prev, message) && self.collapse_messages &&
-               prev.msg.historical === message.msg.historical && same_day(prev, message)) {
-                add_message_to_group(message);
+            if (same_recipient(prev, message_container) && self.collapse_messages &&
+               prev.msg.historical === message_container.msg.historical && same_day(prev, message_container)) {
+                add_message_container_to_group(message_container);
             } else {
                 finish_group();
                 current_group = start_group();
-                add_message_to_group(message);
+                add_message_container_to_group(message_container);
 
-                message.include_recipient = true;
-                message.subscribed = false;
-                message.unsubscribed = false;
+                message_container.include_recipient = true;
+                message_container.subscribed = false;
+                message_container.unsubscribed = false;
 
                 // This home_msg_list condition can be removed
                 // once we filter historical messages from the
                 // home view on the server side (which requires
                 // having an index on UserMessage.flags)
                 if (self.list !== home_msg_list) {
-                    self.add_subscription_marker(current_group, prev, message);
+                    self.add_subscription_marker(current_group, prev, message_container);
                 }
 
-                if (message.msg.stream) {
-                    message.stream_url = narrow.by_stream_uri(message.msg.stream);
-                    message.topic_url = narrow.by_stream_subject_uri(message.msg.stream, message.msg.subject);
+                if (message_container.msg.stream) {
+                    message_container.stream_url = narrow.by_stream_uri(message_container.msg.stream);
+                    message_container.topic_url = narrow.by_stream_subject_uri(message_container.msg.stream, message_container.msg.subject);
                 } else {
-                    message.pm_with_url = narrow.pm_with_uri(message.msg.reply_to);
+                    message_container.pm_with_url = narrow.pm_with_uri(message_container.msg.reply_to);
                 }
             }
 
-            add_display_time(current_group, message, prev);
+            add_display_time(current_group, message_container, prev);
 
-            message.include_sender = true;
-            if (!message.include_recipient &&
+            message_container.include_sender = true;
+            if (!message_container.include_recipient &&
                 !prev.status_message &&
-                same_sender(prev, message)) {
-                message.include_sender = false;
+                same_sender(prev, message_container)) {
+                message_container.include_sender = false;
             }
 
-            self._add_msg_timestring(message);
+            self._add_msg_timestring(message_container);
 
-            message.small_avatar_url = ui.small_avatar_url(message.msg);
-            if (message.msg.stream !== undefined) {
-                message.background_color = stream_data.get_color(message.msg.stream);
+            message_container.small_avatar_url = ui.small_avatar_url(message_container.msg);
+            if (message_container.msg.stream !== undefined) {
+                message_container.background_color = stream_data.get_color(message_container.msg.stream);
             }
 
-            message.contains_mention = notifications.speaking_at_me(message.msg);
-            message.unread = unread.message_unread(message.msg);
+            message_container.contains_mention = notifications.speaking_at_me(message_container.msg);
+            message_container.unread = unread.message_unread(message_container.msg);
 
-            if (message.msg.is_me_message) {
+            if (message_container.msg.is_me_message) {
                 // Slice the '<p>/me ' off the front, and '</p>' off the end
-                message.status_message = message.msg.content.slice(4 + 3, -4);
-                message.include_sender = true;
+                message_container.status_message = message_container.msg.content.slice(4 + 3, -4);
+                message_container.include_sender = true;
             }
             else {
-                message.status_message = false;
+                message_container.status_message = false;
             }
 
-            prev = message;
+            prev = message_container;
         });
 
         finish_group();
@@ -220,23 +220,23 @@ MessageListView.prototype = {
         if (first_group === undefined || second_group === undefined) {
             return false;
         }
-        var last_msg = _.last(first_group.messages);
-        var first_msg = _.first(second_group.messages);
+        var last_msg_container = _.last(first_group.message_containers);
+        var first_msg_container = _.first(second_group.message_containers);
 
         // Join two groups into one.
-        if (this.collapse_messages && same_recipient(last_msg, first_msg) && same_day(last_msg, first_msg) && (last_msg.msg.historical === first_msg.msg.historical)) {
-            if (!last_msg.status_message && !first_msg.is_me_message && same_sender(last_msg, first_msg)) {
-                first_msg.include_sender = false;
+        if (this.collapse_messages && same_recipient(last_msg_container, first_msg_container) && same_day(last_msg_container, first_msg_container) && (last_msg_container.msg.historical === first_msg_container.msg.historical)) {
+            if (!last_msg_container.status_message && !first_msg_container.is_me_message && same_sender(last_msg_container, first_msg_container)) {
+                first_msg_container.include_sender = false;
             }
-            if (same_sender(last_msg, first_msg)) {
-                last_msg.next_is_same_sender = true;
+            if (same_sender(last_msg_container, first_msg_container)) {
+                last_msg_container.next_is_same_sender = true;
             }
-            first_group.messages = first_group.messages.concat(second_group.messages);
+            first_group.message_containers = first_group.message_containers.concat(second_group.message_containers);
             return true;
         // Add a subscription marker
-        } else if (this.list !== home_msg_list && last_msg.msg.historical !== first_msg.msg.historical) {
+        } else if (this.list !== home_msg_list && last_msg_container.msg.historical !== first_msg_container.msg.historical) {
             first_group.bookend_bottom = true;
-            this.add_subscription_marker(first_group, last_msg, first_msg);
+            this.add_subscription_marker(first_group, last_msg_container, first_msg_container);
         }
         return false;
     },
@@ -288,14 +288,14 @@ MessageListView.prototype = {
             if (this.join_message_groups(first_group, second_group)) {
                 // rerender the last message
                 message_actions.rerender_messages.push(
-                    first_group.messages[first_group.messages.length - second_group.messages.length - 1]
+                    first_group.message_containers[first_group.message_containers.length - second_group.message_containers.length - 1]
                 );
-                message_actions.append_messages = _.first(new_message_groups).messages;
+                message_actions.append_messages = _.first(new_message_groups).message_containers;
                 new_message_groups = _.rest(new_message_groups);
             } else if (first_group !== undefined && second_group !== undefined) {
-                var last_msg = _.last(first_group.messages);
-                var first_msg = _.first(second_group.messages);
-                if (same_day(last_msg, first_msg)) {
+                var last_msg_container = _.last(first_group.message_containers);
+                var first_msg_container = _.first(second_group.message_containers);
+                if (same_day(last_msg_container, first_msg_container)) {
                     // Clear the date if it is the same as the last group
                     second_group.show_date = undefined;
                 }
@@ -307,22 +307,22 @@ MessageListView.prototype = {
         return message_actions;
     },
 
-    _post_process_messages: function MessageListView___post_process_messages(messages) {
-        // _post_process_messages adds applies some extra formating to messages
+    _post_process_dom_messages: function MessageListView___post_process_dom_messages(dom_messages) {
+        // _post_process_dom_messages adds applies some extra formating to messages
         // and stores them in self._rows and sends an event that the message is
-        // complete. _post_process_messages should be a list of DOM nodes not
+        // complete. _post_process_dom_messages should be a list of DOM nodes not
         // jQuery objects.
 
         var self = this;
-        _.each(messages, function (message_row) {
-            if (!_.isElement(message_row)) {
-                blueslip.error('Only DOM nodes can be passed to _post_process_messages');
+        _.each(dom_messages, function (dom_message) {
+            if (!_.isElement(dom_message)) {
+                blueslip.warn('Only DOM nodes can be passed to _post_process_messages');
             }
-            var row = $(message_row);
+            var row = $(dom_message);
 
             // Save DOM elements by id into self._rows for O(1) lookup
             if (row.hasClass('message_row')) {
-                self._rows[row.attr('zid')] = message_row;
+                self._rows[row.attr('zid')] = dom_message;
             }
 
             if (row.hasClass('mention')) {
@@ -362,7 +362,7 @@ MessageListView.prototype = {
         // we we record if last_message_was_selected before updating the table
         var last_message_was_selected = rows.id(rows.last_visible()) === list.selected_id();
         var orig_scrolltop_offset, last_message_id;
-        var combined_messages, first_msg, last_msg;
+        var message_containers, first_msg, last_msg;
 
         var self = this;
 
@@ -370,7 +370,7 @@ MessageListView.prototype = {
         // all messages lists. To prevent having both list views overwriting
         // each others data we will make a new message object to add data to
         // for rendering.
-        messages = _.map(messages, function (message) { return {msg: message}; });
+        message_containers = _.map(messages, function (message) { return {msg: message}; });
 
         function save_scroll_position() {
             if (orig_scrolltop_offset === undefined && self.selected_row().length > 0) {
@@ -388,16 +388,18 @@ MessageListView.prototype = {
         // This function processes messages into chunks with separators between them,
         // and templates them to be inserted as table rows into the DOM.
 
-        if (messages.length === 0 || this.table_name === undefined) {
+        if (message_containers.length === 0 || this.table_name === undefined) {
             return;
         }
 
-        var new_message_groups = this.build_message_groups(messages, this.table_name);
+        var new_message_groups = this.build_message_groups(message_containers, this.table_name);
         var message_actions = this.merge_message_groups(new_message_groups, where);
         var new_dom_elements = [];
         var rendered_groups, dom_messages, last_message_row, last_group_row;
 
-        _.each(messages, function (message) { self._list_messages[message.msg.id] = message; });
+        _.each(message_containers, function (message_container) {
+            self.message_containers[message_container.msg.id] = message_container;
+        });
 
 
         // Rerender message groups
@@ -418,7 +420,7 @@ MessageListView.prototype = {
                 dom_messages = rendered_groups.find('.message_row');
                 // Not adding to new_dom_elements it is only used for autoscroll
 
-                self._post_process_messages(dom_messages.get());
+                self._post_process_dom_messages(dom_messages.get());
                 old_message_group.replaceWith(rendered_groups);
                 condense.condense_and_collapse(dom_messages);
             });
@@ -437,7 +439,7 @@ MessageListView.prototype = {
             dom_messages = rendered_groups.find('.message_row');
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
-            self._post_process_messages(dom_messages.get());
+            self._post_process_dom_messages(dom_messages.get());
 
             // The date row will be included in the message groups
             table.find('.recipient_row').first().prev('.date_row').remove();
@@ -447,11 +449,11 @@ MessageListView.prototype = {
 
         // Rerender message rows
         if (message_actions.rerender_messages.length > 0) {
-            _.each(message_actions.rerender_messages, function (message) {
-                var old_row = self.get_row(message.msg.id);
-                var msg_to_render = _.extend(message, {table_name: this.table_name});
+            _.each(message_actions.rerender_messages, function (message_container) {
+                var old_row = self.get_row(message_container.msg.id);
+                var msg_to_render = _.extend(message_container, {table_name: this.table_name});
                 var row = $(templates.render('single_message', msg_to_render));
-                self._post_process_messages(row.get());
+                self._post_process_dom_messages(row.get());
                 old_row.replaceWith(row);
                 condense.condense_and_collapse(row);
                 list.reselect_selected_id();
@@ -462,12 +464,12 @@ MessageListView.prototype = {
         if (message_actions.append_messages.length > 0) {
             last_message_row = table.find('.message_row:last').expectOne();
             last_group_row = rows.get_message_recipient_row(last_message_row);
-            dom_messages = $(_.map(message_actions.append_messages, function (message) {
-                var msg_to_render = _.extend(message, {table_name: this.table_name});
+            dom_messages = $(_.map(message_actions.append_messages, function (message_container) {
+                var msg_to_render = _.extend(message_container, {table_name: this.table_name});
                 return templates.render('single_message', msg_to_render);
             }).join('')).filter('.message_row');
 
-            self._post_process_messages(dom_messages.get());
+            self._post_process_dom_messages(dom_messages.get());
             last_group_row.append(dom_messages);
 
             new_dom_elements = new_dom_elements.concat(dom_messages);
@@ -487,7 +489,7 @@ MessageListView.prototype = {
             dom_messages = rendered_groups.find('.message_row');
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
-            self._post_process_messages(dom_messages.get());
+            self._post_process_dom_messages(dom_messages.get());
             table.append(rendered_groups);
             condense.condense_and_collapse(dom_messages);
         }
@@ -496,7 +498,7 @@ MessageListView.prototype = {
 
         var last_message_group = _.last(self._message_groups);
         if (last_message_group !== undefined) {
-            list.last_message_historical = _.last(last_message_group.messages).msg.historical;
+            list.last_message_historical = _.last(last_message_group.message_containers).msg.historical;
         }
         list.update_trailing_bookend();
 
@@ -508,7 +510,7 @@ MessageListView.prototype = {
                 // of rows.js from compose_fade.  We provide a callback function to be lazy--
                 // compose_fade may not actually need the elements depending on its internal
                 // state.
-                var message_row = self.get_row(message_group.messages[0].msg.id);
+                var message_row = self.get_row(message_group.message_containers[0].msg.id);
                 return rows.get_message_recipient_row(message_row);
             };
 
@@ -699,14 +701,14 @@ MessageListView.prototype = {
         }
     },
 
-    _rerender_header: function MessageListView__maybe_rerender_header(messages) {
+    _rerender_header: function MessageListView__maybe_rerender_header(message_containers) {
         // Given a list of messages that are in the **same** message group,
         // rerender the header / recipient bar of the messages
-        if (messages.length === 0) {
+        if (message_containers.length === 0) {
             return;
         }
 
-        var first_row = this.get_row(messages[0].msg.id);
+        var first_row = this.get_row(message_containers[0].msg.id);
 
         // We may not have the row if the stream or topic was muted
         if (first_row.length === 0) {
@@ -716,17 +718,17 @@ MessageListView.prototype = {
         var recipient_row = rows.get_message_recipient_row(first_row);
         var header = recipient_row.find('.message_header');
 
-        var group = {messages: messages};
-        populate_group_from_message(group, messages[0]);
+        var group = {message_containers: message_containers};
+        populate_group_from_message_container(group, message_containers[0]);
 
         var rendered_recipient_row = $(templates.render('recipient_row', group));
 
         header.replaceWith(rendered_recipient_row);
     },
 
-    _rerender_message: function MessageListView___rerender_message(message) {
-        var row = this.get_row(message.msg.id);
-        var was_selected = this.list.selected_message() === message;
+    _rerender_message: function MessageListView___rerender_message(message_container) {
+        var row = this.get_row(message_container.msg.id);
+        var was_selected = this.list.selected_message() === message_container.msg;
 
         // We may not have the row if the stream or topic was muted
         if (row.length === 0) {
@@ -734,15 +736,15 @@ MessageListView.prototype = {
         }
 
         // Re-render just this one message
-        this._add_msg_timestring(message);
+        this._add_msg_timestring(message_container);
 
-        var msg_to_render = _.extend(message, {table_name: this.table_name});
+        var msg_to_render = _.extend(message_container, {table_name: this.table_name});
         var rendered_msg = $(templates.render('single_message', msg_to_render));
-        this._post_process_messages(rendered_msg.get());
+        this._post_process_dom_messages(rendered_msg.get());
         row.replaceWith(rendered_msg);
 
         if (was_selected) {
-            this.list.select_id(message.msg.id);
+            this.list.select_id(message_container.msg.id);
         }
     },
 
@@ -757,20 +759,20 @@ MessageListView.prototype = {
             return message === undefined;
         });
         // Convert messages to list messages
-        own_messages = _.map(messages, function (message) {
-            return self._list_messages[message.id];
+        var message_containers = _.map(messages, function (message) {
+            return self.message_containers[message.id];
         });
 
         var message_groups = [];
         var current_group = [];
-        _.each(own_messages, function (message) {
-            if (current_group.length === 0 || same_recipient(current_group[current_group.length - 1], message)) {
-                current_group.push(message);
+        _.each(message_containers, function (message_container) {
+            if (current_group.length === 0 || same_recipient(current_group[current_group.length - 1], message_container)) {
+                current_group.push(message_container);
             } else {
                 message_groups.push(current_group);
                 current_group = [];
             }
-            self._rerender_message(message);
+            self._rerender_message(message_container);
         });
         if (current_group.length !== 0) {
             message_groups.push(current_group);
@@ -827,7 +829,7 @@ MessageListView.prototype = {
         rows.get_table(this.table_name).children().detach();
         this._rows = {};
         this._message_groups = [];
-        this._list_messages = {};
+        this.message_containers = {};
     },
 
     get_row: function MessageListView_get_row(id) {
@@ -866,10 +868,10 @@ MessageListView.prototype = {
             this._rows[new_id] = row;
         }
 
-        if (this._list_messages[old_id] !== undefined) {
-            var message = this._list_messages[old_id];
-            delete this._list_messages[old_id];
-            this._list_messages[new_id] = message;
+        if (this.message_containers[old_id] !== undefined) {
+            var message_container = this.message_containers[old_id];
+            delete this.message_containers[old_id];
+            this.message_containers[new_id] = message_container;
         }
 
     }

@@ -289,7 +289,7 @@ function render(template_name, args) {
             display_recipient: "support",
             is_stream: true,
             message_ids: [1, 2],
-            messages: messages,
+            message_containers: messages,
             show_date: '"<span id="timerender82">Jan&nbsp;07</span>"',
             subject: 'two messages',
             match_subject: '<span class="highlight">two</span> messages'
