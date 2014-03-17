@@ -289,6 +289,10 @@ def get_rooms(zulip):
                 rooms.append(stream_to_room(stream))
     return rooms
 
+def config_error(msg):
+    sys.stderr.write("%s\n" % (msg,))
+    sys.exit(2)
+
 if __name__ == '__main__':
     parser = optparse.OptionParser(epilog=
 '''Most general and Jabber configuration options may also be specified in the
@@ -383,11 +387,11 @@ option does not affect login credentials.'''.replace("\n", " "))
         options.zulip_email_suffix = ''
 
     if options.mode not in ('public', 'personal'):
-        sys.exit("Bad value for --mode: must be one of 'public' or 'personal'")
+        config_error("Bad value for --mode: must be one of 'public' or 'personal'")
 
     if None in (options.jid, options.jabber_password):
-        sys.exit("You must specify your Jabber JID and Jabber password either "
-                 + "in the Zulip configuration file or on the commandline")
+        config_error("You must specify your Jabber JID and Jabber password either "
+                     + "in the Zulip configuration file or on the commandline")
 
     zulip = ZulipToJabberBot(zulip.init_from_options(options, "JabberMirror/" + __version__))
     # This won't work for open realms that don't have a consistent domain
@@ -396,7 +400,7 @@ option does not affect login credentials.'''.replace("\n", " "))
     try:
         jid = JID(options.jid)
     except InvalidJID as e:
-        sys.exit("Bad JID: %s: %s" % (options.jid, e.message))
+        config_error("Bad JID: %s: %s" % (options.jid, e.message))
 
     if options.conference_domain is None:
         options.conference_domain = "conference.%s" % (jid.domain,)

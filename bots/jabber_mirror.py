@@ -44,6 +44,11 @@ while backoff.keep_going():
         ret = subprocess.call(args)
     except:
         traceback.print_exc()
+    else:
+        if ret == 2:
+            # Don't try again on initial configuration errors
+            sys.exit(ret)
+
     backoff.fail()
 
 print ""
