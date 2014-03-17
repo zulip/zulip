@@ -4,10 +4,10 @@ var exports = {};
 
 // The following three Dicts point to the same objects
 // All people we've seen
-var people_dict = new Dict();
-var people_by_name_dict = new Dict();
+var people_dict = new Dict({fold_case: true});
+var people_by_name_dict = new Dict({fold_case: true});
 // People in this realm
-var realm_people_dict = new Dict();
+var realm_people_dict = new Dict({fold_case: true});
 
 exports.get_by_email = function get_by_email(email) {
     return people_dict.get(email);
