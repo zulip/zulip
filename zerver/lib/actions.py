@@ -1788,7 +1788,13 @@ def do_update_user_presence(user_profile, client, log_time, status):
     was_idle = presence.status == UserPresence.IDLE
     became_online = (status == UserPresence.ACTIVE) and (stale_status or was_idle)
 
-    if not created:
+    # If an object was created, it has already been saved.
+    #
+    # We suppress changes from ACTIVE to IDLE before stale_status is reached;
+    # this protects us from the user having two clients open: one active, the
+    # other idle. Without this check, we would constantly toggle their status
+    # between the two states.
+    if not created and stale_status or was_idle or status == presence.status:
         # The following block attempts to only update the "status"
         # field in the event that it actually changed.  This is
         # important to avoid flushing the UserPresence cache when the
