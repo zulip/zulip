@@ -62,7 +62,7 @@ if options.forward_class_messages and not options.noshard:
         pass
     sys.exit(0)
 
-backoff = RandomExponentialBackoff()
+backoff = RandomExponentialBackoff(timeout_success_equivalent=300)
 while backoff.keep_going():
     print "Starting zephyr mirroring bot"
     try:
