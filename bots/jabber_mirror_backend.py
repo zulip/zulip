@@ -426,3 +426,4 @@ option does not affect login credentials.'''.replace("\n", " "))
     except BaseException as e:
         logging.exception("Exception in main loop")
         xmpp.abort()
+        sys.exit(1)
