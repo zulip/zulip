@@ -441,7 +441,7 @@ MessageListView.prototype = {
             dom_messages = $(_.map(message_actions.append_messages, function (message) {
                 var msg_to_render = _.extend(message, {table_name: this.table_name});
                 return templates.render('single_message', msg_to_render);
-            }).join(''));
+            }).join('')).filter('.message_row');
 
             self._post_process_messages(dom_messages.get());
             last_group_row.append(dom_messages);
