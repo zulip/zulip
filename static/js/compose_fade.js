@@ -229,7 +229,7 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
     // the other code takes advantage of blocks beneath recipient bars.
     _.each(message_groups, function (message_group) {
         var elt = get_element(message_group);
-        var first_message = message_group.message_containers[0];
+        var first_message = message_group.message_containers[0].msg;
         var should_fade = !fade_heuristic(focused_recipient, first_message);
         change_fade_state(elt, should_fade);
     });
