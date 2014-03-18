@@ -301,7 +301,7 @@ MessageListView.prototype = {
         var self = this;
         _.each(messages, function (message_row) {
             if (!_.isElement(message_row)) {
-                blueslip.warn('Only DOM nodes can be passed to _post_process_messages');
+                blueslip.error('Only DOM nodes can be passed to _post_process_messages');
             }
             var row = $(message_row);
 
@@ -394,7 +394,7 @@ MessageListView.prototype = {
                 dom_messages = rendered_groups.find('.message_row');
                 // Not adding to new_dom_elements it is only used for autoscroll
 
-                self._post_process_messages(dom_messages);
+                self._post_process_messages(dom_messages.get());
                 old_message_group.replaceWith(rendered_groups);
                 condense.condense_and_collapse(dom_messages);
             });
@@ -413,7 +413,7 @@ MessageListView.prototype = {
             dom_messages = rendered_groups.find('.message_row');
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
-            self._post_process_messages(dom_messages);
+            self._post_process_messages(dom_messages.get());
 
             // The date row will be included in the message groups
             table.find('.recipient_row').first().prev('.date_row').remove();
@@ -443,7 +443,7 @@ MessageListView.prototype = {
                 return templates.render('single_message', msg_to_render);
             }).join(''));
 
-            self._post_process_messages(dom_messages);
+            self._post_process_messages(dom_messages.get());
             last_group_row.append(dom_messages);
 
             new_dom_elements = new_dom_elements.concat(dom_messages);
@@ -463,7 +463,7 @@ MessageListView.prototype = {
             dom_messages = rendered_groups.find('.message_row');
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
-            self._post_process_messages(dom_messages);
+            self._post_process_messages(dom_messages.get());
             table.append(rendered_groups);
             condense.condense_and_collapse(dom_messages);
         }
