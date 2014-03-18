@@ -192,7 +192,7 @@ MessageListView.prototype = {
             }
 
             message_container.contains_mention = notifications.speaking_at_me(message_container.msg);
-            message_container.unread = unread.message_unread(message_container.msg);
+            message_container.msg.unread = unread.message_unread(message_container.msg);
 
             if (message_container.msg.is_me_message) {
                 // Slice the '<p>/me ' off the front, and '</p>' off the end
