@@ -730,11 +730,6 @@ MessageListView.prototype = {
         var row = this.get_row(message_container.msg.id);
         var was_selected = this.list.selected_message() === message_container.msg;
 
-        // We may not have the row if the stream or topic was muted
-        if (row.length === 0) {
-            return;
-        }
-
         // Re-render just this one message
         this._add_msg_timestring(message_container);
 
@@ -761,6 +756,10 @@ MessageListView.prototype = {
         // Convert messages to list messages
         var message_containers = _.map(messages, function (message) {
             return self.message_containers[message.id];
+        });
+        // We may not have the message_container if the stream or topic was muted
+        message_containers = _.reject(message_containers, function (message_container) {
+            return message_container === undefined;
         });
 
         var message_groups = [];
