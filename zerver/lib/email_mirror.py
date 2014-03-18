@@ -99,7 +99,7 @@ def filter_footer(text):
     return text.partition("--")[0].strip()
 
 def extract_and_upload_attachments(message, realm):
-    user_profile = get_user_profile_by_email(settings.EMAIL_MIRROR_BOT)
+    user_profile = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
     attachment_links = []
 
     payload = message.get_payload()
