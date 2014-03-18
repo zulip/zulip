@@ -266,21 +266,25 @@ function render(template_name, args) {
 (function message_group() {
     var messages = [
         {
+            msg: {
+                id: 1,
+                match_content: 'This is message one.',
+                starred: true,
+                is_stream: true,
+                content: 'This is message one.'
+            },
             include_recipient: true,
             display_recipient: 'devel',
-            is_stream: true,
-            content: 'This is message one.',
-            match_content: 'This is message one.',
-            last_edit_timestr: '11:00',
-            starred: true,
-            id: 1
+            last_edit_timestr: '11:00'
         },
         {
-            content: 'This is message two.',
-            match_content: 'This is message <span class="highlight">two</span>.',
-            is_stream: true,
-            unread: true,
-            id: 2
+            msg: {
+                content: 'This is message two.',
+                match_content: 'This is message <span class="highlight">two</span>.',
+                is_stream: true,
+                unread: true,
+                id: 2
+            }
         }
     ];
 
