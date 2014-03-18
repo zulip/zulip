@@ -436,7 +436,7 @@ MessageListView.prototype = {
 
         // Insert new messages in to the last message group
         if (message_actions.append_messages.length > 0) {
-            last_message_row = table.find('.message_row:last');
+            last_message_row = table.find('.message_row:last').expectOne();
             last_group_row = rows.get_message_recipient_row(last_message_row);
             dom_messages = $(_.map(message_actions.append_messages, function (message) {
                 var msg_to_render = _.extend(message, {table_name: this.table_name});
@@ -594,7 +594,6 @@ MessageListView.prototype = {
 
 
     clear_rendering_state: function MessageListView__clear_rendering_state(clear_table) {
-        this._message_groups = [];
         if (clear_table) {
             this.clear_table();
         }
@@ -800,6 +799,7 @@ MessageListView.prototype = {
         // mindful of memory leaks.
         rows.get_table(this.table_name).children().detach();
         this._rows = {};
+        this._message_groups = [];
     },
 
     get_row: function MessageListView_get_row(id) {
