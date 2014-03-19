@@ -555,7 +555,7 @@ MessageListView.prototype = {
 
         // autoscroll_forever: if we're on the last message, keep us on the last message
         if (last_message_was_selected && page_params.autoscroll_forever) {
-            this.list.select_id(this.list.last().msg.id, {from_rendering: true});
+            this.list.select_id(this.list.last().id, {from_rendering: true});
             scroll_to_selected();
             this.list.reselect_selected_id();
             return;
