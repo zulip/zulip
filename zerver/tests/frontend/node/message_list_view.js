@@ -207,7 +207,7 @@ set_global('unread', {message_unread: function () {}});
             message1
         ]);
 
-        var message2 = build_message_context({}, {is_me_message: true});
+        var message2 = build_message_context({is_me_message: true});
         var message_group2 = build_message_group([
             message2
         ]);

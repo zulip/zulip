@@ -225,7 +225,7 @@ MessageListView.prototype = {
 
         // Join two groups into one.
         if (this.collapse_messages && same_recipient(last_msg_container, first_msg_container) && same_day(last_msg_container, first_msg_container) && (last_msg_container.msg.historical === first_msg_container.msg.historical)) {
-            if (!last_msg_container.status_message && !first_msg_container.is_me_message && same_sender(last_msg_container, first_msg_container)) {
+            if (!last_msg_container.status_message && !first_msg_container.msg.is_me_message && same_sender(last_msg_container, first_msg_container)) {
                 first_msg_container.include_sender = false;
             }
             if (same_sender(last_msg_container, first_msg_container)) {
