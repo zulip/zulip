@@ -96,7 +96,7 @@ MessageListView.prototype = {
             // Add or update the last_edit_timestr
             var last_edit_time = new XDate(message_container.msg.last_edit_timestamp * 1000);
             message_container.last_edit_timestr =
-                (timerender.render_date(last_edit_time))[0].innerText
+                (timerender.render_date(last_edit_time))[0].textContent
                 + " at " + stringify_time(last_edit_time);
         }
     },
