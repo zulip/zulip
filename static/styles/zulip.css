@@ -3980,3 +3980,127 @@ li.show-more-topics a {
 .inline-subscribe-error {
     margin-left: 5px;
 }
+
+@media (max-width: 500px) {
+    .compose_stream_button,
+    .compose_private_button {
+        padding: 5px 10px 5px 10px;
+    }
+
+    #streamlist-toggle,
+    #userlist-toggle,
+    #navbar-buttons,
+    .navbar-search,
+    #tab_bar,
+    #searchbox,
+    #search_query,
+    #tab_list li,
+    #tab_list,
+    .header {
+        height: 30px;
+        line-height: 30px;
+    }
+
+    #streamlist-toggle-button,
+    #userlist-toggle-button {
+        height: 30px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    #navbar-buttons ul.nav .dropdown-toggle,
+    #navbar-buttons ul.nav li.active .dropdown-toggle {
+        top: -5px;
+    }
+
+    #top_navbar.rightside-userlist .navbar-search {
+        margin-right: 115px;
+    }
+
+    #searchbox .input-append .icon-vector-search {
+        top: 5px;
+    }
+
+    #searchbox .search_button, #searchbox .search_button[disabled]:hover {
+        top: 2px;
+    }
+
+    #tab_bar_underpadding {
+        top: 30px;
+    }
+
+    .messagebox-content {
+        padding-right: 15px;
+    }
+
+    .message_time {
+        right: auto;
+        left: -3px;
+    }
+
+    .message_controls {
+        right: -16px;
+        top: -2px;
+    }
+
+    .message_hovered .message_controls {
+        width: 35px;
+        height: 20px;
+        background: rgba(255,255,255,0.8);
+        z-index: 10;
+        border: 1px solid #e2e2e2;
+        right: -16px;
+        top: -2px;
+    }
+
+    .selected_message .message_controls {
+        right: -13px;
+    }
+
+    .include-sender .message_controls {
+        background: none !important;
+        padding: none !important;
+        border: none !important;
+        top: -3px;
+    }
+
+    .include-sender .message_time {
+        left: auto;
+        right: -5px;
+    }
+
+    .include-sender .message_controls {
+        right: 36px;
+    }
+
+    .star {
+        position: absolute;
+        right: 2px;
+    }
+
+    .info {
+        position: absolute;
+        right: 18px;
+    }
+
+    .sender_name {
+        max-width: 250px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    textarea.new_message_textarea {
+        height: 30px !important;
+        min-height: 30px !important;
+    }
+
+    #tab_bar_underpadding {
+        height: 10px;
+    }
+
+    #floating_recipient_bar {
+        top: 40px;
+    }
+
+}
