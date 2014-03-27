@@ -116,7 +116,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 <script type="text/javascript">
 if ($('#id_email:visible').length) {
     autofocus('#id_email');
-} else {
+} else if ($('#id_full_name:visible').length) {
     autofocus('#id_full_name');
 }
 </script>
