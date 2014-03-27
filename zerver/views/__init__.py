@@ -86,6 +86,7 @@ import base64
 import time
 import logging
 import os
+import jwt
 from collections import defaultdict
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
@@ -635,6 +636,37 @@ def remote_user_sso(request):
     user_profile = authenticate(remote_user=remote_user)
     return login_or_register_remote_user(request, remote_user, user_profile)
 
+@csrf_exempt
+def remote_user_jwt(request):
+    try:
+        json_web_token = request.POST["json_web_token"]
+        payload, signing_input, header, signature = jwt.load(json_web_token)
+    except KeyError:
+        raise JsonableError("No JSON web token passed in request")
+    except jwt.DecodeError:
+        raise JsonableError("Bad JSON web token")
+
+    remote_user = payload.get("user", None)
+    if remote_user is None:
+        raise JsonableError("No user specified in JSON web token claims")
+    domain = payload.get('realm', None)
+    if domain is None:
+        raise JsonableError("No domain specified in JSON web token claims")
+
+    email = "%s@%s" % (remote_user, domain)
+
+    try:
+        jwt.verify_signature(payload, signing_input, header, signature,
+                             settings.JWT_AUTH_KEYS[domain])
+        user_profile = get_user_profile_by_email(email)
+    except (jwt.DecodeError, jwt.ExpiredSignature):
+        raise JsonableError("Bad JSON web token signature")
+    except KeyError:
+        raise JsonableError("Realm not authorized for JWT login")
+    except UserProfile.DoesNotExist:
+        user_profile = None
+
+    return login_or_register_remote_user(request, email, user_profile, remote_user)
 
 def handle_openid_errors(request, issue, openid_response=None):
     if issue == "Unknown user":

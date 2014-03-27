@@ -168,6 +168,8 @@ AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
 
 DROPBOX_APP_KEY = "xxxxxxxxxxxxxxx"
 
+JWT_AUTH_KEYS = {}
+
 # Redis authentication
 if STAGING_DEPLOYED or TESTING_DEPLOYED:
     REDIS_PASSWORD = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
