@@ -63,6 +63,8 @@ class zulip::app_frontend {
                     "python-django-auth-ldap",
                     # Needed for Google Apps mobile auth
                     "python-googleapi",
+                    # Needed for JWT-based auth
+                    "python-pyjwt",
                     ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
