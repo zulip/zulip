@@ -615,22 +615,26 @@ def maybe_send_to_registration(request, email, full_name=''):
         return render_to_response('zerver/accounts_home.html', {'form': form},
                                   context_instance=RequestContext(request))
 
+def login_or_register_remote_user(request, remote_username, user_profile, full_name=''):
+    if user_profile is None:
+        # Since execution has reached here, the client specified a remote user
+        # but no associated user account exists. Send them over to the
+        # PreregistrationUser flow.
+        return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
+    else:
+        login(request, user_profile)
+        return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
+                                              settings.EXTERNAL_HOST))
+
 def remote_user_sso(request):
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
         raise JsonableError("No REMOTE_USER set.")
 
-    user = authenticate(remote_user=remote_user)
+    user_profile = authenticate(remote_user=remote_user)
+    return login_or_register_remote_user(request, remote_user, user_profile)
 
-    if user is None:
-        # Since execution has reached here, REMOTE_USER is defined but no
-        # user account exists. Send them over to the PreregistrationUser flow.
-        return maybe_send_to_registration(request, remote_user_to_email(remote_user))
-    else:
-        login(request, user)
-        return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                              settings.EXTERNAL_HOST))
 
 def handle_openid_errors(request, issue, openid_response=None):
     if issue == "Unknown user":
