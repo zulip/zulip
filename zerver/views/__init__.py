@@ -202,6 +202,10 @@ def principal_to_user_profile(agent, principal):
 
     return principal_user_profile
 
+def name_changes_disabled(realm):
+    return (settings.NAME_CHANGES_DISABLED
+            or realm.domain in ('users.customer4.invalid'))
+
 @require_post
 @has_request_variables
 def beta_signup_submission(request, name=REQ, email=REQ,
@@ -322,7 +326,7 @@ def accounts_register(request):
             form = RegistrationForm()
     else:
         postdata = request.POST.copy()
-        if settings.NAME_CHANGES_DISABLED:
+        if name_changes_disabled(realm):
             # If we populate profile information via LDAP and we have a
             # verified name from you on file, use that. Otherwise, fall
             # back to the full name in the request.
@@ -376,7 +380,7 @@ def accounts_register(request):
              'email': email,
              'key': key,
              'full_name': request.session.get('authenticated_full_name', None),
-             'lock_name': name_validated and settings.NAME_CHANGES_DISABLED
+             'lock_name': name_validated and name_changes_disabled(realm)
             },
         context_instance=RequestContext(request))
 
@@ -914,7 +918,7 @@ def home(request):
         is_admin              = user_profile.is_admin(),
         can_create_streams    = user_profile.can_create_streams(),
         notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
-        name_changes_disabled = settings.NAME_CHANGES_DISABLED,
+        name_changes_disabled = name_changes_disabled(user_profile.realm),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         autoscroll_forever = user_profile.autoscroll_forever,
         show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com", "customer31.invalid"),
@@ -1414,15 +1418,9 @@ def json_change_settings(request, user_profile,
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":
-        if settings.NAME_CHANGES_DISABLED or \
-           user_profile.realm.domain == "users.customer4.invalid":
-            # At the request of the facilitators, CUSTOMER4
-            # students can't change their names. Failingly silently is
-            # fine -- they can't do it through the UI, so they'd have
-            # to be trying to break the rules.
-            #
-            # Additionally, if this install has disabled name changes altogether,
-            # ignore name changes as well
+        if name_changes_disabled(user_profile.realm.domain):
+            # Failingly silently is fine -- they can't do it through the UI, so
+            # they'd have to be trying to break the rules.
             pass
         else:
             new_full_name = full_name.strip()
