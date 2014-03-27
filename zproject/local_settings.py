@@ -1,6 +1,7 @@
 # Secret Django settings for the Zulip project
 import platform
 import ConfigParser
+from base64 import b64decode
 
 config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")

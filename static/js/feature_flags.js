@@ -40,6 +40,8 @@ exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domai
 //the settings.html django template. See zerver/views/__init__.py:home(request).
 exports.show_autoscroll_forever_option = page_params.show_autoscroll_forever_option;
 
+exports.enable_new_user_app_alerts = ! _.contains(['employees.customer16.invalid'], page_params.domain);
+
 // Still very beta:
 
 exports.full_width = false; //page_params.staging;

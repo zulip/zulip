@@ -205,7 +205,7 @@ def principal_to_user_profile(agent, principal):
 
 def name_changes_disabled(realm):
     return (settings.NAME_CHANGES_DISABLED
-            or realm.domain in ('users.customer4.invalid'))
+            or realm.domain in ('users.customer4.invalid', 'employees.customer16.invalid'))
 
 @require_post
 @has_request_variables
@@ -302,6 +302,12 @@ def accounts_register(request):
             form = RegistrationForm(
                     initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
             name_validated = True
+        elif domain == 'employees.customer16.invalid':
+            full_name = email.rpartition('@')[0]
+            form = RegistrationForm(
+                    initial={'full_name': full_name})
+            name_validated = True
+            request.session['authenticated_full_name'] = full_name
         elif settings.POPULATE_PROFILE_VIA_LDAP:
             for backend in get_backends():
                 if isinstance(backend, LDAPBackend):
