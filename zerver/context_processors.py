@@ -5,6 +5,10 @@ import ujson
 from zproject.backends import password_auth_enabled
 
 def add_settings(request):
+    if hasattr(request.user, "realm"):
+        is_pw_auth_enabled = password_auth_enabled(request.user.realm)
+    else:
+        is_pw_auth_enabled = True
     return {
         'full_navbar':   settings.FULL_NAVBAR,
         # We use the not_enterprise variable name so that templates
@@ -12,7 +16,7 @@ def add_settings(request):
         # to the template
         'not_enterprise':    not settings.ENTERPRISE,
         'zulip_admin':   settings.ZULIP_ADMINISTRATOR,
-        'password_auth_enabled': password_auth_enabled(),
+        'password_auth_enabled': is_pw_auth_enabled,
         'login_url':     settings.HOME_NOT_LOGGED_IN,
         'only_sso':     settings.ONLY_SSO,
         'external_api_path': settings.EXTERNAL_API_PATH,

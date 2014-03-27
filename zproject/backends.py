@@ -13,7 +13,7 @@ from openid.consumer.consumer import SUCCESS
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
 
-def password_auth_enabled():
+def password_auth_enabled(realm):
     for backend in django.contrib.auth.get_backends():
          if isinstance(backend, EmailAuthBackend):
              return True

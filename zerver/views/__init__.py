@@ -336,9 +336,11 @@ def accounts_register(request):
             except KeyError:
                 pass
         form = RegistrationForm(postdata)
+        if not password_auth_enabled(realm):
+            form['password'].field.required = False
 
     if form.is_valid():
-        if password_auth_enabled():
+        if password_auth_enabled(realm):
             password = form.cleaned_data['password']
         else:
             # SSO users don't need no passwords
@@ -379,7 +381,11 @@ def accounts_register(request):
              'email': email,
              'key': key,
              'full_name': request.session.get('authenticated_full_name', None),
-             'lock_name': name_validated and name_changes_disabled(realm)
+             'lock_name': name_validated and name_changes_disabled(realm),
+             # password_auth_enabled is normally set via our context processor,
+             # but for the registration form, there is no logged in user yet, so
+             # we have to set it here.
+             'password_auth_enabled': password_auth_enabled(realm),
             },
         context_instance=RequestContext(request))
 
@@ -869,7 +875,7 @@ def home(request):
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
         login_page            = settings.HOME_NOT_LOGGED_IN,
-        password_auth_enabled = password_auth_enabled(),
+        password_auth_enabled = password_auth_enabled(user_profile.realm),
         have_initial_messages = user_has_messages,
         subbed_info           = register_ret['subscriptions'],
         unsubbed_info         = register_ret['unsubscribed'],
@@ -1643,7 +1649,7 @@ def api_fetch_api_key(request, username=REQ, password=REQ):
 @authenticated_json_post_view
 @has_request_variables
 def json_fetch_api_key(request, user_profile, password=REQ(default='')):
-    if password_auth_enabled() and not user_profile.check_password(password):
+    if password_auth_enabled(user_profile.realm) and not user_profile.check_password(password):
         return json_error("Your username or password is incorrect.")
     return json_success({"api_key": user_profile.api_key})
 

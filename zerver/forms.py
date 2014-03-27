@@ -40,10 +40,13 @@ def not_mit_mailing_list(value):
 
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=100)
-    if password_auth_enabled():
-        password = forms.CharField(widget=forms.PasswordInput, max_length=100)
+    # The required-ness of the password field gets overridden if it isn't
+    # actually required for a realm
+    password = forms.CharField(widget=forms.PasswordInput, max_length=100,
+                               required=False)
     if not settings.ENTERPRISE:
         terms = forms.BooleanField(required=True)
+
 
 class ToSForm(forms.Form):
     full_name = forms.CharField(max_length=100)
