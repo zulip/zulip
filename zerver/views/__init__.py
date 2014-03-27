@@ -597,7 +597,7 @@ def maybe_send_to_registration(request, email, full_name=''):
             prereg_user = create_preregistration_user(email, request)
 
         return redirect("".join((
-            "https://",
+            settings.EXTERNAL_URI_SCHEME,
             settings.EXTERNAL_HOST,
             "/",
             # Split this so we only get the part after the /
@@ -624,7 +624,8 @@ def remote_user_sso(request):
         return maybe_send_to_registration(request, remote_user_to_email(remote_user))
     else:
         login(request, user)
-        return HttpResponseRedirect("https://%s" % (settings.EXTERNAL_HOST,))
+        return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
+                                              settings.EXTERNAL_HOST))
 
 def handle_openid_errors(request, issue, openid_response=None):
     if issue == "Unknown user":
