@@ -12,6 +12,16 @@ set_global('feature_flags', {twenty_four_hour_time: false});
 set_global('ui', {small_avatar_url: function () { return ''; }});
 set_global('notifications', {speaking_at_me: function () {}});
 set_global('unread', {message_unread: function () {}});
+// timerender calls setInterval when imported
+set_global('timerender', {
+    render_date: function (time1, time2) {
+        if (time2 === undefined) {
+            return [{outerHTML: String(time1)}];
+        } else {
+            return [{outerHTML: String(time1) + ' - ' + String(time2)}];
+        }
+    }
+});
 
 (function test_merge_message_groups() {
     // MessageListView has lots of DOM code, so we are going to test the mesage
@@ -297,14 +307,17 @@ set_global('unread', {message_unread: function () {}});
         var list = build_list([message_group1]);
         var result = list.merge_message_groups([message_group2], 'top');
 
-        assert(message_group1.show_date);
+        assert.equal(
+            message_group1.show_date,
+            'Sun Jan 11 1970 05:00:00 GMT-0500 (EST) - Wed Dec 31 1969 19:16:40 GMT-0500 (EST)'
+        );
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group2, message_group1]
         );
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
-        assert_message_groups_list_equal(result.rerender_groups, []);
+        assert_message_groups_list_equal(result.rerender_groups, [message_group1]);
         assert_message_list_equal(result.append_messages, []);
         assert_message_list_equal(result.rerender_messages, []);
     }());

@@ -24,6 +24,9 @@ function stringify_time(time) {
 }
 
 function same_day(earlier_msg, later_msg) {
+    if (earlier_msg === undefined || later_msg === undefined) {
+        return false;
+    }
     var earlier_time = new XDate(earlier_msg.msg.timestamp * 1000);
     var later_time = new XDate(later_msg.msg.timestamp * 1000);
 
@@ -279,6 +282,15 @@ MessageListView.prototype = {
                 this._message_groups.unshift(first_group);
 
                 new_message_groups = _.initial(new_message_groups);
+            } else if (!same_day(second_group.message_containers[0], first_group.message_containers[0])) {
+                // The groups did not merge, so we need up update the date row for the old group
+                add_display_time(
+                    second_group,
+                    _.first(second_group.message_containers),
+                    _.last(first_group.message_containers)
+                );
+                // We could add an action to just update the date row, but for now rerender the group.
+                message_actions.rerender_groups.push(second_group);
             }
             message_actions.prepend_groups = new_message_groups;
             this._message_groups = new_message_groups.concat(this._message_groups);
@@ -401,6 +413,27 @@ MessageListView.prototype = {
             self.message_containers[message_container.msg.id] = message_container;
         });
 
+        // Render new message groups on the top
+        if (message_actions.prepend_groups.length > 0) {
+            save_scroll_position();
+
+            rendered_groups = $(templates.render('message_group', {
+                message_groups: message_actions.prepend_groups,
+                use_match_properties: self.list.filter.is_search(),
+                table_name: self.table_name
+            }));
+
+            dom_messages = rendered_groups.find('.message_row');
+            new_dom_elements = new_dom_elements.concat(rendered_groups);
+
+            self._post_process_dom_messages(dom_messages.get());
+
+            // The date row will be included in the message groups or will be
+            // added in a rerenderd in the group below
+            table.find('.recipient_row').first().prev('.date_row').remove();
+            table.prepend(rendered_groups);
+            condense.condense_and_collapse(dom_messages);
+        }
 
         // Rerender message groups
         if (message_actions.rerender_groups.length > 0) {
@@ -424,27 +457,6 @@ MessageListView.prototype = {
                 old_message_group.replaceWith(rendered_groups);
                 condense.condense_and_collapse(dom_messages);
             });
-        }
-
-        // Render new message groups on the top
-        if (message_actions.prepend_groups.length > 0) {
-            save_scroll_position();
-
-            rendered_groups = $(templates.render('message_group', {
-                message_groups: message_actions.prepend_groups,
-                use_match_properties: self.list.filter.is_search(),
-                table_name: self.table_name
-            }));
-
-            dom_messages = rendered_groups.find('.message_row');
-            new_dom_elements = new_dom_elements.concat(rendered_groups);
-
-            self._post_process_dom_messages(dom_messages.get());
-
-            // The date row will be included in the message groups
-            table.find('.recipient_row').first().prev('.date_row').remove();
-            table.prepend(rendered_groups);
-            condense.condense_and_collapse(dom_messages);
         }
 
         // Rerender message rows
