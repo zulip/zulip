@@ -59,10 +59,10 @@ class zulip::app_frontend {
                     "python-gcm-client",
                     # Needed for avatar image resizing
                     "python-imaging",
-		    # Needed for LDAP support
-		    "python-django-auth-ldap",
-		    # Needed for Google Apps mobile auth
-		    "python-googleapi",
+                    # Needed for LDAP support
+                    "python-django-auth-ldap",
+                    # Needed for Google Apps mobile auth
+                    "python-googleapi",
                     ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
