@@ -16,9 +16,9 @@ set_global('unread', {message_unread: function () {}});
 set_global('timerender', {
     render_date: function (time1, time2) {
         if (time2 === undefined) {
-            return [{outerHTML: String(time1)}];
+            return [{outerHTML: String(time1.getTime())}];
         } else {
-            return [{outerHTML: String(time1) + ' - ' + String(time2)}];
+            return [{outerHTML: String(time1.getTime()) + ' - ' + String(time2.getTime())}];
         }
     }
 });
@@ -309,7 +309,7 @@ set_global('timerender', {
 
         assert.equal(
             message_group1.show_date,
-            'Sun Jan 11 1970 05:00:00 GMT-0500 (EST) - Wed Dec 31 1969 19:16:40 GMT-0500 (EST)'
+            '900000000 - 1000000'
         );
         assert_message_groups_list_equal(
             list._message_groups,
