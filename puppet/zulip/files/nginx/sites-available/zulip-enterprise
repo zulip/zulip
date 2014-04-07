@@ -12,8 +12,6 @@ server {
     ssl_certificate /etc/ssl/certs/zulip-enterprise.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/zulip-enterprise.key;
 
-    add_header X-Frame-Options DENY;
-
     location /user_uploads {
         add_header X-Content-Type-Options nosniff;
         include /etc/nginx/zulip-include/uploads.types;

@@ -15,8 +15,5 @@ server {
 
     server_name staging.zulip.com;
 
-    # Avoid clickjacking attacks
-    add_header X-Frame-Options DENY;
-
     include /etc/nginx/zulip-include/app;
 }
