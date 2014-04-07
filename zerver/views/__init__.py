@@ -664,7 +664,10 @@ def remote_user_jwt(request):
     try:
         jwt.verify_signature(payload, signing_input, header, signature,
                              settings.JWT_AUTH_KEYS[domain])
-        user_profile = get_user_profile_by_email(email)
+        # We do all the authentication we need here (otherwise we'd have to
+        # duplicate work), but we need to call authenticate with some backend so
+        # that the request.backend attribute gets set.
+        user_profile = authenticate(username=email, use_dummy_backend=True)
     except (jwt.DecodeError, jwt.ExpiredSignature):
         raise JsonableError("Bad JSON web token signature")
     except KeyError:
