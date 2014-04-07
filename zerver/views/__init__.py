@@ -1466,7 +1466,7 @@ def json_change_settings(request, user_profile,
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":
-        if name_changes_disabled(user_profile.realm.domain):
+        if name_changes_disabled(user_profile.realm):
             # Failingly silently is fine -- they can't do it through the UI, so
             # they'd have to be trying to break the rules.
             pass
