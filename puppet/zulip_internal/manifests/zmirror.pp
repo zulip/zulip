@@ -18,7 +18,7 @@ class zulip_internal::zmirror {
                        ]
   package { $zmirror_packages: ensure => "installed" }
 
-  apt::sources_list {'debathena':
+  apt::source {'debathena':
     location    => 'http://debathena.mit.edu/apt',
     release     => 'wheezy',
     repos       => 'debathena debathena-config',
