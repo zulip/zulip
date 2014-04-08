@@ -142,7 +142,7 @@ class zulip_internal::base {
   file { '/etc/iptables/rules.v4':
     ensure     => file,
     mode       => 600,
-    source     => 'puppet:///modules/zulip_internal/iptables/rules',
+    content    => template('zulip_internal/iptables/rules.v4.erb'),
     require    => Package['iptables-persistent'],
   }
   service { 'iptables-persistent':
