@@ -26,8 +26,9 @@ def report(state, output):
     exit(states[state])
 
 output = ""
-state = "OK"
+down_count = 0
 for results_file_name in os.listdir(RESULTS_DIR):
+    this_state = "OK"
     results_file = os.path.join(RESULTS_DIR, results_file_name)
     data = file(results_file).read().strip()
     last_check = os.stat(results_file).st_mtime
@@ -35,12 +36,17 @@ for results_file_name in os.listdir(RESULTS_DIR):
     # time_since_last_check threshhold needs to be strictly greater
     # than 1 minute, since with cron we expect intervals of at least 1
     # minute without any update
-    if data.split("\n")[-1].strip() == "0" and time_since_last_check < 90:
-        this_state = "OK"
-    else:
-        this_state = "CRITICAL"
-        state = this_state
+    if data.split("\n")[-1].strip() != "0" or time_since_last_check >= 90:
+        down_count += 1
+        this_state = "DOWN"
     last_check_ts = time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check))
     output += "%s: %s (%s)\n" % (results_file, this_state, last_check_ts)
+
+if down_count == 0:
+    state = "OK"
+elif down_count < 5:
+    state = "WARNING"
+else:
+    state = "CRITICAL"
 
 report(state, output)
