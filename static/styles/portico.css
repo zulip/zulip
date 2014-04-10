@@ -401,9 +401,10 @@ input.text-error {
     position: relative;
  }
 
- .header-main .logoimage {
-    height: 40px;
+ .header-main .portico-logo {
+    height: 28px;
     width: auto;
+    padding: 6px 0px 6px 0px;
  }
 
  .app {
