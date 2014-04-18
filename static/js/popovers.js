@@ -471,17 +471,31 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
+        var home_row;
         var msgid = $(e.currentTarget).data('msgid');
         var row = current_msg_list.get_row(msgid);
         var message = current_msg_list.get(rows.id(row));
 
+        // If we are narrowed we also need to collapse this message in the home
+        // view.
+        if (current_msg_list === narrowed_msg_list) {
+            home_row = home_msg_list.get_row(msgid);
+        }
+
+        var toggle_row = function toggle_row(row) {
+            if (!row) { return; }
+
+            if (message.collapsed) {
+                condense.uncollapse(row);
+            } else {
+                condense.collapse(row);
+            }
+        };
+
         popovers.hide_actions_popover();
 
-        if (message.collapsed) {
-            condense.uncollapse(row);
-        } else {
-            condense.collapse(row);
-        }
+        toggle_row(row);
+        toggle_row(home_row);
 
         e.stopPropagation();
         e.preventDefault();
