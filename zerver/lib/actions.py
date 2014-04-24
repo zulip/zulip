@@ -44,7 +44,7 @@ from zerver.lib.cache import cache_with_key, cache_set, \
     cache_delete, cache_delete_many, message_cache_key
 from zerver.decorator import get_user_profile_by_email, JsonableError, \
      statsd_increment
-from zerver.lib.event_queue import request_event_queue, get_user_events
+from zerver.lib.event_queue import request_event_queue, get_user_events, send_event
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
@@ -53,7 +53,6 @@ from zerver.lib.push_notifications import num_push_devices_for_user, \
      send_apple_push_notification, send_android_push_notification
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
-from zerver.tornado_callbacks import send_event
 
 import DNS
 import ujson

@@ -3,7 +3,7 @@ from django.test import TestCase
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib import cache
-from zerver import tornado_callbacks
+from zerver.lib import event_queue
 from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
@@ -49,10 +49,10 @@ def simulated_queue_client(client):
 
 @contextmanager
 def tornado_redirected_to_list(lst):
-    real_tornado_callbacks_process_notification = tornado_callbacks.process_notification
-    tornado_callbacks.process_notification = lst.append
+    real_event_queue_process_notification = event_queue.process_notification
+    event_queue.process_notification = lst.append
     yield
-    tornado_callbacks.process_notification = real_tornado_callbacks_process_notification
+    event_queue.process_notification = real_event_queue_process_notification
 
 @contextmanager
 def simulated_empty_cache():

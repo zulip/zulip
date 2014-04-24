@@ -19,7 +19,7 @@ import logging
 from tornado import ioloop
 from zerver.lib.debug import interactive_debug_listen
 from zerver.lib.response import json_response
-from zerver import tornado_callbacks
+from zerver.lib.event_queue import process_notification, missedmessage_hook
 from zerver.lib.event_queue import setup_event_queue, add_client_gc_hook
 from zerver.lib.queue import setup_tornado_rabbitmq
 from zerver.lib.socket import get_sockjs_router, respond_send_message
@@ -82,7 +82,7 @@ class Command(BaseCommand):
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
                 # Process notifications received via RabbitMQ
-                queue_client.register_json_consumer('notify_tornado', tornado_callbacks.process_notification)
+                queue_client.register_json_consumer('notify_tornado', process_notification)
                 queue_client.register_json_consumer('tornado_return', respond_send_message)
 
             try:
@@ -109,7 +109,7 @@ class Command(BaseCommand):
                     ioloop.IOLoop.instance().set_blocking_log_threshold(5)
 
                 setup_event_queue()
-                add_client_gc_hook(tornado_callbacks.missedmessage_hook)
+                add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
                 ioloop.IOLoop.instance().start()
             except KeyboardInterrupt:

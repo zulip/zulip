@@ -70,7 +70,6 @@ from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token, statsd_key
-from zerver import tornado_callbacks
 from zproject.backends import password_auth_enabled
 
 from confirmation.models import Confirmation

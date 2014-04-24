@@ -9,9 +9,8 @@ from zerver.decorator import asynchronous, \
 
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_bool, check_list, check_string
-from zerver.tornado_callbacks import process_notification
-
-from zerver.lib.event_queue import allocate_client_descriptor, get_client_descriptor
+from zerver.lib.event_queue import allocate_client_descriptor, get_client_descriptor, \
+    process_notification
 from zerver.lib.narrow import check_supported_events_narrow_filter
 
 import ujson
