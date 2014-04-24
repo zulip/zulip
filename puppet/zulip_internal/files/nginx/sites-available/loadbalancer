@@ -26,8 +26,8 @@ server {
     server_name www.humbughq.com api.humbughq.com humbughq.com;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/www.humbughq.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/production-zulip.key;
+    ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-all.key;
 
     location / {
         proxy_pass https://prod;
@@ -49,8 +49,8 @@ server {
     listen staging.zulip.com:443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/staging.zulip.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/staging-zulip.key;
+    ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-all.key;
 
     location / {
         proxy_pass https://staging/;
@@ -73,8 +73,8 @@ server {
     listen www.zulip.com:443 default_server;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/www.zulip.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/production-zulip.key;
+    ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-all.key;
 
     location / {
         proxy_pass https://prod;
@@ -96,8 +96,8 @@ server {
     listen api.zulip.com:443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/api.zulip.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/production-zulip.key;
+    ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-all.key;
 
     location / {
         proxy_pass https://prod;
@@ -121,8 +121,8 @@ server {
     listen zephyr.zulip.com:443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/zephyr.zulip.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/production-zulip.key;
+    ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-all.key;
 
     location / {
         proxy_pass https://prod;
@@ -136,52 +136,6 @@ server {
 
     location ~ /json/get_events|/json/events|/api/v1/events {
         proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy_longpolling;
-    }
-}
-
-server {
-    listen customer29.zulip.com:443;
-
-    ssl on;
-    ssl_certificate /etc/ssl/certs/customer29.zulip.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/production-zulip.key;
-
-    location / {
-        proxy_pass https://alpha;
-        include /etc/nginx/zulip-include/proxy;
-    }
-
-    location /sockjs {
-        proxy_pass https://alpha;
-        include /etc/nginx/zulip-include/location-sockjs;
-    }
-
-    location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://alpha;
-        include /etc/nginx/zulip-include/proxy_longpolling;
-    }
-}
-
-server {
-    listen 10.0.1.202:443;
-
-    ssl on;
-    ssl_certificate /etc/ssl/certs/wildcard-e.customer29.zulip.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/production-zulip.key;
-
-    location / {
-        proxy_pass https://alpha;
-        include /etc/nginx/zulip-include/proxy;
-    }
-
-    location /sockjs {
-        proxy_pass https://alpha;
-        include /etc/nginx/zulip-include/location-sockjs;
-    }
-
-    location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://alpha;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
 }
@@ -190,8 +144,8 @@ server {
     listen external-content.zulipcdn.net:443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/external-content.zulipcdn.net.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/production-zulipcdn.key;
+    ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-all.key;
 
     location / {
         proxy_pass http://127.0.0.1:9292;
