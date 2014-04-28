@@ -39,6 +39,8 @@ import logging
 
 __version__ = "0.2.4"
 
+logger = logging.getLogger(__name__)
+
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
 assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
