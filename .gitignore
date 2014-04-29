@@ -7,7 +7,7 @@
 /prod-static
 /errors/*
 *.sw[po]
-.DS_Store
+*.DS_Store
 event_queues.pickle
 stats/
 zerver/fixtures/available-migrations
