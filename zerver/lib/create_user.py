@@ -44,7 +44,7 @@ def create_user(email, password, realm, full_name, short_name,
                 avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 is_mirror_dummy=False, default_sending_stream=None,
                 default_events_register_stream=None,
-                default_all_public_streams=None):
+                default_all_public_streams=None, user_profile_id=None):
     user_profile = create_user_profile(realm, email, password, active, bot,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy)
@@ -55,6 +55,9 @@ def create_user(email, password, realm, full_name, short_name,
     # Allow the ORM default to be used if not provided
     if default_all_public_streams is not None:
         user_profile.default_all_public_streams = default_all_public_streams
+
+    if user_profile_id is not None:
+        user_profile.id = user_profile_id
 
     user_profile.save()
     recipient = Recipient.objects.create(type_id=user_profile.id,
