@@ -93,24 +93,14 @@ def get_file_info(request, user_file):
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
     return uploaded_file_name, content_type
 
-def authed_upload_enabled(realm):
-    return realm.domain in ('squarespace.com', 'bargainbit.com')
-
-def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_profile, private=None, target_realm=None):
-    if private is None:
-        private = authed_upload_enabled(target_realm if target_realm is not None else user_profile.realm)
-    if private:
-        bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        s3_file_name = "/".join([
-            str(target_realm.id if target_realm is not None else user_profile.realm.id),
-            random_name(18),
-            sanitize_name(uploaded_file_name)
-        ])
-        url = "/user_uploads/%s" % (s3_file_name)
-    else:
-        bucket_name = settings.S3_BUCKET
-        s3_file_name = "/".join([random_name(18), sanitize_name(uploaded_file_name)])
-        url = "https://%s.s3.amazonaws.com/%s" % (bucket_name, s3_file_name)
+def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
+    bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
+    s3_file_name = "/".join([
+        str(target_realm.id if target_realm is not None else user_profile.realm.id),
+        random_name(18),
+        sanitize_name(uploaded_file_name)
+    ])
+    url = "/user_uploads/%s" % (s3_file_name)
 
     upload_image_to_s3(
             bucket_name,
@@ -163,7 +153,7 @@ def write_local_file(type, path, file_data):
     with open(file_path, 'wb') as f:
         f.write(file_data)
 
-def upload_message_image_local(uploaded_file_name, content_type, file_data, user_profile, private=None, target_realm=None):
+def upload_message_image_local(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
     # Split into 256 subdirectories to prevent directories from getting too big
     path = "/".join([
         str(user_profile.realm.id),
@@ -194,6 +184,6 @@ else:
     upload_message_image = upload_message_image_s3
     upload_avatar_image  = upload_avatar_image_s3
 
-def upload_message_image_through_web_client(request, user_file, user_profile, private=None):
+def upload_message_image_through_web_client(request, user_file, user_profile):
     uploaded_file_name, content_type = get_file_info(request, user_file)
-    return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile, private)
+    return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile)

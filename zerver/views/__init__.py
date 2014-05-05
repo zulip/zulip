@@ -1416,14 +1416,14 @@ def json_get_subscribers(request, user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_upload_file(request, user_profile, private=REQ(validator=check_bool, default=None)):
+def json_upload_file(request, user_profile):
     if len(request.FILES) == 0:
         return json_error("You must specify a file to upload")
     if len(request.FILES) != 1:
         return json_error("You may only upload one file at a time")
 
     user_file = request.FILES.values()[0]
-    uri = upload_message_image_through_web_client(request, user_file, user_profile, private=private)
+    uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
 
 @has_request_variables

@@ -45,23 +45,6 @@ class S3Test(AuthedTestCase):
     test_keys = [] # keys in authed bucket
 
     @slow(2.6, "has to contact external S3 service")
-    def test_file_upload(self):
-        """
-        A call to /json/upload_file should return a uri and actually create an object.
-        """
-        self.login("hamlet@zulip.com")
-        fp = StringIO("zulip!")
-        fp.name = "zulip.txt"
-
-        result = self.client.post("/json/upload_file", {'file': fp, 'private':'false'})
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("uri", json)
-        uri = json["uri"]
-        self.test_uris.append(uri)
-        self.assertEquals("zulip!", urllib2.urlopen(uri).read().strip())
-
-    @slow(2.6, "has to contact external S3 service")
     def test_file_upload_authed(self):
         """
         A call to /json/upload_file should return a uri and actually create an object.
@@ -70,7 +53,7 @@ class S3Test(AuthedTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
 
-        result = self.client.post("/json/upload_file", {'file': fp, 'private':'true'})
+        result = self.client.post("/json/upload_file", {'file': fp})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("uri", json)
