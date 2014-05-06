@@ -65,7 +65,7 @@ from zerver.decorator import require_post, \
     RequestVariableConversionError
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
-    get_signed_upload_url
+    get_signed_upload_url, get_realm_for_filename
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
@@ -1432,9 +1432,17 @@ def get_uploaded_file(request, user_profile, realm_id, filename,
     if settings.LOCAL_UPLOADS_DIR is not None:
         return HttpResponseForbidden() # Should have been served by nginx
 
+    url_path = "%s/%s" % (realm_id, filename)
+
+    if realm_id == "unk":
+        realm_id = get_realm_for_filename(url_path)
+        if realm_id is None:
+            # File does not exist
+            return json_error("That file does not exist.", status=404)
+
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
     if user_profile.realm.id == int(realm_id) or user_profile.realm.domain == 'zulip.com':
-        uri = get_signed_upload_url("%s/%s" % (realm_id, filename))
+        uri = get_signed_upload_url(url_path)
         if redir:
             return redirect(uri)
         else:

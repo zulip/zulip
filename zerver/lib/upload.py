@@ -9,6 +9,8 @@ from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 from mimetypes import guess_type, guess_extension
 
+from zerver.models import get_user_profile_by_id
+
 import base64
 import os
 from PIL import Image, ImageOps
@@ -114,6 +116,14 @@ def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_pr
 def get_signed_upload_url(path):
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
+
+def get_realm_for_filename(path):
+    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+    key = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET).get_key(path)
+    if key is None:
+        # This happens if the key does not exist.
+        return None
+    return get_user_profile_by_id(key.metadata["user_profile_id"]).realm.id
 
 def upload_avatar_image_s3(user_file, user_profile, email):
     content_type = guess_type(user_file.name)[0]
