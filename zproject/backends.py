@@ -81,7 +81,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
         except AppIdentityError:
             return None
-        if token_payload["email_verified"] == "true":
+        if token_payload["email_verified"] in (True, "true"):
             try:
                 return get_user_profile_by_email(token_payload["email"])
             except UserProfile.DoesNotExist:
