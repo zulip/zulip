@@ -598,7 +598,9 @@ Feedback button or at support@zulip.com."""
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].replace("@", "@@").split("\n"))
 
-    zwrite_args = ["zwrite", "-n", "-s", message["sender_full_name"], "-F", "Zephyr error: See http://zephyr.1ts.org/wiki/df"]
+    zwrite_args = ["zwrite", "-n", "-s", message["sender_full_name"],
+                   "-F", "Zephyr error: See http://zephyr.1ts.org/wiki/df",
+                   "-x", "UTF-8"]
 
     # Hack to make ctl's fake username setup work :)
     if message['type'] == "stream" and zulip_account_email == "ctl@mit.edu":
