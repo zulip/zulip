@@ -176,8 +176,15 @@ class Client(object):
         self.client_name = client
 
     def get_user_agent(self):
-        vendor = platform.system()
-        vendor_version = platform.release()
+        vendor = ''
+        vendor_version = ''
+        try:
+            vendor = platform.system()
+            vendor_version = platform.release()
+        except IOError:
+            # If the calling process is handling SIGCHLD, platform.system() can
+            # fail with an IOError.  See http://bugs.python.org/issue9127
+            pass
 
         if vendor == "Linux":
             vendor, vendor_version, dummy = platform.linux_distribution()
