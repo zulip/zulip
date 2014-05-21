@@ -14,11 +14,14 @@ import HTMLParser
 import httplib2
 import itertools
 import urllib
+import xml.etree.cElementTree as etree
 
 import hashlib
 
 from collections import defaultdict
 import hmac
+
+import requests
 
 from django.core import mail
 from django.conf import settings
@@ -69,15 +72,24 @@ def walk_tree(root, processor, stop_after_first=False):
 
     return results
 
-def add_a(root, url, link, height=None):
+# height is not actually used
+def add_a(root, url, link, height="", title=None, desc=None, class_attr="message_inline_image"):
     div = markdown.util.etree.SubElement(root, "div")
-    div.set("class", "message_inline_image");
+    div.set("class", class_attr)
     a = markdown.util.etree.SubElement(div, "a")
     a.set("href", link)
     a.set("target", "_blank")
-    a.set("title", url_filename(link))
+    a.set("title", title if title is not None else url_filename(link))
     img = markdown.util.etree.SubElement(a, "img")
     img.set("src", url)
+    if title and desc:
+        summary_div = markdown.util.etree.SubElement(div, "div")
+        title_div = markdown.util.etree.SubElement(summary_div, "div")
+        title_div.set("class", "message_inline_image_title");
+        title_div.text = title
+        desc_div = markdown.util.etree.SubElement(summary_div, "desc")
+        desc_div.set("class", "message_inline_image_desc");
+        desc_div.text = desc
 
 def hash_embedly_url(link):
     return 'embedly:' + hashlib.sha1(link).hexdigest()
@@ -135,6 +147,69 @@ def fetch_tweet_data(tweet_id):
                 return None
     return res
 
+HEAD_START_RE = re.compile('^head[ >]')
+HEAD_END_RE = re.compile('^/head[ >]')
+META_START_RE = re.compile('^meta[ >]')
+META_END_RE = re.compile('^/meta[ >]')
+
+def fetch_open_graph_image(url):
+    in_head = False
+    # HTML will auto close meta tags, when we start the next tag add a closing tag if it has not been closed yet.
+    last_closed = True
+    head = []
+
+    # TODO: What if response content is huge? Should we get headers first?
+    content = requests.get(url).content
+
+    # Extract the head and meta tags
+    # All meta tags are self closing, have no children or are closed
+    # automatically.
+    for part in content.split('<'):
+        if not in_head and HEAD_START_RE.match(part):
+            # Started the head node output it to have a document root
+            in_head = True
+            head.append('<head>')
+        elif in_head and HEAD_END_RE.match(part):
+            # Found the end of the head close any remaining tag then stop
+            # processing
+            in_head = False
+            if not last_closed:
+                last_closed = True
+                head.append('</meta>')
+            head.append('</head>')
+            break
+
+        elif in_head and META_START_RE.match(part):
+            # Found a meta node copy it
+            if not last_closed:
+                head.append('</meta>')
+                last_closed = True
+            head.append('<')
+            head.append(part)
+            if '/>' not in part:
+                last_closed = False
+
+        elif in_head and META_END_RE.match(part):
+            # End of a meta node just copy it to close the tag
+            head.append('<')
+            head.append(part)
+            last_closed = True
+
+    try:
+        doc = etree.fromstring(''.join(head))
+    except etree.ParseError:
+        return None
+    og_image = doc.find('meta[@property="og:image"]')
+    og_title = doc.find('meta[@property="og:title"]')
+    og_desc = doc.find('meta[@property="og:description"]')
+    if og_image is not None:
+        image = og_image.get('content')
+    if og_title is not None:
+        title = og_title.get('content')
+    if og_desc is not None:
+        desc = og_desc.get('content')
+    return {'image': image, 'title': title, 'desc': desc}
+
 def get_tweet_id(url):
     parsed_url = urlparse.urlparse(url)
     if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
@@ -180,12 +255,41 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def dropbox_image(self, url):
         parsed_url = urlparse.urlparse(url)
         if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')):
-            if self.is_image(url) and (parsed_url.path.startswith('/s/')
-                                       or parsed_url.path.startswith('/sh/')):
-                return "%s?dl=1" % (url,)
-            if parsed_url.path.startswith('/sc/'):
-                # /sc/ is generally speaking a photo album, so let's unconditionally try to preview it
-                return "%s?dl=1" % (url,)
+            is_album = parsed_url.path.startswith('/sc/')
+            # Only allow preview Dropbox shared links
+            if not (parsed_url.path.startswith('/s/') or
+                    parsed_url.path.startswith('/sh/') or
+                    is_album):
+                return None
+
+            # Try to retrieve open graph protocol info for a preview
+            # This might be redundant right now for shared links for images.
+            # However, we might want to make use of title and description
+            # in the future. If the actual image is too big, we might also
+            # want to use the open graph image.
+            image_info = fetch_open_graph_image(url)
+
+            is_image = is_album or self.is_image(url)
+
+            # If it is from an album or not an actual image file,
+            # just use open graph image.
+            if is_album or not is_image:
+                if image_info is not None:
+                    image_info["is_image"] = is_image
+                return image_info
+
+            # Otherwise, try to retrieve the actual image.
+            # This is because open graph image from Dropbox may have padding
+            # and gifs do not work.
+            # TODO: What if image is huge? Should we get headers first?
+            if image_info is None:
+                image_info = dict()
+            image_info['is_image'] = True
+            parsed_url_list = list(parsed_url)
+            parsed_url_list[4] = "dl=1" # Replaces query
+            image_info["image"] = urlparse.urlunparse(parsed_url_list)
+
+            return image_info
         return None
 
     def youtube_image(self, url):
@@ -432,9 +536,19 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         rendered_tweet_count = 0
         embedly_urls = []
         for url in found_urls:
-            dropbox = self.dropbox_image(url)
-            if dropbox is not None:
-                add_a(root, dropbox, url)
+            dropbox_image = self.dropbox_image(url)
+            if dropbox_image is not None:
+                class_attr = "message_inline_ref"
+                is_image = dropbox_image["is_image"]
+                if is_image:
+                    class_attr = "message_inline_image"
+                    # Not making use of title and description of images
+                    dropbox_image['title'] = ""
+                    dropbox_image['desc'] = ""
+                add_a(root, dropbox_image['image'], url,
+                      title=dropbox_image.get('title', ""),
+                      desc=dropbox_image.get('desc', ""),
+                      class_attr=class_attr)
                 continue
             if self.is_image(url):
                 add_a(root, url, url)

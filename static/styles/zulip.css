@@ -2254,9 +2254,26 @@ div.floating_recipient {
     border: none !important;
 }
 
-.twitter-image img, .message_inline_image img {
+.message_inline_ref {
+    margin-bottom: 5px;
+    margin-left: 5px;
+    height: 50px;
+    display: block !important;
+    border: none !important;
+}
+
+.twitter-image img, .message_inline_image img, .message_inline_ref img {
     height: auto;
     max-height: 100%;
+    float: left;
+    margin-right: 10px;
+}
+
+.message_inline_image_title {
+    font-weight: bold;
+}
+
+.message_inline_image_desc {
 }
 
 .popover {
