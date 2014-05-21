@@ -1000,6 +1000,11 @@ def home(request):
         (not user_profile.email.lower().endswith("@customer4.invalid"))):
         show_invites = False
 
+    # Warn users on the zulip.com realm to use staging.
+    send_to_staging = False
+    if page_params['domain'] == "zulip.com" and not page_params['staging']:
+        send_to_staging = True
+
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
@@ -1013,6 +1018,7 @@ def home(request):
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
+                                   'send_to_staging': send_to_staging,
                                    },
                                   context_instance=RequestContext(request))
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)

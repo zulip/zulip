@@ -20,6 +20,13 @@
                   to use <a href="https://zephyr.zulip.com">the web interface</a></span>
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
+              {% if send_to_staging %}
+              <div id="staging-warning"class="alert alert_sidebar alert-error">
+                <p>This realm uses staging. Please login into
+                <a href="https://staging.zulip.com/">staging.zulip.com</a>
+                to be part of the conversation.</p>
+              </div>
+              {% endif %}
               <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
               {% if enable_feedback %}
               <div id="feedback_section">
