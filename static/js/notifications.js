@@ -17,12 +17,36 @@ var current_favicon;
 var previous_favicon;
 var flashing = false;
 
+var notifications_api;
+if (window.webkitNotifications) {
+    notifications_api = window.webkitNotifications;
+} else if (window.Notification) {
+    // Build a shim to the new notification API
+    notifications_api = {
+        checkPermission: function checkPermission() {
+            if (window.Notification.permission === 'granted') {
+                return 0;
+            } else {
+                return 2;
+            }
+        },
+        requestPermission: window.Notification.requestPermission,
+        createNotification: function createNotification(icon, title, content) {
+            var notification_object = new window.Notification(title, {icon: icon, body: content});
+            notification_object.show = function () {};
+            notification_object.cancel = function () { notification_object.close(); };
+            return notification_object;
+        }
+    };
+}
+
+
 function browser_desktop_notifications_on () {
-    return (window.webkitNotifications &&
+    return (notifications_api &&
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
             $.browser.webkit &&
             // 0 is PERMISSION_ALLOWED
-            window.webkitNotifications.checkPermission() === 0) ||
+            notifications_api.checkPermission() === 0) ||
         // window.bridge is the desktop client
         (window.bridge !== undefined);
 }
@@ -80,13 +104,13 @@ exports.initialize = function () {
         }
     }
 
-    if (window.webkitNotifications) {
+    if (notifications_api) {
         $(document).click(function () {
             if (!page_params.desktop_notifications_enabled || asked_permission_already) {
                 return;
             }
-            if (window.webkitNotifications.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
-                window.webkitNotifications.requestPermission(function () {});
+            if (notifications_api.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
+                notifications_api.requestPermission(function () {});
                 asked_permission_already = true;
             }
         });
@@ -280,7 +304,7 @@ function process_notification(notification) {
     if (window.bridge === undefined && notification.webkit_notify === true) {
         var icon_url = ui.small_avatar_url(message);
         notice_memory[key] = {
-            obj: window.webkitNotifications.createNotification(
+            obj: notifications_api.createNotification(
                     icon_url, title, content),
             msg_count: msg_count,
             message_id: message.id
