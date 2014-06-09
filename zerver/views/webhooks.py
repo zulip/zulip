@@ -182,9 +182,9 @@ def api_github_landing(request, user_profile, event=REQ,
     if (event == 'pull_request' and domain in ['customer18.invalid']) or exclude_pull_requests:
         return json_success()
 
-    # Only Zulip, CUSTOMER5, and CMU get issues right now
+    # Only Zulip, CUSTOMER5, CUSTOMER27, and CUSTOMER17 get issues right now
     # TODO: is this still the desired behavior?
-    if event == 'issues' and domain not in ('zulip.com', 'customer5.invalid', 'customer27.invalid') or exclude_issues:
+    if event == 'issues' and domain not in ('zulip.com', 'customer5.invalid', 'customer27.invalid', 'customer17.invalid') or exclude_issues:
         return json_success()
 
     # CUSTOMER37 and CUSTOMER38 do not want github issues traffic, or push notifications, only pull requests.
