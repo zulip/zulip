@@ -1187,25 +1187,28 @@ just a temporary hack.
 }
 
 .sender-status {
-    display: inline-block;
-    padding-bottom: 22px;
-    vertical-align: top;
-    height: 35px;
-    line-height: 35px;
+    display: block;
+    left: 45px;
+    top: -26px;
+    padding-bottom: 6px;
+    padding-right: 35px;
+    vertical-align: middle;
+    line-height: 18px;
     font-size: 14px;
     position: relative;
 }
 
-.sender-status .sender_name {
-    font-weight: bold;
-    position: static;
-    vertical-align: top;
-    line-height: 35px;
-    margin-right: 3px;
-    font-size: 14px;
+.message_controls.sender-status-controls {
+    top: 10px;
 }
 
-.sender_name_hovered .sender_name {
+.sender_name-in-status {
+    margin-right: 3px;
+    font-weight: 700;
+}
+
+.sender_name_hovered .sender_name,
+.sender_name_hovered .sender_name-in-status {
     color: #0088CC;
 }
 
