@@ -58,7 +58,7 @@ sed -i 's/localhost$/localhost $hostname/' /etc/hosts
 wget -O /root/ops.asc https://zulip.com/dist/keys/ops.asc
 apt-key add /root/ops.asc
 cat >/etc/apt/sources.list.d/zulip.list <<EOF2
-deb http://apt.zulip.com/ops wheezy main
+deb http://apt.zulip.net/ops wheezy main
 EOF2
 apt-get update
 apt-get -y upgrade

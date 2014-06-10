@@ -18,7 +18,7 @@ class zulip_internal::base {
   package { $org_base_packages: ensure => "installed" }
 
   apt::source {'zulip':
-    location    => 'http://apt.zulip.com/ops',
+    location    => 'http://apt.zulip.net/ops',
     release     => 'wheezy',
     repos       => 'main',
     key         => 'E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65',
