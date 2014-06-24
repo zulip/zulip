@@ -712,7 +712,7 @@ def send_message_backend(request, user_profile,
                          subject_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
                          domain = REQ('domain', default=None),
-                         local_id = REQ(default=None, converter=to_non_negative_float),
+                         local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
     client = request.client
     is_super_user = is_super_user_api(request)
