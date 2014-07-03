@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.test import TestCase
 
 from zilencer.models import Deployment
@@ -238,7 +239,7 @@ class LoginTest(AuthedTestCase):
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email in message.to:
-                confirmation_link_pattern = re.compile("example.com(\S+)>")
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
                 confirmation_url = confirmation_link_pattern.search(
                     message.body).groups()[0]
                 break

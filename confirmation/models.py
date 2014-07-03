@@ -34,8 +34,7 @@ def generate_key():
     return generate_random_token(40)
 
 def generate_activation_url(key):
-    current_site = Site.objects.get_current()
-    return u'https://%s%s' % (current_site.domain,
+    return u'https://%s%s' % (settings.EXTERNAL_HOST,
             reverse('confirmation.views.confirm', kwargs={'confirmation_key': key}))
 
 
