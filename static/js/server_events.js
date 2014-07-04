@@ -270,7 +270,7 @@ function get_events(options) {
                     ($.parseJSON(xhr.responseText).msg.indexOf("too old") !== -1 ||
                      $.parseJSON(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
                     page_params.event_queue_expired = true;
-                    reload.initiate({immediate: true});
+                    reload.initiate({immediate: true, save_state: false});
                 }
 
                 if (error_type === 'abort') {
