@@ -4,8 +4,9 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from zerver.decorator import statsd_increment, uses_mandrill
 from zerver.models import Recipient, ScheduledJob, UserMessage, \
-    get_display_recipient, get_user_profile_by_email, get_user_profile_by_id, \
-    receives_offline_notifications, get_context_for_message
+    Stream, get_display_recipient, get_user_profile_by_email, \
+    get_user_profile_by_id, receives_offline_notifications, \
+    get_context_for_message
 
 import datetime
 import re
@@ -221,6 +222,20 @@ def do_send_missedmessage_events(user_profile, missed_messages):
                 headers['Reply-To'] = missed_messages[0].sender.email
             else:
                 template_payload['reply_warning'] = True
+        elif all(msg.recipient.type == Recipient.STREAM
+                 for msg in missed_messages) and user_profile.realm.domain == 'zulip.com':
+            recipient_ids = {msg.recipient_id for msg in missed_messages}
+            if len(recipient_ids) == 1:
+                from zerver.lib.actions import encode_email_address
+                stream = Stream.objects.get(id=missed_messages[0].recipient.type_id)
+                stream_address = encode_email_address(stream)
+                headers['Reply-To'] = "Zulip - %s <%s>" % (stream.name, stream_address)
+            else:
+                # There are @-mentions on diffrent streams
+                template_payload['mention'] = True
+                template_payload['reply_warning'] = True
+                headers['Reply-To'] = "Nobody <%s>" % (settings.NOREPLY_EMAIL_ADDRESS,)
+
         else:
             # There are some @-mentions mixed in with personals
             template_payload['mention'] = True
@@ -259,6 +274,9 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
+    if not messages:
+        return
+
     messages_by_recipient_subject = defaultdict(list)
     for msg in messages:
         messages_by_recipient_subject[(msg.recipient_id, msg.subject)].append(msg)
@@ -266,10 +284,21 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     for msg_list in messages_by_recipient_subject.values():
         msg = min(msg_list, key=lambda msg: msg.pub_date)
         if msg.recipient.type == Recipient.STREAM:
-            messages.extend(get_context_for_message(msg))
+            msg_list.extend(get_context_for_message(msg))
 
-    if messages:
-        unique_messages = {m.id: m for m in messages}
+
+    # Send an email per recipient subject pair
+    if user_profile.realm.domain == 'zulip.com':
+        for msg_list in messages_by_recipient_subject.values():
+            unique_messages = {m.id: m for m in msg_list}
+            do_send_missedmessage_events(user_profile, unique_messages.values())
+    else:
+        all_messages = [
+            msg
+            for msg_list in messages_by_recipient_subject.values()
+            for msg in msg_list
+        ]
+        unique_messages = {m.id: m for m in all_messages}
         do_send_missedmessage_events(user_profile, unique_messages.values())
 
 @uses_mandrill
