@@ -65,7 +65,7 @@ exports.negated_search = true;
 
 // Ready for deprecation.
 exports.collapsible = false;
-exports.dropbox_integration = false;
+exports.dropbox_integration = page_params.staging;
 
 return exports;
 
