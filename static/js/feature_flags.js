@@ -46,7 +46,7 @@ exports.enable_new_user_app_alerts = ! _.contains(['employees.customer16.invalid
 
 exports.full_width = false; //page_params.staging;
 exports.cleanup_before_reload = page_params.staging || is_customer4;
-exports.new_bot_ui = page_params.staging;
+exports.new_bot_ui = false; // page_params.staging;
 
 // This list must match the list of domains in enqueue_digest_emails.
 exports.dont_show_digest_email_setting = _.contains(["mit.edu", "customer29.invalid", "customer20.invalid"],
