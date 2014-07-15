@@ -5,13 +5,14 @@ from django.template import loader
 from zerver.decorator import statsd_increment, uses_mandrill
 from zerver.models import Recipient, ScheduledJob, UserMessage, \
     get_display_recipient, get_user_profile_by_email, get_user_profile_by_id, \
-    receives_offline_notifications
+    receives_offline_notifications, get_context_for_message
 
 import datetime
 import re
 import subprocess
 import ujson
 import urllib
+from collections import defaultdict
 
 def unsubscribe_token(user_profile):
     # Leverage the Django confirmations framework to generate and track unique
@@ -258,9 +259,18 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
+    messages_by_recipient_subject = defaultdict(list)
+    for msg in messages:
+        messages_by_recipient_subject[(msg.recipient_id, msg.subject)].append(msg)
+
+    for msg_list in messages_by_recipient_subject.values():
+        msg = min(msg_list, key=lambda msg: msg.pub_date)
+        if msg.recipient.type == Recipient.STREAM:
+            messages.extend(get_context_for_message(msg))
 
     if messages:
-        do_send_missedmessage_events(user_profile, messages)
+        unique_messages = {m.id: m for m in messages}
+        do_send_missedmessage_events(user_profile, unique_messages.values())
 
 @uses_mandrill
 def clear_followup_emails_queue(email, mail_client=None):

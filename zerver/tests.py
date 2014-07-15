@@ -12,7 +12,7 @@ from zerver.lib.test_helpers import (
 from zerver.models import UserProfile, Recipient, \
     Realm, Client, UserActivity, \
     get_user_profile_by_email, split_email_to_domain, get_realm, \
-    get_client, get_stream
+    get_client, get_stream, Message
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import \
@@ -22,13 +22,16 @@ from zerver.lib.actions import \
     do_add_subscription, do_remove_subscription, do_make_stream_private
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
+from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.middleware import is_slow_query
 
 from zerver.worker import queue_processors
 
 from django.conf import settings
+from django.core import mail
 import datetime
 import os
+import re
 import sys
 import time
 import ujson
@@ -1380,3 +1383,26 @@ class ExtractedRecipientsTest(TestCase):
         self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com', 'bob@zulip.com'])
 
 
+class TestMissedMessages(AuthedTestCase):
+    def test_extra_context_in_missed_stream_messages(self):
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '0')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '1')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '2')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '3')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '4')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '5')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '6', subject='test2')
+        msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
+
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+
+        def normalize_string(s):
+            s = s.strip()
+            return re.sub(r'\s+', ' ', s)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertIn(
+            'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 @**hamlet**',
+            normalize_string(mail.outbox[0].body),
+        )

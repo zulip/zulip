@@ -23,6 +23,7 @@ import zlib
 
 from bitfield import BitField
 from collections import defaultdict
+from datetime import timedelta
 import pylibmc
 import re
 import ujson
@@ -967,6 +968,15 @@ def pre_save_message(sender, **kwargs):
     if kwargs['update_fields'] is None or "content" in kwargs['update_fields']:
         message = kwargs['instance']
         message.update_calculated_fields()
+
+def get_context_for_message(message):
+    return Message.objects.filter(
+        recipient_id=message.recipient_id,
+        subject=message.subject,
+        id__lt=message.id,
+        pub_date__gt=message.pub_date - timedelta(minutes=5),
+    ).order_by('-id')[:5]
+
 
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)
