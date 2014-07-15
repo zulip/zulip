@@ -143,7 +143,7 @@ exports.redraw_title = function () {
     var n;
 
     var new_title = (new_message_count ? ("(" + new_message_count + ") ") : "")
-        + page_params.realm_name + " - Zulip";
+        + page_params.realm_name + " - " + page_params.product_name;
 
     if (document.title === new_title) {
         return;

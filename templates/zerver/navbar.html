@@ -1,7 +1,7 @@
 <div class="header">
 <div class="header-main rightside-userlist" id="top_navbar">
   <div class="column-left">
-          <a class="brand logo" href="#"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="logoimage" alt="Zulip" content="Zulip" /></a>
+    <a class="brand logo" href="#"><img src="/static/images/logo/{% if dbx_branding %}dbx{% else %}zulip{% endif %}cornerlogo@2x.png" class="logoimage" alt="{{product_name}}" content="{{product_name}}" /></a>
   </div>
   <div class="column-middle" id="navbar-middle">
     <div class="column-middle-inner">
@@ -93,7 +93,7 @@
                     </a>
                   </li>
                   {% if show_invites %}
-                  <li title="Invite coworkers to Zulip">
+                  <li title="Invite coworkers to {{product_name}}">
                     <a href="#invite-user" role="button" data-toggle="modal">
                       <i class="icon-vector-plus-sign"></i> Invite coworkers
                     </a>
@@ -108,8 +108,7 @@
                   {% endif %}
                   <li class="divider"></li>
                   {% if show_webathena %}
-                  <li title="Grant Zulip the Kerberos tickets needed to run your Zephyr
-                             mirror via Webathena" id="webathena_login_menu">
+                  <li title="Grant {{product_name}} the Kerberos tickets needed to run your Zephyr mirror via Webathena" id="webathena_login_menu">
                     <a href="#webathena" class="webathena_login">
                       <i class="icon-vector-bolt"></i>Link with Webathena
                     </a>

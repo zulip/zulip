@@ -1,17 +1,17 @@
           <div class="right-sidebar" id="right-sidebar">
               <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
-                <strong>Unable to connect to Zulip.</strong>  Updates may be delayed.
+                <strong>Unable to connect to {{product_name}}.</strong>  Updates may be delayed.
                 <br /><br /> Retrying soon... <br /><br /> <a class="restart_get_updates_button">Try now</a>.
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="get_old_messages_error">
-                <strong>Unable to connect to Zulip.</strong>  Could not fetch messages.
+                <strong>Unable to connect to {{product_name}}.</strong>  Could not fetch messages.
                 <br /><br /> Retrying soon... <br /><br />
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
                 <strong>Your Zephyr mirror is not working.</strong>
                   <span id="normal-zephyr-mirror-error-text">We
                   recommend that you <a class="webathena_login">give
-                  Zulip the ability to mirror the messages for you via
+                  {{product_name}} the ability to mirror the messages for you via
                   WebAthena</a>.  If you'd prefer, you can instead
                   <a href="/zephyr-mirror" target="_blank">run the Zephyr mirror script yourself</a>
                   in a screen session.</span>
@@ -30,11 +30,11 @@
               $(function () {
                   if (window.bridge !== undefined) {
                       // Desktop app only supports "prompt", not "alert" or "confirm" :/
-                      if (window.prompt("You're currently on the production Zulip server, but everyone else is on the staging server.\n\nPress OK to be redirected there now.\n\nGoing forward, please run Zulip with the following flag to use the staging server:", "--site https://staging.zulip.com") !== null) {
+                      if (window.prompt("You're currently on the production {{product_name}} server, but everyone else is on the staging server.\n\nPress OK to be redirected there now.\n\nGoing forward, please run {{product_name}} with the following flag to use the staging server:", "--site https://staging.zulip.com") !== null) {
                           window.location.assign("https://staging.zulip.com");
                       }
                   } else {
-                      if (window.confirm("You're currently on the production Zulip server, but everyone else is on the staging server. Please use https://staging.zulip.com to use Zulip.\n\nPress OK to be redirected there now.")) {
+                      if (window.confirm("You're currently on the production {{product_name}} server, but everyone else is on the staging server. Please use https://staging.zulip.com to use {{product_name}}.\n\nPress OK to be redirected there now.")) {
                         window.location.assign("https://staging.zulip.com");
                       }
                   }

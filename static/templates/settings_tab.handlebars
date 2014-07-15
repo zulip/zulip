@@ -89,7 +89,7 @@
   <div>
     <div id="notification-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>Notifications</div>
-      <div class="notification-reminder">You'll receive notifications when a message arrives and Zulip isn't in focus or the message is offscreen.</div>
+      <div class="notification-reminder">You'll receive notifications when a message arrives and {{ page_params.product_name }} isn't in focus or the message is offscreen.</div>
       <div class="alert" id="notify-settings-status"></div>
       <div class="notification-settings-form">
         <h4>Stream messages</h4>
@@ -314,11 +314,11 @@
 {{#if_or page_params.show_autoscroll_forever_option page_params.show_default_desktop_notifications_option}}
 <div class="ui-settings">
   <div id="ui-settings" class="settings-section">
-    <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>Zulip Labs</div>
+    <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>{{ page_params.product_name }} Labs</div>
     <div class="alert" id="ui-settings-status"></div>
     <div class="ui-settings-form">
       <p>
-        Zulip Labs is where you can try out some experimental new
+        {{ page_params.product_name }} Labs is where you can try out some experimental new
         features we're working on. Let us know what you think!
       </p>
       <div class="control-group">
