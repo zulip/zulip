@@ -262,7 +262,7 @@ exports.show_settings_for = function (stream_name) {
 
 function add_email_hint(row) {
     // Add a popover explaining stream e-mail addresses on hover.
-    var hint_id = "#email-address-hint-" + row.id;
+    var hint_id = "#email-address-hint-" + row.stream_id;
     var email_address_hint = $(hint_id);
     email_address_hint.popover({"placement": "bottom",
                 "title": "Email integration",
