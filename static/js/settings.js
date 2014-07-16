@@ -648,7 +648,7 @@ exports.setup_page = function () {
             url: '/json/ui_settings/change',
             data: labs_updates,
             success: function (resp, statusText, xhr, form) {
-                var message = "Updated Zulip Labs settings!";
+                var message = "Updated " + page_params.product_name + " Labs settings!";
                 var result = $.parseJSON(xhr.responseText);
                 var ui_settings_status = feature_flags.show_autoscroll_forever_option &&
                     $('#ui-settings-status').expectOne();

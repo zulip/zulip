@@ -266,7 +266,8 @@ function add_email_hint(row) {
     var email_address_hint = $(hint_id);
     email_address_hint.popover({"placement": "bottom",
                 "title": "Email integration",
-                "content": templates.render('email_address_hint'),
+                "content": templates.render('email_address_hint',
+                                            { page_params: page_params }),
                 "trigger": "manual"});
     $("body").on("mouseover", hint_id, function (e) {
         email_address_hint.popover('show');

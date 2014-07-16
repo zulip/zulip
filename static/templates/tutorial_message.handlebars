@@ -1,9 +1,9 @@
 {{! Contents of the "tutorial message" onboarding popup }}
 
 <div class="tutorial-popover popover-{{placement}}" id="tutorial-message">
-    <p>Welcome to Zulip!</p>
+    <p>Welcome to {{ page_params.product_name }}!</p>
 
-    <p>Messages in Zulip go to a <b>stream</b> and have a <b>topic</b>.</p>
+    <p>Messages in {{ page_params.product_name }} go to a <b>stream</b> and have a <b>topic</b>.</p>
 
     <div class="tutorial-done-button">
       <button class="btn btn-primary" type="submit" id="tutorial-message-next">Next</button>

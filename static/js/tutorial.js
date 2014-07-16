@@ -302,7 +302,8 @@ function create_and_show_popover(target_div, placement, title, content_template)
         placement: placement,
         title: templates.render("tutorial_title", {title: title,
                                                    placement: placement}),
-        content: templates.render(content_template, {placement: placement}),
+        content: templates.render(content_template, {placement: placement,
+                                                     page_params: page_params}),
         trigger: "manual"
     });
     target_div.popover("show");
@@ -353,7 +354,7 @@ function finale() {
         if (page_params.prompt_for_invites) {
             alert_contents = "<i class='icon-vector-heart alert-icon'></i>It's lonely in here! <a href='#invite-user' data-toggle='modal'>Invite some coworkers</a>.";
         } else {
-            alert_contents = "<i class='icon-vector-desktop alert-icon'></i>What's better than Zulip in your browser? The <a href='/apps' target='_blank'>Zulip desktop app</a>!";
+            alert_contents = "<i class='icon-vector-desktop alert-icon'></i>What's better than " + page_params.product_name + " in your browser? The <a href='/apps' target='_blank'>"+ page_params.product_name + " desktop app</a>!";
         }
         show_app_alert(alert_contents);
     }
@@ -378,8 +379,8 @@ function finale() {
 
         if (stream_data.in_home_view(page_params.notifications_stream)) {
             send_delayed_stream_message(page_params.notifications_stream, "welcome", "Practice sending sending some messages here, or starting a new topic.", 15);
-            send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "Here's a message on a new topic: `Zulip tips`.\n\nAs you settle into Zulip, customize your account and notifications on your [Settings page](#settings).", 30);
-            send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "You might also enjoy:\n\n* Our lightweight !modal_link(#markdown-help, message formatting) (including emoji! :thumbsup:)\n* !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n* [Desktop and mobile apps](/apps)", 40);
+            send_delayed_stream_message(page_params.notifications_stream, page_params.product_name + " tips", "Here's a message on a new topic: `" + page_params.product_name + " tips`.\n\nAs you settle into " + page_params.product_name + ", customize your account and notifications on your [Settings page](#settings).", 30);
+            send_delayed_stream_message(page_params.notifications_stream, page_params.product_name + " tips", "You might also enjoy:\n\n* Our lightweight !modal_link(#markdown-help, message formatting) (including emoji! :thumbsup:)\n* !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n* [Desktop and mobile apps](/apps)", 40);
         }
 
         if (work_stream !== undefined) {
