@@ -73,23 +73,27 @@ def walk_tree(root, processor, stop_after_first=False):
     return results
 
 # height is not actually used
-def add_a(root, url, link, height="", title=None, desc=None, class_attr="message_inline_image"):
+def add_a(root, url, link, height="", title=None, desc=None,
+          class_attr="message_inline_image"):
+    title = title if title is not None else url_filename(link)
+    title = title if title else ""
+    desc = desc if desc is not None else ""
+
     div = markdown.util.etree.SubElement(root, "div")
     div.set("class", class_attr)
     a = markdown.util.etree.SubElement(div, "a")
     a.set("href", link)
     a.set("target", "_blank")
-    a.set("title", title if title is not None else url_filename(link))
+    a.set("title", title )
     img = markdown.util.etree.SubElement(a, "img")
     img.set("src", url)
-    if title and desc:
+    if class_attr == "message_inline_ref":
         summary_div = markdown.util.etree.SubElement(div, "div")
         title_div = markdown.util.etree.SubElement(summary_div, "div")
-        title_div.set("class", "message_inline_image_title");
+        title_div.set("class", "message_inline_image_title")
         title_div.text = title
         desc_div = markdown.util.etree.SubElement(summary_div, "desc")
-        desc_div.set("class", "message_inline_image_desc");
-        desc_div.text = desc
+        desc_div.set("class", "message_inline_image_desc")
 
 def hash_embedly_url(link):
     return 'embedly:' + hashlib.sha1(link).hexdigest()
@@ -159,7 +163,10 @@ def fetch_open_graph_image(url):
     head = []
 
     # TODO: What if response content is huge? Should we get headers first?
-    content = requests.get(url).content
+    try:
+        content = requests.get(url, timeout=1).content
+    except:
+        return None
 
     # Extract the head and meta tags
     # All meta tags are self closing, have no children or are closed
@@ -202,8 +209,12 @@ def fetch_open_graph_image(url):
     og_image = doc.find('meta[@property="og:image"]')
     og_title = doc.find('meta[@property="og:title"]')
     og_desc = doc.find('meta[@property="og:description"]')
+    title = None
+    desc = None
     if og_image is not None:
         image = og_image.get('content')
+    else:
+        return None
     if og_title is not None:
         title = og_title.get('content')
     if og_desc is not None:
@@ -241,6 +252,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
 
+    def __init__(self, md, bugdown):
+        # Passing in bugdown for access to config to check if realm is zulip.com
+        self.bugdown = bugdown
+        markdown.treeprocessors.Treeprocessor.__init__(self, md)
 
     def is_image(self, url):
         if not settings.INLINE_IMAGE_PREVIEW:
@@ -255,7 +270,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def dropbox_image(self, url):
         parsed_url = urlparse.urlparse(url)
         if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')):
-            is_album = parsed_url.path.startswith('/sc/')
+            is_album = parsed_url.path.startswith('/sc/') or parsed_url.path.startswith('/photos/')
             # Only allow preview Dropbox shared links
             if not (parsed_url.path.startswith('/s/') or
                     parsed_url.path.startswith('/sh/') or
@@ -274,8 +289,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # If it is from an album or not an actual image file,
             # just use open graph image.
             if is_album or not is_image:
-                if image_info is not None:
-                    image_info["is_image"] = is_image
+                # Failed to follow link to find an image preview so
+                # use placeholder image and guess filename
+                if image_info is None:
+                    image_info = dict()
+                    (_, filename) = os.path.split(parsed_url.path)
+                    image_info["title"] = filename
+                    image_info["desc"] = ""
+                    # Dropbox's "unable to preview" image
+                    image_info["image"] = "https://dt8kf6553cww8.cloudfront.net/static/images/preview_fail-vflc3IDxf.png"
+
+                image_info["is_image"] = is_image
                 return image_info
 
             # Otherwise, try to retrieve the actual image.
@@ -535,6 +559,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         rendered_tweet_count = 0
         embedly_urls = []
+
         for url in found_urls:
             dropbox_image = self.dropbox_image(url)
             if dropbox_image is not None:
@@ -543,8 +568,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if is_image:
                     class_attr = "message_inline_image"
                     # Not making use of title and description of images
-                    dropbox_image['title'] = ""
-                    dropbox_image['desc'] = ""
                 add_a(root, dropbox_image['image'], url,
                       title=dropbox_image.get('title', ""),
                       desc=dropbox_image.get('desc', ""),
@@ -1006,7 +1029,7 @@ class Bugdown(markdown.Extension):
                                  BugdownUListPreprocessor(md),
                                  "_begin")
 
-        md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
+        md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")
 
         if settings.CAMO_URI:
             md.treeprocessors.add("rewrite_to_https", InlineHttpsProcessor(md), "_end")
