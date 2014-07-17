@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
         process_as_post, JsonableError
 from zerver.lib.response import json_method_not_allowed, json_unauthorized, json_unhandled_exception
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 
 import logging
@@ -39,6 +39,12 @@ def rest_dispatch(request, globals_list, **kwargs):
         if arg in METHODS:
             supported_methods[arg] = kwargs[arg]
             del kwargs[arg]
+
+    if request.method == 'OPTIONS':
+        response = HttpResponse(status=204) # No content
+        response['Allow'] = ', '.join(supported_methods.keys())
+        response['Content-Length'] = "0"
+        return response
 
     # Override requested method if magic method=??? parameter exists
     method_to_use = request.method
