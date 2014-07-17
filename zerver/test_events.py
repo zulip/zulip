@@ -105,6 +105,9 @@ class GetEventsTest(AuthedTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
+        self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_dummy"], False)
+        self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
+
         last_event_id = events[0]["id"]
         local_id += 0.01
 

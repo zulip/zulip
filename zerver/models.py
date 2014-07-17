@@ -82,7 +82,8 @@ def get_display_recipient_memcached(recipient_id, recipient_type, recipient_type
              'domain': user_profile.realm.domain,
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name,
-             'id': user_profile.id} for user_profile in user_profile_list]
+             'id': user_profile.id,
+             'is_mirror_dummy': user_profile.is_mirror_dummy,} for user_profile in user_profile_list]
 
 def completely_open(domain):
     # This domain is completely open to everyone on the internet to
@@ -751,6 +752,7 @@ class Message(models.Model):
                 sender_full_name = self.sender.full_name,
                 sender_short_name = self.sender.short_name,
                 sender_avatar_source = self.sender.avatar_source,
+                sender_is_mirror_dummy = self.sender.is_mirror_dummy,
                 sending_client_name = self.sending_client.name,
                 recipient_id = self.recipient.id,
                 recipient_type = self.recipient.type,
@@ -780,6 +782,7 @@ class Message(models.Model):
                 sender_full_name = row['sender__full_name'],
                 sender_short_name = row['sender__short_name'],
                 sender_avatar_source = row['sender__avatar_source'],
+                sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
                 sending_client_name = row['sending_client__name'],
                 recipient_id = row['recipient_id'],
                 recipient_type = row['recipient__type'],
@@ -804,6 +807,7 @@ class Message(models.Model):
             sender_full_name,
             sender_short_name,
             sender_avatar_source,
+            sender_is_mirror_dummy,
             sending_client_name,
             recipient_id,
             recipient_type,
@@ -832,7 +836,8 @@ class Message(models.Model):
                          'domain': sender_realm_domain,
                          'full_name': sender_full_name,
                          'short_name': sender_short_name,
-                         'id': sender_id};
+                         'id': sender_id,
+                         'is_mirror_dummy': sender_is_mirror_dummy}
                 if recip['email'] < display_recipient[0]['email']:
                     display_recipient = [recip, display_recipient[0]]
                 elif recip['email'] > display_recipient[0]['email']:
@@ -928,7 +933,8 @@ class Message(models.Model):
             'sender__short_name',
             'sender__realm__id',
             'sender__realm__domain',
-            'sender__avatar_source'
+            'sender__avatar_source',
+            'sender__is_mirror_dummy',
         ]
         return Message.objects.filter(id__in=needed_ids).values(*fields)
 
@@ -1157,6 +1163,7 @@ class UserPresence(models.Model):
                 'user_profile__email',
                 'user_profile__id',
                 'user_profile__enable_offline_push_notifications',
+                'user_profile__is_mirror_dummy',
         )
 
         mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
@@ -1172,7 +1179,8 @@ class UserPresence(models.Model):
                     status=row['status'],
                     timestamp=row['timestamp'],
                     push_enabled=row['user_profile__enable_offline_push_notifications'],
-                    has_push_devices=row['user_profile__id'] in mobile_user_ids
+                    has_push_devices=row['user_profile__id'] in mobile_user_ids,
+                    is_mirror_dummy=row['user_profile__is_mirror_dummy'],
                     )
             user_statuses[row['user_profile__email']][row['client__name']] = info
 
@@ -1180,7 +1188,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def to_presence_dict(client_name=None, status=None, timestamp=None, push_enabled=None,
-            has_push_devices=None):
+            has_push_devices=None, is_mirror_dummy=None):
         presence_val = UserPresence.status_to_string(status)
         timestamp = datetime_to_timestamp(timestamp)
         return dict(

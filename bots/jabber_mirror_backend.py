@@ -236,6 +236,8 @@ class ZulipToJabberBot(object):
         for recipient in msg['display_recipient']:
             if recipient["email"] == self.client.email:
                 continue
+            if not recipient["is_mirror_dummy"]:
+                continue
             recip_email = recipient['email']
             jabber_recipient = zulip_to_jid(recip_email, self.jabber.boundjid.domain)
             outgoing = self.jabber.make_message(
