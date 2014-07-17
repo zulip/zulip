@@ -351,6 +351,16 @@ option does not affect login credentials.'''.replace("\n", " "))
     jabber_group.add_option('--no-use-tls',
                             default=None,
                             action='store_true')
+    jabber_group.add_option('--jabber-server-address',
+                            default=None,
+                            action='store',
+               help="The hostname of your Jabber server. This is only needed if "
+                            "your server is missing SRV records")
+    jabber_group.add_option('--jabber-server-port',
+                            default='5222',
+                            action='store',
+               help="The port of your Jabber server. This is only needed if "
+                            "your server is missing SRV records")
 
     parser.add_option_group(jabber_group)
     parser.add_option_group(zulip.generate_option_group(parser, "zulip-"))
@@ -370,7 +380,7 @@ option does not affect login credentials.'''.replace("\n", " "))
             config.readfp(f, config_file)
     except IOError:
         pass
-    for option in ("jid", "jabber_password", "conference_domain", "mode", "zulip_email_suffix"):
+    for option in ("jid", "jabber_password", "conference_domain", "mode", "zulip_email_suffix", "jabber_server_address", "jabber_server_port"):
         if (getattr(options, option) is None
             and config.has_option("jabber_mirror", option)):
             setattr(options, option, config.get("jabber_mirror", option))
@@ -409,7 +419,11 @@ option does not affect login credentials.'''.replace("\n", " "))
 
     xmpp = JabberToZulipBot(jid, options.jabber_password, get_rooms(zulip))
 
-    if not xmpp.connect(use_tls=not options.no_use_tls):
+    address = None
+    if options.jabber_server_address:
+        address = (options.jabber_server_address, options.jabber_server_port)
+
+    if not xmpp.connect(use_tls=not options.no_use_tls, address=address):
         sys.exit("Unable to connect to Jabber server")
 
     xmpp.set_zulip_client(zulip)
