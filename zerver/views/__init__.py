@@ -1415,11 +1415,16 @@ def get_members_backend(request, user_profile):
     admins = set(user_profile.realm.get_admin_users())
     members = []
     for profile in UserProfile.objects.select_related().filter(realm=realm):
+        avatar_url = get_avatar_url(
+            profile.avatar_source,
+            profile.email
+        )
         member = {"full_name": profile.full_name,
                   "is_bot": profile.is_bot,
                   "is_active": profile.is_active,
                   "is_admin": (profile in admins),
-                  "email": profile.email}
+                  "email": profile.email,
+                  "avatar_url": avatar_url,}
         if profile.is_bot and profile.bot_owner is not None:
             member["bot_owner"] = profile.bot_owner.email
         members.append(member)

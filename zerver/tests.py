@@ -14,6 +14,7 @@ from zerver.models import UserProfile, Recipient, \
     get_user_profile_by_email, split_email_to_domain, get_realm, \
     get_client, get_stream, Message
 
+from zerver.lib.avatar import get_avatar_url
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
@@ -1078,6 +1079,19 @@ class GetProfileTest(AuthedTestCase):
 
         result = self.client.post("/json/update_pointer", {"pointer": 99999999})
         self.assert_json_error(result, "Invalid message ID")
+
+    def test_get_all_profiles_avatar_urls(self):
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        result = self.client.get("/api/v1/users", **self.api_auth('hamlet@zulip.com'))
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+
+        for user in json['members']:
+            if user['email'] == 'hamlet@zulip.com':
+                self.assertEqual(
+                    user['avatar_url'],
+                    get_avatar_url(user_profile.avatar_source, user_profile.email),
+                )
 
 class UserPresenceTests(AuthedTestCase):
     def test_get_empty(self):
