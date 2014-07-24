@@ -30,13 +30,12 @@
               $(function () {
                   if (window.bridge !== undefined) {
                       // Desktop app only supports "prompt", not "alert" or "confirm" :/
-                      if (window.prompt("You're currently on the production {{product_name}} server, but everyone else is on the staging server.\n\nPress OK to be redirected there now.\n\nGoing forward, please run {{product_name}} with the following flag to use the staging server:", "--site https://staging.zulip.com") !== null) {
-                          window.location.assign("https://staging.zulip.com");
-                      }
+                      window.prompt("You're currently on the production {{product_name}} server, but everyone else is on the staging server.\n\nGoing forward, please run {{product_name}} with the following flag to use the staging server:", "--site https://staging.zulip.com");
+                      window.location.assign("https://staging.zulip.com");
                   } else {
-                      if (window.confirm("You're currently on the production {{product_name}} server, but everyone else is on the staging server. Please use https://staging.zulip.com to use {{product_name}}.\n\nPress OK to be redirected there now.")) {
-                        window.location.assign("https://staging.zulip.com");
-                      }
+                      var res = window.confirm("You're currently on the production {{product_name}} server, but everyone else is on the staging server. Please use https://staging.zulip.com to use {{product_name}}.");
+                      if (feature_flags.is_og_zulip_user && !res) { return; }
+                      window.location.assign("https://staging.zulip.com");
                   }
               });
               </script>

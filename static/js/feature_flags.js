@@ -5,7 +5,7 @@ var exports = {};
 // Helpers
 var special_24_hour_people= _.contains([],
     page_params.email);
-
+var og_zuliper_emails = [];
 var zulip_mit_emails = [];
 var is_zulip_mit_user = _.contains(zulip_mit_emails, page_params.email);
 
@@ -26,7 +26,7 @@ exports.collect_send_times = false;
 
 // Permanent realm-specific stuff:
 exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
-
+exports.is_og_zulip_user = _.contains(og_zuliper_emails, page_params.email);
 exports.twenty_four_hour_time = special_24_hour_people || iceland;
 
 exports.mandatory_topics = _.contains([
