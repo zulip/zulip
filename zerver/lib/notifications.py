@@ -226,10 +226,9 @@ def do_send_missedmessage_events(user_profile, missed_messages):
                  for msg in missed_messages) and user_profile.realm.domain == 'zulip.com':
             recipient_ids = {msg.recipient_id for msg in missed_messages}
             if len(recipient_ids) == 1:
-                from zerver.lib.actions import encode_email_address
-                stream = Stream.objects.get(id=missed_messages[0].recipient.type_id)
-                stream_address = encode_email_address(stream)
-                headers['Reply-To'] = "Zulip - %s <%s>" % (stream.name, stream_address)
+                from zerver.lib.email_mirror import create_missed_message_address
+                address = create_missed_message_address(user_profile, missed_messages[0])
+                headers['Reply-To'] = address
             else:
                 # There are @-mentions on diffrent streams
                 template_payload['mention'] = True

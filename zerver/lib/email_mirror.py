@@ -9,8 +9,11 @@ from django.conf import settings
 
 from zerver.lib.actions import decode_email_address, internal_send_message
 from zerver.lib.notifications import convert_html_to_markdown
+from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_image
-from zerver.models import Stream, get_user_profile_by_email
+from zerver.lib.utils import generate_random_token
+from zerver.models import Stream, Recipient, get_user_profile_by_email, \
+    get_user_profile_by_id, get_display_recipient
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +44,86 @@ def log_and_report(email_message, error_message, debug_info):
 
     logger.error(scrubbed_error)
     report_to_zulip(scrubbed_error)
+
+
+# Temporary missed message addresses
+
+redis_client = get_redis_client()
+
+
+def missed_message_redis_key(token):
+    return 'missed_message:' + token
+
+
+def is_missed_message_address(address):
+    local_part = address.split('@')[0]
+    return local_part.startswith('mm') and len(local_part) == 34
+
+
+def get_missed_message_token_from_address(address):
+    local_part = address.split('@')[0]
+    if not address.startswith('mm') and len(address) != 34:
+        raise ZulipEmailForwardError('Could not parse missed message address')
+    return local_part[2:]
+
+
+def create_missed_message_address(user_profile, message):
+    data = {
+        'user_profile_id': user_profile.id,
+        'recipient_id': message.recipient_id,
+        'subject': message.subject,
+    }
+
+    while True:
+        token = generate_random_token(32)
+        key = missed_message_redis_key(token)
+        if redis_client.hsetnx(key, 'uses_left', 1):
+            break
+
+    with redis_client.pipeline() as pipeline:
+        pipeline.hmset(key, data)
+        pipeline.expire(key, 60 * 60 * 24 * 5)
+        pipeline.execute()
+
+    address = 'mm' + token
+    return settings.EMAIL_GATEWAY_PATTERN % (address, )
+
+
+def mark_missed_message_address_as_used(address):
+    token = get_missed_message_token_from_address(address)
+    key = missed_message_redis_key(token)
+    with redis_client.pipeline() as pipeline:
+        pipeline.hincrby(key, 'uses_left', -1)
+        pipeline.expire(key, 60 * 60 * 24 * 5)
+        new_value = pipeline.execute()[0]
+    if new_value != 0:
+        redis_client.delete(key)
+        raise ZulipEmailForwardError('Missed message address has already been used')
+
+
+def send_to_missed_message_address(address, message):
+    token = get_missed_message_token_from_address(address)
+    key = missed_message_redis_key(token)
+    with redis_client.pipeline() as pipeline:
+        pipeline.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
+        pipeline.delete(key)
+        result = pipeline.execute()
+    if not all(result[0]):
+        raise ZulipEmailForwardError('Missing missed message address data')
+    user_profile_id, recipient_id, subject = result[0]
+
+    user_profile = get_user_profile_by_id(user_profile_id)
+    recipient = Recipient.objects.get(id=recipient_id)
+    display_recipient = get_display_recipient(recipient)
+
+    body = filter_footer(extract_body(message))
+    body += extract_and_upload_attachments(message, user_profile.realm)
+    if not body:
+        body = '(No email body)'
+
+    internal_send_message(user_profile.email, recipient.type_name(),
+                          display_recipient, subject, body)
+
 
 ## Sending the Zulip ##
 
@@ -151,26 +234,38 @@ def find_emailgateway_recipient(message):
 
     raise ZulipEmailForwardError("Missing recipient in mirror email")
 
-def process_message(message, rcpt_to=None):
+def process_stream_message(to, subject, message, debug_info):
+    stream = extract_and_validate(to)
+    body = filter_footer(extract_body(message))
+    body += extract_and_upload_attachments(message, stream.realm)
+    debug_info["stream"] = stream
+    if not body:
+        # You can't send empty Zulips, so to avoid confusion over the
+        # email forwarding failing, set a dummy message body.
+        body = "(No email body)"
+    send_zulip(stream, subject, body)
+
+def process_missed_message(to, message, pre_checked):
+    if not pre_checked:
+        mark_missed_message_address_as_used(to)
+    send_to_missed_message_address(to, message)
+
+def process_message(message, rcpt_to=None, pre_checked=False):
     subject = decode_header(message.get("Subject", "(no subject)"))[0][0]
 
     debug_info = {}
 
     try:
-        body = filter_footer(extract_body(message))
         if rcpt_to is not None:
             to = rcpt_to
         else:
             to = find_emailgateway_recipient(message)
         debug_info["to"] = to
-        stream = extract_and_validate(to)
-        debug_info["stream"] = stream
-        body += extract_and_upload_attachments(message, stream.realm)
-        if not body:
-            # You can't send empty Zulips, so to avoid confusion over the
-            # email forwarding failing, set a dummy message body.
-            body = "(No email body)"
-        send_zulip(stream, subject, body)
+
+        if is_missed_message_address(to):
+            process_missed_message(to, message, pre_checked)
+        else:
+            process_stream_message(to, subject, message, debug_info)
     except ZulipEmailForwardError, e:
         # TODO: notify sender of error, retry if appropriate.
         log_and_report(message, e.message, debug_info)

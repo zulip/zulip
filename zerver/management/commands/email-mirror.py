@@ -51,7 +51,9 @@ from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.upload import upload_message_image
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Stream, get_user_profile_by_email, UserProfile
-from zerver.lib.email_mirror import logger, process_message, extract_and_validate, ZulipEmailForwardError
+from zerver.lib.email_mirror import logger, process_message, \
+    extract_and_validate, ZulipEmailForwardError, \
+    mark_missed_message_address_as_used, is_missed_message_address
 
 from twisted.internet import protocol, reactor, ssl
 from twisted.mail import imap4
@@ -135,11 +137,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", args[0] if len(args) else None)
         if rcpt_to is not None:
-            try:
-                extract_and_validate(rcpt_to)
-            except ZulipEmailForwardError:
-                print "5.1.1 Bad destination mailbox address: Please use the address specified in your Streams page."
-                exit(posix.EX_NOUSER)
+            if is_missed_message_address(rcpt_to):
+                try:
+                    mark_missed_message_address_as_used(rcpt_to)
+                except ZulipEmailForwardError:
+                    print "5.1.1 Bad destination mailbox address: Bad or expired missed message address."
+                    exit(posix.EX_NOUSER)
+            else:
+                try:
+                    extract_and_validate(rcpt_to)
+                except ZulipEmailForwardError:
+                    print "5.1.1 Bad destination mailbox address: Please use the address specified in your Streams page."
+                    exit(posix.EX_NOUSER)
 
             # Read in the message, at most 25MiB. This is the limit enforced by
             # Gmail, which we use here as a decent metric.
