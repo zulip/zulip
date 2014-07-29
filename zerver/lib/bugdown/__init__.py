@@ -297,7 +297,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     image_info["title"] = filename
                     image_info["desc"] = ""
                     # Dropbox's "unable to preview" image
-                    image_info["image"] = "https://dt8kf6553cww8.cloudfront.net/static/images/preview_fail-vflc3IDxf.png"
+                    image_info["image"] = "/static/images/preview_fail.png"
 
                 image_info["is_image"] = is_image
                 return image_info
