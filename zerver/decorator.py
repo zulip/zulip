@@ -489,11 +489,9 @@ def to_non_negative_float(x):
         raise ValueError("argument is negative")
     return x
 
-def ruby_boolean(boolean):
-    """ruby booleans may be "true", "false" or ""
-
-    Returns a (python) bool"""
-    if boolean == "true":
+def flexible_boolean(boolean):
+    """Returns True for any of "1", "true", or "True".  Returns False otherwise."""
+    if boolean in ("1", "true", "True"):
         return True
     else:
         return False

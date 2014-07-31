@@ -10,7 +10,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_dict
 from zerver.decorator import authenticated_api_view, REQ, \
     has_request_variables, authenticated_rest_api_view, \
-    api_key_only_webhook_view, to_non_negative_int, ruby_boolean
+    api_key_only_webhook_view, to_non_negative_int, flexible_boolean
 from zerver.views.messages import send_message_backend
 from django.db.models import Q
 
@@ -142,9 +142,9 @@ def api_github_landing(request, user_profile, event=REQ,
                        version=REQ(converter=to_non_negative_int, default=1),
                        commit_stream=REQ(default=''),
                        issue_stream=REQ(default=''),
-                       exclude_pull_requests=REQ(converter=ruby_boolean, default=False),
-                       exclude_issues=REQ(converter=ruby_boolean, default=False),
-                       exclude_commits=REQ(converter=ruby_boolean, default=False)
+                       exclude_pull_requests=REQ(converter=flexible_boolean, default=False),
+                       exclude_issues=REQ(converter=flexible_boolean, default=False),
+                       exclude_commits=REQ(converter=flexible_boolean, default=False)
                        ):
 
     repository = payload['repository']
