@@ -96,7 +96,7 @@ def mark_missed_message_address_as_used(address):
         pipeline.hincrby(key, 'uses_left', -1)
         pipeline.expire(key, 60 * 60 * 24 * 5)
         new_value = pipeline.execute()[0]
-    if new_value != 0:
+    if new_value < 0:
         redis_client.delete(key)
         raise ZulipEmailForwardError('Missed message address has already been used')
 
@@ -104,13 +104,10 @@ def mark_missed_message_address_as_used(address):
 def send_to_missed_message_address(address, message):
     token = get_missed_message_token_from_address(address)
     key = missed_message_redis_key(token)
-    with redis_client.pipeline() as pipeline:
-        pipeline.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
-        pipeline.delete(key)
-        result = pipeline.execute()
-    if not all(result[0]):
+    result = redis_client.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
+    if not all(result):
         raise ZulipEmailForwardError('Missing missed message address data')
-    user_profile_id, recipient_id, subject = result[0]
+    user_profile_id, recipient_id, subject = result
 
     user_profile = get_user_profile_by_id(user_profile_id)
     recipient = Recipient.objects.get(id=recipient_id)
