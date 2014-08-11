@@ -189,6 +189,64 @@ def build_message_list(user_profile, messages):
     return messages_to_render
 
 @statsd_increment("missed_message_reminders")
+def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages):
+    """
+    Send a reminder email to a user if she's missed some PMs by being offline.
+
+    The email will have its reply to address set to a limited used email
+    address that will send a zulip message to the correct recipient. This
+    allows the user to respond to missed PMs, huddles, and @-mentions directly
+    from the email.
+
+    `user_profile` is the user to send the reminder to
+    `missed_messages` is a list of Message objects to remind about they should
+                      all have the same recipient and subject
+    """
+    if not user_profile.enable_offline_email_notifications:
+        return
+
+    recipients = set((msg.recipient_id, msg.subject) for msg in missed_messages)
+    if len(recipients) != 1:
+        raise ValueError(
+            'All missed_messages must have the same recipient and subject %r' %
+            recipients
+        )
+
+    template_payload = {
+        'name': user_profile.full_name,
+        'messages': build_message_list(user_profile, missed_messages),
+        'message_count': len(missed_messages),
+        'url': 'https://%s' % (settings.EXTERNAL_HOST,),
+        'reply_warning': False,
+        'external_host': settings.EXTERNAL_HOST,
+        'mention':missed_messages[0].recipient.type == Recipient.STREAM,
+        'reply_to_zulip': True,
+    }
+
+    headers = {}
+    from zerver.lib.email_mirror import create_missed_message_address
+    address = create_missed_message_address(user_profile, missed_messages[0])
+    headers['Reply-To'] = address
+
+    senders = set(m.sender.full_name for m in missed_messages)
+    sender_str = ", ".join(senders)
+    plural_messages = 's' if len(missed_messages) > 1 else ''
+
+    subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
+    from_email = "%s (via Zulip) <%s>" % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
+
+    text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
+    html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [user_profile.email],
+                                 headers = headers)
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+    user_profile.last_reminder = datetime.datetime.now()
+    user_profile.save(update_fields=['last_reminder'])
+
+@statsd_increment("missed_message_reminders")
 def do_send_missedmessage_events(user_profile, missed_messages):
     """
     Send a reminder email and/or push notifications to a user if she's missed some PMs by being offline
@@ -222,19 +280,6 @@ def do_send_missedmessage_events(user_profile, missed_messages):
                 headers['Reply-To'] = missed_messages[0].sender.email
             else:
                 template_payload['reply_warning'] = True
-        elif all(msg.recipient.type == Recipient.STREAM
-                 for msg in missed_messages) and user_profile.realm.domain == 'zulip.com':
-            recipient_ids = {msg.recipient_id for msg in missed_messages}
-            if len(recipient_ids) == 1:
-                from zerver.lib.email_mirror import create_missed_message_address
-                address = create_missed_message_address(user_profile, missed_messages[0])
-                headers['Reply-To'] = address
-            else:
-                # There are @-mentions on diffrent streams
-                template_payload['mention'] = True
-                template_payload['reply_warning'] = True
-                headers['Reply-To'] = "Nobody <%s>" % (settings.NOREPLY_EMAIL_ADDRESS,)
-
         else:
             # There are some @-mentions mixed in with personals
             template_payload['mention'] = True
@@ -290,7 +335,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     if user_profile.realm.domain == 'zulip.com':
         for msg_list in messages_by_recipient_subject.values():
             unique_messages = {m.id: m for m in msg_list}
-            do_send_missedmessage_events(user_profile, unique_messages.values())
+            do_send_missedmessage_events_reply_in_zulip(user_profile, unique_messages.values())
     else:
         all_messages = [
             msg

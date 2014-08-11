@@ -27,7 +27,12 @@ While you were away you received {{ message_count }} new message{{ message_count
 </div>
 
 
-<p><a href="{{ url }}">Click here to log in to Zulip and view your new messages.</a></p>
+<p>
+    <a href="{{ url }}">Click here to log in to Zulip and view your new messages.</a>
+    {% if reply_to_zulip  %}
+    Or just reply to this email.
+    {% endif %}
+</p>
 
 {% if reply_warning %}
 <p>Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.</p>

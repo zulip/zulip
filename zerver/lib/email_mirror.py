@@ -13,7 +13,7 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_image
 from zerver.lib.utils import generate_random_token
 from zerver.models import Stream, Recipient, get_user_profile_by_email, \
-    get_user_profile_by_id, get_display_recipient
+    get_user_profile_by_id, get_display_recipient, get_recipient
 
 logger = logging.getLogger(__name__)
 
@@ -68,9 +68,15 @@ def get_missed_message_token_from_address(address):
 
 
 def create_missed_message_address(user_profile, message):
+    if message.recipient.type == Recipient.PERSONAL:
+        # We need to reply to the sender so look up their personal recipient_id
+        recipient_id = get_recipient(Recipient.PERSONAL, message.sender_id).id
+    else:
+        recipient_id = message.recipient_id
+
     data = {
         'user_profile_id': user_profile.id,
-        'recipient_id': message.recipient_id,
+        'recipient_id': recipient_id,
         'subject': message.subject,
     }
 
@@ -105,7 +111,7 @@ def send_to_missed_message_address(address, message):
     token = get_missed_message_token_from_address(address)
     key = missed_message_redis_key(token)
     result = redis_client.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
-    if not all(result):
+    if not all(val is not None for val in result):
         raise ZulipEmailForwardError('Missing missed message address data')
     user_profile_id, recipient_id, subject = result
 
@@ -113,12 +119,22 @@ def send_to_missed_message_address(address, message):
     recipient = Recipient.objects.get(id=recipient_id)
     display_recipient = get_display_recipient(recipient)
 
+    # Testing with basestring so we don't depend on the list return type from
+    # get_display_recipient
+    if not isinstance(display_recipient, basestring):
+        display_recipient = ','.join([user['email'] for user in display_recipient])
+
     body = filter_footer(extract_body(message))
     body += extract_and_upload_attachments(message, user_profile.realm)
     if not body:
         body = '(No email body)'
 
-    internal_send_message(user_profile.email, recipient.type_name(),
+    if recipient.type == Recipient.STREAM:
+        recipient_type_name = 'stream'
+    else:
+        recipient_type_name = 'private'
+
+    internal_send_message(user_profile.email, recipient_type_name,
                           display_recipient, subject, body)
 
 
