@@ -6,8 +6,14 @@ import time
 import os
 import subprocess
 
-WARN_THRESHOLD = 10
-CRIT_THRESHOLD = 50
+WARN_THRESHOLD_DEFAULT = 10
+WARN_THRESHOLD = {
+    'missedmessage_emails': 45,
+}
+CRIT_THRESHOLD_DEFAULT = 50
+CRIT_THRESHOLD = {
+    'missedmessage_emails': 70,
+}
 
 states = {
     0: "OK",
@@ -33,10 +39,10 @@ for line in output.split("\n"):
         queue = m.group(1)
         count = int(m.group(2))
         this_status = 0
-        if count > CRIT_THRESHOLD:
+        if count > CRIT_THRESHOLD.get(queue, CRIT_THRESHOLD_DEFAULT):
             this_status = 2
             warn_queues.append(queue)
-        elif count > WARN_THRESHOLD:
+        elif count > WARN_THRESHOLD.get(queue, WARN_THRESHOLD_DEFAULT):
             this_status = max(status, 1)
             warn_queues.append(queue)
 
