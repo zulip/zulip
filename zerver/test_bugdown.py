@@ -198,7 +198,7 @@ class BugdownTest(TestCase):
         msg = 'https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5'
         converted = bugdown_convert(msg)
 
-        self.assertEqual(converted, '<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" target="_blank" title="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" target="_blank" title="1 photo"><img src="https://www.dropbox.com/photos/c/permanent_thumb/ROmr9K1XYtmpneM?size_mode=1&amp;size=320x320"></a></div>')
+        self.assertEqual(converted, '<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" target="_blank" title="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" target="_blank" title="1 photo"><img src="https://photos-3.dropbox.com/t/0/AAAOZdw61-X_zSVRQj-IKZ9rDucmgSTm3Ff6Tc-lJqdvdA/12/271544745/jpeg/320x320/1/_/0/5/baby-piglet.jpg/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0"></a></div>')
 
         # Make sure we're not overzealous in our conversion:
         msg = 'Look at the new dropbox logo: https://www.dropbox.com/static/images/home_logo.png'
