@@ -189,7 +189,7 @@ def build_message_list(user_profile, messages):
     return messages_to_render
 
 @statsd_increment("missed_message_reminders")
-def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages):
+def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, message_count):
     """
     Send a reminder email to a user if she's missed some PMs by being offline.
 
@@ -215,7 +215,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages):
     template_payload = {
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
-        'message_count': len(missed_messages),
+        'message_count': message_count,
         'url': 'https://%s' % (settings.EXTERNAL_HOST,),
         'reply_warning': False,
         'external_host': settings.EXTERNAL_HOST,
@@ -247,7 +247,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages):
     user_profile.save(update_fields=['last_reminder'])
 
 @statsd_increment("missed_message_reminders")
-def do_send_missedmessage_events(user_profile, missed_messages):
+def do_send_missedmessage_events(user_profile, missed_messages, message_count):
     """
     Send a reminder email and/or push notifications to a user if she's missed some PMs by being offline
 
@@ -260,7 +260,7 @@ def do_send_missedmessage_events(user_profile, missed_messages):
     if user_profile.enable_offline_email_notifications:
         template_payload = {'name': user_profile.full_name,
                             'messages': build_message_list(user_profile, missed_messages),
-                            'message_count': len(missed_messages),
+                            'message_count': message_count,
                             'url': 'https://%s' % (settings.EXTERNAL_HOST,),
                             'reply_warning': False,
                             'external_host': settings.EXTERNAL_HOST}
@@ -325,17 +325,25 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     for msg in messages:
         messages_by_recipient_subject[(msg.recipient_id, msg.subject)].append(msg)
 
+    mesage_count_by_recipient_subject = {
+        recipient_subject: len(msgs)
+        for recipient_subject, msgs in messages_by_recipient_subject.items()
+    }
+
     for msg_list in messages_by_recipient_subject.values():
         msg = min(msg_list, key=lambda msg: msg.pub_date)
         if msg.recipient.type == Recipient.STREAM:
             msg_list.extend(get_context_for_message(msg))
 
-
     # Send an email per recipient subject pair
     if user_profile.realm.domain == 'zulip.com':
-        for msg_list in messages_by_recipient_subject.values():
+        for recipient_subject, msg_list in messages_by_recipient_subject.items():
             unique_messages = {m.id: m for m in msg_list}
-            do_send_missedmessage_events_reply_in_zulip(user_profile, unique_messages.values())
+            do_send_missedmessage_events_reply_in_zulip(
+                user_profile,
+                unique_messages.values(),
+                mesage_count_by_recipient_subject[recipient_subject],
+            )
     else:
         all_messages = [
             msg
@@ -343,7 +351,11 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             for msg in msg_list
         ]
         unique_messages = {m.id: m for m in all_messages}
-        do_send_missedmessage_events(user_profile, unique_messages.values())
+        do_send_missedmessage_events(
+            user_profile,
+            unique_messages.values(),
+            len(messages),
+        )
 
 @uses_mandrill
 def clear_followup_emails_queue(email, mail_client=None):
