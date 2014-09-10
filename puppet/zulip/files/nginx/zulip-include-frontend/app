@@ -14,12 +14,35 @@ location /static/ {
 }
 
 # Send longpoll requests to Tornado
-location ~ /json/get_events|/json/events|/api/v1/events {
+location ~ /json/get_events|/json/events {
     proxy_pass http://tornado;
     include /etc/nginx/zulip-include/proxy_longpolling;
 
     proxy_set_header X-Real-IP       $remote_addr;
 }
+
+# Send longpoll requests to Tornado
+location /api/v1/events {
+
+    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Headers Authorization;
+    add_header Access-Control-Allow-Methods 'GET, POST';
+
+    if ($request_method = 'OPTIONS') {
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Headers Authorization;
+        add_header Access-Control-Allow-Methods 'GET, POST';
+        add_header 'Content-Type' 'text/plain charset=UTF-8';
+        add_header 'Content-Length' 0;
+        return 204;
+    }
+
+    proxy_pass http://tornado;
+    include /etc/nginx/zulip-include/proxy_longpolling;
+
+    proxy_set_header X-Real-IP       $remote_addr;
+}
+
 
 # Send sockjs requests to Tornado
 location /sockjs {
@@ -36,6 +59,21 @@ location / {
     fastcgi_buffers 1024 4k;
     fastcgi_max_temp_file_size 0;
     fastcgi_next_upstream off;
+}
+
+location /api/ {
+    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Headers Authorization;
+    add_header Access-Control-Allow-Methods 'GET, POST';
+
+    include fastcgi_params;
+    fastcgi_pass django;
+    fastcgi_split_path_info ^()(.*)$;
+    # Second number set to `getconf PAGESIZE`
+    fastcgi_buffers 1024 4k;
+    fastcgi_max_temp_file_size 0;
+    fastcgi_next_upstream off;
+
 }
 
 include /etc/nginx/zulip-include/app.d/*.conf;
