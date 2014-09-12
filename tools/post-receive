@@ -47,6 +47,7 @@ def send_deployment_finished_message(branch, message):
 deployments = {
     'refs/heads/prod': ('prod0.zulip.net', 'prod'),
     'refs/heads/master': ('staging.zulip.net', 'master'),
+    'refs/heads/dbx': ('dbx.zulip.net', 'dbx'),
     'refs/heads/test-post-receive': None,
     }
 
