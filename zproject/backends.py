@@ -107,6 +107,10 @@ class GoogleBackend(ZulipAuthMixin):
             # create a new user, or send a message to admins, etc.
             return None
 
+        if user_profile.is_mirror_dummy:
+            # mirror dummies can not login, but they can convert to real users
+            return None
+
         return user_profile
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
