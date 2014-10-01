@@ -24,11 +24,15 @@ def create_user_profile(realm, email, password, active, bot, full_name,
                         short_name, bot_owner, is_mirror_dummy):
     now = timezone.now()
     email = UserManager.normalize_email(email)
+
+    enable_stream_desktop_notifications = (realm.domain != 'dropbox.com')
+
     user_profile = UserProfile(email=email, is_staff=False, is_active=active,
                                full_name=full_name, short_name=short_name,
                                last_login=now, date_joined=now, realm=realm,
                                pointer=-1, is_bot=bot, bot_owner=bot_owner,
                                is_mirror_dummy=is_mirror_dummy,
+                               enable_stream_desktop_notifications=enable_stream_desktop_notifications,
                                onboarding_steps=ujson.dumps([]))
 
     if bot or not active:
