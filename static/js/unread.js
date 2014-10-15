@@ -230,6 +230,8 @@ exports.mark_messages_as_read = function mark_messages_as_read (messages, option
             message_flags.send_read(message);
         }
 
+        message.flags = message.flags || [];
+        message.flags.push('read');
         message.unread = false;
         unread.process_read_message(message, options);
         home_msg_list.show_message_as_read(message, options);
