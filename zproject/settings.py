@@ -1,7 +1,12 @@
 # Django settings for zulip project.
+########################################################################
+# Here's how settings for the Zulip project work:
 #
-# DO NOT PUT ANY SECRETS IN THIS FILE.
-# Those belong in local_settings.py.
+# * settings.py contains non-site-specific and settings configuration
+# for the Zulip Django app.
+# * settings.py imports local_settings.py, and any site-specific configuration
+# belongs there.  The template for local_settings.py is local_settings_template.py
+########################################################################
 import os
 import platform
 import time
@@ -11,16 +16,20 @@ import ConfigParser
 from zerver.openid import openid_failure_handler
 from zerver.lib.db import TimeTrackingConnection
 
+########################################################################
+# INITIAL SETTINGS
+########################################################################
+
 config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
-# Whether we're running in a production environment. Note that DEPLOYED does
-# **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
-# and as such should not for example assume they are the main Zulip site.
+# Whether this instance of Zulip is running in a production environment.
 DEPLOYED = config_file.has_option('machine', 'deploy_type')
+# The following flags are leftover from the various configurations of
+# Zulip run by Zulip, Inc.  We will eventually be able to get rid of
+# them and just have the DEPLOYED flag, but we need them for now.
 STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
 TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
-
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 # Import variables like secrets from the local_settings file
@@ -39,7 +48,6 @@ get_secret = lambda x: secrets_file.get('secrets', x)
 SECRET_KEY = get_secret("secret_key")
 
 # A shared secret, used to authenticate different parts of the app to each other.
-# FIXME: store this password more securely
 SHARED_SECRET = get_secret("shared_secret")
 
 # We use this salt to hash a user's email into a filename for their user-uploaded
@@ -48,6 +56,8 @@ SHARED_SECRET = get_secret("shared_secret")
 # the end of the world.  Don't use the salt where there is more security exposure.
 AVATAR_SALT = get_secret("avatar_salt")
 
+# SERVER_GENERATION is used to track whether the server has been
+# restarted for triggering browser clients to reload.
 SERVER_GENERATION = int(time.time())
 
 if not 'DEBUG' in globals():
@@ -55,65 +65,24 @@ if not 'DEBUG' in globals():
     DEBUG = not DEPLOYED # and platform.node() != 'your-machine'
 
 TEMPLATE_DEBUG = DEBUG
-TEST_SUITE = False
+if DEBUG:
+    INTERNAL_IPS = ('127.0.0.1',)
 
+# Detect whether we're running as a queue worker; this impacts the logging configuration.
 if len(sys.argv) > 2 and sys.argv[0].endswith('manage.py') and sys.argv[1] == 'process_queue':
     IS_WORKER = True
 else:
     IS_WORKER = False
 
-if DEBUG:
-    INTERNAL_IPS = ('127.0.0.1',)
-if TESTING_DEPLOYED or ENTERPRISE:
-    # XXX we should probably tighten this for ENTERPRISE
-    # Allow any hosts for our test instances, to reduce 500 spam
-    ALLOWED_HOSTS = ['*']
-elif DEPLOYED:
-    # The IP addresses are for app.zulip.{com,net} and staging.zulip.{com,net}
-    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.213.44.54',
-                     '54.213.41.54', '54.213.44.58', '54.213.44.73',
-                     '54.200.19.65', '54.201.95.104', '54.201.95.206',
-                     '54.201.186.29', "54.200.111.22",
-                     '54.245.120.64', '54.213.44.83', '.zulip.com', '.zulip.net',
-                     'chat.dropboxer.net',
-                     ]
-else:
-    ALLOWED_HOSTS = ['localhost']
 
-DATABASES = {"default": {
-    'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    'NAME': 'zulip',
-    'USER': 'zulip',
-    'PASSWORD': '', # Authentication done via certificates
-    'HOST': 'postgres.zulip.net',
-    'SCHEMA': 'zulip',
-    'CONN_MAX_AGE': 600,
-    'OPTIONS': {
-        'sslmode': 'verify-full',
-        'autocommit': True,
-        'connection_factory': TimeTrackingConnection
-        },
-    },
-}
+# This is overridden in test_settings.py for the test suites
+TEST_SUITE = False
+# The new user tutorial is enabled by default, but disabled for client tests.
+TUTORIAL_ENABLED = True
 
-if ENTERPRISE:
-    DATABASES["default"].update({
-            # Host = '' => connect through a local socket
-            'HOST': '',
-            'OPTIONS': {
-                'autocommit': True,
-                'connection_factory': TimeTrackingConnection
-            }
-            })
-elif not DEPLOYED:
-    DATABASES["default"].update({
-            'PASSWORD': LOCAL_DATABASE_PASSWORD,
-            'HOST': 'localhost',
-            'OPTIONS': {
-                'autocommit': True,
-                'connection_factory': TimeTrackingConnection
-            }
-            })
+########################################################################
+# STANDARD DJANGO SETTINGS
+########################################################################
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -146,35 +115,6 @@ USE_TZ = True
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 TEMPLATE_DIRS = ( os.path.join(DEPLOY_ROOT, 'templates'), )
 
-# Tell the browser to never send our cookies without encryption, e.g.
-# when executing the initial http -> https redirect.
-#
-# Turn it off for local testing because we don't have SSL.
-if DEPLOYED:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE    = True
-
-try:
-    # For get_updates hostname sharding
-    domain = config_file.get('django', 'cookie_domain')
-    SESSION_COOKIE_DOMAIN = '.' + domain
-    CSRF_COOKIE_DOMAIN    = '.' + domain
-except ConfigParser.Error:
-    # Failing here is OK
-    pass
-
-# Prevent Javascript from reading the CSRF token from cookies.  Our code gets
-# the token from the DOM, which means malicious code could too.  But hiding the
-# cookie will slow down some attackers.
-CSRF_COOKIE_PATH = '/;HttpOnly'
-CSRF_FAILURE_VIEW = 'zerver.middleware.csrf_failure'
-
-# Base URL of the Tornado server
-# We set it to None when running backend tests or populate_db.
-# We override the port number when running frontend tests.
-TORNADO_SERVER = 'http://localhost:9993'
-RUNNING_INSIDE_TORNADO = False
-
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
 
@@ -184,6 +124,7 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
     )
 if DEPLOYED:
+    # Template caching is a significant performance win in production.
     TEMPLATE_LOADERS = (
         ('django.template.loaders.cached.Loader',
          TEMPLATE_LOADERS),
@@ -234,6 +175,96 @@ if not ENTERPRISE:
         'zilencer',
     ]
 
+# Base URL of the Tornado server
+# We set it to None when running backend tests or populate_db.
+# We override the port number when running frontend tests.
+TORNADO_SERVER = 'http://localhost:9993'
+RUNNING_INSIDE_TORNADO = False
+
+########################################################################
+# DATABASE CONFIGURATION
+########################################################################
+
+DATABASES = {"default": {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': 'zulip',
+    'USER': 'zulip',
+    'PASSWORD': '', # Authentication done via certificates
+    'HOST': 'postgres.zulip.net',
+    'SCHEMA': 'zulip',
+    'CONN_MAX_AGE': 600,
+    'OPTIONS': {
+        'sslmode': 'verify-full',
+        'autocommit': True,
+        'connection_factory': TimeTrackingConnection
+        },
+    },
+}
+
+if ENTERPRISE:
+    DATABASES["default"].update({
+            # Host = '' => connect through a local socket
+            'HOST': '',
+            'OPTIONS': {
+                'autocommit': True,
+                'connection_factory': TimeTrackingConnection
+            }
+            })
+elif not DEPLOYED:
+    DATABASES["default"].update({
+            'PASSWORD': LOCAL_DATABASE_PASSWORD,
+            'HOST': 'localhost',
+            'OPTIONS': {
+                'autocommit': True,
+                'connection_factory': TimeTrackingConnection
+            }
+            })
+
+########################################################################
+# RABBITMQ CONFIGURATION
+########################################################################
+
+USING_RABBITMQ = True
+RABBITMQ_USERNAME = 'zulip'
+RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
+
+########################################################################
+# CAMO HTTPS CACHE CONFIGURATION
+########################################################################
+
+if CAMO_URI is not None:
+    # This needs to be synced with the Camo installation
+    CAMO_KEY = get_secret("camo_key")
+
+########################################################################
+# CACHING CONFIGURATION
+########################################################################
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
+CACHES = {
+    'default': {
+        'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT':  3600
+    },
+    'database': {
+        'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION':  'third_party_api_results',
+        # Basically never timeout.  Setting to 0 isn't guaranteed
+        # to work, see https://code.djangoproject.com/ticket/9595
+        'TIMEOUT': 2000000000,
+        'OPTIONS': {
+            'MAX_ENTRIES': 100000000,
+            'CULL_FREQUENCY': 10,
+        }
+    },
+}
+
+########################################################################
+# STATSD CONFIGURATION
+########################################################################
+
 LOCAL_STATSD = (False)
 USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED and not ENTERPRISE) or LOCAL_STATSD
 
@@ -256,6 +287,10 @@ if USING_STATSD:
     STATSD_PORT = 8125
     STATSD_CLIENT = 'django_statsd.clients.normal'
 
+########################################################################
+# REDIS-BASED RATE LIMITING CONFIGURATION
+########################################################################
+
 RATE_LIMITING = True
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
@@ -263,6 +298,61 @@ REDIS_PORT = 6379
 RATE_LIMITING_RULES = [
     (60, 100),     # 100 requests max every minute
     ]
+
+########################################################################
+# SECURITY SETTINGS
+########################################################################
+
+# Tell the browser to never send our cookies without encryption, e.g.
+# when executing the initial http -> https redirect.
+#
+# Turn it off for local testing because we don't have SSL.
+if DEPLOYED:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE    = True
+
+try:
+    # For get_updates hostname sharding.
+    domain = config_file.get('django', 'cookie_domain')
+    SESSION_COOKIE_DOMAIN = '.' + domain
+    CSRF_COOKIE_DOMAIN    = '.' + domain
+except ConfigParser.Error:
+    # Failing here is OK
+    pass
+
+# Prevent Javascript from reading the CSRF token from cookies.  Our code gets
+# the token from the DOM, which means malicious code could too.  But hiding the
+# cookie will slow down some attackers.
+CSRF_COOKIE_PATH = '/;HttpOnly'
+CSRF_FAILURE_VIEW = 'zerver.middleware.csrf_failure'
+
+if not DEPLOYED:
+    # Use fast password hashing for creating testing users when not
+    # DEPLOYED.  Saves a bunch of time.
+    PASSWORD_HASHERS = (
+                'django.contrib.auth.hashers.SHA1PasswordHasher',
+                'django.contrib.auth.hashers.PBKDF2PasswordHasher'
+            )
+
+if TESTING_DEPLOYED or ENTERPRISE:
+    # XXX we should probably tighten this for ENTERPRISE
+    # Allow any hosts for our test instances, to reduce 500 spam
+    ALLOWED_HOSTS = ['*']
+elif DEPLOYED:
+    # The IP addresses are for app.zulip.{com,net} and staging.zulip.{com,net}
+    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.213.44.54',
+                     '54.213.41.54', '54.213.44.58', '54.213.44.73',
+                     '54.200.19.65', '54.201.95.104', '54.201.95.206',
+                     '54.201.186.29', "54.200.111.22",
+                     '54.245.120.64', '54.213.44.83', '.zulip.com', '.zulip.net',
+                     'chat.dropboxer.net',
+                     ]
+else:
+    ALLOWED_HOSTS = ['localhost']
+
+########################################################################
+# DEFAULT VALUES
+########################################################################
 
 # For any settings that are not defined in local_settings.py,
 # we want to initialize them to sane default
@@ -339,10 +429,15 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", ""),
                      ("DEFAULT_FROM_EMAIL", ""),
                      ]
 
+########################################################################
+# API/BOT SETTINGS
+########################################################################
+
 if "EXTERNAL_API_PATH" not in vars():
     EXTERNAL_API_PATH = EXTERNAL_HOST + "/api"
 EXTERNAL_API_URI = EXTERNAL_URI_SCHEME + EXTERNAL_API_PATH
 
+# These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
                    'email_template': 'notification-bot@%s',
                    'name': 'Notification Bot'},
@@ -377,7 +472,9 @@ if DEPLOYED:
 else:
     FEEDBACK_TARGET="http://localhost:9991/api"
 
-# Static files and minification
+########################################################################
+# STATIC CONTENT AND MINIFICATION SETTINGS
+########################################################################
 
 STATIC_URL = '/static/'
 
@@ -411,6 +508,9 @@ else:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
         STATIC_ROOT = 'prod-static/serve'
+
+# We want all temporary uploaded files to be stored on disk.
+FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 STATICFILES_DIRS = ['static/']
 STATIC_HEADER_FILE = 'zerver/static_header.txt'
@@ -622,34 +722,9 @@ PIPELINE_JS_COMPRESSOR  = None
 PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
 PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 
-USING_RABBITMQ = True
-RABBITMQ_USERNAME = 'zulip'
-RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
-
-if CAMO_URI is not None:
-    # This needs to be synced with the Camo installation
-    CAMO_KEY = get_secret("camo_key")
-
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
-
-CACHES = {
-    'default': {
-        'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': '127.0.0.1:11211',
-        'TIMEOUT':  3600
-    },
-    'database': {
-        'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION':  'third_party_api_results',
-        # Basically never timeout.  Setting to 0 isn't guaranteed
-        # to work, see https://code.djangoproject.com/ticket/9595
-        'TIMEOUT': 2000000000,
-        'OPTIONS': {
-            'MAX_ENTRIES': 100000000,
-            'CULL_FREQUENCY': 10,
-        }
-    },
-}
+########################################################################
+# LOGGING SETTINGS
+########################################################################
 
 ZULIP_PATHS = [
     ("SERVER_LOG_PATH", "/var/log/zulip/server.log"),
@@ -666,6 +741,8 @@ ZULIP_PATHS = [
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
     ]
 
+# The Event log basically logs most significant database changes,
+# which can be useful for debugging.
 if ENTERPRISE:
     EVENT_LOG_DIR = None
 else:
@@ -792,13 +869,13 @@ OPENID_RENDER_FAILURE = openid_failure_handler
 # (HEARTBEAT_MIN_FREQ_SECS + 10)
 POLL_TIMEOUT = 90 * 1000
 
-# The new user tutorial is enabled by default, and disabled for
-# client tests.
-TUTORIAL_ENABLED = True
-
 # iOS App IDs
 ZULIP_IOS_APP_ID = 'com.zulip.Zulip'
 DBX_IOS_APP_ID = 'com.dropbox.Zulip'
+
+########################################################################
+# SSO AND LDAP SETTINGS
+########################################################################
 
 USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
 
@@ -820,30 +897,26 @@ if POPULATE_PROFILE_VIA_LDAP and \
 else:
     POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
 
+########################################################################
+# EMAIL SETTINGS
+########################################################################
+
 # If an email host is not specified, fail silently and gracefully
 if not EMAIL_HOST and DEPLOYED:
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 elif not DEPLOYED:
+    # In the dev environment, emails are printed to the run-dev.py console.
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-# For testing, you may want to have emails be printed to the console.
-if not DEPLOYED:
-    # Use fast password hashing for creating testing users when not
-    # DEPLOYED
-    PASSWORD_HASHERS = (
-                'django.contrib.auth.hashers.SHA1PasswordHasher',
-                'django.contrib.auth.hashers.PBKDF2PasswordHasher'
-            )
+########################################################################
+# MISC SETTINGS
+########################################################################
 
 if DEPLOYED:
     # Filter out user data
     DEFAULT_EXCEPTION_REPORTER_FILTER = 'zerver.filters.ZulipExceptionReporterFilter'
-
-# We want all temporary uploaded files to be stored on disk.
-
-FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 # We are not currently using embedly due to some performance issues, but
 # we are keeping the code on master for now, behind this launch flag.
