@@ -1446,12 +1446,14 @@ def json_upload_file(request, user_profile):
     uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
 
+@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 @has_request_variables
-def get_uploaded_file(request, user_profile, realm_id, filename,
+def get_uploaded_file(request, realm_id, filename,
                       redir=REQ(validator=check_bool, default=True)):
     if settings.LOCAL_UPLOADS_DIR is not None:
         return HttpResponseForbidden() # Should have been served by nginx
 
+    user_profile = request.user
     url_path = "%s/%s" % (realm_id, filename)
 
     if realm_id == "unk":
