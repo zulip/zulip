@@ -28,7 +28,6 @@ import pylibmc
 import re
 import ujson
 import logging
-import datetime
 
 bugdown = None
 
@@ -1153,9 +1152,7 @@ class UserPresence(models.Model):
     def get_status_dict_by_realm(realm_id):
         user_statuses = defaultdict(dict)
 
-        dormancy_cutoff_date = datetime.datetime.now() - datetime.timedelta(days=45)
         query = UserPresence.objects.filter(
-                timestamp__gte=dormancy_cutoff_date,
                 user_profile__realm_id=realm_id,
                 user_profile__is_active=True,
                 user_profile__is_bot=False
