@@ -688,12 +688,12 @@ MessageListView.prototype = {
 
     rerender_preserving_scrolltop: function MessageListView__rerender_preserving_scrolltop() {
         // scrolltop_offset is the number of pixels between the top of the
-        // viewable window and the newly selected message
+        // viewable window and the selected message
         var scrolltop_offset;
         var selected_row = this.selected_row();
         var selected_in_view = (selected_row.length > 0);
         if (selected_in_view) {
-            scrolltop_offset = viewport.scrollTop() - selected_row.offset().top;
+            scrolltop_offset = selected_row.offset().top;
         }
 
         this.clear_table();
@@ -709,7 +709,7 @@ MessageListView.prototype = {
                 this.list.select_id(this.list.selected_id(), {use_closest: true});
             }
             // Must get this.list.selected_row() again since it is now a new DOM element
-            viewport.scrollTop(this.selected_row().offset().top + scrolltop_offset);
+            viewport.scrollTop(viewport.scrollTop() + this.selected_row().offset().top - scrolltop_offset);
         }
     },
 
