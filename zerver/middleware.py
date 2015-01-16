@@ -316,9 +316,13 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                 # Skip session save for 500 responses, refs #3881.
                 if response.status_code != 500:
                     request.session.save()
+                    host = request.get_host().split(':')[0]
+                    session_cookie_domain = settings.SESSION_COOKIE_DOMAIN
+                    if host.endswith(".e.zulip.com"):
+                        session_cookie_domain = ".e.zulip.com"
                     response.set_cookie(settings.SESSION_COOKIE_NAME,
                             request.session.session_key, max_age=max_age,
-                            expires=expires, domain=settings.SESSION_COOKIE_DOMAIN,
+                            expires=expires, domain=session_cookie_domain,
                             path=settings.SESSION_COOKIE_PATH,
                             secure=settings.SESSION_COOKIE_SECURE or None,
                             httponly=settings.SESSION_COOKIE_HTTPONLY or None)
