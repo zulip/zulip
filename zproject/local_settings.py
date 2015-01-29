@@ -144,8 +144,8 @@ else:
 GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
 
 if DEPLOYED:
-    GOOGLE_OAUTH2_CLIENT_ID = ''
-    GOOGLE_OAUTH2_CLIENT_SECRET  = ''
+    GOOGLE_OAUTH2_CLIENT_ID = '835904834568-ag4p18v0sd9a0tero14r3gekn6shoen3.apps.googleusercontent.com'
+    GOOGLE_OAUTH2_CLIENT_SECRET  = 'xxxxxxxxxxxxxxxxxxxxxxxx'
 else:
     # Google OAUTH2 for dev with the redirect uri set to http://localhost:9991/accounts/login/google/done/
     GOOGLE_OAUTH2_CLIENT_ID = '607830223128-4qgthc7ofdqce232dk690t5jgkm1ce33.apps.googleusercontent.com'

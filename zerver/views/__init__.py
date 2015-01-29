@@ -333,6 +333,10 @@ def accounts_register(request):
                     except TypeError:
                         # Let the user fill out a name and/or try another backend
                         form = RegistrationForm()
+        elif 'full_name' in request.POST:
+            form = RegistrationForm(
+                initial={'full_name': request.POST.get('full_name')}
+            )
         else:
             form = RegistrationForm()
     else:
