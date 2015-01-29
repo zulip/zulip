@@ -15,6 +15,7 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q, F
 from django.core.mail import send_mail, EmailMessage
+from django.middleware.csrf import get_token
 from django.db import transaction
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, bulk_get_recipients, \
@@ -74,6 +75,8 @@ from zproject.backends import password_auth_enabled
 
 from confirmation.models import Confirmation
 
+import requests
+
 import subprocess
 import calendar
 import datetime
@@ -86,6 +89,8 @@ import time
 import logging
 import os
 import jwt
+import hashlib
+import hmac
 from collections import defaultdict
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
@@ -696,6 +701,83 @@ def handle_openid_errors(request, issue, openid_response=None):
 
 def process_openid_login(request):
     return login_complete(request, render_failure=handle_openid_errors)
+
+def google_oauth2_csrf(request, value):
+    return hmac.new(get_token(request).encode('utf-8'), value, hashlib.sha256).hexdigest()
+
+def start_google_oauth2(request):
+    uri = 'https://accounts.google.com/o/oauth2/auth?'
+    cur_time = str(int(time.time()))
+    csrf_state = '{}:{}'.format(
+        cur_time,
+        google_oauth2_csrf(request, cur_time),
+    )
+    prams = {
+        'response_type': 'code',
+        'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
+        'redirect_uri': ''.join((
+            settings.EXTERNAL_URI_SCHEME,
+            settings.EXTERNAL_HOST,
+            reverse('zerver.views.finish_google_oauth2'),
+        )),
+        'scope': 'profile email',
+        'state': csrf_state,
+    }
+    return redirect(uri + urllib.urlencode(prams))
+
+def finish_google_oauth2(request):
+    error = request.GET.get('error')
+    if error == 'access_denied':
+        return redirect('/')
+    elif error is not None:
+        logging.error('Error from google oauth2 login %r', request.GET)
+        return HttpResponse(status=400)
+
+    value, hmac_value = request.GET.get('state').split(':')
+    if hmac_value != google_oauth2_csrf(request, value):
+        raise Exception('Google oauth2 CSRF error')
+
+    resp = requests.post(
+        'https://www.googleapis.com/oauth2/v3/token',
+        data={
+            'code': request.GET.get('code'),
+            'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
+            'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
+            'redirect_uri': ''.join((
+                settings.EXTERNAL_URI_SCHEME,
+                settings.EXTERNAL_HOST,
+                reverse('zerver.views.finish_google_oauth2'),
+            )),
+            'grant_type': 'authorization_code',
+        },
+    )
+    if resp.status_code != 200:
+        raise Exception('Could not convert google pauth2 code to access_token\r%r' % resp.text)
+    access_token = resp.json['access_token']
+
+    resp = requests.get(
+        'https://www.googleapis.com/plus/v1/people/me',
+        params={'access_token': access_token}
+    )
+    if resp.status_code != 200:
+        raise Exception('Google login failed making API call\r%r' % resp.text)
+    body = resp.json
+
+    try:
+        full_name = body['name']['formatted']
+    except KeyError:
+        # Only google+ users have a formated name. I am ignoring i18n here.
+        full_name = '{} {}'.format(
+            body['name']['givenName'], body['name']['familyName']
+        )
+    for email in body['emails']:
+        if email['type'] == 'account':
+            break
+    else:
+        raise Exception('Google oauth2 account email not found %r' % body)
+    email_address = email['value']
+    user_profile = authenticate(username=email_address, use_dummy_backend=True)
+    return login_or_register_remote_user(request, email_address, user_profile, full_name)
 
 def login_page(request, **kwargs):
     template_response = django_login_page(

@@ -41,7 +41,7 @@ $(function () {
             company email address to sign up. Otherwise, we won’t be able to
             connect you with your coworkers.</div>
             <div class="register-google">
-                <a href="/accounts/login/openid/" class="zocial google register-google-button">Sign up with Google</a>
+                <a href="{% url 'zerver.views.start_google_oauth2' %}" class="zocial google register-google-button">Sign up with Google</a>
             </div>
         </div>
 

@@ -92,7 +92,7 @@ autofocus('#id_username');
 
     {% if not desktop_sso_dispatch %}
     <div class="login-google">
-    or <a href="/accounts/login/openid/" class="login-google-button zocial google">Sign in with Google</a>
+    or <a href="{% url 'zerver.views.start_google_oauth2' %}" class="login-google-button zocial google">Sign in with Google</a>
     </div>
     {% endif %}
 

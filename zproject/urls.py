@@ -24,6 +24,8 @@ urlpatterns = patterns('',
     url(r'^accounts/login/openid/done/$', 'django_openid_auth.views.login_complete', name='openid-complete'),
     url(r'^accounts/login/sso/$', 'zerver.views.remote_user_sso', name='login-sso'),
     url(r'^accounts/login/jwt/$', 'zerver.views.remote_user_jwt', name='login-jwt'),
+    url(r'^accounts/login/google/$', 'zerver.views.start_google_oauth2'),
+    url(r'^accounts/login/google/done/$', 'zerver.views.finish_google_oauth2'),
     # We have two entries for accounts/login to allow reverses on the Django
     # view we're wrapping to continue to function.
     url(r'^accounts/login/',  'zerver.views.login_page',         {'template_name': 'zerver/login.html'}),
