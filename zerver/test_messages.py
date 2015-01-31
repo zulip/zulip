@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from django.db.models import Q
+from django.config import settings
 from sqlalchemy.sql import (
     and_, select, column, compiler
 )
@@ -155,6 +156,10 @@ class IncludeHistoryTest(AuthedTestCase):
         self.assertTrue(ok_to_include_history(narrow, realm))
 
 class TestCrossRealmPMs(AuthedTestCase):
+    def setUp(self):
+        # othello is an og zuliper at heart
+        settings.OG_ZULIPER_EMAILS.add('othello@zulip.com')
+
     def create_user(self, email):
         username, domain = email.split('@')
         self.register(username, 'test', domain=domain)
@@ -221,7 +226,7 @@ class TestCrossRealmPMs(AuthedTestCase):
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
 
-        user1_email = 'user1@zulip.com'
+        user1_email = 'othello@zulip.com'
         user1 = self.create_user(user1_email)
         user2_email = 'user2@1.example.com'
         user2 = self.create_user(user2_email)
@@ -240,7 +245,7 @@ class TestCrossRealmPMs(AuthedTestCase):
 
         user1_email = 'user1@1.example.com'
         user1 = self.create_user(user1_email)
-        user2_email = 'user2@zulip.com'
+        user2_email = 'othello@zulip.com'
         user2 = self.create_user(user2_email)
 
         self.send_message(user1_email, user2_email, Recipient.PERSONAL)
@@ -261,7 +266,7 @@ class TestCrossRealmPMs(AuthedTestCase):
         self.create_user(user1_email)
         user2_email = 'user2@2.example.com'
         self.create_user(user2_email)
-        user3_email = 'user3@zulip.com'
+        user3_email = 'othello@zulip.com'
         self.create_user(user3_email)
 
         with self.assertRaisesRegexp(JsonableError,
