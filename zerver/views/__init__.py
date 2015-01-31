@@ -618,7 +618,7 @@ def maybe_send_to_registration(request, email, full_name=''):
 
         return redirect("".join((
             settings.EXTERNAL_URI_SCHEME,
-            settings.EXTERNAL_HOST,
+            request.get_host(),
             "/",
             # Split this so we only get the part after the /
             Confirmation.objects.get_link_for_object(prereg_user).split("/", 3)[3],
@@ -631,7 +631,7 @@ def maybe_send_to_registration(request, email, full_name=''):
                                   context_instance=RequestContext(request))
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name=''):
-    if user_profile is None:
+    if user_profile is None or user_profile.is_mirror_dummy:
         # Since execution has reached here, the client specified a remote user
         # but no associated user account exists. Send them over to the
         # PreregistrationUser flow.
