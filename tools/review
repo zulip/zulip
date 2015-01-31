@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 CC_EMAIL = 'code-review@zulip.com'
 
 ## DOMAIN: Reviewers without an '@' will be assumed to be localparts here.
-DOMAIN = 'zulip.com'
+DOMAIN = 'dropbox.com'
 
 ## TEST_SCRIPT: Test file to run; path relative to root of the working tree, or absolute.
 TEST_SCRIPT = "tools/test-all"
