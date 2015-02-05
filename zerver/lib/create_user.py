@@ -25,7 +25,7 @@ def create_user_profile(realm, email, password, active, bot, full_name,
     now = timezone.now()
     email = UserManager.normalize_email(email)
 
-    enable_stream_desktop_notifications = (realm.domain != 'dropbox.com')
+    enable_stream_desktop_notifications = (realm.domain != 'zulip.com')
 
     user_profile = UserProfile(email=email, is_staff=False, is_active=active,
                                full_name=full_name, short_name=short_name,
