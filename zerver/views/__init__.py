@@ -1088,7 +1088,7 @@ def home(request):
 
     # Warn users on the zulip.com realm to use staging.
     send_to_prod = False
-    if page_params['domain'] == "zulip.com" and page_params['staging'] and user_profile.email == 'armooo@dropbox.com':
+    if page_params['domain'] == "zulip.com" and page_params['staging']:
         send_to_prod = True
 
     dbx_branding = False
