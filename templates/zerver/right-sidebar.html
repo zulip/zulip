@@ -20,22 +20,22 @@
                   to use <a href="https://zephyr.zulip.com">the web interface</a></span>
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
-              {% if send_to_staging %}
+              {% if send_to_prod %}
               <div id="staging-warning"class="alert alert_sidebar alert-error">
-                <p>This realm uses staging. Please login into
-                <a href="https://staging.zulip.com/">staging.zulip.com</a>
+                <p>This realm uses production. Please login into
+                <a href="https://zulip.com/">zulip.com</a>
                 to be part of the conversation.</p>
               </div>
               <script>
               $(function () {
                   if (window.bridge !== undefined) {
                       // Desktop app only supports "prompt", not "alert" or "confirm" :/
-                      window.prompt("You're currently on the production {{product_name}} server, but everyone else is on the staging server.\n\nGoing forward, please run {{product_name}} with the following flag to use the staging server:", "--site https://staging.zulip.com");
-                      window.location.assign("https://staging.zulip.com");
+                      window.prompt("You're currently on the staging {{product_name}} server, but everyone else is on the production server.\n\nGoing forward, please run {{product_name}} with the following flag to use the staging server:", "--site https://zulip.com");
+                      window.location.assign("https://zulip.com");
                   } else {
-                      var res = window.confirm("You're currently on the production {{product_name}} server, but everyone else is on the staging server. Please use https://staging.zulip.com to use {{product_name}}.");
+                      var res = window.confirm("You're currently on the staging {{product_name}} server, but everyone else is on the product_name server. Please use https://zulip.com to use {{product_name}}.");
                       if (feature_flags.is_og_zulip_user && !res) { return; }
-                      window.location.assign("https://staging.zulip.com");
+                      window.location.assign("https://zulip.com");
                   }
               });
               </script>

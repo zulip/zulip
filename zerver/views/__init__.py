@@ -1001,9 +1001,9 @@ def home(request):
         show_invites = False
 
     # Warn users on the zulip.com realm to use staging.
-    send_to_staging = False
-    if page_params['domain'] == "zulip.com" and not page_params['staging']:
-        send_to_staging = True
+    send_to_prod = False
+    if page_params['domain'] == "zulip.com" and page_params['staging'] and user_profile.email == 'armooo@dropbox.com':
+        send_to_prod = True
 
     dbx_branding = False
     product_name = "Zulip"
@@ -1025,7 +1025,7 @@ def home(request):
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
-                                   'send_to_staging': send_to_staging,
+                                   'send_to_prod': send_to_prod,
                                    'dbx_branding': dbx_branding,
                                    'product_name': product_name
                                    },
