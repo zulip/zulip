@@ -4,4 +4,4 @@
 [api]
 email = nagios-bot@zulip.com
 key = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-site = https://staging.zulip.com
+site = https://zulip.com
