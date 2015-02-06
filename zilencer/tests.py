@@ -9,8 +9,8 @@ class EndpointDiscoveryTest(TestCase):
     def test_staging_user(self):
         response = self.client.get("/api/v1/deployments/endpoints", {"email": "lfaraone@zulip.com"})
         data = ujson.loads(response.content)
-        self.assertEqual(data["result"]["base_site_url"], "https://staging.zulip.com/")
-        self.assertEqual(data["result"]["base_api_url"], "https://staging.zulip.com/api/")
+        self.assertEqual(data["result"]["base_site_url"], "https://zulip.com/")
+        self.assertEqual(data["result"]["base_api_url"], "https://zulip.com/api/")
 
     def test_prod_user(self):
         response = self.client.get("/api/v1/deployments/endpoints", {"email": "lfaraone@mit.edu"})
