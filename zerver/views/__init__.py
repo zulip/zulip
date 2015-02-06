@@ -721,7 +721,7 @@ def start_google_oauth2(request):
         'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
         'redirect_uri': ''.join((
             settings.EXTERNAL_URI_SCHEME,
-            settings.EXTERNAL_HOST,
+            request.get_host(),
             reverse('zerver.views.finish_google_oauth2'),
         )),
         'scope': 'profile email',
