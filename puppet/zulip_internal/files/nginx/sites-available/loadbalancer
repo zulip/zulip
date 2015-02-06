@@ -160,3 +160,26 @@ server {
         include /etc/nginx/zulip-include/proxy;
     }
 }
+
+server {
+    listen chat.dropboxer.net:443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/chat.dropboxer.net.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/chat.dropboxer.net.key;
+
+    location / {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy;
+    }
+
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/get_events|/json/events|/api/v1/events {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+}
