@@ -749,7 +749,7 @@ def finish_google_oauth2(request):
             'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
             'redirect_uri': ''.join((
                 settings.EXTERNAL_URI_SCHEME,
-                settings.EXTERNAL_HOST,
+                request.get_host(),
                 reverse('zerver.views.finish_google_oauth2'),
             )),
             'grant_type': 'authorization_code',
