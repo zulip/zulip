@@ -639,7 +639,7 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
     else:
         login(request, user_profile)
         return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                              settings.EXTERNAL_HOST))
+                                              request.get_host()))
 
 def remote_user_sso(request):
     try:
