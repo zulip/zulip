@@ -94,7 +94,8 @@ in a while.
             deactivated=False).values_list('domain', flat=True)
         # This list much match the list of domains for the
         # dont_show_digest_email_setting feature flag.
-        non_digest_domains = set(("mit.edu", "customer29.invalid", "customer20.invalid"))
+        non_digest_domains = set(("mit.edu", "customer29.invalid",
+                                  "customer20.invalid", "zulip.com"))
         digest_domains = set(all_domains) - non_digest_domains
 
         deployment_domains = domains_for_this_deployment()
