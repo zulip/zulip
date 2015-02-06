@@ -771,7 +771,7 @@ def finish_google_oauth2(request):
         full_name = body['name']['formatted']
     except KeyError:
         # Only google+ users have a formated name. I am ignoring i18n here.
-        full_name = '{} {}'.format(
+        full_name = u'{} {}'.format(
             body['name']['givenName'], body['name']['familyName']
         )
     for email in body['emails']:
