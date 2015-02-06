@@ -41,7 +41,7 @@ def update_deployment(server, refname):
 def send_deployment_finished_message(branch, message):
     subprocess.check_call(["/home/zulip/zulip/api/bin/zulip-send", "--user=commit-bot@zulip.com",
                            "--api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "--stream=commits",
-                           "--site=https://staging.zulip.com",
+                           "--site=https://zulip.com",
                            (u"--subject=%s" % (branch,)).encode("utf-8"), "--message=%s" % (message,)])
 
 deployments = {
