@@ -30,10 +30,10 @@
               $(function () {
                   if (window.bridge !== undefined) {
                       // Desktop app only supports "prompt", not "alert" or "confirm" :/
-                      window.prompt("You're currently on the staging {{product_name}} server, but everyone else is on the production server.\n\nGoing forward, please run {{product_name}} with the following flag to use the staging server:", "--site https://zulip.com");
+                      window.prompt("You're currently on the staging {{product_name}} server, but everyone else is on the production server.\n\nGoing forward, please run zulip with the following flag to use the staging server:", "--site https://chat.dropboxer.net");
                       window.location.assign("https://chat.dropboxer.net");
                   } else {
-                      var res = window.confirm("You're currently on the staging {{product_name}} server, but everyone else is on the product_name server. Please use https://zulip.com to use {{product_name}}.");
+                  var res = window.confirm("You're currently on the staging {{product_name}} server, but everyone else is on the production server. Please use https://chat.dropboxer.net.");
                       if (feature_flags.is_og_zulip_user && !res) { return; }
                       window.location.assign("https://chat.dropboxer.net");
                   }
