@@ -39,4 +39,4 @@ def format_commit_message(author, subject, commit_id):
     return '!avatar(%s) [%s](https://git.zulip.net/eng/zulip/commit/%s)\n' % (author, subject, commit_id)
 
 ZULIP_API_PATH = "/home/zulip/zulip/api"
-ZULIP_SITE = "https://staging.zulip.com"
+ZULIP_SITE = "https://zulip.com"
