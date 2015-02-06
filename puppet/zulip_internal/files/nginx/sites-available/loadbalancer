@@ -147,7 +147,9 @@ server {
 }
 
 server {
-    listen external-content.zulipcdn.net:443;
+    listen www.zulip.com:443;
+    server_name external-content.zulipcdn.net;
+
 
     ssl on;
     ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
