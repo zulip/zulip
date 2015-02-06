@@ -130,9 +130,15 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         email = remote_user_to_email(remote_user)
 
         try:
-            return get_user_profile_by_email(email)
+            user_profile = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
             return None
+
+        if user_profile.is_mirror_dummy:
+            # mirror dummies can not login, but they can convert to real users
+            return None
+
+        return user_profile
 
 class ZulipLDAPAuthBackend(ZulipAuthMixin, LDAPBackend):
     def django_to_ldap_username(self, username):
