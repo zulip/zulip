@@ -358,7 +358,7 @@ if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
 
 if DEPLOYED:
-    FEEDBACK_TARGET="https://staging.zulip.com/api"
+    FEEDBACK_TARGET="https://zulip.com/api"
 else:
     FEEDBACK_TARGET="http://localhost:9991/api"
 
