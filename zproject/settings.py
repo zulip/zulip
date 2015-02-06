@@ -269,7 +269,6 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'S3_SECRET_KEY': '',
                     'S3_BUCKET': '',
                     'S3_AVATAR_BUCKET': '',
-                    'MIXPANEL_TOKEN': '',
                     'MAILCHIMP_API_KEY': '',
                     'LOCAL_UPLOADS_DIR': None,
                     'DROPBOX_APP_KEY': '',
@@ -601,11 +600,6 @@ JS_SPECS = {
 }
 
 app_srcs = JS_SPECS['app']['source_filenames']
-
-if MIXPANEL_TOKEN:
-    # Mixpanel is not used on enterprise and throws an error when the
-    # library is not included
-    app_srcs.append('js/metrics.js')
 
 PIPELINE_JS = {}  # Now handled in tools/minify-js
 PIPELINE_JS_COMPRESSOR  = None

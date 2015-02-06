@@ -3,7 +3,7 @@
 // Global variables, categorized by place of definition.
 var globals =
     // Third-party libraries
-      ' $ _ jQuery Spinner Handlebars XDate zxcvbn Intl mixpanel Notification'
+      ' $ _ jQuery Spinner Handlebars XDate zxcvbn Intl Notification'
     + ' LazyLoad Dropbox SockJS marked'
 
     // Node-based unit tests

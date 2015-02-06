@@ -29,7 +29,5 @@ def add_settings(request):
 
 def add_metrics(request):
     return {
-        'mixpanel_token': settings.MIXPANEL_TOKEN,
-        'enable_metrics': ujson.dumps(settings.DEPLOYED),
         'dropboxAppKey': settings.DROPBOX_APP_KEY
     }

@@ -944,12 +944,6 @@ a.bottom-signup-button {
     color: black;
 }
 
-.mixpanel-badge {
-    width: 85px;
-    float: right;
-    margin-right: 10px;
-}
-
 .centered-button {
     text-align: center;
 }
@@ -1039,12 +1033,6 @@ a.bottom-signup-button {
 
     .footer-main {
         text-align: center;
-    }
-
-    .mixpanel-badge {
-        width: 65px;
-        float: none;
-        margin-left: 10px;
     }
 
     .footer-navigation {
