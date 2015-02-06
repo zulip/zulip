@@ -182,4 +182,12 @@ server {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
+
+    location = /accounts/login/ {
+        return 302 /accounts/login/google/;
+    }
+
+    location /login/ {
+        return 302 /accounts/login/google/;
+    }
 }
