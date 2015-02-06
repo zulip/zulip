@@ -390,10 +390,10 @@ def main(args):
   if not opts.stdout:
     client = zulip.Client(verbose=True, client="ZulipReview/0.1")
 
-    if 'staging' not in client.base_url:
+    if 'staging' in client.base_url:
       print '''
 
-        HEY!  You have to point your .zuliprc to staging.
+        HEY!  You still have your .zuliprc pointing to staging.
         ABORTING
 
         '''
