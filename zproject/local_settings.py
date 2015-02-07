@@ -1,4 +1,4 @@
-# Secret Django settings for the Zulip project
+# Non-secret secret Django settings for the Zulip project
 import platform
 import ConfigParser
 from base64 import b64decode
@@ -6,6 +6,11 @@ from base64 import b64decode
 config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
+secrets_file = ConfigParser.RawConfigParser()
+secrets_file.read("/etc/zulip/zulip-secrets.conf")
+
+
+getsecret = lambda x: secrets_file.get('secrets', x)
 # Whether we're running in a production environment. Note that DEPLOYED does
 # **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
 # and as such should not for example assume they are the main Zulip site.
@@ -16,11 +21,7 @@ TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'te
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-# A fixed salt used for hashing in certain places, e.g. email-based
-# username generation.
-HASH_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+SECRET_KEY = getsecret("secret_key")
 
 # Use this salt to hash a user's email into a filename for their user-uploaded
 # avatar.  If this salt is discovered, attackers will only be able to determine
@@ -34,28 +35,28 @@ if not DEPLOYED:
 
 # A shared secret, used to authenticate different parts of the app to each other.
 # FIXME: store this password more securely
-SHARED_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+SHARED_SECRET = getsecret("shared_secret") if DEPLOYED else "dummy"
 
-RABBITMQ_PASSWORD = 'xxxxxxxxxxxxxxxx'
+RABBITMQ_PASSWORD = getsecret("rabbitmq_password") if DEPLOYED else 'xxxxxxxxxxxxxxxx'
 
-MAILCHIMP_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us4'
+MAILCHIMP_API_KEY = getsecret("mailchimp_api_key")
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
 # This can be filled in automatically from the database, maybe
 DEPLOYMENT_ROLE_NAME = 'zulip.com'
-DEPLOYMENT_ROLE_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+DEPLOYMENT_ROLE_KEY = getsecret("deployment_role_key")
 
 # This comes from our mandrill accounts page
-MANDRILL_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxx'
+MANDRILL_API_KEY = getsecret("mandrill_api_key")
 
 # This should be synced with our camo installation
-CAMO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+CAMO_KEY = getsecret("camo_key")
 CAMO_URI = 'https://external-content.zulipcdn.net/'
 
 # Leave EMAIL_HOST unset or empty if you do not wish for emails to be sent
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'zulip@zulip.com'
-EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
+EMAIL_HOST_PASSWORD = getsecret('email_password')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
@@ -81,12 +82,10 @@ elif DEPLOYED:
 else:
     EXTERNAL_HOST = 'localhost:9991'
 
-EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
 # For now, ENTERPRISE is only testing, so write to our test buckets
 if DEPLOYED and not ENTERPRISE:
-    S3_KEY="xxxxxxxxxxxxxxxxxxxx"
-    S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    S3_KEY=getsecret("s3_key")
+    S3_SECRET_KEY=getsecret("s3_secret_key") # XXX
     S3_BUCKET="humbug-user-uploads"
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
     S3_AVATAR_BUCKET="humbug-user-avatars"
@@ -100,6 +99,8 @@ else:
     LOCAL_DATABASE_PASSWORD="xxxxxxxxxxxx"
 
 # Twitter API credentials
+# Secrecy not required because its only used for R/O requests.
+# Please don't make us go over our rate limit.
 if STAGING_DEPLOYED or TESTING_DEPLOYED:
     # Application: "Humbug HQ"
     TWITTER_CONSUMER_KEY = "xxxxxxxxxxxxxxxxxxxxxx"
@@ -142,11 +143,11 @@ GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleuse
 
 if DEPLOYED:
     GOOGLE_OAUTH2_CLIENT_ID = '835904834568-ag4p18v0sd9a0tero14r3gekn6shoen3.apps.googleusercontent.com'
-    GOOGLE_OAUTH2_CLIENT_SECRET  = 'xxxxxxxxxxxxxxxxxxxxxxxx'
+    GOOGLE_OAUTH2_CLIENT_SECRET  = getsecret('google_oauth2_client_secret')
 else:
     # Google OAUTH2 for dev with the redirect uri set to http://localhost:9991/accounts/login/google/done/
     GOOGLE_OAUTH2_CLIENT_ID = '607830223128-4qgthc7ofdqce232dk690t5jgkm1ce33.apps.googleusercontent.com'
-    GOOGLE_OAUTH2_CLIENT_SECRET  = 'xxxxxxxxxxxxxxxxxxxxxxxx'
+    GOOGLE_OAUTH2_CLIENT_SECRET  = getsecret('dev_google_oauth2_client_secret')
 
 # Administrator domain for this install
 ADMIN_DOMAIN = "zulip.com"
