@@ -16,6 +16,7 @@ from django.db.models import Q
 
 from defusedxml.ElementTree import fromstring as xml_fromstring
 
+import pprint
 import base64
 import logging
 import re
@@ -913,4 +914,109 @@ def api_zendesk_webhook(request, user_profile):
     subject = truncate('#%s: %s' % (ticket_id, ticket_title), 60)
     check_send_message(user_profile, get_client('ZulipZenDeskWebhook'), 'stream',
                        [stream], subject, message)
+    return json_success()
+
+
+PAGER_DUTY_EVENT_NAMES = {
+    'incident.trigger': 'triggered',
+    'incident.acknowledge': 'acknowledged',
+    'incident.unacknowledge': 'unacknowledged',
+    'incident.resolve': 'resolved',
+    'incident.assign': 'assigned',
+    'incident.escalate': 'escalated',
+    'incident.delegate': 'delineated',
+}
+
+def build_pagerdudy_formatdict(message):
+    # Normalize the message dict, after this all keys will exist. I would
+    # rather some strange looking messages than dropping pages.
+
+    format_dict = {}
+    format_dict['action'] = PAGER_DUTY_EVENT_NAMES[message['type']]
+
+    format_dict['incident_id'] = message['data']['incident']['id']
+    format_dict['incident_num'] = message['data']['incident']['incident_number']
+    format_dict['incident_url'] = message['data']['incident']['html_url']
+
+    format_dict['service_name'] = message['data']['incident']['service']['name']
+    format_dict['service_url'] = message['data']['incident']['service']['html_url']
+
+    # This key can be missing on null
+    if message['data']['incident'].get('assigned_to_user', None):
+        format_dict['assigned_to_email'] = message['data']['incident']['assigned_to_user']['email']
+        format_dict['assigned_to_username'] = message['data']['incident']['assigned_to_user']['email'].split('@')[0]
+        format_dict['assigned_to_url'] = message['data']['incident']['assigned_to_user']['html_url']
+    else:
+        format_dict['assigned_to_email'] = 'nobody'
+        format_dict['assigned_to_username'] = 'nobody'
+        format_dict['assigned_to_url'] = ''
+
+    # This key can be missing on null
+    if message['data']['incident'].get('resolved_by_user', None):
+        format_dict['resolved_by_email'] = message['data']['incident']['resolved_by_user']['email']
+        format_dict['resolved_by_username'] = message['data']['incident']['resolved_by_user']['email'].split('@')[0]
+        format_dict['resolved_by_url'] = message['data']['incident']['resolved_by_user']['html_url']
+    else:
+        format_dict['resolved_by_email'] = 'nobody'
+        format_dict['resolved_by_username'] = 'nobody'
+        format_dict['resolved_by_url'] = ''
+
+    format_dict['trigger_subject'] = message['data']['incident']['trigger_summary_data']['subject']
+    return format_dict
+
+
+def send_raw_pagerduty_json(user_profile, stream, message):
+    subject = 'pagerduty'
+    body = (
+        'Unknown pagerdudy message\n'
+        '``` py\n'
+        '%s\n'
+        '```') % (pprint.pformat(message),)
+    check_send_message(user_profile, get_client('ZulipPagerDutyWebhook'), 'stream',
+                       [stream], subject, body)
+
+
+def send_formated_pagerduty(user_profile, stream, message_type, format_dict):
+    if message_type in ('incident.trigger', 'incident.unacknowledge'):
+        template = (':unhealthy_heart: Incident '
+        '[{incident_num}]({incident_url}) {action} by '
+        '[{service_name}]({service_url}) and assigned to '
+        '[{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_subject}')
+
+    elif message_type == 'incident.resolve' and format_dict['resolved_by_url']:
+        template = (':healthy_heart: Incident '
+        '[{incident_num}]({incident_url}) resolved by '
+        '[{resolved_by_username}@]({resolved_by_url})\n\n>{trigger_subject}')
+    elif message_type == 'incident.resolve' and not format_dict['resolved_by_url']:
+        template = (':healthy_heart: Incident '
+        '[{incident_num}]({incident_url}) resolved\n\n>{trigger_subject}')
+    else:
+        template = (':average_heart: Incident [{incident_num}]({incident_url}) '
+        '{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_subject}')
+
+    subject = 'incident {incident_num}'.format(**format_dict)
+    body = template.format(**format_dict)
+
+    check_send_message(user_profile, get_client('ZulipPagerDutyWebhook'), 'stream',
+                       [stream], subject, body)
+
+
+@api_key_only_webhook_view
+@has_request_variables
+def api_pagerduty_webhook(request, user_profile, stream=REQ(default='pagerduty')):
+    payload = ujson.loads(request.body)
+
+    for message in payload['messages']:
+        message_type = message['type']
+
+        if message_type not in PAGER_DUTY_EVENT_NAMES:
+            send_raw_pagerduty_json(user_profile, stream, message)
+
+        try:
+            format_dict = build_pagerdudy_formatdict(message)
+        except:
+            send_raw_pagerduty_json(user_profile, stream, message)
+        else:
+            send_formated_pagerduty(user_profile, stream, message_type, format_dict)
+
     return json_success()

@@ -734,3 +734,82 @@ class ZenDeskHookTests(AuthedTestCase):
         msg = self.generate_webhook_response(message='New comment:\n> It is better\n* here')
         self.assertEqual(msg.content, 'New comment:\n> It is better\n* here')
 
+
+class PagerDutyHookTests(AuthedTestCase):
+
+    def send_webhook(self, data, stream_name):
+        email = 'hamlet@zulip.com'
+        self.subscribe_to_stream(email, stream_name)
+        api_key = self.get_api_key(email)
+        url = '/api/v1/external/pagerduty?api_key=%s&stream=%s' % (api_key, stream_name)
+        result = self.client.post(url, ujson.dumps(data), content_type="application/json")
+        self.assert_json_success(result)
+
+        # Check the correct message was sent
+        msg = Message.objects.filter().order_by('-id')[0]
+        self.assertEqual(msg.sender.email, email)
+
+        return msg
+
+    def test_trigger(self):
+        data = ujson.loads(self.fixture_data('pagerduty', 'trigger'))
+        msg = self.send_webhook(data, 'pagerduty')
+        self.assertEqual(msg.subject, 'incident 3')
+        self.assertEqual(
+            msg.content,
+            ':unhealthy_heart: Incident [3](https://zulip-test.pagerduty.com/incidents/P140S4Y) triggered by [Test service](https://zulip-test.pagerduty.com/services/PIL5CUQ) and assigned to [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>foo'
+        )
+
+    def test_unacknowledge(self):
+        data = ujson.loads(self.fixture_data('pagerduty', 'unacknowledge'))
+        msg = self.send_webhook(data, 'pagerduty')
+        self.assertEqual(msg.subject, 'incident 3')
+        self.assertEqual(
+            msg.content,
+            ':unhealthy_heart: Incident [3](https://zulip-test.pagerduty.com/incidents/P140S4Y) unacknowledged by [Test service](https://zulip-test.pagerduty.com/services/PIL5CUQ) and assigned to [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>foo'
+        )
+
+    def test_resolved(self):
+        data = ujson.loads(self.fixture_data('pagerduty', 'resolved'))
+        msg = self.send_webhook(data, 'pagerduty')
+        self.assertEqual(msg.subject, 'incident 1')
+        self.assertEqual(
+            msg.content,
+            ':healthy_heart: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) resolved by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
+        )
+
+    def test_auto_resolved(self):
+        data = ujson.loads(self.fixture_data('pagerduty', 'auto_resolved'))
+        msg = self.send_webhook(data, 'pagerduty')
+        self.assertEqual(msg.subject, 'incident 2')
+        self.assertEqual(
+            msg.content,
+            ':healthy_heart: Incident [2](https://zulip-test.pagerduty.com/incidents/PX7K9J2) resolved\n\n>new'
+        )
+
+    def test_acknowledge(self):
+        data = ujson.loads(self.fixture_data('pagerduty', 'acknowledge'))
+        msg = self.send_webhook(data, 'pagerduty')
+        self.assertEqual(msg.subject, 'incident 1')
+        self.assertEqual(
+            msg.content,
+            ':average_heart: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) acknowledged by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
+        )
+
+    def test_bad_message(self):
+        data = {'messages': [{'type': 'incident.triggered'}]}
+        msg = self.send_webhook(data, 'pagerduty')
+        self.assertEqual(msg.subject, 'pagerduty')
+        self.assertEqual(
+            msg.content,
+            'Unknown pagerdudy message\n``` py\n{u\'type\': u\'incident.triggered\'}\n```'
+        )
+
+    def test_unknown_message_type(self):
+        data = {'messages': [{'type': 'foo'}]}
+        msg = self.send_webhook(data, 'pagerduty')
+        self.assertEqual(msg.subject, 'pagerduty')
+        self.assertEqual(
+            msg.content,
+            'Unknown pagerdudy message\n``` py\n{u\'type\': u\'foo\'}\n```'
+        )
