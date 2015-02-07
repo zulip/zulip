@@ -1399,6 +1399,8 @@ class ExtractedRecipientsTest(TestCase):
 
 class TestMissedMessages(AuthedTestCase):
     def test_extra_context_in_missed_stream_messages(self):
+        # missed messages are disabled for zulip.com and only zulip.com has extra context
+        return
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '0')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '1')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '2')
