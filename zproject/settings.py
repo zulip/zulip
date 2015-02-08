@@ -836,4 +836,5 @@ USING_EMBEDLY = False
 # This is a debugging option only
 PROFILE_ALL_REQUESTS = False
 
-OG_ZULIPER_EMAILS = set(())
+OG_ZULIPER_EMAILS = set(('feedback@zulip.com',
+))
