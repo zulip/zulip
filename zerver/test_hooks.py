@@ -802,7 +802,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'incident 48219')
         self.assertEqual(
             msg.content,
-            ':healthy_heart: Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n>mp_error_block_down_critical'
+            u':healthy_heart: Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n>mp_error_block_down_critical\u2119\u01b4'
         )
 
     def test_bad_message(self):

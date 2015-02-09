@@ -968,40 +968,40 @@ def build_pagerdudy_formatdict(message):
     trigger_description = message['data']['incident']['trigger_summary_data'].get('description', '')
     if trigger_description:
         trigger_message.append(trigger_description)
-    format_dict['trigger_message'] = '\n'.join(trigger_message)
+    format_dict['trigger_message'] = u'\n'.join(trigger_message)
     return format_dict
 
 
 def send_raw_pagerduty_json(user_profile, stream, message):
     subject = 'pagerduty'
     body = (
-        'Unknown pagerdudy message\n'
-        '``` py\n'
-        '%s\n'
-        '```') % (pprint.pformat(message),)
+        u'Unknown pagerdudy message\n'
+        u'``` py\n'
+        u'%s\n'
+        u'```') % (pprint.pformat(message),)
     check_send_message(user_profile, get_client('ZulipPagerDutyWebhook'), 'stream',
                        [stream], subject, body)
 
 
 def send_formated_pagerduty(user_profile, stream, message_type, format_dict):
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
-        template = (':unhealthy_heart: Incident '
-        '[{incident_num}]({incident_url}) {action} by '
-        '[{service_name}]({service_url}) and assigned to '
-        '[{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
+        template = (u':unhealthy_heart: Incident '
+        u'[{incident_num}]({incident_url}) {action} by '
+        u'[{service_name}]({service_url}) and assigned to '
+        u'[{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
     elif message_type == 'incident.resolve' and format_dict['resolved_by_url']:
-        template = (':healthy_heart: Incident '
-        '[{incident_num}]({incident_url}) resolved by '
-        '[{resolved_by_username}@]({resolved_by_url})\n\n>{trigger_message}')
+        template = (u':healthy_heart: Incident '
+        u'[{incident_num}]({incident_url}) resolved by '
+        u'[{resolved_by_username}@]({resolved_by_url})\n\n>{trigger_message}')
     elif message_type == 'incident.resolve' and not format_dict['resolved_by_url']:
-        template = (':healthy_heart: Incident '
-        '[{incident_num}]({incident_url}) resolved\n\n>{trigger_message}')
+        template = (u':healthy_heart: Incident '
+        u'[{incident_num}]({incident_url}) resolved\n\n>{trigger_message}')
     else:
-        template = (':average_heart: Incident [{incident_num}]({incident_url}) '
-        '{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
+        template = (u':average_heart: Incident [{incident_num}]({incident_url}) '
+        u'{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
-    subject = 'incident {incident_num}'.format(**format_dict)
+    subject = u'incident {incident_num}'.format(**format_dict)
     body = template.format(**format_dict)
 
     check_send_message(user_profile, get_client('ZulipPagerDutyWebhook'), 'stream',
