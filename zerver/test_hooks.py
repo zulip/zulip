@@ -796,6 +796,15 @@ class PagerDutyHookTests(AuthedTestCase):
             ':average_heart: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) acknowledged by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
         )
 
+    def test_no_subject(self):
+        data = ujson.loads(self.fixture_data('pagerduty', 'mp_fail'))
+        msg = self.send_webhook(data, 'pagerduty')
+        self.assertEqual(msg.subject, 'incident 48219')
+        self.assertEqual(
+            msg.content,
+            ':healthy_heart: Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n>mp_error_block_down_critical'
+        )
+
     def test_bad_message(self):
         data = {'messages': [{'type': 'incident.triggered'}]}
         msg = self.send_webhook(data, 'pagerduty')

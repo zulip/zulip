@@ -961,7 +961,14 @@ def build_pagerdudy_formatdict(message):
         format_dict['resolved_by_username'] = 'nobody'
         format_dict['resolved_by_url'] = ''
 
-    format_dict['trigger_subject'] = message['data']['incident']['trigger_summary_data']['subject']
+    trigger_message = []
+    trigger_subject = message['data']['incident']['trigger_summary_data'].get('subject', '')
+    if trigger_subject:
+        trigger_message.append(trigger_subject)
+    trigger_description = message['data']['incident']['trigger_summary_data'].get('description', '')
+    if trigger_description:
+        trigger_message.append(trigger_description)
+    format_dict['trigger_message'] = '\n'.join(trigger_message)
     return format_dict
 
 
@@ -981,18 +988,18 @@ def send_formated_pagerduty(user_profile, stream, message_type, format_dict):
         template = (':unhealthy_heart: Incident '
         '[{incident_num}]({incident_url}) {action} by '
         '[{service_name}]({service_url}) and assigned to '
-        '[{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_subject}')
+        '[{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
     elif message_type == 'incident.resolve' and format_dict['resolved_by_url']:
         template = (':healthy_heart: Incident '
         '[{incident_num}]({incident_url}) resolved by '
-        '[{resolved_by_username}@]({resolved_by_url})\n\n>{trigger_subject}')
+        '[{resolved_by_username}@]({resolved_by_url})\n\n>{trigger_message}')
     elif message_type == 'incident.resolve' and not format_dict['resolved_by_url']:
         template = (':healthy_heart: Incident '
-        '[{incident_num}]({incident_url}) resolved\n\n>{trigger_subject}')
+        '[{incident_num}]({incident_url}) resolved\n\n>{trigger_message}')
     else:
         template = (':average_heart: Incident [{incident_num}]({incident_url}) '
-        '{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_subject}')
+        '{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
     subject = 'incident {incident_num}'.format(**format_dict)
     body = template.format(**format_dict)
