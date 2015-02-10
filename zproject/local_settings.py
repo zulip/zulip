@@ -126,10 +126,12 @@ if DEPLOYED or STAGING_DEPLOYED:
     APNS_SANDBOX = "push_production"
     APNS_FEEDBACK = "feedback_production"
     APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
+    DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dist.pem"
 else:
     APNS_SANDBOX = "push_sandbox"
     APNS_FEEDBACK = "feedback_sandbox"
     APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"
+    DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dev.pem"
 
 # GCM tokens are IP-whitelisted; if we deploy to additional
 # servers you will need to explicitly add their IPs here:
@@ -208,3 +210,6 @@ API_SUPER_USERS = set(["tabbott/extra@mit.edu",
 ADMINS = (
     ('Zulip Error Reports', 'errors@zulip.com'),
 )
+
+ZULIP_IOS_APP_ID = 'com.zulip.Zulip'
+DBX_IOS_APP_ID = 'com.dropbox.Zulip'

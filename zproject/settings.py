@@ -297,6 +297,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'EXTERNAL_URI_SCHEME': "https://",
                     'GOOGLE_CLIENT_ID': '',
                     'REDIS_PASSWORD': None,
+                    'DBX_APNS_CERT_FILE': None,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():

@@ -2281,7 +2281,7 @@ def json_set_muted_topics(request, user_profile,
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()
 
-def add_push_device_token(request, user_profile, token, kind):
+def add_push_device_token(request, user_profile, token, kind, ios_app_id=None):
     if token == '' or len(token) > 4096:
         return json_error('Empty or invalid length token')
 
@@ -2290,7 +2290,10 @@ def add_push_device_token(request, user_profile, token, kind):
     PushDeviceToken.objects.filter(token=token).delete()
 
     # Overwrite with the latest value
-    token, created = PushDeviceToken.objects.get_or_create(user=user_profile, token=token, kind=kind)
+    token, created = PushDeviceToken.objects.get_or_create(user=user_profile,
+                                                           token=token,
+                                                           kind=kind,
+                                                           ios_app_id=ios_app_id)
     if not created:
         token.last_updated = now()
         token.save(update_fields=['last_updated'])
@@ -2298,8 +2301,8 @@ def add_push_device_token(request, user_profile, token, kind):
     return json_success()
 
 @has_request_variables
-def add_apns_device_token(request, user_profile, token=REQ):
-    return add_push_device_token(request, user_profile, token, PushDeviceToken.APNS)
+def add_apns_device_token(request, user_profile, token=REQ, appid=REQ(default=settings.ZULIP_IOS_APP_ID)):
+    return add_push_device_token(request, user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
 
 @has_request_variables
 def add_android_reg_id(request, user_profile, token=REQ):
