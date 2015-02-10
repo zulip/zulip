@@ -811,7 +811,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'pagerduty')
         self.assertEqual(
             msg.content,
-            'Unknown pagerdudy message\n``` py\n{u\'type\': u\'incident.triggered\'}\n```'
+            'Unknown pagerduty message\n``` py\n{u\'type\': u\'incident.triggered\'}\n```'
         )
 
     def test_unknown_message_type(self):
@@ -820,5 +820,5 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'pagerduty')
         self.assertEqual(
             msg.content,
-            'Unknown pagerdudy message\n``` py\n{u\'type\': u\'foo\'}\n```'
+            'Unknown pagerduty message\n``` py\n{u\'type\': u\'foo\'}\n```'
         )

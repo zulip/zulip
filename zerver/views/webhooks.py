@@ -927,7 +927,7 @@ PAGER_DUTY_EVENT_NAMES = {
     'incident.delegate': 'delineated',
 }
 
-def build_pagerdudy_formatdict(message):
+def build_pagerduty_formatdict(message):
     # Normalize the message dict, after this all keys will exist. I would
     # rather some strange looking messages than dropping pages.
 
@@ -975,7 +975,7 @@ def build_pagerdudy_formatdict(message):
 def send_raw_pagerduty_json(user_profile, stream, message):
     subject = 'pagerduty'
     body = (
-        u'Unknown pagerdudy message\n'
+        u'Unknown pagerduty message\n'
         u'``` py\n'
         u'%s\n'
         u'```') % (pprint.pformat(message),)
@@ -1020,7 +1020,7 @@ def api_pagerduty_webhook(request, user_profile, stream=REQ(default='pagerduty')
             send_raw_pagerduty_json(user_profile, stream, message)
 
         try:
-            format_dict = build_pagerdudy_formatdict(message)
+            format_dict = build_pagerduty_formatdict(message)
         except:
             send_raw_pagerduty_json(user_profile, stream, message)
         else:
