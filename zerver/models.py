@@ -446,6 +446,9 @@ class PushDeviceToken(models.Model):
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True)
 
+    # [optional] Contains the app id of the device if it is an iOS device
+    ios_app_id = models.TextField(null=True)
+
 class MitUser(models.Model):
     email = models.EmailField(unique=True)
     # status: whether an object has been confirmed.
