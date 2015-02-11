@@ -972,8 +972,8 @@ def build_pagerduty_formatdict(message):
     return format_dict
 
 
-def send_raw_pagerduty_json(user_profile, stream, message):
-    subject = 'pagerduty'
+def send_raw_pagerduty_json(user_profile, stream, message, topic):
+    subject = topic or 'pagerduty'
     body = (
         u'Unknown pagerduty message\n'
         u'``` py\n'
@@ -983,7 +983,7 @@ def send_raw_pagerduty_json(user_profile, stream, message):
                        [stream], subject, body)
 
 
-def send_formated_pagerduty(user_profile, stream, message_type, format_dict):
+def send_formated_pagerduty(user_profile, stream, message_type, format_dict, topic):
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = (u':unhealthy_heart: Incident '
         u'[{incident_num}]({incident_url}) {action} by '
@@ -1001,7 +1001,7 @@ def send_formated_pagerduty(user_profile, stream, message_type, format_dict):
         template = (u':average_heart: Incident [{incident_num}]({incident_url}) '
         u'{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
-    subject = u'incident {incident_num}'.format(**format_dict)
+    subject = topic or u'incident {incident_num}'.format(**format_dict)
     body = template.format(**format_dict)
 
     check_send_message(user_profile, get_client('ZulipPagerDutyWebhook'), 'stream',
@@ -1010,20 +1010,20 @@ def send_formated_pagerduty(user_profile, stream, message_type, format_dict):
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_pagerduty_webhook(request, user_profile, stream=REQ(default='pagerduty')):
+def api_pagerduty_webhook(request, user_profile, stream=REQ(default='pagerduty'), topic=REQ(default=None)):
     payload = ujson.loads(request.body)
 
     for message in payload['messages']:
         message_type = message['type']
 
         if message_type not in PAGER_DUTY_EVENT_NAMES:
-            send_raw_pagerduty_json(user_profile, stream, message)
+            send_raw_pagerduty_json(user_profile, stream, message, topic)
 
         try:
             format_dict = build_pagerduty_formatdict(message)
         except:
-            send_raw_pagerduty_json(user_profile, stream, message)
+            send_raw_pagerduty_json(user_profile, stream, message, topic)
         else:
-            send_formated_pagerduty(user_profile, stream, message_type, format_dict)
+            send_formated_pagerduty(user_profile, stream, message_type, format_dict, topic)
 
     return json_success()

@@ -737,11 +737,14 @@ class ZenDeskHookTests(AuthedTestCase):
 
 class PagerDutyHookTests(AuthedTestCase):
 
-    def send_webhook(self, data, stream_name):
+    def send_webhook(self, data, stream_name, topic=None):
         email = 'hamlet@zulip.com'
         self.subscribe_to_stream(email, stream_name)
         api_key = self.get_api_key(email)
-        url = '/api/v1/external/pagerduty?api_key=%s&stream=%s' % (api_key, stream_name)
+        if topic:
+            url = '/api/v1/external/pagerduty?api_key=%s&stream=%s&topic=%s' % (api_key, stream_name, topic)
+        else:
+            url = '/api/v1/external/pagerduty?api_key=%s&stream=%s' % (api_key, stream_name)
         result = self.client.post(url, ujson.dumps(data), content_type="application/json")
         self.assert_json_success(result)
 
@@ -803,6 +806,15 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(
             msg.content,
             u':healthy_heart: Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n>mp_error_block_down_critical\u2119\u01b4'
+        )
+
+    def test_explicit_subject(self):
+        data = ujson.loads(self.fixture_data('pagerduty', 'acknowledge'))
+        msg = self.send_webhook(data, 'pagerduty', topic="my+cool+topic")
+        self.assertEqual(msg.subject, 'my cool topic')
+        self.assertEqual(
+            msg.content,
+            ':average_heart: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) acknowledged by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
         )
 
     def test_bad_message(self):
