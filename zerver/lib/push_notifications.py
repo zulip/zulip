@@ -39,6 +39,10 @@ def hex_to_b64(data):
     return base64.b64encode(binascii.unhexlify(data))
 
 def _do_push_to_apns_service(user, message, apns_connection):
+    if not apns_connection:
+        logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user))
+        return
+
     apns_client = APNs(apns_connection)
     ret = apns_client.send(message)
     if not ret:
