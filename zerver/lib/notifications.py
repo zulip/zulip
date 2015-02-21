@@ -203,8 +203,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
                       all have the same recipient and subject
     """
     # Disabled missedmessage emails internally
-    if (not user_profile.enable_offline_email_notifications
-        or user_profile.realm.domain == "zulip.com"):
+    if not user_profile.enable_offline_email_notifications:
         return
 
     recipients = set((msg.recipient_id, msg.subject) for msg in missed_messages)
@@ -257,8 +256,7 @@ def do_send_missedmessage_events(user_profile, missed_messages, message_count):
     `missed_messages` is a list of Message objects to remind about
     """
     # Disabled missedmessage emails internally
-    if (not user_profile.enable_offline_email_notifications
-        or user_profile.realm.domain == "zulip.com"):
+    if not user_profile.enable_offline_email_notifications:
         return
 
     senders = set(m.sender.full_name for m in missed_messages)

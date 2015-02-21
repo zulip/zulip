@@ -983,8 +983,8 @@ def get_context_for_message(message):
         recipient_id=message.recipient_id,
         subject=message.subject,
         id__lt=message.id,
-        pub_date__gt=message.pub_date - timedelta(minutes=5),
-    ).order_by('-id')[:5]
+        pub_date__gt=message.pub_date - timedelta(minutes=15),
+    ).order_by('-id')[:10]
 
 
 class UserMessage(models.Model):

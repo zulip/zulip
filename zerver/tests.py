@@ -1399,15 +1399,18 @@ class ExtractedRecipientsTest(TestCase):
 
 class TestMissedMessages(AuthedTestCase):
     def test_extra_context_in_missed_stream_messages(self):
-        # missed messages are disabled for zulip.com and only zulip.com has extra context
-        return
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '0')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '1')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '2')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '3')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '4')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '5')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '6', subject='test2')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '6')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '7')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '8')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '9')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '10')
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
 
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
@@ -1419,6 +1422,6 @@ class TestMissedMessages(AuthedTestCase):
 
         self.assertEquals(len(mail.outbox), 1)
         self.assertIn(
-            'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 @**hamlet**',
+            'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**',
             normalize_string(mail.outbox[0].body),
         )
