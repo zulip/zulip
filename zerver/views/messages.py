@@ -291,6 +291,9 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(cond))
 
 def highlight_string(string, locs):
+    if isinstance(string, unicode):
+        string = string.encode('utf-8')
+
     highlight_start = '<span class="highlight">'
     highlight_stop = '</span>'
     pos = 0
@@ -303,7 +306,7 @@ def highlight_string(string, locs):
         result += highlight_stop
         pos = offset + length
     result += string[pos:]
-    return result
+    return result.decode('utf-8')
 
 def get_search_fields(rendered_content, subject, content_matches, subject_matches):
     return dict(match_content=highlight_string(rendered_content, content_matches),
