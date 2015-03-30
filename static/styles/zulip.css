@@ -2764,25 +2764,6 @@ button.topic_edit_cancel {
     padding-top: 4px;
 }
 
-#notifications-bar {
-    z-index: 9000;
-    position: absolute;
-    bottom: 0px; /* necessary to get slideUp, slideDown directions correct */
-    width: 100%;
-    height: 35px;
-    border-radius: 10px 10px 0px 0px;
-    padding: 10px 0px 0px 10px;
-    background: #58F;
-    color: white;
-    font-size: 125%;
-    cursor: default;
-    display: none;
-    /* For now, cut off long messages (but we should find a better solution) */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .empty_feed_notice {
     padding: 3em 4em;
     display: none;

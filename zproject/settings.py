@@ -533,7 +533,6 @@ JS_SPECS = {
             'js/filter.js',
             'js/narrow.js',
             'js/reload.js',
-            'js/notifications_bar.js',
             'js/compose_fade.js',
             'js/fenced_code.js',
             'js/echo.js',

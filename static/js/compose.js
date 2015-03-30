@@ -83,8 +83,6 @@ function show_box(tabname, focus_area, opts) {
         viewport.user_initiated_animate_scroll(cover+5);
     }
 
-    // Disable the notifications bar if it overlaps with the composebox
-    notifications_bar.maybe_disable();
 }
 
 function clear_invites() {
@@ -105,7 +103,6 @@ function hide_box() {
     $('#stream-message').hide();
     $('#private-message').hide();
     $(".new_message_textarea").css("min-height", "");
-    notifications_bar.enable();
     compose_fade.clear_compose();
     $('.message_comp').hide();
     $("#compose_controls").show();

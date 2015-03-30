@@ -186,7 +186,6 @@ exports.update_unread_counts = function () {
     stream_list.update_dom_with_unread_counts(res);
     notifications.update_title_count(res.home_unread_messages);
     notifications.update_pm_count(res.private_message_count);
-    notifications_bar.update(res.home_unread_messages);
 };
 
 exports.enable = function enable() {
