@@ -50,7 +50,8 @@ DEPLOYMENT_ROLE_KEY = getsecret("deployment_role_key")
 MANDRILL_API_KEY = getsecret("mandrill_api_key")
 
 # This should be synced with our camo installation
-CAMO_KEY = getsecret("camo_key")
+CAMO_KEY = getsecret("camo_key") if DEPLOYED else "dummy"
+# XXX: replace me
 CAMO_URI = 'https://external-content.zulipcdn.net/'
 
 # Leave EMAIL_HOST unset or empty if you do not wish for emails to be sent
