@@ -5,6 +5,7 @@ from zerver.views.messages import get_sqlalchemy_connection
 
 import os
 import time
+import unittest
 
 
 def slow(expected_run_time, slowness_reason):
@@ -70,7 +71,10 @@ def run_test(test):
     start_time = time.time()
 
     test.setUp()
-    test_method()
+    try:
+        test_method()
+    except unittest.SkipTest:
+        pass
     test.tearDown()
 
     delay = time.time() - start_time

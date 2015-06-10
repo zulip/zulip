@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from unittest import skip
 
 from zerver.forms import not_mit_mailing_list
 
@@ -45,6 +46,7 @@ class S3Test(AuthedTestCase):
     test_keys = [] # keys in authed bucket
 
     @slow(2.6, "has to contact external S3 service")
+    @skip("Need S3 mock")
     def test_file_upload_authed(self):
         """
         A call to /json/upload_file should return a uri and actually create an object.
@@ -91,6 +93,8 @@ class S3Test(AuthedTestCase):
 
     def tearDown(self):
         # clean up
+        return
+        # TODO: un-deadden this code when we have proper S3 mocking.
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         for uri in self.test_uris:
             key = Key(conn.get_bucket(settings.S3_BUCKET))
