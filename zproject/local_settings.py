@@ -21,7 +21,7 @@ TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'te
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = getsecret("secret_key")
+SECRET_KEY = getsecret("secret_key") if DEPLOYED else "foobar"
 
 # Use this salt to hash a user's email into a filename for their user-uploaded
 # avatar.  If this salt is discovered, attackers will only be able to determine
