@@ -1,0 +1,59 @@
+Getting started
+===============
+
+Install the following non-Python dependencies:
+ * libffi-dev — needed for some Python extensions
+ * postgresql 9.1 or later — our database (also install development headers)
+ * memcached (and headers)
+ * rabbitmq-server
+ * libldap2-dev
+ * python-dev
+ * redis-server — rate limiting
+ * tsearch-extras — better text search
+
+On Debian or Ubuntu systems:
+  sudo apt-get install libffi-dev memcached rabbitmq-server libldap2-dev redis-server postgresql-server-dev-all libmemcached-dev
+
+  # If on 12.04 or wheezy:
+  sudo apt-get install postgresql-9.1
+  wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
+  sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
+
+  # If on 14.04, wait for us to support it.
+  # If on 15.04 or jessie:
+  sudo apt-get install postgresql-9.4
+  wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
+  sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
+
+  # Then, all versions:
+  pip install -r requirements.txt
+  ./scripts/setup/configure-rabbitmq
+  ./tools/postgres-init-db
+  ./tools/do-destroy-rebuild-database
+
+To start the development server:
+  ./tools/run-dev.py
+
+… and hit http://localhost:9991/.
+
+
+Running the test suite
+======================
+
+One-time setup:
+  ./tools/postgres-init-test-db
+  ./tools/do-destroy-rebuild-test-database
+
+Backend tests:
+  ./tools/test-backend
+
+Frontend tests: TBD
+
+Possible issues
+===============
+
+When running the test suite, if you get an error like this:
+    sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not exist
+    LINE 2: ...ECT message_id, flags, subject, rendered_content, ts_match_l...
+                                                                 ^
+… then you need to install tsearch-extras, described above. Afterwards, re-run the init*-db and the do-destroy-rebuild*-database scripts.
