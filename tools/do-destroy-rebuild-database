@@ -10,4 +10,8 @@ python manage.py migrate
 python manage.py createcachetable third_party_api_results
 python manage.py populate_db -n100 --threads=1
 # Ensure that the local user's API key is synced from ~/.zuliprc
-python manage.py sync_api_key
+
+if [ -e ~/.zuliprc ]; then
+    python manage.py sync_api_key
+fi
+
