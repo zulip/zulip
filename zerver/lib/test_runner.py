@@ -61,6 +61,10 @@ def run_test(test):
     bounce_key_prefix_for_testing(test_name)
 
     print 'Running', test_name
+    if not hasattr(test, "_pre_setup"):
+        print "somehow the test doesn't have _pre_setup; it may be an import fail."
+        print "Here's a debugger. Good luck!"
+        import pdb; pdb.set_trace()
     test._pre_setup()
 
     start_time = time.time()
