@@ -23,6 +23,9 @@ APT_DEPENDENCIES = {
     ]
 }
 
+VENV_PATH="/srv/zulip-venv"
+ZULIP_PATH="/srv/zulip"
+
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
 TSEARCH_URL_BASE = "https://dl.dropboxusercontent.com/u/283158365/zuliposs/"
@@ -43,9 +46,6 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 # TODO: support other architectures
 ARCH = "amd64"
-
-VENV_PATH="/srv/zulip-venv"
-ZULIP_PATH="/srv/zulip"
 
 with sh.sudo:
     sh.apt_get.update()
@@ -87,7 +87,7 @@ execfile(activate_this, dict(__file__=activate_this))
 
 sh.pip.install(r="requirements.txt")
 with sh.sudo:
-    sh.cp(TSEARCH_STOPWORDS_PATH, REPO_STOPWORDS_PATH)
+    sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH)
 
 os.chdir(ZULIP_PATH)
 
