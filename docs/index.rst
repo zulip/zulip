@@ -11,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
+   Code Style <code-style>
 
 Indices and tables
 ==================
