@@ -26,3 +26,5 @@ manage.log
 .kateproject.d/
 .kateproject
 *.kate-swp
+event_queues.json
+.vagrant
