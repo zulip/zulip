@@ -45,7 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
 
-  config.vm.provider "virtualbox" do |vb|
+  config.vm.provider "virtualbox" do |vb, override|
     override.vm.box = "ubuntu/trusty64"
   end
   #
