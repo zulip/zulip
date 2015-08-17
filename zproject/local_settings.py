@@ -6,11 +6,6 @@ from base64 import b64decode
 config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
-secrets_file = ConfigParser.RawConfigParser()
-secrets_file.read("/etc/zulip/zulip-secrets.conf")
-
-
-getsecret = lambda x: secrets_file.get('secrets', x)
 # Whether we're running in a production environment. Note that DEPLOYED does
 # **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
 # and as such should not for example assume they are the main Zulip site.
@@ -19,6 +14,14 @@ STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'st
 TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
 
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
+
+secrets_file = ConfigParser.RawConfigParser()
+if DEPLOYED:
+    secrets_file.read("/etc/zulip/zulip-secrets.conf")
+else:
+    secrets_file.read("zproject/dev-secrets.conf")
+
+getsecret = lambda x: secrets_file.get('secrets', x)
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = getsecret("secret_key") if DEPLOYED else "foobar"
