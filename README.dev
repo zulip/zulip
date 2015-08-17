@@ -4,13 +4,19 @@ Getting started
 Using Vagrant
 -------------
 
-This is the recommended approach, but is only supported on Ubuntu 14.04.
+This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 14.04.
 
+If your host is OS X, download VirtualBox from <http://download.virtualbox.org/virtualbox/4.3.30/VirtualBox-4.3.30-101610-OSX.dmg>. Then run:
+  vagrant up
+  vagrant ssh
+
+If your host is Ubuntu 14.04:
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
   vagrant up --provider=lxc
   vagrant ssh
-  # Now inside the container
+
+All versions, inside the container:
   sudo apt-get update
   sudo apt-get install python-pbs
   cd /srv/zulip && python provision.py
