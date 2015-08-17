@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 
 ## CC_EMAIL: All review requests will be CC'd here.
-CC_EMAIL = 'code-review@zulip.com'
+CC_EMAIL = 'team-zulip@dropbox.com'
 
 ## DOMAIN: Reviewers without an '@' will be assumed to be localparts here.
 DOMAIN = 'dropbox.com'
