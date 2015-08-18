@@ -31,39 +31,25 @@ You can set this up as a local Git commit hook with
 
     echo ./tools/lint-all > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
-Javascript
-----------
+``lint-all`` runs many lint checks in parallel, including
 
-We use `JSLint <http://www.jslint.com/>`__ for checking Javascript code.
-You can simply run
+- Javascript (`JSLint <http://www.jslint.com/>`__)
 
-::
+    ``tools/jslint/check-all.js`` contains a pretty fine-grained set of
+    JSLint options, rule exceptions, and allowed global variables. If you
+    add a new global, you'll need to add it to the list.
 
-    ./tools/jslint/check-all.js
-
-assuming that you have Node.js in your ``$PATH`` as either ``node`` or
-``nodejs``.
-
-We should try to keep the error count at zero, because having a bunch of
-"expected errors" will convince people to ignore the tool entirely.
-
-``tools/jslint/check-all.js`` contains a pretty fine-grained set of
-JSLint options, rule exceptions, and allowed global variables. If you
-add a new global, you'll need to add it to the list.
-
-Python
-------
-
-Run `Pyflakes <http://pypi.python.org/pypi/pyflakes>`__ on your Python
-code.
+- Python (`Pyflakes <http://pypi.python.org/pypi/pyflakes>`__)
+- templates
+- Puppet configuration
+- custom checks (e.g. trailing whitespace)
 
 Secrets
 =======
 
 Please don't put any passwords, secret access keys, etc. inline in the
 code. These secrets should always live in either Puppet or (for our
-Django backend) in ``zproject/local_settings.py``. Otherwise, we will
-end up distributing these secrets to our local server customers.
+Django backend) in ``zproject/local_settings.py``.
 
 Dangerous constructs
 ====================
