@@ -220,6 +220,3 @@ API_SUPER_USERS = set(["tabbott/extra@mit.edu",
 ADMINS = (
     ('Zulip Error Reports', 'errors@zulip.com'),
 )
-
-ZULIP_IOS_APP_ID = 'com.zulip.Zulip'
-DBX_IOS_APP_ID = 'com.dropbox.Zulip'

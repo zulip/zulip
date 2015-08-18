@@ -776,6 +776,10 @@ POLL_TIMEOUT = 90 * 1000
 # client tests.
 TUTORIAL_ENABLED = True
 
+# iOS App IDs
+ZULIP_IOS_APP_ID = 'com.zulip.Zulip'
+DBX_IOS_APP_ID = 'com.dropbox.Zulip'
+
 USING_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
 
 if (len(AUTHENTICATION_BACKENDS) == 1 and
