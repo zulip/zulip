@@ -27,6 +27,27 @@ ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterpri
 # Import local_settings after determining the deployment/machine type
 from local_settings import *
 
+secrets_file = ConfigParser.RawConfigParser()
+if DEPLOYED:
+    secrets_file.read("/etc/zulip/zulip-secrets.conf")
+else:
+    secrets_file.read("zproject/dev-secrets.conf")
+
+get_secret = lambda x: secrets_file.get('secrets', x)
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = get_secret("secret_key")
+
+# A shared secret, used to authenticate different parts of the app to each other.
+# FIXME: store this password more securely
+SHARED_SECRET = get_secret("shared_secret")
+
+# We use this salt to hash a user's email into a filename for their user-uploaded
+# avatar.  If this salt is discovered, attackers will only be able to determine
+# that the owner of an email account has uploaded an avatar to Zulip, which isn't
+# the end of the world.  Don't use the salt where there is more security exposure.
+AVATAR_SALT = get_secret("avatar_salt")
+
 SERVER_GENERATION = int(time.time())
 
 if not 'DEBUG' in globals():
@@ -609,6 +630,11 @@ PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 
 USING_RABBITMQ = True
 RABBITMQ_USERNAME = 'zulip'
+RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
+
+if CAMO_URI is not None:
+    # This needs to be synced with the Camo installation
+    CAMO_KEY = get_secret("camo_key")
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 

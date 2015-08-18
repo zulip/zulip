@@ -23,24 +23,9 @@ else:
 
 getsecret = lambda x: secrets_file.get('secrets', x)
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = getsecret("secret_key") if DEPLOYED else "foobar"
-
-# Use this salt to hash a user's email into a filename for their user-uploaded
-# avatar.  If this salt is discovered, attackers will only be able to determine
-# that the owner of an email account has uploaded an avatar to Zulip, which isn't
-# the end of the world.  Don't use the salt where there is more security exposure.
-AVATAR_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
 # Used just for generating initial passwords (only used in testing environments).
 if not DEPLOYED:
     INITIAL_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-# A shared secret, used to authenticate different parts of the app to each other.
-# FIXME: store this password more securely
-SHARED_SECRET = getsecret("shared_secret") if DEPLOYED else "dummy"
-
-RABBITMQ_PASSWORD = getsecret("rabbitmq_password") if DEPLOYED else 'xxxxxxxxxxxxxxxx'
 
 MAILCHIMP_API_KEY = getsecret("mailchimp_api_key")
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
@@ -52,8 +37,6 @@ DEPLOYMENT_ROLE_KEY = getsecret("deployment_role_key")
 # This comes from our mandrill accounts page
 MANDRILL_API_KEY = getsecret("mandrill_api_key")
 
-# This should be synced with our camo installation
-CAMO_KEY = getsecret("camo_key") if DEPLOYED else "dummy"
 # XXX: replace me
 CAMO_URI = 'https://external-content.zulipcdn.net/'
 

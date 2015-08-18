@@ -189,14 +189,3 @@ AUTH_LDAP_USER_ATTR_MAP = {
 # Populate the Django user's name from the LDAP directory.
     "full_name": "cn",
 }
-
-# The following secrets are randomly generated during the install
-# process, are used for security purposes, and should not be shared
-# with anyone.
-#
-# PLEASE DO NOT CHANGE THEM WITHOUT INSTRUCTIONS FROM ZULIP SUPPORT
-CAMO_KEY = ''
-SECRET_KEY = ''
-RABBITMQ_PASSWORD = ''
-AVATAR_SALT = ''
-SHARED_SECRET = ''
