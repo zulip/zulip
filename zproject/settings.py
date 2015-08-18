@@ -164,7 +164,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    'south',
     'django_openid_auth',
     'confirmation',
     'guardian',

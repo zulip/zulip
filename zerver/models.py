@@ -471,6 +471,9 @@ class MitUser(models.Model):
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
     status = models.IntegerField(default=0)
 
+def generate_email_token_for_stream():
+    return generate_random_token(32)
+
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
@@ -480,7 +483,7 @@ class Stream(models.Model):
     # e-mail length of 254, and our max stream length is 30, so we
     # have plenty of room for the token.
     email_token = models.CharField(
-        max_length=32, default=lambda: generate_random_token(32))
+        max_length=32, default=generate_email_token_for_stream)
     description = models.CharField(max_length=1024, default='')
 
     date_created = models.DateTimeField(default=timezone.now)

@@ -122,10 +122,13 @@ class Command(BaseCommand):
 
             if not settings.ENTERPRISE:
                 # Associate initial deployment with Realm
-                dep = Deployment.objects.all()[0]
-                dep.realms = [realms["zulip.com"]]
+                dep = Deployment()
                 dep.base_api_url = "https://zulip.com/api/"
                 dep.base_site_url = "https://zulip.com/"
+                # We need to save the object before we can access
+                # the many-to-many relationship 'realms'
+                dep.save()
+                dep.realms = [realms["zulip.com"]]
                 dep.save()
 
                 # non-zulip.com realms on the main site go into a separate Deployment
