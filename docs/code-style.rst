@@ -3,7 +3,7 @@ Code style
 ==========
 
 .. attention::
-   Needs formatting and content review
+   Needs content review
 
 Be consistent!
 ==============
@@ -59,9 +59,11 @@ Misuse of database queries
 
 Look out for Django code like this:
 
-| ``[Foo.objects.get(id=bar.x.id)``
-| ``for bar in Bar.objects.filter(...)``
-| ``if  bar.baz < 7]``
+::
+
+   [Foo.objects.get(id=bar.x.id)
+   for bar in Bar.objects.filter(...)
+   if  bar.baz < 7]
 
 This will make one database query for each ``Bar``, which is slow in
 production (but not in local testing!). Instead of a list comprehension,
@@ -126,8 +128,8 @@ of getting at least one of these things wrong.
 ------------------------------------
 
 Our message row DOM elements have a custom attribute ``zid`` which
-contains the numerical message ID. **Don't access this directly as
-``x.attr('zid')``!** The result will be a string and comparisons (e.g.
+contains the numerical message ID. **Don't access this directly as**
+``x.attr('zid')`` ! The result will be a string and comparisons (e.g.
 with ``<=``) will give the wrong result, occasionally, just enough to
 make a bug that's impossible to track down.
 
@@ -142,7 +144,9 @@ Javascript var
 
 Always declare Javascript variables using ``var``:
 
-``var x = ...;``
+::
+
+   var x = ...;
 
 In a function, ``var`` is necessary or else ``x`` will be a global
 variable. For variables declared at global scope, this has no effect,
@@ -157,9 +161,9 @@ Javascript ``for (i in myArray)``
 ---------------------------------
 
 Don't use it:
-`[1 <http://stackoverflow.com/questions/500504/javascript-for-in-with-arrays>`__],
-`[2 <http://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml#for-in_loop>`__],
-`[3 <http://www.jslint.com/lint.html#forin>`__]
+`[1] <http://stackoverflow.com/questions/500504/javascript-for-in-with-arrays>`__,
+`[2] <http://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml#for-in_loop>`__,
+`[3] <http://www.jslint.com/lint.html#forin>`__
 
 jQuery global state
 -------------------
@@ -167,17 +171,21 @@ jQuery global state
 Don't mess with jQuery global state once the app has loaded. Code like
 this is very dangerous:
 
-| ``$.ajaxSetup({ async: false });``
-| ``$.get(...);``
-| ``$.ajaxSetup({ async: true });``
+::
+
+   $.ajaxSetup({ async: false });
+   $.get(...);
+   $.ajaxSetup({ async: true });
 
 jQuery and the browser are free to run other code while the request is
 pending, which could perform other Ajax requests with the altered
 settings.
 
-Instead, switch to the more general
-```$.ajax`` <http://api.jquery.com/jQuery.ajax/>`__ function, which can
-take options like ``async``.
+Instead, switch to the more general |ajax|_ function, which can take options
+like ``async``.
+
+.. |ajax| replace:: ``$.ajax``
+.. _ajax: http://api.jquery.com/jQuery.ajax
 
 State and logs files
 --------------------
@@ -198,17 +206,21 @@ more consistent, better-behaved and offer more choices.
 
 A quick conversion table:
 
-| ``   $.each → _.each (parameters to the callback reversed)``
-| ``   $.inArray → _.indexOf (parameters reversed)``
-| ``   $.grep → _.filter``
-| ``   $.map → _.map``
-| ``   $.extend → _.extend``
+::
+
+      $.each → _.each (parameters to the callback reversed)
+      $.inArray → _.indexOf (parameters reversed)
+      $.grep → _.filter
+      $.map → _.map
+      $.extend → _.extend
 
 There's a subtle difference in the case of ``_.extend``; it will replace
 attributes with undefined, whereas jQuery won't:
 
-| ``   $.extend({foo: 2}, {foo: undefined});  // yields {foo: 2}, BUT...``
-| ``   _.extend({foo: 2}, {foo: undefined});  // yields {foo: undefined}!``
+::
+
+      $.extend({foo: 2}, {foo: undefined});  // yields {foo: 2}, BUT...
+      _.extend({foo: 2}, {foo: undefined});  // yields {foo: undefined}!
 
 Also, ``_.each`` does not let you break out of the iteration early by
 returning false, the way jQuery's version does. If you're doing this,
@@ -270,15 +282,19 @@ its extent is abundantly clear from context and formatting.
 Anonymous functions should have spaces before and after the argument
 list:
 
-``var x = function (foo, bar) { // ...``
+::
+
+   var x = function (foo, bar) { // ...
 
 When calling a function with an anonymous function as an argument, use
 this style:
 
-| ``$.get('foo', function (data) {``
-| ``    var x = ...;``
-| ``    // ...``
-| ``});``
+::
+
+   $.get('foo', function (data) {
+       var x = ...;
+       // ...
+   });
 
 The inner function body is indented one level from the outer function
 call. The closing brace for the inner function and the closing
@@ -288,11 +304,16 @@ functions or other arguments following them.
 
 Use
 
-``$(function () { ...``
+
+::
+
+   $(function () { ...
 
 rather than
 
-``$(document).ready(function () { ...``
+::
+
+   $(document).ready(function () { ...
 
 and combine adjacent on-ready functions, if they are logically related.
 
@@ -300,11 +321,15 @@ The best way to build complicated DOM elements is a Mustache template
 like ``zephyr/static/templates/message.handlebars``. For simpler things
 you can use jQuery DOM building APIs like so:
 
-``var new_tr = $('<tr />').attr('id', zephyr.id);``
+::
+
+   var new_tr = $('<tr />').attr('id', zephyr.id);
 
 Passing a HTML string to jQuery is fine for simple hardcoded things:
 
-``foo.append('<p id="selected">foo</p>');``
+::
+
+   foo.append('<p id="selected">foo</p>');
 
 but avoid programmatically building complicated strings.
 
@@ -364,18 +389,25 @@ Python
    reason to do otherwise.
 -  Unpacking sequences doesn't require list brackets:
 
-| ``[x, y] = xs    # unnecessary``
-| ``x, y = xs      # better``
+   ::
+
+      [x, y] = xs    # unnecessary
+      x, y = xs      # better
 
 -  For string formatting, use ``x % (y,)`` rather than ``x % y``, to
    avoid ambiguity if ``y`` happens to be a tuple.
 -  When selecting by id, don't use ``foo.pk`` when you mean ``foo.id``.
    E.g.
-   ``recipient = Recipient(type_id=huddle.pk, type=Recipient.HUDDLE)``
+
+   ::
+
+      recipient = Recipient(type_id=huddle.pk, type=Recipient.HUDDLE)
 
    should be written as
 
-   ``recipient = Recipient(type_id=huddle.id, type=Recipient.HUDDLE)``
+   ::
+
+      recipient = Recipient(type_id=huddle.id, type=Recipient.HUDDLE)
 
    in case we ever change the primary keys.
 
@@ -401,7 +433,7 @@ Coherency requirements for any commit:
 -  Error handling should generally be included along with the code that
    might trigger the error.
 -  TODO comments should probably be in the commit that introduces the
-   issue or functionality with further work required
+   issue or functionality with further work required.
 
 Exceptions:
 
@@ -412,7 +444,7 @@ Exceptions:
 When you should be minimal:
 
 -  Significant refactorings should be done in a separate commit from
-   functional changes
+   functional changes.
 -  Moving code from one file to another should be done in a separate
    commits from functional changes or even refactorings.
 -  2 different refactorings should be done in different commits.
@@ -445,12 +477,16 @@ Commit Messages
 
 Bad:
 
-| ``bugfix``
-| ``gather_subscriptions was broken``
+::
+
+   bugfix
+   gather_subscriptions was broken
 
 Good:
 
-``Prevent gather_subscriptions from throwing an exception when given bad input.``
+::
+
+   Prevent gather_subscriptions from throwing an exception when given bad input.
 
 -  Please use a complete sentence, ending with a period.
 
