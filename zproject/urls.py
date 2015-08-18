@@ -172,6 +172,8 @@ urlpatterns += patterns('zerver.views',
 
 # JSON format views used by the redesigned API, accept basic auth username:password.
 v1_api_and_json_patterns = patterns('zerver.views',
+    url(r'^export$', 'rest_dispatch',
+            {'GET':  'export'}),
     url(r'^streams$', 'rest_dispatch',
             {'GET':  'get_streams_backend'}),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)

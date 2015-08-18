@@ -14,11 +14,13 @@ from django.core import validators
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q, F
+from django.forms.models import model_to_dict
 from django.core.mail import send_mail, EmailMessage
 from django.middleware.csrf import get_token
 from django.db import transaction
-from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Recipient, Realm, UserMessage, bulk_get_recipients, \
+from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
+    Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
+    RealmFilter, bulk_get_recipients, \
     PreregistrationUser, get_client, MitUser, UserActivity, PushDeviceToken, \
     get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, is_super_user_api, \
@@ -1181,6 +1183,75 @@ def generate_client_id():
 @authenticated_json_post_view
 def json_get_profile(request, user_profile):
     return get_profile_backend(request, user_profile)
+
+# The order of creation of the various dictionaries are important.
+# We filter on {userprofile,stream,subscription_recipient}_ids.
+@require_realm_admin
+def export(request, user_profile):
+    # TODO: remove after testing
+    if user_profile.realm.domain not in  ['zulip.com','zulip.org']:
+        return json_error("Unauthorized")
+
+    response = {}
+
+    response['zerver_realm'] = [model_to_dict(x)
+        for x in Realm.objects.select_related().filter(id=user_profile.realm.id)]
+
+    response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
+                                      for x in UserProfile.objects.select_related().filter(realm=user_profile.realm)]
+
+    userprofile_ids = set(userprofile["id"] for userprofile in response['zerver_userprofile'])
+
+    response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"])
+                                 for x in Stream.objects.select_related().filter(realm=user_profile.realm,invite_only=False)]
+
+    stream_ids = set(x["id"] for x in response['zerver_stream'])
+
+    response['zerver_usermessage'] = [model_to_dict(x) for x in UserMessage.objects.select_related()
+                                 if x.user_profile_id in userprofile_ids]
+
+    user_recipients = [model_to_dict(x)
+                       for x in Recipient.objects.select_related().filter(type=1)
+                       if x.type_id in userprofile_ids]
+
+    stream_recipients = [model_to_dict(x)
+                         for x in Recipient.objects.select_related().filter(type=2)
+                         if x.type_id in stream_ids]
+
+    stream_recipient_ids = set(x["id"] for x in stream_recipients)
+
+    # only check for subscriptions to streams
+    response['zerver_subscription'] = [model_to_dict(x) for x in Subscription.objects.select_related()
+                                 if x.user_profile_id in userprofile_ids
+                                 and x.recipient_id in stream_recipient_ids]
+
+    subscription_recipient_ids = set(x["recipient"] for x in response['zerver_subscription'])
+
+    huddle_recipients = [model_to_dict(r)
+                         for r in Recipient.objects.select_related().filter(type=3)
+                         if r.type_id in subscription_recipient_ids]
+
+    huddle_ids = set(x["type_id"] for x in huddle_recipients)
+
+    response["zerver_recipient"] = user_recipients + stream_recipients + huddle_recipients
+
+    response['zerver_huddle'] = [model_to_dict(h)
+                                 for h in Huddle.objects.select_related()
+                                 if h.id in huddle_ids]
+
+    recipient_ids = set(x["id"] for x in response['zerver_recipient'])
+    response["zerver_message"] = [model_to_dict(m) for m in Message.objects.select_related()
+                                  if m.recipient_id in recipient_ids
+                                  and m.sender_id in userprofile_ids]
+
+    for (table, model) in [("defaultstream", DefaultStream),
+                           ("realmemoji", RealmEmoji),
+                           ("realmalias", RealmAlias),
+                           ("realmfilter", RealmFilter)]:
+        response["zerver_"+table] = [model_to_dict(x) for x in
+                                     model.objects.select_related().filter(realm_id=user_profile.realm.id)]
+
+    return json_success(response)
 
 def get_profile_backend(request, user_profile):
     result = dict(pointer        = user_profile.pointer,

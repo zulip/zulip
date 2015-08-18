@@ -416,6 +416,7 @@ Client._register('update_message', method='PATCH', url='messages', make_request=
 Client._register('get_messages', method='GET', url='messages/latest', longpolling=True)
 Client._register('get_events', url='events', method='GET', longpolling=True, make_request=(lambda **kwargs: kwargs))
 Client._register('register', make_request=_mk_events)
+Client._register('export', method='GET', url='export')
 Client._register('deregister', url="events", method="DELETE", make_request=_mk_deregister)
 Client._register('get_profile', method='GET', url='users/me')
 Client._register('get_streams', method='GET', url='streams', make_request=_kwargs_to_dict)
