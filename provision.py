@@ -1,9 +1,17 @@
 import os
+import logging
+import platform
 
 try:
     import sh
 except ImportError:
     import pbs as sh
+
+SUPPORTED_PLATFORMS = {
+    "Ubuntu": [
+        "trusty",
+    ],
+}
 
 APT_DEPENDENCIES = {
     "trusty": [
@@ -44,23 +52,31 @@ REPO_STOPWORDS_PATH = os.path.join(
     "zulip_english.stop",
 )
 
+log = logging.getLogger("zulip-provisioner")
 # TODO: support other architectures
-ARCH = "amd64"
+if platform.architecture()[0] == '64bit':
+    arch = 'amd64'
+else:
+    log.critical("Only amd64 is supported.")
+
+vendor, version, codename = platform.dist()
+
+if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
+    log.critical("Unsupported platform: {} {}".format(vendor, codename))
 
 with sh.sudo:
     sh.apt_get.update()
 
-    # TODO(lfaraone): add support for other distros
-    sh.apt_get.install("-y", *APT_DEPENDENCIES["trusty"])
+    sh.apt_get.install(*APT_DEPENDENCIES["trusty"], assume_yes=True)
 
-temp_deb_path = sh.mktemp("--tmpdir", "package_XXXXXX.deb")
+temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
 
 sh.wget(
     "{}/{}_{}_{}.deb".format(
         TSEARCH_URL_BASE,
         TSEARCH_PACKAGE_NAME["trusty"],
         TSEARCH_VERSION,
-        ARCH,
+        arch,
     ),
     output_document=temp_deb_path,
 )
