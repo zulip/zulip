@@ -91,6 +91,8 @@ with sh.sudo:
 
 sh.virtualenv(VENV_PATH)
 
+# Add the ./tools and ./sctipts/setup directories inside the repository root to
+# the system path; we'll reference them later.
 orig_path = os.environ["PATH"]
 os.environ["PATH"] = os.pathsep.join((
         os.path.join(ZULIP_PATH, "tools"),
@@ -98,16 +100,16 @@ os.environ["PATH"] = os.pathsep.join((
         orig_path
 ))
 
+# Switch current Python context to the virtualenv.
 activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
 execfile(activate_this, dict(__file__=activate_this))
 
-sh.pip.install(r="requirements.txt")
+sh.pip.install(requirement=os.path.join(ZULIP_PATH, "requirements.txt"))
 with sh.sudo:
     sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH)
 
+# Management commands expect to be run from the root of the project.
 os.chdir(ZULIP_PATH)
-
-import sys
 
 sh.configure_rabbitmq()
 sh.postgres_init_db()
