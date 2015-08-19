@@ -788,7 +788,9 @@ def finish_google_oauth2(request):
 def login_page(request, **kwargs):
     extra_context = kwargs.pop('extra_context',{})
     if dev_auth_enabled():
-        extra_context['direct_users'] = sorted([u.email for u in UserProfile.objects.filter(is_bot=False, is_active=True)])
+        users = UserProfile.objects.filter(is_bot=False, is_active=True)
+        extra_context['direct_admins'] = sorted([u.email for u in users if u.is_admin()])
+        extra_context['direct_users'] = sorted([u.email for u in users if not u.is_admin()])
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
