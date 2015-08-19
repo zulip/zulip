@@ -13,6 +13,7 @@ Contents:
 
    code-style
    directory-structure
+   testing
 
 Indices and tables
 ==================
