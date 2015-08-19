@@ -800,7 +800,7 @@ TUTORIAL_ENABLED = True
 ZULIP_IOS_APP_ID = 'com.zulip.Zulip'
 DBX_IOS_APP_ID = 'com.dropbox.Zulip'
 
-USING_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
+USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
 
 if (len(AUTHENTICATION_BACKENDS) == 1 and
     AUTHENTICATION_BACKENDS[0] == "zproject.backends.ZulipRemoteUserBackend"):
