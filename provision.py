@@ -27,6 +27,7 @@ APT_DEPENDENCIES = {
         "hunspell-en-us",
         "nodejs",
         "python-virtualenv",
+        "supervisor",
         "git",
     ]
 }
@@ -116,3 +117,7 @@ sh.postgres_init_db()
 sh.do_destroy_rebuild_database()
 sh.postgres_init_test_db()
 sh.do_destroy_rebuild_test_database()
+
+with sh.sudo:
+    sh.cp(os.path.join(ZULIP_PATH, "tools", "provision", "zulip-dev.conf"), "/etc/supervisor/conf.d/zulip-dev.conf")
+    sh.service("supervisor", "restart")
