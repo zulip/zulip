@@ -34,8 +34,10 @@ def generate_key():
     return generate_random_token(40)
 
 def generate_activation_url(key):
-    return u'https://%s%s' % (settings.EXTERNAL_HOST,
-            reverse('confirmation.views.confirm', kwargs={'confirmation_key': key}))
+    return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
+                        settings.EXTERNAL_HOST,
+                        reverse('confirmation.views.confirm',
+                                kwargs={'confirmation_key': key}))
 
 
 class ConfirmationManager(models.Manager):
