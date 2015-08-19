@@ -796,11 +796,6 @@ if POPULATE_PROFILE_VIA_LDAP and \
 else:
     POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
 
-if DEPLOYED:
-    FULL_NAVBAR    = False
-else:
-    FULL_NAVBAR    = True
-
 # If an email host is not specified, fail silently and gracefully
 if not EMAIL_HOST and DEPLOYED:
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
