@@ -14,6 +14,7 @@ Contents:
    code-style
    directory-structure
    testing
+   schema-changes
 
 Indices and tables
 ==================
