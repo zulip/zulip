@@ -23,7 +23,14 @@ autofocus('#id_username');
 <div class="app login-page">
   <div class="app-main login-page-container">
 
+    {% if dev_auth_enabled %}
+    <h3 class="login-page-header">Zulip Dev Login</h3>
+    {% if not password_auth_enabled %}
+    <h4 class="login-page-subheader">Choose a user:</h4>
+    {% endif %}
+    {% else %}
     <h3 class="login-page-header">You look familiar.</h3>
+    {% endif %}
 
 {% if only_sso %}
     {% comment %}SSO users don't have a password.{% endcomment %}
@@ -54,6 +61,7 @@ autofocus('#id_username');
     </div>
     {% endif %}
 
+        {% if password_auth_enabled or desktop_sso_dispatch %}
         <form name="login_form" id="login_form" method="post" class="login-form"
             {% if desktop_sso_dispatch %}
             {# desktop_sso_dispatch is only set when this template is invoked by zilencer.views #}
@@ -89,8 +97,25 @@ autofocus('#id_username');
                 </div>
             </div>
         </form>
+	{% endif %}
+	{% if dev_auth_enabled %}
+	<form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
+	      action="{% url 'zerver.views.dev_direct_login' %}">
+            {% csrf_token %}
+	    <div class="control-group">
+	        {% if password_auth_enabled %}
+	        <label for="direct_email" class="direct-label">or Choose a user:</label>
+		{% endif %}
+	        <div class="controls">
+		    {% for user_email in direct_users %}
+		    <p><input type="submit" name="direct_email" class="btn-direct" value="{{ user_email }}" /></p>
+		    {% endfor %}
+	        </div>
+	    </div>
+	</form>
+	{% endif %}
 
-    {% if not desktop_sso_dispatch %}
+    {% if google_auth_enabled %}
     <div class="login-google">
     or <a href="{% url 'zerver.views.start_google_oauth2' %}" class="login-google-button zocial google">Sign in with Google</a>
     </div>

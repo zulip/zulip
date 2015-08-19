@@ -16,7 +16,7 @@ from oauth2client.crypt import AppIdentityError
 def password_auth_enabled(realm):
     if realm.domain == 'employees.customer16.invalid':
         return False
-    elif realm.domain == 'zulip.com' and not settings.TEST_SUITE:
+    elif realm.domain == 'zulip.com' and settings.DEPLOYED:
         # the dropbox realm is SSO only, but the unit tests still need to be
         # able to login
         return False
@@ -24,6 +24,18 @@ def password_auth_enabled(realm):
     for backend in django.contrib.auth.get_backends():
          if isinstance(backend, EmailAuthBackend):
              return True
+    return False
+
+def dev_auth_enabled():
+    for backend in django.contrib.auth.get_backends():
+        if isinstance(backend, DevAuthBackend):
+            return True
+    return False
+
+def google_auth_enabled():
+    for backend in django.contrib.auth.get_backends():
+        if isinstance(backend, GoogleMobileOauth2Backend):
+            return True
     return False
 
 class ZulipAuthMixin(object):
@@ -162,3 +174,13 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackend):
 
     def authenticate(self, username, password):
         return None
+
+class DevAuthBackend(ZulipAuthMixin):
+    # Allow logging in as any user without a password.
+    # This is used for convenience when developing Zulip.
+
+    def authenticate(self, username):
+        try:
+            return get_user_profile_by_email(username)
+        except UserProfile.DoesNotExist:
+            return None

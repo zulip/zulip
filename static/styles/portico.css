@@ -693,6 +693,17 @@ a.bottom-signup-button {
     margin-bottom: 50px;
 }
 
+.login-page-subheader {
+    font-weight: 300;
+    font-size: 24px;
+    display: block;
+    margin: auto;
+    width: 300px;
+    text-align: center;
+    margin-top: -30px;
+    margin-bottom: 50px;
+}
+
 .feature-page-header,
 .api-page-header,
 .apps-page-header,
@@ -761,6 +772,18 @@ a.bottom-signup-button {
     margin-bottom: 15px;
 }
 
+.btn-direct {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding: 8px;
+    color: #fff;
+    font-size: 18px;
+    background-color: #428bca;
+    border-color: #357ebd;
+    border-radius: 5px;
+    min-width: 300px;
+}
+
 .feature-page-header {
     width: auto;
 }
@@ -790,6 +813,11 @@ a.bottom-signup-button {
 
 .login-form .control-label, .register-form .control-label {
     margin-bottom: 2px;
+}
+
+.login-form .direct-label {
+    margin-top: 50px;
+    margin-bottom: 6px;
 }
 
 .login-form #id_username,

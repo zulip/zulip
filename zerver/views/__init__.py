@@ -71,7 +71,7 @@ from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import statsd, generate_random_token, statsd_key
-from zproject.backends import password_auth_enabled
+from zproject.backends import password_auth_enabled, dev_auth_enabled
 
 from confirmation.models import Confirmation
 
@@ -784,15 +784,30 @@ def finish_google_oauth2(request):
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
 
 def login_page(request, **kwargs):
+    extra_context = kwargs.pop('extra_context',{})
+    if dev_auth_enabled():
+        extra_context['direct_users'] = sorted([u.email for u in UserProfile.objects.filter(is_bot=False, is_active=True)])
     template_response = django_login_page(
-        request, authentication_form=OurAuthenticationForm, **kwargs)
-
+        request, authentication_form=OurAuthenticationForm,
+        extra_context=extra_context, **kwargs)
     try:
         template_response.context_data['email'] = request.GET['email']
     except KeyError:
         pass
 
     return template_response
+
+def dev_direct_login(request, **kwargs):
+    # This function allows logging in without a password and should only be called in development environments.
+    # It may be called if the DevAuthBackend is included in settings.AUTHENTICATION_BACKENDS
+    if (not dev_auth_enabled()) or settings.DEPLOYED:
+        # This check is probably not required, since authenticate would fail without an enabled DevAuthBackend.
+        raise Exception('Direct login not supported.')
+    email = request.POST['direct_email']
+    user_profile = authenticate(username=email)
+    login(request, user_profile)
+    return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
+                                          request.get_host()))
 
 @authenticated_json_post_view
 @has_request_variables

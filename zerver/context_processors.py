@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.conf import settings
 import ujson
-from zproject.backends import password_auth_enabled
+from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
 def add_settings(request):
     if hasattr(request.user, "realm"):
@@ -16,7 +16,6 @@ def add_settings(request):
         # to the template
         'not_enterprise':    not settings.ENTERPRISE,
         'zulip_admin':   settings.ZULIP_ADMINISTRATOR,
-        'password_auth_enabled': is_pw_auth_enabled,
         'login_url':     settings.HOME_NOT_LOGGED_IN,
         'only_sso':     settings.ONLY_SSO,
         'external_api_path': settings.EXTERNAL_API_PATH,
@@ -25,6 +24,9 @@ def add_settings(request):
         'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_integration_enabled': settings.EMAIL_GATEWAY_BOT != "",
         'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
+        'password_auth_enabled': is_pw_auth_enabled,
+        'dev_auth_enabled': dev_auth_enabled(),
+        'google_auth_enabled': google_auth_enabled(),
     }
 
 def add_metrics(request):
