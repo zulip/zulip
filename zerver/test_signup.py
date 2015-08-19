@@ -19,6 +19,7 @@ from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
 from zerver.lib.test_helpers import AuthedTestCase, find_key_by_email, queries_captured
 from zerver.lib.test_runner import slow
+from zerver.lib.session_user import get_session_dict_user
 
 import re
 import ujson
@@ -90,11 +91,11 @@ class LoginTest(AuthedTestCase):
     def test_login(self):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
-        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_login_bad_password(self):
         self.login("hamlet@zulip.com", "wrongpassword")
-        self.assertIsNone(self.client.session.get('_auth_user_id', None))
+        self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_login_nonexist_user(self):
         result = self.login("xxx@zulip.com", "xxx")
@@ -112,7 +113,7 @@ class LoginTest(AuthedTestCase):
         # Ensure the number of queries we make is not O(streams)
         self.assert_length(queries, 67)
         user_profile = get_user_profile_by_email('test@zulip.com')
-        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_register_deactivated(self):
         """
@@ -143,7 +144,7 @@ class LoginTest(AuthedTestCase):
     def test_logout(self):
         self.login("hamlet@zulip.com")
         self.client.post('/accounts/logout/')
-        self.assertIsNone(self.client.session.get('_auth_user_id', None))
+        self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_non_ascii_login(self):
         """
@@ -155,14 +156,14 @@ class LoginTest(AuthedTestCase):
         # Registering succeeds.
         self.register("test", password)
         user_profile = get_user_profile_by_email(email)
-        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.client.post('/accounts/logout/')
-        self.assertIsNone(self.client.session.get('_auth_user_id', None))
+        self.assertIsNone(get_session_dict_user(self.client.session))
 
         # Logging in succeeds.
         self.client.post('/accounts/logout/')
         self.login(email, password)
-        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_register_first_user_with_invites(self):
         """

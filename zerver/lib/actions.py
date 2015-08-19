@@ -53,6 +53,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user, \
      send_apple_push_notification, send_android_push_notification
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
+from zerver.lib.session_user import get_session_user
 
 import DNS
 import ujson
@@ -166,21 +167,21 @@ def do_create_user(email, password, realm, full_name, short_name,
 
 def user_sessions(user_profile):
     return [s for s in Session.objects.all()
-            if s.get_decoded().get('_auth_user_id') == user_profile.id]
+            if get_session_user(s) == user_profile.id]
 
 def delete_session(session):
     return session_engine.SessionStore(session.session_key).delete()
 
 def delete_user_sessions(user_profile):
     for session in Session.objects.all():
-        if session.get_decoded().get('_auth_user_id') == user_profile.id:
+        if get_session_user(session) == user_profile.id:
             delete_session(session)
 
 def delete_realm_user_sessions(realm):
     realm_user_ids = [user_profile.id for user_profile in
                       UserProfile.objects.filter(realm=realm)]
     for session in Session.objects.filter(expire_date__gte=datetime.datetime.now()):
-        if session.get_decoded().get('_auth_user_id') in realm_user_ids:
+        if get_session_user(session) in realm_user_ids:
             delete_session(session)
 
 def delete_all_user_sessions():

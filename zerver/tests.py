@@ -24,6 +24,7 @@ from zerver.lib.actions import \
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
 from zerver.lib.notifications import handle_missedmessage_emails
+from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
 
 from zerver.worker import queue_processors
@@ -951,7 +952,7 @@ class ChangeSettingsTest(AuthedTestCase):
         self.client.post('/accounts/logout/')
         self.login("hamlet@zulip.com", "foobar1")
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
-        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_notify_settings(self):
         # This is basically a don't-explode test.

@@ -20,6 +20,7 @@ from zerver.lib.event_queue import get_client_descriptor
 from zerver.middleware import record_request_start_data, record_request_stop_data, \
     record_request_restart_data, write_log_line, format_timedelta
 from zerver.lib.redis_utils import get_redis_client
+from zerver.lib.session_user import get_session_user
 
 logger = logging.getLogger('zulip.socket')
 
@@ -34,10 +35,8 @@ def get_user_profile(session_id):
     except djSession.DoesNotExist:
         return None
 
-    session_store = djsession_engine.SessionStore(djsession.session_key)
-
     try:
-        return UserProfile.objects.get(pk=session_store['_auth_user_id'])
+        return UserProfile.objects.get(pk=get_session_user(djsession))
     except (UserProfile.DoesNotExist, KeyError):
         return None
 
