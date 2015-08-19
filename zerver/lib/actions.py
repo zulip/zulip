@@ -463,7 +463,7 @@ def do_send_messages(messages):
 
     # Save the message receipts in the database
     user_message_flags = defaultdict(dict)
-    with transaction.commit_on_success():
+    with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
         ums = []
         for message in messages:

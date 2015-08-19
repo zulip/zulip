@@ -197,7 +197,6 @@ DATABASES = {"default": {
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
         'sslmode': 'verify-full',
-        'autocommit': True,
         'connection_factory': TimeTrackingConnection
         },
     },
@@ -208,7 +207,6 @@ if ENTERPRISE:
             # Host = '' => connect through a local socket
             'HOST': '',
             'OPTIONS': {
-                'autocommit': True,
                 'connection_factory': TimeTrackingConnection
             }
             })
@@ -218,7 +216,6 @@ elif not DEPLOYED:
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost',
             'OPTIONS': {
-                'autocommit': True,
                 'connection_factory': TimeTrackingConnection
             }
             })

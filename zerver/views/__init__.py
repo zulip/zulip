@@ -1356,7 +1356,7 @@ def update_stream_backend(request, user_profile, stream_name,
 def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
-@transaction.commit_on_success
+@transaction.atomic
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
                                  delete=REQ(validator=check_list(check_string), default=[]),

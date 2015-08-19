@@ -1109,7 +1109,7 @@ def get_huddle(id_list):
 def get_huddle_backend(huddle_hash, id_list):
     (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
     if created:
-        with transaction.commit_on_success():
+        with transaction.atomic():
             recipient = Recipient.objects.create(type_id=huddle.id,
                                                  type=Recipient.HUDDLE)
             subs_to_create = [Subscription(recipient=recipient,
