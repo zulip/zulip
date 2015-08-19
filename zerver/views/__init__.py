@@ -2302,7 +2302,7 @@ def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ,
 def get_bots_backend(request, user_profile):
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                               bot_owner=user_profile)
-    bot_profiles = bot_profiles.select_related('default_sending_stream', 'default_events_register')
+    bot_profiles = bot_profiles.select_related('default_sending_stream', 'default_events_register_stream')
     bot_profiles = bot_profiles.order_by('date_joined')
 
     def bot_info(bot_profile):
