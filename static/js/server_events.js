@@ -180,6 +180,9 @@ function get_events_success(events) {
             notifications.handle_global_notification_updates(event.notification_name,
                                                              event.setting);
             break;
+        case 'update_display_settings':
+            page_params.twenty_four_hour_time = event.twenty_four_hour_time;
+            break;
         }
     };
 

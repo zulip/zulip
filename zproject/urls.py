@@ -145,6 +145,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^json/set_alert_words$',          'json_set_alert_words'),
     url(r'^json/set_muted_topics$',         'json_set_muted_topics'),
     url(r'^json/set_avatar$',               'json_set_avatar'),
+    url(r'^json/time_setting$',             'json_time_setting'),
 
     # This json format view is used by the LEGACY pre-REST API.  It
     # requires an API key.

@@ -46,7 +46,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
     do_regenerate_api_key, do_remove_default_stream, do_update_pointer, \
-    do_change_avatar_source
+    do_change_avatar_source, do_change_twenty_four_hour_time
 
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -1071,6 +1071,7 @@ def home(request):
             user_profile.enable_offline_email_notifications,
         enable_offline_push_notifications =
             user_profile.enable_offline_push_notifications,
+        twenty_four_hour_time = register_ret['twenty_four_hour_time'],
 
         enable_digest_emails  = user_profile.enable_digest_emails,
         event_queue_id        = register_ret['queue_id'],
@@ -1707,6 +1708,18 @@ def json_change_settings(request, user_profile,
                 return json_error("Name too long!")
             do_change_full_name(user_profile, new_full_name)
             result['full_name'] = new_full_name
+
+    return json_success(result)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator=check_bool,default=None)):
+    result = {}
+    if twenty_four_hour_time is not None and \
+        user_profile.twenty_four_hour_time != twenty_four_hour_time:
+        do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
+
+    result['twenty_four_hour_time'] = twenty_four_hour_time
 
     return json_success(result)
 

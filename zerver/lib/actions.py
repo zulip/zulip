@@ -1717,6 +1717,16 @@ def do_change_default_desktop_notifications(user_profile, default_desktop_notifi
     user_profile.default_desktop_notifications = default_desktop_notifications
     user_profile.save(update_fields=["default_desktop_notifications"])
 
+def do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time, log=True):
+    user_profile.twenty_four_hour_time = twenty_four_hour_time
+    user_profile.save(update_fields=["twenty_four_hour_time"])
+    event = {'type': 'update_display_settings',
+             'user': user_profile.email,
+             'setting': twenty_four_hour_time}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
 def set_default_streams(realm, stream_names):
     DefaultStream.objects.filter(realm=realm).delete()
     for stream_name in stream_names:
@@ -2359,6 +2369,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
 
+    if want('update_display_settings'):
+        state['twenty_four_hour_time'] = user_profile.twenty_four_hour_time
+
     return state
 
 def apply_events(state, events, user_profile):
@@ -2489,6 +2502,8 @@ def apply_events(state, events, user_profile):
             state['muted_topics'] = event["muted_topics"]
         elif event['type'] == "realm_filters":
             state['realm_filters'] = event["realm_filters"]
+        elif event['type'] == "update_display_settings":
+            state['twenty_four_hour_time'] == event["twenty_four_hour_time"]
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 

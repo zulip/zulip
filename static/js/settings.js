@@ -151,6 +151,7 @@ exports.setup_page = function () {
     $("#settings").html(settings_tab);
     $("#settings-status").hide();
     $("#notify-settings-status").hide();
+    $("#display-settings-status").hide();
     $("#ui-settings-status").hide();
 
     alert_words_ui.set_up_alert_words();
@@ -382,6 +383,41 @@ exports.setup_page = function () {
         maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                       update_audible_notification_setting);
     });
+
+    $("#twenty_four_hour_time").change(function () {
+        var time_checkbox = $("#twenty_four_hour_time").is(":checked");
+        var data = {};
+        data.twenty_four_hour_time = JSON.stringify(time_checkbox);
+
+        channel.patch({
+            url: '/json/time_setting',
+            data: data,
+            success: function (resp, statusText, xhr, form) {
+                var message = "Updated display settings!";
+                var result = $.parseJSON(xhr.responseText);
+                var display_settings_status = $('#display-settings-status').expectOne();
+
+                display_settings_status.removeClass(status_classes)
+                    .addClass('alert-success')
+                    .text(message).stop(true).fadeTo(0,1);
+                },
+            error: function (xhr, error_type, xhn) {
+                var response = "Error updating display settings";
+                var display_settings_status = $('#display-settings-status').expectOne();
+
+                 if (xhr.status.toString().charAt(0) === "4") {
+                    // Only display the error response for 4XX, where we've crafted
+                    // a nice response.
+                    response += ": " + $.parseJSON(xhr.responseText).msg;
+                }
+                display_settings_status.removeClass(status_classes)
+                    .addClass('alert-error')
+                    .text(response).stop(true).fadeTo(0,1);
+
+            }
+        });
+    });
+
 
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();

@@ -17,7 +17,7 @@ function MessageListView(list, table_name, collapse_messages) {
 (function () {
 
 function stringify_time(time) {
-    if (feature_flags.twenty_four_hour_time) {
+    if (page_params.twenty_four_hour_time) {
         return time.toString('HH:mm');
     }
     return time.toString('h:mm TT');

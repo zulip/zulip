@@ -328,6 +328,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enter_sends = models.NullBooleanField(default=True)
     autoscroll_forever = models.BooleanField(default=False)
 
+    # display settings
+    twenty_four_hour_time = models.BooleanField(default=False)
+
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
     # Minutes to wait before warning a bot owner that her bot sent a message

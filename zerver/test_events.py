@@ -34,6 +34,7 @@ from zerver.lib.actions import (
     do_set_realm_invite_by_admins_only,
     do_update_message,
     do_update_pointer,
+    do_change_twenty_four_hour_time,
     fetch_initial_state_data,
 )
 
@@ -434,6 +435,21 @@ class EventsRegisterTest(AuthedTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
+    def test_change_twenty_four_hour_time(self):
+        schema_checker = check_dict([
+            ('type', equals('update_display_settings')),
+            ('op', equals('update')),
+            ('person', check_dict([
+                ('email', check_string),
+                ('twenty_four_hour_time', check_bool),
+            ])),
+        ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for twenty_four_hour_time in [False, True, False]:
+            events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, twenty_four_hour_time))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
     def test_realm_emoji_events(self):
         schema_checker = check_dict([
             ('type', equals('realm_emoji')),
@@ -462,6 +478,7 @@ class EventsRegisterTest(AuthedTestCase):
         self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#[123]"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
+
 
     def test_create_bot(self):
         bot_created_checker = check_dict([

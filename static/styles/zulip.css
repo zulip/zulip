@@ -3299,7 +3299,7 @@ div.edit_bot {
     position: relative;
 }
 
-#settings #notify-settings-status,#ui-settings-status {
+#settings #notify-settings-status,#ui-settings-status,#display-settings-status {
     width: 80%;
     text-align: center;
     margin: auto;
@@ -3324,7 +3324,7 @@ div.edit_bot {
     left: 20px;
 }
 
-#settings .settings-section .notification-settings-form,.ui-settings-form {
+#settings .settings-section .notification-settings-form,.ui-settings-form,.display-settings-form {
     width: 400px;
     margin: auto;
 }
@@ -3343,6 +3343,7 @@ div.edit_bot {
 }
 
 #settings .settings-section .notification-settings-form .controls,
+#settings .settings-section .display-settings-form .controls,
 #settings .settings-section .ui-settings-form .controls {
     display: inline-block;
     vertical-align: middle;
@@ -3354,7 +3355,12 @@ div.edit_bot {
     margin-right: 12px;
 }
 
+#settings .settings-section .display-settings-form .controls {
+    margin-left: 0;
+}
+
 #settings .settings-section .notification-settings-form .controls input[type='checkbox'],
+#settings .settings-section .display-settings-form .controls input[type='checkbox'],
 #settings .settings-section .ui-settings-form .controls input[type='checkbox'] {
     margin: 0px;
     padding: 0px;
@@ -3364,13 +3370,18 @@ div.edit_bot {
 }
 
 #settings .settings-section .notification-settings-form .control-label,
-#settings .settings-section .ui-settings-form .control-label {
+#settings .settings-section .ui-settings-form .control-label,
+#settings .settings-section .display-settings-form .control-label {
     float: none;
     display: inline-block;
     vertical-align: middle;
     margin: 0px;
     padding: 0px;
     width:  240px;
+}
+
+#settings .settings-section .display-settings-form .control-label {
+    width:  360px;
 }
 
 #settings .settings-section .notification-settings-form .notification-submission,
@@ -3477,6 +3488,7 @@ div.edit_bot {
 #settings .settings-section .account-settings-form,
 #settings .settings-section .new-bot-form,
 #settings .settings-section .notification-settings-form,
+#settings .settings-section .display-settings-form,
 #settings .settings-section .edit-bot-form-box {
     width: 100%;
 }

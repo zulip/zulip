@@ -87,6 +87,28 @@
   </div>
 
   <div>
+    <div id="display-settings" class="settings-section">
+      <div class="settings-section-title"><i class="icon-vector-time settings-section-icon"></i>
+      Display Settings</div>
+      <div class="alert" id="display-settings-status"></div>
+      <div class="display-settings-form">
+        <div class="control-group">
+          <div class="controls">
+            <input type="checkbox" name="twenty_four_hour_time"
+                   id="twenty_four_hour_time"
+                   {{#if page_params.twenty_four_hour_time}}
+                   checked="yes"
+                   {{/if}} />
+          </div>
+          <label for="twenty_four_hour_time" class="control-label">
+            Display time in 24-hour format (17:00 instead of 5:00 PM)
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
     <div id="notification-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>Notifications</div>
       <div class="notification-reminder">You'll receive notifications when a message arrives and {{ page_params.product_name }} isn't in focus or the message is offscreen.</div>

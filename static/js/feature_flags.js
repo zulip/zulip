@@ -3,11 +3,7 @@ var feature_flags = (function () {
 var exports = {};
 
 // Helpers
-var special_24_hour_people= _.contains([],
-    page_params.email);
 var og_zuliper_emails = [];
-
-var iceland = page_params.domain === 'customer8.invalid';
 
 var customer4_realms = [
   'customer4.invalid',
@@ -25,7 +21,6 @@ exports.collect_send_times = false;
 // Permanent realm-specific stuff:
 exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
 exports.is_og_zulip_user = _.contains(og_zuliper_emails, page_params.email);
-exports.twenty_four_hour_time = special_24_hour_people || iceland;
 
 exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domain);
 exports.enable_new_user_app_alerts = ! _.contains(['employees.customer16.invalid'], page_params.domain);
