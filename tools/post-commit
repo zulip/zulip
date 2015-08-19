@@ -1,9 +1,0 @@
-#!/bin/bash
-AUTHOR=$(git log -1 HEAD | grep ^Author | sed 's/Author: //')
-if ! $(echo "$AUTHOR" | egrep '(humbughq|zulip|dropbox)\.com' >/dev/null); then
-   echo -e "\e[0;91m  Invalid non-Zulip commit author: $AUTHOR\e[0m"
-fi
-COMMITTER=$(git log -1 HEAD --pretty=fuller | grep ^Commit: | sed 's/Author: //')
-if ! $(echo "$COMMITTER" | egrep '(humbughq|zulip|dropbox)\.com' >/dev/null); then
-   echo -e "\e[0;91m  Invalid non-Zulip committer: $COMMITTER\e[0m"
-fi

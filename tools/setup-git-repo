@@ -6,6 +6,6 @@ if ! [ -d ".git/hooks/" ]; then
     exit 1
 fi
 
-for hook in pre-commit post-commit; do
+for hook in pre-commit; do
     ln -snf ../../tools/"$hook" .git/hooks/
 done
