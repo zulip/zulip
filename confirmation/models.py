@@ -49,7 +49,7 @@ class ConfirmationManager(models.Manager):
             except self.model.DoesNotExist:
                 return False
             obj = confirmation.content_object
-            status_field = get_status_field(obj._meta.app_label, obj._meta.module_name)
+            status_field = get_status_field(obj._meta.app_label, obj._meta.model_name)
             setattr(obj, status_field, getattr(settings, 'STATUS_ACTIVE', 1))
             obj.save()
             return obj
@@ -75,7 +75,7 @@ class ConfirmationManager(models.Manager):
         if additional_context is not None:
             context.update(additional_context)
         templates = [
-            'confirmation/%s_confirmation_email_subject.txt' % obj._meta.module_name,
+            'confirmation/%s_confirmation_email_subject.txt' % obj._meta.model_name,
             'confirmation/confirmation_email_subject.txt',
         ]
         if subject_template_path:
@@ -84,7 +84,7 @@ class ConfirmationManager(models.Manager):
             template = loader.select_template(templates)
         subject = template.render(context).strip().replace(u'\n', u' ') # no newlines, please
         templates = [
-            'confirmation/%s_confirmation_email_body.txt' % obj._meta.module_name,
+            'confirmation/%s_confirmation_email_body.txt' % obj._meta.model_name,
             'confirmation/confirmation_email_body.txt',
         ]
         if body_template_path:

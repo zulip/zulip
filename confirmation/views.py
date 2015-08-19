@@ -38,6 +38,6 @@ def confirm(request, confirmation_key):
     ]
     if obj:
         # if we have an object, we can use specific template
-        templates.insert(0, 'confirmation/confirm_%s.html' % obj._meta.module_name)
+        templates.insert(0, 'confirmation/confirm_%s.html' % obj._meta.model_name)
     return render_to_response(templates, ctx,
         context_instance=RequestContext(request))
