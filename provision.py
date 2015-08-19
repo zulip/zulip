@@ -117,6 +117,7 @@ sh.postgres_init_db()
 sh.do_destroy_rebuild_database()
 sh.postgres_init_test_db()
 sh.do_destroy_rebuild_test_database()
+sh.setup_git_repo()
 
 with sh.sudo:
     sh.cp(os.path.join(ZULIP_PATH, "tools", "provision", "zulip-dev.conf"), "/etc/supervisor/conf.d/zulip-dev.conf")
