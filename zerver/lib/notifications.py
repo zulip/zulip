@@ -348,9 +348,9 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             )
     else:
         all_messages = [
-            msg
+            msg_
             for msg_list in messages_by_recipient_subject.values()
-            for msg in msg_list
+            for msg_ in msg_list
         ]
         unique_messages = {m.id: m for m in all_messages}
         do_send_missedmessage_events(
