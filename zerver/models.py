@@ -420,7 +420,7 @@ post_save.connect(flush_user_profile, sender=UserProfile)
 class PreregistrationUser(models.Model):
     email = models.EmailField()
     referred_by = models.ForeignKey(UserProfile, null=True)
-    streams = models.ManyToManyField('Stream', null=True)
+    streams = models.ManyToManyField('Stream')
     invited_at = models.DateTimeField(auto_now=True)
 
     # status: whether an object has been confirmed.
@@ -436,7 +436,7 @@ class AppleDeviceToken(models.Model):
     # sent to us from each iOS device, after registering with
     # the APNS service
     token = models.CharField(max_length=255, unique=True)
-    last_updated = models.DateTimeField(auto_now=True, default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
 
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True)
@@ -457,7 +457,7 @@ class PushDeviceToken(models.Model):
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
     token = models.CharField(max_length=4096, unique=True)
-    last_updated = models.DateTimeField(auto_now=True, default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
 
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True)
@@ -1078,10 +1078,7 @@ def get_active_bot_dicts_in_realm(realm):
                                        'email', 'default_sending_stream__name',
                                        'default_events_register_stream__name',
                                        'default_all_public_streams', 'api_key',
-                                       'bot_owner__email', 'avatar_source') \
-                                .select_related('default_sending_stream',
-                                                'default_events_register_stream',
-                                                'bot_owner')
+                                       'bot_owner__email', 'avatar_source')
 
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest

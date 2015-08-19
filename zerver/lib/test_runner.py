@@ -83,8 +83,6 @@ def run_test(test):
     test._post_teardown()
 
 class Runner(DiscoverRunner):
-    option_list = ()
-
     def __init__(self, *args, **kwargs):
         DiscoverRunner.__init__(self, *args, **kwargs)
 

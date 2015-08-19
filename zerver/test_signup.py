@@ -189,7 +189,7 @@ class LoginTest(AuthedTestCase):
         # link.
         self.assertEquals(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s%%40%s" % (username, domain)))
+                "/accounts/send_confirm/%s@%s" % (username, domain)))
         result = self.client.get(result["Location"])
         self.assertIn("Check your email so we can get started.", result.content)
 
