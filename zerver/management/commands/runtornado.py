@@ -144,7 +144,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     def get(self):
         from tornado.wsgi import WSGIContainer
-        from django.core.handlers.wsgi import WSGIRequest
+        from django.core.handlers.wsgi import WSGIRequest, get_script_name
         import urllib
 
         environ  = WSGIContainer.environ(self.request)
@@ -152,7 +152,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         request  = WSGIRequest(environ)
         request._tornado_handler     = self
 
-        set_script_prefix(base.get_script_name(environ))
+        set_script_prefix(get_script_name(environ))
         signals.request_started.send(sender=self.__class__)
         try:
             response = self.get_response(request)
