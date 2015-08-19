@@ -174,13 +174,15 @@ EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 
 SSO_APPEND_DOMAIN = None
 
-## WARNING: DO NOT ENABLE DevAuthBackend UNLESS YOU WANT
-## ANYONE TO BE ABLE TO LOG IN AS ANY USER.
-# AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
+if DEPLOYED:
+    AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
+                               'zproject.backends.GoogleMobileOauth2Backend',
+                               'zproject.backends.GoogleBackend')
+else:
+    ## WARNING: ENABLING DevAuthBackend WILL ENABLE
+    ## ANYONE TO LOG IN AS ANY USER.
+    AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
 
-AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
-                           'zproject.backends.GoogleMobileOauth2Backend',
-                           'zproject.backends.GoogleBackend')
 
 
 DROPBOX_APP_KEY = "xxxxxxxxxxxxxxx"
