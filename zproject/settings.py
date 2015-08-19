@@ -159,7 +159,6 @@ WSGI_APPLICATION = 'zproject.wsgi.application'
 
 INSTALLED_APPS = [
     'django.contrib.auth',
-    'zproject.authhack',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
