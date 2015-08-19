@@ -194,15 +194,15 @@ class Command(BaseCommand):
             get_client("website")
             get_client("API")
 
-            # Create internal users; first the ones who are referenced
-            # directly by the test suite; the MIT ones are needed to
-            # test the Zephyr mirroring codepaths.
-            testsuite_mit_users = [
-                ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
-                ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
-                ("Esp Classroom (MIT)", "espuser@mit.edu"),
-                ]
-            create_users(realms, testsuite_mit_users)
+            if options["test_suite"]:
+                # Create test users; the MIT ones are needed to test
+                # the Zephyr mirroring codepaths.
+                testsuite_mit_users = [
+                    ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
+                    ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
+                    ("Esp Classroom (MIT)", "espuser@mit.edu"),
+                    ]
+                create_users(realms, testsuite_mit_users)
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -220,10 +220,6 @@ class Command(BaseCommand):
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
-                internal_mit_users = []
-                create_users(realms, internal_mit_users)
-
-                create_users(realms, settings.INTERNAL_ZULIP_USERS)
                 zulip_stream_list = ["devel", "all", "zulip", "design", "support", "social", "test",
                                       "errors", "sales"]
                 create_streams(realms, zulip_realm, zulip_stream_list)
