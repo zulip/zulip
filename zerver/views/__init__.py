@@ -1103,7 +1103,7 @@ def home(request):
 
     # Warn users on the zulip.com realm to use staging.
     send_to_prod = False
-    if page_params['domain'] == "zulip.com" and page_params['staging']:
+    if page_params['domain'] == "zulip.com" and settings.STAGING_DEPLOYED:
         send_to_prod = True
 
     dbx_branding = False
