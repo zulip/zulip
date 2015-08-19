@@ -39,7 +39,7 @@ parser.add_option('--test',
 
 parser.add_option('--interface',
     action='store', dest='interface',
-    default='127.0.0.1', help='Set the interface for the proxy to listen on')
+    default='127.0.0.1', help='Set the IP or hostname for the proxy to listen on')
 
 (options, args) = parser.parse_args()
 
