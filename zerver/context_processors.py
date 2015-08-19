@@ -5,10 +5,7 @@ import ujson
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
 def add_settings(request):
-    if hasattr(request.user, "realm"):
-        is_pw_auth_enabled = password_auth_enabled(request.user.realm)
-    else:
-        is_pw_auth_enabled = True
+    realm = request.user.realm if hasattr(request.user, "realm") else None
     return {
         'full_navbar':   settings.FULL_NAVBAR,
         # We use the not_enterprise variable name so that templates
@@ -24,7 +21,7 @@ def add_settings(request):
         'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_integration_enabled': settings.EMAIL_GATEWAY_BOT != "",
         'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
-        'password_auth_enabled': is_pw_auth_enabled,
+        'password_auth_enabled': password_auth_enabled(realm),
         'dev_auth_enabled': dev_auth_enabled(),
         'google_auth_enabled': google_auth_enabled(),
     }
