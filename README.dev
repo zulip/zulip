@@ -6,29 +6,12 @@ Using Vagrant
 
 This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 14.04.
 
-If your host is OS X, download VirtualBox from <http://download.virtualbox.org/virtualbox/4.3.30/VirtualBox-4.3.30-101610-OSX.dmg>. Then run:
-  vagrant up
-  vagrant ssh
+If your host is OS X, download VirtualBox from <http://download.virtualbox.org/virtualbox/4.3.30/VirtualBox-4.3.30-101610-OSX.dmg>.
 
 If your host is Ubuntu 14.04:
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
-  vagrant plugin install vagrant-lxc
-  vagrant up --provider=lxc
-  vagrant ssh
 
-All versions, inside the container:
-  sudo apt-get update
-  sudo apt-get install python-pbs
-  cd /srv/zulip && python provision.py
-
-To run the development server:
-  vagrant ssh -- -L9991:localhost:9991
-  # Now inside the container
-  cd /srv/zulip
-  source /srv/zulip-venv/bin/activate
-  ./tools/run-dev.py
-
-You can now visit <http://localhost:9991/> in your browser.
+Once that's done, simply run `vagrant up`. Congrats, you can now visit <http://localhost:9991/> in your browser.
 
 By hand
 -------

@@ -19,4 +19,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.memory = 2048
   end
 
+$provision_script = <<SCRIPT
+set -x
+set -e
+sudo apt-get update
+sudo apt-get install -y python-pbs
+python /srv/zulip/provision.py
+SCRIPT
+
+  config.vm.provision "shell",
+    # We want provision.py to be run with the permissions of the vagrant user.
+    privileged: false,
+    inline: $provision_script
 end
