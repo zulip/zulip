@@ -83,7 +83,7 @@ def is_slow_query(time_delta, path):
     return True
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
-                   status_code=200, error_content=''):
+                   status_code=200, error_content_iter=()):
     # For statsd timer name
     if path == '/':
         statsd_path = 'webreq'
@@ -191,6 +191,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
+        error_content = ''.join(error_content_iter)
         if len(error_content) > 100:
             error_content = "[content more than 100 characters]"
         logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_content, email))
@@ -233,9 +234,14 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
+        if response.streaming:
+            content_iter = response.streaming_content
+        else:
+            content_iter = (response.content,)
+
         write_log_line(request._log_data, request.path, request.method,
                        remote_ip, email, client, response.status_code,
-                       response.content)
+                       content_iter)
         return response
 
 class JsonErrorHandler(object):
