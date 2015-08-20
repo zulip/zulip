@@ -114,7 +114,8 @@ class Command(BaseCommand):
 
             # Create our two default realms
             zulip_realm = Realm.objects.create(domain="zulip.com")
-            Realm.objects.create(domain="mit.edu")
+            if options["test_suite"]:
+                Realm.objects.create(domain="mit.edu")
             realms = {}
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
