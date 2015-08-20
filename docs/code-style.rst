@@ -57,9 +57,7 @@ Dangerous constructs
 Misuse of database queries
 --------------------------
 
-Look out for Django code like this:
-
-::
+Look out for Django code like this::
 
    [Foo.objects.get(id=bar.x.id)
    for bar in Bar.objects.filter(...)
@@ -142,9 +140,7 @@ can pass a number without any explicit conversion.
 Javascript var
 --------------
 
-Always declare Javascript variables using ``var``:
-
-::
+Always declare Javascript variables using ``var``::
 
    var x = ...;
 
@@ -169,9 +165,7 @@ jQuery global state
 -------------------
 
 Don't mess with jQuery global state once the app has loaded. Code like
-this is very dangerous:
-
-::
+this is very dangerous::
 
    $.ajaxSetup({ async: false });
    $.get(...);
@@ -204,9 +198,7 @@ should generally use `Underscore <http://underscorejs.org/>`__. We used
 to use jQuery's utility functions, but the Underscore equivalents are
 more consistent, better-behaved and offer more choices.
 
-A quick conversion table:
-
-::
+A quick conversion table::
 
       $.each → _.each (parameters to the callback reversed)
       $.inArray → _.indexOf (parameters reversed)
@@ -215,9 +207,7 @@ A quick conversion table:
       $.extend → _.extend
 
 There's a subtle difference in the case of ``_.extend``; it will replace
-attributes with undefined, whereas jQuery won't:
-
-::
+attributes with undefined, whereas jQuery won't::
 
       $.extend({foo: 2}, {foo: undefined});  // yields {foo: 2}, BUT...
       _.extend({foo: 2}, {foo: undefined});  // yields {foo: undefined}!
@@ -280,16 +270,12 @@ End every statement with a semicolon.
 its extent is abundantly clear from context and formatting.
 
 Anonymous functions should have spaces before and after the argument
-list:
-
-::
+list::
 
    var x = function (foo, bar) { // ...
 
 When calling a function with an anonymous function as an argument, use
-this style:
-
-::
+this style::
 
    $.get('foo', function (data) {
        var x = ...;
@@ -303,7 +289,6 @@ isn't necessarily appropriate for calls with multiple anonymous
 functions or other arguments following them.
 
 Use
-
 
 ::
 
@@ -319,23 +304,17 @@ and combine adjacent on-ready functions, if they are logically related.
 
 The best way to build complicated DOM elements is a Mustache template
 like ``zephyr/static/templates/message.handlebars``. For simpler things
-you can use jQuery DOM building APIs like so:
-
-::
+you can use jQuery DOM building APIs like so::
 
    var new_tr = $('<tr />').attr('id', zephyr.id);
 
-Passing a HTML string to jQuery is fine for simple hardcoded things:
-
-::
+Passing a HTML string to jQuery is fine for simple hardcoded things::
 
    foo.append('<p id="selected">foo</p>');
 
 but avoid programmatically building complicated strings.
 
-We used to favor attaching behaviors in templates like so:
-
-::
+We used to favor attaching behaviors in templates like so::
 
     <p onclick="select_zephyr({{id}})">
 
@@ -366,9 +345,7 @@ Instead, attach a jQuery event handler
 (inside a ``$(function () {...})`` block).
 
 Use this format when you have the same block applying to multiple CSS
-styles (separate lines for each selector):
-
-::
+styles (separate lines for each selector)::
 
     selector1,
     selector2 {
@@ -387,9 +364,7 @@ Python
    328 <http://docs.python.org/2/whatsnew/2.5.html#pep-328-absolute-and-relative-imports>`__
 -  Put all imports together at the top of the file, absent a compelling
    reason to do otherwise.
--  Unpacking sequences doesn't require list brackets:
-
-   ::
+-  Unpacking sequences doesn't require list brackets::
 
       [x, y] = xs    # unnecessary
       x, y = xs      # better
@@ -475,16 +450,12 @@ Commit Messages
    and be kept relatively short while concisely explaining what the
    commit does. For example:
 
-Bad:
-
-::
+Bad::
 
    bugfix
    gather_subscriptions was broken
 
-Good:
-
-::
+Good::
 
    Prevent gather_subscriptions from throwing an exception when given bad input.
 
