@@ -196,15 +196,18 @@ exports.setup_page = function () {
         $('.new-bot-ui').hide();
     }
 
-
-    function settings_change_error(message) {
+    function settings_change_error(message, xhr) {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
         viewport.scrollTop(0);
-        var settings_status = $('#settings-status').expectOne();
-        settings_status.removeClass(status_classes)
-            .addClass('alert-error')
-            .text(message).stop(true).fadeTo(0,1);
+        ui.report_error(message, xhr, $('#settings-status').expectOne());
+    }
+
+    function settings_change_success(message) {
+        // Scroll to the top so the error message is visible.
+        // We would scroll anyway if we end up submitting the form.
+        viewport.scrollTop(0);
+        ui.report_success(message, $('#settings-status').expectOne());
     }
 
     $("form.your-account-settings").ajaxForm({
@@ -231,22 +234,10 @@ exports.setup_page = function () {
             return true;
         },
         success: function (resp, statusText, xhr, form) {
-            var message = "Updated settings!";
-            var result = $.parseJSON(xhr.responseText);
-            var settings_status = $('#settings-status').expectOne();
-
-            settings_status.removeClass(status_classes)
-                .addClass('alert-success')
-                .text(message).stop(true).fadeTo(0,1);
+            settings_change_success("Updated settings!");
         },
         error: function (xhr, error_type, xhn) {
-            var response = "Error changing settings";
-            if (xhr.status.toString().charAt(0) === "4") {
-                // Only display the error response for 4XX, where we've crafted
-                // a nice response.
-                response += ": " + $.parseJSON(xhr.responseText).msg;
-            }
-            settings_change_error(response);
+            settings_change_error("Error changing settings", xhr);
         },
         complete: function (xhr, statusText) {
             // Whether successful or not, clear the password boxes.
@@ -292,24 +283,11 @@ exports.setup_page = function () {
             page_params.enable_digest_emails = result.enable_digest_emails;
         }
 
-        notify_settings_status.removeClass(status_classes)
-            .addClass('alert-success')
-            .text(message).stop(true).fadeTo(0,1);
+        ui.report_success("Updated notification settings!", notify_settings_status);
     }
 
     function update_notification_settings_error(xhr, error_type, xhn) {
-        var response = "Error changing settings";
-        var notify_settings_status = $('#notify-settings-status').expectOne();
-
-        if (xhr.status.toString().charAt(0) === "4") {
-            // Only display the error response for 4XX, where we've crafted
-            // a nice response.
-            response += ": " + $.parseJSON(xhr.responseText).msg;
-        }
-
-        notify_settings_status.removeClass(status_classes)
-            .addClass('alert-error')
-            .text(response).stop(true).fadeTo(0,1);
+        ui.report_error("Error changing settings", xhr, $('#notify-settings-status').expectOne());
     }
 
     function post_notify_settings_changes(notification_changes, success_func,
@@ -393,27 +371,11 @@ exports.setup_page = function () {
             url: '/json/time_setting',
             data: data,
             success: function (resp, statusText, xhr, form) {
-                var message = "Updated display settings!  You will need to reload for the changes to take effect";
-                var result = $.parseJSON(xhr.responseText);
-                var display_settings_status = $('#display-settings-status').expectOne();
-
-                display_settings_status.removeClass(status_classes)
-                    .addClass('alert-success')
-                    .text(message).stop(true).fadeTo(0,1);
+                ui.report_success("Updated display settings!  You will need to reload for the changes to take effect",
+                                  $('#display-settings-status').expectOne());
                 },
             error: function (xhr, error_type, xhn) {
-                var response = "Error updating display settings";
-                var display_settings_status = $('#display-settings-status').expectOne();
-
-                 if (xhr.status.toString().charAt(0) === "4") {
-                    // Only display the error response for 4XX, where we've crafted
-                    // a nice response.
-                    response += ": " + $.parseJSON(xhr.responseText).msg;
-                }
-                display_settings_status.removeClass(status_classes)
-                    .addClass('alert-error')
-                    .text(response).stop(true).fadeTo(0,1);
-
+                ui.report_error("Error updating display settings", xhr, $('#display-settings-status').expectOne());
             }
         });
     });
@@ -435,17 +397,7 @@ exports.setup_page = function () {
             settings_status.hide();
         },
         error: function (xhr, error_type, xhn) {
-            var response = "Error getting API key";
-            var settings_status = $('#settings-status').expectOne();
-
-            if (xhr.status.toString().charAt(0) === "4") {
-                // Only display the error response for 4XX, where we've crafted
-                // a nice response.
-                response += ": " + $.parseJSON(xhr.responseText).msg;
-            }
-            settings_status.removeClass(status_classes)
-                .addClass('alert-error')
-                .text(response).stop(true).fadeTo(0,1);
+            ui.report_error("Error getting API key", xhr, $('#settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
         }
@@ -693,23 +645,10 @@ exports.setup_page = function () {
                     resize.resize_page_components();
                 }
 
-                ui_settings_status.removeClass(status_classes)
-                    .addClass('alert-success')
-                    .text(message).stop(true).fadeTo(0,1);
+                ui.report_success(message, ui_settings_status);
             },
             error: function (xhr, error_type, xhn) {
-                var response = "Error changing settings";
-                var ui_settings_status = $('#ui-settings-status').expectOne();
-
-                if (xhr.status.toString().charAt(0) === "4") {
-                    // Only display the error response for 4XX, where we've crafted
-                    // a nice response.
-                    response += ": " + $.parseJSON(xhr.responseText).msg;
-                }
-
-                ui_settings_status.removeClass(status_classes)
-                    .addClass('alert-error')
-                    .text(response).stop(true).fadeTo(0,1);
+                ui.report_error("Error changing settings", xhr, $('#ui-settings-status').expectOne());
             }
         });
     });

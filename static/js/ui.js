@@ -133,7 +133,7 @@ exports.report_message = function (response, status_box, cls) {
 };
 
 exports.report_error = function (response, xhr, status_box) {
-    if (xhr.status.toString().charAt(0) === "4") {
+    if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
         response += ": " + $.parseJSON(xhr.responseText).msg;
