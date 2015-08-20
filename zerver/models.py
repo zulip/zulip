@@ -116,6 +116,7 @@ class Realm(models.Model):
     name = models.CharField(max_length=40, null=True)
     restricted_to_domain = models.BooleanField(default=True)
     invite_required = models.BooleanField(default=False)
+    invite_by_admins_only = models.BooleanField(default=False)
     mandatory_topics = models.BooleanField(default=False)
     show_digest_email = models.BooleanField(default=True)
 

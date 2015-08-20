@@ -33,7 +33,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, bulk_add_subscriptions, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
-    do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, do_set_realm_invite_required, internal_prep_message, \
+    do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, do_set_realm_invite_required, do_set_realm_invite_by_admins_only, internal_prep_message, \
     do_send_messages, get_default_subs, do_deactivate_user, do_reactivate_user, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
@@ -1049,6 +1049,7 @@ def home(request):
         domain                = user_profile.realm.domain,
         realm_name            = register_ret['realm_name'],
         realm_invite_required = register_ret['realm_invite_required'],
+        realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         enter_sends           = user_profile.enter_sends,
         referrals             = register_ret['referrals'],
@@ -1111,10 +1112,8 @@ def home(request):
     statsd.incr('views.home')
     show_invites = True
 
-    # For the CUSTOMER4 student realm, only let instructors (who have
-    # @customer4.invalid addresses) invite new users.
-    if ((user_profile.realm.domain == "users.customer4.invalid") and
-        (not user_profile.email.lower().endswith("@customer4.invalid"))):
+    # Some realms only allow admins to invite users
+    if user_profile.realm.invite_by_admins_only and not user_profile.is_admin():
         show_invites = False
 
     # Warn users on the zulip.com realm to use staging.
@@ -1339,7 +1338,8 @@ def get_public_streams_backend(request, user_profile):
 @has_request_variables
 def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
                  restricted_to_domain=REQ(validator=check_bool, default=None),
-                 invite_required=REQ(validator=check_bool,default=None)):
+                 invite_required=REQ(validator=check_bool,default=None),
+                 invite_by_admins_only=REQ(validator=check_bool,default=None)):
     realm = user_profile.realm
     data = {}
     if name is not None and realm.name != name:
@@ -1351,6 +1351,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if invite_required is not None and realm.invite_required != invite_required:
         do_set_realm_invite_required(realm, invite_required)
         data['invite_required'] = invite_required
+    if invite_by_admins_only is not None and realm.invite_by_admins_only != invite_by_admins_only:
+        do_set_realm_invite_by_admins_only(realm, invite_by_admins_only)
+        data['invite_by_admins_only'] = invite_by_admins_only
     return json_success(data)
 
 @require_realm_admin

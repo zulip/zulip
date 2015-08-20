@@ -9,6 +9,7 @@
           <div class="alert" id="admin-realm-name-status"></div>
 	  <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
 	  <div class="alert" id="admin-realm-invite-required-status"></div>
+	  <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
           <label for="realm_name" class="control-label">Your organization's name</label>
           <div class="controls">
             <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
@@ -25,6 +26,12 @@
           <label for="realm_invite_required" title="If checked, users must be invited in order to join your organization." class="control-label">E-mail invitation required</label>
           <div class="controls">
 	    <input type="checkbox" id="id_realm_invite_required" name="realm_invite_required" {{#if realm_invite_required}}checked="checked"{{/if}} />
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" title="If checked, only administrators may invite new users." class="control-label{{#unless realm_invite_required}} control-label-disabled{{/unless}}">Only admins may invite</label>
+          <div class="controls">
+	    <input type="checkbox" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only" {{#unless realm_invite_required}}disabled="disabled"{{/unless}} {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
           </div>
         </div>
         <input type="submit" class="btn btn-default" value="Save" />

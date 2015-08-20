@@ -78,6 +78,8 @@ function get_events_success(events) {
                 notifications.redraw_title();
             } else if (event.op === 'update' && event.property === 'invite_required') {
                 page_params.realm_invite_required = event.value;
+            } else if (event.op === 'update' && event.property === 'invite_by_admins_only') {
+                page_params.realm_invite_by_admins_only = event.value;
             } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
                 page_params.realm_restricted_to_domain = event.value;
             }

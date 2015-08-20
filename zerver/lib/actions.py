@@ -230,6 +230,18 @@ def do_set_realm_invite_required(realm, invite_required):
     send_event(event, active_user_ids(realm))
     return {}
 
+def do_set_realm_invite_by_admins_only(realm, invite_by_admins_only):
+    realm.invite_by_admins_only = invite_by_admins_only
+    realm.save(update_fields=['invite_by_admins_only'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='invite_by_admins_only',
+        value=invite_by_admins_only,
+    )
+    send_event(event, active_user_ids(realm))
+    return {}
+
 def do_deactivate_realm(realm):
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
@@ -2321,6 +2333,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_name'] = user_profile.realm.name
         state['realm_restricted_to_domain'] = user_profile.realm.restricted_to_domain
         state['realm_invite_required'] = user_profile.realm.invite_required
+        state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only
 
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain

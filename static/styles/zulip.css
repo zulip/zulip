@@ -3647,6 +3647,10 @@ form.admin-realm .control-label {
     margin-bottom: -20px;
 }
 
+.control-label-disabled {
+    color: #d3d3d3;
+}
+
 .zero_count {
     display: none;
 }
