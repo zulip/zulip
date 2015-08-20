@@ -493,10 +493,8 @@ class Stream(models.Model):
         return self.__repr__()
 
     def is_public(self):
-        if self.realm.domain in ["mit.edu", "customer1.invalid", "customer22.invalid"]:
-            # These realms predate public streams and all streams are private
-            return False
-        return not self.invite_only
+        # All streams are private at MIT.
+        return self.realm.domain != "mit.edu" and not self.invite_only
 
     class Meta:
         unique_together = ("name", "realm")
