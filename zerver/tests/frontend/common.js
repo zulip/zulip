@@ -2,6 +2,8 @@ var common = (function () {
 
 var exports = {};
 
+var test_credentials = require('../test_credentials.js').test_credentials;
+
 function timestamp() {
     return new Date().getTime();
 }
@@ -11,7 +13,7 @@ var last_send_or_update = -1;
 
 function log_in(credentials) {
     if (credentials === undefined) {
-        credentials = {username: 'iago@zulip.com', password: 'JhwLkBydEG1tAL5P'};
+        credentials = test_credentials.default_user;
     }
 
     casper.test.info('Logging in');

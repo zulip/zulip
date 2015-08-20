@@ -29,6 +29,7 @@ APT_DEPENDENCIES = {
         "python-virtualenv",
         "supervisor",
         "git",
+        "phantomjs",
     ]
 }
 
