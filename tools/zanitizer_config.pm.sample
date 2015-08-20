@@ -9,7 +9,11 @@ sub scrub_text {
 }
 
 sub keep_file {
-    !m%^secret-directory/% && !m%settings\.ini$%
+    if (m%^secret-directory/% || m%settings\.ini$%) {
+        undef $_;
+    } else {
+        s/bruce/batman/g;
+    }
 }
 
 1;

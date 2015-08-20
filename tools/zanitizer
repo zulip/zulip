@@ -39,6 +39,7 @@ my %commit_tree = ();
 my %scrubbed_blob = ();
 my %scrubbed_file = ();
 my %deleted_file = ();
+my %renamed_file = ();
 
 open FAST_EXPORT, '<', $fast_export_file or die "cannot open $fast_export_file: $!";
 $_ = <FAST_EXPORT>;
@@ -115,12 +116,15 @@ while (defined $_) {
 		last;
 	    } elsif (/^D (?'file'.*)\n$/s) {
 		$_ = $+{file};
-		push @delete, {%+} if keep_file;
+		scrub_filename;
+		push @delete, {%+, file => $_} if defined $_;
 	    } elsif (/^M (?'mode'\d+) (?'mark'\S+) (?'file'.*)\n$/s) {
 		$_ = $+{file};
-		if (keep_file) {
-		    $scrubbed_file{$+{file}} = 1 if exists $scrubbed_blob{$+{mark}};
-		    push @modify, {%+};
+		scrub_filename;
+		if (defined $_) {
+		    $renamed_file{$+{file}} = $_ if $_ ne $+{file};
+		    $scrubbed_file{$_} = 1 if exists $scrubbed_blob{$+{mark}};
+		    push @modify, {%+, file => $_};
 		} else {
 		    $deleted_file{$+{file}} = 1;
 		}
@@ -168,5 +172,7 @@ close FAST_EXPORT;
 
 print STDERR "Deleted files:\n";
 print STDERR "  $_\n" for sort keys %deleted_file;
+print STDERR "Renamed files:\n";
+print STDERR "  $_ => $renamed_file{$_}\n" for sort keys %renamed_file;
 print STDERR "Scrubbed files:\n";
 print STDERR "  $_\n" for sort keys %scrubbed_file;
