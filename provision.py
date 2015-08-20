@@ -32,6 +32,7 @@ APT_DEPENDENCIES = {
         "phantomjs",
         "npm",
         "node-jquery",
+        "yui-compressor",
     ]
 }
 
