@@ -585,13 +585,6 @@ JS_SPECS = {
             ),
         'output_filename':  'min/common.js'
     },
-    'landing-page': {
-        'source_filenames': (
-            'third/jquery-form/jquery.form.js',
-            'js/landing-page.js',
-            ),
-        'output_filename':  'min/landing-page.js'
-    },
     'signup': {
         'source_filenames': (
             'js/signup.js',

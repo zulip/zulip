@@ -15,7 +15,7 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q, F
 from django.forms.models import model_to_dict
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import send_mail
 from django.middleware.csrf import get_token
 from django.db import transaction
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
@@ -211,44 +211,6 @@ def principal_to_user_profile(agent, principal):
 
 def name_changes_disabled(realm):
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
-
-@require_post
-@has_request_variables
-def beta_signup_submission(request, name=REQ, email=REQ,
-                           company=REQ, count=REQ, product=REQ):
-
-    domain = resolve_email_to_domain(email)
-    realm = get_realm(domain)
-
-    content = """Name: %s
-Email: %s
-Company: %s
-# users: %s
-Currently using: %s""" % (name, email, company, count, product,)
-
-    subject = "Interest in Zulip: %s" % (company,)
-    if realm:
-        subject = "(Realm already exists) " + subject
-
-    from_email = '"%s" <zulip+signups@zulip.com>' % (name,)
-    to_email = '"Zulip Signups" <zulip+signups@zulip.com>'
-    headers = {'Reply-To' : '"%s" <%s>' % (name, email,)}
-    msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
-    msg.send()
-
-    if realm:
-        # This domain already uses Zulip, so they probably meant to
-        # register. Send them a registration link.
-        send_registration_completion_email(email, request)
-        return json_error("Your group is already signed up!", status=403)
-    else:
-        internal_send_message(
-            settings.NOTIFICATION_BOT, "stream", "interest", company,
-            "`%s <%s>` at %s is interested in switching from `%s` (%s users)" % (
-                name, email, company, product, count)
-            )
-
-    return json_success()
 
 @require_post
 def accounts_register(request):

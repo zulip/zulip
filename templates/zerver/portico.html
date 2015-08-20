@@ -28,7 +28,6 @@ hence the name.
           {% endif %}
 
           {% if deployed and not_enterprise %}
-          <a href="{% url 'signup' %}">Sign up</a>
           {% elif only_sso %}
           <a href="{% url 'login-sso' %}">Log In</a>
           {% else %}
@@ -60,7 +59,6 @@ hence the name.
       <li><span class="little-bullet">·</span></li>
       <li>
           {% if deployed and not_enterprise %}
-          <a href="{% url 'signup' %}">Sign up</a>
           {% else %}
           <a href="{% url 'register' %}">Register</a>
           {% endif %}

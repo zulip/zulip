@@ -72,18 +72,6 @@ li {
     max-width: 100%;
 }
 
-.signup {
-    width: 650px;
-    padding: 8px 35px 8px 14px;
-    margin-bottom: 20px;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-    background-color: LightGray;
-    border: 1px solid DarkGray;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-}
-
 .for_you {
     font-size: 30px;
     font-style: italic;
@@ -100,14 +88,6 @@ a.title {
 a.title:hover {
     color: gray;
     text-decoration: none;
-}
-
-.login-area {
-    /* Often, the form itself overshoots the containing span, which
-     is an issue because then it collides with the "Sign in with Google"
-     button. This fix, though hackish, makes sure it's big enough at
-     all times. */
-    min-width: 400px;
 }
 
 .fakecontrol {
@@ -229,24 +209,6 @@ img.screenshot{
     width: 33%
 }
 
-.signup-button {
-    margin-top: 1em;
-    padding: 0.5em 2em;
-}
-
-.signup-button h2 {
-    font-weight: normal;
-}
-
-.signup-header {
-    width: 100%;
-    max-width: 600px;
-    margin: auto;
-    margin-bottom: 20px;
-    text-align: center;
-    margin-top: 30px;
-}
-
 .portico-page h1 {
     font-weight: 300;
 }
@@ -258,96 +220,6 @@ img.screenshot{
 .darker-background {
     background-color: #474747;
     color: white;
-}
-
-.postal-envelope {
-    width: 100%;
-    max-width: 600px;
-    margin: auto;
-    background: url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/airstripes.png'), url('/static/images/landing-page/signup/paper.jpg');
-    background-repeat: repeat-x, repeat-x, repeat;
-    background-position: top, bottom, center;
-    background-size: 40px auto, 40px auto, auto;
-    position: relative;
-}
-
-
-.stamp {
-    background-image: url('/static/images/landing-page/signup/cambridge-stamp.png');
-    background-repeat: no-repeat;
-    background-size: 187px auto;
-    background-position: right top;
-    position: absolute;
-    right: 20px;
-    top: 30px;
-    width: 187px;
-    height: 82px;
-}
-
-.stamp .date {
-    position: absolute;
-    font-family: 'Stamp', 'Humbug';
-    top: 29px;
-    left: 24px;
-    font-size: 12px;
-    line-height: 14px;
-    color: #5d4591;
-    text-align: center;
-    text-transform: uppercase;
-   -webkit-touch-callout: none;
-   -webkit-user-select: none;
-   -khtml-user-select: none;
-   -moz-user-select: none;
-   -ms-user-select: none;
-    user-select: none;
-    opacity: 0.8;
-    transform: rotate(345deg);
-   -webkit-transform: rotate(345deg);
-   -moz-transform: rotate(345deg);
-   -o-transform: rotate(345deg);
-   -ms-transform: rotate(345deg);
-}
-
-.paravion {
-    position: absolute;
-    left: 20px;
-    top: 40px;
-    background-image: url('/static/images/landing-page/signup/courriel.png');
-    background-repeat: no-repeat;
-    background-size: 120px auto;
-    background-position: center;
-    width: 120px;
-    height: 35px;
-}
-
-.letter-form {
-    font-size: 20px;
-    font-weight: 400;
-    padding-top: 90px;
-    padding-left: 60px;
-    padding-right: 60px;
-}
-
-.letter-form input {
-    border: 0px;
-    border-bottom: 1px dashed grey;
-    box-shadow: none;
-    padding-bottom: 0px;
-    transition: border linear 0.2s;
-    font-family: 'Humbug';
-    font-weight: 400;
-    font-size: 16px;
-    background: rgba(255,255,255,0.3);
-
-}
-
-@media (max-width: 767px) {
-    /* This is a hack and I'm not 100% sure why it's necessary,
-       but otherwise when we resize the form to be pretty narrow,
-       this gets crushed */
-    #envelope-holder {
-        margin-left: 0px;
-    }
 }
 
 .alert-hidden {
@@ -527,7 +399,6 @@ a.bottom-signup-button {
 }
 
 .login-page,
-.signup-page,
 .apps-page,
 .register-page,
 .portico-page,
@@ -537,13 +408,6 @@ a.bottom-signup-button {
     margin-bottom: -54px;
 }
 
-.signup-page-bottom {
-    width: 100%;
-    max-width: 600px;
-    text-align: center;
-    margin: auto;
-}
-
 .signup-signature {
     margin-top: 20px;
     padding-bottom: 50px;
@@ -551,7 +415,6 @@ a.bottom-signup-button {
 
 .login-page-container,
 .terms-page-container,
-.signup-page-container,
 .feature-page-container,
 .apps-page-container,
 .integrations-page-container,

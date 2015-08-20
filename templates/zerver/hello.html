@@ -11,7 +11,6 @@
       </span>
       <span class="footnote">* It's also great for sharing cat pictures.</span>
         {% if not_enterprise %}
-          <a href="{% url 'signup' %}" class="main-signup-button btn btn-large btn-primary">Sign up now, for free!</a>
         {% elif only_sso %}
           <a href="{% url 'login-sso' %}" class="main-signup-button btn btn-large btn-primary">Log in now!</a>
         {% else %}
@@ -177,7 +176,6 @@
 <div class="app feature-line light">
   <div class="app-main feature-line-container centered-content">
     {% if not_enterprise %}
-      <a href="{% url 'signup' %}" class="bottom-signup-button btn btn-large btn-primary">Sign up now</a>
     {% elif only_sso %}
       <a href="{% url 'login-sso' %}" class="bottom-signup-button btn btn-large btn-primary">Log in now</a>
     {% else %}
