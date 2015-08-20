@@ -1032,20 +1032,6 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
-def notify_for_streams_by_default(user_profile):
-    # For users in older realms and CUSTOMER19, do not generate notifications
-    # for stream messages by default. Everyone else uses the setting on the
-    # user_profile.
-
-    if (user_profile.realm.domain in ["customer19.invalid", "customer25.invalid"] or
-        user_profile.realm.date_created <= datetime.datetime(2013, 9, 24,
-                                                             tzinfo=timezone.utc)):
-        return False
-
-    return user_profile.default_desktop_notifications
-
-
-
 def bulk_add_subscriptions(streams, users):
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
     recipients = [recipient.id for recipient in recipients_map.values()]
@@ -1169,7 +1155,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
         (subscription, created) = Subscription.objects.get_or_create(
             user_profile=user_profile, recipient=recipient,
             defaults={'active': True, 'color': color,
-                      'notifications': notify_for_streams_by_default(user_profile)})
+                      'notifications': user_profile.default_desktop_notifications})
         did_subscribe = created
         if not subscription.active:
             did_subscribe = True

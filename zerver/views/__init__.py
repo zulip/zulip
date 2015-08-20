@@ -38,7 +38,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
     do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
-    notify_for_streams_by_default, do_change_enable_offline_push_notifications, \
+    do_change_enable_offline_push_notifications, \
     do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
     do_add_default_stream, do_change_default_all_public_streams, \
     do_change_default_desktop_notifications, \
@@ -1084,7 +1084,6 @@ def home(request):
         realm_filters         = register_ret['realm_filters'],
         is_admin              = user_profile.is_admin(),
         can_create_streams    = user_profile.can_create_streams(),
-        notify_for_streams_by_default = notify_for_streams_by_default(user_profile),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         autoscroll_forever = user_profile.autoscroll_forever,
