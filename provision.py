@@ -112,6 +112,7 @@ with sh.sudo:
 # Management commands expect to be run from the root of the project.
 os.chdir(ZULIP_PATH)
 
+os.system("generate_enterprise_secrets.py -d")
 sh.configure_rabbitmq()
 sh.postgres_init_db()
 sh.do_destroy_rebuild_database()

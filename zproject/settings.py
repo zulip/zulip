@@ -211,6 +211,7 @@ if ENTERPRISE:
             }
             })
 elif not DEPLOYED:
+    LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
     DATABASES["default"].update({
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost',
@@ -333,6 +334,9 @@ if not DEPLOYED:
                 'django.contrib.auth.hashers.SHA1PasswordHasher',
                 'django.contrib.auth.hashers.PBKDF2PasswordHasher'
             )
+    # Also we auto-generate passwords for the default users which you
+    # can query using ./manage.py print_initial_password
+    INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
 
 if TESTING_DEPLOYED or ENTERPRISE:
     # XXX we should probably tighten this for ENTERPRISE

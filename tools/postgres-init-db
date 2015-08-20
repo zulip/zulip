@@ -48,9 +48,12 @@ ALTER ROLE $VAGRANTUSERNAME SET search_path TO $SEARCH_PATH;
 EOF
 
 umask go-rw
-PGPASS_LINE="*:*:*:$USERNAME:$PASSWORD"
-if ! $(grep -q "$PGPASS_LINE" ~/.pgpass); then
-    echo $PGPASS_LINE >> ~/.pgpass
+PGPASS_PREFIX="*:*:*:$USERNAME:"
+PGPASS_ESCAPED_PREFIX="*:\*:\*:$USERNAME:"
+if ! $(grep -q "$PGPASS_ESCAPED_PREFIX" ~/.pgpass); then
+    echo $PGPASS_PREFIX$PASSWORD >> ~/.pgpass
+else
+    sed -i 's/$PGPASS_ESCAPED_PREFIX.*$/$PGPASS_PREFIX$PASSWORD/' ~/.pgpass
 fi
 chmod go-rw ~/.pgpass
 

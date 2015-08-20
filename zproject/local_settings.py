@@ -23,10 +23,6 @@ else:
 
 getsecret = lambda x: secrets_file.get('secrets', x)
 
-# Used just for generating initial passwords (only used in testing environments).
-if not DEPLOYED:
-    INITIAL_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
 MAILCHIMP_API_KEY = getsecret("mailchimp_api_key")
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
@@ -82,8 +78,6 @@ else:
     S3_BUCKET="humbug-user-uploads-test"
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads-test"
     S3_AVATAR_BUCKET="humbug-user-avatars-test"
-
-    LOCAL_DATABASE_PASSWORD="xxxxxxxxxxxx"
 
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.
