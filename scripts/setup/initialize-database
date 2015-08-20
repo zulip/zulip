@@ -11,8 +11,7 @@ EOF
 
 python manage.py checkconfig
 
-python manage.py syncdb --noinput
-python manage.py migrate
+python manage.py migrate --noinput
 python manage.py createcachetable third_party_api_results
 python manage.py initialize_enterprise_db
 

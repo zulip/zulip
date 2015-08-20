@@ -26,8 +26,7 @@ DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_base;
 EOF
 
-python manage.py syncdb --noinput --settings=zproject.test_settings
-python manage.py migrate --settings=zproject.test_settings
+python manage.py migrate --noinput --settings=zproject.test_settings
 migration_status "zerver/fixtures/migration-status"
 
 # This next line can be simplified to "-n0" once we fix our app (and tests) with 0 messages.
