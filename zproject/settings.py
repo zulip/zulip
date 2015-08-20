@@ -932,5 +932,4 @@ USING_EMBEDLY = False
 # This is a debugging option only
 PROFILE_ALL_REQUESTS = False
 
-OG_ZULIPER_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com',
-))
+CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))

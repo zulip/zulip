@@ -157,7 +157,7 @@ class IncludeHistoryTest(AuthedTestCase):
 
 class TestCrossRealmPMs(AuthedTestCase):
     def setUp(self):
-        settings.OG_ZULIPER_EMAILS.add('test-og-user@zulip.com')
+        settings.CROSS_REALM_BOT_EMAILS.add('test-og-bot@zulip.com')
 
     def create_user(self, email):
         username, domain = email.split('@')
@@ -225,7 +225,7 @@ class TestCrossRealmPMs(AuthedTestCase):
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
 
-        user1_email = 'test-og-user@zulip.com'
+        user1_email = 'test-og-bot@zulip.com'
         user1 = self.create_user(user1_email)
         user2_email = 'user2@1.example.com'
         user2 = self.create_user(user2_email)
@@ -244,7 +244,7 @@ class TestCrossRealmPMs(AuthedTestCase):
 
         user1_email = 'user1@1.example.com'
         user1 = self.create_user(user1_email)
-        user2_email = 'test-og-user@zulip.com'
+        user2_email = 'test-og-bot@zulip.com'
         user2 = self.create_user(user2_email)
 
         self.send_message(user1_email, user2_email, Recipient.PERSONAL)
@@ -265,7 +265,7 @@ class TestCrossRealmPMs(AuthedTestCase):
         self.create_user(user1_email)
         user2_email = 'user2@2.example.com'
         self.create_user(user2_email)
-        user3_email = 'test-og-user@zulip.com'
+        user3_email = 'test-og-bot@zulip.com'
         self.create_user(user3_email)
 
         with self.assertRaisesRegexp(JsonableError,
