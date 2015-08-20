@@ -1088,9 +1088,7 @@ def home(request):
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         autoscroll_forever = user_profile.autoscroll_forever,
-        show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com", "customer31.invalid"),
         default_desktop_notifications = user_profile.default_desktop_notifications,
-        show_default_desktop_notifications_option = user_profile.realm.domain in ("customer13.invalid", "zulip.com",),
         avatar_url            = avatar_url(user_profile),
         mandatory_topics      = user_profile.realm.mandatory_topics,
     )

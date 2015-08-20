@@ -28,10 +28,6 @@ exports.is_og_zulip_user = _.contains(og_zuliper_emails, page_params.email);
 exports.twenty_four_hour_time = special_24_hour_people || iceland;
 
 exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domain);
-//This was set as a page_params variable already, because it's also used in
-//the settings.html django template. See zerver/views/__init__.py:home(request).
-exports.show_autoscroll_forever_option = page_params.show_autoscroll_forever_option;
-
 exports.enable_new_user_app_alerts = ! _.contains(['employees.customer16.invalid'], page_params.domain);
 
 // Still very beta:

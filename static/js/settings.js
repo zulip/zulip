@@ -650,8 +650,7 @@ exports.setup_page = function () {
             success: function (resp, statusText, xhr, form) {
                 var message = "Updated " + page_params.product_name + " Labs settings!";
                 var result = $.parseJSON(xhr.responseText);
-                var ui_settings_status = feature_flags.show_autoscroll_forever_option &&
-                    $('#ui-settings-status').expectOne();
+                var ui_settings_status = $('#ui-settings-status').expectOne();
 
                 if (result.autoscroll_forever !== undefined) {
                     page_params.autoscroll_forever = result.autoscroll_forever;
@@ -664,8 +663,7 @@ exports.setup_page = function () {
             },
             error: function (xhr, error_type, xhn) {
                 var response = "Error changing settings";
-                var ui_settings_status = feature_flags.show_autoscroll_forever_option &&
-                    $('#ui-settings-status').expectOne();
+                var ui_settings_status = $('#ui-settings-status').expectOne();
 
                 if (xhr.status.toString().charAt(0) === "4") {
                     // Only display the error response for 4XX, where we've crafted

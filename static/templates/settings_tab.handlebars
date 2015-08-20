@@ -311,18 +311,15 @@
   </ul>
 </div>
 
-{{#if_or page_params.show_autoscroll_forever_option page_params.show_default_desktop_notifications_option}}
 <div class="ui-settings">
   <div id="ui-settings" class="settings-section">
     <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>{{ page_params.product_name }} Labs</div>
     <div class="alert" id="ui-settings-status"></div>
     <div class="ui-settings-form">
       <p>
-        {{ page_params.product_name }} Labs is where you can try out some experimental new
-        features we're working on. Let us know what you think!
+        Warning: the below features are experimental features and may not work as well as you would like.
       </p>
       <div class="control-group">
-        {{#if page_params.show_autoscroll_forever_option}}
         <div class="controls">
           <input type="checkbox" name="autoscroll_forever" id="autoscroll_forever"
                  {{#if page_params.autoscroll_forever}}
@@ -332,9 +329,7 @@
         <label for="autoscroll_forever" class="control-label">
           Always auto-scroll to new messages
         </label>
-        {{/if}}
 
-        {{#if page_params.show_default_desktop_notifications_option}}
         <div class="controls">
           <input type="checkbox" name="default_desktop_notifications" id="default_desktop_notifications"
                  {{#if page_params.default_desktop_notifications}}
@@ -344,7 +339,6 @@
         <label for="default_desktop_notifications" class="control-label">
           Enable desktop notifications for new streams
         </label>
-        {{/if}}
 
       </div>
       <div class="control-group">
@@ -355,4 +349,4 @@
     </div>
   </div>
 </div>
-{{/if_or}}
+
