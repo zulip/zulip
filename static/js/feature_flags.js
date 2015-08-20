@@ -6,8 +6,6 @@ var exports = {};
 var special_24_hour_people= _.contains([],
     page_params.email);
 var og_zuliper_emails = [];
-var zulip_mit_emails = [];
-var is_zulip_mit_user = _.contains(zulip_mit_emails, page_params.email);
 
 var iceland = page_params.domain === 'customer8.invalid';
 
