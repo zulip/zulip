@@ -2,8 +2,11 @@
 Testing
 =======
 
-Postgres testing databases
-==========================
+Postgres testing database setup
+===============================
+
+(Listed here for reference, although these setup steps should be done
+already when provisioning the VM, in ``provision.py``.)
 
 ``tools/postgres-init-test-db`` works like ``tools/postgres-init-db`` to
 create the database "zulip\_test" and set up the necessary permissions.
