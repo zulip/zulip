@@ -29,6 +29,9 @@ from zerver.lib.actions import (
     do_rename_stream,
     do_set_muted_topics,
     do_set_realm_name,
+    do_set_realm_restricted_to_domain,
+    do_set_realm_invite_required,
+    do_set_realm_invite_by_admins_only,
     do_update_message,
     do_update_pointer,
     fetch_initial_state_data,
@@ -376,6 +379,45 @@ class EventsRegisterTest(AuthedTestCase):
         events = self.do_test(lambda: do_set_realm_name(self.user_profile.realm, 'New Realm Name'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+    def test_change_realm_restricted_to_domain(self):
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('restricted_to_domain')),
+            ('value', check_bool),
+        ])
+        # The first True is probably a noop, then we get transitions in both directions.
+        for restricted_to_domain in (True, False, True):
+            events = self.do_test(lambda: do_set_realm_restricted_to_domain(self.user_profile.realm, restricted_to_domain))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_invite_required(self):
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('invite_required')),
+            ('value', check_bool),
+        ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for invite_required in (False, True, False):
+            events = self.do_test(lambda: do_set_realm_invite_required(self.user_profile.realm, invite_required))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_invite_by_admins_only(self):
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('invite_by_admins_only')),
+            ('value', check_bool),
+        ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for invite_by_admins_only in (False, True, False):
+            events = self.do_test(lambda: do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
 
     def test_change_is_admin(self):
         schema_checker = check_dict([

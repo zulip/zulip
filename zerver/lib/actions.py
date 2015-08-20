@@ -212,7 +212,7 @@ def do_set_realm_restricted_to_domain(realm, restricted):
     event = dict(
         type="realm",
         op="update",
-        property='restricted_restricted_to_domain',
+        property='restricted_to_domain',
         value=restricted,
     )
     send_event(event, active_user_ids(realm))
