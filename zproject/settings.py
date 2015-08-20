@@ -36,14 +36,6 @@ ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterpri
 # Import local_settings after determining the deployment/machine type
 from local_settings import *
 
-secrets_file = ConfigParser.RawConfigParser()
-if DEPLOYED:
-    secrets_file.read("/etc/zulip/zulip-secrets.conf")
-else:
-    secrets_file.read("zproject/dev-secrets.conf")
-
-get_secret = lambda x: secrets_file.get('secrets', x)
-
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")
 

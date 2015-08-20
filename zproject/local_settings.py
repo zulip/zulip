@@ -21,17 +21,17 @@ if DEPLOYED:
 else:
     secrets_file.read("zproject/dev-secrets.conf")
 
-getsecret = lambda x: secrets_file.get('secrets', x)
+get_secret = lambda x: secrets_file.get('secrets', x)
 
-MAILCHIMP_API_KEY = getsecret("mailchimp_api_key")
+MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
 # This can be filled in automatically from the database, maybe
 DEPLOYMENT_ROLE_NAME = 'zulip.com'
-DEPLOYMENT_ROLE_KEY = getsecret("deployment_role_key")
+DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
 # This comes from our mandrill accounts page
-MANDRILL_API_KEY = getsecret("mandrill_api_key")
+MANDRILL_API_KEY = get_secret("mandrill_api_key")
 
 # XXX: replace me
 CAMO_URI = 'https://external-content.zulipcdn.net/'
@@ -39,7 +39,7 @@ CAMO_URI = 'https://external-content.zulipcdn.net/'
 # Leave EMAIL_HOST unset or empty if you do not wish for emails to be sent
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'zulip@zulip.com'
-EMAIL_HOST_PASSWORD = getsecret('email_password')
+EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
@@ -67,8 +67,8 @@ else:
 
 # For now, ENTERPRISE is only testing, so write to our test buckets
 if DEPLOYED and not ENTERPRISE:
-    S3_KEY=getsecret("s3_key")
-    S3_SECRET_KEY=getsecret("s3_secret_key") # XXX
+    S3_KEY=get_secret("s3_key")
+    S3_SECRET_KEY=get_secret("s3_secret_key") # XXX
     S3_BUCKET="humbug-user-uploads"
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
     S3_AVATAR_BUCKET="humbug-user-avatars"
@@ -126,11 +126,11 @@ GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleuse
 
 if DEPLOYED:
     GOOGLE_OAUTH2_CLIENT_ID = '835904834568-ag4p18v0sd9a0tero14r3gekn6shoen3.apps.googleusercontent.com'
-    GOOGLE_OAUTH2_CLIENT_SECRET  = getsecret('google_oauth2_client_secret')
+    GOOGLE_OAUTH2_CLIENT_SECRET  = get_secret('google_oauth2_client_secret')
 else:
     # Google OAUTH2 for dev with the redirect uri set to http://localhost:9991/accounts/login/google/done/
     GOOGLE_OAUTH2_CLIENT_ID = '607830223128-4qgthc7ofdqce232dk690t5jgkm1ce33.apps.googleusercontent.com'
-    GOOGLE_OAUTH2_CLIENT_SECRET  = getsecret('dev_google_oauth2_client_secret')
+    GOOGLE_OAUTH2_CLIENT_SECRET  = get_secret('dev_google_oauth2_client_secret')
 
 # Administrator domain for this install
 ADMIN_DOMAIN = "zulip.com"
