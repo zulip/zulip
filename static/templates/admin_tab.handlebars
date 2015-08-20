@@ -4,16 +4,30 @@
       <div class="alert" id="administration-status"></div>
       <h1>Administration</h1>
 
-      <form class="admin-realm-name form-horizontal">
-        <div class="control-group admin-realm-name">
-          <div class="alert admin-realm-name-status"></div>
+      <form class="form-horizontal admin-realm">
+        <div class="control-group admin-realm">
+          <div class="alert" id="admin-realm-name-status"></div>
+	  <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
+	  <div class="alert" id="admin-realm-invite-required-status"></div>
           <label for="realm_name" class="control-label">Your organization's name</label>
           <div class="controls">
-            <input type="text" name="realm_name" class="admin-realm-name"
+            <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
                    value="{{ realm_name }}" />
-            <input type="submit" class="btn btn-default" value="Save" />
           </div>
         </div>
+        <div class="control-group">
+          <label for="realm_restricted_to_domain" title="If checked, only users with an @{{ domain }} e-mail address will be able to join the organization." class="control-label">Users restricted to {{ domain }}</label>
+          <div class="controls">
+	    <input type="checkbox" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain" {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="realm_invite_required" title="If checked, users must be invited in order to join your organization." class="control-label">E-mail invitation required</label>
+          <div class="controls">
+	    <input type="checkbox" id="id_realm_invite_required" name="realm_invite_required" {{#if realm_invite_required}}checked="checked"{{/if}} />
+          </div>
+        </div>
+        <input type="submit" class="btn btn-default" value="Save" />
       </form>
 
       <h2>Users</h2>

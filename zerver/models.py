@@ -87,11 +87,22 @@ def get_display_recipient_memcached(recipient_id, recipient_type, recipient_type
 
 def completely_open(domain):
     # This domain is completely open to everyone on the internet to
-    # join. This is not the same as a "restricted_to_domain" realm: in
-    # those realms, users from outside the domain must be invited.
-    return domain and Realm.objects.filter(domain=domain).count() == 1 and \
-        domain.lower() == "customer3.invalid"
+    # join. E-mail addresses do not need to match the domain and
+    # an invite from an existing user is not required.
+    realm = get_realm(domain)
+    if not realm:
+        return False
+    return not realm.invite_required and not realm.restricted_to_domain
 
+def get_unique_open_realm():
+    # We only return a realm if there is a unique realm and it is completely open.
+    realms = Realm.objects.filter(deactivated=False)
+    if len(realms) != 1:
+        return None
+    realm = realms[0]
+    if realm.invite_required or realm.restricted_to_domain:
+        return None
+    return realm
 
 def get_realm_emoji_cache_key(realm):
     return 'realm_emoji:%s' % (realm.id,)
@@ -104,6 +115,7 @@ class Realm(models.Model):
     # structure.
     name = models.CharField(max_length=40, null=True)
     restricted_to_domain = models.BooleanField(default=True)
+    invite_required = models.BooleanField(default=False)
     date_created = models.DateTimeField(default=timezone.now)
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True)
     deactivated = models.BooleanField(default=False)

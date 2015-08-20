@@ -12,16 +12,16 @@ from zerver.lib.actions import do_change_password, is_inactive
 from zproject.backends import password_auth_enabled
 import DNS
 
-SIGNUP_STRING = '<a href="https://zulip.com/signup">Sign up</a> to find out when Zulip is ready for you.'
+SIGNUP_STRING = u'Use a different e-mail address, or contact %s with questions.'%(settings.ZULIP_ADMINISTRATOR,)
 
 def has_valid_realm(value):
+    # Checks if there is a realm without invite_required
+    # matching the domain of the input e-mail.
     try:
         realm = Realm.objects.get(domain=resolve_email_to_domain(value))
     except Realm.DoesNotExist:
         return False
-    if settings.ENTERPRISE:
-        return True
-    return realm.deployment.name in ["mit.edu", "zulip.com"]
+    return not realm.invite_required
 
 def not_mit_mailing_list(value):
     # I don't want ec-discuss signed up for Zulip
@@ -69,7 +69,7 @@ class HomepageForm(forms.Form):
         if completely_open(self.domain) or has_valid_realm(data) and not_mit_mailing_list(data):
             return data
         raise ValidationError(mark_safe(
-                u'Registration is not currently available for your domain. ' \
+                u'Your e-mail does not match any existing open organization. ' \
                     + SIGNUP_STRING))
 
 class LoggingSetPasswordForm(SetPasswordForm):

@@ -206,6 +206,30 @@ def get_realm_name(domain):
     realm = Realm.objects.get(domain=domain)
     return realm.name
 
+def do_set_realm_restricted_to_domain(realm, restricted):
+    realm.restricted_to_domain = restricted
+    realm.save(update_fields=['restricted_to_domain'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='restricted_restricted_to_domain',
+        value=restricted,
+    )
+    send_event(event, active_user_ids(realm))
+    return {}
+
+def do_set_realm_invite_required(realm, invite_required):
+    realm.invite_required = invite_required
+    realm.save(update_fields=['invite_required'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='invite_required',
+        value=invite_required,
+    )
+    send_event(event, active_user_ids(realm))
+    return {}
+
 def do_deactivate_realm(realm):
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
@@ -2295,6 +2319,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
     if want('realm'):
         state['realm_name'] = user_profile.realm.name
+        state['realm_restricted_to_domain'] = user_profile.realm.restricted_to_domain
+        state['realm_invite_required'] = user_profile.realm.invite_required
 
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain

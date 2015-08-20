@@ -76,6 +76,10 @@ function get_events_success(events) {
             if (event.op === 'update' && event.property === 'name') {
                 page_params.realm_name = event.value;
                 notifications.redraw_title();
+            } else if (event.op === 'update' && event.property === 'invite_required') {
+                page_params.realm_invite_required = event.value;
+            } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
+                page_params.realm_restricted_to_domain = event.value;
             }
             break;
         case 'realm_user':

@@ -3640,6 +3640,13 @@ div.edit_bot {
     text-align: left;
 }
 
+form.admin-realm .control-label {
+    width: 200px;
+    padding-top: 3px;
+    padding-right: 20px;
+    margin-bottom: -20px;
+}
+
 .zero_count {
     display: none;
 }
@@ -3944,10 +3951,6 @@ div.edit_bot {
 .administration {
     margin-top: 55px;
     padding-left: 15px;
-}
-
-.admin-realm-name-status {
-    display: none;
 }
 
 li.show-more-topics a {

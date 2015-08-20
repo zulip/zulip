@@ -71,9 +71,18 @@ function populate_streams (streams_data) {
 }
 
 exports.setup_page = function () {
-    var admin_tab = templates.render('admin_tab', {realm_name: page_params.realm_name});
+    var options = {
+        realm_name:                 page_params.realm_name,
+        domain:                     page_params.domain,
+        realm_restricted_to_domain: page_params.realm_restricted_to_domain,
+        realm_invite_required:      page_params.realm_invite_required,
+    };
+    var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
     $("#administration-status").hide();
+    $("#admin-realm-name-status").hide();
+    $("#admin-realm-restricted-to-domain-status").hide();
+    $("#admin-realm-invite-required-status").hide();
 
     // create loading indicators
     loading.make_indicator($('#admin_page_users_loading_indicator'));
@@ -163,26 +172,54 @@ exports.setup_page = function () {
         });
     });
 
-    $(".administration").on("submit", "form.admin-realm-name", function (e) {
-        e.preventDefault();
+    $(".administration").on("submit", "form.admin-realm", function (e) {
+        var name_status = $("#admin-realm-name-status").expectOne();
+        var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
+        var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
+        name_status.hide();
+        restricted_to_domain_status.hide();
+        invite_required_status.hide();
+
+	e.preventDefault();
         e.stopPropagation();
 
-        var new_name = $("input.admin-realm-name").val();
+        var new_name = $("#id_realm_name").val();
+        var new_restricted = $("#id_realm_restricted_to_domain").prop("checked");
+        var new_invite = $("#id_realm_invite_required").prop("checked");
 
         var url = "/json/realm";
         var data = {
-            name: JSON.stringify(new_name)
+            name: JSON.stringify(new_name),
+            restricted_to_domain: JSON.stringify(new_restricted),
+            invite_required: JSON.stringify(new_invite)
         };
-        var status = $(".admin-realm-name .admin-realm-name-status").expectOne();
 
         channel.patch({
             url: url,
             data: data,
-            success: function () {
-                ui.report_success("Name changed!", status);
+            success: function (data) {
+		if (data.name !== undefined) {
+		    ui.report_success("Name changed!", name_status);
+		}
+                if (data.restricted_to_domain !== undefined) {
+                    if (data.restricted_to_domain) {
+                        ui.report_success("New users must have @" + page_params.domain + " e-mails!", restricted_to_domain_status);
+                    }
+                    else {
+                        ui.report_success("New users may have arbitrary e-mails!", restricted_to_domain_status);
+                    }
+		}
+		if (data.invite_required !== undefined) {
+                    if (data.invite_required) {
+                        ui.report_success("New users must be invited by e-mil!", invite_required_status);
+                    }
+                    else {
+                        ui.report_success("New users may sign up online!", invite_required_status);
+                    }
+		}
             },
             error: function (xhr, error) {
-                ui.report_error("Failed!", xhr, status);
+                ui.report_error("Failed!", xhr, name_status);
             }
         });
     });

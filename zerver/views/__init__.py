@@ -25,7 +25,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, is_super_user_api, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
-    completely_open, get_active_user_dicts_in_realm, remote_user_to_email
+    completely_open, get_unique_open_realm, get_active_user_dicts_in_realm, remote_user_to_email
 from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_change_full_name, do_change_enable_desktop_notifications, do_change_is_admin, \
     do_change_enter_sends, do_change_enable_sounds, do_activate_user, do_create_user, \
@@ -33,7 +33,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, bulk_add_subscriptions, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
-    do_change_enable_digest_emails, do_set_realm_name, internal_prep_message, \
+    do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, do_set_realm_invite_required, internal_prep_message, \
     do_send_messages, get_default_subs, do_deactivate_user, do_reactivate_user, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
@@ -269,7 +269,10 @@ def accounts_register(request):
     #
     # MitUsers can't be referred and don't have a referred_by field.
     if not mit_beta_user and prereg_user.referred_by:
-        domain = prereg_user.referred_by.realm.domain
+        realm = prereg_user.referred_by.realm
+        domain = realm.domain
+        if realm.restricted_to_domain and domain != resolve_email_to_domain(email):
+            return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
     elif not mit_beta_user and prereg_user.realm:
         # You have a realm set, even though nobody referred you. This
         # happens if you sign up through a special URL for an open
@@ -895,6 +898,13 @@ def send_registration_completion_email(email, request):
                                            additional_context=context)
 
 def accounts_home(request):
+    # First we populate request.session with a domain if
+    # there is a single realm, which is open.
+    # This is then used in HomepageForm and in creating a PreregistrationUser
+    unique_realm = get_unique_open_realm()
+    if unique_realm:
+        request.session['domain'] = unique_realm.domain
+
     if request.method == 'POST':
         form = create_homepage_form(request, user_info=request.POST)
         if form.is_valid():
@@ -1038,6 +1048,8 @@ def home(request):
         email                 = user_profile.email,
         domain                = user_profile.realm.domain,
         realm_name            = register_ret['realm_name'],
+        realm_invite_required = register_ret['realm_invite_required'],
+        realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         enter_sends           = user_profile.enter_sends,
         referrals             = register_ret['referrals'],
         realm_emoji           = register_ret['realm_emoji'],
@@ -1325,9 +1337,21 @@ def get_public_streams_backend(request, user_profile):
 
 @require_realm_admin
 @has_request_variables
-def update_realm(request, user_profile, name=REQ(validator=check_string, default=None)):
-    # This will grow, but for now it only handles changes to realm name.
-    return json_success(do_set_realm_name(user_profile.realm, name))
+def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
+                 restricted_to_domain=REQ(validator=check_bool, default=None),
+                 invite_required=REQ(validator=check_bool,default=None)):
+    realm = user_profile.realm
+    data = {}
+    if name is not None and realm.name != name:
+        do_set_realm_name(realm, name)
+        data['name'] = 'updated'
+    if restricted_to_domain is not None and realm.restricted_to_domain != restricted_to_domain:
+        do_set_realm_restricted_to_domain(realm, restricted_to_domain)
+        data['restricted_to_domain'] = restricted_to_domain
+    if invite_required is not None and realm.invite_required != invite_required:
+        do_set_realm_invite_required(realm, invite_required)
+        data['invite_required'] = invite_required
+    return json_success(data)
 
 @require_realm_admin
 @has_request_variables
