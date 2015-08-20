@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 import platform
 
@@ -67,86 +68,91 @@ REPO_STOPWORDS_PATH = os.path.join(
     "zulip_english.stop",
 )
 
-log = logging.getLogger("zulip-provisioner")
-# TODO: support other architectures
-if platform.architecture()[0] == '64bit':
-    arch = 'amd64'
-else:
-    log.critical("Only amd64 is supported.")
 
-vendor, version, codename = platform.dist()
+def main():
+    log = logging.getLogger("zulip-provisioner")
+    # TODO: support other architectures
+    if platform.architecture()[0] == '64bit':
+        arch = 'amd64'
+    else:
+        log.critical("Only amd64 is supported.")
 
-if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
-    log.critical("Unsupported platform: {} {}".format(vendor, codename))
+    vendor, version, codename = platform.dist()
 
-with sh.sudo:
-    sh.apt_get.update()
+    if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
+        log.critical("Unsupported platform: {} {}".format(vendor, codename))
 
-    sh.apt_get.install(*APT_DEPENDENCIES["trusty"], assume_yes=True)
+    with sh.sudo:
+        sh.apt_get.update()
 
-temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
+        sh.apt_get.install(*APT_DEPENDENCIES["trusty"], assume_yes=True)
 
-sh.wget(
-    "{}/{}_{}_{}.deb".format(
-        TSEARCH_URL_BASE,
-        TSEARCH_PACKAGE_NAME["trusty"],
-        TSEARCH_VERSION,
-        arch,
-    ),
-    output_document=temp_deb_path,
-)
+    temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
 
-with sh.sudo:
-    sh.dpkg("--install", temp_deb_path)
+    sh.wget(
+        "{}/{}_{}_{}.deb".format(
+            TSEARCH_URL_BASE,
+            TSEARCH_PACKAGE_NAME["trusty"],
+            TSEARCH_VERSION,
+            arch,
+        ),
+        output_document=temp_deb_path,
+    )
 
-with sh.sudo:
-    sh.rm("-rf", VENV_PATH)
-    sh.mkdir("-p", VENV_PATH)
-    sh.chown("{}:{}".format(os.getuid(), os.getgid()), VENV_PATH)
+    with sh.sudo:
+        sh.dpkg("--install", temp_deb_path)
 
-sh.virtualenv(VENV_PATH)
+    with sh.sudo:
+        sh.rm("-rf", VENV_PATH)
+        sh.mkdir("-p", VENV_PATH)
+        sh.chown("{}:{}".format(os.getuid(), os.getgid()), VENV_PATH)
 
-# Add the ./tools and ./scripts/setup directories inside the repository root to
-# the system path; we'll reference them later.
-orig_path = os.environ["PATH"]
-os.environ["PATH"] = os.pathsep.join((
-        os.path.join(ZULIP_PATH, "tools"),
-        os.path.join(ZULIP_PATH, "scripts", "setup"),
-        orig_path
-))
+    sh.virtualenv(VENV_PATH)
+
+    # Add the ./tools and ./scripts/setup directories inside the repository root to
+    # the system path; we'll reference them later.
+    orig_path = os.environ["PATH"]
+    os.environ["PATH"] = os.pathsep.join((
+            os.path.join(ZULIP_PATH, "tools"),
+            os.path.join(ZULIP_PATH, "scripts", "setup"),
+            orig_path
+    ))
 
 
-# Put Python virtualenv activation in our .bash_profile.
-with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
-    bash_profile.writelines([
-        "source .bashrc\n",
-        "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
-    ])
+    # Put Python virtualenv activation in our .bash_profile.
+    with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
+        bash_profile.writelines([
+            "source .bashrc\n",
+            "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
+        ])
 
-# Switch current Python context to the virtualenv.
-activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
-execfile(activate_this, dict(__file__=activate_this))
+    # Switch current Python context to the virtualenv.
+    activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
+    execfile(activate_this, dict(__file__=activate_this))
 
-sh.pip.install(requirement=os.path.join(ZULIP_PATH, "requirements.txt"))
+    sh.pip.install(requirement=os.path.join(ZULIP_PATH, "requirements.txt"))
 
-with sh.sudo:
-    sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH)
+    with sh.sudo:
+        sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH)
 
-# Add additional node packages for test-js-with-node.
-with sh.sudo:
-    sh.npm.install(*NPM_DEPENDENCIES["trusty"], g=True, prefix="/usr")
+    # Add additional node packages for test-js-with-node.
+    with sh.sudo:
+        sh.npm.install(*NPM_DEPENDENCIES["trusty"], g=True, prefix="/usr")
 
-# Management commands expect to be run from the root of the project.
-os.chdir(ZULIP_PATH)
+    # Management commands expect to be run from the root of the project.
+    os.chdir(ZULIP_PATH)
 
-os.system("generate_enterprise_secrets.py -d")
-sh.configure_rabbitmq()
-sh.postgres_init_db()
-sh.do_destroy_rebuild_database()
-sh.postgres_init_test_db()
-sh.do_destroy_rebuild_test_database()
-sh.setup_git_repo()
+    os.system("generate_enterprise_secrets.py -d")
+    sh.configure_rabbitmq()
+    sh.postgres_init_db()
+    sh.do_destroy_rebuild_database()
+    sh.postgres_init_test_db()
+    sh.do_destroy_rebuild_test_database()
+    sh.setup_git_repo()
 
-with sh.sudo:
-    sh.cp(os.path.join(ZULIP_PATH, "tools", "provision", "zulip-dev.conf"), "/etc/supervisor/conf.d/zulip-dev.conf")
-    sh.service("supervisor", "restart")
+    with sh.sudo:
+        sh.cp(os.path.join(ZULIP_PATH, "tools", "provision", "zulip-dev.conf"), "/etc/supervisor/conf.d/zulip-dev.conf")
+        sh.service("supervisor", "restart")
+
+if __name__ == "__main__":
+    sys.exit(main())
