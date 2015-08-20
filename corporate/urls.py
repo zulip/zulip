@@ -7,8 +7,6 @@ urlpatterns = patterns('',
     url(r'^mit/$', TemplateView.as_view(template_name='corporate/mit.html')),
     url(r'^zephyr-mirror/$', TemplateView.as_view(template_name='corporate/zephyr-mirror.html')),
 
-    # Marketing
-    url(r'^compare/$', TemplateView.as_view(template_name='corporate/compare.html')),
     # signup form
     url(r'^signup/$', TemplateView.as_view(template_name='corporate/signup.html'),
                                          name='signup'),

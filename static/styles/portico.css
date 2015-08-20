@@ -196,11 +196,6 @@ img.screenshot{
     }
 }
 
-.feature-list div {
-    padding-bottom: 2.5em;
-    height: 6em;
-}
-
 .landing-page {
     padding: 2em 0em;
 }
@@ -232,13 +227,6 @@ img.screenshot{
 
 .platform-icon {
     width: 33%
-}
-
-.spotlighted-feature {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
 }
 
 .signup-button {
@@ -980,58 +968,6 @@ a.bottom-signup-button {
     color: #ddd;
 }
 
-.side-by-side {
-    border-spacing: 3px;
-    border-collapse: separate;
-    width: 100%;
-    font-size: 16px;
-}
-
-.side-by-side .logo-header {
-    width: 80%;
-    min-width: 100px;
-    height: auto;
-}
-
-.side-by-side .logo-text {
-    display: none;
-}
-
-.side-by-side .product-header {
-    width: 15%;
-}
-
-.side-by-side td,
-.side-by-side th {
-    padding: 10px;
-    background: #eee;
-    text-align: center;
-    border-radius: 2px;
-}
-
-.side-by-side .features-header {
-    background: none;
-}
-
-.side-by-side .feature-name {
-    text-align: left;
-    padding-left: 20px;
-}
-
-.side-by-side .feature-presence {
-    font-size: 18px;
-}
-
-.side-by-side .feature-presence.feature-yes {
-    color: #005f00;
-    background: #d2edcd;
-}
-
-.side-by-side .feature-presence.feature-no {
-    color: #a20202;
-    background: #d2b0b0;
-}
-
 
 @media (max-width: 950px) {
 
@@ -1135,17 +1071,6 @@ a.bottom-signup-button {
        margin-right: 0px;
    }
 
-}
-
-@media (max-width: 767px) {
-   .side-by-side .logo-header {
-       display: none;
-   }
-
-   .side-by-side .logo-text {
-       display: block;
-       font-size: 13px;
-   }
 }
 
 @media (max-width: 500px) {
