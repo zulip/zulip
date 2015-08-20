@@ -210,8 +210,7 @@ def principal_to_user_profile(agent, principal):
     return principal_user_profile
 
 def name_changes_disabled(realm):
-    return (settings.NAME_CHANGES_DISABLED
-            or realm.domain in ('users.customer4.invalid', 'employees.customer16.invalid'))
+    return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 @require_post
 @has_request_variables
