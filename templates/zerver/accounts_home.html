@@ -8,10 +8,6 @@
 <script type="text/javascript">
 $(function () {
     autofocus('#email');
-
-    if (window.location.pathname.indexOf("customer3.invalid") !== -1) {
-        $("#customer3-pitch").show();
-    }
 });
 </script>
 
@@ -20,7 +16,6 @@ $(function () {
 
         <div class="register-form">
             <p class="lead">
-              <span id="customer3-pitch" style="display: none;">Participate in the real-time conference discussion using Zulip!</span>
               <div class="register-page-header">Let's get started…</div>
             </p>
             <form class="form-inline" id="send_confirm" name="email_form"
