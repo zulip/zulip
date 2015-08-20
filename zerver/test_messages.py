@@ -425,7 +425,7 @@ class StreamMessagesTest(AuthedTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 7)
 
     def test_message_mentions(self):
         user_profile = get_user_profile_by_email("iago@zulip.com")
