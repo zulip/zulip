@@ -67,12 +67,6 @@ li {
     font-weight: bold;
 }
 
-.jobs-lead {
-    font-weight: normal;
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
-
 .pitch {
     width: 600px;
     max-width: 100%;
@@ -682,8 +676,7 @@ a.bottom-signup-button {
 .feature-page-header,
 .integrations-page-header,
 .register-page-header,
-.api-page-header,
-.jobs-page-header {
+.api-page-header {
     font-weight: 300;
     font-size: 40px;
     display: block;
@@ -707,8 +700,7 @@ a.bottom-signup-button {
 .feature-page-header,
 .api-page-header,
 .apps-page-header,
-.integrations-page-header,
-.jobs-page-header
+.integrations-page-header
 {
     padding-top: 40px;
 }
@@ -716,8 +708,7 @@ a.bottom-signup-button {
 .apps-page-header,
 .integrations-page-header,
 .register-page-header,
-.api-page-header,
-.jobs-page-header {
+.api-page-header {
     line-height: 42px;
     width: auto;
     margin-bottom: 10px;
@@ -733,8 +724,7 @@ a.bottom-signup-button {
 }
 
 .integrations-page-header,
-.api-page-header,
-.jobs-page-header {
+.api-page-header {
     text-align: left;
 }
 
