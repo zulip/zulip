@@ -117,14 +117,6 @@ else:
     APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"
     DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dev.pem"
 
-# GCM tokens are IP-whitelisted; if we deploy to additional
-# servers you will need to explicitly add their IPs here:
-# https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
-if DEPLOYED:
-    ANDROID_GCM_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-else:
-    ANDROID_GCM_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
 GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
 
 if DEPLOYED:

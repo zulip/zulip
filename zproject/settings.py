@@ -424,6 +424,11 @@ if "EXTERNAL_API_PATH" not in vars():
     EXTERNAL_API_PATH = EXTERNAL_HOST + "/api"
 EXTERNAL_API_URI = EXTERNAL_URI_SCHEME + EXTERNAL_API_PATH
 
+# GCM tokens are IP-whitelisted; if we deploy to additional
+# servers you will need to explicitly add their IPs here:
+# https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
+ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
+
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
                    'email_template': 'notification-bot@%s',
