@@ -29,3 +29,4 @@ manage.log
 *.kate-swp
 event_queues.json
 .vagrant
+/zproject/dev-secrets.conf
