@@ -46,7 +46,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
     do_regenerate_api_key, do_remove_default_stream, do_update_pointer, \
-    do_change_avatar_source, do_change_twenty_four_hour_time
+    do_change_avatar_source, do_change_twenty_four_hour_time, do_change_left_side_userlist
 
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -983,6 +983,7 @@ def home(request):
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         enter_sends           = user_profile.enter_sends,
+        left_side_userlist    = register_ret['left_side_userlist'],
         referrals             = register_ret['referrals'],
         realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,
@@ -1639,6 +1640,18 @@ def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator
         do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
 
     result['twenty_four_hour_time'] = twenty_four_hour_time
+
+    return json_success(result)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool,default=None)):
+    result = {}
+    if left_side_userlist is not None and \
+        user_profile.left_side_userlist != left_side_userlist:
+        do_change_left_side_userlist(user_profile, left_side_userlist)
+
+    result['left_side_userlist'] = left_side_userlist
 
     return json_success(result)
 

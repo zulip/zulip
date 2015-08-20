@@ -92,13 +92,23 @@
       Display Settings</div>
       <div class="alert" id="display-settings-status"></div>
       <div class="display-settings-form">
+
         <div class="control-group">
           <div class="controls">
-            <input type="checkbox" name="twenty_four_hour_time"
-                   id="twenty_four_hour_time"
-                   {{#if page_params.twenty_four_hour_time}}
-                   checked="yes"
-                   {{/if}} />
+            <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
+              {{#if page_params.left_side_userlist}}
+                checked="yes"
+              {{/if}} />
+          </div>
+        <label for="left_side_userlist" class="control-label">Display user list on left side in narrow windows.</label>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
+              {{#if page_params.twenty_four_hour_time}}
+                checked="yes"
+              {{/if}} />
           </div>
           <label for="twenty_four_hour_time" class="control-label">
             Display time in 24-hour format (17:00 instead of 5:00 PM)

@@ -188,7 +188,7 @@ exports.resize_page_components = function () {
     var h;
     var sidebar;
 
-    if (feature_flags.left_side_userlist) {
+    if (page_params.left_side_userlist) {
         var css_narrow_mode = viewport.is_narrow();
 
         $("#top_navbar").removeClass("rightside-userlist");

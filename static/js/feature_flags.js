@@ -18,8 +18,6 @@ exports.local_echo = true;
 exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
 exports.is_og_zulip_user = _.contains(og_zuliper_emails, page_params.email);
 
-exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domain);
-
 // Experimental modification to support much wider message views.
 exports.full_width = false;
 

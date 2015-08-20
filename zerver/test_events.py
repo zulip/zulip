@@ -35,6 +35,7 @@ from zerver.lib.actions import (
     do_update_message,
     do_update_pointer,
     do_change_twenty_four_hour_time,
+    do_change_left_side_userlist,
     fetch_initial_state_data,
 )
 
@@ -445,6 +446,19 @@ class EventsRegisterTest(AuthedTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_left_side_userlist(self):
+        schema_checker = check_dict([
+            ('type', equals('update_display_settings')),
+            ('setting_name', equals('left_side_userlist')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_left_side_userlist(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

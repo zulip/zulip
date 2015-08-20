@@ -1729,6 +1729,17 @@ def do_change_twenty_four_hour_time(user_profile, setting_value, log=True):
         log_event(event)
     send_event(event, [user_profile.id])
 
+def do_change_left_side_userlist(user_profile, setting_value, log=True):
+    user_profile.left_side_userlist = setting_value
+    user_profile.save(update_fields=["left_side_userlist"])
+    event = {'type': 'update_display_settings',
+             'user': user_profile.email,
+             'setting_name':'left_side_userlist',
+             'setting': setting_value}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
 def set_default_streams(realm, stream_names):
     DefaultStream.objects.filter(realm=realm).delete()
     for stream_name in stream_names:
@@ -2373,6 +2384,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
     if want('update_display_settings'):
         state['twenty_four_hour_time'] = user_profile.twenty_four_hour_time
+        state['left_side_userlist'] = user_profile.left_side_userlist
 
     return state
 
@@ -2507,6 +2519,8 @@ def apply_events(state, events, user_profile):
         elif event['type'] == "update_display_settings":
             if event['setting_name'] == "twenty_four_hour_time":
                 state['twenty_four_hour_time'] = event["setting"]
+            if event['setting_name'] == 'left_side_userlist':
+                state['left_side_userlist'] = event["setting"]
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 

@@ -362,6 +362,24 @@ exports.setup_page = function () {
                                                       update_audible_notification_setting);
     });
 
+    $("#left_side_userlist").change(function () {
+        var left_side_userlist = this.checked;
+        var data = {};
+        data.left_side_userlist = JSON.stringify(left_side_userlist);
+
+        channel.patch({
+            url: '/json/left_side_userlist',
+            data: data,
+            success: function (resp, statusText, xhr, form) {
+                ui.report_success("Updated display settings!  You will need to reload the window for your changes to take effect.",
+                                  $('#display-settings-status').expectOne());
+            },
+            error: function (xhr, error_type, xhn) {
+                ui.report_error("Error updating display settings", xhr, $('#display-settings-status').expectOne());
+            }
+        });
+    });
+
     $("#twenty_four_hour_time").change(function () {
         var data = {};
         var setting_value = $("#twenty_four_hour_time").is(":checked");

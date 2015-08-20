@@ -185,6 +185,11 @@ function get_events_success(events) {
                 page_params.twenty_four_hour_time = event.twenty_four_hour_time;
                 // TODO: Make this rerender the existing elements to not require a reload.
             }
+            if (event.setting_name === 'left_side_userlist') {
+                // TODO: Make this change the view immediately rather
+                // than requiring a reload or page resize.
+                page_params.left_side_userlist = event.left_side_userlist;
+            }
             break;
         }
     };

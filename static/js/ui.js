@@ -363,7 +363,7 @@ $(function () {
     // box, but, close enough for now.
     resize.handler();
 
-    if (!feature_flags.left_side_userlist) {
+    if (!page_params.left_side_userlist) {
         $("#navbar-buttons").addClass("right-userlist");
     }
 
