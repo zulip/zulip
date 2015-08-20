@@ -15,6 +15,6 @@ from zerver.worker.queue_processors import get_active_worker_queues
 
 queues = get_active_worker_queues()
 
-args = ' '.join(sys.argv[1:])
+args = sys.argv[1:]
 for queue in queues:
-    subprocess.Popen('python manage.py process_queue %s %s' %(args, queue), shell=True)
+    subprocess.Popen(['python', 'manage.py', 'process_queue'] + args + [queue])
