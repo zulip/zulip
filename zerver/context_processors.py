@@ -10,19 +10,20 @@ def add_settings(request):
         # We use the not_enterprise variable name so that templates
         # will render even if the appropriate context is not provided
         # to the template
-        'not_enterprise':    not settings.ENTERPRISE,
-        'zulip_admin':   settings.ZULIP_ADMINISTRATOR,
-        'login_url':     settings.HOME_NOT_LOGGED_IN,
-        'only_sso':     settings.ONLY_SSO,
-        'external_api_path': settings.EXTERNAL_API_PATH,
-        'external_api_uri': settings.EXTERNAL_API_URI,
-        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-        'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
+        'not_enterprise':            not settings.ENTERPRISE,
+        'deployed':                  settings.DEPLOYED,
+        'zulip_admin':               settings.ZULIP_ADMINISTRATOR,
+        'login_url':                 settings.HOME_NOT_LOGGED_IN,
+        'only_sso':                  settings.ONLY_SSO,
+        'external_api_path':         settings.EXTERNAL_API_PATH,
+        'external_api_uri':          settings.EXTERNAL_API_URI,
+        'external_uri_scheme':       settings.EXTERNAL_URI_SCHEME,
+        'api_site_required':         settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_integration_enabled': settings.EMAIL_GATEWAY_BOT != "",
-        'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
-        'password_auth_enabled': password_auth_enabled(realm),
-        'dev_auth_enabled': dev_auth_enabled(),
-        'google_auth_enabled': google_auth_enabled(),
+        'email_gateway_example':     settings.EMAIL_GATEWAY_EXAMPLE,
+        'password_auth_enabled':     password_auth_enabled(realm),
+        'dev_auth_enabled':          dev_auth_enabled(),
+        'google_auth_enabled':       google_auth_enabled(),
     }
 
 def add_metrics(request):
