@@ -230,14 +230,6 @@ RABBITMQ_USERNAME = 'zulip'
 RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 
 ########################################################################
-# CAMO HTTPS CACHE CONFIGURATION
-########################################################################
-
-if CAMO_URI is not None:
-    # This needs to be synced with the Camo installation
-    CAMO_KEY = get_secret("camo_key")
-
-########################################################################
 # CACHING CONFIGURATION
 ########################################################################
 
@@ -397,7 +389,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'API_SUPER_USERS': set(),
                     'ADMINS': '',
                     'INLINE_IMAGE_PREVIEW': True,
-                    'CAMO_URI': None,
+                    'CAMO_URI': '',
                     'ENABLE_FEEDBACK': True,
                     'FEEDBACK_EMAIL': None,
                     'ENABLE_GRAVATAR': True,
@@ -475,6 +467,14 @@ if DEPLOYED:
     FEEDBACK_TARGET="https://zulip.com/api"
 else:
     FEEDBACK_TARGET="http://localhost:9991/api"
+
+########################################################################
+# CAMO HTTPS CACHE CONFIGURATION
+########################################################################
+
+if CAMO_URI != '':
+    # This needs to be synced with the Camo installation
+    CAMO_KEY = get_secret("camo_key")
 
 ########################################################################
 # STATIC CONTENT AND MINIFICATION SETTINGS

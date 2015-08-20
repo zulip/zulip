@@ -39,11 +39,22 @@ cd $TMP_CHECKOUT
 # Use default settings so there is no chance of leaking secrets
 cp zproject/local_settings_template.py zproject/local_settings.py
 
-# Some settings need values for it to work
+# Some settings need to be updated for update-prod-static to work
+#
+# TODO: Would be much better to instead run the below tools with some
+# sort of environment hack to make settings.ENTERPRISE=True so that we
+# don't need to create this dummy secrets file.
 cat >> zproject/local_settings.py <<EOF
 DEBUG = False
-LOCAL_DATABASE_PASSWORD = ''
-SECRET_KEY = 'not_used_here'
+EOF
+cat >> zproject/dev-secrets.conf <<EOF
+[secrets]
+local_database_password = ''
+secret_key = 'not_used_here'
+shared_secret = 'not_used_here'
+avatar_salt = 'not_used_here'
+rabbitmq_password = 'not_used_here'
+initial_password_salt = 'not_used_here'
 EOF
 
 # update-prod-static generates the prod-static directory.
@@ -52,6 +63,8 @@ EOF
 echo $GITID > build_id
 echo $version > version
 mv update-prod-static.log ..
+
+rm -f zproject/dev-secrets.conf
 
 # We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
 find prod-static/serve/third/gemoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
