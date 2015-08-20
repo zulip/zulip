@@ -684,7 +684,7 @@ function validate_stream_message() {
         return false;
     }
 
-    if (feature_flags.mandatory_topics) {
+    if (page_params.mandatory_topics) {
         var topic = exports.subject();
         if (topic === "") {
             compose_error("Please specify a topic", $("#subject"));

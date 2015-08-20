@@ -1091,7 +1091,8 @@ def home(request):
         show_autoscroll_forever_option = user_profile.realm.domain in ("customer28.invalid", "zulip.com", "customer31.invalid"),
         default_desktop_notifications = user_profile.default_desktop_notifications,
         show_default_desktop_notifications_option = user_profile.realm.domain in ("customer13.invalid", "zulip.com",),
-        avatar_url            = avatar_url(user_profile)
+        avatar_url            = avatar_url(user_profile),
+        mandatory_topics      = user_profile.realm.mandatory_topics,
     )
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message

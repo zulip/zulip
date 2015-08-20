@@ -27,12 +27,6 @@ exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
 exports.is_og_zulip_user = _.contains(og_zuliper_emails, page_params.email);
 exports.twenty_four_hour_time = special_24_hour_people || iceland;
 
-exports.mandatory_topics = _.contains([
-    'customer7.invalid'
-    ],
-    page_params.domain
-);
-
 exports.left_side_userlist = _.contains(['customer7.invalid'], page_params.domain);
 //This was set as a page_params variable already, because it's also used in
 //the settings.html django template. See zerver/views/__init__.py:home(request).
