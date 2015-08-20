@@ -30,6 +30,18 @@ APT_DEPENDENCIES = {
         "supervisor",
         "git",
         "phantomjs",
+        "npm",
+        "node-jquery",
+    ]
+}
+
+# TODO: backport node-{cssstyle,htmlparser2,nwmatcher} to trusty,
+# so we can eliminate npm (above) and this section.
+NPM_DEPENDENCIES = {
+    "trusty": [
+        "cssstyle",
+        "htmlparser2",
+        "nwmatcher",
     ]
 }
 
@@ -102,13 +114,26 @@ os.environ["PATH"] = os.pathsep.join((
         orig_path
 ))
 
+
+# Put Python virtualenv activation in our .bash_profile.
+with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
+    bash_profile.writelines([
+        "source .bashrc\n",
+        "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
+    ])
+
 # Switch current Python context to the virtualenv.
 activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
 execfile(activate_this, dict(__file__=activate_this))
 
 sh.pip.install(requirement=os.path.join(ZULIP_PATH, "requirements.txt"))
+
 with sh.sudo:
     sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH)
+
+# Add additional node packages for test-js-with-node.
+with sh.sudo:
+    sh.npm.install(*NPM_DEPENDENCIES["trusty"], g=True, prefix="/usr")
 
 # Management commands expect to be run from the root of the project.
 os.chdir(ZULIP_PATH)
