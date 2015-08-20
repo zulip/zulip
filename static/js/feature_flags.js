@@ -36,10 +36,6 @@ exports.full_width = false; //page_params.staging;
 exports.cleanup_before_reload = true;
 exports.new_bot_ui = false; // page_params.staging;
 
-// This list must match the list of domains in enqueue_digest_emails.
-exports.dont_show_digest_email_setting = _.contains(["mit.edu", "customer29.invalid", "customer20.invalid"],
-                                                    page_params.domain);
-
 exports.fade_at_stream_granularity = page_params.staging;
 
 // Still burning in...

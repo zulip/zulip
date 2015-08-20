@@ -1091,6 +1091,7 @@ def home(request):
         default_desktop_notifications = user_profile.default_desktop_notifications,
         avatar_url            = avatar_url(user_profile),
         mandatory_topics      = user_profile.realm.mandatory_topics,
+        show_digest_email     = user_profile.realm.show_digest_email,
     )
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message

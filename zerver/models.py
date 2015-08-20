@@ -117,6 +117,7 @@ class Realm(models.Model):
     restricted_to_domain = models.BooleanField(default=True)
     invite_required = models.BooleanField(default=False)
     mandatory_topics = models.BooleanField(default=False)
+    show_digest_email = models.BooleanField(default=True)
 
     date_created = models.DateTimeField(default=timezone.now)
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True)

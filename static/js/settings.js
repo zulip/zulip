@@ -188,8 +188,8 @@ exports.setup_page = function () {
         password_quality($('#new_password').val(), $('#pw_strength .bar'));
     });
 
-    if (feature_flags.dont_show_digest_email_setting) {
-        $("#digest_container").hide();
+    if (!page_params.show_digest_email) {
+        $("#other_notifications").hide();
     }
     if (!feature_flags.new_bot_ui) {
         $('.new-bot-ui').hide();

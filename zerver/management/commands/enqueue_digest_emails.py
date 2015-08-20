@@ -90,17 +90,9 @@ in a while.
         if datetime.datetime.utcnow().weekday() not in VALID_DIGEST_DAYS:
             return
 
-        all_domains = Realm.objects.filter(
-            deactivated=False).values_list('domain', flat=True)
-        # This list much match the list of domains for the
-        # dont_show_digest_email_setting feature flag.
-        non_digest_domains = set(("mit.edu", "customer29.invalid",
-                                  "customer20.invalid", "zulip.com"))
-        digest_domains = set(all_domains) - non_digest_domains
-
         deployment_domains = domains_for_this_deployment()
-
-        for domain in digest_domains:
+        for realm in Realm.objects.filter(deactivated=False,show_digest_email=True):
+            domain = realm.domain
             if not should_process_digest(domain, deployment_domains):
                 continue
 
