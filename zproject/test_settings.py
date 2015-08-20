@@ -26,6 +26,9 @@ EVENT_LOG_DIR = '/tmp/zulip-test-event-log'
 # Print our emails rather than sending them
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
+# The test suite uses EmailAuthBackend
+AUTHENTICATION_BACKENDS += ('zproject.backends.EmailAuthBackend',)
+
 TEST_SUITE = True
 RATE_LIMITING = False
 # Don't use rabbitmq from the test suite -- the user_profile_ids for
