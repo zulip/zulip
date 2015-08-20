@@ -75,7 +75,7 @@ exports.setup_page = function () {
         realm_name:                 page_params.realm_name,
         domain:                     page_params.domain,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
-        realm_invite_required:      page_params.realm_invite_required,
+        realm_invite_required:      page_params.realm_invite_required
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
