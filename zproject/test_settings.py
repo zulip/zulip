@@ -52,3 +52,5 @@ CACHES['database'] = {
 
 LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
+
+CAMO_KEY = 'dummy'
