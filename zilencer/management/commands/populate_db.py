@@ -9,7 +9,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
     split_email_to_domain, email_to_username
 from zerver.lib.actions import do_send_message, set_default_streams, \
-    do_activate_user, do_deactivate_user, do_change_password
+    do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin
 from zerver.lib.parallel import run_parallel
 from django.db.models import Count
 from django.conf import settings
@@ -144,6 +144,8 @@ class Command(BaseCommand):
             for i in xrange(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(realms, names)
+            iago = UserProfile.objects.get(email="iago@zulip.com")
+            do_change_is_admin(iago, True)
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             create_streams(realms, zulip_realm, stream_list)
