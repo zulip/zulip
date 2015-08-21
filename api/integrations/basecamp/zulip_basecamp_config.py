@@ -41,7 +41,7 @@ ZULIP_STREAM_NAME = "basecamp"
 ## path, but if not, set a custom path below
 ZULIP_API_PATH = None
 
-# If you're using Zulip Enterprise, set this to your Zulip Enterprise server
+# If you're using Zulip Voyager, set this to your Zulip Voyager server
 ZULIP_SITE = "https://api.zulip.com"
 
 # If you wish to log to a file rather than stdout/stderr,

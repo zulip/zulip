@@ -7,7 +7,7 @@ from django.conf import settings
 import sys
 
 class Command(BaseCommand):
-    help = """Checks your Zulip Enterprise Django configuration for issues."""
+    help = """Checks your Zulip Voyager Django configuration for issues."""
 
     option_list = BaseCommand.option_list + ()
     def handle(self, **options):

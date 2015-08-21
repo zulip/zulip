@@ -25,7 +25,7 @@ def create_users(name_list, bot=False):
     bulk_create_users(realms, user_set, bot)
 
 class Command(BaseCommand):
-    help = "Populate an initial database for Zulip Enterprise"
+    help = "Populate an initial database for Zulip Voyager"
 
     option_list = BaseCommand.option_list + (
         make_option('--extra-users',

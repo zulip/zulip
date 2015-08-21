@@ -1,4 +1,4 @@
-# Settings for Zulip Enterprise
+# Settings for Zulip Voyager
 
 ### MANDATORY SETTINGS
 
@@ -7,7 +7,7 @@
 EXTERNAL_HOST = ''
 
 # The email address for the person or team who maintain the Zulip
-# Enterprise installation. Will also get support emails. (e.g. zulip-admin@example.com)
+# Voyager installation. Will also get support emails. (e.g. zulip-admin@example.com)
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
 # The domain for your organization, e.g. example.com

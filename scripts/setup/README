@@ -16,7 +16,7 @@ Requirements:
 
 =======================================================================
 
-How to install Zulip Enterprise:
+How to install Zulip Voyager:
 
 These instructions should be followed as root.
 
@@ -91,7 +91,7 @@ login via the SSO solution.
 
 =======================================================================
 
-Maintaining Zulip Enterprise:
+Maintaining Zulip Voyager:
 
 * To upgrade to a new version, download the appropriate tarball from
   https://zulip.com/enterprise/download, and then run
@@ -112,7 +112,7 @@ Maintaining Zulip Enterprise:
   a regular basis to ensure that it is up to date with the latest
   security patches.
 
-* To use the Zulip API with Zulip Enterprise, you will need to use the
+* To use the Zulip API with Zulip Voyager, you will need to use the
   API endpoint of e.g. "https://zulip.yourdomain.net/api".  Our Python
   API examples support this via the
   "--site=https://zulip.yourdomain.net" argument.  The API bindings

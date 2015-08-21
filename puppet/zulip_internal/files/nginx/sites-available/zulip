@@ -60,7 +60,7 @@ server {
         alias /srv/www/dist/;
     }
 
-    # Enterprise downloads
+    # Voyager downloads
     location /enterprise/ {
         alias /srv/www/enterprise/;
         autoindex on;
