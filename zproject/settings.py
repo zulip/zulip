@@ -356,7 +356,6 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'TWITTER_CONSUMER_SECRET': '',
                     'TWITTER_ACCESS_TOKEN_KEY': '',
                     'TWITTER_ACCESS_TOKEN_SECRET': '',
-                    'EMBEDLY_KEY': '',
                     'EMAIL_GATEWAY_PATTERN': '',
                     'EMAIL_GATEWAY_EXAMPLE': '',
                     'EMAIL_GATEWAY_BOT': None,
@@ -914,13 +913,6 @@ else:
 if DEPLOYED:
     # Filter out user data
     DEFAULT_EXCEPTION_REPORTER_FILTER = 'zerver.filters.ZulipExceptionReporterFilter'
-
-# We are not currently using embedly due to some performance issues, but
-# we are keeping the code on master for now, behind this launch flag.
-# If you turn this back on for dev, you will want it to be still False
-# for running the tests, or you will need to ensure that embedly_client.is_supported()
-# gets called before the tests run.
-USING_EMBEDLY = False
 
 # This is a debugging option only
 PROFILE_ALL_REQUESTS = False

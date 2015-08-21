@@ -35,10 +35,6 @@ import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 
 
-if settings.USING_EMBEDLY:
-    from embedly import Embedly
-    embedly_client = Embedly(settings.EMBEDLY_KEY, timeout=2.5)
-
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
 version = 1
@@ -94,9 +90,6 @@ def add_a(root, url, link, height="", title=None, desc=None,
         title_div.text = title
         desc_div = markdown.util.etree.SubElement(summary_div, "desc")
         desc_div.set("class", "message_inline_image_desc")
-
-def hash_embedly_url(link):
-    return 'embedly:' + hashlib.sha1(link).hexdigest()
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id):
@@ -479,76 +472,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             logging.warning(traceback.format_exc())
             return None
 
-    def do_embedly(self, root, supported_urls):
-        # embed.ly support is disabled until it can be
-        # properly debugged.
-        #
-        # We're not deleting the code for now, since we expect to
-        # restore it and want to be able to update it along with
-        # future refactorings rather than keeping it as a separate
-        # branch.
-        if not settings.USING_EMBEDLY:
-            return
-
-        # We want this to be able to easily reverse the hashing later
-        keys_to_links = dict((hash_embedly_url(link), link) for link in supported_urls)
-        cache_hits = cache_get_many(keys_to_links.keys(), cache_name="database")
-
-        # Construct a dict of url => oembed_data pairs
-        oembeds = dict((keys_to_links[key], cache_hits[key]) for key in cache_hits)
-
-        to_process = [url for url in supported_urls if not url in oembeds]
-        to_cache = {}
-
-        if to_process:
-            # Don't touch embed.ly if we have everything cached.
-            try:
-                responses = embedly_client.oembed(to_process, maxwidth=250)
-            except httplib2.socket.timeout:
-                # We put this in its own try-except because it requires external
-                # connectivity. If embedly flakes out, we don't want to not-render
-                # the entire message; we just want to not show the embedly preview.
-                logging.warning("Embedly Embed timeout for URLs: %s" % (" ".join(to_process)))
-                logging.warning(traceback.format_exc())
-                return root
-            except Exception:
-                # If things break for any other reason, don't make things sad.
-                logging.warning(traceback.format_exc())
-                return root
-            for oembed_data in responses:
-                # Don't cache permanent errors
-                if oembed_data["type"] == "error" and \
-                        oembed_data["error_code"] in (500, 501, 503):
-                    continue
-                # Convert to dict because otherwise pickling won't work.
-                to_cache[oembed_data["original_url"]] = dict(oembed_data)
-
-            # Cache the newly collected data to the database
-            cache_set_many(dict((hash_embedly_url(link), to_cache[link]) for link in to_cache),
-                           cache_name="database")
-            oembeds.update(to_cache)
-
-        # Now let's process the URLs in order
-        for link in supported_urls:
-            oembed_data = oembeds[link]
-
-            if oembed_data["type"] in ("link"):
-                continue
-            elif oembed_data["type"] in ("video", "rich") and "script" not in oembed_data["html"]:
-                placeholder = self.markdown.htmlStash.store(oembed_data["html"], safe=True)
-                el = markdown.util.etree.SubElement(root, "p")
-                el.text = placeholder
-            else:
-                try:
-                    add_a(root,
-                          oembed_data["thumbnail_url"],
-                          link,
-                          height=oembed_data["thumbnail_height"])
-                except KeyError:
-                    # We didn't have a thumbnail, so let's just bail and keep on going...
-                    continue
-        return root
-
     def run(self, root):
         # Get all URLs from the blob
         found_urls = walk_tree(root, lambda e: e.get("href") if e.tag == "a" else None)
@@ -558,7 +481,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return
 
         rendered_tweet_count = 0
-        embedly_urls = []
 
         for url in found_urls:
             dropbox_image = self.dropbox_image(url)
@@ -589,18 +511,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 div.set("class", "inline-preview-twitter")
                 div.insert(0, twitter_data)
                 continue
-            if settings.USING_EMBEDLY:
-                if embedly_client.is_supported(url):
-                    embedly_urls.append(url)
-                    continue
-            # NOTE: settings.USING_EMBEDLY will prevent the below from running
             youtube = self.youtube_image(url)
             if youtube is not None:
                 add_a(root, youtube, url)
                 continue
-
-        if settings.USING_EMBEDLY:
-            self.do_embedly(root, embedly_urls)
 
 class Avatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
