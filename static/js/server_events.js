@@ -181,7 +181,10 @@ function get_events_success(events) {
                                                              event.setting);
             break;
         case 'update_display_settings':
-            page_params.twenty_four_hour_time = event.twenty_four_hour_time;
+            if (event.setting_name === 'twenty_four_hour_time') {
+                page_params.twenty_four_hour_time = event.twenty_four_hour_time;
+                // TODO: Make this rerender the existing elements to not require a reload.
+            }
             break;
         }
     };

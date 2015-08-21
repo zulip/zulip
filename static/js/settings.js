@@ -393,7 +393,7 @@ exports.setup_page = function () {
             url: '/json/time_setting',
             data: data,
             success: function (resp, statusText, xhr, form) {
-                var message = "Updated display settings!";
+                var message = "Updated display settings!  You will need to reload for the changes to take effect";
                 var result = $.parseJSON(xhr.responseText);
                 var display_settings_status = $('#display-settings-status').expectOne();
 
