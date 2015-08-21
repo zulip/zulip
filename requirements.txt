@@ -18,8 +18,6 @@ diff-match-patch==20121119
 django-auth-ldap==1.2.6
 django-bitfield==1.8.0
 git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69
-git+https://github.com/rwbarton/django-openid-auth.git
-https://django-openid-consumer.googlecode.com/files/django-openid-consumer-0.1.1.tar.gz
 django-pipeline==1.2.2
 docopt==0.4.0
 enum34==1.0.4
@@ -47,7 +45,6 @@ pydns==2.3.6
 pyflakes==0.9.1
 pylibmc==1.4.3
 python-ldap==2.4.19
-python-openid==2.2.5
 pytz==2015.4
 redis==2.10.3
 requests==2.7.0

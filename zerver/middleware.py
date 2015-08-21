@@ -93,7 +93,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         # because someone manually entered a nonexistant path), as UTF-8 chars make
         # statsd sad when it sends the key name over the socket
         statsd_path = statsd_path.encode('ascii', errors='ignore')
-    blacklisted_requests = ['do_confirm', 'accounts.login.openid', 'send_confirm',
+    blacklisted_requests = ['do_confirm', 'send_confirm',
                             'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
                             'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
                             'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',

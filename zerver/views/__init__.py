@@ -53,10 +53,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
     CreateUserForm, is_inactive, OurAuthenticationForm
 from django.views.decorators.csrf import csrf_exempt
-from django_openid_auth.views import default_render_failure, login_complete
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from openid.consumer.consumer import SUCCESS as openid_SUCCESS
-from openid.extensions import ax
 from zerver.lib import bugdown
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.validator import check_string, check_list, check_dict, \
@@ -650,27 +647,6 @@ def remote_user_jwt(request):
         user_profile = None
 
     return login_or_register_remote_user(request, email, user_profile, remote_user)
-
-def handle_openid_errors(request, issue, openid_response=None):
-    if issue == "Unknown user":
-        if openid_response is not None and openid_response.status == openid_SUCCESS:
-            ax_response = ax.FetchResponse.fromSuccessResponse(openid_response)
-            google_email = openid_response.getSigned('http://openid.net/srv/ax/1.0', 'value.email')
-            try:
-                first_name = full_name = ax_response.get('http://axschema.org/namePerson/first')[0]
-            except KeyError:
-                first_name = None
-            try:
-                last_name = full_name = ax_response.get('http://axschema.org/namePerson/last')[0]
-                if first_name is not None:
-                    full_name = first_name + " " + last_name
-            except KeyError:
-                pass
-            return maybe_send_to_registration(request, google_email, full_name=full_name)
-    return default_render_failure(request, issue)
-
-def process_openid_login(request):
-    return login_complete(request, render_failure=handle_openid_errors)
 
 def google_oauth2_csrf(request, value):
     return hmac.new(get_token(request).encode('utf-8'), value, hashlib.sha256).hexdigest()

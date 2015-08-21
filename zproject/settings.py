@@ -13,7 +13,6 @@ import time
 import sys
 import ConfigParser
 
-from zerver.openid import openid_failure_handler
 from zerver.lib.db import TimeTrackingConnection
 
 ########################################################################
@@ -163,7 +162,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    'django_openid_auth',
     'confirmation',
     'guardian',
     'pipeline',
@@ -878,9 +876,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ACCOUNT_ACTIVATION_DAYS=7
 
 LOGIN_REDIRECT_URL='/'
-OPENID_SSO_SERVER_URL = 'https://www.google.com/accounts/o8/id'
-OPENID_CREATE_USERS = True
-OPENID_RENDER_FAILURE = openid_failure_handler
 
 # Client-side polling timeout for get_events, in milliseconds.
 # We configure this here so that the client test suite can override it.

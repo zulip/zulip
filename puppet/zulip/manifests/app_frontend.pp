@@ -11,7 +11,6 @@ class zulip::app_frontend {
                     # Django dependencies
                     "python-django",
                     "python-django-guardian",
-                    "python-django-auth-openid",
                     "python-django-south",
                     "python-django-pipeline",
                     "python-django-bitfield",

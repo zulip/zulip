@@ -19,9 +19,6 @@ urlpatterns = patterns('',
     # want to require a new desktop app build for everyone in that case
     url(r'^desktop_home/$', 'zerver.views.desktop_home'),
 
-    url(r'^accounts/login/openid/$', 'django_openid_auth.views.login_begin', name='openid-login'),
-    url(r'^accounts/login/openid/done/$', 'zerver.views.process_openid_login', name='openid-complete'),
-    url(r'^accounts/login/openid/done/$', 'django_openid_auth.views.login_complete', name='openid-complete'),
     url(r'^accounts/login/sso/$', 'zerver.views.remote_user_sso', name='login-sso'),
     url(r'^accounts/login/jwt/$', 'zerver.views.remote_user_jwt', name='login-jwt'),
     url(r'^accounts/login/google/$', 'zerver.views.start_google_oauth2'),

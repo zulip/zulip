@@ -9,7 +9,6 @@ from django_auth_ldap.backend import LDAPBackend
 from zerver.models import UserProfile, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username
 
-from openid.consumer.consumer import SUCCESS
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
 
@@ -109,29 +108,6 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
                 return None
         else:
             return_data["valid_attestation"] = False
-
-# Adapted from http://djangosnippets.org/snippets/2183/ by user Hangya (September 1, 2010)
-
-class GoogleBackend(ZulipAuthMixin):
-    def authenticate(self, openid_response):
-        if openid_response is None:
-            return None
-        if openid_response.status != SUCCESS:
-            return None
-
-        google_email = openid_response.getSigned('http://openid.net/srv/ax/1.0', 'value.email')
-
-        try:
-            user_profile = get_user_profile_by_email(google_email)
-        except UserProfile.DoesNotExist:
-            # create a new user, or send a message to admins, etc.
-            return None
-
-        if user_profile.is_mirror_dummy:
-            # mirror dummies can not login, but they can convert to real users
-            return None
-
-        return user_profile
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
