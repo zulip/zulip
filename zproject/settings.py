@@ -87,6 +87,7 @@ else:
     # sample local_settings.py file, with a few exceptions.
     from local_settings_template import *
     EXTERNAL_HOST = 'localhost:9991'
+    ALLOWED_HOSTS = ['localhost']
     AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
     # Add some of the below if you're testing other backends
     # AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
@@ -343,22 +344,6 @@ if not DEPLOYED:
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
     INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
-
-if TESTING_DEPLOYED or ENTERPRISE:
-    # XXX we should probably tighten this for ENTERPRISE
-    # Allow any hosts for our test instances, to reduce 500 spam
-    ALLOWED_HOSTS = ['*']
-elif DEPLOYED:
-    # The IP addresses are for app.zulip.{com,net} and staging.zulip.{com,net}
-    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.213.44.54',
-                     '54.213.41.54', '54.213.44.58', '54.213.44.73',
-                     '54.200.19.65', '54.201.95.104', '54.201.95.206',
-                     '54.201.186.29', "54.200.111.22",
-                     '54.245.120.64', '54.213.44.83', '.zulip.com', '.zulip.net',
-                     'chat.dropboxer.net',
-                     ]
-else:
-    ALLOWED_HOSTS = ['localhost']
 
 ########################################################################
 # DEFAULT VALUES

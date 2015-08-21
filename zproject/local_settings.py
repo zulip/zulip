@@ -94,6 +94,21 @@ SSO_APPEND_DOMAIN = None
 AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
                            'zproject.backends.GoogleMobileOauth2Backend')
 
+# ALLOWED_HOSTS is used by django to determine which addresses
+# Zulip can serve. This is a security measure.
+if TESTING_DEPLOYED:
+    # Allow any hosts for our test instances, to reduce 500 spam
+    ALLOWED_HOSTS = ['*']
+else:
+    # Deployed on zulip.com
+    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.213.44.54',
+                     '54.213.41.54', '54.213.44.58', '54.213.44.73',
+                     '54.200.19.65', '54.201.95.104', '54.201.95.206',
+                     '54.201.186.29', '54.200.111.22',
+                     '54.245.120.64', '54.213.44.83', '.zulip.com', '.zulip.net',
+                     'chat.dropboxer.net',
+                     ]
+
 
 JWT_AUTH_KEYS = {}
 
