@@ -129,8 +129,6 @@ else:
 
 
 
-DROPBOX_APP_KEY = "xxxxxxxxxxxxxxx"
-
 JWT_AUTH_KEYS = {}
 
 NOTIFICATION_BOT = "notification-bot@zulip.com"

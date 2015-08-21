@@ -431,6 +431,8 @@ S3_SECRET_KEY = get_secret("s3_secret_key")
 # https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
 ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
 
+DROPBOX_APP_KEY = get_secret("dropbox_app_key")
+
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.
 # Please don't make us go over our rate limit.
