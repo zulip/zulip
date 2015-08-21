@@ -210,30 +210,26 @@ DATABASES = {"default": {
     'NAME': 'zulip',
     'USER': 'zulip',
     'PASSWORD': '', # Authentication done via certificates
-    'HOST': 'postgres.zulip.net',
+    'HOST': '',  # Host = '' => connect through a local socket
     'SCHEMA': 'zulip',
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
-        'sslmode': 'verify-full',
         'connection_factory': TimeTrackingConnection
         },
     },
 }
 
-if VOYAGER:
-    DATABASES["default"].update({
-            # Host = '' => connect through a local socket
-            'HOST': '',
-            'OPTIONS': {
-                'connection_factory': TimeTrackingConnection
-            }
-            })
-elif DEVELOPMENT:
+if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
     DATABASES["default"].update({
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
-            'HOST': 'localhost',
+            'HOST': 'localhost'
+            })
+elif ZULIP_COM:
+    DATABASES["default"].update({
+            'HOST': 'postgres.zulip.net',
             'OPTIONS': {
+                'sslmode': 'verify-full',
                 'connection_factory': TimeTrackingConnection
             }
             })
