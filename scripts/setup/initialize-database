@@ -3,12 +3,6 @@
 # Change to root directory of the checkout that we're running from
 cd $(dirname $0)/../..
 
-psql <<EOF
-DROP SCHEMA zulip CASCADE;
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA zulip;
-EOF
-
 python manage.py checkconfig
 
 python manage.py migrate --noinput

@@ -1,10 +1,15 @@
-#/bin/sh -xe
+#!/bin/sh -xe
 
 su postgres -c psql <<EOF
 CREATE USER zulip;
 ALTER ROLE zulip SET search_path TO zulip,public;
 DROP DATABASE IF EXISTS zulip;
 CREATE DATABASE zulip OWNER=zulip;
+EOF
+
+su postgres -c psql zulip <<EOF
+CREATE SCHEMA zulip OWNER=zulip;
+CREATE EXTENSION tsearch_extras SCHEMA zulip;
 EOF
 
 echo "Database created"
