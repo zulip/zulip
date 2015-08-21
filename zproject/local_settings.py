@@ -101,8 +101,7 @@ SSO_APPEND_DOMAIN = None
 
 if DEPLOYED:
     AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
-                               'zproject.backends.GoogleMobileOauth2Backend',
-                               'zproject.backends.GoogleBackend')
+                               'zproject.backends.GoogleMobileOauth2Backend')
 else:
     ## WARNING: ENABLING DevAuthBackend WILL ENABLE
     ## ANYONE TO LOG IN AS ANY USER.
