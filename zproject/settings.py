@@ -424,6 +424,9 @@ if "EXTERNAL_API_PATH" not in vars():
     EXTERNAL_API_PATH = EXTERNAL_HOST + "/api"
 EXTERNAL_API_URI = EXTERNAL_URI_SCHEME + EXTERNAL_API_PATH
 
+S3_KEY = get_secret("s3_key")
+S3_SECRET_KEY = get_secret("s3_secret_key")
+
 # GCM tokens are IP-whitelisted; if we deploy to additional
 # servers you will need to explicitly add their IPs here:
 # https://cloud.google.com/console/project/apps~zulip-android/apiui/credential

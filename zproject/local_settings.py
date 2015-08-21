@@ -70,14 +70,10 @@ else:
 
 # For now, ENTERPRISE is only testing, so write to our test buckets
 if DEPLOYED and not ENTERPRISE:
-    S3_KEY=get_secret("s3_key")
-    S3_SECRET_KEY=get_secret("s3_secret_key") # XXX
     S3_BUCKET="humbug-user-uploads"
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
     S3_AVATAR_BUCKET="humbug-user-avatars"
 else:
-    S3_KEY="xxxxxxxxxxxxxxxxxxxx"
-    S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     S3_BUCKET="humbug-user-uploads-test"
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads-test"
     S3_AVATAR_BUCKET="humbug-user-avatars-test"
