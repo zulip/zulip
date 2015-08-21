@@ -26,20 +26,6 @@ config_file.read("/etc/zulip/zulip.conf")
 PRODUCTION = config_file.has_option('machine', 'deploy_type')
 DEVELOPMENT = not PRODUCTION
 
-# The following flags are left over from the various configurations of
-# Zulip run by Zulip, Inc.  We will eventually be able to get rid of
-# them and just have the PRODUCTION flag, but we need them for now.
-ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-staging'
-ZULIP_COM = ((PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod')
-             or ZULIP_COM_STAGING)
-
-# Voyager is a production zulip server that is not zulip.com or
-# staging.zulip.com VOYAGER is the standalone all-on-one-server
-# production deployment model for based on the original Zulip
-# ENTERPRISE implementation.  We expect most users of the open source
-# project will be using VOYAGER=True in production.
-VOYAGER = PRODUCTION and not ZULIP_COM
-
 secrets_file = ConfigParser.RawConfigParser()
 if PRODUCTION:
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
@@ -109,6 +95,13 @@ else:
     ERROR_BOT = "error-bot@zulip.com"
     NEW_USER_BOT = "new-user-bot@zulip.com"
     EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
+
+# Voyager is a production zulip server that is not zulip.com or
+# staging.zulip.com VOYAGER is the standalone all-on-one-server
+# production deployment model for based on the original Zulip
+# ENTERPRISE implementation.  We expect most users of the open source
+# project will be using VOYAGER=True in production.
+VOYAGER = PRODUCTION and not ZULIP_COM
 
 ########################################################################
 # STANDARD DJANGO SETTINGS
@@ -377,6 +370,8 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
                     'AUTH_LDAP_SERVER_URI': "",
                     'EXTERNAL_URI_SCHEME': "https://",
+                    'ZULIP_COM': False,
+                    'ZULIP_COM_STAGING': False,
                     'GOOGLE_CLIENT_ID': '',
                     'DBX_APNS_CERT_FILE': None,
                     }
