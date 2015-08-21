@@ -24,7 +24,7 @@ if [ -e "/etc/init.d/nginx" ]; then
     service nginx restart
 fi
 
-/root/zulip/scripts/setup/generate_voyager_secrets.py
+/root/zulip/scripts/setup/generate_secrets.py
 mv /root/zulip/zproject/local_settings_template.py /etc/zulip/settings.py
 ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 

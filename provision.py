@@ -145,7 +145,7 @@ def main():
     # Management commands expect to be run from the root of the project.
     os.chdir(ZULIP_PATH)
 
-    os.system("generate_voyager_secrets.py -d")
+    os.system("generate_secrets.py -d")
     sh.configure_rabbitmq(**LOUD)
     sh.postgres_init_db(**LOUD)
     sh.do_destroy_rebuild_database(**LOUD)
