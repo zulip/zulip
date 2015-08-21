@@ -42,10 +42,6 @@ def get_secret(key):
         return secrets_file.get('secrets', key)
     return None
 
-# Import variables like secrets from the local_settings file
-# Import local_settings after determining the deployment/machine type
-from local_settings import *
-
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")
 
@@ -81,6 +77,28 @@ else:
 TEST_SUITE = False
 # The new user tutorial is enabled by default, but disabled for client tests.
 TUTORIAL_ENABLED = True
+
+# Import variables like secrets from the local_settings file
+# Import local_settings after determining the deployment/machine type
+if DEPLOYED:
+    from local_settings import *
+else:
+    # For the Dev VM environment, we use the same settings as the
+    # sample local_settings.py file, with a few exceptions.
+    from local_settings_template import *
+    EXTERNAL_HOST = 'localhost:9991'
+    AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
+    # Add some of the below if you're testing other backends
+    # AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
+    #                            'zproject.backends.GoogleMobileOauth2Backend',
+    #                            'zproject.backends.GoogleBackend')
+    EXTERNAL_URI_SCHEME = "http://"
+    EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST
+    ADMIN_DOMAIN = "zulip.com"
+    NOTIFICATION_BOT = "notification-bot@zulip.com"
+    ERROR_BOT = "error-bot@zulip.com"
+    NEW_USER_BOT = "new-user-bot@zulip.com"
+    EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 
 ########################################################################
 # STANDARD DJANGO SETTINGS

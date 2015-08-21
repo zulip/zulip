@@ -53,4 +53,5 @@ CACHES['database'] = {
 LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
 
+CAMO_URI = 'https://external-content.zulipcdn.net/'
 CAMO_KEY = 'dummy'

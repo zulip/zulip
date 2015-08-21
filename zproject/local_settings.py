@@ -36,11 +36,6 @@ NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
-if DEPLOYED:
-    EXTERNAL_URI_SCHEME = "https://"
-else:
-    EXTERNAL_URI_SCHEME = "http://"
-
 if TESTING_DEPLOYED:
     EXTERNAL_HOST = platform.node()
 elif STAGING_DEPLOYED:
@@ -48,8 +43,7 @@ elif STAGING_DEPLOYED:
 elif DEPLOYED:
     EXTERNAL_HOST = 'zulip.com'
     EXTERNAL_API_PATH = 'api.zulip.com'
-else:
-    EXTERNAL_HOST = 'localhost:9991'
+
 
 # For now, ENTERPRISE is only testing, so write to our test buckets
 if DEPLOYED and not ENTERPRISE:
@@ -89,8 +83,6 @@ if STAGING_DEPLOYED:
     EMAIL_GATEWAY_PATTERN = "%s@streams.staging.zulip.com"
 elif DEPLOYED:
     EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
-else:
-    EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST
 
 # Email mirror configuration
 # The email of the Zulip bot that the email gateway should post as.
@@ -99,14 +91,8 @@ EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 
 SSO_APPEND_DOMAIN = None
 
-if DEPLOYED:
-    AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
-                               'zproject.backends.GoogleMobileOauth2Backend')
-else:
-    ## WARNING: ENABLING DevAuthBackend WILL ENABLE
-    ## ANYONE TO LOG IN AS ANY USER.
-    AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
-
+AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
+                           'zproject.backends.GoogleMobileOauth2Backend')
 
 
 JWT_AUTH_KEYS = {}
