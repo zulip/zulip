@@ -21,7 +21,10 @@ if DEPLOYED:
 else:
     secrets_file.read("zproject/dev-secrets.conf")
 
-get_secret = lambda x: secrets_file.get('secrets', x)
+def get_secret(key):
+    if secrets_file.has_option('secrets', key):
+        return secrets_file.get('secrets', key)
+    return None
 
 MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
