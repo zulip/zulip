@@ -81,7 +81,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                 deployment.realms.add(realm)
                 deployment.save()
                 print "Added to deployment", str(deployment.id)
-            elif settings.ZULIP_COM or settings.ZULIP_COM_STAGING:
+            elif settings.ZULIP_COM:
                 deployment = Deployment.objects.get(base_site_url="https://zulip.com/")
                 deployment.realms.add(realm)
                 deployment.save()

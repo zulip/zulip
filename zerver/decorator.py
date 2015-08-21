@@ -24,7 +24,7 @@ import logging
 import cProfile
 from zerver.lib.mandrill_client import get_mandrill_client
 
-if settings.ZULIP_COM or settings.ZULIP_COM_STAGING:
+if settings.ZULIP_COM:
     from zilencer.models import get_deployment_by_domain, Deployment
 else:
     from mock import Mock

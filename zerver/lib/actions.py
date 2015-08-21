@@ -2173,7 +2173,7 @@ def encode_email_address_helper(name, email_token):
 def decode_email_address(email):
     # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
-    if settings.ZULIP_COM or settings.ZULIP_COM_STAGING:
+    if settings.ZULIP_COM:
         # Accept mails delivered to any Zulip server
         pattern_parts[-1] = r'@[\w-]*\.zulip\.net'
     match_email_re = re.compile("(.*?)".join(pattern_parts))

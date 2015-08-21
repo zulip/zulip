@@ -53,7 +53,7 @@ def queue_digest_recipient(user_profile, cutoff):
     queue_json_publish("digest_emails", event, lambda event: None)
 
 def domains_for_this_deployment():
-    if settings.ZULIP_COM or settings.ZULIP_COM_STAGING:
+    if settings.ZULIP_COM:
         # Voyager deployments don't have a Deployment entry.
         # Only send zulip.com digests on staging.
         from zilencer.models import Deployment

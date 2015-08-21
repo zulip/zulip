@@ -30,14 +30,15 @@ DEVELOPMENT = not PRODUCTION
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the PRODUCTION flag, but we need them for now.
 ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-staging'
-ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod'
+ZULIP_COM = ((PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod')
+             or ZULIP_COM_STAGING)
 
 # Voyager is a production zulip server that is not zulip.com or
 # staging.zulip.com VOYAGER is the standalone all-on-one-server
 # production deployment model for based on the original Zulip
 # ENTERPRISE implementation.  We expect most users of the open source
 # project will be using VOYAGER=True in production.
-VOYAGER = PRODUCTION and not ZULIP_COM and not ZULIP_COM_STAGING
+VOYAGER = PRODUCTION and not ZULIP_COM
 
 secrets_file = ConfigParser.RawConfigParser()
 if PRODUCTION:
@@ -282,7 +283,7 @@ CACHES = {
 ########################################################################
 
 LOCAL_STATSD = (False)
-USING_STATSD = ZULIP_COM or ZULIP_COM_STAGING or LOCAL_STATSD
+USING_STATSD = ZULIP_COM or LOCAL_STATSD
 
 # These must be named STATSD_PREFIX for the statsd module
 # to pick them up
