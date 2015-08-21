@@ -526,7 +526,7 @@ class Avatar(markdown.inlinepatterns.Pattern):
         img.set('alt', email_address)
         return img
 
-if settings.ENTERPRISE:
+if settings.VOYAGER:
     path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
                                  'prod-static', 'serve', 'third', 'gemoji', 'images', 'emoji', '*.png')
 else:

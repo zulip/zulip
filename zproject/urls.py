@@ -254,7 +254,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
         {'GET': 'get_events_backend',
          'DELETE': 'cleanup_event_queue'}),
 )
-if not settings.ENTERPRISE:
+if not settings.VOYAGER:
     v1_api_and_json_patterns += patterns('',
         # Still scoped to api/v1/, but under a different project
         url(r'^deployments/', include('zilencer.urls.api')),

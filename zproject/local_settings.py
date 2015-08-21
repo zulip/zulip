@@ -7,16 +7,17 @@ config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether we're running in a production environment. Note that PRODUCTION does
-# **not** mean hosted on Zulip.com; customer sites are PRODUCTION and ENTERPRISE
+# **not** mean hosted on Zulip.com; customer sites are PRODUCTION and VOYAGER
 # and as such should not assume they are the main Zulip site.
 PRODUCTION = config_file.has_option('machine', 'deploy_type')
 
 # The following flags are left over from the various configurations of
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the PRODUCTION flag, but we need them for now.
-ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'staging'
-ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'prod'
-ENTERPRISE = PRODUCTION and config_file.get('machine', 'deploy_type') == 'enterprise'
+ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-staging'
+ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod'
+if not ZULIP_COM and not ZULIP_COM_STAGING:
+    raise Exception("You should create your own local settings from local_settings_template.")
 
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
@@ -41,39 +42,23 @@ SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
 if ZULIP_COM_STAGING:
     EXTERNAL_HOST = 'staging.zulip.com'
-elif PRODUCTION:
+else:
     EXTERNAL_HOST = 'zulip.com'
     EXTERNAL_API_PATH = 'api.zulip.com'
 
 
-# For now, ENTERPRISE is only testing, so write to our test buckets
-if PRODUCTION and not ENTERPRISE:
-    S3_BUCKET="humbug-user-uploads"
-    S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
-    S3_AVATAR_BUCKET="humbug-user-avatars"
-else:
-    S3_BUCKET="humbug-user-uploads-test"
-    S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads-test"
-    S3_AVATAR_BUCKET="humbug-user-avatars-test"
+S3_BUCKET="humbug-user-uploads"
+S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
+S3_AVATAR_BUCKET="humbug-user-avatars"
 
-if PRODUCTION or ZULIP_COM_STAGING:
-    APNS_SANDBOX = "push_production"
-    APNS_FEEDBACK = "feedback_production"
-    APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
-    DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dist.pem"
-else:
-    APNS_SANDBOX = "push_sandbox"
-    APNS_FEEDBACK = "feedback_sandbox"
-    APNS_CERT_FILE = "/etc/ssl/django-private/apns-dev.pem"
-    DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dev.pem"
+APNS_SANDBOX = "push_production"
+APNS_FEEDBACK = "feedback_production"
+APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
+DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dist.pem"
 
 GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
 
-if PRODUCTION:
-    GOOGLE_OAUTH2_CLIENT_ID = '835904834568-ag4p18v0sd9a0tero14r3gekn6shoen3.apps.googleusercontent.com'
-else:
-    # Google OAUTH2 for dev with the redirect uri set to http://localhost:9991/accounts/login/google/done/
-    GOOGLE_OAUTH2_CLIENT_ID = '607830223128-4qgthc7ofdqce232dk690t5jgkm1ce33.apps.googleusercontent.com'
+GOOGLE_OAUTH2_CLIENT_ID = '835904834568-ag4p18v0sd9a0tero14r3gekn6shoen3.apps.googleusercontent.com'
 
 # Administrator domain for this install
 ADMIN_DOMAIN = "zulip.com"
@@ -82,7 +67,7 @@ ADMIN_DOMAIN = "zulip.com"
 # The %s will be replaced with a unique token.
 if ZULIP_COM_STAGING:
     EMAIL_GATEWAY_PATTERN = "%s@streams.staging.zulip.com"
-elif PRODUCTION:
+else:
     EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
 
 # Email mirror configuration

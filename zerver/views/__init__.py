@@ -830,7 +830,7 @@ def send_registration_completion_email(email, request):
     """
     prereg_user = create_preregistration_user(email, request)
     context = {'support_email': settings.ZULIP_ADMINISTRATOR,
-               'enterprise': settings.ENTERPRISE}
+               'enterprise': settings.VOYAGER}
     Confirmation.objects.send_confirmation(prereg_user, email,
                                            additional_context=context)
 
@@ -966,7 +966,7 @@ def home(request):
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
-        enterprise            = settings.ENTERPRISE,
+        enterprise            = settings.VOYAGER,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,

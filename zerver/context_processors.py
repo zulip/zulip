@@ -10,7 +10,7 @@ def add_settings(request):
         # We use the not_enterprise variable name so that templates
         # will render even if the appropriate context is not provided
         # to the template
-        'not_enterprise':            not settings.ENTERPRISE,
+        'not_enterprise':            not settings.VOYAGER,
         'zulip_com':                 settings.ZULIP_COM,
         'zulip_admin':               settings.ZULIP_ADMINISTRATOR,
         'login_url':                 settings.HOME_NOT_LOGGED_IN,

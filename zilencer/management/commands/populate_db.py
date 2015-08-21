@@ -120,7 +120,7 @@ class Command(BaseCommand):
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
 
-            if not settings.ENTERPRISE:
+            if settings.ZULIP_COM or settings.ZULIP_COM_STAGING: # what about development?
                 # Associate initial deployment with Realm
                 dep = Deployment()
                 dep.base_api_url = "https://zulip.com/api/"

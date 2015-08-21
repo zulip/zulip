@@ -494,14 +494,14 @@ def send_local_email_template_with_delay(recipients, template_prefix,
 
 def enqueue_welcome_emails(email, name):
     sender = {'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'}
-    if settings.ENTERPRISE:
+    if settings.VOYAGER:
         sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
 
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
 
     template_payload = {'name': name,
-                        'not_enterprise': not settings.ENTERPRISE,
+                        'not_enterprise': not settings.VOYAGER,
                         'external_host': settings.EXTERNAL_HOST,
                         'unsubscribe_link': unsubscribe_link}
 

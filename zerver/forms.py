@@ -44,7 +44,7 @@ class RegistrationForm(forms.Form):
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=100,
                                required=False)
-    if not settings.ENTERPRISE:
+    if not settings.VOYAGER:
         terms = forms.BooleanField(required=True)
 
 

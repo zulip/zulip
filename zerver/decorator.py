@@ -25,12 +25,13 @@ import cProfile
 from zerver.lib.mandrill_client import get_mandrill_client
 
 
-if not settings.ENTERPRISE:
-    from zilencer.models import get_deployment_by_domain, Deployment
-else:
+if settings.VOYAGER:
     from mock import Mock
     get_deployment_by_domain = Mock()
     Deployment = Mock()
+else:
+    # Should this be only on zulip.com?
+    from zilencer.models import get_deployment_by_domain, Deployment
 
 def get_deployment_or_userprofile(role):
     return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)

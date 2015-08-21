@@ -53,8 +53,8 @@ def queue_digest_recipient(user_profile, cutoff):
     queue_json_publish("digest_emails", event, lambda event: None)
 
 def domains_for_this_deployment():
-    if settings.PRODUCTION and not settings.ENTERPRISE:
-        # Enterprise deployments don't have a Deployment entry.
+    if settings.ZULIP_COM or settings.ZULIP_COM_STAGING:
+        # Voyager deployments don't have a Deployment entry.
         # Only send zulip.com digests on staging.
         from zilencer.models import Deployment
         site_url = settings.EXTERNAL_URI_SCHEME + settings.EXTERNAL_HOST.rstrip("/")
@@ -65,18 +65,19 @@ def domains_for_this_deployment():
             raise ValueError("digest: Unable to determine deployment.")
 
         return [r.domain for r in deployment.realms.all()]
-    # Enterprise and localhost.
+    # Voyager and development.
     return []
 
 def should_process_digest(domain, deployment_domains):
-    if settings.ENTERPRISE:
-        # Enterprise. We ship with a zulip.com realm for the feedback bot, but
+    if settings.VOYAGER:
+        # Voyager. We ship with a zulip.com realm for the feedback bot, but
         # don't try to send e-mails to it.
         return domain != "zulip.com"
     elif settings.PRODUCTION:
+        # zulip.com or staging.zulip.com
         return domain in deployment_domains
     else:
-        # Localhost.
+        # Development
         return True
 
 class Command(BaseCommand):

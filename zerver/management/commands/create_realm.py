@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_realm, set_default_streams
 from zerver.models import RealmAlias
 
-if not settings.ENTERPRISE:
+if not settings.VOYAGER:
     from zilencer.models import Deployment
 
 import re
@@ -63,7 +63,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             print >>sys.stderr, "\033[1;31mExternal deployments cannot be open realms.\033[0m\n"
             self.print_help("python manage.py", "create_realm")
             exit(1)
-        if options["deployment_id"] is not None and settings.ENTERPRISE:
+        if options["deployment_id"] is not None and settings.VOYAGER:
             print >>sys.stderr, "\033[1;31mExternal deployments are not supported on enterprise deployments.\033[0m\n"
             exit(1)
 
@@ -81,10 +81,11 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                 deployment.realms.add(realm)
                 deployment.save()
                 print "Added to deployment", str(deployment.id)
-            elif not settings.ENTERPRISE:
+            elif settings.ZULIP_COM or settings.ZULIP_COM_STAGING:
                 deployment = Deployment.objects.get(base_site_url="https://zulip.com/")
                 deployment.realms.add(realm)
                 deployment.save()
+            # should there be an else clause here?
             set_default_streams(realm, ["social", "engineering"])
 
             print "\033[1;36mDefault streams set to social,engineering,zulip!\033[0m"

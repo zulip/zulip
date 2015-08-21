@@ -2173,7 +2173,7 @@ def encode_email_address_helper(name, email_token):
 def decode_email_address(email):
     # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
-    if settings.PRODUCTION and not settings.ENTERPRISE:
+    if settings.ZULIP_COM or settings.ZULIP_COM_STAGING:
         # Accept mails delivered to any Zulip server
         pattern_parts[-1] = r'@[\w-]*\.zulip\.net'
     match_email_re = re.compile("(.*?)".join(pattern_parts))
@@ -2547,7 +2547,7 @@ def do_send_confirmation_email(invitee, referrer):
     body_template_path = 'confirmation/invite_email_body.txt'
     context = {'referrer': referrer,
                'support_email': settings.ZULIP_ADMINISTRATOR,
-               'enterprise': settings.ENTERPRISE}
+               'enterprise': settings.VOYAGER}
 
     if referrer.realm.domain == 'mit.edu':
         subject_template_path = 'confirmation/mituser_invite_email_subject.txt'

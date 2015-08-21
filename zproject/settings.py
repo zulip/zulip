@@ -31,7 +31,10 @@ DEVELOPMENT = not PRODUCTION
 # them and just have the PRODUCTION flag, but we need them for now.
 ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-staging'
 ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod'
-ENTERPRISE = PRODUCTION and config_file.get('machine', 'deploy_type') == 'enterprise'
+
+# Voyager is a production zulip server that is not zulip.com or staging.zulip.com
+# VOYAGER is not ENTERPRISE.
+VOYAGER = PRODUCTION and not ZULIP_COM and not ZULIP_COM_STAGING
 
 secrets_file = ConfigParser.RawConfigParser()
 if PRODUCTION:
@@ -189,7 +192,7 @@ INSTALLED_APPS = [
     'zerver',
 ]
 
-if not ENTERPRISE:
+if not VOYAGER:
     INSTALLED_APPS += [
         'analytics',
         'zilencer',
@@ -220,7 +223,7 @@ DATABASES = {"default": {
     },
 }
 
-if ENTERPRISE:
+if VOYAGER:
     DATABASES["default"].update({
             # Host = '' => connect through a local socket
             'HOST': '',
@@ -276,7 +279,7 @@ CACHES = {
 ########################################################################
 
 LOCAL_STATSD = (False)
-USING_STATSD = (PRODUCTION and not ENTERPRISE) or LOCAL_STATSD
+USING_STATSD = ZULIP_COM or ZULIP_COM_STAGING or LOCAL_STATSD
 
 # These must be named STATSD_PREFIX for the statsd module
 # to pick them up
@@ -376,7 +379,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ERROR_REPORTING': True,
                     'NAME_CHANGES_DISABLED': False,
                     'DEPLOYMENT_ROLE_NAME': "",
-                    # The following bots only exist in non-ENTERPRISE installs
+                    # The following bots only exist in non-VOYAGER installs
                     'ERROR_BOT': None,
                     'NEW_USER_BOT': None,
                     'NAGIOS_STAGING_SEND_BOT': None,
@@ -533,7 +536,7 @@ else:
     STATICFILES_FINDERS = (
         'zerver.finders.ZulipFinder',
     )
-    if PRODUCTION or ENTERPRISE:
+    if PRODUCTION:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
         STATIC_ROOT = 'prod-static/serve'
@@ -765,7 +768,7 @@ ZULIP_PATHS = [
 
 # The Event log basically logs most significant database changes,
 # which can be useful for debugging.
-if ENTERPRISE:
+if VOYAGER:
     EVENT_LOG_DIR = None
 else:
     ZULIP_PATHS.append(("EVENT_LOG_DIR", "/home/zulip/logs/event_log"))
