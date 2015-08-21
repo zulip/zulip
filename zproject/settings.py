@@ -24,6 +24,7 @@ config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
 DEPLOYED = config_file.has_option('machine', 'deploy_type')
+DEVELOPMENT = not DEPLOYED
 # The following flags are leftover from the various configurations of
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the DEPLOYED flag, but we need them for now.
@@ -59,7 +60,7 @@ SERVER_GENERATION = int(time.time())
 
 if not 'DEBUG' in globals():
     # Uncomment end of next line to test JS/CSS minification.
-    DEBUG = not DEPLOYED # and platform.node() != 'your-machine'
+    DEBUG = DEVELOPMENT # and platform.node() != 'your-machine'
 
 TEMPLATE_DEBUG = DEBUG
 if DEBUG:

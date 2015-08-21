@@ -400,8 +400,8 @@ def send_future_email(recipients, email_html, email_text, subject,
     """
     # When sending real emails while testing locally, don't accidentally send
     # emails to non-zulip.com users.
-    if not settings.DEPLOYED and \
-            settings.EMAIL_BACKEND != 'django.core.mail.backends.console.EmailBackend':
+    if settings.DEVELOPMENT and \
+       settings.EMAIL_BACKEND != 'django.core.mail.backends.console.EmailBackend':
         for recipient in recipients:
             email = recipient.get("email")
             if get_user_profile_by_email(email).realm.domain != "zulip.com":

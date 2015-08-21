@@ -1017,7 +1017,7 @@ def home(request):
         max_message_id        = register_ret['max_message_id'],
         unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
-        staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED,
+        staging               = settings.STAGING_DEPLOYED or settings.DEVELOPMENT,
         alert_words           = register_ret['alert_words'],
         muted_topics          = register_ret['muted_topics'],
         realm_filters         = register_ret['realm_filters'],

@@ -94,7 +94,7 @@ urlpatterns = patterns('',
 
 # These are used for enterprise development. On a real enterprise instance,
 # these files would be served by nginx.
-if not settings.DEPLOYED and settings.LOCAL_UPLOADS_DIR is not None:
+if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
     urlpatterns += patterns('',
         url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
             {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
@@ -287,7 +287,7 @@ urlpatterns += patterns('',
 )
 
 
-if not settings.DEPLOYED:
+if settings.DEVELOPMENT:
     use_prod_static = getattr(settings, 'PIPELINE', False)
     static_root = os.path.join(settings.DEPLOY_ROOT,
         'prod-static/serve' if use_prod_static else 'static')
