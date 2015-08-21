@@ -279,44 +279,6 @@ Setting up the test database
 Will populate your local database with all the usual accounts plus some
 test messages involving Shakespeare characters.
 
-Testing signups
----------------
-
-The logic behind signups is dependent on the setting of
-``ALLOW_REGISTER``; if ``True``, any email on any domain can be used to
-register, if ``False``, only emails which belong to already extant
-realms can register [#]_.
-
-.. [#]
-   If ``ALLOW_REGISTER`` is ``False``, MIT users cannot register at all
-   unless they already have an account created via Zephyr mirroring and are
-   activated by us.
-
-Normal user creation
-~~~~~~~~~~~~~~~~~~~~
-
-#. Visit ``/accounts/home/`` and enter an email address of
-   ``<something random>@zulip.com``.
-#. Check the console where you're running ``run-dev`` for the email, and
-   copy-paste the link, changing the hostname from ``example.com``.
-#. Fill out the signup form.
-
-You should be sent to the Zulip app after hitting "Register".
-
-Realm creation control
-~~~~~~~~~~~~~~~~~~~~~~
-
-#. Set ``ALLOW_REGISTER = False``.
-#. Try to sign up with ``alice@example.net``.
-#. Try to sign up with ``zulip@mit.edu``.
-
-You should get an error message for both.
-
-MIT user activation
-~~~~~~~~~~~~~~~~~~~
-
-TODO: Do we want to keep this content?
-
 Mailing list synchronization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
