@@ -86,4 +86,12 @@ finally:
     assert_server_running()
     server.terminate()
 
+if ret != 0:
+    print >>sys.stderr, """
+Oops, the frontend tests failed. Tips for debugging:
+ * Check the frontend test server logs at zerver/tests/frontend/server.log
+ * Check the screenshots of failed tests at /tmp/casper-failure*.png
+ * Try remote debugging the test web browser as described in docs/testing.rst
+"""
+
 sys.exit(ret)
