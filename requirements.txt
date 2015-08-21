@@ -1,4 +1,4 @@
-git+https://github.com/rwbarton/django.git@f784845ae5f0ffb0bfac910702b6c1ca106835ad
+git+https://github.com/rwbarton/django.git@59f1fc4c7b65d23fceffd5c87e2b6ea350030c56
 GitPython==0.3.2.1
 Markdown==2.1.1
 Pillow==2.8.2
@@ -18,7 +18,7 @@ diff-match-patch==20121119
 django-auth-ldap==1.2.6
 django-bitfield==1.8.0
 git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69
-git+https://github.com/zulip/django-openid-auth.git
+git+https://github.com/rwbarton/django-openid-auth.git
 https://django-openid-consumer.googlecode.com/files/django-openid-consumer-0.1.1.tar.gz
 django-pipeline==1.2.2
 docopt==0.4.0
