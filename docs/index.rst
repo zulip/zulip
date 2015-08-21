@@ -11,6 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   welcome
    code-style
    directory-structure
    testing
