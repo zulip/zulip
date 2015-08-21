@@ -407,8 +407,8 @@ MANAGERS = ADMINS
 # user has filled in before starting the app.  It consists of a series
 # of pairs of (setting name, default value that it must be changed from)
 REQUIRED_SETTINGS = [("EXTERNAL_HOST", ""),
-                     ("ZULIP_ADMINISTRATOR", ""),
-                     ("ADMIN_DOMAIN", ""),
+                     ("ZULIP_ADMINISTRATOR", "zulip-admin@example.com"),
+                     ("ADMIN_DOMAIN", "example.com"),
                      # SECRET_KEY doesn't really need to be here, in
                      # that we set it automatically, but just in
                      # case, it seems worth having in this list
