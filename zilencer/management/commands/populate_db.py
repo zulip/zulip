@@ -113,7 +113,7 @@ class Command(BaseCommand):
             clear_database()
 
             # Create our two default realms
-            zulip_realm = Realm.objects.create(domain="zulip.com")
+            zulip_realm = Realm.objects.create(domain="zulip.com", name="Zulip Dev")
             if options["test_suite"]:
                 Realm.objects.create(domain="mit.edu")
             realms = {}
