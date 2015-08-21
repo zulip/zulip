@@ -85,7 +85,8 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                 deployment = Deployment.objects.get(base_site_url="https://zulip.com/")
                 deployment.realms.add(realm)
                 deployment.save()
-            # should there be an else clause here?
+            # In the else case, we are not using the Deployments feature.
+
             set_default_streams(realm, ["social", "engineering"])
 
             print "\033[1;36mDefault streams set to social,engineering,zulip!\033[0m"

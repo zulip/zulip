@@ -158,6 +158,14 @@ class IncludeHistoryTest(AuthedTestCase):
 class TestCrossRealmPMs(AuthedTestCase):
     def setUp(self):
         settings.CROSS_REALM_BOT_EMAILS.add('test-og-bot@zulip.com')
+        dep = Deployment()
+        dep.base_api_url = "https://zulip.com/api/"
+        dep.base_site_url = "https://zulip.com/"
+        # We need to save the object before we can access
+        # the many-to-many relationship 'realms'
+        dep.save()
+        dep.realms = [get_realm("zulip.com")]
+        dep.save()
 
     def create_user(self, email):
         username, domain = email.split('@')
@@ -181,7 +189,7 @@ class TestCrossRealmPMs(AuthedTestCase):
         self.assertEqual(len(messages), 1)
         self.assertEquals(messages[0].sender.pk, user1.pk)
 
-    def test_diffrent_realms(self):
+    def test_different_realms(self):
         """Users on the different realms can not PM each other"""
         r1 = Realm.objects.create(domain='1.example.com')
         r2 = Realm.objects.create(domain='2.example.com')
@@ -198,7 +206,7 @@ class TestCrossRealmPMs(AuthedTestCase):
                                      'You can\'t send private messages outside of your organization.'):
             self.send_message(user1_email, user2_email, Recipient.PERSONAL)
 
-    def test_three_diffrent_realms(self):
+    def test_three_different_realms(self):
         """Users on three different realms can not PM each other"""
         r1 = Realm.objects.create(domain='1.example.com')
         r2 = Realm.objects.create(domain='2.example.com')

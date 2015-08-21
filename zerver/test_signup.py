@@ -177,10 +177,7 @@ class LoginTest(AuthedTestCase):
         email = "user1@test.com"
 
         # Create a new realm to ensure that we're the first user in it.
-        realm = Realm.objects.create(domain=domain, name="Test Inc.")
-        deployment = Deployment.objects.all().first()
-        deployment.realms.add(realm)
-        deployment.save()
+        Realm.objects.create(domain=domain, name="Test Inc.")
 
         # Start the signup process by supplying an email address.
         result = self.client.post('/accounts/home/', {'email': email})

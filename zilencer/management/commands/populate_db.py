@@ -120,26 +120,6 @@ class Command(BaseCommand):
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
 
-            if settings.ZULIP_COM or settings.ZULIP_COM_STAGING: # what about development?
-                # Associate initial deployment with Realm
-                dep = Deployment()
-                dep.base_api_url = "https://zulip.com/api/"
-                dep.base_site_url = "https://zulip.com/"
-                # We need to save the object before we can access
-                # the many-to-many relationship 'realms'
-                dep.save()
-                dep.realms = [realms["zulip.com"]]
-                dep.save()
-
-                # non-zulip.com realms on the main site go into a separate Deployment
-                dep = Deployment()
-                dep.api_key = settings.DEPLOYMENT_ROLE_KEY
-                dep.base_api_url = 'https://api.zulip.com/'
-                dep.base_site_url = 'https://zulip.com/'
-                dep.save()
-                dep.realms = Realm.objects.annotate(dc=Count("_deployments")).filter(dc=0)
-                dep.save()
-
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
             names = [("Othello, the Moor of Venice", "othello@zulip.com"), ("Iago", "iago@zulip.com"),
