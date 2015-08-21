@@ -5,12 +5,6 @@ var exports = {};
 // Helpers
 var og_zuliper_emails = [];
 
-var customer4_realms = [
-  'customer4.invalid',
-  'users.customer4.invalid'
-];
-var is_customer4 = _.contains(customer4_realms, page_params.domain);
-
 // Voyager-related flags
 exports.do_not_share_the_love = page_params.voyager;
 
