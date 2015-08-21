@@ -2807,10 +2807,8 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     if include_all_active and not is_super_user(user_profile):
         raise JsonableError("User not authorized for this query")
 
-    # Listing public streams are disabled for some users (e.g. a
-    # contractor for CUSTOMER5) and for the mit.edu realm.
-    include_public = include_public and not (user_profile.public_streams_disabled or
-                                             user_profile.realm.domain == "mit.edu")
+    # Listing public streams are disabled for the mit.edu realm.
+    include_public = include_public and user_profile.realm.domain != "mit.edu"
     # Start out with all streams in the realm with subscribers
     query = get_occupied_streams(user_profile.realm)
 

@@ -1472,9 +1472,8 @@ def filter_stream_authorization(user_profile, streams):
         if stream.id in streams_subscribed:
             continue
 
-        # The user is not authorized for invite_only streams, and if
-        # the user has public streams disabled, nothing is authorized
-        if stream.invite_only or user_profile.public_streams_disabled:
+        # The user is not authorized for invite_only streams
+        if stream.invite_only:
             unauthorized_streams.append(stream)
 
     streams = [stream for stream in streams if

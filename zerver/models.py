@@ -384,10 +384,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def is_admin(self):
         return self.has_perm('administer', self.realm)
 
-    @property
-    def public_streams_disabled(self):
-        return self.email.lower() == "restricted-user@customer5.invalid"
-
     def last_reminder_tzaware(self):
         if self.last_reminder is not None and timezone.is_naive(self.last_reminder):
             logging.warning("Loaded a user_profile.last_reminder for user %s that's not tz-aware: %s"
