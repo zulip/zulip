@@ -68,6 +68,8 @@ REPO_STOPWORDS_PATH = os.path.join(
     "zulip_english.stop",
 )
 
+LOUD = dict(_out=sys.stdout, _err=sys.stderr)
+
 
 def main():
     log = logging.getLogger("zulip-provisioner")
@@ -83,9 +85,9 @@ def main():
         log.critical("Unsupported platform: {} {}".format(vendor, codename))
 
     with sh.sudo:
-        sh.apt_get.update()
+        sh.apt_get.update(**LOUD)
 
-        sh.apt_get.install(*APT_DEPENDENCIES["trusty"], assume_yes=True)
+        sh.apt_get.install(*APT_DEPENDENCIES["trusty"], assume_yes=True, **LOUD)
 
     temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
 
@@ -97,17 +99,18 @@ def main():
             arch,
         ),
         output_document=temp_deb_path,
+        **LOUD
     )
 
     with sh.sudo:
-        sh.dpkg("--install", temp_deb_path)
+        sh.dpkg("--install", temp_deb_path, **LOUD)
 
     with sh.sudo:
-        sh.rm("-rf", VENV_PATH)
-        sh.mkdir("-p", VENV_PATH)
-        sh.chown("{}:{}".format(os.getuid(), os.getgid()), VENV_PATH)
+        sh.rm("-rf", VENV_PATH, **LOUD)
+        sh.mkdir("-p", VENV_PATH, **LOUD)
+        sh.chown("{}:{}".format(os.getuid(), os.getgid()), VENV_PATH, **LOUD)
 
-    sh.virtualenv(VENV_PATH)
+    sh.virtualenv(VENV_PATH, **LOUD)
 
     # Add the ./tools and ./scripts/setup directories inside the repository root to
     # the system path; we'll reference them later.
@@ -130,29 +133,29 @@ def main():
     activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
     execfile(activate_this, dict(__file__=activate_this))
 
-    sh.pip.install(requirement=os.path.join(ZULIP_PATH, "requirements.txt"))
+    sh.pip.install(requirement=os.path.join(ZULIP_PATH, "requirements.txt"), **LOUD)
 
     with sh.sudo:
-        sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH)
+        sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH, **LOUD)
 
     # Add additional node packages for test-js-with-node.
     with sh.sudo:
-        sh.npm.install(*NPM_DEPENDENCIES["trusty"], g=True, prefix="/usr")
+        sh.npm.install(*NPM_DEPENDENCIES["trusty"], g=True, prefix="/usr", **LOUD)
 
     # Management commands expect to be run from the root of the project.
     os.chdir(ZULIP_PATH)
 
     os.system("generate_enterprise_secrets.py -d")
-    sh.configure_rabbitmq()
-    sh.postgres_init_db()
-    sh.do_destroy_rebuild_database()
-    sh.postgres_init_test_db()
-    sh.do_destroy_rebuild_test_database()
-    sh.setup_git_repo()
+    sh.configure_rabbitmq(**LOUD)
+    sh.postgres_init_db(**LOUD)
+    sh.do_destroy_rebuild_database(**LOUD)
+    sh.postgres_init_test_db(**LOUD)
+    sh.do_destroy_rebuild_test_database(**LOUD)
+    sh.setup_git_repo(**LOUD)
 
     with sh.sudo:
-        sh.cp(os.path.join(ZULIP_PATH, "tools", "provision", "zulip-dev.conf"), "/etc/supervisor/conf.d/zulip-dev.conf")
-        sh.service("supervisor", "restart")
+        sh.cp(os.path.join(ZULIP_PATH, "tools", "provision", "zulip-dev.conf"), "/etc/supervisor/conf.d/zulip-dev.conf", **LOUD)
+        sh.service("supervisor", "restart", **LOUD)
 
 if __name__ == "__main__":
     sys.exit(main())
