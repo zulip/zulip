@@ -388,7 +388,6 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'AUTH_LDAP_SERVER_URI': "",
                     'EXTERNAL_URI_SCHEME': "https://",
                     'GOOGLE_CLIENT_ID': '',
-                    'REDIS_PASSWORD': None,
                     'DBX_APNS_CERT_FILE': None,
                     }
 
