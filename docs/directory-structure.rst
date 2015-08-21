@@ -3,7 +3,7 @@ Directory structure
 ===================
 
 .. attention::
-   ``tools/build-enterprise-tarball`` needs a new name. (``build-server-tarball``?)
+   does ``tools/build-voyager-tarball`` need a different name?
 
 This page documents our directory structure and how to decide where to
 put a file.
@@ -89,7 +89,7 @@ Documentation
 | ``docs/``   | Source for this documentation                 |
 +-------------+-----------------------------------------------+
 
-You can consult the code for ``tools/build-enterprise-tarball`` to
+You can consult the code for ``tools/build-voyager-tarball`` to
 check exactly which components are included in production --
 since that is the tool that does the builds, it controls the
 distribution.

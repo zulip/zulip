@@ -64,7 +64,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             self.print_help("python manage.py", "create_realm")
             exit(1)
         if options["deployment_id"] is not None and settings.VOYAGER:
-            print >>sys.stderr, "\033[1;31mExternal deployments are not supported on enterprise deployments.\033[0m\n"
+            print >>sys.stderr, "\033[1;31mExternal deployments are not supported on voyager deployments.\033[0m\n"
             exit(1)
 
         domain = options["domain"]

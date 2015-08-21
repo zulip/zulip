@@ -12,12 +12,9 @@ Why bother with topics? Well, two reasons: it makes conversations clearer (imagi
 
 Take it for a spin now:
 https://{{ external_host }}
-{% if not_enterprise %}
-- Waseem, for the Zulip team
-{% else %}
+
 Thanks,
 Zulip
-{% endif %}
 ----
 Manage email preferences:
 https://{{ external_host }}/#settings

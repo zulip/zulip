@@ -125,7 +125,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                                              "zerver/emails/invitation/invitation_reminder_email",
                                              {'activate_url': link,
                                               'referrer': referrer,
-                                              'enterprise': settings.VOYAGER,
+                                              'voyager': settings.VOYAGER,
                                               'external_host': settings.EXTERNAL_HOST,
                                               'support_email': settings.ZULIP_ADMINISTRATOR},
                                              datetime.timedelta(days=2),

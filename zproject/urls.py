@@ -92,7 +92,7 @@ urlpatterns = patterns('',
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 )
 
-# These are used for enterprise development. On a real enterprise instance,
+# These are used for voyager development. On a real voyager instance,
 # these files would be served by nginx.
 if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
     urlpatterns += patterns('',

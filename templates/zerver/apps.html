@@ -8,7 +8,7 @@
 
     <h3 class="apps-instructions-header">Installation instructions</h3>
     <ul class="nav nav-tabs" id="apps-tabs">
-    {% if not_enterprise %}
+    {% if not_voyager %}
       <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
       <li><a href="#iphone" data-toggle="tab">iPhone</a></li>
     {% endif %}
@@ -19,7 +19,7 @@
     </ul>
 
     <div class="tab-content">
-    {% if not_enterprise %}
+    {% if not_voyager %}
       <div class="tab-pane active" id="android">
         <img class="screenshot android-screenshot pull-left" src="/static/images/app-screenshots/zulip-android.png" alt="screenshot of the Zulip app on Android" />
 
@@ -54,7 +54,7 @@
         emacs, or Photoshop.</p>
 
         <p style="text-align: center">
-        {% if not_enterprise %}
+        {% if not_voyager %}
           <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
         {% else %}
           <a href="https://zulip.com/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
@@ -75,7 +75,7 @@
 cat user-apt.asc | sudo apt-key add -
 sudo apt-add-repository http://apt.zulip.com/user/
 sudo apt-get update
-{% if not_enterprise %}
+{% if not_voyager %}
 sudo apt-get install zulip-desktop
 {% else %}
 sudo apt-get install zulip-desktop-sso
@@ -84,7 +84,7 @@ sudo apt-get install zulip-desktop-sso
 
 
         <h3>Other</h3>
-        {% if not_enterprise %}
+        {% if not_voyager %}
           <p>We provide a <a href="https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.
           </p>
         {% else %}
@@ -102,7 +102,7 @@ sudo apt-get install zulip-desktop-sso
         Solitaire, obviously.)</p>
 
         <p style="text-align: center">
-          {% if not_enterprise %}
+          {% if not_voyager %}
             <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Windows</a>
           {% else %}
             <a href="https://zulip.com/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Windows</a>

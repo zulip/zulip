@@ -10,7 +10,7 @@ version="$1"
 prefix="zulip-server-$version"
 
 if [ "$(uname)" = "Darwin" ]; then
-    TMPDIR=/tmp/enterprise-build
+    TMPDIR=/tmp/voyager-build
     rm -Rf $TMPDIR
     mkdir -p $TMPDIR
 else

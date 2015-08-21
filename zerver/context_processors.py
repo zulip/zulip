@@ -7,10 +7,10 @@ from zproject.backends import password_auth_enabled, dev_auth_enabled, google_au
 def add_settings(request):
     realm = request.user.realm if hasattr(request.user, "realm") else None
     return {
-        # We use the not_enterprise variable name so that templates
+        # We use the not_voyager variable name so that templates
         # will render even if the appropriate context is not provided
         # to the template
-        'not_enterprise':            not settings.VOYAGER,
+        'not_voyager':               not settings.VOYAGER,
         'zulip_com':                 settings.ZULIP_COM,
         'zulip_admin':               settings.ZULIP_ADMINISTRATOR,
         'login_url':                 settings.HOME_NOT_LOGGED_IN,

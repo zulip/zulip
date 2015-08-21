@@ -4,7 +4,7 @@
 Forward messages sent to the configured email gateway to Zulip.
 
 At Zulip, messages to that address go to the Inbox of emailgateway@zulip.com.
-Zulip enterprise customers' configurations will differ.
+Zulip voyager configurations will differ.
 
 Messages meant for Zulip have a special recipient form of
 

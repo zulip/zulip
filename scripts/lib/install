@@ -15,7 +15,7 @@ apt-get install -y puppet git
 cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
 mkdir -p /etc/zulip
-echo -e "[machine]\npuppet_classes = zulip::enterprise\ndeploy_type = enterprise" > /etc/zulip/zulip.conf
+echo -e "[machine]\npuppet_classes = zulip::enterprise\ndeploy_type = voyager" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
 
 # These server restarting bits should be moveable into puppet-land, ideally
@@ -24,7 +24,7 @@ if [ -e "/etc/init.d/nginx" ]; then
     service nginx restart
 fi
 
-/root/zulip/scripts/setup/generate_enterprise_secrets.py
+/root/zulip/scripts/setup/generate_voyager_secrets.py
 mv /root/zulip/zproject/local_settings_template.py /etc/zulip/settings.py
 ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 

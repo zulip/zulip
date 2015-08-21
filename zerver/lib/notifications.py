@@ -371,7 +371,7 @@ def clear_followup_emails_queue(email, mail_client=None):
     `from_email` is a string representing the zulip email account used
     to send the email (for example `support@zulip.com` or `signups@zulip.com`)
     """
-    # Zulip Enterprise implementation
+    # Zulip implementation
     if not mail_client:
         items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
         items.delete()
@@ -414,7 +414,7 @@ def send_future_email(recipients, email_html, email_text, subject,
     #            "to": [{'email':"acrefoot@zulip.com", 'name': "thingamajig"}]
     #            }
 
-    # Zulip Enterprise implementation
+    # Zulip implementation
     if not mail_client:
         if sender is None:
             # This may likely overridden by settings.DEFAULT_FROM_EMAIL
@@ -501,7 +501,7 @@ def enqueue_welcome_emails(email, name):
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
 
     template_payload = {'name': name,
-                        'not_enterprise': not settings.VOYAGER,
+                        'not_voyager': not settings.VOYAGER,
                         'external_host': settings.EXTERNAL_HOST,
                         'unsubscribe_link': unsubscribe_link}
 
