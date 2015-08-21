@@ -11,7 +11,7 @@ def add_settings(request):
         # will render even if the appropriate context is not provided
         # to the template
         'not_enterprise':            not settings.ENTERPRISE,
-        'deployed':                  settings.DEPLOYED,
+        'deployed':                  settings.PRODUCTION,
         'zulip_admin':               settings.ZULIP_ADMINISTRATOR,
         'login_url':                 settings.HOME_NOT_LOGGED_IN,
         'only_sso':                  settings.ONLY_SSO,

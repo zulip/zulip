@@ -38,7 +38,7 @@ subprocess.check_call(['python', './manage.py', 'collectstatic', '--noinput'],
 # proper place.
 subprocess.check_call(['rm', '-rf', 'prod-static/source-map'],
                       stdout=fp, stderr=fp)
-subprocess.check_call(['mkdir', '-p', 'prod-static'],  # Needed if DEPLOYED
+subprocess.check_call(['mkdir', '-p', 'prod-static'],  # Needed if PRODUCTION
                       stdout=fp, stderr=fp)
 subprocess.check_call(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'),
                              'prod-static/source-map'],

@@ -744,7 +744,7 @@ def login_page(request, **kwargs):
 def dev_direct_login(request, **kwargs):
     # This function allows logging in without a password and should only be called in development environments.
     # It may be called if the DevAuthBackend is included in settings.AUTHENTICATION_BACKENDS
-    if (not dev_auth_enabled()) or settings.DEPLOYED:
+    if (not dev_auth_enabled()) or settings.PRODUCTION:
         # This check is probably not required, since authenticate would fail without an enabled DevAuthBackend.
         raise Exception('Direct login not supported.')
     email = request.POST['direct_email']

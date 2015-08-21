@@ -53,7 +53,7 @@ def queue_digest_recipient(user_profile, cutoff):
     queue_json_publish("digest_emails", event, lambda event: None)
 
 def domains_for_this_deployment():
-    if settings.DEPLOYED and not settings.ENTERPRISE:
+    if settings.PRODUCTION and not settings.ENTERPRISE:
         # Enterprise deployments don't have a Deployment entry.
         # Only send zulip.com digests on staging.
         from zilencer.models import Deployment
@@ -73,7 +73,7 @@ def should_process_digest(domain, deployment_domains):
         # Enterprise. We ship with a zulip.com realm for the feedback bot, but
         # don't try to send e-mails to it.
         return domain != "zulip.com"
-    elif settings.DEPLOYED:
+    elif settings.PRODUCTION:
         return domain in deployment_domains
     else:
         # Localhost.

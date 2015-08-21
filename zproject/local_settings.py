@@ -6,17 +6,17 @@ from base64 import b64decode
 config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
-# Whether we're running in a production environment. Note that DEPLOYED does
-# **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
+# Whether we're running in a production environment. Note that PRODUCTION does
+# **not** mean hosted by us; customer sites are PRODUCTION and ENTERPRISE
 # and as such should not for example assume they are the main Zulip site.
-DEPLOYED = config_file.has_option('machine', 'deploy_type')
+PRODUCTION = config_file.has_option('machine', 'deploy_type')
 
 # The following flags are leftover from the various configurations of
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
-# them and just have the DEPLOYED flag, but we need them for now.
-ZULIP_COM_STAGING = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
+# them and just have the PRODUCTION flag, but we need them for now.
+ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'staging'
 
-ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
+ENTERPRISE = PRODUCTION and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
@@ -41,13 +41,13 @@ SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
 if ZULIP_COM_STAGING:
     EXTERNAL_HOST = 'staging.zulip.com'
-elif DEPLOYED:
+elif PRODUCTION:
     EXTERNAL_HOST = 'zulip.com'
     EXTERNAL_API_PATH = 'api.zulip.com'
 
 
 # For now, ENTERPRISE is only testing, so write to our test buckets
-if DEPLOYED and not ENTERPRISE:
+if PRODUCTION and not ENTERPRISE:
     S3_BUCKET="humbug-user-uploads"
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
     S3_AVATAR_BUCKET="humbug-user-avatars"
@@ -56,7 +56,7 @@ else:
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads-test"
     S3_AVATAR_BUCKET="humbug-user-avatars-test"
 
-if DEPLOYED or ZULIP_COM_STAGING:
+if PRODUCTION or ZULIP_COM_STAGING:
     APNS_SANDBOX = "push_production"
     APNS_FEEDBACK = "feedback_production"
     APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
@@ -69,7 +69,7 @@ else:
 
 GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
 
-if DEPLOYED:
+if PRODUCTION:
     GOOGLE_OAUTH2_CLIENT_ID = '835904834568-ag4p18v0sd9a0tero14r3gekn6shoen3.apps.googleusercontent.com'
 else:
     # Google OAUTH2 for dev with the redirect uri set to http://localhost:9991/accounts/login/google/done/
@@ -82,7 +82,7 @@ ADMIN_DOMAIN = "zulip.com"
 # The %s will be replaced with a unique token.
 if ZULIP_COM_STAGING:
     EMAIL_GATEWAY_PATTERN = "%s@streams.staging.zulip.com"
-elif DEPLOYED:
+elif PRODUCTION:
     EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
 
 # Email mirror configuration

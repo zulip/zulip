@@ -16,7 +16,7 @@ def password_auth_enabled(realm):
     if realm is not None:
         if realm.domain == 'employees.customer16.invalid':
             return False
-        elif realm.domain == 'zulip.com' and settings.DEPLOYED:
+        elif realm.domain == 'zulip.com' and settings.PRODUCTION:
             # the dropbox realm is SSO only, but the unit tests still need to be
             # able to login
             return False

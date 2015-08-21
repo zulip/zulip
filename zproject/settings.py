@@ -23,18 +23,18 @@ config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
-DEPLOYED = config_file.has_option('machine', 'deploy_type')
-DEVELOPMENT = not DEPLOYED
+PRODUCTION = config_file.has_option('machine', 'deploy_type')
+DEVELOPMENT = not PRODUCTION
 
 # The following flags are left over from the various configurations of
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the PRODUCTION flag, but we need them for now.
 ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'staging'
 ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'prod'
-ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
+ENTERPRISE = PRODUCTION and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 secrets_file = ConfigParser.RawConfigParser()
-if DEPLOYED:
+if PRODUCTION:
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
 else:
     secrets_file.read("zproject/dev-secrets.conf")
@@ -82,7 +82,7 @@ TUTORIAL_ENABLED = True
 
 # Import variables like secrets from the local_settings file
 # Import local_settings after determining the deployment/machine type
-if DEPLOYED:
+if PRODUCTION:
     from local_settings import *
 else:
     # For the Dev VM environment, we use the same settings as the
@@ -146,7 +146,7 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
     )
-if DEPLOYED:
+if PRODUCTION:
     # Template caching is a significant performance win in production.
     TEMPLATE_LOADERS = (
         ('django.template.loaders.cached.Loader',
@@ -228,7 +228,7 @@ if ENTERPRISE:
                 'connection_factory': TimeTrackingConnection
             }
             })
-elif not DEPLOYED:
+elif DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
     DATABASES["default"].update({
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
@@ -276,13 +276,13 @@ CACHES = {
 ########################################################################
 
 LOCAL_STATSD = (False)
-USING_STATSD = (DEPLOYED and not ENTERPRISE) or LOCAL_STATSD
+USING_STATSD = (PRODUCTION and not ENTERPRISE) or LOCAL_STATSD
 
 # These must be named STATSD_PREFIX for the statsd module
 # to pick them up
 if ZULIP_COM_STAGING:
     STATSD_PREFIX = 'staging'
-elif DEPLOYED:
+elif PRODUCTION:
     STATSD_PREFIX = 'app'
 else:
     STATSD_PREFIX = 'user'
@@ -317,7 +317,7 @@ RATE_LIMITING_RULES = [
 # when executing the initial http -> https redirect.
 #
 # Turn it off for local testing because we don't have SSL.
-if DEPLOYED:
+if PRODUCTION:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE    = True
 
@@ -336,9 +336,9 @@ except ConfigParser.Error:
 CSRF_COOKIE_PATH = '/;HttpOnly'
 CSRF_FAILURE_VIEW = 'zerver.middleware.csrf_failure'
 
-if not DEPLOYED:
+if DEVELOPMENT:
     # Use fast password hashing for creating testing users when not
-    # DEPLOYED.  Saves a bunch of time.
+    # PRODUCTION.  Saves a bunch of time.
     PASSWORD_HASHERS = (
                 'django.contrib.auth.hashers.SHA1PasswordHasher',
                 'django.contrib.auth.hashers.PBKDF2PasswordHasher'
@@ -390,7 +390,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ADMINS': '',
                     'INLINE_IMAGE_PREVIEW': True,
                     'CAMO_URI': '',
-                    'ENABLE_FEEDBACK': DEPLOYED,
+                    'ENABLE_FEEDBACK': PRODUCTION,
                     'FEEDBACK_EMAIL': None,
                     'ENABLE_GRAVATAR': True,
                     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
@@ -488,7 +488,7 @@ if EMAIL_GATEWAY_PATTERN != "":
 
 DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
-if DEPLOYED:
+if PRODUCTION:
     FEEDBACK_TARGET="https://zulip.com/api"
 else:
     FEEDBACK_TARGET="http://localhost:9991/api"
@@ -533,7 +533,7 @@ else:
     STATICFILES_FINDERS = (
         'zerver.finders.ZulipFinder',
     )
-    if DEPLOYED or ENTERPRISE:
+    if PRODUCTION or ENTERPRISE:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
         STATIC_ROOT = 'prod-static/serve'
@@ -771,8 +771,8 @@ else:
     ZULIP_PATHS.append(("EVENT_LOG_DIR", "/home/zulip/logs/event_log"))
 
 for (var, path) in ZULIP_PATHS:
-    if not DEPLOYED:
-        # if not DEPLOYED, store these files in the Zulip checkout
+    if DEVELOPMENT:
+        # if DEVELOPMENT, store these files in the Zulip checkout
         path = os.path.basename(path)
     vars()[var] = path
 
@@ -921,9 +921,9 @@ else:
 ########################################################################
 
 # If an email host is not specified, fail silently and gracefully
-if not EMAIL_HOST and DEPLOYED:
+if not EMAIL_HOST and PRODUCTION:
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
-elif not DEPLOYED:
+elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
@@ -935,7 +935,7 @@ EMAIL_HOST_PASSWORD = get_secret('email_password')
 # MISC SETTINGS
 ########################################################################
 
-if DEPLOYED:
+if PRODUCTION:
     # Filter out user data
     DEFAULT_EXCEPTION_REPORTER_FILTER = 'zerver.filters.ZulipExceptionReporterFilter'
 

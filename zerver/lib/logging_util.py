@@ -49,4 +49,4 @@ class ReturnTrue(logging.Filter):
 class RequireReallyDeployed(logging.Filter):
     def filter(self, record):
         from django.conf import settings
-        return settings.DEPLOYED
+        return settings.PRODUCTION
