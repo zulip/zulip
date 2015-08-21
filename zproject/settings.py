@@ -279,32 +279,6 @@ CACHES = {
 }
 
 ########################################################################
-# STATSD CONFIGURATION
-########################################################################
-
-LOCAL_STATSD = (False)
-USING_STATSD = ZULIP_COM or LOCAL_STATSD
-
-# These must be named STATSD_PREFIX for the statsd module
-# to pick them up
-if ZULIP_COM_STAGING:
-    STATSD_PREFIX = 'staging'
-elif PRODUCTION:
-    STATSD_PREFIX = 'app'
-else:
-    STATSD_PREFIX = 'user'
-
-if USING_STATSD:
-    if LOCAL_STATSD:
-        STATSD_HOST = 'localhost'
-    else:
-        STATSD_HOST = 'stats.zulip.net'
-
-    INSTALLED_APPS += ['django_statsd']
-    STATSD_PORT = 8125
-    STATSD_CLIENT = 'django_statsd.clients.normal'
-
-########################################################################
 # REDIS-BASED RATE LIMITING CONFIGURATION
 ########################################################################
 
@@ -499,6 +473,32 @@ if PRODUCTION:
     FEEDBACK_TARGET="https://zulip.com/api"
 else:
     FEEDBACK_TARGET="http://localhost:9991/api"
+
+########################################################################
+# STATSD CONFIGURATION
+########################################################################
+
+LOCAL_STATSD = (False)
+USING_STATSD = ZULIP_COM or LOCAL_STATSD
+
+# These must be named STATSD_PREFIX for the statsd module
+# to pick them up
+if ZULIP_COM_STAGING:
+    STATSD_PREFIX = 'staging'
+elif PRODUCTION:
+    STATSD_PREFIX = 'app'
+else:
+    STATSD_PREFIX = 'user'
+
+if USING_STATSD:
+    if LOCAL_STATSD:
+        STATSD_HOST = 'localhost'
+    else:
+        STATSD_HOST = 'stats.zulip.net'
+
+    INSTALLED_APPS += ['django_statsd']
+    STATSD_PORT = 8125
+    STATSD_CLIENT = 'django_statsd.clients.normal'
 
 ########################################################################
 # CAMO HTTPS CACHE CONFIGURATION
