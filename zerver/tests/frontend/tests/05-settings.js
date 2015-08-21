@@ -75,13 +75,13 @@ casper.then(function create_bot() {
     casper.click('#create_bot_button');
 });
 
-casper.waitUntilVisible('.open_edit_bot_form', function open_edit_bot_form() {
+casper.waitUntilVisible('.open_edit_bot_form[data-email="1-bot@zulip.com"]', function open_edit_bot_form() {
     casper.test.info('Opening edit bot form');
-    casper.click('.open_edit_bot_form');
+    casper.click('.open_edit_bot_form[data-email="1-bot@zulip.com"]');
 });
 
-casper.waitUntilVisible('.edit_bot_form', function test_edit_bot_forn_values() {
-    var form_sel = 'form[data-email="1-bot@zulip.com"]';
+casper.waitUntilVisible('.edit_bot_form[data-email="1-bot@zulip.com"]', function test_edit_bot_form_values() {
+    var form_sel = '.edit_bot_form[data-email="1-bot@zulip.com"]';
     casper.test.info('Testing edit bot form values');
 
 //     casper.test.assertEqual(
