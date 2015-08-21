@@ -22,13 +22,12 @@ class zulip::base {
 
   group { 'zulip':
     ensure     => present,
-    gid        => '1000',
   }
+
   user { 'zulip':
     ensure     => present,
-    uid        => '1000',
-    gid        => '1000',
     require    => Group['zulip'],
+    gid        => 'zulip',
     shell      => '/bin/bash',
     home       => '/home/zulip',
     managehome => true,
