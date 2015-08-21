@@ -431,6 +431,8 @@ S3_SECRET_KEY = get_secret("s3_secret_key")
 # https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
 ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
 
+GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
+
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 # Twitter API credentials
