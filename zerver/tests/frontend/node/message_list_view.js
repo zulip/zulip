@@ -7,6 +7,9 @@ add_dependencies({
     util: 'js/util.js'
 });
 
+set_global('page_params', {
+  twenty_four_hour_time: false
+});
 set_global('home_msg_list', null);
 set_global('feature_flags', {twenty_four_hour_time: false});
 set_global('ui', {small_avatar_url: function () { return ''; }});

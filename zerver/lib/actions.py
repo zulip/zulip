@@ -1722,6 +1722,7 @@ def do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time, log=Tru
     user_profile.save(update_fields=["twenty_four_hour_time"])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
+             'setting_name': 'twenty_four_hour_time',
              'setting': twenty_four_hour_time}
     if log:
         log_event(event)
@@ -2503,7 +2504,8 @@ def apply_events(state, events, user_profile):
         elif event['type'] == "realm_filters":
             state['realm_filters'] = event["realm_filters"]
         elif event['type'] == "update_display_settings":
-            state['twenty_four_hour_time'] == event["twenty_four_hour_time"]
+            if event['setting_name'] == "twenty_four_hour_time":
+                state['twenty_four_hour_time'] = event["setting"]
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 

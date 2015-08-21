@@ -438,12 +438,10 @@ class EventsRegisterTest(AuthedTestCase):
     def test_change_twenty_four_hour_time(self):
         schema_checker = check_dict([
             ('type', equals('update_display_settings')),
-            ('op', equals('update')),
-            ('person', check_dict([
-                ('email', check_string),
-                ('twenty_four_hour_time', check_bool),
-            ])),
-        ])
+            ('setting_name', equals('twenty_four_hour_time')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
         # The first False is probably a noop, then we get transitions in both directions.
         for twenty_four_hour_time in [False, True, False]:
             events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, twenty_four_hour_time))
