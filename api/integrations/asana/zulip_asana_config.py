@@ -49,7 +49,7 @@ RESUME_FILE = "/var/tmp/zulip_asana.state"
 # When initially started, how many hours of messages to include.
 ASANA_INITIAL_HISTORY_HOURS = 1
 
-# If you're using Zulip Voyager, set this to your Zulip Voyager server
+# Set this to your Zulip API server URI
 ZULIP_SITE = "https://api.zulip.com"
 
 # If properly installed, the Zulip API should be in your import

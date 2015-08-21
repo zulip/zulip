@@ -63,7 +63,7 @@ def send_email_job(job):
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip (either for immediate sending or sending at a specified time).
 
-Run this command under supervisor. We use Mandrill for our deploy; this is for Zulip Voyager deploys.
+Run this command under supervisor. We use Mandrill for zulip.com; this is for SMTP email delivery.
 
 Usage: python manage.py deliver_email
 """

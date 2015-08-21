@@ -32,8 +32,11 @@ DEVELOPMENT = not PRODUCTION
 ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-staging'
 ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod'
 
-# Voyager is a production zulip server that is not zulip.com or staging.zulip.com
-# VOYAGER is not ENTERPRISE.
+# Voyager is a production zulip server that is not zulip.com or
+# staging.zulip.com VOYAGER is the standalone all-on-one-server
+# production deployment model for based on the original Zulip
+# ENTERPRISE implementation.  We expect most users of the open source
+# project will be using VOYAGER=True in production.
 VOYAGER = PRODUCTION and not ZULIP_COM and not ZULIP_COM_STAGING
 
 secrets_file = ConfigParser.RawConfigParser()

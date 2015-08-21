@@ -47,5 +47,5 @@ TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment", "owner"
 ## path, but if not, set a custom path below
 ZULIP_API_PATH = None
 
-# If you're using Zulip Voyager, set this to your Zulip Voyager server
+# Set this to your Zulip API server URI
 ZULIP_SITE = "https://api.zulip.com"

@@ -30,15 +30,12 @@ file is as follows:
     [api]
     key=<api key from the web interface>
     email=<your email address>
-
-If you are using Zulip Voyager, you should also add
-
-    site=<your Zulip Voyager server's URI>
+    site=<your Zulip server's URI>
 
 Alternatively, you may explicitly use "--user" and "--api-key" in our
 examples, which is especially useful if you are running several bots
 which share a home directory.  There is also a "--site" option for
-setting the Zulip Voyager server on the command line.
+setting the Zulip server on the command line.
 
 You can obtain your Zulip API key, create bots, and manage bots all
 from your Zulip [settings page](https://zulip.com/#settings).

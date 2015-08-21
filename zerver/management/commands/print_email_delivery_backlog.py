@@ -18,7 +18,7 @@ class Command(BaseCommand):
 (The number of currently overdue (by at least a minute) email jobs)
 
 This is run as part of the nagios health check for the deliver_email command.
-Please note that this is only currently useful for Zulip Voyager deploys.
+Please note that this is only relevant to the SMTP-based email delivery (no Mandrill).
 
 Usage: python manage.py print_email_delivery_backlog
 """

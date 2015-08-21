@@ -97,7 +97,7 @@ def generate_option_group(parser, prefix=''):
     group = optparse.OptionGroup(parser, 'Zulip API configuration')
     group.add_option('--%ssite' % (prefix,),
                      dest="zulip_site",
-                     help="Zulip Voyager server URI (if using Zulip Voyager)",
+                     help="Zulip server URI",
                      default=None)
     group.add_option('--%sapi-key' % (prefix,),
                      dest="zulip_api_key",
