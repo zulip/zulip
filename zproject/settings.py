@@ -29,8 +29,8 @@ DEVELOPMENT = not PRODUCTION
 # The following flags are left over from the various configurations of
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the PRODUCTION flag, but we need them for now.
-ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'staging'
-ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'prod'
+ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-staging'
+ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod'
 ENTERPRISE = PRODUCTION and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 secrets_file = ConfigParser.RawConfigParser()
