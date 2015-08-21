@@ -397,6 +397,7 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      ("AUTHENTICATION_BACKENDS", ()),
                      ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
                      ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
+                     ("ALLOWED_HOSTS", "*"),
                      ]
 if PRODUCTION:
     for (setting_name, default) in REQUIRED_SETTINGS:
