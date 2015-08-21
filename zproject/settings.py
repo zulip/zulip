@@ -370,7 +370,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'DROPBOX_APP_KEY': '',
                     'ERROR_REPORTING': True,
                     'NAME_CHANGES_DISABLED': False,
-                    'DEPLOYMENT_ROLE_NAME': ADMIN_DOMAIN,
+                    'DEPLOYMENT_ROLE_NAME': "",
                     # The following bots only exist in non-ENTERPRISE installs
                     'ERROR_BOT': None,
                     'NEW_USER_BOT': None,
@@ -409,7 +409,6 @@ MANAGERS = ADMINS
 REQUIRED_SETTINGS = [("EXTERNAL_HOST", ""),
                      ("ZULIP_ADMINISTRATOR", ""),
                      ("ADMIN_DOMAIN", ""),
-                     ("DEPLOYMENT_ROLE_KEY", ""),
                      # SECRET_KEY doesn't really need to be here, in
                      # that we set it automatically, but just in
                      # case, it seems worth having in this list

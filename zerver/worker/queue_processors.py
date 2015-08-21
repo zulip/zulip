@@ -192,10 +192,11 @@ def make_feedback_client():
         verbose=True,
         site=settings.FEEDBACK_TARGET)
 
+# We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
 class FeedbackBot(QueueProcessingWorker):
     def start(self):
-        if settings.FEEDBACK_EMAIL is None:
+        if settings.ENABLE_FEEDBACK and settings.FEEDBACK_EMAIL is None:
             self.staging_client = make_feedback_client()
             self.staging_client._register(
                 'forward_feedback',
@@ -206,6 +207,8 @@ class FeedbackBot(QueueProcessingWorker):
         QueueProcessingWorker.start(self)
 
     def consume(self, event):
+        if not settings.ENABLE_FEEDBACK:
+            return
         if settings.FEEDBACK_EMAIL is not None:
             to_email = settings.FEEDBACK_EMAIL
             subject = "Zulip feedback from %s" % (event["sender_email"],)
@@ -214,9 +217,8 @@ class FeedbackBot(QueueProcessingWorker):
             headers = {'Reply-To' : '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
             msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
             msg.send()
-            return
-
-        self.staging_client.forward_feedback(event)
+        else:
+            self.staging_client.forward_feedback(event)
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):

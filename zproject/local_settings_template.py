@@ -13,11 +13,6 @@ ZULIP_ADMINISTRATOR = ''
 # The domain for your organization, e.g. example.com
 ADMIN_DOMAIN = ''
 
-# The deployment key is used by your server to authenticate any
-# communication with Zulip.  You can obtain your key from
-# https://zulip.com/enterprise/download/deployment-key
-DEPLOYMENT_ROLE_KEY = ''
-
 # Enable at least one of the following authentication backends.
 AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.EmailAuthBackend', # Email and password
