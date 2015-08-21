@@ -27,7 +27,7 @@ hence the name.
           <a href="{{login_url}}">Log in</a>
           {% endif %}
 
-          {% if deployed and not_enterprise %}
+          {% if zulip_com %}
           {% elif only_sso %}
           <a href="{% url 'login-sso' %}">Log In</a>
           {% else %}
@@ -58,7 +58,7 @@ hence the name.
       {% if not only_sso %}
       <li><span class="little-bullet">·</span></li>
       <li>
-          {% if deployed and not_enterprise %}
+          {% if zulip_com %}
           {% else %}
           <a href="{% url 'register' %}">Register</a>
           {% endif %}

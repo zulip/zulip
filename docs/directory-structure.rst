@@ -90,6 +90,6 @@ Documentation
 +-------------+-----------------------------------------------+
 
 You can consult the code for ``tools/build-enterprise-tarball`` to
-check exactly which components are deployed --
+check exactly which components are included in production --
 since that is the tool that does the builds, it controls the
 distribution.

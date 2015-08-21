@@ -191,7 +191,7 @@ State and logs files
 --------------------
 
 Do not write state and logs files inside the current working directory
-in the deployed environment. This will not work correctly, because the
+in the production environment. This will not work correctly, because the
 current working directory for the app changes every time we do a deploy.
 Instead, hardcode a path when settings.py -- see SERVER\_LOG\_PATH in
 settings.py for an example.

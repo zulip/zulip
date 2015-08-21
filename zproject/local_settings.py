@@ -7,15 +7,15 @@ config_file = ConfigParser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether we're running in a production environment. Note that PRODUCTION does
-# **not** mean hosted by us; customer sites are PRODUCTION and ENTERPRISE
-# and as such should not for example assume they are the main Zulip site.
+# **not** mean hosted on Zulip.com; customer sites are PRODUCTION and ENTERPRISE
+# and as such should not assume they are the main Zulip site.
 PRODUCTION = config_file.has_option('machine', 'deploy_type')
 
-# The following flags are leftover from the various configurations of
+# The following flags are left over from the various configurations of
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the PRODUCTION flag, but we need them for now.
 ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'staging'
-
+ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'prod'
 ENTERPRISE = PRODUCTION and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'

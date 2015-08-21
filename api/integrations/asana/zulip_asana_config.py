@@ -38,7 +38,7 @@ ZULIP_STREAM_NAME = "asana"
 ### OPTIONAL CONFIGURATION ###
 
 # Set to None for logging to stdout when testing, and to a file for
-# logging when deployed.
+# logging in production.
 #LOG_FILE = "/var/tmp/zulip_asana.log"
 LOG_FILE = None
 
