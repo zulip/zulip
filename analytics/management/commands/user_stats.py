@@ -9,15 +9,19 @@ from zerver.models import UserProfile, Realm, Stream, Message
 class Command(BaseCommand):
     help = "Generate statistics on user activity."
 
+    def add_arguments(self, parser):
+        parser.add_argument('realms', metavar='<realm>', type=str, nargs='*',
+                            help="realm to generate statistics for")
+
     def messages_sent_by(self, user, week):
         start = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=(week + 1)*7)
         end = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=week*7)
         return Message.objects.filter(sender=user, pub_date__gt=start, pub_date__lte=end).count()
 
     def handle(self, *args, **options):
-        if args:
+        if options['realms']:
             try:
-                realms = [Realm.objects.get(domain=domain) for domain in args]
+                realms = [Realm.objects.get(domain=domain) for domain in options['realms']]
             except Realm.DoesNotExist, e:
                 print e
                 exit(1)

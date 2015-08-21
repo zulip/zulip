@@ -16,6 +16,10 @@ human_messages = Message.objects.filter(sending_client__name__in=HUMAN_CLIENT_LI
 class Command(BaseCommand):
     help = "Generate statistics on realm activity."
 
+    def add_arguments(self, parser):
+        parser.add_argument('realms', metavar='<realm>', type=str, nargs='*',
+                            help="realm to generate statistics for")
+
     def active_users(self, realm):
         # Has been active (on the website, for now) in the last 7 days.
         activity_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=7)
@@ -64,9 +68,9 @@ class Command(BaseCommand):
         print "%.2f%% of" % (fraction * 100,), text
 
     def handle(self, *args, **options):
-        if args:
+        if options['realms']:
             try:
-                realms = [Realm.objects.get(domain=domain) for domain in args]
+                realms = [Realm.objects.get(domain=domain) for domain in options['realms']]
             except Realm.DoesNotExist, e:
                 print e
                 exit(1)

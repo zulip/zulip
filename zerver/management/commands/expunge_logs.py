@@ -53,13 +53,16 @@ def expunge(filename):
 class Command(BaseCommand):
     help = ('Expunge old entries from one or more log files, '
             + 'according to the retention policy.')
-    args = '<log file> <log file> ...'
 
-    def handle(self, *args, **kwargs):
-        if len(args) == 0:
+    def add_arguments(self, parser):
+        parser.add_argument('log_files', metavar='<log file>', type=str, nargs='*',
+                            help='file to expunge entries from')
+
+    def handle(self, *args, **options):
+        if len(options['log_files']) == 0:
             print >>sys.stderr, 'WARNING: No log files specified; doing nothing.'
 
-        for infile in args:
+        for infile in options['log_files']:
             try:
                 expunge(infile)
             except KeyboardInterrupt:

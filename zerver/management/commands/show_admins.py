@@ -5,17 +5,14 @@ from zerver.models import Realm
 import sys
 
 class Command(BaseCommand):
-    help = """Show the admins in a realm.
+    help = """Show the admins in a realm."""
 
-Usage: ./manage.py show_admins <realm domain>
-"""
+    def add_arguments(self, parser):
+        parser.add_argument('realm', metavar='<realm>', type=str,
+                            help="realm to show admins for")
 
     def handle(self, *args, **options):
-        try:
-            realm = args[0]
-        except IndexError:
-            print 'Please specify a realm.'
-            sys.exit(1)
+        realm = options['realm']
 
         try:
             realm = Realm.objects.get(domain=realm)

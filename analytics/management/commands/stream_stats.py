@@ -7,10 +7,14 @@ from zerver.models import Realm, Stream, Message, Subscription, Recipient
 class Command(BaseCommand):
     help = "Generate statistics on the streams for a realm."
 
+    def add_arguments(self, parser):
+        parser.add_argument('realms', metavar='<realm>', type=str, nargs='*',
+                            help="realm to generate statistics for")
+
     def handle(self, *args, **options):
-        if args:
+        if options['realms']:
             try:
-                realms = [Realm.objects.get(domain=domain) for domain in args]
+                realms = [Realm.objects.get(domain=domain) for domain in options['realms']]
             except Realm.DoesNotExist, e:
                 print e
                 exit(1)

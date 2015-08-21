@@ -7,38 +7,33 @@ from django.core.management.base import BaseCommand
 from optparse import make_option
 
 class Command(BaseCommand):
-    help = """Manually block or unblock a user from accessing the API
+    help = """Manually block or unblock a user from accessing the API"""
 
-    Usage: ./manage.py rate_limit [--all-bots] [--domain all] [--seconds 60] [--api-key bf4sds] [--email f@b.com] block/unblock"""
-
-    option_list = BaseCommand.option_list + (
-        make_option('-e', '--email',
-                    dest='email',
-                    help="Email account of user."),
-        make_option('-a', '--api-key',
-                    dest='api_key',
-                    help="API key of user."),
-        make_option('-s', '--seconds',
-                    dest='seconds',
-                    default=60,
-                    type=int,
-                    help="Seconds to block for."),
-        make_option('-d', '--domain',
-                    dest='domain',
-                    default='all',
-                    help="Rate-limiting domain. Defaults to 'all'."),
-        make_option('-b', '--all-bots',
-                    dest='bots',
-                    action='store_true',
-                    default=False,
-                    help="Whether or not to also block all bots for this user."),
-        )
+    def add_arguments(self, parser):
+        parser.add_argument('-e', '--email',
+                            dest='email',
+                            help="Email account of user.")
+        parser.add_argument('-a', '--api-key',
+                            dest='api_key',
+                            help="API key of user.")
+        parser.add_argument('-s', '--seconds',
+                            dest='seconds',
+                            default=60,
+                            type=int,
+                            help="Seconds to block for.")
+        parser.add_argument('-d', '--domain',
+                            dest='domain',
+                            default='all',
+                            help="Rate-limiting domain. Defaults to 'all'.")
+        parser.add_argument('-b', '--all-bots',
+                            dest='bots',
+                            action='store_true',
+                            default=False,
+                            help="Whether or not to also block all bots for this user.")
+        parser.add_argument('operation', metavar='<operation>', type=str, choices=['block', 'unblock'],
+                            help="operation to perform (block or unblock)")
 
     def handle(self, *args, **options):
-        if len(args) == 0 or args[0] not in ('block', 'unblock'):
-            print "Please pass either 'block' or 'unblock"
-            exit(1)
-
         if (not options['api_key'] and not options['email']) or \
            (options['api_key'] and options['email']):
             print "Please enter either an email or API key to manage"
@@ -58,7 +53,7 @@ class Command(BaseCommand):
             users.extend(bot for bot in UserProfile.objects.filter(is_bot=True,
                                                                    bot_owner=user_profile))
 
-        operation = args[0]
+        operation = options['operation']
         for user in users:
             print "Applying operation to User ID: %s: %s" % (user.id, operation)
 

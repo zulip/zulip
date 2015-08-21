@@ -11,16 +11,17 @@ class Command(BaseCommand):
     help = """Create a stream, and subscribe all active users (excluding bots).
 
 This should be used for TESTING only, unless you understand the limitations of
-the command.
+the command."""
 
-Usage: python manage.py create_stream <domain> <stream name>"""
+    def add_arguments(self, parser):
+        parser.add_argument('domain', metavar='<domain>', type=str,
+                            help='domain in which to create the stream')
+        parser.add_argument('stream_name', metavar='<stream name>', type=str,
+                            help='name of stream to create')
 
     def handle(self, *args, **options):
-        if len(args) != 2:
-            print "Please provide a domain and the stream name."
-            exit(1)
-
-        domain, stream_name = args
+        domain = options['domain']
+        stream_name = options['stream_name']
         encoding = sys.getfilesystemencoding()
 
         try:

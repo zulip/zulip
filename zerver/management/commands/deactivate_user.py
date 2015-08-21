@@ -10,20 +10,17 @@ from zerver.models import get_user_profile_by_email, UserProfile
 class Command(BaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
 
-    option_list = BaseCommand.option_list + (
-        make_option('-f', '--for-real',
-                    dest='for_real',
-                    action='store_true',
-                    default=False,
-                    help="Actually deactivate the user. Default is a dry run."),
-        )
+    def add_arguments(self, parser):
+        parser.add_argument('-f', '--for-real',
+                            dest='for_real',
+                            action='store_true',
+                            default=False,
+                            help="Actually deactivate the user. Default is a dry run.")
+        parser.add_argument('email', metavar='<email>', type=str,
+                            help='email of user to deactivate')
 
     def handle(self, *args, **options):
-        if not args:
-            print "Please specify an e-mail address."
-            exit(1)
-
-        user_profile = get_user_profile_by_email(args[0])
+        user_profile = get_user_profile_by_email(options['email'])
 
         print "Deactivating %s (%s) - %s" % (user_profile.full_name,
                                              user_profile.email,

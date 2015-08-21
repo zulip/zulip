@@ -6,16 +6,17 @@ from zerver.lib.actions import do_change_user_email
 from zerver.models import UserProfile, get_user_profile_by_email
 
 class Command(BaseCommand):
-    help = """Change the email address for a user.
+    help = """Change the email address for a user."""
 
-Usage: python manage.py change_user_email <old email> <new email>"""
+    def add_arguments(self, parser):
+        parser.add_argument('old_email', metavar='<old email>', type=str,
+                            help='email address to change')
+        parser.add_argument('new_email', metavar='<new email>', type=str,
+                            help='new email address')
 
     def handle(self, *args, **options):
-        if len(args) != 2:
-            print "Please provide both the old and new address."
-            exit(1)
-
-        old_email, new_email = args
+        old_email = options['old_email']
+        new_email = options['new_email']
         try:
             user_profile = get_user_profile_by_email(old_email)
         except UserProfile.DoesNotExist:

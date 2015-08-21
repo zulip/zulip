@@ -134,8 +134,12 @@ def main():
 class Command(BaseCommand):
     help = __doc__
 
+    def add_arguments(self, parser):
+        parser.add_argument('recipient', metavar='<recipient>', type=str, nargs='?', default=None,
+                            help="original recipient")
+
     def handle(self, *args, **options):
-        rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", args[0] if len(args) else None)
+        rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", options['recipient'])
         if rcpt_to is not None:
             if is_missed_message_address(rcpt_to):
                 try:

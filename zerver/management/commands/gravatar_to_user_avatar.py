@@ -12,17 +12,18 @@ class Command(BaseCommand):
 email addresses are specified, use the Gravatar for the first and upload the image
 for both email addresses."""
 
-    def handle(self, *args, **kwargs):
-        if len(args) == 0:
-            raise CommandError("You must specify a user")
-        if len(args) > 2:
-            raise CommandError("Too many positional arguments")
+    def add_arguments(self, parser):
+        parser.add_argument('old_email', metavar='<old email>', type=str,
+                            help="user whose Gravatar should be migrated")
+        parser.add_argument('new_email', metavar='<new email>', type=str, nargs='?', default=None,
+                            help="user to copy the Gravatar to")
 
-        old_email = args[0]
+    def handle(self, *args, **options):
+        old_email = options['old_email']
 
-        if len(args) == 2:
-            new_email = args[1]
-        elif len(args) == 1:
+        if options['new_email']:
+            new_email = options['new_email']
+        else:
             new_email = old_email
 
         gravatar_url = "https://secure.gravatar.com/avatar/%s?d=identicon" % (gravatar_hash(old_email),)

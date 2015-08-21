@@ -6,16 +6,14 @@ from zerver.lib.actions import do_update_message_flags
 from zerver.models import UserProfile, Message, get_user_profile_by_email
 
 class Command(BaseCommand):
-    help = """Bankrupt one or many users.
+    help = """Bankrupt one or many users."""
 
-Usage: python manage.py bankrupt_users <list of email addresses>"""
+    def add_arguments(self, parser):
+        parser.add_argument('emails', metavar='<email>', type=str, nargs='+',
+                            help='email address to bankrupt')
 
     def handle(self, *args, **options):
-        if len(args) < 1:
-            print "Please provide at least one e-mail address."
-            exit(1)
-
-        for email in args:
+        for email in options['emails']:
             try:
                 user_profile = get_user_profile_by_email(email)
             except UserProfile.DoesNotExist:

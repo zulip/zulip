@@ -6,18 +6,14 @@ from zerver.lib.actions import do_change_full_name
 from zerver.models import UserProfile, get_user_profile_by_email
 
 class Command(BaseCommand):
-    help = """Change the names for many users.
+    help = """Change the names for many users."""
 
-Usage: python manage.py bulk_change_user_name <data file>
-
-Where <data file> contains rows of the form <email>,<desired name>."""
+    def add_arguments(self, parser):
+        parser.add_argument('data_file', metavar='<data file>', type=str,
+                            help="file containing rows of the form <email>,<desired name>")
 
     def handle(self, *args, **options):
-        if len(args) != 1:
-            print "Please provide a CSV file mapping emails to desired names."
-            exit(1)
-
-        data_file = args[0]
+        data_file = options['data_file']
         with open(data_file, "r") as f:
             for line in f:
                 email, new_name = line.strip().split(",", 1)

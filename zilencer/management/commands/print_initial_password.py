@@ -9,9 +9,13 @@ class Command(BaseCommand):
 
     fmt = '%-30s %-16s  %-32s'
 
+    def add_arguments(self, parser):
+        parser.add_argument('emails', metavar='<email>', type=str, nargs='*',
+                            help="email of user to show password and API key for")
+
     def handle(self, *args, **options):
         print self.fmt % ('email', 'password', 'API key')
-        for email in args:
+        for email in options['emails']:
             if '@' not in email:
                 print 'ERROR: %s does not look like an email address' % (email,)
                 continue

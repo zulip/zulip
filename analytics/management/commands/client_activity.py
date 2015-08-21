@@ -17,6 +17,10 @@ python manage.py client_activity
 python manage.py client_activity zulip.com
 python manage.py client_activity jesstess@zulip.com"""
 
+    def add_arguments(self, parser):
+        parser.add_argument('arg', metavar='<arg>', type=str, nargs='?', default=None,
+                            help="realm or user to estimate client activity for")
+
     def compute_activity(self, user_activity_objects):
         # Report data from the past week.
         #
@@ -49,21 +53,22 @@ python manage.py client_activity jesstess@zulip.com"""
 
 
     def handle(self, *args, **options):
-        if len(args) == 0:
+        if options['arg'] is None:
             # Report global activity.
             self.compute_activity(UserActivity.objects.all())
-        elif len(args) == 1:
+        else:
+            arg = options['arg']
             try:
                 # Report activity for a user.
-                user_profile = get_user_profile_by_email(args[0])
+                user_profile = get_user_profile_by_email(arg)
                 self.compute_activity(UserActivity.objects.filter(
                         user_profile=user_profile))
             except UserProfile.DoesNotExist:
                 try:
                     # Report activity for a realm.
-                    realm = get_realm(args[0])
+                    realm = get_realm(arg)
                     self.compute_activity(UserActivity.objects.filter(
                             user_profile__realm=realm))
                 except Realm.DoesNotExist:
-                    print "Unknown user or domain %s" % (args[0],)
+                    print "Unknown user or domain %s" % (arg,)
                     exit(1)

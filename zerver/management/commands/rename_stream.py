@@ -8,16 +8,20 @@ from zerver.models import Realm, get_realm
 import sys
 
 class Command(BaseCommand):
-    help = """Change the stream name for a realm.
+    help = """Change the stream name for a realm."""
 
-Usage: python manage.py rename_stream <domain> <old name> <new name>"""
+    def add_arguments(self, parser):
+        parser.add_argument('domain', metavar='<domain>', type=str,
+                            help="domain to operate on")
+        parser.add_argument('old_name', metavar='<old name>', type=str,
+                            help='name of stream to be renamed')
+        parser.add_argument('new_name', metavar='<new name>', type=str,
+                            help='new name to rename the stream to')
 
     def handle(self, *args, **options):
-        if len(args) != 3:
-            print "Please provide a domain and the old and new names."
-            exit(1)
-
-        domain, old_name, new_name = args
+        domain = options['domain']
+        old_name = options['old_name']
+        new_name = options['new_name']
         encoding = sys.getfilesystemencoding()
 
         try:

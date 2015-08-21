@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import sys
-from optparse import make_option
+import argparse
 
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
@@ -18,19 +18,24 @@ class Command(BaseCommand):
 
 A user MUST have ALREADY accepted the Terms of Service before creating their
 account this way.
+
+Omit both <email> and <full name> for interactive user creation.
 """
 
-    option_list = BaseCommand.option_list + (
-        make_option('--this-user-has-accepted-the-tos',
-                    dest='tos',
-                    action="store_true",
-                    default=False,
-                    help='Acknowledgement that the user has already accepted the ToS.'),
-        make_option('--domain',
-                    dest='domain',
-                    type='str',
-                    help='The name of the existing realm to which to add the user.'),
-        )
+    def add_arguments(self, parser):
+        parser.add_argument('--this-user-has-accepted-the-tos',
+                            dest='tos',
+                            action="store_true",
+                            default=False,
+                            help='Acknowledgement that the user has already accepted the ToS.')
+        parser.add_argument('--domain',
+                            dest='domain',
+                            type=str,
+                            help='The name of the existing realm to which to add the user.')
+        parser.add_argument('email', metavar='<email>', type=str, nargs='?', default=argparse.SUPPRESS,
+                            help='email address of new user')
+        parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?', default=argparse.SUPPRESS,
+                            help='full name of new user')
 
     def handle(self, *args, **options):
         if not options["tos"]:
@@ -46,13 +51,14 @@ Terms of Service by passing --this-user-has-accepted-the-tos.""")
             raise CommandError("Realm does not exist.")
 
         try:
-            email, full_name = args
+            email = options['email']
+            full_name = options['full_name']
             try:
                 validators.validate_email(email)
             except ValidationError:
                 raise CommandError("Invalid email address.")
-        except ValueError:
-            if len(args) != 0:
+        except KeyError:
+            if 'email' in options or 'full_name' in options:
                 raise CommandError("""Either specify an email and full name as two
 parameters, or specify no parameters for interactive user creation.""")
             else:

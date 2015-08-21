@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-from optparse import make_option
-
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 
@@ -15,24 +13,22 @@ class Command(BaseCommand):
 ONLY perform this on customer request from an authorized person.
 """
 
-    option_list = BaseCommand.option_list + (
-        make_option('-f', '--for-real',
-                    dest='ack',
-                    action="store_true",
-                    default=False,
-                    help='Acknowledgement that this is done according to policy.'),
-        make_option('--revoke',
-                    dest='grant',
-                    action="store_false",
-                    default=True,
-                    help='Remove an administrator\'s rights.'),
-        )
+    def add_arguments(self, parser):
+        parser.add_argument('-f', '--for-real',
+                            dest='ack',
+                            action="store_true",
+                            default=False,
+                            help='Acknowledgement that this is done according to policy.')
+        parser.add_argument('--revoke',
+                            dest='grant',
+                            action="store_false",
+                            default=True,
+                            help='Remove an administrator\'s rights.')
+        parser.add_argument('email', metavar='<email>', type=str,
+                            help="email of user to knight")
 
     def handle(self, *args, **options):
-        try:
-            email = args[0]
-        except ValueError:
-            raise CommandError("""Please specify a user.""")
+        email = options['email']
         try:
             profile = UserProfile.objects.get(email=email)
         except ValidationError:

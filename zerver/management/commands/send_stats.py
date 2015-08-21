@@ -4,18 +4,19 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 class Command(BaseCommand):
-    help = """Send some stats to statsd.
+    help = """Send some stats to statsd."""
 
-Usage: python manage.py send_stats [incr|decr|timing|timer|gauge] name val"""
+    def add_arguments(self, parser):
+        parser.add_argument('operation', metavar='<operation>', type=str,
+                            choices=['incr', 'decr', 'timing', 'timer', 'gauge'],
+                            help="incr|decr|timing|timer|gauge")
+        parser.add_argument('name', metavar='<name>', type=str)
+        parser.add_argument('val', metavar='<val>', type=str)
 
     def handle(self, *args, **options):
-        if len(args) != 3:
-            print "Usage: python manage.py send_stats [incr|decr|timing|timer|gauge] name val"
-            exit(1)
-
-        operation = args[0]
-        name = args[1]
-        val = args[2]
+        operation = options['operation']
+        name = options['name']
+        val = options['val']
 
         if settings.USING_STATSD:
             from statsd import statsd

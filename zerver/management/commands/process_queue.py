@@ -9,20 +9,19 @@ import signal
 import logging
 
 class Command(BaseCommand):
-    args = "<queue name> [<worker number>]"
+    def add_arguments(self, parser):
+        parser.add_argument('queue_name', metavar='<queue name>', type=str,
+                            help="queue to process")
+        parser.add_argument('worker_num', metavar='<worker number>', type=int, nargs='?', default=0,
+                            help="worker label")
+
     help = "Runs a queue processing worker"
     def handle(self, *args, **options):
         logging.basicConfig()
         logger = logging.getLogger('process_queue')
 
-        if len(args) not in (1, 2):
-            raise CommandError("Wrong number of arguments")
-
-        queue_name = args[0]
-        if len(args) > 1:
-            worker_num = int(args[1])
-        else:
-            worker_num = 0
+        queue_name = options['queue_name']
+        worker_num = options['worker_num']
 
         def signal_handler(signal, frame):
             logger.info("Worker %d disconnecting from queue %s" % (worker_num, queue_name))

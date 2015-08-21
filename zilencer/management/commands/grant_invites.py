@@ -6,17 +6,17 @@ from zerver.lib.actions import send_referral_event
 from zerver.models import get_user_profile_by_email
 
 class Command(BaseCommand):
-    help = """Grants a user invites and resets the number of invites they've used.
+    help = """Grants a user invites and resets the number of invites they've used."""
 
-Usage: python manage.py grant_invites <email> <num invites>"""
+    def add_arguments(self, parser):
+        parser.add_argument('email', metavar='<email>', type=str,
+                            help="user to grant invites to")
+        parser.add_argument('num_invites', metavar='<num invites>', type=int,
+                            help="number of invites to grant")
 
-    def handle(self, *args, **kwargs):
-        if len(args) != 2:
-            print "Please provide an email address and the number of invites."
-            exit(1)
-
-        email = args[0]
-        num_invites = int(args[1])
+    def handle(self, *args, **options):
+        email = options['email']
+        num_invites = options['num_invites']
 
         user_profile = get_user_profile_by_email(email)
         user_profile.invites_granted = num_invites

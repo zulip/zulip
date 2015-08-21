@@ -18,17 +18,18 @@ fields, the second of which is a JSON payload.  (The latter is to accomodate
 the format of error files written by queue workers that catch exceptions--their
 first field is a timestamp that we ignore.)
 
-Usage: python manage.py enqueue_file <queue_name> <file_name>
-
 You can use "-" to represent stdin.
 """
 
-    def handle(self, *args, **options):
-        if len(args) != 2:
-            print "Please provide a queue and file name."
-            exit(1)
+    def add_arguments(self, parser):
+        parser.add_argument('queue_name', metavar='<queue>', type=str,
+                            help="name of worker queue to enqueue to")
+        parser.add_argument('file_name', metavar='<file>', type=str,
+                            help="name of file containing JSON lines")
 
-        queue_name, file_name = args
+    def handle(self, *args, **options):
+        queue_name = options['queue_name']
+        file_name = options['file_name']
 
         if file_name == '-':
             f = sys.stdin
