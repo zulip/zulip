@@ -1,10 +1,13 @@
 # Settings for Zulip Voyager
 
 ### MANDATORY SETTINGS
+#
+# These settings MUST be set in production. In a development environment,
+# sensible default values will be used.
 
 # The user-accessible Zulip hostname for this installation, e.g.
 # zulip.example.com
-EXTERNAL_HOST = ''
+EXTERNAL_HOST = 'zulip.example.com'
 
 # The email address for the person or team who maintain the Zulip
 # Voyager installation. Will also get support emails. (e.g. zulip-admin@example.com)
