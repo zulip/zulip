@@ -25,10 +25,12 @@ config_file.read("/etc/zulip/zulip.conf")
 # Whether this instance of Zulip is running in a production environment.
 DEPLOYED = config_file.has_option('machine', 'deploy_type')
 DEVELOPMENT = not DEPLOYED
-# The following flags are leftover from the various configurations of
+
+# The following flags are left over from the various configurations of
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
-# them and just have the DEPLOYED flag, but we need them for now.
-STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
+# them and just have the PRODUCTION flag, but we need them for now.
+ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'staging'
+ZULIP_COM = PRODUCTION and config_file.get('machine', 'deploy_type') == 'prod'
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 secrets_file = ConfigParser.RawConfigParser()
@@ -278,7 +280,7 @@ USING_STATSD = (DEPLOYED and not ENTERPRISE) or LOCAL_STATSD
 
 # These must be named STATSD_PREFIX for the statsd module
 # to pick them up
-if STAGING_DEPLOYED:
+if ZULIP_COM_STAGING:
     STATSD_PREFIX = 'staging'
 elif DEPLOYED:
     STATSD_PREFIX = 'app'

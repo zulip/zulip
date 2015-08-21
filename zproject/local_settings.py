@@ -10,7 +10,11 @@ config_file.read("/etc/zulip/zulip.conf")
 # **not** mean hosted by us; customer sites are DEPLOYED and ENTERPRISE
 # and as such should not for example assume they are the main Zulip site.
 DEPLOYED = config_file.has_option('machine', 'deploy_type')
-STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
+
+# The following flags are leftover from the various configurations of
+# Zulip run by Zulip, Inc.  We will eventually be able to get rid of
+# them and just have the DEPLOYED flag, but we need them for now.
+ZULIP_COM_STAGING = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
 
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
@@ -35,7 +39,7 @@ NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
-if STAGING_DEPLOYED:
+if ZULIP_COM_STAGING:
     EXTERNAL_HOST = 'staging.zulip.com'
 elif DEPLOYED:
     EXTERNAL_HOST = 'zulip.com'
@@ -52,7 +56,7 @@ else:
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads-test"
     S3_AVATAR_BUCKET="humbug-user-avatars-test"
 
-if DEPLOYED or STAGING_DEPLOYED:
+if DEPLOYED or ZULIP_COM_STAGING:
     APNS_SANDBOX = "push_production"
     APNS_FEEDBACK = "feedback_production"
     APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
@@ -76,7 +80,7 @@ ADMIN_DOMAIN = "zulip.com"
 
 # The email address pattern to use for auto-generated stream emails
 # The %s will be replaced with a unique token.
-if STAGING_DEPLOYED:
+if ZULIP_COM_STAGING:
     EMAIL_GATEWAY_PATTERN = "%s@streams.staging.zulip.com"
 elif DEPLOYED:
     EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"

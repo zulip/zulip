@@ -65,16 +65,16 @@ class AdminZulipHandler(logging.Handler):
             )
 
         try:
-            if not settings.STAGING_DEPLOYED:
-                queue_json_publish('error_reports', dict(
-                    type = "server",
-                    report = report,
-                ), lambda x: None)
-            else:
+            if settings.ZULIP_COM_STAGING:
                 # On staging, process the report directly so it can happen inside this
                 # try/except to prevent looping
                 from zilencer.error_notify import notify_server_error
                 notify_server_error(report)
+            else:
+                queue_json_publish('error_reports', dict(
+                    type = "server",
+                    report = report,
+                ), lambda x: None)
         except:
             # If this breaks, complain loudly but don't pass the traceback up the stream
             # However, we *don't* want to use logging.exception since that could trigger a loop.
