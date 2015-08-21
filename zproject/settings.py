@@ -432,6 +432,14 @@ S3_SECRET_KEY = get_secret("s3_secret_key")
 # https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
 ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
 
+# Twitter API credentials
+# Secrecy not required because its only used for R/O requests.
+# Please don't make us go over our rate limit.
+TWITTER_CONSUMER_KEY = get_secret("twitter_consumer_key")
+TWITTER_CONSUMER_SECRET = get_secret("twitter_consumer_secret")
+TWITTER_ACCESS_TOKEN_KEY = get_secret("twitter_access_token_key")
+TWITTER_ACCESS_TOKEN_SECRET = get_secret("twitter_access_token_secret")
+
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
                    'email_template': 'notification-bot@%s',

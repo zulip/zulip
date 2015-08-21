@@ -78,30 +78,6 @@ else:
     S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads-test"
     S3_AVATAR_BUCKET="humbug-user-avatars-test"
 
-# Twitter API credentials
-# Secrecy not required because its only used for R/O requests.
-# Please don't make us go over our rate limit.
-if STAGING_DEPLOYED or TESTING_DEPLOYED:
-    # Application: "Humbug HQ"
-    TWITTER_CONSUMER_KEY = "xxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-elif DEPLOYED and not ENTERPRISE:
-    # This is the real set of API credentials used by our real server,
-    # and we probably shouldn't test with it just so we don't waste its requests
-    # Application: "Humbug HQ - Production"
-    TWITTER_CONSUMER_KEY = "xxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-else:
-    # Application: "Humbug HQ Test"
-    TWITTER_CONSUMER_KEY = "xxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_CONSUMER_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_ACCESS_TOKEN_KEY = "xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    TWITTER_ACCESS_TOKEN_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
 if DEPLOYED or STAGING_DEPLOYED:
     APNS_SANDBOX = "push_production"
     APNS_FEEDBACK = "feedback_production"
