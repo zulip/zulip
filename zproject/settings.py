@@ -28,7 +28,6 @@ DEPLOYED = config_file.has_option('machine', 'deploy_type')
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the DEPLOYED flag, but we need them for now.
 STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'staging'
-TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
 secrets_file = ConfigParser.RawConfigParser()
@@ -274,7 +273,7 @@ CACHES = {
 ########################################################################
 
 LOCAL_STATSD = (False)
-USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED and not ENTERPRISE) or LOCAL_STATSD
+USING_STATSD = (DEPLOYED and not ENTERPRISE) or LOCAL_STATSD
 
 # These must be named STATSD_PREFIX for the statsd module
 # to pick them up
