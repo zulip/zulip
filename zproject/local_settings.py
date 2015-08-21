@@ -15,26 +15,10 @@ TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'te
 
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
-secrets_file = ConfigParser.RawConfigParser()
-if DEPLOYED:
-    secrets_file.read("/etc/zulip/zulip-secrets.conf")
-else:
-    secrets_file.read("zproject/dev-secrets.conf")
-
-def get_secret(key):
-    if secrets_file.has_option('secrets', key):
-        return secrets_file.get('secrets', key)
-    return None
-
-MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
 # This can be filled in automatically from the database, maybe
 DEPLOYMENT_ROLE_NAME = 'zulip.com'
-DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
-
-# This comes from our mandrill accounts page
-MANDRILL_API_KEY = get_secret("mandrill_api_key")
 
 # XXX: replace me
 CAMO_URI = 'https://external-content.zulipcdn.net/'
@@ -42,7 +26,6 @@ CAMO_URI = 'https://external-content.zulipcdn.net/'
 # Leave EMAIL_HOST unset or empty if you do not wish for emails to be sent
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'zulip@zulip.com'
-EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 

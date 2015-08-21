@@ -32,6 +32,17 @@ STAGING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'st
 TESTING_DEPLOYED = DEPLOYED and config_file.get('machine', 'deploy_type') == 'test'
 ENTERPRISE = DEPLOYED and config_file.get('machine', 'deploy_type') == 'enterprise'
 
+secrets_file = ConfigParser.RawConfigParser()
+if DEPLOYED:
+    secrets_file.read("/etc/zulip/zulip-secrets.conf")
+else:
+    secrets_file.read("zproject/dev-secrets.conf")
+
+def get_secret(key):
+    if secrets_file.has_option('secrets', key):
+        return secrets_file.get('secrets', key)
+    return None
+
 # Import variables like secrets from the local_settings file
 # Import local_settings after determining the deployment/machine type
 from local_settings import *
@@ -435,6 +446,11 @@ GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
 
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
+MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
+
+# This comes from our mandrill accounts page
+MANDRILL_API_KEY = get_secret("mandrill_api_key")
+
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.
 # Please don't make us go over our rate limit.
@@ -472,6 +488,8 @@ if EMAIL_GATEWAY_BOT not in API_SUPER_USERS:
     API_SUPER_USERS.add(EMAIL_GATEWAY_BOT)
 if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
+
+DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
 if DEPLOYED:
     FEEDBACK_TARGET="https://zulip.com/api"
@@ -916,6 +934,8 @@ elif not DEPLOYED:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST_PASSWORD = get_secret('email_password')
 
 ########################################################################
 # MISC SETTINGS
