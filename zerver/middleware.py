@@ -83,8 +83,12 @@ def is_slow_query(time_delta, path):
     return True
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
-                   status_code=200, error_content_iter=()):
-    # For statsd timer name
+                   status_code=200, error_content=None, error_content_iter=None):
+    assert error_content is None or error_content_iter is ()
+    if error_content is not None:
+        error_content_iter = (error_content,)
+
+# For statsd timer name
     if path == '/':
         statsd_path = 'webreq'
     else:
@@ -236,12 +240,14 @@ class LogRequests(object):
 
         if response.streaming:
             content_iter = response.streaming_content
+            content = None
         else:
-            content_iter = (response.content,)
+            content = response.content
+            content_iter = ()
 
         write_log_line(request._log_data, request.path, request.method,
-                       remote_ip, email, client, response.status_code,
-                       content_iter)
+                       remote_ip, email, client, status_code=response.status_code,
+                       error_content=content, error_content_iter=content_iter)
         return response
 
 class JsonErrorHandler(object):
