@@ -18,7 +18,11 @@ hence the name.
 <div class="header-main" id="top_navbar">
   <div class="column-left">
         <div>
+          {% if zulip_com %}
+          <a class="brand logo" href="/"><img src="/static/images/logo/zulip-dropbox.png" class="portico-logo" alt="Zulip" content="Zulip" /></a>
+          {% else %}
           <a class="brand logo" href="/"><img src="/static/images/logo/zulipwlogo@2x.png" class="portico-logo" alt="Zulip" content="Zulip" /></a>
+          {% endif %}
         </div>
   </div>
 
@@ -27,8 +31,7 @@ hence the name.
           <a href="{{login_url}}">Log in</a>
           {% endif %}
 
-          {% if zulip_com %}
-          {% elif only_sso %}
+          {% if only_sso %}
           <a href="{% url 'login-sso' %}">Log In</a>
           {% else %}
           <a href="{% url 'register' %}">Register</a>
@@ -49,7 +52,7 @@ hence the name.
   <div class="footer-main">
     <ul class="footer-navigation">
       <li><a href="/hello">About</a></li>
-      {% if not_enterpise %}
+      {% if zulip_com %}
       <li><span class="little-bullet">·</span></li>
       <li><a href="/terms">Legal</a></li>
       {% endif %}
