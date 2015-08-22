@@ -46,7 +46,6 @@ autofocus('#id_username');
 <div class="alert alert-error">
     {% if desktop_sso_unknown_email %}
         Zulip is not currently available for your domain. <br />
-        <a href="https://zulip.com/signup">Sign up</a> to find out when Zulip is ready for you.
     {% else %}
         {% for error in form.errors.values %}
         <div>{{ error | striptags }}</div>
