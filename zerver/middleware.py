@@ -84,7 +84,7 @@ def is_slow_query(time_delta, path):
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=None, error_content_iter=None):
-    assert error_content is None or error_content_iter is ()
+    assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
 
@@ -243,7 +243,7 @@ class LogRequests(object):
             content = None
         else:
             content = response.content
-            content_iter = ()
+            content_iter = None
 
         write_log_line(request._log_data, request.path, request.method,
                        remote_ip, email, client, status_code=response.status_code,
