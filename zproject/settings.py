@@ -104,6 +104,96 @@ else:
 VOYAGER = PRODUCTION and not ZULIP_COM
 
 ########################################################################
+# DEFAULT VALUES FOR SETTINGS
+########################################################################
+
+# For any settings that are not defined in local_settings.py,
+# we want to initialize them to sane default
+DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
+                    'TWITTER_CONSUMER_SECRET': '',
+                    'TWITTER_ACCESS_TOKEN_KEY': '',
+                    'TWITTER_ACCESS_TOKEN_SECRET': '',
+                    'EMAIL_GATEWAY_PATTERN': '',
+                    'EMAIL_GATEWAY_EXAMPLE': '',
+                    'EMAIL_GATEWAY_BOT': None,
+                    'EMAIL_GATEWAY_LOGIN': None,
+                    'EMAIL_GATEWAY_PASSWORD': None,
+                    'EMAIL_GATEWAY_IMAP_SERVER': None,
+                    'EMAIL_GATEWAY_IMAP_PORT': None,
+                    'EMAIL_GATEWAY_IMAP_FOLDER': None,
+                    'MANDRILL_API_KEY': '',
+                    'S3_KEY': '',
+                    'S3_SECRET_KEY': '',
+                    'S3_BUCKET': '',
+                    'S3_AVATAR_BUCKET': '',
+                    'MAILCHIMP_API_KEY': '',
+                    'LOCAL_UPLOADS_DIR': None,
+                    'DROPBOX_APP_KEY': '',
+                    'ERROR_REPORTING': True,
+                    'NAME_CHANGES_DISABLED': False,
+                    'DEPLOYMENT_ROLE_NAME': "",
+                    # The following bots only exist in non-VOYAGER installs
+                    'ERROR_BOT': None,
+                    'NEW_USER_BOT': None,
+                    'NAGIOS_STAGING_SEND_BOT': None,
+                    'NAGIOS_STAGING_RECEIVE_BOT': None,
+                    'APNS_CERT_FILE': None,
+                    'ANDROID_GCM_API_KEY': None,
+                    'INITIAL_PASSWORD_SALT': None,
+                    'FEEDBACK_BOT': 'feedback@zulip.com',
+                    'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
+                    'API_SUPER_USERS': set(),
+                    'ADMINS': '',
+                    'INLINE_IMAGE_PREVIEW': True,
+                    'CAMO_URI': '',
+                    'ENABLE_FEEDBACK': PRODUCTION,
+                    'FEEDBACK_EMAIL': None,
+                    'ENABLE_GRAVATAR': True,
+                    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
+                    'AUTH_LDAP_SERVER_URI': "",
+                    'EXTERNAL_URI_SCHEME': "https://",
+                    'ZULIP_COM': False,
+                    'ZULIP_COM_STAGING': False,
+                    'GOOGLE_CLIENT_ID': '',
+                    'DBX_APNS_CERT_FILE': None,
+                    }
+
+for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
+    if not setting_name in vars():
+        vars()[setting_name] = setting_val
+
+# These are the settings that we will check that the user has filled in for
+# production deployments before starting the app.  It consists of a series
+# of pairs of (setting name, default value that it must be changed from)
+REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
+                     ("ZULIP_ADMINISTRATOR", "zulip-admin@example.com"),
+                     ("ADMIN_DOMAIN", "example.com"),
+                     # SECRET_KEY doesn't really need to be here, in
+                     # that we set it automatically, but just in
+                     # case, it seems worth having in this list
+                     ("SECRET_KEY", ""),
+                     ("AUTHENTICATION_BACKENDS", ()),
+                     ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
+                     ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
+                     ("ALLOWED_HOSTS", "*"),
+                     ]
+if PRODUCTION:
+    for (setting_name, default) in REQUIRED_SETTINGS:
+        try:
+            value = globals()[setting_name]
+            if value != default:
+                continue
+            print "Error: %s can't be %s in production in /etc/zulip/settings.py." % \
+                (setting_name, value)
+        except AttributeError:
+            print "Error: You must set %s in /etc/zulip/settings.py." % (setting_name,)
+        sys.exit(1)
+
+if ADMINS == "":
+    ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
+MANAGERS = ADMINS
+
+########################################################################
 # STANDARD DJANGO SETTINGS
 ########################################################################
 
@@ -316,96 +406,6 @@ if DEVELOPMENT:
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
     INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
-
-########################################################################
-# DEFAULT VALUES
-########################################################################
-
-# For any settings that are not defined in local_settings.py,
-# we want to initialize them to sane default
-DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
-                    'TWITTER_CONSUMER_SECRET': '',
-                    'TWITTER_ACCESS_TOKEN_KEY': '',
-                    'TWITTER_ACCESS_TOKEN_SECRET': '',
-                    'EMAIL_GATEWAY_PATTERN': '',
-                    'EMAIL_GATEWAY_EXAMPLE': '',
-                    'EMAIL_GATEWAY_BOT': None,
-                    'EMAIL_GATEWAY_LOGIN': None,
-                    'EMAIL_GATEWAY_PASSWORD': None,
-                    'EMAIL_GATEWAY_IMAP_SERVER': None,
-                    'EMAIL_GATEWAY_IMAP_PORT': None,
-                    'EMAIL_GATEWAY_IMAP_FOLDER': None,
-                    'MANDRILL_API_KEY': '',
-                    'S3_KEY': '',
-                    'S3_SECRET_KEY': '',
-                    'S3_BUCKET': '',
-                    'S3_AVATAR_BUCKET': '',
-                    'MAILCHIMP_API_KEY': '',
-                    'LOCAL_UPLOADS_DIR': None,
-                    'DROPBOX_APP_KEY': '',
-                    'ERROR_REPORTING': True,
-                    'NAME_CHANGES_DISABLED': False,
-                    'DEPLOYMENT_ROLE_NAME': "",
-                    # The following bots only exist in non-VOYAGER installs
-                    'ERROR_BOT': None,
-                    'NEW_USER_BOT': None,
-                    'NAGIOS_STAGING_SEND_BOT': None,
-                    'NAGIOS_STAGING_RECEIVE_BOT': None,
-                    'APNS_CERT_FILE': None,
-                    'ANDROID_GCM_API_KEY': None,
-                    'INITIAL_PASSWORD_SALT': None,
-                    'FEEDBACK_BOT': 'feedback@zulip.com',
-                    'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
-                    'API_SUPER_USERS': set(),
-                    'ADMINS': '',
-                    'INLINE_IMAGE_PREVIEW': True,
-                    'CAMO_URI': '',
-                    'ENABLE_FEEDBACK': PRODUCTION,
-                    'FEEDBACK_EMAIL': None,
-                    'ENABLE_GRAVATAR': True,
-                    'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
-                    'AUTH_LDAP_SERVER_URI': "",
-                    'EXTERNAL_URI_SCHEME': "https://",
-                    'ZULIP_COM': False,
-                    'ZULIP_COM_STAGING': False,
-                    'GOOGLE_CLIENT_ID': '',
-                    'DBX_APNS_CERT_FILE': None,
-                    }
-
-for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
-    if not setting_name in vars():
-        vars()[setting_name] = setting_val
-
-if ADMINS == "":
-    ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
-MANAGERS = ADMINS
-
-# These are the settings that we will check that the user has filled in for
-# production deployments before starting the app.  It consists of a series
-# of pairs of (setting name, default value that it must be changed from)
-REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
-                     ("ZULIP_ADMINISTRATOR", "zulip-admin@example.com"),
-                     ("ADMIN_DOMAIN", "example.com"),
-                     # SECRET_KEY doesn't really need to be here, in
-                     # that we set it automatically, but just in
-                     # case, it seems worth having in this list
-                     ("SECRET_KEY", ""),
-                     ("AUTHENTICATION_BACKENDS", ()),
-                     ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
-                     ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
-                     ("ALLOWED_HOSTS", "*"),
-                     ]
-if PRODUCTION:
-    for (setting_name, default) in REQUIRED_SETTINGS:
-        try:
-            value = globals()[setting_name]
-            if value != default:
-                continue
-            print "Error: %s can't be %s in production in /etc/zulip/settings.py." % \
-                (setting_name, value)
-        except AttributeError:
-            print "Error: You must set %s in /etc/zulip/settings.py." % (setting_name,)
-        sys.exit(1)
 
 ########################################################################
 # API/BOT SETTINGS
