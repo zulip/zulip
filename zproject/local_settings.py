@@ -41,12 +41,15 @@ NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
+STATSD_HOST = 'stats.zulip.net'
+
 if ZULIP_COM_STAGING:
     EXTERNAL_HOST = 'staging.zulip.com'
+    STATSD_PREFIX = 'staging'
 else:
     EXTERNAL_HOST = 'zulip.com'
     EXTERNAL_API_PATH = 'api.zulip.com'
-
+    STATSD_PREFIX = 'app'
 
 S3_BUCKET="humbug-user-uploads"
 S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"

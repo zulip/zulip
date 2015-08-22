@@ -154,6 +154,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'EXTERNAL_URI_SCHEME': "https://",
                     'ZULIP_COM': False,
                     'ZULIP_COM_STAGING': False,
+                    'STATSD_HOST': '',
                     'GOOGLE_CLIENT_ID': '',
                     'DBX_APNS_CERT_FILE': None,
                     }
@@ -481,24 +482,9 @@ else:
 # STATSD CONFIGURATION
 ########################################################################
 
-LOCAL_STATSD = (False)
-USING_STATSD = ZULIP_COM or LOCAL_STATSD
-
-# These must be named STATSD_PREFIX for the statsd module
-# to pick them up
-if ZULIP_COM_STAGING:
-    STATSD_PREFIX = 'staging'
-elif PRODUCTION:
-    STATSD_PREFIX = 'app'
-else:
-    STATSD_PREFIX = 'user'
-
-if USING_STATSD:
-    if LOCAL_STATSD:
-        STATSD_HOST = 'localhost'
-    else:
-        STATSD_HOST = 'stats.zulip.net'
-
+# Statsd is not super well supported; if you want to use it you'll need
+# to set STATSD_HOST and STATSD_PREFIX.
+if STATSD_HOST != '':
     INSTALLED_APPS += ['django_statsd']
     STATSD_PORT = 8125
     STATSD_CLIENT = 'django_statsd.clients.normal'

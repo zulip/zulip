@@ -18,7 +18,7 @@ class Command(BaseCommand):
         name = options['name']
         val = options['val']
 
-        if settings.USING_STATSD:
+        if settings.STATSD_HOST != '':
             from statsd import statsd
 
             func = getattr(statsd, operation)

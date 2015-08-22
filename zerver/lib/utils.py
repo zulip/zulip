@@ -40,7 +40,7 @@ class StatsDWrapper(object):
         # Hand off to statsd if we have it enabled
         # otherwise do nothing
         if name in ['timer', 'timing', 'incr', 'decr', 'gauge']:
-            if settings.USING_STATSD:
+            if settings.STATSD_HOST != '':
                 from django_statsd.clients import statsd
                 if name == 'gauge':
                     return self._our_gauge
