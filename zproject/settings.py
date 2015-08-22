@@ -155,6 +155,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ZULIP_COM': False,
                     'ZULIP_COM_STAGING': False,
                     'STATSD_HOST': '',
+                    'REMOTE_POSTGRES_HOST': '',
                     'GOOGLE_CLIENT_ID': '',
                     'DBX_APNS_CERT_FILE': None,
                     }
@@ -316,14 +317,11 @@ if DEVELOPMENT:
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost'
             })
-elif ZULIP_COM:
-    DATABASES["default"].update({
-            'HOST': 'postgres.zulip.net',
-            'OPTIONS': {
-                'sslmode': 'verify-full',
-                'connection_factory': TimeTrackingConnection
-            }
+elif REMOTE_POSTGRES_HOST != '':
+    DATABASES['default'].update({
+            'HOST': REMOTE_POSTGRES_HOST,
             })
+    DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
 ########################################################################
 # RABBITMQ CONFIGURATION

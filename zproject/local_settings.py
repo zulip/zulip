@@ -41,6 +41,7 @@ NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
+REMOTE_POSTGRES_HOST = "postgres.zulip.net"
 STATSD_HOST = 'stats.zulip.net'
 
 if ZULIP_COM_STAGING:
