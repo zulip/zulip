@@ -33,6 +33,7 @@ APT_DEPENDENCIES = {
         "npm",
         "node-jquery",
         "yui-compressor",
+        "puppet",               # Used by lint-all
     ]
 }
 
