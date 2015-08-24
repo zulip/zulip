@@ -8,8 +8,6 @@ Requirements:
   discuss with Zulip Support if this is an issue for you)
 * SSL Certificate for the host you're putting this on
   (e.g. https://zulip.example.com)
-* Zulip deployment key for the host that you're putting this on.
-  You should have been provided with one by Zulip support.
 * Email credentials for the service to send outgoing emails to users
   (e.g. missed message notifications, password reminders if you're not
   using SSO, etc.).
