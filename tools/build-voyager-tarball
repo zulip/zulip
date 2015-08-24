@@ -73,7 +73,7 @@ cd $TMPDIR
 
 tar --append -f $TARBALL $prefix/prod-static $prefix/build_id $prefix/version
 
-rm -r $prefix
+rm -rf $prefix
 
 gzip $TARBALL
 echo "Generated $TARBALL.gz"
