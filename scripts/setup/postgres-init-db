@@ -8,7 +8,7 @@ CREATE DATABASE zulip OWNER=zulip;
 EOF
 
 su postgres -c psql zulip <<EOF
-CREATE SCHEMA zulip OWNER=zulip;
+CREATE SCHEMA zulip AUTHORIZATION zulip;
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 EOF
 
