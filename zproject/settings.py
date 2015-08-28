@@ -96,13 +96,6 @@ else:
     NEW_USER_BOT = "new-user-bot@zulip.com"
     EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 
-# Voyager is a production zulip server that is not zulip.com or
-# staging.zulip.com VOYAGER is the standalone all-on-one-server
-# production deployment model for based on the original Zulip
-# ENTERPRISE implementation.  We expect most users of the open source
-# project will be using VOYAGER=True in production.
-VOYAGER = PRODUCTION and not ZULIP_COM
-
 ########################################################################
 # DEFAULT VALUES FOR SETTINGS
 ########################################################################
@@ -194,6 +187,13 @@ if PRODUCTION:
 if ADMINS == "":
     ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
 MANAGERS = ADMINS
+
+# Voyager is a production zulip server that is not zulip.com or
+# staging.zulip.com VOYAGER is the standalone all-on-one-server
+# production deployment model for based on the original Zulip
+# ENTERPRISE implementation.  We expect most users of the open source
+# project will be using VOYAGER=True in production.
+VOYAGER = PRODUCTION and not ZULIP_COM
 
 ########################################################################
 # STANDARD DJANGO SETTINGS
