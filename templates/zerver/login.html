@@ -11,13 +11,17 @@
 
 {% block portico_content %}
 
+{% if password_auth_enabled %}
 <script type="text/javascript">
 {% if email %}
+{% if not desktop_sso_dispatch %}
 autofocus('#id_password');
+{% endif %}
 {% else %}
 autofocus('#id_username');
 {% endif %}
 </script>
+{% endif %}
 
 
 <div class="app login-page">
