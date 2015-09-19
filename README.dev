@@ -66,7 +66,7 @@ One-time setup:
 Backend tests:
   ./tools/test-backend
 
-Frontend tests: TBD
+Frontend tests: not yet supported
 
 Possible issues
 ===============
