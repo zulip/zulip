@@ -1058,12 +1058,7 @@ def home(request):
     if page_params['domain'] == "zulip.com" and settings.ZULIP_COM_STAGING:
         send_to_prod = True
 
-    dbx_branding = False
     product_name = "Zulip"
-    if page_params['domain'] == "zulip.com":
-        dbx_branding = True
-        product_name = "Dropbox Chat"
-
     page_params['product_name'] = product_name
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render_to_response('zerver/index.html',
@@ -1079,7 +1074,6 @@ def home(request):
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
                                    'send_to_prod': send_to_prod,
-                                   'dbx_branding': dbx_branding,
                                    'product_name': product_name
                                    },
                                   context_instance=RequestContext(request))
