@@ -30,7 +30,7 @@ parser.add_option('--remote-debug',
 test_files = []
 for file in args:
     if not os.path.exists(file):
-        file = os.path.join(os.path.dirname(__file__), 'tests', file)
+        file = os.path.join(os.path.dirname(__file__), '../zerver/tests/frontend/tests', file)
     test_files.append(os.path.abspath(file))
 
 os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../..'))
