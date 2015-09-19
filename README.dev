@@ -59,17 +59,25 @@ To start the development server:
 Running the test suite
 ======================
 
-One-time setup:
+One-time setup of test databases:
   ./tools/postgres-init-test-db
   ./tools/do-destroy-rebuild-test-database
 
-Backend tests:
-  ./tools/test-backend
+Run all tests:
+  ./tools/test-all
 
-Frontend tests: not yet supported
+This runs the linter plus all of our test suites; they can all be run
+separately (just read `tools/test-all` to see them).  You can also run
+individual tests, e.g.:
+  ./tools/test-backend zerver.test_bugdown.BugdownTest.test_inline_youtube
+  ./tools/test-js-with-casper 10-navigation.js
 
 Possible issues
 ===============
+
+The Casper tests are flaky on the Virtualbox environment (probably due
+to some performance-sensitive races).  Until this issue is debugged,
+you may need to rerun them to get them to pass.
 
 When running the test suite, if you get an error like this:
     sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not exist
