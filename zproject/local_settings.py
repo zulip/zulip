@@ -111,14 +111,6 @@ NAGIOS_STAGING_RECEIVE_BOT = 'cordelia@zulip.com'
 # Also used for support email in emails templates
 ZULIP_ADMINISTRATOR = 'support@zulip.com'
 
-# TODO: Store this info in the database
-# Also note -- the email gateway bot is automatically added.
-API_SUPER_USERS = set(["tabbott/extra@mit.edu",
-                       "irc-bot@zulip.com",
-                       "bot1@customer35.invalid",
-                       "bot1@customer36.invalid",
-                       "hipchat-bot@zulip.com",])
-
 ADMINS = (
     ('Zulip Error Reports', 'errors@zulip.com'),
 )

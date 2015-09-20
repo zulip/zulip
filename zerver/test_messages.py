@@ -443,6 +443,33 @@ class StreamMessagesTest(AuthedTestCase):
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
+    def test_stream_message_mirroring(self):
+        from zerver.lib.actions import do_change_is_admin
+        user_profile = get_user_profile_by_email("iago@zulip.com")
+
+        do_change_is_admin(user_profile, True, 'api_super_user')
+        result = self.client.post("/api/v1/send_message", {"type": "stream",
+                                                           "to": "Verona",
+                                                           "sender": "cordelia@zulip.com",
+                                                           "client": "test suite",
+                                                           "subject": "announcement",
+                                                           "content": "Everyone knows Iago rules",
+                                                           "forged": "true",
+                                                           "email": user_profile.email,
+                                                           "api-key": user_profile.api_key})
+        self.assert_json_success(result)
+        do_change_is_admin(user_profile, False, 'api_super_user')
+        result = self.client.post("/api/v1/send_message", {"type": "stream",
+                                                           "to": "Verona",
+                                                           "sender": "cordelia@zulip.com",
+                                                           "client": "test suite",
+                                                           "subject": "announcement",
+                                                           "content": "Everyone knows Iago rules",
+                                                           "forged": "true",
+                                                           "email": user_profile.email,
+                                                           "api-key": user_profile.api_key})
+        self.assert_json_error(result, "User not authorized for this query")
+
     @slow(0.28, 'checks all users')
     def test_message_to_stream(self):
         """

@@ -34,8 +34,8 @@ bugdown = None
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 
-def is_super_user(user):
-    return user.email in settings.API_SUPER_USERS
+def is_super_user(user_profile):
+    return user_profile.is_api_super_user()
 
 def is_super_user_api(request):
     return request.user.is_authenticated() and is_super_user(request.user)
@@ -158,6 +158,7 @@ class Realm(models.Model):
     class Meta:
         permissions = (
             ('administer', "Administer a realm"),
+            ('api_super_user', "Can send messages as other users for mirroring"),
         )
 
 post_save.connect(flush_realm, sender=Realm)
@@ -384,6 +385,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def is_admin(self):
         return self.has_perm('administer', self.realm)
+
+    def is_api_super_user(self):
+        # TODO: Remove API_SUPER_USERS hack; fixing this will require
+        # setting the email bot as a super user in the provision process.
+        return self.has_perm('api_super_user', self.realm) or self.email in settings.API_SUPER_USERS
 
     def last_reminder_tzaware(self):
         if self.last_reminder is not None and timezone.is_naive(self.last_reminder):

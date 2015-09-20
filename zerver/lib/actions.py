@@ -1462,16 +1462,17 @@ def do_change_default_all_public_streams(user_profile, value, log=True):
                                 default_all_public_streams=user_profile.default_all_public_streams,)),
                     bot_owner_userids(user_profile))
 
-def do_change_is_admin(user_profile, is_admin):
+def do_change_is_admin(user_profile, is_admin, permission='administer'):
     if is_admin:
-        assign_perm('administer', user_profile, user_profile.realm)
+        assign_perm(permission, user_profile, user_profile.realm)
     else:
-        remove_perm('administer', user_profile, user_profile.realm)
+        remove_perm(permission, user_profile, user_profile.realm)
 
-    event = dict(type="realm_user", op="update",
-                 person=dict(email=user_profile.email,
-                             is_admin=is_admin))
-    send_event(event, active_user_ids(user_profile.realm))
+    if permission == 'administer':
+        event = dict(type="realm_user", op="update",
+                     person=dict(email=user_profile.email,
+                                 is_admin=is_admin))
+        send_event(event, active_user_ids(user_profile.realm))
 
 def do_make_stream_public(user_profile, realm, stream_name):
     stream_name = stream_name.strip()

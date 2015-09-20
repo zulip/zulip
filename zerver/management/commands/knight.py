@@ -24,6 +24,11 @@ ONLY perform this on customer request from an authorized person.
                             action="store_false",
                             default=True,
                             help='Remove an administrator\'s rights.')
+        parser.add_argument('--permission',
+                            dest='permission',
+                            action="store",
+                            default='administer',
+                            help='Permission to grant/remove.')
         parser.add_argument('email', metavar='<email>', type=str,
                             help="email of user to knight")
 
@@ -35,21 +40,21 @@ ONLY perform this on customer request from an authorized person.
             raise CommandError("No such user.")
 
         if options['grant']:
-            if profile.has_perm('administer', profile.realm):
+            if profile.has_perm(options['permission'], profile.realm):
                 raise CommandError("User already has permission for this realm.")
             else:
                 if options['ack']:
-                    do_change_is_admin(profile, True)
+                    do_change_is_admin(profile, True, permission=options['permission'])
                     print "Done!"
                 else:
-                    print "Would have made %s an administrator for %s" % (email, profile.realm.domain)
+                    print "Would have granted %s %s rights for %s" % (email, options['permission'], profile.realm.domain)
         else:
-            if profile.has_perm('administer', profile.realm):
+            if profile.has_perm(options['permission'], profile.realm):
                 if options['ack']:
-                    do_change_is_admin(profile, False)
+                    do_change_is_admin(profile, False, permission=options['permission'])
                     print "Done!"
                 else:
-                    print "Would have removed %s's administrator rights on %s" % (email,
+                    print "Would have removed %s's %s rights on %s" % (email, options['permission'],
                             profile.realm.domain)
             else:
                 raise CommandError("User did not have permission for this realm!")
