@@ -2,6 +2,7 @@
 # encoding: utf-8
 #
 # Copyright (C) 2010 Ksplice, Inc.
+# Copyright (C) 2012-2015 Zulip, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +21,10 @@
 from __future__ import unicode_literals
 
 ## CC_EMAIL: All review requests will be CC'd here.
-CC_EMAIL = 'team-zulip@dropbox.com'
+CC_EMAIL = 'listname@example.com'
 
 ## DOMAIN: Reviewers without an '@' will be assumed to be localparts here.
-DOMAIN = 'dropbox.com'
+DOMAIN = 'example.com'
 
 ## TEST_SCRIPT: Test file to run; path relative to root of the working tree, or absolute.
 TEST_SCRIPT = "tools/test-all"

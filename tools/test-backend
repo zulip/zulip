@@ -11,6 +11,5 @@ esac
 
 cd "$(dirname "$0")"/..
 ./tools/generate-fixtures
-# "-u" uses unbuffered IO, which is important when wrapping it in
-# something like subprocess (as tools/review does)
+# "-u" uses unbuffered IO, which is important when wrapping it in subprocess
 /usr/bin/env python -u ./manage.py test "$target" --settings=zproject.test_settings "$@"
