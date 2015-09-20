@@ -1047,11 +1047,6 @@ def home(request):
     if user_profile.realm.invite_by_admins_only and not user_profile.is_admin():
         show_invites = False
 
-    # Warn users on the zulip.com realm to use staging.
-    send_to_prod = False
-    if page_params['domain'] == "zulip.com" and settings.ZULIP_COM_STAGING:
-        send_to_prod = True
-
     product_name = "Zulip"
     page_params['product_name'] = product_name
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
@@ -1067,7 +1062,6 @@ def home(request):
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
-                                   'send_to_prod': send_to_prod,
                                    'product_name': product_name
                                    },
                                   context_instance=RequestContext(request))

@@ -20,26 +20,6 @@
                   to use <a href="https://zephyr.zulip.com">the web interface</a></span>
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
-              {% if send_to_prod %}
-              <div id="staging-warning"class="alert alert_sidebar alert-error">
-                <p>This realm uses production. Please login into
-                <a href="https://zulip.com/">zulip.com</a>
-                to be part of the conversation.</p>
-              </div>
-              <script>
-              $(function () {
-                  if (window.bridge !== undefined) {
-                      // Desktop app only supports "prompt", not "alert" or "confirm" :/
-                      window.prompt("You're currently on the staging {{product_name}} server, but everyone else is on the production server.\n\nGoing forward, please run zulip with the following flag to use the staging server:", "--site https://chat.dropboxer.net");
-                      window.location.assign("https://chat.dropboxer.net");
-                  } else {
-                  var res = window.confirm("You're currently on the staging {{product_name}} server, but everyone else is on the production server. Please use https://chat.dropboxer.net.");
-                      if (feature_flags.is_og_zulip_user && !res) { return; }
-                      window.location.assign("https://chat.dropboxer.net");
-                  }
-              });
-              </script>
-              {% endif %}
               <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
               {% if enable_feedback %}
               <div id="feedback_section">
