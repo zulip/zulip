@@ -475,6 +475,7 @@ $(function () {
     composebox_typeahead.initialize();
     search.initialize();
     notifications.initialize();
+    gear_menu.initialize();
     hashchange.initialize();
     invite.initialize();
     activity.initialize();

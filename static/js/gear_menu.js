@@ -8,7 +8,7 @@ var exports = {};
 // when we switch back.)
 var scroll_positions = {};
 
-$(function () {
+exports.initialize = function () {
     admin.show_or_hide_menu_item();
 
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
@@ -67,7 +67,7 @@ $(function () {
 
     var settings_link = $('#gear-menu a[href="#settings"]');
     settings_link.on('shown', settings.setup_page);
-});
+};
 
 return exports;
 }());
