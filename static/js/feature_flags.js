@@ -2,9 +2,6 @@ var feature_flags = (function () {
 
 var exports = {};
 
-// Helpers
-var og_zuliper_emails = [];
-
 // Voyager-related flags
 exports.do_not_share_the_love = page_params.voyager;
 
@@ -16,7 +13,6 @@ exports.local_echo = true;
 
 // Permanent realm-specific stuff:
 exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
-exports.is_og_zulip_user = _.contains(og_zuliper_emails, page_params.email);
 
 // Experimental modification to support much wider message views.
 exports.full_width = false;
