@@ -370,7 +370,7 @@ def process_notice(notice, log):
     if is_personal:
         if body.startswith("CC:"):
             is_huddle = True
-            # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
+            # Map "CC: user1 user2" => "user1@mit.edu, user2@mit.edu"
             huddle_recipients = [to_zulip_username(x.strip()) for x in
                                  body.split("\n")[0][4:].split()]
             if notice.sender not in huddle_recipients:

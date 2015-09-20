@@ -352,7 +352,7 @@ def compute_jabber_user_fullname(email):
 
 def compute_mit_user_fullname(email):
     try:
-        # Input is either e.g. starnine@mit.edu or user|CROSSREALM.INVALID@mit.edu
+        # Input is either e.g. username@mit.edu or user|CROSSREALM.INVALID@mit.edu
         match_user = re.match(r'^([a-zA-Z0-9_.-]+)(\|.+)?@mit\.edu$', email.lower())
         if match_user and match_user.group(2) is None:
             answer = DNS.dnslookup(
