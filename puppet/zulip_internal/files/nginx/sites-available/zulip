@@ -37,19 +37,6 @@ server {
     ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
-    server_name customer29.zulip.com;
-
-    include /etc/nginx/zulip-include/app;
-}
-
-server {
-    listen 443;
-
-    ssl on;
-
-    ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
-
     # We don't actually have an SSL cert for zulip.com, but that's okay since
     # clients will never be accessing this host directly.
     server_name humbughq.com www.humbughq.com zulip.com www.zulip.com;
