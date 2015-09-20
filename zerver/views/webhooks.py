@@ -50,14 +50,8 @@ def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
     `payload` comes in unmodified from github
     `stream` is set to 'commits' if otherwise unset
     """
-
     commit_stream = stream
-    # in v1, we assume that the stream 'issues' exists, since we only handle issues for CUSTOMER5 and ourselves
-    issue_stream = stream
-
-    if user_profile.realm.domain in ('customer5.invalid', 'zulip.com'):
-        issue_stream = 'issues'
-
+    issue_stream = 'issues'
     return api_github_v2(user_profile, event, payload, branches, stream, commit_stream, issue_stream, **kwargs)
 
 
