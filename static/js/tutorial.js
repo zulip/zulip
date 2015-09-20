@@ -350,14 +350,12 @@ function finale() {
 
     var alert_contents;
 
-    if (page_params.enable_new_user_app_alerts) {
-        if (page_params.prompt_for_invites) {
-            alert_contents = "<i class='icon-vector-heart alert-icon'></i>It's lonely in here! <a href='#invite-user' data-toggle='modal'>Invite some coworkers</a>.";
-        } else {
-            alert_contents = "<i class='icon-vector-desktop alert-icon'></i>What's better than " + page_params.product_name + " in your browser? The <a href='/apps' target='_blank'>"+ page_params.product_name + " desktop app</a>!";
-        }
-        show_app_alert(alert_contents);
+    if (page_params.prompt_for_invites) {
+        alert_contents = "<i class='icon-vector-heart alert-icon'></i>It's lonely in here! <a href='#invite-user' data-toggle='modal'>Invite some coworkers</a>.";
+    } else {
+        alert_contents = "<i class='icon-vector-desktop alert-icon'></i>What's better than " + page_params.product_name + " in your browser? The <a href='/apps' target='_blank'>"+ page_params.product_name + " desktop app</a>!";
     }
+    show_app_alert(alert_contents);
 
     // We start you in a narrow so it's not overwhelming.
     if (stream_data.in_home_view(page_params.notifications_stream)) {
