@@ -172,9 +172,7 @@ def realm_summary_table(realm_minutes):
                 GROUP BY realm_id
             ) at_risk_counts
             ON at_risk_counts.realm_id = realm.id
-        WHERE
-            realm.domain not in ('customer4.invalid', 'wdaher.com')
-        AND EXISTS (
+        WHERE EXISTS (
                 SELECT *
                 FROM zerver_useractivity ua
                 JOIN zerver_userprofile up
@@ -226,11 +224,6 @@ def realm_summary_table(realm_minutes):
 
     # Count active sites
     def meets_goal(row):
-        # The wdaher.com realm doesn't count toward company goals for
-        # obvious reasons, and customer4.invalid is essentially a dup
-        # for users.customer4.invalid.
-        if row['domain'] in ['customer4.invalid', 'wdaher.com']:
-            return False
         return row['active_user_count'] >= 5
 
     num_active_sites = len(filter(meets_goal, rows))

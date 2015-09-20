@@ -25,12 +25,8 @@ users_who_sent_query = Message.objects.select_related("sender") \
 
 def active_users():
     # Return a list of active users we want to count towards various
-    # statistics. This eliminates bots, @zulip.com, @customer29.invalid and customer3.invalid
-    exclude_realms = ["zulip.com", "customer29.invalid", "customer3.invalid",
-                      "ios_appreview.zulip.com", "wdaher.com", "customer30.invalid"]
-    return UserProfile.objects.filter(is_bot=False, is_active=True) \
-                              .exclude(realm__domain__in=exclude_realms) \
-                              .select_related()
+    # statistics.
+    return UserProfile.objects.filter(is_bot=False, is_active=True).select_related()
 
 def users_who_sent_between(begin, end):
     sender_objs = users_who_sent_query.filter(pub_date__gt=begin, pub_date__lt=end) \
@@ -64,10 +60,6 @@ def seconds_active_during_day(day):
     begin_day = day.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=utc)
     end_day = day.replace(hour=23, minute=59, second=59, microsecond=0, tzinfo=utc)
     active_users = active_users_to_measure()
-
-    # Exclude Friday CUSTOMER4 activity numbers
-    if day.weekday() == 4:
-        active_users = [u for u in active_users if u.realm.domain != 'users.customer4.invalid']
 
     return [seconds_usage_between(user, begin_day, end_day).total_seconds() for user in active_users]
 
