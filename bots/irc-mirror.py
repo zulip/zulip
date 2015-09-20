@@ -12,9 +12,11 @@ from irc.client import ip_numstr_to_quad, ip_quad_to_numstr
 import zulip
 import optparse
 
+IRC_DOMAIN = "irc.example.com"
+
 def zulip_sender(sender_string):
     nick = sender_string.split("!")[0]
-    return nick + "@irc.zulip.com"
+    return nick + "@" + IRC_DOMAIN
 
 class IRCBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
@@ -47,14 +49,14 @@ class IRCBot(irc.bot.SingleServerIRCBot):
     def on_privmsg(self, c, e):
         content = e.arguments[0]
         sender = zulip_sender(e.source)
-        if sender.endswith("_zulip@irc.zulip.com"):
+        if sender.endswith("_zulip@" + IRC_DOMAIN):
             return
 
         # Forward the PM to Zulip
         print zulip_client.send_message({
                 "sender": sender,
                 "type": "private",
-                "to": "tabbott@zulip.com",
+                "to": "username@example.com",
                 "content": content,
                 })
 
@@ -62,7 +64,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
         content = e.arguments[0]
         stream = e.target
         sender = zulip_sender(e.source)
-        if sender.endswith("_zulip@irc.zulip.com"):
+        if sender.endswith("_zulip@" + IRC_DOMAIN):
             return
 
         # Forward the stream message to Zulip
@@ -94,8 +96,8 @@ usage = """python irc-mirror.py --server=IRC_SERVER --channel=<CHANNEL> --nick-p
 
 Example:
 
-python irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=tabbott
-  --site=https://staging.zulip.com --user=irc-bot@zulip.com
+python irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=username
+  --site=https://zulip.example.com --user=irc-bot@example.com
   --api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 Note that "_zulip" will be automatically appended to the IRC nick provided

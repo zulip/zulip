@@ -18,8 +18,8 @@ usage = """show-last-messages --user=<bot's email address> --api-key=<bot's api 
 
 Shows the last <count> messages on all public streams.
 
-Examples: subscribe --user=tabbott@zulip.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --count=5 --streams=social
-          subscribe --user=tabbott@zulip.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --streams='foo bar'
+Examples: subscribe --user=username@example.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --count=5 --streams=social
+          subscribe --user=username@example.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --streams='foo bar'
 
 You can omit --user and --api-key arguments if you have a properly set up ~/.zuliprc
 """
