@@ -23,7 +23,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     RealmFilter, bulk_get_recipients, \
     PreregistrationUser, get_client, MitUser, UserActivity, PushDeviceToken, \
     get_stream, bulk_get_streams, UserPresence, \
-    get_recipient, valid_stream_name, is_super_user_api, \
+    get_recipient, valid_stream_name, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, get_active_user_dicts_in_realm, remote_user_to_email
 from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \

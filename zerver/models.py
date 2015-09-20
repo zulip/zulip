@@ -34,12 +34,6 @@ bugdown = None
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 
-def is_super_user(user_profile):
-    return user_profile.is_api_super_user()
-
-def is_super_user_api(request):
-    return request.user.is_authenticated() and is_super_user(request.user)
-
 # Doing 1000 memcached requests to get_display_recipient is quite slow,
 # so add a local cache as well as the memcached cache.
 per_request_display_recipient_cache = {}

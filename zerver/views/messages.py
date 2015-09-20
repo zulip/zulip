@@ -25,7 +25,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, valid_stream_name, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
-    stringify_message_dict, is_super_user, is_super_user_api, \
+    stringify_message_dict, \
     resolve_email_to_domain, get_realm, get_active_streams, \
     bulk_get_streams
 
@@ -718,7 +718,7 @@ def send_message_backend(request, user_profile,
                          local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
     client = request.client
-    is_super_user = is_super_user_api(request)
+    is_super_user = request.user.is_api_super_user()
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
 

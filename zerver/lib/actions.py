@@ -12,7 +12,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     resolve_email_to_domain, email_to_username, display_recipient_cache_key, \
-    get_stream_cache_key, to_dict_cache_key_id, is_super_user, \
+    get_stream_cache_key, to_dict_cache_key_id, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, RealmFilter, get_active_bot_dicts_in_realm
@@ -762,8 +762,8 @@ def check_message(sender, client, message_type_name, message_to,
         elif subscribed_to_stream(sender, stream):
             # Or it is private, but your are subscribed
             pass
-        elif is_super_user(sender) or (forwarder_user_profile is not None and
-                                       is_super_user(forwarder_user_profile)):
+        elif sender.is_api_super_user() or (forwarder_user_profile is not None and
+                                            forwarder_user_profile.is_api_super_user()):
             # Or this request is being done on behalf of a super user
             pass
         elif sender.is_bot and subscribed_to_stream(sender.bot_owner, stream):
@@ -2820,7 +2820,7 @@ def get_occupied_streams(realm):
 
 def do_get_streams(user_profile, include_public=True, include_subscribed=True,
                    include_all_active=False):
-    if include_all_active and not is_super_user(user_profile):
+    if include_all_active and not user_profile.is_api_super_user():
         raise JsonableError("User not authorized for this query")
 
     # Listing public streams are disabled for the mit.edu realm.
