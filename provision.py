@@ -16,6 +16,7 @@ SUPPORTED_PLATFORMS = {
 
 APT_DEPENDENCIES = {
     "trusty": [
+        "closure-compiler",
         "libffi-dev",
         "memcached",
         "rabbitmq-server",

@@ -74,7 +74,13 @@ if prev_deploy:
     changed_files.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
 
 JS_SPECS = settings.JS_SPECS
-CLOSURE_BINARY = 'tools/closure-compiler/run'
+CLOSURE_BINARY = '/usr/bin/closure-compiler'
+if not os.path.exists(CLOSURE_BINARY):
+    CLOSURE_BINARY = 'tools/closure-compiler/run'
+    if not os.path.exists(CLOSURE_BINARY):
+        print "closure-compiler not installed; the Vagrant provision.py installs it via apt "\
+            "or you can manually unpack http://dl.google.com/closure-compiler/compiler-latest.zip to tools/closure-compiler"
+        sys.exit(1)
 
 # Where to put minified JS and source maps
 MIN_DIR = os.path.join(STATIC_PATH, 'min/')
