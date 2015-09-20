@@ -17,6 +17,12 @@ else
     TMPDIR=$(mktemp -d)
 fi
 
+if ! git diff --exit-code >/dev/null; then
+    set +x
+    echo; echo "\033[31mWARNING: tarballs builds are based on a commit hash so your changes will not be included\033[0m"; echo
+    set -x
+fi
+
 TMP_CHECKOUT=$TMPDIR/$prefix/
 TARBALL=$TMPDIR/$prefix.tar
 
@@ -59,6 +65,10 @@ EOF
 
 # update-prod-static generates the prod-static directory.
 # See COLLECTSTATIC in settings.py
+set +x
+echo; echo "\033[33mRunning update-prod-static; check ${TMP_CHECKOUT}update-prod-static.log if it fails\033[0m"; echo
+set -x
+
 ./tools/update-prod-static
 echo $GITID > build_id
 echo $version > version
