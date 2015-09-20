@@ -1,9 +1,9 @@
 var ct = require('js/composebox_typeahead.js');
 
 var people_in_realm = [{email: 'othello@zulip.com', full_name: "Othello, Moor of Venice"},
-					   {email: 'cordelia@zulip.com', full_name: "Cordelia Lear"}];
+                       {email: 'cordelia@zulip.com', full_name: "Cordelia Lear"}];
 var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
-			      {emoji_name: "moneybags", emoji_url: "TBD"}];
+                  {emoji_name: "moneybags", emoji_url: "TBD"}];
 
 set_global('page_params', {people_list: people_in_realm});
 set_global('emoji', {emojis: emoji_list});
@@ -19,8 +19,8 @@ set_global('emoji', {emojis: emoji_list});
 }());
 
 (function test_begins_typeahead () {
-	// Stub out split_at_cursor that uses $(':focus')
-	ct.split_at_cursor = function (word) { return [word, '']; };
+    // Stub out split_at_cursor that uses $(':focus')
+    ct.split_at_cursor = function (word) { return [word, '']; };
 
     var begin_typehead_this = {options: {completions: {emoji: true,
                                                       mention: true}}};

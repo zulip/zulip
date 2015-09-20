@@ -97,8 +97,8 @@ casper.waitUntilVisible('.edit_bot_form[data-email="1-bot@zulip.com"]', function
 //         'Rome'
 //     );
     casper.test.assertEqual(
-	common.get_form_field_value(form_sel + ' [name=bot_name]'),
-	'Bot 1'
+        common.get_form_field_value(form_sel + ' [name=bot_name]'),
+        'Bot 1'
     );
 });
 

@@ -39,9 +39,9 @@ def loc_to_abs_offset(loc_str):
     #   result = XLogFileSize * xlogid1 + xrecoff1
     #
     # xlog_internal.h says:
-    #   #define XLogSegSize		((uint32) XLOG_SEG_SIZE)
+    #   #define XLogSegSize ((uint32) XLOG_SEG_SIZE)
     #   #define XLogSegsPerFile (((uint32) 0xffffffff) / XLogSegSize)
-    #   #define XLogFileSize	(XLogSegsPerFile * XLogSegSize)
+    #   #define XLogFileSize (XLogSegsPerFile * XLogSegSize)
     #
     # Since XLOG_SEG_SIZE is normally 16MB, XLogFileSize comes out to 0xFF000000
     return 0xFF000000 * int(xlog_file, 16) + int(file_offset, 16)

@@ -76,7 +76,7 @@ exports.setup_page = function () {
         domain:                     page_params.domain,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required:      page_params.realm_invite_required,
-	realm_invite_by_admins_only: page_params.realm_invite_by_admins_only
+        realm_invite_by_admins_only: page_params.realm_invite_by_admins_only
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
@@ -175,24 +175,24 @@ exports.setup_page = function () {
     });
 
     $("#id_realm_invite_required").change(function () {
-	if(this.checked) {
-	    $("#id_realm_invite_by_admins_only").removeAttr("disabled");
-	    $("#id_realm_invite_by_admins_only_label").removeClass("control-label-disabled");
-	} else {
-	    $("#id_realm_invite_by_admins_only").attr("disabled", true);
-	    $("#id_realm_invite_by_admins_only_label").addClass("control-label-disabled");
-	}
+        if(this.checked) {
+            $("#id_realm_invite_by_admins_only").removeAttr("disabled");
+            $("#id_realm_invite_by_admins_only_label").removeClass("control-label-disabled");
+        } else {
+            $("#id_realm_invite_by_admins_only").attr("disabled", true);
+            $("#id_realm_invite_by_admins_only_label").addClass("control-label-disabled");
+        }
     });
 
     $(".administration").on("submit", "form.admin-realm", function (e) {
         var name_status = $("#admin-realm-name-status").expectOne();
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
-	var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
+        var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
-	invite_by_admins_only_status.hide();
+        invite_by_admins_only_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
@@ -200,23 +200,23 @@ exports.setup_page = function () {
         var new_name = $("#id_realm_name").val();
         var new_restricted = $("#id_realm_restricted_to_domain").prop("checked");
         var new_invite = $("#id_realm_invite_required").prop("checked");
-	var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
+        var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
 
         var url = "/json/realm";
         var data = {
             name: JSON.stringify(new_name),
             restricted_to_domain: JSON.stringify(new_restricted),
             invite_required: JSON.stringify(new_invite),
-	    invite_by_admins_only: JSON.stringify(new_invite_by_admins_only)
+            invite_by_admins_only: JSON.stringify(new_invite_by_admins_only)
         };
 
         channel.patch({
             url: url,
             data: data,
             success: function (data) {
-		if (data.name !== undefined) {
-		    ui.report_success("Name changed!", name_status);
-		}
+                if (data.name !== undefined) {
+                    ui.report_success("Name changed!", name_status);
+                }
                 if (data.restricted_to_domain !== undefined) {
                     if (data.restricted_to_domain) {
                         ui.report_success("New users must have @" + page_params.domain + " e-mails!", restricted_to_domain_status);
@@ -224,23 +224,23 @@ exports.setup_page = function () {
                     else {
                         ui.report_success("New users may have arbitrary e-mails!", restricted_to_domain_status);
                     }
-		}
-		if (data.invite_required !== undefined) {
+                }
+                if (data.invite_required !== undefined) {
                     if (data.invite_required) {
                         ui.report_success("New users must be invited by e-mail!", invite_required_status);
                     }
                     else {
                         ui.report_success("New users may sign up online!", invite_required_status);
                     }
-		}
-		if (data.invite_by_admins_only !== undefined) {
+                }
+                if (data.invite_by_admins_only !== undefined) {
                     if (data.invite_by_admins_only) {
                         ui.report_success("New users must be invited by an admin!", invite_by_admins_only_status);
                     }
                     else {
                         ui.report_success("Any user may now invite new users!", invite_by_admins_only_status);
                     }
-		}
+                }
             },
             error: function (xhr, error) {
                 ui.report_error("Failed!", xhr, name_status);
