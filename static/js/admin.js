@@ -80,11 +80,11 @@ exports.setup_page = function () {
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
-    $("#administration-status").hide();
-    $("#admin-realm-name-status").hide();
-    $("#admin-realm-restricted-to-domain-status").hide();
-    $("#admin-realm-invite-required-status").hide();
-    $("#admin-realm-invite-by-admins-only").hide();
+    $("#administration-status").expectOne().hide();
+    $("#admin-realm-name-status").expectOne().hide();
+    $("#admin-realm-restricted-to-domain-status").expectOne().hide();
+    $("#admin-realm-invite-required-status").expectOne().hide();
+    $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
 
     // create loading indicators
     loading.make_indicator($('#admin_page_users_loading_indicator'));
