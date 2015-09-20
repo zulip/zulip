@@ -75,11 +75,14 @@ for filepath in files:
 
     by_lang[exn].append(filepath)
 
-def check_trailing_whitespace(fn):
+def check_whitespace(fn):
     failed = False
     for i, line in enumerate(open(fn)):
         if re.search('\s+$', line.strip('\n')):
             sys.stdout.write('Fix whitespace at %s line %s\n' % (fn, i+1))
+            failed = True
+        if re.search('\t', line):
+            sys.stdout.write('Fix tab-based whitespace at %s line %s\n' % (fn, i+1))
             failed = True
     return failed
 
@@ -161,16 +164,19 @@ def check_pyflakes():
 def check_custom_checks():
     failed = False
 
-    for fn in by_lang['.js'] + by_lang['.py']:
-        if check_trailing_whitespace(fn):
-            failed = True
-
     for fn in by_lang['.py']:
         if check_python_gotchas(fn):
             failed = True
 
     for fn in by_lang['.js']:
         if perform_extra_js_checks(fn):
+            failed = True
+
+    whitespace_exceptions = set(['zerver/lib/bugdown/codehilite.py'])
+    whitespace_targets = by_lang['.js'] + by_lang['.py']
+    whitespace_targets = [x for x in whitespace_targets if not x in whitespace_exceptions]
+    for fn in whitespace_targets:
+        if check_whitespace(fn):
             failed = True
 
     return failed
