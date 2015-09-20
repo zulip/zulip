@@ -1718,13 +1718,13 @@ def do_change_default_desktop_notifications(user_profile, default_desktop_notifi
     user_profile.default_desktop_notifications = default_desktop_notifications
     user_profile.save(update_fields=["default_desktop_notifications"])
 
-def do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time, log=True):
-    user_profile.twenty_four_hour_time = twenty_four_hour_time
+def do_change_twenty_four_hour_time(user_profile, setting_value, log=True):
+    user_profile.twenty_four_hour_time = setting_value
     user_profile.save(update_fields=["twenty_four_hour_time"])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
              'setting_name': 'twenty_four_hour_time',
-             'setting': twenty_four_hour_time}
+             'setting': setting_value}
     if log:
         log_event(event)
     send_event(event, [user_profile.id])

@@ -443,8 +443,8 @@ class EventsRegisterTest(AuthedTestCase):
             ('setting', check_bool),
             ])
         # The first False is probably a noop, then we get transitions in both directions.
-        for twenty_four_hour_time in [False, True, False]:
-            events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, twenty_four_hour_time))
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

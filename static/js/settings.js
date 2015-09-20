@@ -363,17 +363,17 @@ exports.setup_page = function () {
     });
 
     $("#twenty_four_hour_time").change(function () {
-        var time_checkbox = $("#twenty_four_hour_time").is(":checked");
         var data = {};
-        data.twenty_four_hour_time = JSON.stringify(time_checkbox);
+        var setting_value = $("#twenty_four_hour_time").is(":checked");
+        data.twenty_four_hour_time = JSON.stringify(setting_value);
 
         channel.patch({
             url: '/json/time_setting',
             data: data,
             success: function (resp, statusText, xhr, form) {
-                ui.report_success("Updated display settings!  You will need to reload for the changes to take effect",
+                ui.report_success("Updated display settings!  You will need to reload the window for your changes to take effect",
                                   $('#display-settings-status').expectOne());
-                },
+            },
             error: function (xhr, error_type, xhn) {
                 ui.report_error("Error updating display settings", xhr, $('#display-settings-status').expectOne());
             }
