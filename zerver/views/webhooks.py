@@ -179,25 +179,23 @@ def api_github_landing(request, user_profile, event=REQ,
     if domain == "customer26.invalid" and short_ref:
         kwargs['topic_focus'] = short_ref
 
-    if event == 'pull_request' and exclude_pull_requests:
-        return json_success()
+    allowed_events = set()
+    if not exclude_pull_requests:
+        allowed_events.add('pull_request')
 
-    if event == 'issues' and exclude_issues:
-        return json_success()
+    if not exclude_issues:
+        allowed_events.add("issues")
+        allowed_events.add("issue_comment")
 
-    ### Zulip-specific logic
+    if not exclude_commits:
+        allowed_events.add("push")
+        allowed_events.add("commit_comment")
 
-    # We currently handle push, pull_request, issues, issue_comment, commit_comment
-    if event not in ('pull_request', 'issues', 'issue_comment', 'push', 'commit_comment'):
-        # we don't handle this event type yet
+    if event not in allowed_events:
         return json_success()
 
     # We filter issue_comment events for issue creation events
-    if event == 'issue_comment' and payload['action'] != 'created' or exclude_issues:
-        return json_success()
-
-    # Filter commits traffic if requested
-    if event in ("push", "commit_comment") and exclude_commits:
+    if event == 'issue_comment' and payload['action'] != 'created':
         return json_success()
 
     if event == 'push':
