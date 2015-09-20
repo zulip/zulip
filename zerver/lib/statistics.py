@@ -99,8 +99,7 @@ def activity_averages_during_day(day):
     return calculate_stats(seconds_active, all_users=users_to_measure)
 
 # Returns an info dict {mean: , median} with engagement numbers for all users according
-# to active_users_to_measure. This will ignore weekends, and ignore users.customer4.invalid
-# on Fridays
+# to active_users_to_measure.
 def activity_averages_between(begin, end, by_day=True):
     seconds_active = {}
     users_to_measure = active_users_to_measure()

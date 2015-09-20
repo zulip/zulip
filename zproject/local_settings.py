@@ -97,9 +97,6 @@ ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.213.44.54',
                  '54.244.50.64', '54.244.50.65', '54.244.50.74',
                  'chat.dropboxer.net']
 
-
-JWT_AUTH_KEYS = {}
-
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 NEW_USER_BOT = "new-user-bot@zulip.com"

@@ -123,6 +123,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'LOCAL_UPLOADS_DIR': None,
                     'DROPBOX_APP_KEY': '',
                     'ERROR_REPORTING': True,
+                    'JWT_AUTH_KEYS': {},
                     'NAME_CHANGES_DISABLED': False,
                     'DEPLOYMENT_ROLE_NAME': "",
                     # The following bots only exist in non-VOYAGER installs
