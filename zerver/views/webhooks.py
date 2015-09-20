@@ -179,21 +179,12 @@ def api_github_landing(request, user_profile, event=REQ,
     if domain == "customer26.invalid" and short_ref:
         kwargs['topic_focus'] = short_ref
 
-    # CUSTOMER18 has requested not to get pull request notifications
-    if (event == 'pull_request' and domain in ['customer18.invalid']) or exclude_pull_requests:
+    if event == 'pull_request' and exclude_pull_requests:
         return json_success()
 
     # Only Zulip, CUSTOMER5, CUSTOMER27, and CUSTOMER17 get issues right now
     # TODO: is this still the desired behavior?
     if event == 'issues' and domain not in ('zulip.com', 'customer5.invalid', 'customer27.invalid', 'customer17.invalid') or exclude_issues:
-        return json_success()
-
-    # CUSTOMER37 and CUSTOMER38 do not want github issues traffic, or push notifications, only pull requests.
-    if event in ('issues', 'issue_comment', 'push') and domain in ('customer37.invalid', 'customer38.invalid'):
-        return json_success()
-
-    # CUSTOMER23 doesn't want synchronize events for pull_requests
-    if event == "pull_request" and payload['action'] == "synchronize" and domain == "customer23.invalid":
         return json_success()
 
     ### Zulip-specific logic
@@ -212,14 +203,6 @@ def api_github_landing(request, user_profile, event=REQ,
         return json_success()
 
     if event == 'push':
-        # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
-        # get spammed when people commit to non-master all over the place.
-        # Long-term, this will be replaced by some GitHub configuration
-        # option of which branches to notify on.
-        # FIXME: get CUSTOMER18 to use the branch whitelist
-        if short_ref != 'master' and domain in ['customer18.invalid', 'zulip.com']:
-            return json_success()
-
         # If we are given a whitelist of branches, then we silently ignore
         # any push notification on a branch that is not in our whitelist.
         if branches and short_ref not in re.split('[\s,;|]+', branches):
