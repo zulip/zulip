@@ -139,7 +139,8 @@ def api_github_landing(request, user_profile, event=REQ,
                        issue_stream=REQ(default=''),
                        exclude_pull_requests=REQ(converter=flexible_boolean, default=False),
                        exclude_issues=REQ(converter=flexible_boolean, default=False),
-                       exclude_commits=REQ(converter=flexible_boolean, default=False)
+                       exclude_commits=REQ(converter=flexible_boolean, default=False),
+                       emphasize_branch_in_topic=REQ(converter=flexible_boolean, default=False),
                        ):
 
     repository = payload['repository']
@@ -157,7 +158,9 @@ def api_github_landing(request, user_profile, event=REQ,
                                      'issue_stream': issue_stream,
                                      'exclude_pull_requests': exclude_pull_requests,
                                      'exclude_issues': exclude_issues,
-                                     'exclude_commits': exclude_commits}))
+                                     'exclude_commits': exclude_commits,
+                                     'emphasize_branch_in_topic': emphasize_branch_in_topic,
+                                     }))
                 f.write("\n")
     except Exception:
         logging.exception("Error while capturing Github event")
@@ -168,9 +171,7 @@ def api_github_landing(request, user_profile, event=REQ,
     short_ref = re.sub(r'^refs/heads/', '', payload.get('ref', ""))
     kwargs = dict()
 
-    ### realm-specific logic
-    domain = user_profile.realm.domain
-    if domain == "customer26.invalid" and short_ref:
+    if (emphasize_branch_in_topic or user_profile.realm.domain == "customer26.invalid") and short_ref:
         kwargs['topic_focus'] = short_ref
 
     allowed_events = set()
