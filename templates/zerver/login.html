@@ -110,9 +110,11 @@ autofocus('#id_username');
 	        <label for="direct_email" class="direct-label">or Choose a user:</label>
 		{% endif %}
 	        <div class="controls">
+                    <p>(Administrators)</p>
 		    {% for user_email in direct_admins %}
 		    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
 		    {% endfor %}
+                    <p>(Normal users)</p>
 		    {% for user_email in direct_users %}
 		    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
 		    {% endfor %}
