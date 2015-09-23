@@ -2,9 +2,7 @@
 Directory structure
 ===================
 
-.. attention::
-
-This page documents our directory structure and how to decide where to
+This page documents the Zulip directory structure and how to decide where to
 put a file.
 
 Scripts
@@ -24,9 +22,9 @@ Bots
 ====
 
 +------------------------+----------------------------------------------------------------------+
-| ``bots/``              | Not distributed, even to production deployment instances             |
+| ``api/integrations``   | Bots distributed as part of the Zulip API bundle.                    |
 +------------------------+----------------------------------------------------------------------+
-| ``api/integrations``   | Distributed in our API bundle                                        |
+| ``bots/``              | Previously Zulip internal bots.  These usually need a bit of work.   |
 +------------------------+----------------------------------------------------------------------+
 
 Management commands
@@ -77,11 +75,13 @@ Templates
 Tests
 =====
 
-+------------------------+---------------------------------+
-| ``zerver/test*.py``    | Backend tests                   |
-+------------------------+---------------------------------+
-| ``zerver/tests``       | Frontend tests                  |
-+------------------------+---------------------------------+
++------------------------+-----------------------------------+
+| ``zerver/test*.py``             | Backend tests            |       |
++------------------------+-----------------------------------+
+| ``zerver/tests/frontend/node``  | Node Frontend unit tests |
++------------------------+-----------------------------------+
+| ``zerver/tests/frontend/tests`` | Casper frontend tests    |
++------------------------+-----------------------------------+
 
 Documentation
 =============
@@ -90,6 +90,6 @@ Documentation
 | ``docs/``   | Source for this documentation                 |
 +-------------+-----------------------------------------------+
 
-You can consult the .gitattributes file to see exactly which
-components are excluded from production releases (release tarballs are
-generated using tools/build-release-tarball).
+You can consult the repository's .gitattributes file to see exactly
+which components are excluded from production releases (release
+tarballs are generated using tools/build-release-tarball).
