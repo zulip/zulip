@@ -9,6 +9,22 @@
     {% minified_js 'signup' %}
 {% endblock %}
 
+{% block os_announcement %}
+  {% if zulip_com %}
+  <div class="os-headline-container">
+    <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
+    <div class="main-headline-text">
+      <span class="tagline os-tagline">
+         Zulip has been released as open source software!
+      </span>
+      <span class="footnote os-footnote">
+         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
+      </span>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
 {% block portico_content %}
 
 {% if password_auth_enabled %}

@@ -21,7 +21,7 @@ hence the name.
           {% if zulip_com %}
           <a class="brand logo" href="/"><img src="/static/images/logo/zulip-dropbox.png" class="portico-logo" alt="Zulip" content="Zulip" /></a>
           {% else %}
-          <a class="brand logo" href="/"><img src="/static/images/logo/zulipwlogo@2x.png" class="portico-logo" alt="Zulip" content="Zulip" /></a>
+          <a class="brand logo" href="/"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="portico-simple-logo" alt="Zulip" content="Zulip" /></a>
           {% endif %}
         </div>
   </div>
@@ -41,6 +41,10 @@ hence the name.
 </div>
 
 <div class="app portico-page">
+  <div class="portico-os-announcement">
+    {% block os_announcement %}
+    {% endblock %}
+  </div>
   <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
   {% block portico_content %}
   {% endblock %}

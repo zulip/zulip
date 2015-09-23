@@ -1,6 +1,22 @@
 {% extends "zerver/portico.html" %}
 {% block hello_page_container %} hello-main{% endblock %}
 {% block hello_page_footer %} hello-footer{% endblock %}
+{% block os_announcement %}
+  {% if zulip_com %}
+  <div class="os-headline-container">
+    <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
+    <div class="main-headline-text">
+      <span class="tagline os-tagline">
+         Zulip has been released as open source software!
+      </span>
+      <span class="footnote os-footnote">
+         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
+      </span>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
 {% block portico_content %}
 <div class="app main-headline">
   <div class="app-main main-headline-container">
