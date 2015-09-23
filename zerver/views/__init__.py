@@ -1121,9 +1121,9 @@ def json_get_profile(request, user_profile):
 # We filter on {userprofile,stream,subscription_recipient}_ids.
 @require_realm_admin
 def export(request, user_profile):
-    # TODO: remove after testing
-    if user_profile.realm.domain not in  ['zulip.com','zulip.org']:
-        return json_error("Unauthorized")
+    if (Message.objects.filter(sender__realm=user_profile.realm).count() > 1000000 or
+        UserMessage.objects.filter(user_profile__realm=user_profile.realm).count() > 3000000):
+        return json_error("Realm has too much data for non-batched export.")
 
     response = {}
 
