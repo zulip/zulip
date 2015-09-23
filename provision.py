@@ -164,9 +164,5 @@ def main():
     sh.do_destroy_rebuild_test_database(**LOUD)
     sh.setup_git_repo(**LOUD)
 
-    with sh.sudo:
-        sh.cp(os.path.join(ZULIP_PATH, "tools", "provision", "zulip-dev.conf"), "/etc/supervisor/conf.d/zulip-dev.conf", **LOUD)
-        sh.service("supervisor", "restart", **LOUD)
-
 if __name__ == "__main__":
     sys.exit(main())
