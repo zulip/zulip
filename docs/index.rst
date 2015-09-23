@@ -11,12 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   welcome
    new-feature-tutorial
    code-style
    directory-structure
    testing
-   schema-changes
 
 Indices and tables
 ==================
