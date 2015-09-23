@@ -3,7 +3,6 @@ Directory structure
 ===================
 
 .. attention::
-   does ``tools/build-voyager-tarball`` need a different name?
 
 This page documents our directory structure and how to decide where to
 put a file.
@@ -91,7 +90,6 @@ Documentation
 | ``docs/``   | Source for this documentation                 |
 +-------------+-----------------------------------------------+
 
-You can consult the code for ``tools/build-voyager-tarball`` to
-check exactly which components are included in production --
-since that is the tool that does the builds, it controls the
-distribution.
+You can consult the .gitattributes file to see exactly which
+components are excluded from production releases (release tarballs are
+generated using tools/build-release-tarball).

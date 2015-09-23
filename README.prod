@@ -106,7 +106,7 @@ Maintaining Zulip in production:
   we recommend doing upgrades at off hours.
 
   You can create your own release tarballs from a copy of this
-  repository using `tools/build-voyager-tarball`.
+  repository using `tools/build-release-tarball`.
 
 * To update your settings, simply edit /etc/zulip/settings.py and then
   run /home/zulip/deployments/current/scripts/restart-server to
@@ -116,12 +116,15 @@ Maintaining Zulip in production:
   a regular basis to ensure that it is up to date with the latest
   security patches.
 
-* To use the Zulip API with Zulip Voyager, you will need to use the
+* To use the Zulip API with your Zulip server, you will need to use the
   API endpoint of e.g. "https://zulip.yourdomain.net/api".  Our Python
   API example scripts support this via the
   "--site=https://zulip.yourdomain.net" argument.  The API bindings
   support it via putting "site=https://zulip.yourdomain.net" in your
   .zuliprc.
+
+* Similarly, you will need to instruct your users to specify the URL
+  for your Zulip server when using the Zulip desktop and mobile apps.
 
 * As a measure to mitigate the impact of potential memory leaks in one
   of the Zulip daemons, the service automatically restarts itself
