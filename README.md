@@ -1,5 +1,5 @@
-Getting started
-===============
+Installing the Zulip Development environment
+============================================
 
 Using Vagrant
 -------------
@@ -103,3 +103,22 @@ When running the test suite, if you get an error like this:
     LINE 2: ...ECT message_id, flags, subject, rendered_content, ts_match_l...
                                                                  ^
 … then you need to install tsearch-extras, described above. Afterwards, re-run the init*-db and the do-destroy-rebuild*-database scripts.
+
+Contributing to Zulip
+=====================
+
+Zulip welcomes all forms of contributions!
+
+Before a pull request can be merged, you need to to sign the [Dropbox
+Contributor License Agreement](https://opensource.dropbox.com/cla/).
+
+Also, you should run the tests and lint rules to make sure that they
+all pass.  The development server configuration automatically sets up
+`tools/lint-all` to run as a pre-commit hook.
+
+Zulip also has a [development discussion mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+
+Running Zulip in production
+===========================
+
+This is documented in https://zulip.org/server.html and README.prod.md.
