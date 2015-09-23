@@ -1,4 +1,6 @@
-Requirements:
+This documents the process for installing Zulip in a production environment.
+
+Recommended requirements:
 
 * Server running Ubuntu Precise or Debian Wheezy
 * At least 2 CPUs for production use
@@ -14,7 +16,7 @@ Requirements:
 
 =======================================================================
 
-How to install Zulip Voyager:
+How to install Zulip in production:
 
 These instructions should be followed as root.
 
@@ -47,10 +49,10 @@ to visit the URL for your server and register for an account.
 
 SSO Authentication:
 
-We integrate with your Single-Sign-On solution.  There are a few ways
-to do it, but this section documents how to configure Zulip to use
-your SSO solution that supports Apache and will set the REMOTE_USER
-variable:
+Zulip supports integrating with a corporate Single-Sign-On solution.
+There are a few ways to do it, but this section documents how to
+configure Zulip to use an SSO solution that best supports Apache and
+will set the REMOTE_USER variable:
 
 (0) Check that /etc/zulip/settings.py has
 "zproject.backends.ZulipRemoteUserBackend" as the only enabled value
@@ -89,18 +91,22 @@ login via the SSO solution.
 
 =======================================================================
 
-Maintaining Zulip Voyager:
+Maintaining Zulip in production:
 
-* To upgrade to a new version, download the appropriate tarball from
-  https://zulip.com/enterprise/download, and then run
+* To upgrade to a new version, download the appropriate release
+  tarball from https://www.zulip.org, and then run as root
 
   /home/zulip/deployments/current/scripts/upgrade-zulip <tarball>
 
-  The upgrade process will result in some brief downtime for the
-  service, which should be under 30 seconds unless there is an
-  expensive transition involved, which would be mentioned in the
-  release notes for the upgrade.  So we recommend doing upgrades at
-  off hours.
+  The upgrade process will shut down the service, run `apt-get
+  upgrade` and any database migrations, and then bring the service
+  back up.  This will result in some brief downtime for the service,
+  which should be under 30 seconds unless there is an expensive
+  transition involved.  Unless you have tested the upgrade in advance,
+  we recommend doing upgrades at off hours.
+
+  You can create your own release tarballs from a copy of this
+  repository using `tools/build-voyager-tarball`.
 
 * To update your settings, simply edit /etc/zulip/settings.py and then
   run /home/zulip/deployments/current/scripts/restart-server to
@@ -112,17 +118,12 @@ Maintaining Zulip Voyager:
 
 * To use the Zulip API with Zulip Voyager, you will need to use the
   API endpoint of e.g. "https://zulip.yourdomain.net/api".  Our Python
-  API examples support this via the
+  API example scripts support this via the
   "--site=https://zulip.yourdomain.net" argument.  The API bindings
   support it via putting "site=https://zulip.yourdomain.net" in your
   .zuliprc.
 
-* Contact support@zulip.com for our Nagios plugin for monitoring the
-  service's health as you move it into production.
-
-* As a measure to mitigate the impact of potential memory leaks, the
-  service automatically restarts itself once a week Sunday early
-  morning.  See /etc/cron.d/restart-zulip for the precise
-  configuration; if you'd like to change this setting, please be in
-  touch with Zulip support on how to properly disable it (if you just
-  delete the file, it will be re-added on the next Zulip upgrade).
+* As a measure to mitigate the impact of potential memory leaks in one
+  of the Zulip daemons, the service automatically restarts itself
+  every Sunday early morning.  See /etc/cron.d/restart-zulip for the
+  precise configuration.
