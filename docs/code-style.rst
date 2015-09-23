@@ -1,20 +1,16 @@
-==========
-Code style
-==========
-
-.. attention::
-   Needs content review
+==========================
+Code style and conventions
+==========================
 
 Be consistent!
 ==============
 
-Look at the surrounding code, or a similar part of the project, and try
-to do the same thing. If you think the other code has actively bad
-style, fix it (in a separate commit). Talk to the author first if you
-can.
+Look at the surrounding code, or a similar part of the project, and
+try to do the same thing. If you think the other code has actively bad
+style, fix it (in a separate commit).
 
-If in doubt, ask your colleagues or look online for guidance from
-experts.
+When in doubt, send an email to zulip-devel@googlegroups.com with your
+question.
 
 Lint tools
 ==========
@@ -29,7 +25,9 @@ You can set this up as a local Git commit hook with
 
 ::
 
-    echo ./tools/lint-all > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+    ``tools/setup-git-repo``
+
+The Vagrant setup process runs this for you.
 
 ``lint-all`` runs many lint checks in parallel, including
 
@@ -42,14 +40,14 @@ You can set this up as a local Git commit hook with
 - Python (`Pyflakes <http://pypi.python.org/pypi/pyflakes>`__)
 - templates
 - Puppet configuration
-- custom checks (e.g. trailing whitespace)
+- custom checks (e.g. trailing whitespace and spaces-not-tabs)
 
 Secrets
 =======
 
 Please don't put any passwords, secret access keys, etc. inline in the
-code. These secrets should always live in either Puppet or (for our
-Django backend) in ``zproject/local_settings.py``.
+code.  Instead, use the ``get_secret`` function in
+``zproject/settings.py`` to read secrets from ``/etc/zulip/secrets.conf``.
 
 Dangerous constructs
 ====================
@@ -84,7 +82,7 @@ use ``get_user_profile_by_{email,id}``. There are 3 reasons for this:
 #. It fetches the user object from memcached, which is faster
 #. It always fetches a UserProfile object which has been queried using
    .selected\_related(), and thus will perform well when one later
-   accesses related fields like the Realm.
+   accesses related models like the Realm.
 
 Similarly we have ``get_client`` and ``get_stream`` functions to fetch
 those commonly accessed objects via memcached.
@@ -185,9 +183,9 @@ State and logs files
 --------------------
 
 Do not write state and logs files inside the current working directory
-in the production environment. This will not work correctly, because the
+in the production environment. This will not how you expect, because the
 current working directory for the app changes every time we do a deploy.
-Instead, hardcode a path when settings.py -- see SERVER\_LOG\_PATH in
+Instead, hardcode a path in settings.py -- see SERVER\_LOG\_PATH in
 settings.py for an example.
 
 JS array/object manipulation
@@ -333,7 +331,7 @@ HTML / CSS
 ----------
 
 Don't use the ``style=`` attribute. Instead, define logical classes and
-put your styles in ``zephyr.css``.
+put your styles in ``zulip.css``.
 
 Don't use the tag name in a selector unless you have to. In other words,
 use ``.foo`` instead of ``span.foo``. We shouldn't have to care if the
@@ -392,8 +390,8 @@ Version Control
 Commit Discipline
 -----------------
 
-We follow the recommended git practice of "1 minimal coherent change per
-commit".
+We follow the Git project's own commit discipline practice of "Each
+commit is a minimal coherent idea".
 
 Coherency requirements for any commit:
 
@@ -407,21 +405,15 @@ Coherency requirements for any commit:
    checks should be there from the beginning.
 -  Error handling should generally be included along with the code that
    might trigger the error.
--  TODO comments should probably be in the commit that introduces the
+-  TODO comments should be in the commit that introduces the
    issue or functionality with further work required.
-
-Exceptions:
-
--  If a commit is part of a long refactoring series, and the individual
-   commit is a step backward in code cleanliness, it's still preferred
-   to have it as a single commit, as long as it's a pure refactoring.
 
 When you should be minimal:
 
 -  Significant refactorings should be done in a separate commit from
    functional changes.
 -  Moving code from one file to another should be done in a separate
-   commits from functional changes or even refactorings.
+   commits from functional changes or even refactoring within a file.
 -  2 different refactorings should be done in different commits.
 -  2 different features should be done in different commits.
 -  If you find yourself writing a commit message that reads like a list
@@ -434,7 +426,9 @@ When not to be overly minimal:
    new commits for each little subfeature of the new feature. E.g. if
    you're writing a new tool from scratch, it's fine to have the initial
    tool have plenty of options/features without doing separate commits
-   for each one.
+   for each one.  That said, reviewing a 2000-line giant blob of new
+   code isn't fun, so please be thoughtful about submitting things in
+   reviewable units.
 -  Don't bother to split back end commits from front end commits, even
    though the backend can often be coherent on its own.
 
@@ -442,6 +436,12 @@ Other considerations:
 
 -  Overly fine commits are easily squashed, but not vice versa, so err
    toward small commits, and the code reviewer can advise on squashing.
+
+It can take some practice to get used to writing your commits this
+way.  For example, often you'll start adding a feature, and discover
+you need to a refactoring partway through writing the feature.  When
+that happens, we recommend stashing your partial feature, do the
+refactoring, commit it, and then finish implementing your feature.
 
 Commit Messages
 ---------------
@@ -465,6 +465,16 @@ Good::
    explain why and how the change was made. If the commit makes
    performance improvements, you should generally include some rough
    benchmarks showing that it actually improves the performance.
+
+-  In your commit message, you should describe any manual testing you
+   did in addition to running the automated tests, and any aspects of
+   the commit that you think are questionable and you'd like special
+   attention applied to.
+
+Tests
+-----
+
+All significant new features should come with tests.
 
 Third party code
 ----------------
