@@ -2,6 +2,9 @@
 New Feature Tutorial
 ====================
 
+.. attention::
+   This tutorial is an unfinished work -- contributions welcome!
+
 The changes needed to add a new feature will vary, of course.  We give an
 example here that illustrates some of the common steps needed.  We describe
 the process of adding a new setting for admins that restricts inviting new
@@ -17,11 +20,13 @@ The server accesses the underlying database in `zerver/models.py`.  Add
 a new field in the appropriate class, `realm_invite_by_admins_only`
 in the `Realm` class in this case.
 
-Once you do so, you need to migrate the database.  See the page on schema changes
-for more details.
+Once you do so, you need to create the migration and run it; the
+process is documented at:
+https://docs.djangoproject.com/en/1.8/topics/migrations/
 
-.. attention::
-   Add link to schema-changes
+Once you've run the migration, to test your changes, you'll want to
+restart memcached on your development server (``/etc/init.d/memcached restart``) and
+then restart ``run-dev.py`` to avoid interacting with cached objects.
 
 Backend changes
 ---------------
@@ -52,7 +57,7 @@ already took care of our event.
 
 Then update `zerver/views/__init__.py` to actually call your function.
 In the dictionary which sets the javascript `page_params` dictionary,
-add
+add a value for your feature.
 
 ::
 
@@ -65,9 +70,16 @@ The functions in this file control the generation of various pages served
 Our new feature also shows up in the administration tab (as a checkbox),
 so we need to update the `update_realm` function.
 
+
+Finally, add tests for your backend changes; at the very least you
+should add a test of your event data flowing through the system in
+``test_events.py``.
+
+
 Frontend changes
 ----------------
 
 You need to change various things on the front end.  In this case, the relevant files
 are `static/js/server_events.js`, `static/js/admin.js`, `static/styles/zulip.css
 and `static/templates/admin_tab.handlebars`.
+
