@@ -48,7 +48,6 @@ class zulip::app_frontend {
                     # Needed for S3 file uploads
                     "python-boto",
                     # Needed to send email
-                    "python-postmonkey",
                     "python-mandrill",
                     # Needed to generate diffs for edits
                     "python-diff-match-patch",

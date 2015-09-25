@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
-from postmonkey import PostMonkey, MailChimpException
 from zerver.models import get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client
 from zerver.lib.context_managers import lockfile
@@ -83,18 +82,21 @@ class QueueProcessingWorker(object):
     def stop(self):
         self.q.stop_consuming()
 
+if settings.MAILCHIMP_API_KEY:
+    from postmonkey import PostMonkey, MailChimpException
+
 @assign_queue('signups')
 class SignupWorker(QueueProcessingWorker):
     def __init__(self):
         super(SignupWorker, self).__init__()
-        if settings.MAILCHIMP_API_KEY != '':
+        if settings.MAILCHIMP_API_KEY:
             self.pm = PostMonkey(settings.MAILCHIMP_API_KEY, timeout=10)
 
     def consume(self, data):
         merge_vars=data['merge_vars']
         # This should clear out any invitation reminder emails
         clear_followup_emails_queue(data["EMAIL"])
-        if settings.MAILCHIMP_API_KEY != '' and settings.PRODUCTION:
+        if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
             try:
                 self.pm.listSubscribe(
                         id=settings.ZULIP_FRIENDS_LIST_ID,
