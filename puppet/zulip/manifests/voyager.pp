@@ -5,11 +5,11 @@ class zulip::voyager {
   include zulip::redis
 
   apt::source {'zulip':
-    location    => 'http://apt.zulip.com/enterprise',
-    release     => 'precise',
-    repos       => 'v1',
-    key         => 'E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65',
-    key_source  => 'https://zulip.com/dist/keys/enterprise.asc',
+    location    => 'http://ppa.launchpad.net/tabbott/zulip/ubuntu',
+    release     => 'trusty',
+    repos       => 'main',
+    key         => '84C2BE60E50E336456E4749CE84240474E26AE47',
+    key_source  => 'https://zulip.com/dist/keys/zulip.asc',
     pin         => '995',
     include_src => true,
   }

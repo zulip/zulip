@@ -3,10 +3,11 @@
 # Assumes we've already been untarred
 
 # First, install any updates from the apt repo that may be needed
-wget -O /root/enterprise.asc https://zulip.com/dist/keys/enterprise.asc
-apt-key add /root/enterprise.asc
+wget -O /root/zulip-ppa.asc https://zulip.com/dist/keys/zulip-ppa.asc
+apt-key add /root/zulip-ppa.asc
 cat >/etc/apt/sources.list.d/zulip.list <<EOF
-deb http://apt.zulip.com/enterprise precise v1
+deb http://ppa.launchpad.net/tabbott/zulip/ubuntu trusty main
+deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu trusty main
 EOF
 
 apt-get update
