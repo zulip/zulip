@@ -162,7 +162,6 @@ def main():
     sh.do_destroy_rebuild_database(**LOUD)
     sh.postgres_init_test_db(**LOUD)
     sh.do_destroy_rebuild_test_database(**LOUD)
-    sh.setup_git_repo(**LOUD)
 
 if __name__ == "__main__":
     sys.exit(main())
