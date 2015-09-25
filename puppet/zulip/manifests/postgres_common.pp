@@ -1,6 +1,6 @@
 class zulip::postgres_common {
   $postgres_packages = [# The database itself
-                        "postgresql-9.1",
+                        "postgresql-9.3",
                         # tools for database setup
                         "pgtune",
                         # tools for database monitoring
