@@ -112,11 +112,23 @@ Zulip welcomes all forms of contributions!
 Before a pull request can be merged, you need to to sign the [Dropbox
 Contributor License Agreement](https://opensource.dropbox.com/cla/).
 
-Also, you should run the tests and lint rules to make sure that they
-all pass.  The development server configuration automatically sets up
-`tools/lint-all` to run as a pre-commit hook.
+Please run the tests (tools/test-all) before submitting your pull
+request.
+
+Zulip has a growing collection of developer documentation including
+detailed documentation on coding style available on [Read The
+Docs](https://zulip.readthedocs.org/).
 
 Zulip also has a [development discussion mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+
+Feel free to send any questions or suggestions of areas where you'd
+love to see more documentation to the list!
+
+We recommend sending proposals for large features or refactorings to
+the zulip-devel list for discussion and advice before getting too deep
+into implementation.
+
+Please report any security issues you discover to support@zulip.com.
 
 Running Zulip in production
 ===========================
