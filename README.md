@@ -17,16 +17,19 @@ Once that's done, simply change to your zulip directory and run
 server inside a Vagrant guest.
 
 Once that finishes, you can run the development server as follows:
-  vagrant ssh -- -L9991:localhost:9991
-  # Now inside the container
-  cd /srv/zulip
-  source /srv/zulip-venv/bin/activate
-  ./tools/run-dev.py --interface=''
+
+```
+vagrant ssh -- -L9991:localhost:9991
+# Now inside the container
+cd /srv/zulip
+source /srv/zulip-venv/bin/activate
+./tools/run-dev.py --interface=''
+```
 
 You can now visit <http://localhost:9991/> in your browser.  To get
 shell access to the virtual machine running the server, use `vagrant ssh`.
 
-(A small note on tools/run-dev.py: the --interface='' option will make
+(A small note on tools/run-dev.py: the `--interface=''` option will make
 the development server listen on all network interfaces.  While this
 is correct for the Vagrant guest sitting behind a NAT, you probably
 don't want to use that option when using run-dev.py in other environments).
@@ -51,32 +54,38 @@ Install the following non-Python dependencies:
  * tsearch-extras — better text search
 
 On Debian or Ubuntu systems:
-  sudo apt-get install libffi-dev memcached rabbitmq-server libldap2-dev redis-server postgresql-server-dev-all libmemcached-dev
 
-  # If on 12.04 or wheezy:
-  sudo apt-get install postgresql-9.1
-  wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
-  sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
+```
+sudo apt-get install libffi-dev memcached rabbitmq-server libldap2-dev redis-server postgresql-server-dev-all libmemcached-dev
 
-  # If on 14.04:
-  sudo apt-get install postgresql-9.3
-  wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
-  sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
+# If on 12.04 or wheezy:
+sudo apt-get install postgresql-9.1
+wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
+sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
 
-  # If on 15.04 or jessie:
-  sudo apt-get install postgresql-9.4
-  wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
-  sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
+# If on 14.04:
+sudo apt-get install postgresql-9.3
+wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
+sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
 
-  # Then, all versions:
-  pip install -r requirements.txt
-  ./scripts/setup/configure-rabbitmq
-  ./tools/postgres-init-db
-  ./tools/do-destroy-rebuild-database
-  ./tools/emoji_dump/build_emoji
+# If on 15.04 or jessie:
+sudo apt-get install postgresql-9.4
+wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
+sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
+
+# Then, all versions:
+pip install -r requirements.txt
+./scripts/setup/configure-rabbitmq
+./tools/postgres-init-db
+./tools/do-destroy-rebuild-database
+./tools/emoji_dump/build_emoji
+```
 
 To start the development server:
-  ./tools/run-dev.py
+
+```
+./tools/run-dev.py
+```
 
 … and hit http://localhost:9991/.
 
@@ -85,17 +94,26 @@ Running the test suite
 ======================
 
 One-time setup of test databases:
-  ./tools/postgres-init-test-db
-  ./tools/do-destroy-rebuild-test-database
+
+```
+./tools/postgres-init-test-db
+./tools/do-destroy-rebuild-test-database
+```
 
 Run all tests:
-  ./tools/test-all
+
+```
+./tools/test-all
+```
 
 This runs the linter plus all of our test suites; they can all be run
 separately (just read `tools/test-all` to see them).  You can also run
 individual tests, e.g.:
-  ./tools/test-backend zerver.test_bugdown.BugdownTest.test_inline_youtube
-  ./tools/test-js-with-casper 10-navigation.js
+
+```
+./tools/test-backend zerver.test_bugdown.BugdownTest.test_inline_youtube
+./tools/test-js-with-casper 10-navigation.js
+```
 
 Possible issues
 ===============
@@ -105,10 +123,14 @@ to some performance-sensitive races).  Until this issue is debugged,
 you may need to rerun them to get them to pass.
 
 When running the test suite, if you get an error like this:
+
+```
     sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not exist
     LINE 2: ...ECT message_id, flags, subject, rendered_content, ts_match_l...
                                                                  ^
-… then you need to install tsearch-extras, described above. Afterwards, re-run the init*-db and the do-destroy-rebuild*-database scripts.
+```
+
+… then you need to install tsearch-extras, described above. Afterwards, re-run the `init*-db` and the `do-destroy-rebuild*-database` scripts.
 
 Contributing to Zulip
 =====================
