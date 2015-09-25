@@ -10,7 +10,7 @@ This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 
   <http://download.virtualbox.org/virtualbox/4.3.30/VirtualBox-4.3.30-101610-OSX.dmg>
   and install it.
 * If your host is Ubuntu 14.04:
-  sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
+  sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir && vagrant plugin install vagrant-lxc
 
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal.  That will install the development
