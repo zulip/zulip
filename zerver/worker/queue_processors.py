@@ -225,16 +225,19 @@ class FeedbackBot(QueueProcessingWorker):
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
     def start(self):
-        self.staging_client = make_feedback_client()
-        self.staging_client._register(
+        if settings.DEPLOYMENT_ROLE_KEY:
+            self.staging_client = make_feedback_client()
+            self.staging_client._register(
                 'forward_error',
                 method='POST',
                 url='deployments/report_error',
                 make_request=(lambda type, report: {'type': type, 'report': simplejson.dumps(report)}),
-        )
+                )
         QueueProcessingWorker.start(self)
 
     def consume(self, event):
+        if not settings.DEPLOYMENT_ROLE_KEY:
+            return
         self.staging_client.forward_error(event['type'], event['report'])
 
 @assign_queue('slow_queries')
