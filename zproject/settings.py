@@ -173,17 +173,6 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
                      ("ALLOWED_HOSTS", "*"),
                      ]
-if PRODUCTION:
-    for (setting_name, default) in REQUIRED_SETTINGS:
-        try:
-            value = globals()[setting_name]
-            if value != default:
-                continue
-            print "Error: %s can't be %s in production in /etc/zulip/settings.py." % \
-                (setting_name, value)
-        except AttributeError:
-            print "Error: You must set %s in /etc/zulip/settings.py." % (setting_name,)
-        sys.exit(1)
 
 if ADMINS == "":
     ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
