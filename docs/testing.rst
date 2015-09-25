@@ -2,29 +2,21 @@
 Testing
 =======
 
-Postgres testing database setup
-===============================
+Running tests
+=============
 
-(Listed here for reference, although these setup steps should be done
-already when provisioning the VM, in ``provision.py``.)
+To run everything, just use ``./tools/test-all``. This runs lint checks,
+web frontend / whole-system blackbox tests, and backend Django tests.
 
-``tools/postgres-init-test-db`` works like ``tools/postgres-init-db`` to
-create the database "zulip\_test" and set up the necessary permissions.
+If you want to run individual parts, see the various commands inside
+that script.
 
-.. attention::
-   TODO: Is the below still accurate?
+Schema and initial data changes
+-------------------------------
 
-``tools/do-destroy-rebuild-test-database`` is an alias for
-``tools/generate-fixtures --force``. Do this after creating the
-postgres database.
-
-.. note::
-   Running ``generate-fixtures`` attempts to restore "zulip\_test" from
-   a template database that was created. It's an unsafe copy (assumes that
-   no one is writing to the template db, and that the db being copied into
-   is DROP-able), so don't try to run the dev server and run tests at the
-   same time, though ``generate-fixtures --force`` should make things happy
-   again.
+If you change the database schema or change the initial test data, you
+have have to regenerate the pristine test database by running
+``tools/do-destroy-rebuild-test-database``.
 
 Wiping the test databases
 -------------------------
@@ -57,27 +49,6 @@ it. On Ubuntu:
 
     sudo pg_dropcluster --stop 9.1 main
     sudo pg_createcluster --locale=en_US.utf8 --start 9.1 main
-
-Running tests
-=============
-
-To run everything, just use ``./tools/test-all``. This runs lint checks,
-web frontend / whole-system blackbox tests, and backend Django tests.
-
-If you want to run individual parts, see the various commands inside
-that script.
-
-Schema and initial data changes
--------------------------------
-
-If you change the database schema or change the initial test data, you
-have have to regenerate the pristine test database by running
-``tools/generate-fixtures --force``.
-
-Writing tests
-=============
-
-We have a list of `test cases to write <Test%20cases%20to%20write>`__.
 
 Backend Django tests
 --------------------
@@ -269,8 +240,8 @@ good goal.
 Manual testing (local app + web browser)
 ========================================
 
-Setting up the test database
-----------------------------
+Setting up the manual testing database
+--------------------------------------
 
 ::
 
@@ -278,16 +249,3 @@ Setting up the test database
 
 Will populate your local database with all the usual accounts plus some
 test messages involving Shakespeare characters.
-
-Mailing list synchronization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When new users are created an event is dispatched to the ``signups``
-RabbitMQ queue. The ``subscribe_new_users`` ``manage.py`` command
-attaches to this queue as a consumer and makes the appropriate calls to
-Mailchimp. To test this, you need to have RabbitMQ installed and
-configured on your workstation as well as the ``postmonkey`` library.
-
-Then, keep ``python manage.py subscribe_new_users`` running while
-signing up a user and ask somebody to confirm that a user was in fact
-subscribed on MailChimp. TODO: split tests off into a separate list.
