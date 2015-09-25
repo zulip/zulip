@@ -207,7 +207,7 @@ class BugdownTest(TestCase):
         # Don't fail on bad dropbox links
         msg = "https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p><a href="https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>\n<div class="message_inline_image"><a href="https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="ROmr9K1XYtmpneM"><img src="/static/images/preview_fail.png"></a></div>')
+        self.assertEqual(converted, '<p><a href="https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>\n<div class="message_inline_image"><a href="https://meta-dbdev.dev.corp.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="ROmr9K1XYtmpneM"><img src="https://dt8kf6553cww8.cloudfront.net/static/images/preview_fail-vflc3IDxf.png"></a></div>')
 
     def test_twitter_id_extraction(self):
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
