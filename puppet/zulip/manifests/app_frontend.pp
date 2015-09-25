@@ -11,7 +11,6 @@ class zulip::app_frontend {
                     # Django dependencies
                     "python-django",
                     "python-django-guardian",
-                    "python-django-south",
                     "python-django-pipeline",
                     "python-django-bitfield",
                     # Needed for mock objects in decorators
