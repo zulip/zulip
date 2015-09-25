@@ -229,10 +229,6 @@ Files: static/third/zocial/*
 Copyright: Sam Collins 
 License: Expat
 
-Files: static/third/zxcvbn/*
-Copyright: 2012-2015 Dan Wheeler and Dropbox, Inc.
-License: Expat
-
 Files: tools/inject-messages/othello
 Copyright: Shakespeare
 License: public-domain

@@ -156,6 +156,7 @@ def main():
     # Management commands expect to be run from the root of the project.
     os.chdir(ZULIP_PATH)
 
+    os.system("tools/download-zxcvbn")
     os.system("tools/emoji_dump/build_emoji")
     os.system("generate_secrets.py -d")
     sh.configure_rabbitmq(**LOUD)
