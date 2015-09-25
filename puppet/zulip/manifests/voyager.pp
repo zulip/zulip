@@ -1,4 +1,4 @@
-class zulip::enterprise {
+class zulip::voyager {
   include zulip::base
   include zulip::app_frontend
   include zulip::postgres_appdb
