@@ -80,7 +80,9 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
         subject = github_generic_subject('pull request', topic_focus, pull_req)
         content = github_generic_content('pull request', payload, pull_req)
     elif event == 'issues':
-        # in v1, we assume that this stream exists, since we only handle issues for CUSTOMER5 and ourselves
+        # in v1, we assume that this stream exists since it is
+        # deprecated and the few realms that use it already have the
+        # stream
         target_stream = issue_stream
         issue = payload['issue']
         subject = github_generic_subject('issue', topic_focus, issue)
