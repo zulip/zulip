@@ -1,5 +1,8 @@
 #!/bin/sh -xe
 
+# Make sure the current working directory is readable
+cd /
+
 su postgres -c psql <<EOF
 CREATE USER zulip;
 ALTER ROLE zulip SET search_path TO zulip,public;
