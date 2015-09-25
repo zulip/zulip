@@ -21,9 +21,9 @@ How to install Zulip in production:
 These instructions should be followed as root.
 
 (1) Install the SSL certificates for your machine to
-  /etc/ssl/private/zulip-enterprise.key
+  /etc/ssl/private/zulip.key
   and
-  /etc/ssl/certs/zulip-enterprise.combined-chain.crt
+  /etc/ssl/certs/zulip.combined-chain.crt
 
 (2) download zulip-server.tar.gz, and unpack to it /root/zulip, e.g.
 tar -xf zulip-server-1.1.3.tar.gz
