@@ -73,6 +73,7 @@ On Debian or Ubuntu systems:
   ./scripts/setup/configure-rabbitmq
   ./tools/postgres-init-db
   ./tools/do-destroy-rebuild-database
+  ./tools/emoji_dump/build_emoji
 
 To start the development server:
   ./tools/run-dev.py
