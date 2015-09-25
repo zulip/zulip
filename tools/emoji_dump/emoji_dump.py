@@ -52,6 +52,11 @@ os.mkdir('out')
 os.mkdir('out/unicode')
 
 emoji_map = json.load(open('emoji_map.json'))
+
+# Fix data problem with red/blue cars being inaccurate.
+emoji_map['blue_car'] = emoji_map['red_car']
+emoji_map['red_car'] = emoji_map['oncoming_automobile']
+
 for name, code_point in emoji_map.items():
     try:
         color_font(name, code_point)

@@ -1,0 +1,7 @@
+#!/bin/sh -ex
+
+rm -rf static/third/gemoji/images
+(cd tools/emoji_dump && python ./emoji_dump.py)
+mkdir -p static/third/gemoji/images
+mv tools/emoji_dump/out static/third/gemoji/images/emoji
+cp -a assets/zulip-emoji/* static/third/gemoji/images/emoji/

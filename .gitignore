@@ -30,3 +30,6 @@ manage.log
 event_queues.json
 .vagrant
 /zproject/dev-secrets.conf
+static/third/gemoji/
+tools/emoji_dump/bitmaps/
+tools/emoji_dump/*.ttx

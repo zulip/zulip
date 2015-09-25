@@ -1,0 +1,13 @@
+This directory contains images adapted from the Noto project. For more detail
+about Noto, please refer to:
+
+https://code.google.com/p/noto/
+
+These images were generated from the git repository at
+<https://android.googlesource.com/platform/external/noto-fonts> as of
+90372d894b5d9c9f2a111315d2eb3b8de1979ee4
+
+and
+
+<https://android.googlesource.com/platform/frameworks/base> at
+07912f876c8639f811b06831465c14c4a3b17663.
