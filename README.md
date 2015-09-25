@@ -21,10 +21,15 @@ Once that finishes, you can run the development server as follows:
   # Now inside the container
   cd /srv/zulip
   source /srv/zulip-venv/bin/activate
-  ./tools/run-dev.py
+  ./tools/run-dev.py --interface=''
 
 You can now visit <http://localhost:9991/> in your browser.  To get
 shell access to the virtual machine running the server, use `vagrant ssh`.
+
+(A small note on tools/run-dev.py: the --interface='' option will make
+the development server listen on all network interfaces.  While this
+is correct for the Vagrant guest sitting behind a NAT, you probably
+don't want to use that option when using run-dev.py in other environments).
 
 The run-dev.py console output will show any errors your Zulip
 development server encounters.  It runs on top of Django's "manage.py
