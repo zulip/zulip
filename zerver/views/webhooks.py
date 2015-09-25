@@ -171,7 +171,7 @@ def api_github_landing(request, user_profile, event=REQ,
     short_ref = re.sub(r'^refs/heads/', '', payload.get('ref', ""))
     kwargs = dict()
 
-    if (emphasize_branch_in_topic or user_profile.realm.domain == "customer26.invalid") and short_ref:
+    if emphasize_branch_in_topic and short_ref:
         kwargs['topic_focus'] = short_ref
 
     allowed_events = set()
