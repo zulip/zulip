@@ -47,6 +47,9 @@ subprocess.check_call(["git", "clone", "-q", "-b", refname,
                        "git@git.zulip.net:eng/zulip.git",
                        deploy_path], stdout=open('/dev/null', 'w'))
 os.chdir(deploy_path)
+# Hack to deploy images not included in open source project
+subprocess.check_call(["cp", "-a", "/etc/zulip/zulip-dropbox.png",
+                       os.path.join(deploy_path, "static/images/logo")])
 
 # Update static files
 logging.info("Updating static files")
