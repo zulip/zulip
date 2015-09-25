@@ -65,7 +65,7 @@ port = 5432				# (change requires restart)
 # Note:  Increasing max_connections costs ~400 bytes of shared memory per
 # connection slot, plus lock space (see max_locks_per_transaction).
 #superuser_reserved_connections = 3	# (change requires restart)
-unix_socket_directory = '/var/run/postgresql'		# (change requires restart)
+unix_socket_directories = '/var/run/postgresql'		# (change requires restart)
 #unix_socket_group = ''			# (change requires restart)
 #unix_socket_permissions = 0777		# begin with 0 to use octal notation
 					# (change requires restart)
@@ -77,7 +77,7 @@ unix_socket_directory = '/var/run/postgresql'		# (change requires restart)
 # - Security and Authentication -
 
 #authentication_timeout = 1min		# 1s-600s
-ssl = true				# (change requires restart)
+#ssl = true				# (change requires restart)
 #ssl_ciphers = 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'	# allowed SSL ciphers
 					# (change requires restart)
 #ssl_renegotiation_limit = 512MB	# amount of data between renegotiations
@@ -106,7 +106,7 @@ ssl = true				# (change requires restart)
 
 # - Memory -
 
-# shared_buffers = 24MB			# min 128kB
+shared_buffers = 128MB			# min 128kB
 					# (change requires restart)
 #temp_buffers = 8MB			# min 800kB
 #max_prepared_transactions = 0		# zero disables the feature
