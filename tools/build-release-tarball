@@ -11,8 +11,8 @@ prefix="zulip-server-$version"
 
 if [ "$(uname)" = "Darwin" ]; then
     TMPDIR=/tmp/voyager-build
-    rm -Rf $TMPDIR
-    mkdir -p $TMPDIR
+    rm -Rf "$TMPDIR"
+    mkdir -p "$TMPDIR"
 else
     TMPDIR=$(mktemp -d)
 fi
@@ -27,10 +27,10 @@ TMP_CHECKOUT=$TMPDIR/$prefix/
 TARBALL=$TMPDIR/$prefix.tar
 
 # .gitattributes lists the files that are not exported
-git archive -o $TARBALL --prefix=$prefix/ HEAD
+git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
 
-if tar -tf $TARBALL | grep -q -e zilencer -e zproject/local_settings.py -e puppet/zulip_internal; then
+if tar -tf "$TARBALL" | grep -q -e zilencer -e zproject/local_settings.py -e puppet/zulip_internal; then
 	echo "Excluded files remain in tarball!";
 	echo "Versions of git 1.8.1.1 - 1.8.1.6 have broken .gitattributes syntax";
 	exit 1;
@@ -39,8 +39,8 @@ else
 fi
 
 # Check out a temporary full copy of the index to generate static files
-git checkout-index -f -a --prefix $TMP_CHECKOUT
-cd $TMP_CHECKOUT
+git checkout-index -f -a --prefix "$TMP_CHECKOUT"
+cd "$TMP_CHECKOUT"
 
 # Use default settings so there is no chance of leaking secrets
 cp zproject/local_settings_template.py zproject/local_settings.py
@@ -70,8 +70,8 @@ echo; echo "\033[33mRunning update-prod-static; check ${TMP_CHECKOUT}update-prod
 set -x
 
 ./tools/update-prod-static
-echo $GITID > build_id
-echo $version > version
+echo "$GITID" > build_id
+echo "$version" > version
 mv update-prod-static.log ..
 
 rm -f zproject/dev-secrets.conf
@@ -79,11 +79,11 @@ rm -f zproject/dev-secrets.conf
 # We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
 find prod-static/serve/third/gemoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
 
-cd $TMPDIR
+cd "$TMPDIR"
 
-tar --append -f $TARBALL $prefix/prod-static $prefix/build_id $prefix/version
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version"
 
-rm -rf $prefix
+rm -rf "$prefix"
 
-gzip $TARBALL
+gzip "$TARBALL"
 echo "Generated $TARBALL.gz"

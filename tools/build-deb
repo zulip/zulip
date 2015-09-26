@@ -12,7 +12,7 @@ dist=$1
 file=$2
 
 if [ -z "$dist" ] || [ -z "$file" ]; then
-    echo "$(echo $0 | rev | cut -d "/" -f  1-1 | rev) -- build Debian packages on a Zulip buildslave"
+    echo "$(echo "$0" | rev | cut -d "/" -f  1-1 | rev) -- build Debian packages on a Zulip buildslave"
     echo
     echo "USAGE: $0 dist path/to/package.dsc"
     exit 1
@@ -21,10 +21,10 @@ fi
 set -xe
 
 ret=0
-path=$(ssh -q -l $BUILDD_USERNAME $BUILDD_HOST -- mktemp -d $BUILDD_BASE_PATH/$USER.`date -u +%F.%R`.XXXXXXX)/
+path=$(ssh -q -l "$BUILDD_USERNAME" "$BUILDD_HOST" -- "mktemp -d '$BUILDD_BASE_PATH/$USER.`date -u +%F.%R`.XXXXXXX'")/
 
-dcmd rsync -vz --copy-links $file $BUILDD_USERNAME@$BUILDD_HOST:$path/
-file=$(basename $file)
+dcmd rsync -vz --copy-links "$file" "$BUILDD_USERNAME@$BUILDD_HOST:$path/"
+file=$(basename "$file")
 
 # -A specifies to build arch-all packages (non-arch dependent) in addition to
 # binary packages
@@ -38,9 +38,9 @@ file=$(basename $file)
 #
 # We always build for amd64. There is no 32-bit.
 
-ssh -t -l $BUILDD_USERNAME $BUILDD_HOST -- "cd $path && sbuild -A -s --force-orig-source --dist=$dist --arch=amd64 $file"
+ssh -t -l "$BUILDD_USERNAME" "$BUILDD_HOST" -- "cd '$path' && sbuild -A -s --force-orig-source '--dist=$dist' --arch=amd64 '$file'"
 
-rsync -Lvz --copy-links $BUILDD_USERNAME@$BUILDD_HOST:$path/* .
-ssh -l  $BUILDD_USERNAME $BUILDD_HOST rm -r $path
+rsync -Lvz --copy-links "$BUILDD_USERNAME@$BUILDD_HOST:$path/*" .
+ssh -l  "$BUILDD_USERNAME" "$BUILDD_HOST" rm -r "$path"
 
-exit $ret
+exit "$ret"

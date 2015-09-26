@@ -6,7 +6,7 @@ function migration_status {
 
 template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='zulip_test_template';" | python manage.py dbshell --settings=zproject.test_settings | grep -q "1 row"; echo $?)
 
-if [ $template_grep_error_code == "0" ]; then
+if [ "$template_grep_error_code" == "0" ]; then
     migration_status zerver/fixtures/available-migrations
     if [ -e zerver/fixtures/migration-status ] &&
         cmp -s zerver/fixtures/available-migrations zerver/fixtures/migration-status &&

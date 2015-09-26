@@ -1,5 +1,5 @@
 #!/bin/sh -xe
 
 # This is a really simple wrapper script, pretty much for documenting clarity
-`dirname $0`/../tools/generate-fixtures --force
+"`dirname "$0"`/../tools/generate-fixtures" --force
 

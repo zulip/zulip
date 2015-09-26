@@ -11,7 +11,7 @@ VAGRANTUSERNAME=$(whoami)
 
 if [[ $# == 0 ]]; then
     USERNAME=zulip
-    PASSWORD=$($(dirname $0)/../bin/get-django-setting LOCAL_DATABASE_PASSWORD)
+    PASSWORD=$("$(dirname "$0")/../bin/get-django-setting" LOCAL_DATABASE_PASSWORD)
     DBNAME=zulip
     SEARCH_PATH="$USERNAME",public
 elif [[ $# == 4 ]]; then
@@ -28,7 +28,7 @@ fi
 
 DBNAME_BASE=${DBNAME}_base
 
-$ROOT_POSTGRES $DEFAULT_DB << EOF
+$ROOT_POSTGRES "$DEFAULT_DB" << EOF
 CREATE USER $USERNAME;
 ALTER USER $USERNAME PASSWORD '$PASSWORD';
 ALTER USER $USERNAME CREATEDB;
@@ -42,28 +42,28 @@ EOF
 umask go-rw
 PGPASS_PREFIX="*:*:*:$USERNAME:"
 PGPASS_ESCAPED_PREFIX="*:\*:\*:$USERNAME:"
-if ! $(grep -q "$PGPASS_ESCAPED_PREFIX" ~/.pgpass); then
-    echo $PGPASS_PREFIX$PASSWORD >> ~/.pgpass
+if ! grep -q "$PGPASS_ESCAPED_PREFIX" ~/.pgpass; then
+    echo "$PGPASS_PREFIX$PASSWORD" >> ~/.pgpass
 else
     sed -i "s/$PGPASS_ESCAPED_PREFIX.*\$/$PGPASS_PREFIX$PASSWORD/" ~/.pgpass
 fi
 chmod go-rw ~/.pgpass
 
-psql -h localhost postgres $USERNAME <<EOF
+psql -h localhost postgres "$USERNAME" <<EOF
 DROP DATABASE IF EXISTS $DBNAME;
 DROP DATABASE IF EXISTS $DBNAME_BASE;
 CREATE DATABASE $DBNAME_BASE
 EOF
 
-psql -h localhost $DBNAME_BASE $USERNAME <<EOF
+psql -h localhost "$DBNAME_BASE" "$USERNAME" <<EOF
 CREATE SCHEMA zulip;
 EOF
 
-$ROOT_POSTGRES $DBNAME_BASE << EOF
+$ROOT_POSTGRES "$DBNAME_BASE" << EOF
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 EOF
 
-psql -h localhost postgres $USERNAME <<EOF
+psql -h localhost postgres "$USERNAME" <<EOF
 CREATE DATABASE $DBNAME TEMPLATE $DBNAME_BASE;
 EOF
 

@@ -3,9 +3,9 @@
 # Delete the "guest" default user and replace it with a Zulip user
 # with a real password
 
-RMQPW=$($(dirname $0)/../../bin/get-django-setting RABBITMQ_PASSWORD)
+RMQPW=$("$(dirname "$0")/../../bin/get-django-setting" RABBITMQ_PASSWORD)
 sudo rabbitmqctl delete_user zulip || true
 sudo rabbitmqctl delete_user guest || true
-sudo rabbitmqctl add_user zulip $RMQPW
+sudo rabbitmqctl add_user zulip "$RMQPW"
 sudo rabbitmqctl set_user_tags zulip administrator
 sudo rabbitmqctl set_permissions -p / zulip '.*' '.*' '.*'

@@ -11,7 +11,7 @@ COUNT=50
 mkdir -p output
 while true; do
 
-if python show-last-messages --api-key=$API_KEY --user=$BOT_EMAIL --streams="$STREAMS" --count=$COUNT; then
+if python show-last-messages --api-key="$API_KEY" --user="$BOT_EMAIL" --streams="$STREAMS" --count="$COUNT"; then
     echo "[`date`] Success";
     mv output-candidate.html output/zulip.html
     touch output/zulip.html

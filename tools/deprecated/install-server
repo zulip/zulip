@@ -8,7 +8,7 @@ if [ -z "$hostname" ]; then
     echo "USAGE: $0 server type hostname [branch]"
     exit 1
 fi
-if ! $(echo "$hostname" | grep -q zulip); then
+if ! echo "$hostname" | grep -q zulip; then
     echo "USAGE: $0 server type hostname [branch]"
     echo "Hostname must have zulip in it."
     exit 1
@@ -35,11 +35,11 @@ fi
 # Force RSA keys. We do this because the ECDSA key is not printed on syslog,
 # and our puppet configuration does not use ECDSA. If we don't do this,
 # we'll get key errors after puppet apply.
-SSH_OPTS="-o HostKeyAlgorithms=ssh-rsa"
+SSH_OPTS=(-o HostKeyAlgorithms=ssh-rsa)
 
 set +e
 
-ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -ladmin -o "ControlMaster=no" <<EOF
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -ladmin -o "ControlMaster=no" <<EOF
 sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
 sudo mkdir -p ~root/.ssh && sudo cp .ssh/authorized_keys ~root/.ssh/authorized_keys
 sudo service ssh restart
@@ -48,7 +48,7 @@ EOF
 
 set -e
 
-ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
 resize2fs /dev/xvda1
 echo "$hostname" > /etc/hostname
 sed -i 's/localhost$/localhost $hostname/' /etc/hosts
@@ -69,9 +69,9 @@ EOF
 
 # Give new server git access
 # TODO: Don't give servers push access to our git!
-scp $SSH_OPTS -i "$amazon_key_file" "$server_private_key_file" root@"$server":/root/.ssh/id_rsa
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" root@"$server":/root/.ssh/id_rsa
 
-ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
 chmod 600 /root/.ssh/id_rsa
 # Setup initial known_hosts including git server
 cat > /root/.ssh/known_hosts <<EOF2
@@ -85,7 +85,7 @@ cd /root/zulip
 git checkout $branch
 EOF
 
-ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
 cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
 userdel admin
@@ -107,8 +107,8 @@ fi
 EOF
 
 # TODO: Don't give servers push access to our git!
-scp $SSH_OPTS -i "$amazon_key_file" "$server_private_key_file" zulip@"$server":/home/zulip/.ssh/id_rsa
-ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lzulip <<EOF
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" zulip@"$server":/home/zulip/.ssh/id_rsa
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lzulip <<EOF
 chmod 600 /home/zulip/.ssh/id_rsa
 EOF
 

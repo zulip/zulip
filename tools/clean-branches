@@ -4,7 +4,7 @@
 # and also any branches in origin which are ancestors of
 # origin/master and are named like $USER-*.
 
-push_args=''
+push_args=()
 
 function is_merged {
     ! git rev-list -n 1 origin/master.."$1" | grep -q .
@@ -31,7 +31,7 @@ function clean_ref {
                 echo -n "Deleting remote branch $remote_name"
                 echo " (was $(git rev-parse --short "$ref"))"
                 # NB: this won't handle spaces in ref names
-                push_args="$push_args :$remote_name"
+                push_args=("${push_args[@]}" ":$remote_name")
             fi
             ;;
     esac
@@ -44,8 +44,8 @@ fi
 
 git fetch --prune origin
 
-eval $(git for-each-ref --shell --format='clean_ref %(refname);')
+eval "$(git for-each-ref --shell --format='clean_ref %(refname);')"
 
-if [ -n "$push_args" ]; then
-    git push origin $push_args
+if [ "${#push_args}" -ne 0 ]; then
+    git push origin "${push_args[@]}"
 fi
