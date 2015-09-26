@@ -20,7 +20,7 @@ ADMIN_DOMAIN = 'example.com'
 AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.EmailAuthBackend', # Email and password
 #                           'zproject.backends.ZulipRemoteUserBackend', # Local SSO
-#                           'zproject.backends.GoogleBackend', # Google Apps
+#                           'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
     )
 
 # If you are using the ZulipRemoteUserBackend authentication backend,
