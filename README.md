@@ -1,3 +1,35 @@
+Contributing to Zulip
+=====================
+
+Zulip welcomes all forms of contributions!
+
+Before a pull request can be merged, you need to to sign the [Dropbox
+Contributor License Agreement](https://opensource.dropbox.com/cla/).
+
+Please run the tests (tools/test-all) before submitting your pull
+request and read our [commit message style
+guidelines](http://zulip.readthedocs.org/en/latest/code-style.html#commit-messages).
+
+Zulip has a growing collection of developer documentation including
+detailed documentation on coding style available on [Read The
+Docs](https://zulip.readthedocs.org/).
+
+Zulip also has a [development discussion mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+
+Feel free to send any questions or suggestions of areas where you'd
+love to see more documentation to the list!
+
+We recommend sending proposals for large features or refactorings to
+the zulip-devel list for discussion and advice before getting too deep
+into implementation.
+
+Please report any security issues you discover to support@zulip.com.
+
+Running Zulip in production
+===========================
+
+This is documented in https://zulip.org/server.html and README.prod.md.
+
 Installing the Zulip Development environment
 ============================================
 
@@ -115,8 +147,8 @@ individual tests, e.g.:
 ./tools/test-js-with-casper 10-navigation.js
 ```
 
-Possible issues
-===============
+Possible testing issues
+=======================
 
 The Casper tests are flaky on the Virtualbox environment (probably due
 to some performance-sensitive races).  Until this issue is debugged,
@@ -131,37 +163,6 @@ When running the test suite, if you get an error like this:
 ```
 
 … then you need to install tsearch-extras, described above. Afterwards, re-run the `init*-db` and the `do-destroy-rebuild*-database` scripts.
-
-Contributing to Zulip
-=====================
-
-Zulip welcomes all forms of contributions!
-
-Before a pull request can be merged, you need to to sign the [Dropbox
-Contributor License Agreement](https://opensource.dropbox.com/cla/).
-
-Please run the tests (tools/test-all) before submitting your pull
-request.
-
-Zulip has a growing collection of developer documentation including
-detailed documentation on coding style available on [Read The
-Docs](https://zulip.readthedocs.org/).
-
-Zulip also has a [development discussion mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
-
-Feel free to send any questions or suggestions of areas where you'd
-love to see more documentation to the list!
-
-We recommend sending proposals for large features or refactorings to
-the zulip-devel list for discussion and advice before getting too deep
-into implementation.
-
-Please report any security issues you discover to support@zulip.com.
-
-Running Zulip in production
-===========================
-
-This is documented in https://zulip.org/server.html and README.prod.md.
 
 License
 =======
