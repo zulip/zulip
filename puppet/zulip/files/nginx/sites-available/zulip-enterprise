@@ -9,7 +9,7 @@ server {
     listen 443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/zulip-combined-chain.crt;
+    ssl_certificate /etc/ssl/certs/zulip.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/zulip.key;
 
     location /user_uploads {
