@@ -693,7 +693,7 @@ def finish_google_oauth2(request):
     )
     if resp.status_code != 200:
         raise Exception('Could not convert google pauth2 code to access_token\r%r' % resp.text)
-    access_token = resp.json['access_token']
+    access_token = resp.json()['access_token']
 
     resp = requests.get(
         'https://www.googleapis.com/plus/v1/people/me',
@@ -701,7 +701,7 @@ def finish_google_oauth2(request):
     )
     if resp.status_code != 200:
         raise Exception('Google login failed making API call\r%r' % resp.text)
-    body = resp.json
+    body = resp.json()
 
     try:
         full_name = body['name']['formatted']
