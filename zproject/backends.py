@@ -91,7 +91,6 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         https://developers.google.com/+/mobile/android/sign-in#server-side_access_for_your_app
         https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
 
-    This backend is not currently supported on voyager.
     """
     def authenticate(self, google_oauth2_token=None, return_data={}):
         try:

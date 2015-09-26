@@ -23,6 +23,14 @@ AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
     )
 
+# Google Oauth requires a bit of configuration; you will need to go to
+# https://console.developers.google.com, setup an Oauth2 client ID
+# that allows redirects to
+# e.g. https://zulip.example.com/accounts/login/google/done/ put your
+# client secret as "google_oauth2_client_secret" in
+# zulip-secrets.conf, and your cleitn ID here:
+# GOOGLE_OAUTH2_CLIENT_ID=<your client ID from Google>
+
 # If you are using the ZulipRemoteUserBackend authentication backend,
 # set this to your domain (e.g. if REMOTE_USER is "username" and the
 # corresponding email address is "username@example.com", set
