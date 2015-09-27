@@ -1,0 +1,15 @@
+install:
+  - pip install pbs
+  - python provision.py --travis
+cache: apt
+language: python
+python:
+  - "2.7"
+# command to run tests
+script:
+  - source /srv/zulip-venv/bin/activate && env PATH=$PATH:/srv/zulip-venv/bin ./tools/test-all
+sudo: required
+services:
+- docker
+addons:
+  postgresql: "9.3"
