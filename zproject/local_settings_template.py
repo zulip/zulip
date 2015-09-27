@@ -28,7 +28,7 @@ AUTHENTICATION_BACKENDS = (
 # that allows redirects to
 # e.g. https://zulip.example.com/accounts/login/google/done/ put your
 # client secret as "google_oauth2_client_secret" in
-# zulip-secrets.conf, and your cleitn ID here:
+# zulip-secrets.conf, and your client ID here:
 # GOOGLE_OAUTH2_CLIENT_ID=<your client ID from Google>
 
 # If you are using the ZulipRemoteUserBackend authentication backend,
