@@ -42,6 +42,9 @@ SSO_APPEND_DOMAIN = None
 # outgoing port must be 587. The EMAIL_HOST is prepopulated
 # for GMail servers, change it for other hosts, or leave it unset
 # or empty to skip sending email.
+#
+# A common problem you may encounter when trying to get this working
+# is many hosting providers block outgoing SMTP traffic.
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 # If you're using password auth, you will need to put the password in
