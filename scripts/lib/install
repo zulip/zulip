@@ -12,7 +12,7 @@ EOF
 
 apt-get update
 apt-get -y dist-upgrade
-apt-get install -y puppet git
+apt-get install -y puppet git python
 
 mkdir -p /etc/zulip
 echo -e "[machine]\npuppet_classes = zulip::voyager\ndeploy_type = voyager" > /etc/zulip/zulip.conf
