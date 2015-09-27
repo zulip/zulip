@@ -44,7 +44,8 @@ SSO_APPEND_DOMAIN = None
 # or empty to skip sending email.
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+# If you're using password auth, you will need to put the password in
+# /etc/zulip/zulip-secrets.conf as email_host_password.
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
