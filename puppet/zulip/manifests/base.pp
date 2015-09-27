@@ -48,6 +48,13 @@ class zulip::base {
     source     => 'puppet:///modules/zulip/limits.conf',
   }
 
+  # This directory is written to by cron jobs for reading by Nagios
+  file { '/var/lib/nagios_state/':
+    ensure     => directory,
+    group      => 'zulip',
+    mode       => 774,
+  }
+
   file { '/var/log/zulip':
     ensure => 'directory',
     owner  => 'zulip',
