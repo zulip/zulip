@@ -15,11 +15,6 @@ apt-get -y dist-upgrade
 apt-get install -y puppet git
 cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
 
-# Hack to get required python-django-guardian while the PPA build of django-guardian isn't working :(
-apt-get -y install python-django
-wget https://zulip.com/dist/packages/python-django-guardian_1.3-1~zulip4_all.deb
-dpkg -i ./python-django-guardian_1.3-1~zulip4_all.deb
-
 mkdir -p /etc/zulip
 echo -e "[machine]\npuppet_classes = zulip::voyager\ndeploy_type = voyager" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
