@@ -40,14 +40,6 @@ class zulip::base {
     group      => 'zulip',
   }
 
-  file { '/etc/puppet/puppet.conf':
-    ensure     => file,
-    mode       => 640,
-    owner      => "root",
-    group      => "root",
-    source     => 'puppet:///modules/zulip/puppet.conf',
-  }
-
   file { '/etc/security/limits.conf':
     ensure     => file,
     mode       => 640,

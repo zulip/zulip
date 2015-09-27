@@ -86,8 +86,6 @@ git checkout $branch
 EOF
 
 ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
-cp -a /root/zulip/puppet/zulip/files/puppet.conf /etc/puppet/
-
 userdel admin
 passwd -d root
 mkdir /etc/zulip
