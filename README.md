@@ -1,3 +1,17 @@
+Zulip
+=====
+
+Zulip is a powerful, open source group chat application. Written in
+Python and using the Django framework, Zulip supports both private
+messaging and group chats via conversation streams.
+
+Zulip also supports fast search, drag-and-drop file uploads, image
+previews, group private messages, audible notifications,
+missed-message emails, desktop apps, and much more.
+
+Further information on the Zulip project and its features can be found
+at https://www.zulip.org
+
 Contributing to Zulip
 =====================
 
