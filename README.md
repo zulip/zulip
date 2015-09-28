@@ -102,7 +102,7 @@ Install the following non-Python dependencies:
 On Debian or Ubuntu systems:
 
 ```
-sudo apt-get install libffi-dev memcached rabbitmq-server libldap2-dev redis-server postgresql-server-dev-all libmemcached-dev
+sudo apt-get install libffi-dev memcached rabbitmq-server libldap2-dev python-dev redis-server postgresql-server-dev-all libmemcached-dev
 
 # If on 12.04 or wheezy:
 sudo apt-get install postgresql-9.1
