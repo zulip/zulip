@@ -24,11 +24,18 @@ AUTHENTICATION_BACKENDS = (
     )
 
 # Google Oauth requires a bit of configuration; you will need to go to
-# https://console.developers.google.com, setup an Oauth2 client ID
-# that allows redirects to
-# e.g. https://zulip.example.com/accounts/login/google/done/ put your
-# client secret as "google_oauth2_client_secret" in
-# zulip-secrets.conf, and your client ID here:
+# do the following:
+#
+# (1) Visit https://console.developers.google.com, setup an
+# Oauth2 client ID that allows redirects to
+# e.g. https://zulip.example.com/accounts/login/google/done/.
+#
+# (2) Then click into the APIs and Auth section (in the sidebar on the
+# left side of the page), APIs, then under "Social APIs" click on
+# "Google+ API" and click the button to enable the API.
+#
+# (3) put your client secret as "google_oauth2_client_secret" in
+# zulip-secrets.conf, and your client ID right here:
 # GOOGLE_OAUTH2_CLIENT_ID=<your client ID from Google>
 
 # If you are using the ZulipRemoteUserBackend authentication backend,
