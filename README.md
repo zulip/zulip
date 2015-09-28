@@ -118,19 +118,22 @@ individual tests, e.g.:
 Possible issues
 ===============
 
-The Casper tests are flaky on the Virtualbox environment (probably due
-to some performance-sensitive races).  Until this issue is debugged,
-you may need to rerun them to get them to pass.
+- The Casper tests are flaky on the Virtualbox environment (probably due
+  to some performance-sensitive races).  Until this issue is debugged,
+  you may need to rerun them to get them to pass.
 
-When running the test suite, if you get an error like this:
+  When running the test suite, if you get an error like this:
 
-```
-    sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not exist
-    LINE 2: ...ECT message_id, flags, subject, rendered_content, ts_match_l...
-                                                                 ^
-```
+  ```
+      sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not   exist
+      LINE 2: ...ECT message_id, flags, subject, rendered_content, ts_match_l...
+                                                                   ^
+  ```
 
-… then you need to install tsearch-extras, described above. Afterwards, re-run the `init*-db` and the `do-destroy-rebuild*-database` scripts.
+  … then you need to install tsearch-extras, described above. Afterwards, re-run the `init*-db` and the     `do-destroy-rebuild*-database` scripts.
+
+- When building the development environment using Vagrant and the LXC provider, if you encounter permissions errors, you may need to `chown -R 1000:$(whoami) /path/to/zulip` on the host before running `vagrant up` in order to ensure that the synced directory has the correct owner during provision. This issue will arise if you run `id username` on the host where `username` is the user running Vagrant and the output is anything but 1000.
+  This seems to be caused by Vagrant behavior; more information can be found here https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
 
 Contributing to Zulip
 =====================
