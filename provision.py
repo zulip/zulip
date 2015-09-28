@@ -52,7 +52,7 @@ VENV_PATH="/srv/zulip-venv"
 ZULIP_PATH="/srv/zulip"
 
 # TODO: Parse arguments properly
-if sys.argv[1] == "--travis":
+if "--travis" in sys.argv:
     ZULIP_PATH="."
 
 # tsearch-extras is an extension to postgres's built-in full-text search.
@@ -163,7 +163,7 @@ def main():
     os.system("tools/download-zxcvbn")
     os.system("tools/emoji_dump/build_emoji")
     os.system("generate_secrets.py -d")
-    if sys.argv[1] == "--travis":
+    if "--travis" in sys.argv:
         os.system("sudo service rabbitmq-server restart")
         os.system("sudo service redis-server restart")
         os.system("sudo service memcached restart")
