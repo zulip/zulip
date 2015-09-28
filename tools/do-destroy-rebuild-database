@@ -5,6 +5,8 @@ DROP DATABASE IF EXISTS zulip;
 CREATE DATABASE zulip TEMPLATE zulip_base;
 EOF
 
+sh "$(dirname "$0")/../scripts/setup/flush-memcached"
+
 python manage.py migrate --noinput
 python manage.py createcachetable third_party_api_results
 python manage.py populate_db -n100 --threads=1

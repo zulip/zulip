@@ -15,6 +15,7 @@ if [ "$template_grep_error_code" == "0" ]; then
 DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_template;
 EOF
+        sh "$(dirname "$0")/../scripts/setup/flush-memcached"
         exit 0
     fi
 fi
@@ -25,6 +26,7 @@ psql -h localhost postgres zulip_test <<EOF
 DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_base;
 EOF
+sh "$(dirname "$0")/../scripts/setup/flush-memcached"
 
 python manage.py migrate --noinput --settings=zproject.test_settings
 migration_status "zerver/fixtures/migration-status"

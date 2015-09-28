@@ -15,5 +15,7 @@ CREATE SCHEMA zulip AUTHORIZATION zulip;
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 EOF
 
+sh "$(dirname "$0")/flush-memcached"
+
 echo "Database created"
 
