@@ -51,6 +51,10 @@ NPM_DEPENDENCIES = {
 VENV_PATH="/srv/zulip-venv"
 ZULIP_PATH="/srv/zulip"
 
+# TODO: Parse arguments properly
+if "--travis" in sys.argv:
+    ZULIP_PATH="."
+
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
 TSEARCH_URL_BASE = "https://dl.dropboxusercontent.com/u/283158365/zuliposs/"
@@ -159,6 +163,10 @@ def main():
     os.system("tools/download-zxcvbn")
     os.system("tools/emoji_dump/build_emoji")
     os.system("generate_secrets.py -d")
+    if "--travis" in sys.argv:
+        os.system("sudo service rabbitmq-server restart")
+        os.system("sudo service redis-server restart")
+        os.system("sudo service memcached restart")
     sh.configure_rabbitmq(**LOUD)
     sh.postgres_init_db(**LOUD)
     sh.do_destroy_rebuild_database(**LOUD)
