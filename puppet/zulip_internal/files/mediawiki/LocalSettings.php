@@ -49,8 +49,8 @@ $wgLogo             = "$wgStylePath/common/images/wiki.png";
 $wgEnableEmail      = true;
 $wgEnableUserEmail  = true; # UPO
 
-$wgEmergencyContact = "support@zulip.com";
-$wgPasswordSender   = "support@zulip.com";
+$wgEmergencyContact = "zulip-devel@googlegroups.com";
+$wgPasswordSender   = "zulip-devel@googlegroups.com";
 
 $wgEnotifUserTalk      = true; # UPO
 $wgEnotifWatchlist     = true; # UPO

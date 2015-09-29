@@ -49,7 +49,7 @@ client = zulip.Client(
     site=config.ZULIP_SITE,
     api_key=config.ZULIP_API_KEY,
     client="ZulipBasecamp/" + VERSION)
-user_agent = "Basecamp To Zulip Mirroring script (support@zulip.com)"
+user_agent = "Basecamp To Zulip Mirroring script (zulip-devel@googlegroups.com)"
 htmlParser = HTMLParser()
 
 # find some form of JSON loader/dumper, with a preference order for speed.
