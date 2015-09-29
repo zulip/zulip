@@ -109,7 +109,7 @@ NAGIOS_STAGING_SEND_BOT = 'iago@zulip.com'
 NAGIOS_STAGING_RECEIVE_BOT = 'cordelia@zulip.com'
 
 # Also used for support email in emails templates
-ZULIP_ADMINISTRATOR = 'support@zulip.com'
+ZULIP_ADMINISTRATOR = 'zulip-devel@googlegroups.com'
 
 ADMINS = (
     ('Zulip Error Reports', 'errors@zulip.com'),
