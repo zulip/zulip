@@ -130,11 +130,9 @@ ENABLE_GRAVATAR = True
 #
 # 1. Log in to http://dev.twitter.com.
 # 2. In the menu under your username, click My Applications. From this page, create a new application.
-# 3. Click on the application you created and click "create my access token". Fill in the requested values.
-TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET = ''
-TWITTER_ACCESS_TOKEN_KEY = ''
-TWITTER_ACCESS_TOKEN_SECRET = ''
+# 3. Click on the application you created and click "create my access token".
+# 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
+#    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
 
 ### EMAIL GATEWAY INTEGRATION
 
