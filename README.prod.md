@@ -41,6 +41,25 @@ These instructions should be followed as root.
   and
   /etc/ssl/certs/zulip.combined-chain.crt
 
+  If you don't know how to generate an SSL certificate, you, you can
+  do the following to generate a self-signed certificate:
+  ```
+  apt-get install openssl
+  openssl genrsa -des3 -passout pass:x -out server.pass.key 4096
+  openssl rsa -passin pass:x -in server.pass.key -out zulip.key
+  rm server.pass.key
+  openssl req -new -key zulip.key -out server.csr
+  openssl x509 -req -days 365 -in server.csr -signkey zulip.key -out zulip.combined-chain.crt
+  rm server.csr
+  cp zulip.key /etc/ssl/private/zulip.key
+  cp zulip.combined-chain.crt /etc/ssl/certs/zulip.combined-chain.crt
+  ```
+
+  You will eventually want to get a properly signed certificate (and
+  note that at present the Zulip desktop app doesn't support
+  self-signed certificates), but this will let you finish the
+  installation process.
+
 (2) download zulip-server.tar.gz, and unpack to it /root/zulip, e.g.
 tar -xf zulip-server-1.1.3.tar.gz
 mv zulip-server-1.1.3 /root/zulip
