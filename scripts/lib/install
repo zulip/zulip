@@ -66,4 +66,5 @@ cat <<EOF
 
  su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 
+ To configure the initial database.
 EOF

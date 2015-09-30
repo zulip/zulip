@@ -20,3 +20,11 @@ if ! python manage.py initialize_voyager_db; then
 fi
 
 supervisorctl restart all
+
+echo "Congratulations!  You have successfully configured your Zulip database."
+echo "If you haven't already, you should configure email in /etc/zulip/settings.py"
+echo "And then you should now be able to visit your server over https and sign up using"
+echo "an email address that ends with @ADMIN_DOMAIN (from your settings file)."
+echo ""
+echo "See README.prod.md for instructions on how to confirm your Zulip install is healthy, "
+echo " change ADMIN_DOMAIN, debug common issues, and otherwise finish setting things up."
