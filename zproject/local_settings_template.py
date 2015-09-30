@@ -44,14 +44,20 @@ AUTHENTICATION_BACKENDS = (
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None
 
-# Configure the outgoing SMTP server below. For outgoing email
-# via a GMail SMTP server, EMAIL_USE_TLS must be True and the
-# outgoing port must be 587. The EMAIL_HOST is prepopulated
-# for GMail servers, change it for other hosts, or leave it unset
-# or empty to skip sending email.
+# Configure the outgoing SMTP server below. The default configuration
+# is prepopulated for GMail servers.  Change EMAIL_HOST for other
+# hosts, or leave it unset or empty to skip sending email.  Note if
+# you are using a GMail account to send outgoing email, you will
+# likely need to configure that account as "less secure" here:
+# https://support.google.com/accounts/answer/6010255.
+#
+# With the exception of reading EMAIL_HOST_PASSWORD from the Zulip
+# secrets file, Zulip uses Django's standard EmailBackend, so if
+# you're having issues, you may want to search for documentation on
+# using your email provider with Django.
 #
 # A common problem you may encounter when trying to get this working
-# is many hosting providers block outgoing SMTP traffic.
+# is that some hosting providers block outgoing SMTP traffic.
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 # If you're using password auth, you will need to put the password in
