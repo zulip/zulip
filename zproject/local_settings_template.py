@@ -21,6 +21,7 @@ AUTHENTICATION_BACKENDS = (
 #                           'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
 #                           'zproject.backends.ZulipRemoteUserBackend', # Local SSO
 #                           'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
+#                           'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
     )
 
 # Google Oauth requires a bit of configuration; you will need to go to
@@ -191,8 +192,11 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 ### LDAP integration configuration
-# Zulip supports retrieving information about users via LDAP, and optionally
-# using LDAP as an authentication mechanism.
+# Zulip supports retrieving information about users via LDAP, and
+# optionally using LDAP as an authentication mechanism.  For using
+# LDAP authentication, you will need to enable the
+# zproject.backends.ZulipLDAPAuthBackend auth backend in
+# AUTHENTICATION_BACKENDS above.
 
 import ldap
 from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
