@@ -54,6 +54,6 @@ while backoff.keep_going():
 print ""
 print ""
 print "ERROR: The Jabber mirroring bot is unable to continue mirroring Jabber."
-print "Please contact support@zulip.com if you need assistance."
+print "Please contact zulip-devel@googlegroups.com if you need assistance."
 print ""
 sys.exit(1)

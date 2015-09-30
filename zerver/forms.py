@@ -93,7 +93,7 @@ class OurAuthenticationForm(AuthenticationForm):
         if user_profile.realm.deactivated:
             error_msg = u"""Sorry for the trouble, but %s has been deactivated.
 
-Please contact support@zulip.com to reactivate this group.""" % (
+Please contact zulip-devel@googlegroups.com to reactivate this group.""" % (
                 user_profile.realm.name,)
             raise ValidationError(mark_safe(error_msg))
 
