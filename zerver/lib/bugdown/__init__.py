@@ -106,9 +106,8 @@ def fetch_tweet_data(tweet_id):
         if not all(creds.values()):
            return None
 
-        api = twitter.Api(**creds)
-
         try:
+            api = twitter.Api(**creds)
             # Sometimes Twitter hangs on responses.  Timing out here
             # will cause the Tweet to go through as-is with no inline
             # preview, rather than having the message be rejected
@@ -117,6 +116,10 @@ def fetch_tweet_data(tweet_id):
             tweet = timeout(3, api.GetStatus, tweet_id)
             res = tweet.AsDict()
             res['media'] = tweet.media  # AsDict does not include media
+        except AttributeError:
+            logging.error('Unable to load twitter api, you may have the wrong '
+                          'library installed, see https://github.com/zulip/zulip/issues/86')
+            return None
         except TimeoutExpired as e:
             # We'd like to try again later and not cache the bad result,
             # so we need to re-raise the exception (just as though

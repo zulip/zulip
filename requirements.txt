@@ -56,7 +56,7 @@ smmap==0.9.0
 sockjs-tornado==1.0.1
 sourcemap==0.1.8
 tornado==2.4.1
-twitter==1.17.0
+python-twitter==1.1
 ujson==1.33
 uritemplate==0.6
 wsgiref==0.1.2
