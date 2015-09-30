@@ -26,7 +26,7 @@ class zulip::rabbit {
     require => Package[rabbitmq-server],
     ensure => file,
     owner  => "root",
-    group  => "root",
+    group  => "root",service 
     mode => 644,
     source => "puppet:///modules/zulip/rabbitmq/rabbitmq-server",
   }
@@ -42,6 +42,7 @@ class zulip::rabbit {
 
   exec { "epmd":
     command => "epmd -daemon",
+    require => Package[erlang-base],
     path    => "/usr/bin/:/bin/",
   }
   
