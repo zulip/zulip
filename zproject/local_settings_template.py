@@ -18,7 +18,7 @@ ADMIN_DOMAIN = 'example.com'
 
 # Enable at least one of the following authentication backends.
 AUTHENTICATION_BACKENDS = (
-#                           'zproject.backends.EmailAuthBackend', # Email and password
+#                           'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
 #                           'zproject.backends.ZulipRemoteUserBackend', # Local SSO
 #                           'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
     )
