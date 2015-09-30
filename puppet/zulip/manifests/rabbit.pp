@@ -26,7 +26,7 @@ class zulip::rabbit {
     require => Package[rabbitmq-server],
     ensure => file,
     owner  => "root",
-    group  => "root",service 
+    group  => "root", 
     mode => 644,
     source => "puppet:///modules/zulip/rabbitmq/rabbitmq-server",
   }
