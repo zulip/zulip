@@ -1,5 +1,6 @@
 class zulip::rabbit {
   $rabbit_packages = [# Needed to run rabbitmq
+                      "erlang-base",
                       "rabbitmq-server",
                       ]
   package { $rabbit_packages: ensure => "installed" }
@@ -39,5 +40,15 @@ class zulip::rabbit {
     source => "puppet:///modules/zulip/rabbitmq/rabbitmq.config",
   }
 
+  exec { "epmd":
+    command => "epmd -daemon",
+    path    => "/usr/bin/:/bin/",
+  }
+  
+  service { "rabbitmq-server":
+    ensure => running,
+    require => Exec["epmd"],
+  }
+  
   # TODO: Should also call exactly once "configure-rabbitmq"
 }
