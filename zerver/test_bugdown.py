@@ -294,6 +294,10 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315459'),
                                                        make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459', media_tweet_html, """<div class="twitter-image"><a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3"><img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small"></a></div>""")))
 
+    def test_fetch_tweet_data_settings_validation(self):
+        with self.settings(TEST_SUITE=False):
+            self.assertIs(None, bugdown.fetch_tweet_data('287977969287315459'))
+
     def test_realm_emoji(self):
         def emoji_img(name, url):
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, url, name)

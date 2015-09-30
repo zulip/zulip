@@ -97,16 +97,16 @@ def fetch_tweet_data(tweet_id):
         from . import testing_mocks
         res = testing_mocks.twitter(tweet_id)
     else:
-        if settings.TWITTER_CONSUMER_KEY == '' or \
-           settings.TWITTER_CONSUMER_SECRET == '' or \
-           settings.TWITTER_ACCESS_TOKEN_KEY == '' or \
-           settings.TWITTER_ACCESS_TOKEN_SECRET == '':
+        creds = {
+            'consumer_key': settings.TWITTER_CONSUMER_KEY,
+            'consumer_secret': settings.TWITTER_CONSUMER_SECRET,
+            'access_token_key': settings.TWITTER_ACCESS_TOKEN_KEY,
+            'access_token_secret': settings.TWITTER_ACCESS_TOKEN_SECRET,
+        }
+        if not all(creds.values()):
            return None
 
-        api = twitter.Api(consumer_key = settings.TWITTER_CONSUMER_KEY,
-                          consumer_secret = settings.TWITTER_CONSUMER_SECRET,
-                          access_token_key = settings.TWITTER_ACCESS_TOKEN_KEY,
-                          access_token_secret = settings.TWITTER_ACCESS_TOKEN_SECRET)
+        api = twitter.Api(**creds)
 
         try:
             # Sometimes Twitter hangs on responses.  Timing out here
