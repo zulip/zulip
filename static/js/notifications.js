@@ -324,7 +324,7 @@ function process_notification(notification) {
     } else if (notification.webkit_notify === false && typeof Notification !== "undefined" && $.browser.mozilla === true) {
         Notification.requestPermission(function (perm) {
             if (perm === 'granted') {
-                Notification(title, {
+                new Notification(title, {
                     body: content,
                     iconUrl: ui.small_avatar_url(message)
                 });
