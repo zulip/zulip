@@ -39,5 +39,9 @@ class zulip::rabbit {
     source => "puppet:///modules/zulip/rabbitmq/rabbitmq.config",
   }
 
+  service { "rabbitmq-server":
+    ensure    => running 
+  }
+  
   # TODO: Should also call exactly once "configure-rabbitmq"
 }
