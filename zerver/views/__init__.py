@@ -244,7 +244,8 @@ def accounts_register(request):
         # The user is trying to register for a deactivated realm. Advise them to
         # contact support.
         return render_to_response("zerver/deactivated.html",
-                                  {"deactivated_domain_name": realm.name})
+                                  {"deactivated_domain_name": realm.name,
+                                   "zulip_administrator": settings.ZULIP_ADMINISTRATOR})
 
     try:
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
