@@ -22,6 +22,8 @@ def password_auth_enabled(realm):
     for backend in django.contrib.auth.get_backends():
          if isinstance(backend, EmailAuthBackend):
              return True
+         if isinstance(backend, ZulipLDAPAuthBackend):
+             return True
     return False
 
 def dev_auth_enabled():
