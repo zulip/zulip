@@ -760,7 +760,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'incident 3')
         self.assertEqual(
             msg.content,
-            ':unhealthy_heart: Incident [3](https://zulip-test.pagerduty.com/incidents/P140S4Y) triggered by [Test service](https://zulip-test.pagerduty.com/services/PIL5CUQ) and assigned to [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>foo'
+            ':imp: Incident [3](https://zulip-test.pagerduty.com/incidents/P140S4Y) triggered by [Test service](https://zulip-test.pagerduty.com/services/PIL5CUQ) and assigned to [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>foo'
         )
 
     def test_unacknowledge(self):
@@ -769,7 +769,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'incident 3')
         self.assertEqual(
             msg.content,
-            ':unhealthy_heart: Incident [3](https://zulip-test.pagerduty.com/incidents/P140S4Y) unacknowledged by [Test service](https://zulip-test.pagerduty.com/services/PIL5CUQ) and assigned to [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>foo'
+            ':imp: Incident [3](https://zulip-test.pagerduty.com/incidents/P140S4Y) unacknowledged by [Test service](https://zulip-test.pagerduty.com/services/PIL5CUQ) and assigned to [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>foo'
         )
 
     def test_resolved(self):
@@ -778,7 +778,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'incident 1')
         self.assertEqual(
             msg.content,
-            ':healthy_heart: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) resolved by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
+            ':grinning: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) resolved by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
         )
 
     def test_auto_resolved(self):
@@ -787,7 +787,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'incident 2')
         self.assertEqual(
             msg.content,
-            ':healthy_heart: Incident [2](https://zulip-test.pagerduty.com/incidents/PX7K9J2) resolved\n\n>new'
+            ':grinning: Incident [2](https://zulip-test.pagerduty.com/incidents/PX7K9J2) resolved\n\n>new'
         )
 
     def test_acknowledge(self):
@@ -796,7 +796,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'incident 1')
         self.assertEqual(
             msg.content,
-            ':average_heart: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) acknowledged by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
+            ':no_good: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) acknowledged by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
         )
 
     def test_no_subject(self):
@@ -805,7 +805,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'incident 48219')
         self.assertEqual(
             msg.content,
-            u':healthy_heart: Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n>mp_error_block_down_critical\u2119\u01b4'
+            u':grinning: Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n>mp_error_block_down_critical\u2119\u01b4'
         )
 
     def test_explicit_subject(self):
@@ -814,7 +814,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assertEqual(msg.subject, 'my cool topic')
         self.assertEqual(
             msg.content,
-            ':average_heart: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) acknowledged by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
+            ':no_good: Incident [1](https://zulip-test.pagerduty.com/incidents/PO1XIJ5) acknowledged by [armooo@](https://zulip-test.pagerduty.com/users/POBCFRJ)\n\n>It is on fire'
         )
 
     def test_bad_message(self):

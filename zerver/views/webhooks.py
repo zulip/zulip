@@ -961,20 +961,20 @@ def send_raw_pagerduty_json(user_profile, stream, message, topic):
 
 def send_formated_pagerduty(user_profile, stream, message_type, format_dict, topic):
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
-        template = (u':unhealthy_heart: Incident '
+        template = (u':imp: Incident '
         u'[{incident_num}]({incident_url}) {action} by '
         u'[{service_name}]({service_url}) and assigned to '
         u'[{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
     elif message_type == 'incident.resolve' and format_dict['resolved_by_url']:
-        template = (u':healthy_heart: Incident '
+        template = (u':grinning: Incident '
         u'[{incident_num}]({incident_url}) resolved by '
         u'[{resolved_by_username}@]({resolved_by_url})\n\n>{trigger_message}')
     elif message_type == 'incident.resolve' and not format_dict['resolved_by_url']:
-        template = (u':healthy_heart: Incident '
+        template = (u':grinning: Incident '
         u'[{incident_num}]({incident_url}) resolved\n\n>{trigger_message}')
     else:
-        template = (u':average_heart: Incident [{incident_num}]({incident_url}) '
+        template = (u':no_good: Incident [{incident_num}]({incident_url}) '
         u'{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
     subject = topic or u'incident {incident_num}'.format(**format_dict)
