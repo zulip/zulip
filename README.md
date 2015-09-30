@@ -47,16 +47,24 @@ This is documented in https://zulip.org/server.html and README.prod.md.
 Installing the Zulip Development environment
 ============================================
 
+You will need a machine with at least 2GB of RAM available (see
+https://github.com/zulip/zulip/issues/32 for a plan for how to
+dramatically reduce this requirement).
+
 Using Vagrant
 -------------
 
 This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 14.04.
 
+* The best performing way to run the Zulip development environment is
+  using an LXC container.  If your host is Ubuntu 14.04 (or newer;
+  what matters is having support for LXC containers), you'll want to
+  install and configure the LXC Vagrant provider like this:
+  `sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir && vagrant plugin install vagrant-lxc`
+
 * If your host is OS X, download VirtualBox from
   <http://download.virtualbox.org/virtualbox/4.3.30/VirtualBox-4.3.30-101610-OSX.dmg>
   and install it.
-* If your host is Ubuntu 14.04: 
-  `sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir && vagrant plugin install vagrant-lxc`
 
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal.  That will install the development
@@ -85,9 +93,27 @@ development server encounters.  It runs on top of Django's "manage.py
 runserver" tool, which will automatically restart the Zulip server
 whenever you save changes to Python code.
 
+Using provision.py without Vagrant
+----------------------------------
+
+If you'd like to install a Zulip development environment on a server
+that's already running Ubuntu 14.04 Trusty, you can do that by just
+running:
+
+```
+sudo apt-get update
+sudo apt-get install -y python-pbs
+python /srv/zulip/provision.py
+
+cd /srv/zulip
+source /srv/zulip-venv/bin/activate
+./tools/run-dev.py
+```
 
 By hand
 -------
+If you really want to install everything by hand, the below
+instructions should work.
 
 Install the following non-Python dependencies:
  * libffi-dev — needed for some Python extensions
@@ -121,10 +147,14 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 
 # Then, all versions:
 pip install -r requirements.txt
+tools/download-zxcvbn
+./tools/emoji_dump/build_emoji
+generate_secrets.py -d
 ./scripts/setup/configure-rabbitmq
 ./tools/postgres-init-db
 ./tools/do-destroy-rebuild-database
-./tools/emoji_dump/build_emoji
+./tools/postgres-init-test-db
+./tools/do_destroy_rebuild_test_database
 ```
 
 To start the development server:
@@ -133,18 +163,11 @@ To start the development server:
 ./tools/run-dev.py
 ```
 
-… and hit http://localhost:9991/.
+… and visit http://localhost:9991/.
 
 
 Running the test suite
 ======================
-
-One-time setup of test databases:
-
-```
-./tools/postgres-init-test-db
-./tools/do-destroy-rebuild-test-database
-```
 
 Run all tests:
 
@@ -161,14 +184,24 @@ individual tests, e.g.:
 ./tools/test-js-with-casper 10-navigation.js
 ```
 
+The above instructions include the first-time setup of test databases,
+but you may need to rebuild the test database occasionally if you're
+working on new database migrations.  To do this, run:
+
+```
+./tools/postgres-init-test-db
+./tools/do-destroy-rebuild-test-database
+```
+
 Possible testing issues
 =======================
 
-- The Casper tests are flaky on the Virtualbox environment (probably due
-  to some performance-sensitive races).  Until this issue is debugged,
-  you may need to rerun them to get them to pass.
+- The Casper tests are flaky on the Virtualbox environment (probably
+  due to some performance-sensitive races; they work reliably in
+  Travis CI).  Until this issue is debugged, you may need to rerun
+  them to get them to pass.
 
-  When running the test suite, if you get an error like this:
+- When running the test suite, if you get an error like this:
 
   ```
       sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not   exist
@@ -176,7 +209,9 @@ Possible testing issues
                                                                    ^
   ```
 
-  … then you need to install tsearch-extras, described above. Afterwards, re-run the `init*-db` and the     `do-destroy-rebuild*-database` scripts.
+  … then you need to install tsearch-extras, described
+  above. Afterwards, re-run the `init*-db` and the
+  `do-destroy-rebuild*-database` scripts.
 
 - When building the development environment using Vagrant and the LXC provider, if you encounter permissions errors, you may need to `chown -R 1000:$(whoami) /path/to/zulip` on the host before running `vagrant up` in order to ensure that the synced directory has the correct owner during provision. This issue will arise if you run `id username` on the host where `username` is the user running Vagrant and the output is anything but 1000.
   This seems to be caused by Vagrant behavior; more information can be found here https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner

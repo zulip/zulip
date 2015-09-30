@@ -28,6 +28,17 @@ fi
 cp -a /root/zulip/zproject/local_settings_template.py /etc/zulip/settings.py
 ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 
+if ! rabbitmqctl status >/dev/null; then
+    set +x
+    echo; echo "RabbitMQ seems to not have started properly after the installation process."
+    echo "Often, this can be caused by misconfigured /etc/hosts in virtualized environments"
+    echo "See https://github.com/zulip/zulip/issues/53#issuecomment-143805121"
+    echo "for more information"
+    echo
+    set -x
+    exit 1
+fi
+
 /root/zulip/scripts/setup/configure-rabbitmq
 
 /root/zulip/scripts/setup/postgres-init-db
@@ -55,4 +66,5 @@ cat <<EOF
 
  su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 
+ To configure the initial database.
 EOF

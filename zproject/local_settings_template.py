@@ -18,9 +18,10 @@ ADMIN_DOMAIN = 'example.com'
 
 # Enable at least one of the following authentication backends.
 AUTHENTICATION_BACKENDS = (
-#                           'zproject.backends.EmailAuthBackend', # Email and password
+#                           'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
 #                           'zproject.backends.ZulipRemoteUserBackend', # Local SSO
 #                           'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
+#                           'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
     )
 
 # Google Oauth requires a bit of configuration; you will need to go to
@@ -44,14 +45,20 @@ AUTHENTICATION_BACKENDS = (
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None
 
-# Configure the outgoing SMTP server below. For outgoing email
-# via a GMail SMTP server, EMAIL_USE_TLS must be True and the
-# outgoing port must be 587. The EMAIL_HOST is prepopulated
-# for GMail servers, change it for other hosts, or leave it unset
-# or empty to skip sending email.
+# Configure the outgoing SMTP server below. The default configuration
+# is prepopulated for GMail servers.  Change EMAIL_HOST for other
+# hosts, or leave it unset or empty to skip sending email.  Note if
+# you are using a GMail account to send outgoing email, you will
+# likely need to configure that account as "less secure" here:
+# https://support.google.com/accounts/answer/6010255.
+#
+# With the exception of reading EMAIL_HOST_PASSWORD from the Zulip
+# secrets file, Zulip uses Django's standard EmailBackend, so if
+# you're having issues, you may want to search for documentation on
+# using your email provider with Django.
 #
 # A common problem you may encounter when trying to get this working
-# is many hosting providers block outgoing SMTP traffic.
+# is that some hosting providers block outgoing SMTP traffic.
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 # If you're using password auth, you will need to put the password in
@@ -185,8 +192,11 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 ### LDAP integration configuration
-# Zulip supports retrieving information about users via LDAP, and optionally
-# using LDAP as an authentication mechanism.
+# Zulip supports retrieving information about users via LDAP, and
+# optionally using LDAP as an authentication mechanism.  For using
+# LDAP authentication, you will need to enable the
+# zproject.backends.ZulipLDAPAuthBackend auth backend in
+# AUTHENTICATION_BACKENDS above.
 
 import ldap
 from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
