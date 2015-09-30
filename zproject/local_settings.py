@@ -1,4 +1,11 @@
-# Non-secret secret Django settings for the Zulip project
+# This file is the Zulip local_settings.py configuration for the
+# zulip.com installation of Zulip.  It shouldn't be used in other
+# environments, but you may find it to be a a helpful reference when
+# setting up your own Zulip installation to see how Zulip can be
+# configured.
+#
+# On a normal Zulip production server, zproject/local_settings.py is a
+# symlink to /etc/zulip/settings.py (based off local_settings_template.py).
 import platform
 import ConfigParser
 from base64 import b64decode
