@@ -146,6 +146,12 @@
             <span class="integration-label">New Relic</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-pagerduty">
+         <a class="integration-link integration-pagerduty" href="#pagerduty">
+            <img class="integration-logo" src="/static/images/integrations/logos/pagerduty.png" alt="Pagerduty logo" />
+            <span class="integration-label">Pagerduty</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-perforce">
          <a class="integration-link integration-perforce" href="#perforce">
             <img class="integration-logo" src="/static/images/integrations/logos/perforce.png" alt="Perforce logo" />
@@ -1080,6 +1086,30 @@ key = NAGIOS_BOT_API_KEY
       running <code>/usr/local/share/zulip/integrations/nagios/nagios-notify-zulip</code>
       directly.</p>
     </div>
+
+
+    <div id="pagerduty" class="integration-instructions">
+
+      <p>First, create the stream you'd like to use for Pagerduty notifications,
+      and subscribe all interested parties to this stream. We recommend the
+      stream name <code>pagerduty</code>. Keep in mind you still need to create
+      the stream first even if you are using this recommendation.</p>
+
+      <p>Next, in Pagerduty, select Services under Configuration on the top
+      of the page.</p>
+      <img class="screenshot" src="/static/images/integrations/pagerduty/001.png" />
+
+      <p>Now navigate to the service you want to integrate with Zulip. From
+      there, click "Add a webhook". Fill in the form like this:</p>
+      <ul>
+          <li><b>Name</b>: Zulip</li>
+          <li><b>Endpoint URL</b>: <code>{{ external_api_uri }}{% verbatim %}/v1/external/pagerduty?api_key=abcdefgh&amp;stream=pagerduty{% endverbatim %}</code></li>
+      </ul>
+
+      <img class="screenshot" src="/static/images/integrations/pagerduty/002.png" />
+
+    </div>
+
 
     <div id="perforce" class="integration-instructions">
 
