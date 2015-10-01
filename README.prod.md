@@ -58,10 +58,12 @@ These instructions should be followed as root.
   self-signed certificates), but this will let you finish the
   installation process.
 
-(2) Download `zulip-server.tar.gz`, and unpack to it `/root/zulip`, e.g.
+(2) Download [the latest built server tarball](https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz)
+  and unpack it to `/root/zulip`, e.g.
   ```
-  tar -xf zulip-server-1.1.3.tar.gz
-  mv zulip-server-1.1.3 /root/zulip
+  wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
+  tar -xf zulip-server-latest.tar.gz
+  mv zulip-server-1.3.6 /root/zulip
   ```
 
 (3) Run
