@@ -322,10 +322,10 @@ Maintaining Zulip in production
 ===============================
 
 * To upgrade to a new version, download the appropriate release
-  tarball from https://www.zulip.org, and then run as root
-
+  tarball from https://www.zulip.com/dist/releases/ to a path readable
+  by the zulip user (e.g. /home/zulip), and then run as root:
   ```
-  /home/zulip/deployments/current/scripts/upgrade-zulip <tarball>
+  /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
   ```
 
   The upgrade process will shut down the service, run `apt-get
