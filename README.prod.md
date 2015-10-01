@@ -40,27 +40,29 @@ These instructions should be followed as root.
     `/etc/ssl/private/zulip.key` and `/etc/ssl/certs/zulip.combined-chain.crt`
 
 (2) Download `zulip-server.tar.gz`, and unpack to it `/root/zulip`, e.g.
-```
-tar -xf zulip-server-1.1.3.tar.gz
-mv zulip-server-1.1.3 /root/zulip
-```
+    ```
+    tar -xf zulip-server-1.1.3.tar.gz
+    mv zulip-server-1.1.3 /root/zulip
+    ```
 
-(3) run `/root/zulip/scripts/setup/install`.
+(3) run
+    ```/root/zulip/scripts/setup/install```
     This may take a while to run, since it will install a large number of
     packages via apt.
 
 (4) Configure the Zulip server instance by filling in the settings in
     `/etc/zulip/settings.py`.
 
-(6) Run `su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database`.
+(6) Run
+```su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database```
     This will report an error if you did not fill in all the mandatory
-    settings from ``/etc/zulip/settings.py`.  Once this completes
+    settings from `/etc/zulip/settings.py`.  Once this completes
     successfully, the main installation process will be complete, and if
     you are planning on using password authentication, you should be able
     to visit the URL for your server and register for an account.
 
-(6) Subscribe to [the Zulip announcements Google Group](https://groups.google.com/forum/#!forum/zulip-announce) to get announcements
-    about new releases, security issues, etc.
+(6) Subscribe to [the Zulip announcements Google Group](https://groups.google.com/forum/#!forum/zulip-announce)
+    to get announcements about new releases, security issues, etc.
 
 
 Authentication and logging into Zulip the first time
@@ -78,7 +80,7 @@ you can join, the `ADMIN_DOMAIN` realm (defined in
 
 The `ADMIN_DOMAIN` realm is by default configured with the following settings:
 * `restricted_to_domain=True`: Only people with emails ending with @ADMIN_DOMAIN can join.
-* `invite_required=Fals`e: An invitation is not required to join the realm.
+* `invite_required=False`: An invitation is not required to join the realm.
 * `invite_by_admin_only=False`: You don't need to be an admin user to invite other users.
 * `mandatory_topics=False`: Users are not required to specify a topic when sending messages.
 
@@ -155,8 +157,8 @@ And checking for errors in the Zulip errors logs under
 Tornado servers), and `workers.log` (combined logs from the queue
 workers).
 
-After you change configuration in ``/etc/zulip/settings.py` or fix a
-misconfigurtion, you will often want to restart the Zulip application.
+After you change configuration in `/etc/zulip/settings.py` or fix a
+misconfiguration, you will often want to restart the Zulip application.
 You can restart Zulip using:
 
 ```
@@ -371,5 +373,5 @@ place your completed configuration file at `/etc/apache2/sites-available/zulip-s
 
 (4) Run `a2ensite zulip-sso` to enable the Apache integration site.
 
-Now you should be able to visit https://zulip.yourdomain.net/ and
+Now you should be able to visit `https://zulip.yourdomain.net/` and
 login via the SSO solution.
