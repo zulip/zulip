@@ -74,7 +74,11 @@ These instructions should be followed as root.
   packages via apt.
 
 (4) Configure the Zulip server instance by filling in the settings in
-  `/etc/zulip/settings.py`.
+  `/etc/zulip/settings.py`.  Be sure to fill in all the mandatory
+  settings, enable at least one authentication mechanism, and do the
+  configuration required for that authentication mechanism to work.
+  See the section on "Authentication" below for more detail on
+  configuring authentication mechanisms.
 
 (5) Run
   ```
