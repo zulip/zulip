@@ -379,7 +379,7 @@ configuration change.
 (1) Edit `/etc/zulip/zulip.conf` and change the `puppet_classes` line to read:
 
 ```
-puppet_classes = zulip::enterprise, zulip::apache_sso
+puppet_classes = zulip::voyager, zulip::apache_sso
 ```
 
 (2) As root, run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`
