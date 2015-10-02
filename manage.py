@@ -5,6 +5,9 @@ import logging
 import subprocess
 
 if __name__ == "__main__":
+    if 'posix' in os.name and os.geteuid() == 0:
+        from django.core.management.base import CommandError
+        raise CommandError("manage.py should not be run as root.")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
 
     from django.conf import settings
