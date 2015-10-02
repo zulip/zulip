@@ -666,6 +666,15 @@ def start_google_oauth2(request):
     }
     return redirect(uri + urllib.urlencode(prams))
 
+# Workaround to support the Python-requests 1.0 transition of .json
+# from a property to a function
+requests_json_is_function = callable(requests.Response.json)
+def extract_json_response(resp):
+    if requests_json_is_function:
+        return resp.json()
+    else:
+        return resp.json
+
 def finish_google_oauth2(request):
     error = request.GET.get('error')
     if error == 'access_denied':
@@ -694,7 +703,7 @@ def finish_google_oauth2(request):
     )
     if resp.status_code != 200:
         raise Exception('Could not convert google pauth2 code to access_token\r%r' % resp.text)
-    access_token = resp.json()['access_token']
+    access_token = extract_json_response(resp)['access_token']
 
     resp = requests.get(
         'https://www.googleapis.com/plus/v1/people/me',
@@ -702,7 +711,7 @@ def finish_google_oauth2(request):
     )
     if resp.status_code != 200:
         raise Exception('Google login failed making API call\r%r' % resp.text)
-    body = resp.json()
+    body = extract_json_response(resp)
 
     try:
         full_name = body['name']['formatted']
