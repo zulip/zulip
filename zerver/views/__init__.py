@@ -1882,10 +1882,10 @@ def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     return json_success({"api_key": user_profile.api_key})
 
 @csrf_exempt
-def api_fetch_gcid(request):
+def api_fetch_google_client_id(request):
     if not settings.GOOGLE_CLIENT_ID:
-        return json_error("GCID is not configured", status=400)
-    return json_success({"gcid": settings.GOOGLE_CLIENT_ID})
+        return json_error("GOOGLE_CLIENT_ID is not configured", status=400)
+    return json_success({"google_client_id": settings.GOOGLE_CLIENT_ID})
 
 def get_status_list(requesting_user_profile):
     return {'presences': get_status_dict(requesting_user_profile),

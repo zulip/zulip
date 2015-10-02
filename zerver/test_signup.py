@@ -85,22 +85,22 @@ class PublicURLTest(TestCase):
 
     def test_get_gcid_when_not_configured(self):
         with self.settings(GOOGLE_CLIENT_ID=None):
-            resp = self.client.get("/api/v1/fetch_gcid")
+            resp = self.client.get("/api/v1/fetch_google_client_id")
             self.assertEquals(400, resp.status_code,
-                msg="Expected 400, received %d for GET /api/v1/fetch_gcid" % resp.status_code,
+                msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
             )
             data = ujson.loads(resp.content)
             self.assertEqual('error', data['result'])
 
     def test_get_gcid_when_configured(self):
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
-            resp = self.client.get("/api/v1/fetch_gcid")
+            resp = self.client.get("/api/v1/fetch_google_client_id")
             self.assertEquals(200, resp.status_code,
-                msg="Expected 200, received %d for GET /api/v1/fetch_gcid" % resp.status_code,
+                msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
             )
             data = ujson.loads(resp.content)
             self.assertEqual('success', data['result'])
-            self.assertEqual('ABCD', data['gcid'])
+            self.assertEqual('ABCD', data['google_client_id'])
 
 class LoginTest(AuthedTestCase):
     """
