@@ -42,7 +42,7 @@ Please report any security issues you discover to support@zulip.com.
 Running Zulip in production
 ===========================
 
-This is documented in https://zulip.org/server.html and README.prod.md.
+This is documented in https://zulip.org/server.html and [README.prod.md](README.prod.md).
 
 Installing the Zulip Development environment
 ============================================
