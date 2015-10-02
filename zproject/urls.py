@@ -153,6 +153,9 @@ urlpatterns += patterns('zerver.views',
     # password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'api_fetch_api_key'),
 
+    # Used to present the GOOGLE_CLIENT_ID to mobile apps
+    url(r'^api/v1/fetch_gcid$',             'api_fetch_gcid'),
+
     # These are integration-specific web hook callbacks
     url(r'^api/v1/external/beanstalk$' ,    'webhooks.api_beanstalk_webhook'),
     url(r'^api/v1/external/github$',        'webhooks.api_github_landing'),
