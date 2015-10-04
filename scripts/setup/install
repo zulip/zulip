@@ -6,4 +6,4 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 mkdir -p /var/log/zulip
-"$(dirname "$(dirname "$0")")/lib/install" "$@" 2>&1 | tee -a /var/log/zulip/install.log || echo "Installation error" && exit 1
+"$(dirname "$(dirname "$0")")/lib/install" "$@" 2>&1 | tee -a /var/log/zulip/install.log
