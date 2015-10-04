@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2.7
 #
 # Copyright (C) 2013 Permabit, Inc.
 # Copyright (C) 2013--2014 Zulip, Inc.

@@ -32,7 +32,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if None in (options["api"], options["web"], options["domain"]):
             print >>sys.stderr, "\033[1;31mYou must provide a domain, an API URL, and a web URL.\033[0m\n"
-            self.print_help("python manage.py", "create_realm")
+            self.print_help("python2.7 manage.py", "create_realm")
             exit(1)
 
         if not options["no_realm"]:

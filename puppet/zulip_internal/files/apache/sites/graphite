@@ -32,7 +32,7 @@ Listen 444
         SetHandler None
     </Location>
 
-    Alias /media/ "/usr/lib/pymodules/python2.7/django/contrib/admin/media/"
+    Alias /media/ "/usr/lib/pymodules/python2/django/contrib/admin/media/"
     <Location "/media/">
             SetHandler None
     </Location>

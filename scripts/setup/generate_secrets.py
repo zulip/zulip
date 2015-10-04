@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # This tools generates local_settings_generated.py using the template
 
 import sys, os, os.path

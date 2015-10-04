@@ -160,7 +160,7 @@ ENABLE_GRAVATAR = True
 # mail addressed to the hostname of your Zulip server.
 #
 # Users of other mail servers will need to configure it to pass mail to the
-# email mirror; see `python manage.py email-mirror --help` for details.
+# email mirror; see `python2.7 manage.py email-mirror --help` for details.
 
 # The email address pattern to use for auto-generated stream emails
 # The %s will be replaced with a unique token, and the resulting email

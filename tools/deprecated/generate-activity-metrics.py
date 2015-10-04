@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 #
 # Generates % delta activity metrics from graphite/statsd data
 #
