@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 #
 # This is tool for injecting messages during a usability study.  It's
 # likely useless for other applications.

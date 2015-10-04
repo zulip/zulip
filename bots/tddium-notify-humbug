@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # Copyright (C) 2012 Zulip, Inc.
 #
 # Permission is hereby granted, free of charge, to any person
