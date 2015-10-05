@@ -68,7 +68,8 @@ This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 
 
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal.  That will install the development
-server inside a Vagrant guest.
+server inside a Vagrant guest. If you don't have Vagrant, you can [download
+a binary package here](https://www.vagrantup.com/downloads.html).
 
 Once that finishes, you can run the development server as follows:
 
