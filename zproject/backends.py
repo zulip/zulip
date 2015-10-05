@@ -5,8 +5,9 @@ from django.conf import settings
 import django.contrib.auth
 
 from django_auth_ldap.backend import LDAPBackend
+from zerver.lib.actions import do_create_user
 
-from zerver.models import UserProfile, get_user_profile_by_id, \
+from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username
 
 from apiclient.sample_tools import client as googleapiclient
@@ -143,7 +144,14 @@ class ZulipLDAPAuthBackend(ZulipAuthMixin, LDAPBackend):
         try:
             return get_user_profile_by_email(username), False
         except UserProfile.DoesNotExist:
-            return UserProfile(), False
+            realm = Realm.objects.get(domain=settings.LDAP_APPEND_DOMAIN)
+            full_name = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]]
+            short_name = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]]
+            if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
+                short_name = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
+
+            user_profile = do_create_user(username, None, realm, full_name, short_name)
+            return user_profile, False
 
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackend):
     # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
