@@ -64,7 +64,8 @@ This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 
 
 * If your host is OS X, download VirtualBox from
   <http://download.virtualbox.org/virtualbox/4.3.30/VirtualBox-4.3.30-101610-OSX.dmg>
-  and install it.
+  and install it. If you don't have Vagrant installed, you can
+  [download a binary package here](https://www.vagrantup.com/downloads.html).
 
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal.  That will install the development
