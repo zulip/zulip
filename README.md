@@ -155,7 +155,7 @@ pip install -r requirements.txt
 ./tools/postgres-init-db
 ./tools/do-destroy-rebuild-database
 ./tools/postgres-init-test-db
-./tools/do_destroy_rebuild_test_database
+./tools/do-destroy-rebuild-test-database
 ```
 
 To start the development server:
