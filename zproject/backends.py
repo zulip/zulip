@@ -147,8 +147,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             domain = resolve_email_to_domain(username)
             realm = Realm.objects.get(domain=domain)
 
-            full_name = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]]
-            short_name = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]]
+            full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
+            short_name = full_name = ldap_user.attrs[full_name_attr]
             if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
                 short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
                 short_name = ldap_user.attrs[short_name_attr]
