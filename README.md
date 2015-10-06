@@ -148,9 +148,9 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 
 # Then, all versions:
 pip install -r requirements.txt
-tools/download-zxcvbn
+./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
-generate_secrets.py -d
+./scripts/setup/generate_secrets.py -d
 ./scripts/setup/configure-rabbitmq
 ./tools/postgres-init-db
 ./tools/do-destroy-rebuild-database
