@@ -8,7 +8,8 @@ from django_auth_ldap.backend import LDAPBackend
 from zerver.lib.actions import do_create_user
 
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
-    get_user_profile_by_email, remote_user_to_email, email_to_username
+    get_user_profile_by_email, remote_user_to_email, email_to_username, \
+    resolve_email_to_domain
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
@@ -144,7 +145,9 @@ class ZulipLDAPAuthBackend(ZulipAuthMixin, LDAPBackend):
         try:
             return get_user_profile_by_email(username), False
         except UserProfile.DoesNotExist:
-            realm = Realm.objects.get(domain=settings.LDAP_APPEND_DOMAIN)
+            domain = resolve_email_to_domain(username)
+            realm = Realm.objects.get(domain=domain)
+
             full_name = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]]
             short_name = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]]
             if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
