@@ -153,6 +153,7 @@ pip install -r requirements.txt
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
+sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/
 ./scripts/setup/configure-rabbitmq
 ./tools/postgres-init-db
 ./tools/do-destroy-rebuild-database
