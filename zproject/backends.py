@@ -130,7 +130,10 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
 
         return user_profile
 
-class ZulipLDAPAuthBackend(ZulipAuthMixin, LDAPBackend):
+class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
+    pass
+
+class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     def django_to_ldap_username(self, username):
         if settings.LDAP_APPEND_DOMAIN is not None:
             return email_to_username(username)
@@ -140,6 +143,12 @@ class ZulipLDAPAuthBackend(ZulipAuthMixin, LDAPBackend):
         if settings.LDAP_APPEND_DOMAIN is not None:
             return "@".join((username, settings.LDAP_APPEND_DOMAIN))
         return username
+
+    def authenticate(self, username, password):
+        try:
+            return ZulipLDAPAuthBackendBase.authenticate(self, username, password)
+        except Realm.DoesNotExist:
+            return None
 
     def get_or_create_user(self, username, ldap_user):
         try:
