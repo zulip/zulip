@@ -147,8 +147,39 @@ sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
 sudo apt-get install postgresql-9.4
 wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
 sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
+```
 
-# Then, all versions:
+Now continue with the "All systems" instructions below.
+
+On Fedora 22 (experimental):
+
+```
+sudo dnf install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server postgresql-devel postgresql libmemcached-devel
+wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/tsearch-extras_0.1.3.tar.gz
+tar xvzf tsearch-extras_0.1.3.tar.gz
+cd ts2
+make
+sudo make install
+
+# Hack around missing dictionary files -- need to fix this to get
+# the proper dictionaries from what in debian is the hunspell-en-us package.
+sudo touch /usr/share/pgsql/tsearch_data/english.stop
+sudo touch /usr/share/pgsql/tsearch_data/en_us.dict
+sudo touch /usr/share/pgsql/tsearch_data/en_us.affix
+
+# Edit the postgres settings:
+sudo vi /var/lib/pgsql/data/pg_hba.conf
+
+# Add this line before the first uncommented line to enable password auth:
+host    all             all             127.0.0.1/32            md5
+
+# Start the services
+sudo systemctl start redis memcached rabbitmq-server postgresql
+```
+
+All Systems:
+
+```
 pip install -r requirements.txt
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
@@ -167,7 +198,7 @@ To start the development server:
 ./tools/run-dev.py
 ```
 
-… and visit http://localhost:9991/.
+… and visit [http://localhost:9991/](http://localhost:9991/).
 
 
 Running the test suite
