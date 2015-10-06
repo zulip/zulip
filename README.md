@@ -51,6 +51,8 @@ You will need a machine with at least 2GB of RAM available (see
 https://github.com/zulip/zulip/issues/32 for a plan for how to
 dramatically reduce this requirement).
 
+Start by cloning this repository: `git clone https://github.com/zulip/zulip.git`
+
 Using Vagrant
 -------------
 
