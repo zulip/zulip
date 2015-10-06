@@ -150,12 +150,13 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 pip install -r requirements.txt
 tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
-generate_secrets.py -d
+scripts/setup/generate_secrets.py -d
+sudo cp puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/.
 ./scripts/setup/configure-rabbitmq
 ./tools/postgres-init-db
 ./tools/do-destroy-rebuild-database
 ./tools/postgres-init-test-db
-./tools/do_destroy_rebuild_test_database
+./tools/do-destroy-rebuild-test-database
 ```
 
 To start the development server:
