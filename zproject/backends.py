@@ -134,16 +134,6 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     pass
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
-    def django_to_ldap_username(self, username):
-        if settings.LDAP_APPEND_DOMAIN is not None:
-            return email_to_username(username)
-        return username
-
-    def ldap_to_django_username(self, username):
-        if settings.LDAP_APPEND_DOMAIN is not None:
-            return "@".join((username, settings.LDAP_APPEND_DOMAIN))
-        return username
-
     def authenticate(self, username, password):
         try:
             return ZulipLDAPAuthBackendBase.authenticate(self, username, password)
