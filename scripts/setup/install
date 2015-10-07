@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+set -o pipefail
 if [ "$EUID" -ne 0 ]; then
     echo "Error: The installation script must be run as root" >&2
     exit 1
