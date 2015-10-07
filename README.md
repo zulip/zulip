@@ -161,6 +161,93 @@ sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql
 ./tools/do-destroy-rebuild-test-database
 ```
 
+On CentOS 7 (Core):
+
+```
+# Note: these instructions are for the development version of Zulip, not the production one.
+
+# Add user zulip to the system (not necessary if you configured zulip as the administrator
+# user during the install process of CentOS 7).
+useradd zulip
+
+# Create a password for zulip user
+passwd zulip
+
+# Allow zulip to sudo
+visudo
+# Add this line after line `root    ALL=(ALL)       ALL`
+zulip   ALL=(ALL)       ALL
+
+# Switch to zulip user
+su zulip
+
+# Enable EPEL 7 repo so we can install rabbitmq-server, redis and other dependencies
+sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+# Install dependencies
+sudo yum install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server \
+postgresql-devel postgresql libmemcached-devel wget python-pip openssl-devel freetype-devel libjpeg-turbo-devel \
+zlib-devel nodejs
+
+# We need these packages to compile tsearch-extras
+sudo yum groupinstall "Development Tools"
+ 
+cd && wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/tsearch-extras_0.1.3.tar.gz
+tar xvzf tsearch-extras_0.1.3.tar.gz
+cd ts2
+make -j $(nproc)
+sudo make install
+
+# Now create the missing dictionary files
+sudo touch /usr/share/pgsql/tsearch_data/zulip_english.stop
+sudo touch /usr/share/pgsql/tsearch_data/english.stop
+sudo touch /usr/share/pgsql/tsearch_data/en_us.dict
+sudo touch /usr/share/pgsql/tsearch_data/en_us.affix
+
+# clone Zulip's git repo and cd into it
+cd && git clone https://github.com/zulip/zulip && cd zulip/
+
+# Initialize the postgres db
+sudo postgresql-setup initdb
+
+# Edit the postgres settings:
+sudo vi /var/lib/pgsql/data/pg_hba.conf
+
+# Add these two lines after line 80:
+local   zulip           zulip                                   md5
+host    all             all             127.0.0.1/32            md5
+
+# Change these lines:
+host    all             all             127.0.0.1/32            ident
+host    all             all             ::1/128                 ident
+# to this:
+host    all             all             127.0.0.1/32            md5
+host    all             all             ::1/128                 md5
+
+# Start the services
+sudo systemctl start redis rabbitmq-server memcached postgresql
+
+# Enable automatic service startup after the system startup
+sudo systemctl enable redis rabbitmq-server memcached postgresql
+
+# Recompile pillow with freetype support (required for build_emoji script)
+sudo pip uninstall pillow; sudo pip install pillow
+```
+
+After that:
+
+```
+sudo pip install -r requirements.txt
+./tools/download-zxcvbn
+./tools/emoji_dump/build_emoji
+./scripts/setup/generate_secrets.py -d
+./scripts/setup/configure-rabbitmq
+./tools/postgres-init-db
+./tools/do-destroy-rebuild-database
+./tools/postgres-init-test-db
+./tools/do-destroy-rebuild-test-database
+```
+
 To start the development server:
 
 ```
