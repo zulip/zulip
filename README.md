@@ -149,7 +149,7 @@ wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsear
 sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 ```
 
-On Fedora 22:
+On Fedora 22 (experimental):
 
 ```
 sudo dnf install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server postgresql-devel postgresql libmemcached-devel
@@ -167,15 +167,11 @@ sudo touch /usr/share/pgsql/tsearch_data/en_us.affix
 # Edit the postgres settings:
 sudo vi /var/lib/pgsql/data/pg_hba.conf
 
-# Add these two lines after line 80:
-local   zulip           zulip                                   md5
+# Add this line after the first uncommented line:
 host    all             all             127.0.0.1/32            md5
 
 # Start the services
-sudo service redis start
-sudo service rabbitmq-server start
-sudo service memcached start
-sudo service postgresql start
+sudo systemctl stop redis memcached rabbitmq-server postgresql
 ```
 
 All Systems:
