@@ -4,7 +4,9 @@ New Feature Tutorial
 
 The changes needed to add a new feature will vary, of course, but this document
 provides a general outline of what you may need to do, as well as an example of
-the specific steps needed to add a new feature;
+the specific steps needed to add a new feature: adding a new option to the 
+application that is dynamically synced through the data system in real-time to
+all browsers the user may have open.
 
 General Process
 ===============
@@ -15,8 +17,9 @@ Adding a field to the database
 **Update the model:** The server accesses the underlying database in `zerver/
 models.py`. Add a new field in the appropriate class.
 
-**Create and run the migration:** The migration process is documented at:
-https://docs.djangoproject.com/en/1.8/topics/migrations/
+**Create and run the migration:** To create and apply a migration, run: ::
+./manage.py makemigrations
+./manage.py migrate
 
 **Test your changes:** Once you've run the migration, restart memcached on your 
 development server (``/etc/init.d/memcached restart``) and then restart 
@@ -33,12 +36,11 @@ send an event announcing the change.
 functions in ``zerver/lib/actions.py`` to update the state based on the event you 
 just created.
 
-**Backend rendering:** Make any other modifications to the backend required for 
-your change. This could include the [xxx] file, which controls the generation of 
-various pages served (along with the Django templates).
+**Backend implementation:** Make any other modifications to the backend required for 
+your change.
 
-**Testing:** At the very least, add a test of your event data flowing through the system in
-``test_events.py``.
+**Testing:** At the very least, add a test of your event data flowing through 
+the system in ``test_events.py``.
 
 
 Frontend changes
@@ -52,15 +54,17 @@ new event that is sent to clients, be sure to add a handler for it to
 **CSS:** The primary CSS file is ``static/styles/zulip.css``. If your new 
 feature requires UI changes, you may need to add additional CSS to this file.
 
-**Templates:** Zulip uses Handlebars templates which are located in
+**Templates:** The initial page structure is rendered via Django templates 
+located in ``template/server``. For JavaScript, Zulip uses Handlebars templates located in
 ``static/templates``. Templates are precompiled as part of the build/deploy
 process.
 
-**Testing:** There are both blackbox, end-to-end front end tests and unit tests. 
-The blackbox tests are run in a headless browser using Casper.js and are located
-in ``zerver/tests/frontend/tests/``. The unit tests use Node's ``assert`` module
-are located in ``zerver/tests/frontend/node/``. For more information on testing
-see the :doc:`testing documentation <testing>`.
+**Testing:** There are two types of frontend tests: node-based unit tests and 
+blackbox end-to-end tests. The blackbox tests are run in a headless browser 
+using Casper.js and are located in ``zerver/tests/frontend/tests/``. The unit
+tests use Node's ``assert`` module are located in ``zerver/tests/frontend/node/``.
+For more information on writing and running tests see the :doc:`testing 
+documentation <testing>`.
 
 Example Feature
 ===============
@@ -78,7 +82,16 @@ to the ``zerver_realm`` table.
 
 In ``zerver/lib/actions.py``, create a new function named 
 ``do_set_realm_invite_by_admins_only``. This function will update the database
-and trigger an event to notify clients when this setting changes. ::
+and trigger an event to notify clients when this setting changes. In this case 
+there was an exisiting ``realm|update`` event type which was used for setting 
+similar flags on the Realm model, so it was possible to add a new property to 
+that event rather than creating a new one. The property name matches the 
+database field to make it easy to understand what it indicates.
+
+The second argument to ``send_event`` is the list of users whose browser 
+sessions should be notified. Depending on the setting, this can be a single user
+(if the setting is a personal one, like time display format), only members in a
+particular stream or all active users in a realm. ::
 
   # zerver/lib/actions.py
 
@@ -94,13 +107,16 @@ and trigger an event to notify clients when this setting changes. ::
     send_event(event, active_user_ids(realm))
     return {}
 
-You then need to add code that will handle the event and update the application state. In ``zerver/lib/actions.py`` update the ``fetch_initial_state`` and ``apply_events`` functions. ::
+You then need to add code that will handle the event and update the application
+state. In ``zerver/lib/actions.py`` update the ``fetch_initial_state`` and
+``apply_events`` functions. ::
 
   def fetch_initial_state_data(user_profile, event_types, queue_id):
     # ...
     state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only`
 
-In this case you don't need to change ``apply_events`` because there is already code that will correctly handle this event: ::
+In this case you don't need to change ``apply_events`` because there is already
+code that will correctly handle the realm update event type: ::
 
   def apply_events(state, events, user_profile):
     for event in events:
@@ -109,9 +125,12 @@ In this case you don't need to change ``apply_events`` because there is already 
          field = 'realm_' + event['property']
          state[field] = event['value']
 
-This feature adds a new parameter that should be sent to clients when the
-application loads and be accessible via JavaScript, so add it the initial state
-in ``zerver/views/__init__.py``. ::
+You then need to add a view for clients to access that will call the newly-added
+``actions.py`` code to update the database. This example feature adds a new
+parameter that should be sent to clients when the application loads and be
+accessible via JavaScript, and there is already a view that does this for
+related flags: ``update_realm``. So in this case, we can add out code to the
+exisiting view instead of creating a new one. ::
 
   # zerver/views/__init__.py
 
@@ -123,7 +142,9 @@ in ``zerver/views/__init__.py``. ::
       # ...
     )
 
-Since this feature also adds a checkbox to the admin page, and adds a new property the Realm model that can be modified from there, you also need to make changes to the ``update_realm`` function in the same file: ::
+Since this feature also adds a checkbox to the admin page, and adds a new
+property the Realm model that can be modified from there, you also need to make
+changes to the ``update_realm`` function in the same file: ::
 
   # zerver/views/__init__.py
 
@@ -139,9 +160,14 @@ Since this feature also adds a checkbox to the admin page, and adds a new proper
         do_set_realm_invite_by_admins_only(realm, invite_by_admins_only)
         data['invite_by_admins_only'] = invite_by_admins_only
 
-Then make the required front end changes: in this case a checkbox needs to be added to the admin page (and its value added to the data sent back to server when a realm is updated) and the change event needs to be handled on the client.
+Then make the required front end changes: in this case a checkbox needs to be
+added to the admin page (and its value added to the data sent back to server
+when a realm is updated) and the change event needs to be handled on the client.
 
-To add the checkbox to the admin page, modify the relevant template, ``static/templates/admin_tab.handlebars`` (omitted here since it is relatively straightforward). Then add code to handle changes to the new form control in ``static/js/admin.js``. ::
+To add the checkbox to the admin page, modify the relevant template,
+``static/templates/admin_tab.handlebars`` (omitted here since it is relatively
+straightforward). Then add code to handle changes to the new form control in
+``static/js/admin.js``. ::
 
   var url = "/json/realm";
   var new_invite_by_admins_only =
@@ -162,7 +188,8 @@ To add the checkbox to the admin page, modify the relevant template, ``static/te
     }
   });
 
-Finally, update ``server_events.js`` to handle related events coming from the server. ::
+Finally, update ``server_events.js`` to handle related events coming from the
+server. ::
 
   # static/js/server_events.js
 
@@ -177,3 +204,12 @@ Finally, update ``server_events.js`` to handle related events coming from the se
         }
     }
   }
+
+Any code needed to update the UI should be placed in ``dispatch_event`` callback
+(rather than the ``channel.patch``) function. This ensures the appropriate code
+will run even if the changes are made in another browser window. In this example
+most of the changes are on the backend, so no UI updates are required.
+
+This example is based on an actual Zulip feature, and you can review [the original
+commit in the Zulip git repo](https://github.com/zulip/zulip/commit/5b7f3466baee565b8e5099bcbd3e1ccdbdb0a408). (Note that Zulip has since been upgraded from
+Django 1.6 to 1.8, so the migration format has changed.)
