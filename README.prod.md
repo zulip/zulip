@@ -284,6 +284,15 @@ using topics:
 * You can edit topics to fix a thread that's already been started,
   which can be helpful when onboarding new batches of users to the platform.
 
+Third, setting default streams for new users is a great way to get
+new users involved in conversations before they've accustomed
+themselves with joining streams on their own. You can use the
+[`set_default_streams`](https://github.com/zulip/zulip/blob/master/zerver/management/commands/set_default_streams.py) command to set default streams for users within a realm:
+
+```
+python manage.py set_default_streams --domain=example.com --streams=foo,bar,...
+```
+
 (3) Notification settings.  Zulip gives you a great deal of control
 over which messages trigger desktop notifications; you can configure
 these extensively in the `/#settings` page (get there from the gear
