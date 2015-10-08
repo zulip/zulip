@@ -290,17 +290,8 @@ themselves with joining streams on their own. You can use the
 [`set_default_streams`](https://github.com/zulip/zulip/blob/master/zerver/management/commands/set_default_streams.py) command to set default streams for users within a realm:
 
 ```
-python manage.py set_default_streams --domain=zulip.com --streams=foo,bar,...
+python manage.py set_default_streams --domain=example.com --streams=foo,bar,...
 ```
-
-And you can use the [`add_users_to_streams`](https://github.com/zulip/zulip/blob/master/zerver/management/commands/add_users_to_streams.py) command to subscribe users to streams:
-
-```
-python manage.py add_users_to_streams --domain=zulip.com --streams=foo,bar,... --all-users
-```
-
-This comes in handy if you change the default streams and some users
-are not yet subscribed to the new defaults.
 
 (3) Notification settings.  Zulip gives you a great deal of control
 over which messages trigger desktop notifications; you can configure
