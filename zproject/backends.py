@@ -5,9 +5,11 @@ from django.conf import settings
 import django.contrib.auth
 
 from django_auth_ldap.backend import LDAPBackend
+from zerver.lib.actions import do_create_user
 
-from zerver.models import UserProfile, get_user_profile_by_id, \
-    get_user_profile_by_email, remote_user_to_email, email_to_username
+from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
+    get_user_profile_by_email, remote_user_to_email, email_to_username, \
+    resolve_email_to_domain
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
@@ -128,22 +130,31 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
 
         return user_profile
 
-class ZulipLDAPAuthBackend(ZulipAuthMixin, LDAPBackend):
-    def django_to_ldap_username(self, username):
-        if settings.LDAP_APPEND_DOMAIN is not None:
-            return email_to_username(username)
-        return username
+class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
+    pass
 
-    def ldap_to_django_username(self, username):
-        if settings.LDAP_APPEND_DOMAIN is not None:
-            return "@".join((username, settings.LDAP_APPEND_DOMAIN))
-        return username
+class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
+    def authenticate(self, username, password):
+        try:
+            return ZulipLDAPAuthBackendBase.authenticate(self, username, password)
+        except Realm.DoesNotExist:
+            return None
 
     def get_or_create_user(self, username, ldap_user):
         try:
             return get_user_profile_by_email(username), False
         except UserProfile.DoesNotExist:
-            return UserProfile(), False
+            domain = resolve_email_to_domain(username)
+            realm = Realm.objects.get(domain=domain)
+
+            full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
+            short_name = full_name = ldap_user.attrs[full_name_attr]
+            if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
+                short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
+                short_name = ldap_user.attrs[short_name_attr]
+
+            user_profile = do_create_user(username, None, realm, full_name, short_name)
+            return user_profile, False
 
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackend):
     # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
