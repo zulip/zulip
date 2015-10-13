@@ -1,12 +1,12 @@
 from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_user_profile_by_email, UserProfile
 import os
 from ConfigParser import SafeConfigParser
 
 class Command(BaseCommand):
-    help = """Reset all colors for a person to the default grey"""
+    help = """Sync your API key from ~/.zuliprc into your development instance"""
 
     def handle(self, *args, **options):
         config_file = os.path.join(os.environ["HOME"], ".zuliprc")
@@ -18,6 +18,9 @@ class Command(BaseCommand):
         api_key = config.get("api", "key")
         email = config.get("api", "email")
 
-        user_profile = get_user_profile_by_email(email)
-        user_profile.api_key = api_key
-        user_profile.save(update_fields=["api_key"])
+        try:
+            user_profile = get_user_profile_by_email(email)
+            user_profile.api_key = api_key
+            user_profile.save(update_fields=["api_key"])
+        except UserProfile.DoesNotExist:
+            print "User %s does not exist; not syncing API key" % (email,)
