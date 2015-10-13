@@ -40,7 +40,7 @@ people.test_set_people_name_dict({'Cordelia Lear': {full_name: 'Cordelia Lear', 
 
 var echo = require('js/echo.js');
 
-var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../fixtures/bugdown-data.json'), 'utf8', 'r'));
+var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver/fixtures/bugdown-data.json'), 'utf8', 'r'));
 
 (function test_bugdown_detection() {
 

@@ -25,7 +25,7 @@ os.chdir(path.join(path.dirname(__file__), '..'))
 exclude_trees = """
 static/third
 confirmation
-zerver/tests/frontend/casperjs
+frontend_tests/casperjs
 zerver/migrations
 node_modules
 """.split()

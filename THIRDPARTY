@@ -254,12 +254,12 @@ Files: zerver/lib/ccache.py
 Copyright: 2013 David Benjamin and Alan Huang
 License: Expat
 
-Files: zerver/tests/frontend/casperjs/*
+Files: frontend_tests/casperjs/*
 Copyright: 2011-2012 Nicolas Perriault
  Joyent, Inc. and other Node contributors
 License: Expat
 
-Files: zerver/tests/frontend/casperjs/modules/vendors/*
+Files: frontend_tests/casperjs/modules/vendors/*
 Copyright: 2011, Jeremy Ashkenas
 License: Expat
 

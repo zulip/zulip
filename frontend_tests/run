@@ -30,10 +30,10 @@ parser.add_option('--remote-debug',
 test_files = []
 for file in args:
     if not os.path.exists(file):
-        file = os.path.join(os.path.dirname(__file__), '../zerver/tests/frontend/tests', file)
+        file = os.path.join(os.path.dirname(__file__), '../frontend_tests/tests', file)
     test_files.append(os.path.abspath(file))
 
-os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../..'))
+os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
 subprocess.check_call('tools/generate-fixtures')
 
@@ -41,7 +41,7 @@ subprocess.check_call('tools/generate-test-credentials')
 
 subprocess.check_call(['rm', '-f'] + glob.glob('/tmp/casper-failure*.png'))
 
-log = open('zerver/tests/frontend/server.log', 'w')
+log = open('frontend_tests/server.log', 'w')
 
 # Run this not through the shell, so that we have the actual PID.
 server = subprocess.Popen(('tools/run-dev.py', '--test'),
@@ -50,7 +50,7 @@ server = subprocess.Popen(('tools/run-dev.py', '--test'),
 def assert_server_running():
     # Get the exit code of the server, or None if it is still running.
     if server.poll() is not None:
-        raise RuntimeError, 'Server died unexpectedly! Check zerver/tests/frontend/server.log'
+        raise RuntimeError, 'Server died unexpectedly! Check frontend_tests/server.log'
 
 def server_is_up():
     assert_server_running()
@@ -74,12 +74,12 @@ try:
     remote_debug = ""
     if options.remote_debug:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
-    cmd = "zerver/tests/frontend/casperjs/bin/casperjs %s test " % (remote_debug,)
+    cmd = "frontend_tests/casperjs/bin/casperjs %s test " % (remote_debug,)
 
     if test_files:
         cmd += ' '.join(test_files)
     else:
-        cmd += 'zerver/tests/frontend/tests'
+        cmd += 'frontend_tests/tests'
     print "Running %s" % (cmd,)
     ret = subprocess.call(cmd, shell=True)
 finally:
@@ -89,7 +89,7 @@ finally:
 if ret != 0:
     print >>sys.stderr, """
 Oops, the frontend tests failed. Tips for debugging:
- * Check the frontend test server logs at zerver/tests/frontend/server.log
+ * Check the frontend test server logs at frontend_tests/server.log
  * Check the screenshots of failed tests at /tmp/casper-failure*.png
  * Try remote debugging the test web browser as described in docs/testing.rst
 """

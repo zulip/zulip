@@ -39,7 +39,7 @@ global.add_dependencies = function (dct) {
 };
 
 function template_dir() {
-    return __dirname + '/../../../../static/templates/';
+    return __dirname + '/../../static/templates/';
 }
 
 global.make_sure_all_templates_have_been_compiled = function () {
