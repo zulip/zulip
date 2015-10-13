@@ -186,7 +186,7 @@ pip install -r requirements.txt
 ./scripts/setup/generate_secrets.py -d
 sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/
 ./scripts/setup/configure-rabbitmq
-./tools/postgres-init-db
+./tools/postgres-init-dev-db
 ./tools/do-destroy-rebuild-database
 ./tools/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
