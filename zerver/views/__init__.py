@@ -29,11 +29,12 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
 from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_change_full_name, do_change_enable_desktop_notifications, do_change_is_admin, \
     do_change_enter_sends, do_change_enable_sounds, do_activate_user, do_create_user, \
-    do_change_subscription_property, internal_send_message, \
+    process_new_human_user, do_change_subscription_property, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, bulk_add_subscriptions, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
-    do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, do_set_realm_invite_required, do_set_realm_invite_by_admins_only, internal_prep_message, \
+    do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, \
+    do_set_realm_invite_required, do_set_realm_invite_by_admins_only, internal_prep_message, \
     do_send_messages, get_default_subs, do_deactivate_user, do_reactivate_user, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
@@ -46,7 +47,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
     do_regenerate_api_key, do_remove_default_stream, do_update_pointer, \
-    do_change_avatar_source, do_change_twenty_four_hour_time, do_change_left_side_userlist
+    do_change_avatar_source, do_change_twenty_four_hour_time, do_change_left_side_userlist, \
+    realm_user_count
 
 from zerver.lib.create_user import random_api_key
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -143,43 +145,6 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         raise JsonableError("Stream(s) (%s) do not exist" % ", ".join(rejects))
 
     return existing_streams, created_streams
-
-def realm_user_count(realm):
-    user_dicts = get_active_user_dicts_in_realm(realm)
-    return len([user_dict for user_dict in user_dicts if not user_dict["is_bot"]])
-
-def send_signup_message(sender, signups_stream, user_profile,
-                        internal=False, realm=None):
-    if internal:
-        # When this is done using manage.py vs. the web interface
-        internal_blurb = " **INTERNAL SIGNUP** "
-    else:
-        internal_blurb = " "
-
-    user_count = realm_user_count(user_profile.realm)
-    # Send notification to realm notifications stream if it exists
-    # Don't send notification for the first user in a realm
-    if user_profile.realm.notifications_stream is not None and user_count > 1:
-        internal_send_message(sender, "stream",
-                              user_profile.realm.notifications_stream.name,
-                              "New users", "%s just signed up for Zulip. Say hello!" % \
-                                (user_profile.full_name,),
-                              realm=user_profile.realm)
-
-    internal_send_message(sender,
-            "stream", signups_stream, user_profile.realm.domain,
-            "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
-                user_profile.full_name,
-                user_profile.email,
-                internal_blurb,
-                user_count,
-                )
-            )
-
-def notify_new_user(user_profile, internal=False):
-    if settings.NEW_USER_BOT is not None:
-        send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
-    statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
 
 class PrincipalError(JsonableError):
     def __init__(self, principal):
@@ -361,79 +326,6 @@ def accounts_register(request):
              'password_auth_enabled': password_auth_enabled(realm),
             },
         context_instance=RequestContext(request))
-
-# Does the processing for a new user account:
-# * Subscribes to default/invitation streams
-# * Fills in some recent historical messages
-# * Notifies other users in realm and Zulip about the signup
-# * Deactivates PreregistrationUser objects
-# * subscribe the user to newsletter if newsletter_data is specified
-def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None):
-    mit_beta_user = user_profile.realm.domain == "mit.edu"
-    try:
-        streams = prereg_user.streams.all()
-    except AttributeError:
-        # This will catch both the case where prereg_user is None and where it
-        # is a MitUser.
-        streams = []
-
-    # If the user's invitation didn't explicitly list some streams, we
-    # add the default streams
-    if len(streams) == 0:
-        streams = get_default_subs(user_profile)
-    bulk_add_subscriptions(streams, [user_profile])
-
-    # Give you the last 100 messages on your streams, so you have
-    # something to look at in your home view once you finish the
-    # tutorial.
-    one_week_ago = now() - datetime.timedelta(weeks=1)
-    recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                              type_id__in=[stream.id for stream in streams])
-    messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
-    if len(messages) > 0:
-        ums_to_create = [UserMessage(user_profile=user_profile, message=message,
-                                     flags=UserMessage.flags.read)
-                         for message in messages]
-
-        UserMessage.objects.bulk_create(ums_to_create)
-
-    # mit_beta_users don't have a referred_by field
-    if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None \
-            and settings.NOTIFICATION_BOT is not None:
-        # This is a cross-realm private message.
-        internal_send_message(settings.NOTIFICATION_BOT,
-                "private", prereg_user.referred_by.email, user_profile.realm.domain,
-                "%s <`%s`> accepted your invitation to join Zulip!" % (
-                    user_profile.full_name,
-                    user_profile.email,
-                    )
-                )
-    # Mark any other PreregistrationUsers that are STATUS_ACTIVE as
-    # inactive so we can keep track of the PreregistrationUser we
-    # actually used for analytics
-    if prereg_user is not None:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.email).exclude(
-            id=prereg_user.id).update(status=0)
-    else:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.email).update(status=0)
-
-    notify_new_user(user_profile)
-
-    if newsletter_data is not None:
-        # If the user was created automatically via the API, we may
-        # not want to register them for the newsletter
-        queue_json_publish(
-            "signups",
-            {
-                'EMAIL': user_profile.email,
-                'merge_vars': {
-                    'NAME': user_profile.full_name,
-                    'REALM': user_profile.realm.domain,
-                    'OPTIN_IP': newsletter_data["IP"],
-                    'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
-                },
-            },
-        lambda event: None)
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def accounts_accept_terms(request):
