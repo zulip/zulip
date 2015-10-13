@@ -193,11 +193,44 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 ### LDAP integration configuration
 # Zulip supports retrieving information about users via LDAP, and
-# optionally using LDAP as an authentication mechanism.  For using
-# LDAP authentication, you will need to enable the
-# zproject.backends.ZulipLDAPAuthBackend auth backend in
-# AUTHENTICATION_BACKENDS above.
-
+# optionally using LDAP as an authentication mechanism.
+#
+# In either configuration, you will need to do the following:
+#
+# * Fill in the LDAP configuration options below so that Zulip can
+# connect to your LDAP server
+#
+# * Setup the mapping between email addresses (used as login names in
+# Zulip) and LDAP usernames.  There are two supported ways to setup
+# the username mapping:
+#
+#   (A) If users' email addresses are in LDAP, set
+#       LDAP_APPEND_DOMAIN = None
+#       AUTH_LDAP_USER_SEARCH to lookup users by email address
+#
+#   (B) If LDAP only has usernames but email addresses are of the form
+#       username@example.com, you should set:
+#       LDAP_APPEND_DOMAIN = example.com and
+#       AUTH_LDAP_USER_SEARCH to lookup users by username
+#
+# You can quickly test whether your configuration works by running:
+#   ./manage.py query_ldap username@example.com
+# From the root of your Zulip installation; if your configuration is working
+# that will output the full name for your user.
+#
+# -------------------------------------------------------------
+#
+# If you are using LDAP for authentication, you will need to enable
+# the zproject.backends.ZulipLDAPAuthBackend auth backend in
+# AUTHENTICATION_BACKENDS above.  After doing so, you should be able
+# to login to Zulip by entering your email address and LDAP password
+# on the Zulip login form.
+#
+# If you are using LDAP to populate names in Zulip, once you finish
+# configuring this integration, you will need to run:
+#   ./manage.py sync_ldap_user_data
+# To sync names for existing users; you may want to run this in a cron
+# job to pick up name changes made on your LDAP server.
 import ldap
 from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 

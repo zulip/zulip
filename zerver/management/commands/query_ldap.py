@@ -9,7 +9,7 @@ from django.conf import settings
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 
-# Run this on a cronjob to pick up on name changes.
+# Quick tool to test whether you're correctly authenticating to LDAP
 def query_ldap(**options):
     email = options['email']
     for backend in get_backends():
