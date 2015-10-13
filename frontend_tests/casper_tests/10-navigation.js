@@ -1,4 +1,4 @@
-var common = require('../common.js').common;
+var common = require('../casper_lib/common.js').common;
 
 // Test basic tab navigation.
 

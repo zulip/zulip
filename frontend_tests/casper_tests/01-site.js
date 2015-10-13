@@ -10,7 +10,7 @@
 // For example, utils.dump() prints an Object with nice formatting.
 var utils = require('utils');
 
-var common = require('../common.js').common;
+var common = require('../casper_lib/common.js').common;
 
 common.start_and_log_in();
 

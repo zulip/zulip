@@ -2,7 +2,7 @@ var common = (function () {
 
 var exports = {};
 
-var test_credentials = require('../test_credentials.js').test_credentials;
+var test_credentials = require('../casper_lib/test_credentials.js').test_credentials;
 
 function timestamp() {
     return new Date().getTime();

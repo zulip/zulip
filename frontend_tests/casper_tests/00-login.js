@@ -1,4 +1,4 @@
-var common = require('../common.js').common;
+var common = require('../casper_lib/common.js').common;
 
 // Start of test script.
 casper.start('http://localhost:9981/', common.initialize_casper);
