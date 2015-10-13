@@ -15,6 +15,6 @@
 /zproject/test_settings.py export-ignore
 /zerver/fixtures export-ignore
 /zerver/tests.py export-ignore
-/zerver/tests export-ignore
+/frontend_tests export-ignore
 /node_modules export-ignore
 /humbug export-ignore
