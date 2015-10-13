@@ -114,7 +114,7 @@ bottom of ``foobar.js``:
 This makes ``foobar.js`` follow the CommonJS module pattern, so it can
 be required in Node.js, which runs our tests.
 
-Now create ``frontend_tests/node/foobar.js``. At the top, require
+Now create ``frontend_tests/node_tests/foobar.js``. At the top, require
 the `Node.js assert module <http://nodejs.org/api/assert.html>`__, and
 the module you're testing, like so:
 
