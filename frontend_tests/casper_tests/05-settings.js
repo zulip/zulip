@@ -1,5 +1,5 @@
-var common = require('../common.js').common;
-var test_credentials = require('./test_credentials.js').test_credentials;
+var common = require('../casper_lib/common.js').common;
+var test_credentials = require('../casper_lib/test_credentials.js').test_credentials;
 
 common.start_and_log_in();
 
