@@ -29,7 +29,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
 from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
     do_change_full_name, do_change_enable_desktop_notifications, do_change_is_admin, \
     do_change_enter_sends, do_change_enable_sounds, do_activate_user, do_create_user, \
-    process_new_human_user, do_change_subscription_property, internal_send_message, \
+    do_change_subscription_property, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, bulk_add_subscriptions, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
@@ -296,12 +296,13 @@ def accounts_register(request):
                 do_change_password(user_profile, password)
                 do_change_full_name(user_profile, full_name)
             except UserProfile.DoesNotExist:
-                user_profile = do_create_user(email, password, realm, full_name, short_name)
+                user_profile = do_create_user(email, password, realm, full_name, short_name,
+                                              prereg_user=prereg_user,
+                                              newsletter_data={"IP": request.META['REMOTE_ADDR']})
         else:
-            user_profile = do_create_user(email, password, realm, full_name, short_name)
-
-        process_new_human_user(user_profile, prereg_user=prereg_user,
-                               newsletter_data={"IP": request.META['REMOTE_ADDR']})
+            user_profile = do_create_user(email, password, realm, full_name, short_name,
+                                          prereg_user=prereg_user,
+                                          newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
         # This logs you in using the ZulipDummyBackend, since honestly nothing
         # more fancy than this is required.
@@ -1639,8 +1640,7 @@ def create_user_backend(request, user_profile, email=REQ, password=REQ,
     except UserProfile.DoesNotExist:
         pass
 
-    new_user_profile = do_create_user(email, password, realm, full_name, short_name)
-    process_new_human_user(new_user_profile)
+    do_create_user(email, password, realm, full_name, short_name)
     return json_success()
 
 @authenticated_json_post_view

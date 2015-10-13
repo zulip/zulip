@@ -250,7 +250,8 @@ def do_create_user(email, password, realm, full_name, short_name,
                    active=True, bot=False, bot_owner=None,
                    avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
-                   default_all_public_streams=None):
+                   default_all_public_streams=None, prereg_user=None,
+                   newsletter_data=None):
     event = {'type': 'user_created',
              'timestamp': time.time(),
              'full_name': full_name,
@@ -273,6 +274,9 @@ def do_create_user(email, password, realm, full_name, short_name,
     notify_created_user(user_profile)
     if bot:
         notify_created_bot(user_profile)
+    else:
+        process_new_human_user(user_profile, prereg_user=prereg_user,
+                               newsletter_data=newsletter_data)
     return user_profile
 
 def user_sessions(user_profile):
