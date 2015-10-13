@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
-from zerver.models import Realm
+from zerver.models import Realm, get_realm
 from zerver.lib.actions import do_add_realm_emoji, do_remove_realm_emoji
 import sys
 
@@ -30,7 +30,7 @@ Example: python manage.py realm_emoji --realm=zulip.com --op=show
                             help="URL of image to display for the emoji")
 
     def handle(self, *args, **options):
-        realm = Realm.objects.get(domain=options["domain"])
+        realm = get_realm(options["domain"])
         if options["op"] == "show":
             for name, url in realm.get_emoji().iteritems():
                 print name, url

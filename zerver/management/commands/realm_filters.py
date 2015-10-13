@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from zerver.models import RealmFilter, all_realm_filters, Realm
+from zerver.models import RealmFilter, all_realm_filters, get_realm
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
 import sys
 
@@ -37,7 +37,7 @@ Example: python manage.py realm_filters --realm=zulip.com --op=show
                             help="format string to substitute")
 
     def handle(self, *args, **options):
-        realm = Realm.objects.get(domain=options["domain"])
+        realm = get_realm(options["domain"])
         if options["op"] == "show":
             print "%s: %s" % (realm.domain, all_realm_filters().get(realm.domain, ""))
             sys.exit(0)

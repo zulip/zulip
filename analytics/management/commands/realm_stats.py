@@ -6,7 +6,7 @@ import pytz
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 from zerver.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
-    Subscription, UserMessage
+    Subscription, UserMessage, get_realm
 
 MOBILE_CLIENT_LIST = ["Android", "ios"]
 HUMAN_CLIENT_LIST = MOBILE_CLIENT_LIST + ["website"]
@@ -70,7 +70,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['realms']:
             try:
-                realms = [Realm.objects.get(domain=domain) for domain in options['realms']]
+                realms = [get_realm(domain) for domain in options['realms']]
             except Realm.DoesNotExist, e:
                 print e
                 exit(1)

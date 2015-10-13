@@ -5,7 +5,7 @@ from django.test import TestCase
 from zilencer.models import Deployment
 
 from zerver.models import (
-    get_user_profile_by_email,
+    get_realm, get_user_profile_by_email,
     PreregistrationUser, Realm, ScheduledJob, UserProfile,
 )
 
@@ -121,7 +121,7 @@ class LoginTest(AuthedTestCase):
         self.assertIn("Please enter a correct email and password", result.content)
 
     def test_register(self):
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         streams = ["stream_%s" % i for i in xrange(40)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
@@ -139,7 +139,7 @@ class LoginTest(AuthedTestCase):
         If you try to register for a deactivated realm, you get a clear error
         page.
         """
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -153,7 +153,7 @@ class LoginTest(AuthedTestCase):
         """
         If you try to log in to a deactivated realm, you get a clear error page.
         """
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -386,7 +386,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        zulip_realm = Realm.objects.get(domain="zulip.com")
+        zulip_realm = get_realm("zulip.com")
         zulip_realm.restricted_to_domain = True
         zulip_realm.save()
 
@@ -403,7 +403,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = False`, you can invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        zulip_realm = Realm.objects.get(domain="zulip.com")
+        zulip_realm = get_realm("zulip.com")
         zulip_realm.restricted_to_domain = False
         zulip_realm.save()
 
@@ -421,7 +421,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         invitee = "alice-test@zulip.com"
 
         stream_name = u"hümbüǵ"
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         stream, _ = create_stream_if_needed(realm, stream_name)
 
         # Make sure we're subscribed before inviting someone.

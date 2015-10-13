@@ -23,7 +23,7 @@ class Command(BaseCommand):
                             help="alias to add or remove")
 
     def handle(self, *args, **options):
-        realm = Realm.objects.get(domain=options["domain"])
+        realm = get_realm(options["domain"])
         if options["op"] == "show":
             print "Aliases for %s:" % (realm.domain,)
             for alias in realm_aliases(realm):

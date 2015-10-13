@@ -8,10 +8,12 @@ from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, do_add_subscription,
-    get_display_recipient, get_user_profile_by_email,
+    get_display_recipient,
 )
 
 from zerver.models import (
+    get_realm,
+    get_user_profile_by_email,
     resolve_email_to_domain,
     Client,
     Message,
@@ -271,7 +273,7 @@ class AuthedTestCase(TestCase):
         return data['messages']
 
     def users_subscribed_to_stream(self, stream_name, realm_domain):
-        realm = Realm.objects.get(domain=realm_domain)
+        realm = get_realm(realm_domain)
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
@@ -321,7 +323,7 @@ class AuthedTestCase(TestCase):
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
-        realm = Realm.objects.get(domain=resolve_email_to_domain(email))
+        realm = get_realm(resolve_email_to_domain(email))
         stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
         do_add_subscription(user_profile, stream, no_log=True)

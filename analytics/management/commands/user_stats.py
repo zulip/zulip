@@ -4,7 +4,7 @@ import datetime
 import pytz
 
 from django.core.management.base import BaseCommand
-from zerver.models import UserProfile, Realm, Stream, Message
+from zerver.models import UserProfile, Realm, Stream, Message, get_realm
 
 class Command(BaseCommand):
     help = "Generate statistics on user activity."
@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['realms']:
             try:
-                realms = [Realm.objects.get(domain=domain) for domain in options['realms']]
+                realms = [get_realm(domain) for domain in options['realms']]
             except Realm.DoesNotExist, e:
                 print e
                 exit(1)

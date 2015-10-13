@@ -18,7 +18,7 @@ def has_valid_realm(value):
     # Checks if there is a realm without invite_required
     # matching the domain of the input e-mail.
     try:
-        realm = Realm.objects.get(domain=resolve_email_to_domain(value))
+        realm = get_realm(resolve_email_to_domain(value))
     except Realm.DoesNotExist:
         return False
     return not realm.invite_required

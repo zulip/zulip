@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import delete_all_user_sessions, \
     delete_realm_user_sessions
-from zerver.models import Realm
+from zerver.models import get_realm
 
 class Command(BaseCommand):
     help = "Log out all users."
@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options["realm"]:
-            realm = Realm.objects.get(domain=options["realm"])
+            realm = get_realm(options["realm"])
             delete_realm_user_sessions(realm)
         else:
             delete_all_user_sessions()
