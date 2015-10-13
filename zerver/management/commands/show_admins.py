@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
-from zerver.models import Realm
+from zerver.models import get_realm, Realm
 import sys
 
 class Command(BaseCommand):
@@ -15,7 +15,7 @@ class Command(BaseCommand):
         realm = options['realm']
 
         try:
-            realm = Realm.objects.get(domain=realm)
+            realm = get_realm(realm)
         except Realm.DoesNotExist:
             print 'There is no realm called %s.' % (realm,)
             sys.exit(1)

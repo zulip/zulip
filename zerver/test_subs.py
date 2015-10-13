@@ -417,7 +417,7 @@ class DefaultStreamTest(AuthedTestCase):
         return set(stream_names)
 
     def test_set_default_streams(self):
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         stream_names = ['apple', 'banana', 'Carrot Cake']
         expected_names = stream_names + ['zulip']
         set_default_streams(realm, stream_names)
@@ -425,7 +425,7 @@ class DefaultStreamTest(AuthedTestCase):
         self.assertEqual(stream_names, set(expected_names))
 
     def test_add_and_remove_default_stream(self):
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         orig_stream_names = self.get_default_stream_names(realm)
         do_add_default_stream(realm, 'Added Stream')
         new_stream_names = self.get_default_stream_names(realm)
@@ -882,7 +882,7 @@ class SubscriptionAPITest(AuthedTestCase):
     def test_multi_user_subscription(self):
         email1 = 'cordelia@zulip.com'
         email2 = 'iago@zulip.com'
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         streams_to_sub = ['multi_user_stream']
         events = []
         with tornado_redirected_to_list(events):
@@ -960,7 +960,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
 
     def test_bulk_subscribe_MIT(self):
-        realm = Realm.objects.get(domain="mit.edu")
+        realm = get_realm("mit.edu")
         streams = ["stream_%s" % i for i in xrange(40)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
@@ -979,7 +979,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_bulk_subscribe_many(self):
         # Create a whole bunch of streams
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         streams = ["stream_%s" % i for i in xrange(20)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
@@ -1400,7 +1400,7 @@ class GetSubscribersTest(AuthedTestCase):
         """
         gather_subscriptions returns correct results with only 3 queries
         """
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         streams = ["stream_%s" % i for i in xrange(10)]
         for stream in streams:
             create_stream_if_needed(realm, stream)

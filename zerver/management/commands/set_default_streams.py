@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
 
-from zerver.models import Realm
+from zerver.models import get_realm
 from zerver.lib.actions import set_default_streams
 
 from optparse import make_option
@@ -41,5 +41,5 @@ set of streams (which can be empty, with `--streams=`)."
             exit(1)
 
         stream_names = [stream.strip() for stream in options["streams"].split(",")]
-        realm = Realm.objects.get(domain=options["domain"])
+        realm = get_realm(options["domain"])
         set_default_streams(realm, stream_names)

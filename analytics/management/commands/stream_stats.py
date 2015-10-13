@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
 from django.db.models import Q
-from zerver.models import Realm, Stream, Message, Subscription, Recipient
+from zerver.models import Realm, Stream, Message, Subscription, Recipient, get_realm
 
 class Command(BaseCommand):
     help = "Generate statistics on the streams for a realm."
@@ -14,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['realms']:
             try:
-                realms = [Realm.objects.get(domain=domain) for domain in options['realms']]
+                realms = [get_realm(domain) for domain in options['realms']]
             except Realm.DoesNotExist, e:
                 print e
                 exit(1)

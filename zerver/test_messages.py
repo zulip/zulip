@@ -488,7 +488,7 @@ class StreamMessagesTest(AuthedTestCase):
 
         # Subscribe everyone to a stream with non-ASCII characters.
         non_ascii_stream_name = u"hümbüǵ"
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         stream, _ = create_stream_if_needed(realm, non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(realm=realm):
             do_add_subscription(user_profile, stream, no_log=True)
@@ -499,7 +499,7 @@ class StreamMessagesTest(AuthedTestCase):
 class MessageDictTest(AuthedTestCase):
     @slow(1.6, 'builds lots of messages')
     def test_bulk_message_fetching(self):
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
@@ -838,7 +838,7 @@ class GetOldMessagesTest(AuthedTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = Realm.objects.get(domain="zulip.com")
+        realm = get_realm("zulip.com")
         stream, _ = create_stream_if_needed(realm, "Scotland")
         do_add_subscription(get_user_profile_by_email("hamlet@zulip.com"),
                             stream, no_log=True)
@@ -866,7 +866,7 @@ class GetOldMessagesTest(AuthedTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = Realm.objects.get(domain="mit.edu")
+        realm = get_realm("mit.edu")
         lambda_stream, _ = create_stream_if_needed(realm, u"\u03bb-stream")
         do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
                             lambda_stream, no_log=True)
@@ -901,7 +901,7 @@ class GetOldMessagesTest(AuthedTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = Realm.objects.get(domain="mit.edu")
+        realm = get_realm("mit.edu")
         stream, _ = create_stream_if_needed(realm, "Scotland")
         do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
                             stream, no_log=True)
@@ -1439,7 +1439,7 @@ class CheckMessageTest(AuthedTestCase):
         sender = get_user_profile_by_email('othello@zulip.com')
         client, _ = Client.objects.get_or_create(name="test suite")
         stream_name = 'integration'
-        stream, _ = create_stream_if_needed(Realm.objects.get(domain="zulip.com"), stream_name)
+        stream, _ = create_stream_if_needed(get_realm("zulip.com"), stream_name)
         message_type_name = 'stream'
         message_to = None
         message_to = [stream_name]
@@ -1468,7 +1468,7 @@ class CheckMessageTest(AuthedTestCase):
         sender = bot
         client, _ = Client.objects.get_or_create(name="test suite")
         stream_name = 'integration'
-        stream, _ = create_stream_if_needed(Realm.objects.get(domain="zulip.com"), stream_name)
+        stream, _ = create_stream_if_needed(get_realm("zulip.com"), stream_name)
         message_type_name = 'stream'
         message_to = None
         message_to = [stream_name]

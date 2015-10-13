@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from zerver.models import Message, Realm, Stream, Recipient
+from zerver.models import get_realm, Message, Realm, Stream, Recipient
 
 import datetime
 import time
@@ -23,7 +23,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        realm = Realm.objects.get(domain=options["domain"])
+        realm = get_realm(options["domain"])
         streams = Stream.objects.filter(realm=realm, invite_only=False)
         recipients = Recipient.objects.filter(
             type=Recipient.STREAM, type_id__in=[stream.id for stream in streams])

@@ -5,7 +5,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_remove_subscription
-from zerver.models import Realm, UserProfile, get_stream, \
+from zerver.models import Realm, UserProfile, get_realm, get_stream, \
     get_user_profile_by_email
 
 class Command(BaseCommand):
@@ -37,7 +37,7 @@ class Command(BaseCommand):
             self.print_help("python manage.py", "remove_users_from_stream")
             exit(1)
 
-        realm = Realm.objects.get(domain=options["domain"])
+        realm = get_realm(options["domain"])
         stream_name = options["stream"].strip()
         stream = get_stream(stream_name, realm)
 

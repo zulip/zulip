@@ -710,7 +710,7 @@ def recipient_for_emails(emails, not_forged_mirror_message,
     # and one of users is a zuliper
     if len(realm_domains) == 2:
         # I'm assuming that cross-realm PMs with the "admin realm" are rare, and therefore can be slower
-        admin_realm = Realm.objects.get(domain=settings.ADMIN_DOMAIN)
+        admin_realm = get_realm(settings.ADMIN_DOMAIN)
         admin_realm_admin_emails = {u.email for u in admin_realm.get_admin_users()}
         # We allow settings.CROSS_REALM_BOT_EMAILS for the hardcoded emails for the feedback and notification bots
         if not (normalized_emails & admin_realm_admin_emails or normalized_emails & settings.CROSS_REALM_BOT_EMAILS):

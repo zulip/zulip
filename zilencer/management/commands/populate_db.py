@@ -18,7 +18,7 @@ from zerver.lib.bulk_create import bulk_create_realms, \
     bulk_create_clients
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import MAX_MESSAGE_LENGTH
-from zerver.models import DefaultStream, get_stream
+from zerver.models import DefaultStream, get_stream, get_realm
 from zilencer.models import Deployment
 
 import ujson
@@ -147,7 +147,7 @@ class Command(BaseCommand):
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
         else:
-            zulip_realm = Realm.objects.get(domain="zulip.com")
+            zulip_realm = get_realm("zulip.com")
             recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
@@ -577,7 +577,7 @@ def restore_saved_messages():
             user_profile.save(update_fields=["enable_offline_push_notifications"])
             continue
         elif message_type == "default_streams":
-            set_default_streams(Realm.objects.get(domain=old_message["domain"]),
+            set_default_streams(get_realm(old_message["domain"]),
                                 old_message["streams"])
             continue
         elif message_type == "subscription_property":
