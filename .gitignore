@@ -13,7 +13,6 @@ stats/
 zerver/fixtures/available-migrations
 zerver/fixtures/migration-status
 zerver/fixtures/test_data1.json
-frontend_tests/test_credentials.js
 .kdev4
 zulip.kdev4
 memcached_prefix
