@@ -175,7 +175,7 @@ def main():
         os.system("sudo service redis-server restart")
         os.system("sudo service memcached restart")
     sh.configure_rabbitmq(**LOUD)
-    sh.postgres_init_db(**LOUD)
+    sh.postgres_init_dev_db(**LOUD)
     sh.do_destroy_rebuild_database(**LOUD)
     sh.postgres_init_test_db(**LOUD)
     sh.do_destroy_rebuild_test_database(**LOUD)
