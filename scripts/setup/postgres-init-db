@@ -3,14 +3,14 @@
 # Make sure the current working directory is readable
 cd /
 
-su postgres -c psql <<EOF
+sudo su postgres -c psql <<EOF
 CREATE USER zulip;
 ALTER ROLE zulip SET search_path TO zulip,public;
 DROP DATABASE IF EXISTS zulip;
 CREATE DATABASE zulip OWNER=zulip;
 EOF
 
-su postgres -c 'psql zulip' <<EOF
+sudo su postgres -c 'psql zulip' <<EOF
 CREATE SCHEMA zulip AUTHORIZATION zulip;
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 EOF
