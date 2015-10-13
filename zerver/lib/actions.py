@@ -317,10 +317,6 @@ def do_set_realm_name(realm, name):
     send_event(event, active_user_ids(realm))
     return {}
 
-def get_realm_name(domain):
-    realm = Realm.objects.get(domain=domain)
-    return realm.name
-
 def do_set_realm_restricted_to_domain(realm, restricted):
     realm.restricted_to_domain = restricted
     realm.save(update_fields=['restricted_to_domain'])
