@@ -19,7 +19,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
-    do_set_realm_name, get_realm_name, do_deactivate_realm, \
+    do_set_realm_name, do_deactivate_realm, \
     do_add_subscription, do_remove_subscription, do_make_stream_private
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
     add_user_alert_words, remove_user_alert_words
@@ -86,7 +86,7 @@ class RealmTest(AuthedTestCase):
         realm = Realm.objects.get(domain='zulip.com')
         new_name = 'Zed You Elle Eye Pea'
         do_set_realm_name(realm, new_name)
-        self.assertEqual(get_realm_name(realm.domain), new_name)
+        self.assertEqual(get_realm(realm.domain).name, new_name)
         self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
 
     def test_do_set_realm_name_events(self):
