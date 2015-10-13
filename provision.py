@@ -51,6 +51,12 @@ NPM_DEPENDENCIES = {
 VENV_PATH="/srv/zulip-venv"
 ZULIP_PATH="/srv/zulip"
 
+if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
+    print "Error: No Zulip git repository present at /srv/zulip!"
+    print "To setup the Zulip development environment, you should clone the code"
+    print "from GitHub, rather than using a Zulip production release tarball."
+    sys.exit(1)
+
 # TODO: Parse arguments properly
 if "--travis" in sys.argv:
     ZULIP_PATH="."
