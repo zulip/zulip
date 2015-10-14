@@ -7,7 +7,8 @@ from email.header import decode_header
 
 from django.conf import settings
 
-from zerver.lib.actions import decode_email_address, internal_send_message
+from zerver.lib.actions import decode_email_address, get_email_gateway_message_string_from_address, \
+    internal_send_message
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_image
@@ -56,16 +57,18 @@ def missed_message_redis_key(token):
 
 
 def is_missed_message_address(address):
-    local_part = address.split('@')[0]
-    return local_part.startswith('mm') and len(local_part) == 34
+    msg_string = get_email_gateway_message_string_from_address(address)
 
+    return msg_string.startswith('mm') and len(msg_string) == 34
 
 def get_missed_message_token_from_address(address):
-    local_part = address.split('@')[0]
-    if not address.startswith('mm') and len(address) != 34:
-        raise ZulipEmailForwardError('Could not parse missed message address')
-    return local_part[2:]
+    msg_string = get_email_gateway_message_string_from_address(address)
 
+    if not msg_string.startswith('mm') and len(msg_string) != 34:
+        raise ZulipEmailForwardError('Could not parse missed message address')
+
+    # strip off the 'mm' before returning the redis key
+    return msg_string[2:]
 
 def create_missed_message_address(user_profile, message):
     if message.recipient.type == Recipient.PERSONAL:
