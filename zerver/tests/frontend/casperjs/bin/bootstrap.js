@@ -175,7 +175,7 @@ function patchRequire(require, requireDirs) {
 
 function bootstrap(global) {
     "use strict";
-    var phantomArgs = require('system').args;
+    var system = require('system');
 
     /**
      * Hooks in default phantomjs error handler to print a hint when a possible
@@ -223,7 +223,7 @@ function bootstrap(global) {
         // casper root path
         if (!phantom.casperPath) {
             try {
-                phantom.casperPath = phantom.args.map(function _map(i) {
+                phantom.casperPath = system.args.map(function _map(i) {
                     var match = i.match(/^--casper-path=(.*)/);
                     if (match) {
                         return fs.absolute(match[1]);
@@ -289,7 +289,7 @@ function bootstrap(global) {
         global.require = patchRequire(global.require, [phantom.casperPath, fs.workingDirectory]);
 
         // casper cli args
-        phantom.casperArgs = global.require('cli').parse(phantom.args);
+        phantom.casperArgs = global.require('cli').parse(system.args);
 
         // loaded status
         phantom.casperLoaded = true;
