@@ -18,6 +18,7 @@ Adding a field to the database
 models.py`. Add a new field in the appropriate class.
 
 **Create and run the migration:** To create and apply a migration, run: ::
+
 ./manage.py makemigrations
 ./manage.py migrate
 
@@ -71,7 +72,10 @@ Example Feature
 
 This example describes the process of adding a new setting to Zulip:
 a flag that restricts inviting new users to admins only (the default behavior
-is that any user can invite other users).
+is that any user can invite other users). It is based on an actual Zulip feature,
+and you can review `the original commit in the Zulip git repo <https://github.com/zulip/zulip/commit/5b7f3466baee565b8e5099bcbd3e1ccdbdb0a408>`_.
+(Note that Zulip has since been upgraded from Django 1.6 to 1.8, so the migration
+format has changed.)
 
 First, update the database and model to store the new setting. Add a 
 new boolean field, ``realm_invite_by_admins_only``, to the Realm model in
@@ -210,6 +214,3 @@ Any code needed to update the UI should be placed in ``dispatch_event`` callback
 will run even if the changes are made in another browser window. In this example
 most of the changes are on the backend, so no UI updates are required.
 
-This example is based on an actual Zulip feature, and you can review [the original
-commit in the Zulip git repo](https://github.com/zulip/zulip/commit/5b7f3466baee565b8e5099bcbd3e1ccdbdb0a408). (Note that Zulip has since been upgraded from
-Django 1.6 to 1.8, so the migration format has changed.)
