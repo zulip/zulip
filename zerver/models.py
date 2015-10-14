@@ -1048,6 +1048,7 @@ class Subscription(models.Model):
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
+    starred = models.BooleanField(default=False)
 
     desktop_notifications = models.BooleanField(default=True)
     audible_notifications = models.BooleanField(default=True)
