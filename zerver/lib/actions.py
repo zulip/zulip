@@ -2182,25 +2182,31 @@ def encode_email_address_helper(name, email_token):
     encoded_token = "%s+%s" % (encoded_name, email_token)
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
-def decode_email_address(email):
-    # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
+def get_email_gateway_message_string_from_address(address):
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
     if settings.ZULIP_COM:
         # Accept mails delivered to any Zulip server
         pattern_parts[-1] = r'@[\w-]*\.zulip\.net'
     match_email_re = re.compile("(.*?)".join(pattern_parts))
-    match = match_email_re.match(email)
+    match = match_email_re.match(address)
 
     if not match:
         return None
 
-    full_address = match.group(1)
-    if '.' in full_address:
+    msg_string = match.group(1)
+
+    return msg_string
+
+def decode_email_address(email):
+    # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
+    msg_string = get_email_gateway_message_string_from_address(email)
+
+    if '.' in msg_string:
         # Workaround for Google Groups and other programs that don't accept emails
         # that have + signs in them (see Trac #2102)
-        encoded_stream_name, token = full_address.split('.')
+        encoded_stream_name, token = msg_string.split('.')
     else:
-        encoded_stream_name, token = full_address.split('+')
+        encoded_stream_name, token = msg_string.split('+')
     stream_name = re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), encoded_stream_name)
     return stream_name, token
 
