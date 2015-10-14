@@ -105,7 +105,7 @@ class Confirmation(models.Model):
 
     objects = ConfirmationManager()
 
-    class Meta:
+    class Meta(object):
         verbose_name = _('confirmation email')
         verbose_name_plural = _('confirmation emails')
 

@@ -44,7 +44,7 @@ import select
 
 DEFAULT_SITE = "https://api.zulip.com"
 
-class States:
+class States(object):
     Startup, ZulipToZephyr, ZephyrToZulip, ChildSending = list(range(4))
 CURRENT_STATE = States.Startup
 

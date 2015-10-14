@@ -25,7 +25,7 @@ class DecoratorTestCase(TestCase):
         def get_total(request, numbers=REQ(converter=my_converter)):
             return sum(numbers)
 
-        class Request:
+        class Request(object):
             pass
 
         request = Request()
@@ -54,7 +54,7 @@ class DecoratorTestCase(TestCase):
         def get_total(request, numbers=REQ(validator=check_list(check_int))):
             return sum(numbers)
 
-        class Request:
+        class Request(object):
             pass
 
         request = Request()

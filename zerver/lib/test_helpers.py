@@ -149,10 +149,10 @@ def get_user_messages(user_profile):
         order_by('message')
     return [um.message for um in query]
 
-class DummyObject:
+class DummyObject(object):
     pass
 
-class DummyTornadoRequest:
+class DummyTornadoRequest(object):
     def __init__(self):
         self.connection = DummyObject()
         self.connection.stream = DummyStream()
@@ -178,7 +178,7 @@ class DummyHandler(object):
 class DummySession(object):
     session_key = "0"
 
-class DummyStream:
+class DummyStream(object):
     def closed(self):
         return False
 
