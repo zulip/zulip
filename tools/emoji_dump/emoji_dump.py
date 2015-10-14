@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import json
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -57,6 +58,7 @@ emoji_map = json.load(open('emoji_map.json'))
 emoji_map['blue_car'] = emoji_map['red_car']
 emoji_map['red_car'] = emoji_map['oncoming_automobile']
 
+failed = False
 for name, code_point in emoji_map.items():
     try:
         color_font(name, code_point)
@@ -66,6 +68,11 @@ for name, code_point in emoji_map.items():
         except Exception as e:
             print e
             print 'Missing {}, {}'.format(name, code_point)
+            failed = True
             continue
 
     os.symlink('unicode/{}.png'.format(code_point), 'out/{}.png'.format(name))
+
+if failed:
+    print "Errors dumping emoji!"
+    sys.exit(1)
