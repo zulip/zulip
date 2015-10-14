@@ -97,6 +97,11 @@ development server encounters.  It runs on top of Django's "manage.py
 runserver" tool, which will automatically restart the Zulip server
 whenever you save changes to Python code.
 
+However, the Zulip queue workers will not automatically restart when
+you save changes, so you will need to ctrl-C and then restart
+`run-dev.py` manually if you are testing changes to the queue workers
+or if a queue worker has crashed.
+
 Using provision.py without Vagrant
 ----------------------------------
 
