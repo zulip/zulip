@@ -64,14 +64,15 @@ This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 
   install and configure the LXC Vagrant provider like this:
   `sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir && vagrant plugin install vagrant-lxc`
 
-* If your host is OS X, download VirtualBox from
-  <http://download.virtualbox.org/virtualbox/4.3.30/VirtualBox-4.3.30-101610-OSX.dmg>
-  and install it.
+* If your host is OS X, [download VirtualBox](https://www.virtualbox.org/wiki/Downloads),
+  [download Vagrant](https://www.vagrantup.com/downloads.html), and install them both.
 
 Once that's done, simply change to your zulip directory and run
-`vagrant up` in your terminal.  That will install the development
-server inside a Vagrant guest. If you don't have Vagrant, you can [download
-a binary package here](https://www.vagrantup.com/downloads.html).
+`vagrant up` in your terminal to install the development server.  This
+will take a long time on the first run because Vagrant needs to
+download the Ubuntu Trusty base image, but later you can run `vagrant
+destroy` and then `vagrant up` again to rebuild the environment and it
+will be much faster.
 
 Once that finishes, you can run the development server as follows:
 
