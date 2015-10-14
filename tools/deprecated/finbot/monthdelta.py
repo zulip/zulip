@@ -7,7 +7,7 @@ __all__ = ['MonthDelta', 'monthmod']
 
 from datetime import date, timedelta
 
-class MonthDelta:
+class MonthDelta(object):
     """Number of months offset from a date or datetime.
 
     MonthDeltas allow date calculation without regard to the different lengths

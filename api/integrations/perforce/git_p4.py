@@ -824,13 +824,13 @@ def wildcard_present(path):
     m = re.search("[*#@%]", path)
     return m is not None
 
-class Command:
+class Command(object):
     def __init__(self):
         self.usage = "usage: %prog [options]"
         self.needsGit = True
         self.verbose = False
 
-class P4UserMap:
+class P4UserMap(object):
     def __init__(self):
         self.userMapFromPerforceServer = False
         self.myP4UserId = None

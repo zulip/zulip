@@ -199,7 +199,7 @@ class PermissionTest(AuthedTestCase):
         self.assert_json_error(result, 'Insufficient permission')
 
 class WorkerTest(TestCase):
-    class FakeClient:
+    class FakeClient(object):
         def __init__(self):
             self.consumers = {}
             self.queue = []

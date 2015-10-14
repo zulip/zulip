@@ -28,7 +28,7 @@ except ImportError:
     pygments = False
 
 # ------------------ The Main CodeHilite Class ----------------------
-class CodeHilite:
+class CodeHilite(object):
     """
     Determine language of source code, and pass it into the pygments hilighter.
 
