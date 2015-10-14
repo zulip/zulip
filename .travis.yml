@@ -1,14 +1,17 @@
 install:
-  - pip install pbs
-  - python provision.py --travis
+  - tools/travis/setup-$TEST_SUITE
 cache:
   - apt: false
+env:
+  - TEST_SUITE=frontend
+  - TEST_SUITE=backend
+  - TEST_SUITE=production
 language: python
 python:
   - "2.7"
 # command to run tests
 script:
-  - source /srv/zulip-venv/bin/activate && env PATH=$PATH:/srv/zulip-venv/bin ./tools/test-all
+  - ./tools/travis/$TEST_SUITE
 sudo: required
 services:
 - docker

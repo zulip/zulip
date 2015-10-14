@@ -11,7 +11,7 @@ deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu trusty main
 EOF
 
 apt-get update
-apt-get -y dist-upgrade
+apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python
 
 mkdir -p /etc/zulip
