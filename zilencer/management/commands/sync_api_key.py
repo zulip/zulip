@@ -14,7 +14,7 @@ class Command(BaseCommand):
         if not os.path.exists(config_file):
             raise RuntimeError("No ~/.zuliprc found")
         config = SafeConfigParser()
-        with file(config_file, 'r') as f:
+        with open(config_file, 'r') as f:
             config.readfp(f, config_file)
         api_key = config.get("api", "key")
         email = config.get("api", "email")

@@ -191,7 +191,7 @@ def zephyr_bulk_subscribe(subs):
 
 def update_subscriptions():
     try:
-        f = file(options.stream_file_path, "r")
+        f = open(options.stream_file_path, "r")
         public_streams = simplejson.loads(f.read())
         f.close()
     except:
@@ -287,7 +287,7 @@ def parse_zephyr_body(zephyr_data):
 
 def parse_crypt_table(zephyr_class, instance):
     try:
-        crypt_table = file(os.path.join(os.environ["HOME"], ".crypt-table"))
+        crypt_table = open(os.path.join(os.environ["HOME"], ".crypt-table"))
     except IOError:
         return None
 
@@ -349,7 +349,7 @@ def process_notice(notice, log):
 
     if zephyr_class == options.nagios_class:
         # Mark that we got the message and proceed
-        with file(options.nagios_path, "w") as f:
+        with open(options.nagios_path, "w") as f:
             f.write("0\n")
         return
 
@@ -468,7 +468,7 @@ def zephyr_load_session_autoretry(session_path):
     backoff = zulip.RandomExponentialBackoff()
     while backoff.keep_going():
         try:
-            session = file(session_path, "r").read()
+            session = open(session_path, "r").read()
             zephyr._z.initialize()
             zephyr._z.load_session(session)
             zephyr.__inited = True
@@ -510,7 +510,7 @@ def zephyr_to_zulip(options):
         if options.nagios_class:
             zephyr_subscribe_autoretry((options.nagios_class, "*", "*"))
         if options.use_sessions:
-            file(options.session_path, "w").write(zephyr._z.dump_session())
+            open(options.session_path, "w").write(zephyr._z.dump_session())
 
     if options.logs_to_resend is not None:
         with open(options.logs_to_resend, 'r') as log:
@@ -857,7 +857,7 @@ def parse_zephyr_subs(verbose=False):
             logger.error("Couldn't find ~/.zephyr.subs!")
         return []
 
-    for line in file(subs_file, "r").readlines():
+    for line in open(subs_file, "r").readlines():
         line = line.strip()
         if len(line) == 0:
             continue
@@ -1050,7 +1050,7 @@ Could not find API key file.
 You need to either place your api key file at %s,
 or specify the --api-key-file option.""" % (options.api_key_file,))))
             sys.exit(1)
-        api_key = file(options.api_key_file).read().strip()
+        api_key = open(options.api_key_file).read().strip()
         # Store the API key in the environment so that our children
         # don't need to read it in
         os.environ["HUMBUG_API_KEY"] = api_key

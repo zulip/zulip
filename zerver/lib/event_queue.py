@@ -370,7 +370,7 @@ def gc_event_queues():
 def dump_event_queues():
     start = time.time()
 
-    with file(settings.JSON_PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
+    with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
         ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.iteritems()],
                    stored_queues)
 

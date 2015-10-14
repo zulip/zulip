@@ -130,7 +130,7 @@ doc.write(r'''
 ''')
 doc.close()
 
-with file('tools/print-all/tex/epilogue.tex', 'w') as f:
+with open('tools/print-all/tex/epilogue.tex', 'w') as f:
     def print_list(title, xs):
         f.write('\\section*{%s}\n\n' % (title,))
         for x in xs:

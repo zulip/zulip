@@ -28,6 +28,7 @@ libfuturize.fixes.fix_next_call
 libfuturize.fixes.fix_print_with_import
 libfuturize.fixes.fix_raise
 libmodernize.fixes.fix_basestring
+libmodernize.fixes.fix_file
 libmodernize.fixes.fix_filter
 libmodernize.fixes.fix_imports_six
 libmodernize.fixes.fix_input_six

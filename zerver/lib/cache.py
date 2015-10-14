@@ -54,7 +54,7 @@ def get_or_create_key_prefix():
         # The file already exists
         tries = 1
         while tries < 10:
-            with file(filename, 'r') as f:
+            with open(filename, 'r') as f:
                 prefix = f.readline()[:-1]
             if len(prefix) == 33:
                 break

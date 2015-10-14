@@ -70,7 +70,7 @@ for filepath in files:
     _, exn = path.splitext(filepath)
     if not exn:
         # No extension; look at the first line
-        with file(filepath) as f:
+        with open(filepath) as f:
             if re.match(r'^#!.*\bpython', f.readline()):
                 exn = '.py'
 

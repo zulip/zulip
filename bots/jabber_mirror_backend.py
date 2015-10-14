@@ -376,7 +376,7 @@ option does not affect login credentials.'''.replace("\n", " "))
 
     config = SafeConfigParser()
     try:
-        with file(config_file, 'r') as f:
+        with open(config_file, 'r') as f:
             config.readfp(f, config_file)
     except IOError:
         pass

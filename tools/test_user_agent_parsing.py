@@ -12,7 +12,7 @@ from zerver.lib.user_agent import parse_user_agent
 user_agents_parsed = defaultdict(int)
 user_agents_path = os.path.join(os.path.dirname(__file__), "user_agents_unique")
 parse_errors = 0
-for line in file(user_agents_path).readlines():
+for line in open(user_agents_path).readlines():
     line = line.strip()
     match = re.match('^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
     if match is None:

@@ -164,7 +164,7 @@ class Client(object):
             config_file = get_default_config_filename()
         if os.path.exists(config_file):
             config = SafeConfigParser()
-            with file(config_file, 'r') as f:
+            with open(config_file, 'r') as f:
                 config.readfp(f, config_file)
             if api_key is None:
                 api_key = config.get("api", "key")

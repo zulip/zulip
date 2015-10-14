@@ -369,7 +369,7 @@ def restore_saved_messages():
 
     event_glob = os.path.join(settings.EVENT_LOG_DIR, 'events.*')
     for filename in sorted(glob.glob(event_glob)):
-        with file(filename, "r") as message_log:
+        with open(filename, "r") as message_log:
             for line in message_log.readlines():
                 process_line(line)
 
@@ -699,7 +699,7 @@ def restore_saved_messages():
 def send_messages(data):
     (tot_messages, personals_pairs, options, output) = data
     random.seed(os.getpid())
-    texts = file("zilencer/management/commands/test_messages.txt", "r").readlines()
+    texts = open("zilencer/management/commands/test_messages.txt", "r").readlines()
     offset = random.randint(0, len(texts))
 
     recipient_streams = [klass.id for klass in
