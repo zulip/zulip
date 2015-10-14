@@ -1,7 +1,9 @@
 install:
   - pip install pbs
   - python provision.py --travis
-cache: apt
+cache:
+  apt: false
+  pip: true
 language: python
 python:
   - "2.7"
