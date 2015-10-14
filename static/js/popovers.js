@@ -550,8 +550,15 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
     });
 
-    $('body').on('click', '.open_stream_settings', function (e) {
+    $('body').on('click', '.star_stream', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        popovers.hide_stream_sidebar_popover();
+        subs.set_starred_stream(stream);
+        e.stopPropagation();
+    });
+
+    $('body').on('click', '.open_stream_settings', function (e) {
+        var stream = $(e.currentTarget).parents('ul').attr('data-name');'s'
         popovers.hide_stream_sidebar_popover();
         if (! $('#subscriptions').hasClass('active')) {
             // Go to streams page and once it loads, expand the relevant

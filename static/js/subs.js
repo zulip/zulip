@@ -205,6 +205,10 @@ exports.set_color = function (stream_name, color) {
     set_stream_property(stream_name, 'color', color);
 };
 
+exports.set_starred_stream = function (stream_name) {
+    set_stream_property(stream_name, 'starred', true)
+};
+
 function create_sub(stream_name, attrs) {
     var sub = stream_data.get_sub(stream_name);
     if (sub !== undefined) {
