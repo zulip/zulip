@@ -10,3 +10,4 @@ All notable changes to this project will be documented in this file.
 - Added new endpoint to support Google auth on mobile.
 - Fixed desktop notifications in modern Firefox.
 - Fixed several installation issues for both production and development environments.
+- Improved documentation for outgoing SMTP and the email mirror integration.
