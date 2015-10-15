@@ -45,27 +45,30 @@ AUTHENTICATION_BACKENDS = (
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None
 
-# Configure the outgoing SMTP server below. The default configuration
-# is prepopulated for GMail servers.  Change EMAIL_HOST for other
-# hosts, or leave it unset or empty to skip sending email.  Note if
-# you are using a GMail account to send outgoing email, you will
-# likely need to configure that account as "less secure" here:
-# https://support.google.com/accounts/answer/6010255.
+# Configure the outgoing SMTP server below. You will need to complete
+# the following steps:
 #
-# With the exception of reading EMAIL_HOST_PASSWORD from the Zulip
-# secrets file, Zulip uses Django's standard EmailBackend, so if
-# you're having issues, you may want to search for documentation on
-# using your email provider with Django.
+# (1) Fill out the outgoing email sending configuration below.  You
+# can skip sending emails entirely by commenting out EMAIL_HOST.
 #
-# A common problem you may encounter when trying to get this working
-# is that some hosting providers block outgoing SMTP traffic.
+# (2) Put the SMTP password for EMAIL_HOST_USER in
+# /etc/zulip/zulip-secrets.conf as email_password.
+#
+# (3) If you are using a gmail account to send outgoing email, you
+# will likely need to read this Google support answer and configure
+# that account as "less secure":
+# https://support.google.com/mail/answer/14257.
+#
+# A common problem is hosting providers that block outgoing SMTP traffic.
+#
+# With the exception of reading EMAIL_HOST_PASSWORD from
+# email_password in the Zulip secrets file, Zulip uses Django's
+# standard EmailBackend, so if you're having issues, you may want to
+# search for documentation on using your email provider with Django.
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
-# If you're using password auth, you will need to put the password in
-# /etc/zulip/zulip-secrets.conf as email_password.
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
 # The email From address to be used for automatically generated emails
 DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
 # The noreply address to be used as Reply-To for certain generated emails.
