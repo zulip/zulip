@@ -19,8 +19,13 @@
   </li>
   <li>
     <a class="star_stream">
-      <i class="icon-vector-edit"></i>
+      {{#if stream.starred}}
+      <i class="icon-vector-star"></i>
+      Unstar stream <b>{{stream.name}}</b>
+      {{else}}
+      <i class="icon-vector-star"></i>
       Star stream <b>{{stream.name}}</b>
+      {{/if}}
     </a>
   </li>
   <li>

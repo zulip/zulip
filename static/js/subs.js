@@ -144,6 +144,11 @@ exports.toggle_home = function (stream_name) {
     set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
 };
 
+exports.toggle_star_stream = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+    set_stream_property(stream_name, 'starred', !sub.starred);
+};
+
 function update_stream_desktop_notifications(sub, value) {
     var desktop_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.attr('checked', value);
@@ -202,10 +207,6 @@ exports.set_color = function (stream_name, color) {
     var sub = stream_data.get_sub(stream_name);
     stream_color.update_stream_color(sub, stream_name, color, {update_historical: true});
     set_stream_property(stream_name, 'color', color);
-};
-
-exports.set_starred_stream = function (stream_name) {
-    set_stream_property(stream_name, 'starred', true)
 };
 
 function create_sub(stream_name, attrs) {
@@ -391,6 +392,15 @@ exports.mark_sub_unsubscribed = function (sub) {
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 };
 
+exports.mark_starred_or_unstarred = function (stream_name){
+    var sub = stream_data.get_sub(stream_name);
+    if (stream_name === undefined) {
+        return;
+    } else {
+        stream_list.refresh_stream_in_sidebar(sub);
+    }
+};
+
 exports.receives_desktop_notifications = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
     if (sub === undefined) {
@@ -418,6 +428,7 @@ function populate_subscriptions(subs, subscribed) {
                                            invite_only: elem.invite_only,
                                            desktop_notifications: elem.desktop_notifications,
                                            audible_notifications: elem.audible_notifications,
+                                           starred: elem.starred,
                                            subscribed: subscribed,
                                            email_address: elem.email_address,
                                            stream_id: elem.stream_id,
@@ -547,6 +558,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'email_address':
         sub.email_address = value;
+        break;
+    case 'starred':
+        sub.starred = value;
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,

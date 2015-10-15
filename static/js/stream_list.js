@@ -55,7 +55,20 @@ exports.build_stream_list = function () {
 
     var sort_recent = (streams.length > 40);
 
-    streams.sort(function (a, b) {
+    var starred_streams = [];
+    var unstarred_streams = [];
+
+    _.each(streams, function (stream) {
+        var starred = stream_data.get_sub(stream).starred;
+        if (starred) {
+            starred_streams.push(stream);
+        }
+        else{
+            unstarred_streams.push(stream);
+        }
+    });
+
+    unstarred_streams.sort(function (a, b) {
         if (sort_recent) {
             if (stream_data.recent_subjects.has(b) && ! stream_data.recent_subjects.has(a)) {
                 return 1;
@@ -66,8 +79,9 @@ exports.build_stream_list = function () {
         return util.strcmp(a, b);
     });
 
-    if (previous_sort_order !== undefined
-        && util.array_compare(previous_sort_order, streams)) {
+    streams = starred_streams.concat(unstarred_streams);
+
+    if (previous_sort_order !== undefined && util.array_compare(previous_sort_order, streams)) {
         return;
     }
 
@@ -181,14 +195,15 @@ exports.set_in_home_view = function (stream, in_home) {
     }
 };
 
-function build_stream_sidebar_row(name) {
+function build_stream_sidebar_row (name) {
     var sub = stream_data.get_sub(name);
     var args = {name: name,
                 id: sub.stream_id,
                 uri: narrow.by_stream_uri(name),
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: sub.invite_only,
-                color: stream_data.get_color(name)
+                color: stream_data.get_color(name),
+                starred: sub.starred
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
@@ -529,6 +544,13 @@ exports.update_dom_with_unread_counts = function (counts) {
 exports.rename_stream = function (sub) {
     sub.sidebar_li = build_stream_sidebar_row(sub.name);
     exports.build_stream_list(); // big hammer
+};
+
+exports.refresh_stream_in_sidebar = function (sub){
+// used by subs.mark_starred_or_unstarred,
+// since starring/unstarring requires reordering of streams in the sidebar
+    sub.sidebar_li = build_stream_sidebar_row(sub.name);
+    exports.build_stream_list();
 };
 
 $(function () {

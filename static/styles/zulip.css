@@ -2892,6 +2892,17 @@ button.topic_edit_cancel {
     box-shadow: inset 0px 0px 3px -2px #000;
 }
 
+.streamlist_star{
+    display: block;
+    width: 11px;
+    height: 11px;
+    vertical-align: middle;
+    float: left;
+    position: absolute;
+    left: 10px;
+    top: 5px;
+}
+
 .streamlist_swatch.private-stream-swatch {
     visibility: hidden;
 }
