@@ -371,6 +371,11 @@ $(function () {
         }
     });
 
+    // Override the #compose mousewheel prevention below just for the emoji box
+    $('.emoji_popover').mousewheel(function (e) {
+        e.stopPropagation();
+    });
+
     // Ignore wheel events in the compose area which weren't already handled above.
     $('#compose').mousewheel(function (e) {
         e.stopPropagation();
