@@ -299,8 +299,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     ### Notifications settings. ###
 
     # Stream notifications.
-    enable_stream_desktop_notifications = models.BooleanField(default=True)
-    enable_stream_sounds = models.BooleanField(default=True)
+    enable_stream_desktop_notifications = models.BooleanField(default=False)
+    enable_stream_sounds = models.BooleanField(default=False)
 
     # PM + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)
