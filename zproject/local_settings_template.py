@@ -151,39 +151,47 @@ ENABLE_GRAVATAR = True
 # The email gateway provides, for each stream, an email address that
 # you can send email to in order to have the email's content be posted
 # to that stream.  Emails received at the per-stream email address
-# will be converted into a Zulip message
-
+# will be converted into a Zulip message.
+#
 # There are two ways to make use of local email mirroring:
 #  1. Local delivery: A MTA runs locally and passes mail directly to Zulip
 #  2. Polling: Checks an IMAP inbox every minute for new messages.
-
-# A Puppet manifest for local delivery via Postfix is available in
-# puppet/zulip/manifests/postfix_localmail.pp. To use the manifest, add it to
-# puppet_classes in /etc/zulip/zulip.conf. This manifest assumes you'll receive
-# mail addressed to the hostname of your Zulip server.
 #
-# Users of other mail servers will need to configure it to pass mail to the
-# email mirror; see `python manage.py email-mirror --help` for details.
-
-# The email address pattern to use for auto-generated stream emails
-# The %s will be replaced with a unique token, and the resulting email
-# must be delivered to the EMAIL_GATEWAY_IMAP_FOLDER of the
-# EMAIL_GATEWAY_LOGIN account below, or piped in to the email-mirror management
-# command as indicated above.
+# The local delivery configuration is preferred for production because
+# it doesn't have delay, while the polling mechanism is preferred for
+# development because it doesn't require an external DNS name.
 #
-# Example: zulip+%s@example.com
+# The main email mirror setting is the email address pattern to use
+# for auto-generated stream emails.  The %s will be replaced with a
+# unique token, and the resulting email must be delivered to the
+# EMAIL_GATEWAY_IMAP_FOLDER of the EMAIL_GATEWAY_LOGIN account below,
+# or piped in to the email-mirror management command as indicated
+# above.
+#
+# E.g. %s@example.com (local delivery) or username+%s@example.com (polling)
 EMAIL_GATEWAY_PATTERN = ""
-
-
-# The following options are relevant if you're using mail polling.
-#
-# A sample cron job for mail polling is available at puppet/zulip/files/cron.d/email-mirror
-#
 # The Zulip username of the bot that the email pattern should post as.
 # Example: emailgateway@example.com
 EMAIL_GATEWAY_BOT = ""
-
-# Configuration of the email mirror mailbox
+#
+# If you are using local delivery, the above is all you need to change
+# in this file.  You will also need to enable the Zulip postfix
+# configuration to support local delivery by adding
+#   , zulip::postfix_localmail
+# to puppet_classes in /etc/zulip/zulip.conf.
+#
+# If you are using polling, you will need to setup an IMAP email
+# account dedicated to Zulip email gateway messages.  The model is
+# that users will send emails to that account via an address of the
+# form username+%s@example.com (which is what you will set as
+# EMAIL_GATEWAY_PATTERN); your email provider should deliver those
+# emails to the username@example.com inbox.  Then you run in a cron
+# job `./manage.py email-mirror` (see puppet/zulip/files/cron.d/email-mirror),
+# which will check that inbox and batch-process any new messages.
+#
+# You will need to configure authentication for the email mirror
+# command to access the IMAP mailbox below.
+#
 # The IMAP login and password
 EMAIL_GATEWAY_LOGIN = ""
 EMAIL_GATEWAY_PASSWORD = ""
