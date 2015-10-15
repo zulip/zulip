@@ -15,7 +15,7 @@ import sys
 class Command(BaseCommand):
     help = """Create a realm for the specified domain.
 
-Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
+Usage: python2.7 manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
     option_list = BaseCommand.option_list + (
         make_option('-o', '--open-realm',
@@ -56,12 +56,12 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
     def handle(self, *args, **options):
         if options["domain"] is None or options["name"] is None:
             print >>sys.stderr, "\033[1;31mPlease provide both a domain and name.\033[0m\n"
-            self.print_help("python manage.py", "create_realm")
+            self.print_help("python2.7 manage.py", "create_realm")
             exit(1)
 
         if options["open_realm"] and options["deployment_id"] is not None:
             print >>sys.stderr, "\033[1;31mExternal deployments cannot be open realms.\033[0m\n"
-            self.print_help("python manage.py", "create_realm")
+            self.print_help("python2.7 manage.py", "create_realm")
             exit(1)
         if options["deployment_id"] is not None and settings.VOYAGER:
             print >>sys.stderr, "\033[1;31mExternal deployments are not supported on voyager deployments.\033[0m\n"
