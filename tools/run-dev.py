@@ -19,6 +19,9 @@ def patched_finish(self):
     return orig_finish(self)
 Request.finish = patched_finish
 
+if 'posix' in os.name and os.geteuid() == 0:
+    raise RuntimeError("run-dev.py should not be run as root.")
+
 parser = optparse.OptionParser(r"""
 
 Starts the app listening on localhost, for local development.
