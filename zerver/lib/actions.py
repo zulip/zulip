@@ -2333,7 +2333,7 @@ def gather_subscriptions_helper(user_profile):
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
         "recipient__type_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "active")
+        "audible_notifications", "active", "starred")
 
     stream_ids = [sub["recipient__type_id"] for sub in sub_dicts]
 
@@ -2372,6 +2372,7 @@ def gather_subscriptions_helper(user_profile):
                        'color': sub["color"],
                        'desktop_notifications': sub["desktop_notifications"],
                        'audible_notifications': sub["audible_notifications"],
+                       'starred': sub["starred"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}

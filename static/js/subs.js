@@ -419,6 +419,7 @@ function populate_subscriptions(subs, subscribed) {
                                            invite_only: elem.invite_only,
                                            desktop_notifications: elem.desktop_notifications,
                                            audible_notifications: elem.audible_notifications,
+                                           starred: elem.starred,
                                            subscribed: subscribed,
                                            email_address: elem.email_address,
                                            stream_id: elem.stream_id,

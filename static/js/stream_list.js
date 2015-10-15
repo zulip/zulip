@@ -26,7 +26,20 @@ exports.build_stream_list = function () {
 
     var sort_recent = (streams.length > 40);
 
-    streams.sort(function (a, b) {
+    var starred_streams = [];
+    var unstarred_streams = [];
+
+    _.each(streams, function (stream) {
+        var starred = stream_data.get_sub(stream).starred;
+        if (starred) {
+            starred_streams.push(stream);
+        }
+        else{
+            unstarred_streams.push(stream);
+        }
+    });
+
+    unstarred_streams.sort(function (a, b) {
         if (sort_recent) {
             if (recent_subjects.has(b) && ! recent_subjects.has(a)) {
                 return 1;
@@ -36,6 +49,8 @@ exports.build_stream_list = function () {
         }
         return util.strcmp(a, b);
     });
+
+    streams = starred_streams.concat(unstarred_streams);
 
     if (previous_sort_order !== undefined
         && util.array_compare(previous_sort_order, streams)) {
