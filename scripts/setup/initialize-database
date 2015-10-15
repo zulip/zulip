@@ -17,6 +17,7 @@ if ! python manage.py initialize_voyager_db; then
     echo "  * scripts/setup/postgres-init-db # run as root to drop and re-create the database"
     echo -e "\033[0m"
     set -x
+    exit 1
 fi
 
 supervisorctl restart all
