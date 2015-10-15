@@ -91,6 +91,11 @@ def completely_open(domain):
 def get_unique_open_realm():
     # We only return a realm if there is a unique realm and it is completely open.
     realms = Realm.objects.filter(deactivated=False)
+    if settings.VOYAGER:
+        # On production installations, the "zulip.com" realm is an
+        # empty realm just used for system bots, so don't include it
+        # in this accounting.
+        realms = realms.exclude(domain="zulip.com")
     if len(realms) != 1:
         return None
     realm = realms[0]

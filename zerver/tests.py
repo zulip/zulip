@@ -12,7 +12,8 @@ from zerver.lib.test_helpers import (
 from zerver.models import UserProfile, Recipient, \
     Realm, Client, UserActivity, \
     get_user_profile_by_email, split_email_to_domain, get_realm, \
-    get_client, get_stream, Message
+    get_client, get_stream, Message, get_unique_open_realm, \
+    completely_open
 
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.initial_password import initial_password
@@ -1426,3 +1427,18 @@ class TestMissedMessages(AuthedTestCase):
             'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**',
             normalize_string(mail.outbox[0].body),
         )
+
+class TestOpenRealms(AuthedTestCase):
+    def test_open_realm_logic(self):
+        mit_realm = get_realm("mit.edu")
+        self.assertEquals(get_unique_open_realm(), None)
+        mit_realm.restricted_to_domain = False
+        mit_realm.save()
+        self.assertTrue(completely_open(mit_realm.domain))
+        self.assertEquals(get_unique_open_realm(), None)
+        settings.VOYAGER = True
+        self.assertEquals(get_unique_open_realm(), mit_realm)
+        # Restore state
+        settings.VOYAGER = False
+        mit_realm.restricted_to_domain = True
+        mit_realm.save()
