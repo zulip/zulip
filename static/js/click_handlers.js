@@ -282,6 +282,13 @@ $(function () {
     });
 
     function handle_compose_click(e) {
+        // Emoji clicks should be handled by their own click handler in popover.js
+        if ($(e.target).is("#emoji_map") ||
+            $(e.target).is(".emoji_popover") ||
+            $(e.target).is(".emoji_popover.inner") ||
+            $(e.target).is("img.emoji")) {
+            return;
+        }
         // Don't let clicks in the compose area count as
         // "unfocusing" our compose -- in other words, e.g.
         // clicking "Press enter to send" should not
@@ -391,7 +398,8 @@ $(function () {
         // of modals or selecting text (for copy+paste) trigger cancelling.
         if (compose.composing() && !$(e.target).is("a") &&
             ($(e.target).closest(".modal").length === 0) &&
-            window.getSelection().toString() === "") {
+            window.getSelection().toString() === "" &&
+            ($(e.target).closest('#emoji_map').length === 0)) {
             compose.cancel();
         }
     });

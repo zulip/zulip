@@ -3005,6 +3005,44 @@ li.expanded_subject {
     color: #000;
 }
 
+.drag {
+    display: none;
+    height: 18px;
+    width: 100%;
+    top: 23px;
+    position: relative;
+    cursor: ns-resize;
+}
+
+.emoji_popover {
+    display: none;
+    position: relative;
+    margin-top: 10px;
+    bottom: 0px;
+    z-index: 1010;
+    width: 100%;
+    height: 60px;
+    padding: 1px;
+    text-align: center;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    overflow-y: scroll;
+}
+
+.emoji_popover .emoji {
+    margin: 2px;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.emoji_popover .emoji:active {
+    border-radius: 5px;
+    border: 2px white solid;
+}
+
 #enter_sends {
     margin-top: 0px;
     margin-right: 5px;

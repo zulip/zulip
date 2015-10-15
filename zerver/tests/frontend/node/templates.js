@@ -1,6 +1,7 @@
 add_dependencies({
     Handlebars: 'handlebars',
-    templates: 'js/templates'
+    templates: 'js/templates',
+    emoji: 'js/emoji'
 });
 
 global.$ = require('jquery');
@@ -58,6 +59,20 @@ function render(template_name, args) {
     var link = $(html).find("a.respond_button");
     assert.equal(link.text().trim(), 'Reply');
     global.write_test_output("actions_popover_content.handlebars", html);
+}());
+
+(function emoji_popover_content() {
+    var args = {
+        emoji_list: global.emoji.emojis_by_name
+    };
+
+    var html = '<div style="height: 250px">';
+    html += render('emoji_popover_content', args);
+    html += "</div>";
+    // test to make sure the first emoji is present in the popover
+    var emoji_key = $(html).find(".emoji-100").attr('title');
+    assert.equal(emoji_key, ':100:');
+    global.write_test_output("emoji_popover_content.handlebars", html);
 }());
 
 (function admin_tab() {
