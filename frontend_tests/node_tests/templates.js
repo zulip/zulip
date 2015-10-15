@@ -1,6 +1,12 @@
+set_global('page_params', {realm_emoji: {
+  burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
+            source_url: '/static/third/gemoji/images/emoji/burrito.png'}
+}});
+
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
+    emoji: 'js/emoji',
     i18n: 'i18next'
 });
 
@@ -293,6 +299,20 @@ function render(template_name, args) {
     global.write_handlebars_output("email_address_hint", html);
     var li = $(html).find("li:first");
     assert.equal(li.text(), 'The email will be forwarded to this stream');
+}());
+
+(function emoji_popover_content() {
+    var args = {
+        emoji_list: global.emoji.emojis_by_name
+    };
+
+    var html = '<div style="height: 250px">';
+    html += render('emoji_popover_content', args);
+    html += "</div>";
+    // test to make sure the first emoji is present in the popover
+    var emoji_key = $(html).find(".emoji-100").attr('title');
+    assert.equal(emoji_key, ':100:');
+    global.write_handlebars_output("emoji_popover_content", html);
 }());
 
 (function group_pms() {
