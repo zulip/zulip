@@ -54,7 +54,7 @@ exports.build_stream_list = function () {
 
     if (previous_sort_order !== undefined
         && util.array_compare(previous_sort_order, streams)) {
-        return;
+        return; 
     }
 
     previous_sort_order = streams;
@@ -141,14 +141,15 @@ exports.set_in_home_view = function (stream, in_home) {
     }
 };
 
-function build_stream_sidebar_row(name) {
+function build_stream_sidebar_row (name) {
     var sub = stream_data.get_sub(name);
     var args = {name: name,
                 id: sub.stream_id,
                 uri: narrow.by_stream_uri(name),
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: sub.invite_only,
-                color: stream_data.get_color(name)
+                color: stream_data.get_color(name),
+                starred: sub.starred
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
@@ -414,6 +415,11 @@ exports.rename_stream = function (sub) {
     sub.sidebar_li = build_stream_sidebar_row(sub.name);
     exports.build_stream_list(); // big hammer
 };
+
+exports.update_stream_star = function (sub){
+    sub.sidebar_li = build_stream_sidebar_row(sub.name);
+    exports.build_stream_list(); 
+}
 
 $(function () {
     $(document).on('narrow_activated.zulip', function (event) {

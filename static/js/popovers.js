@@ -553,7 +553,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.star_stream', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();
-        subs.set_starred_stream(stream);
+        subs.toggle_star_stream(stream);
         e.stopPropagation();
     });
 
