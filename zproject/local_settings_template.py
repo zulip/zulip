@@ -150,34 +150,31 @@ ENABLE_GRAVATAR = True
 
 ### EMAIL GATEWAY INTEGRATION
 
-# The email gateway provides, for each stream, an email address that
-# you can send email to in order to have the email's content be posted
-# to that stream.  Emails received at the per-stream email address
-# will be converted into a Zulip message.
+# The Email gateway integration supports sending messages into Zulip
+# by sending an email.  This is useful for receiving notifications
+# from third-party services that only send outgoing notifications via
+# email.  Once this integration is configured, each stream will have
+# an email address documented on the stream settings page an emails
+# sent to that address will be delivered into the stream.
 #
-# There are two ways to make use of local email mirroring:
+# There are two ways to configure email mirroring in Zulip:
 #  1. Local delivery: A MTA runs locally and passes mail directly to Zulip
 #  2. Polling: Checks an IMAP inbox every minute for new messages.
 #
 # The local delivery configuration is preferred for production because
-# it doesn't have delay, while the polling mechanism is preferred for
-# development because it doesn't require an external DNS name.
+# it supports nicer looking email addresses and has no cron delay,
+# while the polling mechanism is better for testing/developing this
+# feature because it doesn't require a public-facing IP/DNS setup.
 #
-# The main email mirror setting is the email address pattern to use
-# for auto-generated stream emails.  The %s will be replaced with a
-# unique token, and the resulting email must be delivered to the
-# EMAIL_GATEWAY_IMAP_FOLDER of the EMAIL_GATEWAY_LOGIN account below,
-# or piped in to the email-mirror management command as indicated
-# above.
-#
-# E.g. %s@example.com (local delivery) or username+%s@example.com (polling)
+# The main email mirror setting is the email address pattern, where
+# you specify the email address format you'd like the integration to
+# use.  It should be one of the following:
+#   %s@zulip.example.com (for local delivery)
+#   username+%s@example.com (for polling if EMAIL_GATEWAY_LOGIN=username@example.com)
 EMAIL_GATEWAY_PATTERN = ""
-# The Zulip username of the bot that the email pattern should post as.
-# Example: emailgateway@example.com
-EMAIL_GATEWAY_BOT = ""
 #
-# If you are using local delivery, the above is all you need to change
-# in this file.  You will also need to enable the Zulip postfix
+# If you are using local delivery, EMAIL_GATEWAY_PATTERN is all you need
+# to change in this file.  You will also need to enable the Zulip postfix
 # configuration to support local delivery by adding
 #   , zulip::postfix_localmail
 # to puppet_classes in /etc/zulip/zulip.conf.
