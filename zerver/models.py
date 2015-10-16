@@ -1061,7 +1061,7 @@ class Subscription(models.Model):
         unique_together = ("user_profile", "recipient")
 
     def __repr__(self):
-        return (u"<Subscription: %r -> %s, starred? %r>" % (self.user_profile, self.recipient)).encode("utf-8")
+        return (u"<Subscription: %r -> %s>" % (self.user_profile, self.recipient)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
 

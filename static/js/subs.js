@@ -147,7 +147,7 @@ exports.toggle_home = function (stream_name) {
 
 exports.toggle_star_stream = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
-    set_stream_property(stream_name, 'starred', !sub.starred)
+    set_stream_property(stream_name, 'starred', !sub.starred);
 };
 
 function update_stream_desktop_notifications(sub, value) {
@@ -393,23 +393,12 @@ exports.mark_sub_unsubscribed = function (sub) {
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 };
 
-exports.mark_starred = function (stream_name){
-    sub = stream_data.get_sub(stream_name);
+exports.mark_starred_or_unstarred = function (stream_name){
+    var sub = stream_data.get_sub(stream_name);
     if (stream_name === undefined) {
         return;
     } else {
-        sub.starred = true;
-        stream_list.update_stream_star(sub)
-    }
-};
-
-exports.mark_unstarred = function (stream_name){
-    sub = stream_data.get_sub(stream_name);
-    if (stream_name === undefined) {
-        return;
-    } else {
-        sub.starred = false;
-        stream_list.update_stream_star(sub)
+        stream_list.refresh_stream_in_sidebar(sub);
     }
 };
 
@@ -562,6 +551,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'email_address':
         sub.email_address = value;
+        break;
+    case 'starred':
+        sub.starred = value;
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,

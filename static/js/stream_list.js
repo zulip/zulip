@@ -52,9 +52,8 @@ exports.build_stream_list = function () {
 
     streams = starred_streams.concat(unstarred_streams);
 
-    if (previous_sort_order !== undefined
-        && util.array_compare(previous_sort_order, streams)) {
-        return; 
+    if (previous_sort_order !== undefined && util.array_compare(previous_sort_order, streams)) {
+        return;
     }
 
     previous_sort_order = streams;
@@ -416,10 +415,12 @@ exports.rename_stream = function (sub) {
     exports.build_stream_list(); // big hammer
 };
 
-exports.update_stream_star = function (sub){
+exports.refresh_stream_in_sidebar = function (sub){
+// used by subs.mark_starred_or_unstarred,
+// since starring/unstarring requires reordering of streams in the sidebar
     sub.sidebar_li = build_stream_sidebar_row(sub.name);
-    exports.build_stream_list(); 
-}
+    exports.build_stream_list();
+};
 
 $(function () {
     $(document).on('narrow_activated.zulip', function (event) {

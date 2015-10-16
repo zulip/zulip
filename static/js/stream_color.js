@@ -103,10 +103,12 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     if (opts.update_historical) {
         update_historical_message_color(stream_name, color);
     }
-    if (sub.starred)
+    if (sub.starred) {
         update_stream_sidebar_star_color(id, color);
-    else
+    }
+    else {
         update_stream_sidebar_swatch_color(id, color);
+    }
     tab_bar.colorize_tab_bar();
 };
 

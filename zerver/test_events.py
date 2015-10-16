@@ -20,6 +20,7 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_is_admin,
     do_change_stream_description,
+    do_change_subscription_property,
     do_create_user,
     do_deactivate_user,
     do_regenerate_api_key,
@@ -38,6 +39,7 @@ from zerver.lib.actions import (
     do_change_twenty_four_hour_time,
     do_change_left_side_userlist,
     fetch_initial_state_data,
+    get_subscription
 )
 
 from zerver.lib.event_queue import allocate_client_descriptor
@@ -121,7 +123,7 @@ class GetEventsTest(AuthedTestCase):
         self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
 
         result = self.tornado_call(get_events_backend, user_profile,
-                                   {"queue_id": queue_id,
+                                    {"queue_id": queue_id,
                                     "user_client": "website",
                                     "last_event_id": last_event_id,
                                     "dont_block": ujson.dumps(True),
@@ -420,6 +422,21 @@ class EventsRegisterTest(AuthedTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for invite_by_admins_only in (False, True, False):
             events = self.do_test(lambda: do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_starred_stream(self):
+        schema_checker = check_dict([
+            ('type', equals('subscription')),
+            ('op', equals('update')),
+            ('property', equals('starred')),
+            ('value', check_bool),
+        ])
+        stream = "Denmark"
+        sub = get_subscription(stream, self.user_profile)
+        # The first False is probably a noop, then we get transitions in both directions.
+        for starred in (False, True, False):
+            events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "starred", starred ))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

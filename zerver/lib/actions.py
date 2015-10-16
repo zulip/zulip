@@ -1141,6 +1141,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     desktop_notifications=subscription.desktop_notifications,
                     audible_notifications=subscription.audible_notifications,
                     description=stream.description,
+                    starred=subscription.starred,
                     subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
     event = dict(type="subscription", op="add",
