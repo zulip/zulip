@@ -12,7 +12,13 @@ from zerver.lib.actions import do_change_password, is_inactive
 from zproject.backends import password_auth_enabled
 import DNS
 
-SIGNUP_STRING = u'Use a different e-mail address, or contact %s with questions.'%(settings.ZULIP_ADMINISTRATOR,)
+SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' + \
+                u'Use a different e-mail address, or contact %s with questions.' % (settings.ZULIP_ADMINISTRATOR,)
+if settings.ZULIP_COM:
+    SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \
+                    u"The zulip.com service is not taking new customer teams. <br /> " + \
+                    u"<a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/\">Zulip is open source</a>, so you can install your own Zulip server " + \
+                    u"by following the instructions on <a href=\"https://www.zulip.org\">www.zulip.org</a>!"
 
 def has_valid_realm(value):
     # Checks if there is a realm without invite_required
@@ -68,9 +74,7 @@ class HomepageForm(forms.Form):
         data = self.cleaned_data['email']
         if completely_open(self.domain) or has_valid_realm(data) and not_mit_mailing_list(data):
             return data
-        raise ValidationError(mark_safe(
-                u'Your e-mail does not match any existing open organization. ' \
-                    + SIGNUP_STRING))
+        raise ValidationError(mark_safe(SIGNUP_STRING))
 
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
