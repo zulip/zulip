@@ -10,39 +10,111 @@ previews, group private messages, audible notifications,
 missed-message emails, desktop apps, and much more.
 
 Further information on the Zulip project and its features can be found
-at https://www.zulip.org
-
-Contributing to Zulip
-=====================
-
-Zulip welcomes all forms of contributions!
-
-Before a pull request can be merged, you need to to sign the [Dropbox
-Contributor License Agreement](https://opensource.dropbox.com/cla/).
-
-Please run the tests (tools/test-all) before submitting your pull
-request and read our [commit message style
-guidelines](http://zulip.readthedocs.org/en/latest/code-style.html#commit-messages).
-
-Zulip has a growing collection of developer documentation including
-detailed documentation on coding style available on [Read The
-Docs](https://zulip.readthedocs.org/).
-
-Zulip also has a [development discussion mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
-
-Feel free to send any questions or suggestions of areas where you'd
-love to see more documentation to the list!
-
-We recommend sending proposals for large features or refactorings to
-the zulip-devel list for discussion and advice before getting too deep
-into implementation.
-
-Please report any security issues you discover to support@zulip.com.
+at https://www.zulip.org.
 
 Running Zulip in production
 ===========================
 
 This is documented in https://zulip.org/server.html and [README.prod.md](README.prod.md).
+
+Contributing to Zulip
+=====================
+
+Zulip welcomes all forms of contributions!  The page documents the
+Zulip development process.
+
+* **Pull requests**. Before a pull request can be merged, you need to to sign the [Dropbox
+Contributor License Agreement](https://opensource.dropbox.com/cla/).
+Also, please skim our [commit message style
+guidelines](http://zulip.readthedocs.org/en/latest/code-style.html#commit-messages).
+
+* **Testing**. The Zulip automated tests all run automatically when
+you submit a pull request, but you can also run them all in your
+development environment following the instructions in the [testing
+section](https://github.com/zulip/zulip#running-the-test-suite) below.
+
+* **Developer Documentation**.  Zulip has a growing collection of
+developer documentation on [Read The Docs](https://zulip.readthedocs.org/).
+Recommended reading for new contributors includes the
+[directory structure](http://zulip.readthedocs.org/en/latest/directory-structure.html) and
+[new feature tutorial](http://zulip.readthedocs.org/en/latest/new-feature-tutorial.html).
+
+* **Mailing list and bug tracker** Zulip has a [development discussion
+mailing list](https://groups.google.com/forum/#!forum/zulip-devel) and
+uses [GitHub issues](https://github.com/zulip/zulip/issues).  Feel
+free to send any questions or suggestions of areas where you'd love to
+see more documentation to the list!  Please report any security issues
+you discover to support@zulip.com.
+
+* **App codebases** This repository is for the Zulip server and web app; the
+[desktop](https://github.com/zulip/zulip-desktop),
+[Android](https://github.com/zulip/zulip-android), and
+[iOS](https://github.com/zulip/zulip-ios) apps are separate
+repositories.
+
+How to get involved with contributing to Zulip
+==============================================
+
+First, subscribe to the Zulip [development discussion mailing list](https://groups.google.com/forum/#!forum/zulip-devel).
+
+The Zulip project uses a system of labels in our [issue
+tracker](https://github.com/zulip/zulip/issues) to make it easy to
+find a project if you don't have your own project idea in mind or want
+to get some experience with workng on Zulip before embarking on a
+larger project you have in mind:
+
+* [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
+  Smaller projects that could be a great first contribution.
+* [Integrations](https://github.com/zulip/zulip/labels/integrations).
+  Integrate Zulip with another piece of software and contribute it
+  back to the community!  Writing an integration can be a great
+  started project.  There's some brief documentation on the best way
+  to write integrations at https://github.com/zulip/zulip/issues/70.
+* [Documentation](https://github.com/zulip/zulip/labels/documentation).
+  The Zulip project loves contributions of new documentation.
+* [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
+  A broader list of projects that nobody is currently working on.
+* [Platform support](https://github.com/zulip/zulip/labels/Platform%20support).
+  These are open issues about making it possible to install Zulip on a wider
+  range of platforms.
+* [Bugs](https://github.com/zulip/zulip/labels/bug). Open bugs.
+* [Feature requests](https://github.com/zulip/zulip/labels/enhancement).
+  Browsing this list can be a great way to find feature ideas to implement that
+  other Zulip users are excited about.
+
+If you're excited about helping with an open issue, just post on the
+conversation thread that you're working on it.  You're encouraged to
+ask questions on how to best implement or debug your changes -- the
+Zulip maintainers are excited to answer questions to help you stay
+unblocked and working efficiently.
+
+We also welcome suggestions of features that you feel would be
+valuable or changes that you feel would make Zulip a better open
+source project, and are happy to support you in adding new features or
+other user experience improvements to Zulip.
+
+If you have a new feature you'd like to add, we recommend you start by
+opening a GitHub issue about the feature idea explaining the problem
+that you're hoping to solve and that you're excited to work on it.  A
+Zulip maintainer will usually reply within a day with feedback on the
+idea, notes on any important issues or concerns, and and often tips on
+how to implement or test it.  Please feel free to ping the thread if
+you don't hear a response from the maintainers -- we try to be very
+responsive so this usually means we missed your message.
+
+For significant changes to the visual design, user experience, data
+model, or architecture, we highly recommend posting a mockup,
+screenshot, or description of what you have in mind to zulip-devel@ to
+get broad feedback before you spend too much time on implementation
+details.
+
+Finally, before implementing a larger feature, we highly recommend
+looking at the new feature tutorial and coding style guidelines on
+ReadTheDocs.
+
+Feedback on how to make this development process more efficient, fun,
+and friendly to new contributors is very welcome!  Just shoot an email
+to the Zulip Developers list with your thoughts.
 
 Installing the Zulip Development environment
 ============================================
@@ -93,9 +165,10 @@ is correct for the Vagrant guest sitting behind a NAT, you probably
 don't want to use that option when using run-dev.py in other environments).
 
 The run-dev.py console output will show any errors your Zulip
-development server encounters.  It runs on top of Django's "manage.py
-runserver" tool, which will automatically restart the Zulip server
-whenever you save changes to Python code.
+development server encounters.  It runs on top of Django's [manage.py
+runserver](https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port)
+tool, which will automatically restart the Zulip Django and Tornado
+servers whenever you save changes to Python code.
 
 However, the Zulip queue workers will not automatically restart when
 you save changes, so you will need to ctrl-C and then restart
@@ -217,13 +290,15 @@ Run all tests:
 ./tools/test-all
 ```
 
-This runs the linter plus all of our test suites; they can all be run
-separately (just read `tools/test-all` to see them).  You can also run
-individual tests, e.g.:
+This runs the linter (`tools/lint-all`) plus all of our test suites;
+they can all be run separately (just read `tools/test-all` to see
+them).  You can also run individual tests which can save you a lot of
+time debugging a test failure, e.g.:
 
 ```
 ./tools/test-backend zerver.test_bugdown.BugdownTest.test_inline_youtube
 ./tools/test-js-with-casper 10-navigation.js
+./tools/test-js-with-node # Runs all node tests but is very fast
 ```
 
 The above instructions include the first-time setup of test databases,
