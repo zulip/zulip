@@ -23,11 +23,8 @@ if settings.ZULIP_COM:
 def has_valid_realm(value):
     # Checks if there is a realm without invite_required
     # matching the domain of the input e-mail.
-    try:
-        realm = get_realm(resolve_email_to_domain(value))
-    except Realm.DoesNotExist:
-        return False
-    return not realm.invite_required
+    realm = get_realm(resolve_email_to_domain(value))
+    return realm is not None and not realm.invite_required
 
 def not_mit_mailing_list(value):
     # I don't want ec-discuss signed up for Zulip
