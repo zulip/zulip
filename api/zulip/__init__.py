@@ -117,6 +117,19 @@ def generate_option_group(parser, prefix=''):
                      default=None,
                      dest="zulip_client",
                      help=optparse.SUPPRESS_HELP)
+    group.add_option('--insecure',
+                     action='store_true',
+                     dest='insecure',
+                     help='''Do not verify the server certificate.
+                          The https connection will not be secure.''')
+    group.add_option('--cert-bundle',
+                     action='store',
+                     dest='cert_bundle',
+                     help='''Specify a file containing either the
+                          server certificate, or a set of trusted
+                          CA certificates. This will be used to
+                          verify the server's identity. All
+                          certificates should be PEM encoded.''')
     return group
 
 def init_from_options(options, client=None):
@@ -126,7 +139,8 @@ def init_from_options(options, client=None):
         client = _default_client()
     return Client(email=options.zulip_email, api_key=options.zulip_api_key,
                   config_file=options.zulip_config_file, verbose=options.verbose,
-                  site=options.zulip_site, client=client)
+                  site=options.zulip_site, client=client,
+                  cert_bundle=options.cert_bundle, insecure=options.insecure)
 
 def get_default_config_filename():
     config_file = os.path.join(os.environ["HOME"], ".zuliprc")
@@ -138,15 +152,14 @@ def get_default_config_filename():
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
-                 site=None, client=None):
+                 site=None, client=None,
+                 cert_bundle=None, insecure=None):
         if client is None:
             client = _default_client()
-        if None in (api_key, email):
-            if config_file is None:
-                config_file = get_default_config_filename()
-            if not os.path.exists(config_file):
-                raise RuntimeError("api_key or email not specified and %s does not exist"
-                                   % (config_file,))
+
+        if config_file is None:
+            config_file = get_default_config_filename()
+        if os.path.exists(config_file):
             config = SafeConfigParser()
             with file(config_file, 'r') as f:
                 config.readfp(f, config_file)
@@ -156,6 +169,22 @@ class Client(object):
                 email = config.get("api", "email")
             if site is None and config.has_option("api", "site"):
                 site = config.get("api", "site")
+            if cert_bundle is None and config.has_option("api", "cert_bundle"):
+                cert_bundle = config.get("api", "cert_bundle")
+            if insecure is None and config.has_option("api", "insecure"):
+                # Be quite strict about what is accepted so that users don't
+                # disable security unintentionally.
+                insecure_setting = config.get("api", "insecure").lower()
+                if insecure_setting == "true":
+                    insecure = True
+                elif insecure_setting == "false":
+                    insecure = False
+                else:
+                    raise RuntimeError("insecure is set to '%s', it must be 'true' or 'false' if it is used in %s"
+                                       % (insecure_setting, config_file))
+        elif None in (api_key, email):
+            raise RuntimeError("api_key or email not specified and %s does not exist"
+                               % (config_file,))
 
         self.api_key = api_key
         self.email = email
@@ -174,6 +203,17 @@ class Client(object):
         self.base_url += "/"
         self.retry_on_errors = retry_on_errors
         self.client_name = client
+
+        if insecure:
+            self.tls_verification=False
+        elif cert_bundle is not None:
+            if not os.path.isfile(cert_bundle):
+                raise RuntimeError("tls bundle '%s' does not exist"
+                                   %(cert_bundle,))
+            self.tls_verification=cert_bundle
+        else:
+            # Default behavior: verify against system CA certificates
+            self.tls_verification=True
 
     def get_user_agent(self):
         vendor = ''
@@ -249,7 +289,7 @@ class Client(object):
                         urlparse.urljoin(self.base_url, url),
                         auth=requests.auth.HTTPBasicAuth(self.email,
                                                          self.api_key),
-                        verify=True, timeout=90,
+                        verify=self.tls_verification, timeout=90,
                         headers={"User-agent": self.get_user_agent()},
                         **kwargs)
 

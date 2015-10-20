@@ -31,11 +31,24 @@ file is as follows:
     key=<api key from the web interface>
     email=<your email address>
     site=<your Zulip server's URI>
+    insecure=<true or false, true means do not verify the server certificate>
+    cert_bundle=<path to a file containing CA or server certificates to trust>
+
+If omitted, these settings have the following defaults:
+
+    site=https://api.zulip.com
+    insecure=false
+    cert_bundle=<the default CA bundle trusted by Python>
 
 Alternatively, you may explicitly use "--user" and "--api-key" in our
 examples, which is especially useful if you are running several bots
-which share a home directory.  There is also a "--site" option for
-setting the Zulip server on the command line.
+which share a home directory.
+
+The command line equivalents for other configuration options are:
+
+    --site=<your Zulip server's URI>
+    --insecure
+    --cert-bundle=<file>
 
 You can obtain your Zulip API key, create bots, and manage bots all
 from your Zulip [settings page](https://zulip.com/#settings).
@@ -101,3 +114,46 @@ Alternatively, if you don't want to use your ~/.zuliprc file:
         --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
         hamlet@example.com cordelia@example.com -m \
         "Conscience doth make cowards of us all."
+
+#### Working with an untrusted server certificate
+
+If your server has either a self-signed certificate, or a certificate signed
+by a CA that you don't wish to globally trust then by default the API will
+fail with an SSL verification error.
+
+You can add `insecure=true` to your .zuliprc file.
+
+    [api]
+    site=https://zulip.example.com
+    insecure=true
+
+This disables verification of the server certificate, so connections are
+encrypted but unauthenticated. This is not secure, but may be good enough
+for a development environment.
+
+
+You can explicitly trust the server certificate using `cert_bundle=<filename>`
+in your .zuliprc file.
+
+    [api]
+    site=https://zulip.example.com
+    cert_bundle=/home/bots/certs/zulip.example.com.crt
+
+You can also explicitly trust a different set of Certificate Authorities from
+the default bundle that is trusted by Python. For example to trust a company
+internal CA.
+
+    [api]
+    site=https://zulip.example.com
+    cert_bundle=/home/bots/certs/example.com.ca-bundle
+
+Save the server certificate (or the CA certificate) in its own file,
+converting to PEM format first if necessary.
+Verify that the certificate you have saved is the same as the one on the
+server.
+
+The `cert_bundle` option trusts the server / CA certificate only for
+interaction with the zulip site, and is relatively secure.
+
+Note that a certificate bundle is merely one or more certificates combined
+into a single file.
