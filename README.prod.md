@@ -140,7 +140,7 @@ need to do some additional setup documented in the `settings.py` template:
 You should be able to login now.  If you get an error, check
 `/var/log/zulip/errors.log` for a traceback, and consult the next
 section for advice on how to debug.  If you aren't able to figure it
-out, email zulip-devel@googlegroups.com with the traceback and we'll
+out, email zulip-help@googlegroups.com with the traceback and we'll
 try to help you out!
 
 You will likely want to make your own user account an admin user,
