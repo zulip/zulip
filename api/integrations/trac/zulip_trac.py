@@ -107,8 +107,8 @@ class ZulipPlugin(Component):
         field_changes = []
         for key in old_values.keys():
             if key == "description":
-                content += '- Changed %s from %s to %s' % (key, markdown_block(old_values.get(key)),
-                                                           markdown_block(ticket.values.get(key)))
+                content += '- Changed %s from %s\n\nto %s' % (key, markdown_block(old_values.get(key)),
+                                                              markdown_block(ticket.values.get(key)))
             elif old_values.get(key) == "":
                 field_changes.append('%s: => **%s**' % (key, ticket.values.get(key)))
             elif ticket.values.get(key) == "":
