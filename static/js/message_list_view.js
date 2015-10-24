@@ -215,7 +215,7 @@ MessageListView.prototype = {
         else {
             message_container.status_message = false;
         }
-    }, 
+    },
 
     join_message_groups: function MessageListView__join_message_groups(first_group, second_group) {
         // join_message_groups will combine groups if they have the
