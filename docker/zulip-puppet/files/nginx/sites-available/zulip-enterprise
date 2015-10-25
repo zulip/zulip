@@ -1,0 +1,32 @@
+server {
+    listen 80;
+    return 301 https://$host$request_uri;
+}
+
+include /etc/nginx/zulip-include/upstreams;
+
+server {
+    listen 443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/zulip.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/zulip.key;
+
+    location /user_uploads {
+        add_header X-Content-Type-Options nosniff;
+        include /etc/nginx/zulip-include/uploads.types;
+        alias /home/zulip/uploads/files;
+    }
+
+    location /user_avatars {
+        add_header X-Content-Type-Options nosniff;
+        include /etc/nginx/zulip-include/uploads.types;
+        alias /home/zulip/uploads/avatars;
+    }
+
+    location /local-static {
+        alias /home/zulip/local-static;
+    }
+
+    include /etc/nginx/zulip-include/app;
+}

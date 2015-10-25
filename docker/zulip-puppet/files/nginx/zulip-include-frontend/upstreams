@@ -1,0 +1,12 @@
+upstream django {
+    server unix:/home/zulip/deployments/fastcgi-socket;
+}
+
+upstream tornado {
+    server 127.0.0.1:9993;
+    keepalive 10000;
+}
+
+upstream localhost_sso {
+    server 127.0.0.1:8888;
+}
