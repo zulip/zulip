@@ -6,7 +6,7 @@ from zilencer.models import Deployment
 
 from zerver.models import (
     get_realm, get_user_profile_by_email,
-    PreregistrationUser, Realm, ScheduledJob, UserProfile,
+    PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
 )
 
 from zerver.lib.actions import (
@@ -297,6 +297,31 @@ class InviteUserTest(AuthedTestCase):
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee])
+
+    def test_invite_user_signup_initial_history(self):
+        """
+        Test that a new user invited to a stream receives some initial
+        history but only from public streams.
+        """
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        private_stream_name = "Secret"
+        (stream, _) = create_stream_if_needed(user_profile.realm, private_stream_name, invite_only=True)
+        do_add_subscription(user_profile, stream)
+        public_msg_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                                          "Public topic", "Public message")
+        secret_msg_id = self.send_message("hamlet@zulip.com", private_stream_name, Recipient.STREAM,
+                                          "Secret topic", "Secret message")
+        invitee = "alice-test@zulip.com"
+        self.assert_json_success(self.invite(invitee, [private_stream_name, "Denmark"]))
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user("alice-test", "password")
+        invitee_profile = get_user_profile_by_email(invitee)
+        invitee_msg_ids = [um.message_id for um in
+                           UserMessage.objects.filter(user_profile=invitee_profile)]
+        self.assertTrue(public_msg_id in invitee_msg_ids)
+        self.assertFalse(secret_msg_id in invitee_msg_ids)
 
     def test_multi_user_invite(self):
         """
