@@ -16,7 +16,7 @@ set_global('unread', {});
 
 var stream_list = require('js/stream_list.js');
 
-global.$ = require('jquery');
+global.$ = require('jQuery');
 $.fn.expectOne = function () {
     assert(this.length === 1);
     return this;

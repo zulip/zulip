@@ -33,3 +33,4 @@ static/third/gemoji/
 static/third/zxcvbn/
 tools/emoji_dump/bitmaps/
 tools/emoji_dump/*.ttx
+node_modules

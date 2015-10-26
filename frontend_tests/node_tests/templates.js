@@ -3,7 +3,7 @@ add_dependencies({
     templates: 'js/templates'
 });
 
-global.$ = require('jquery');
+global.$ = require('jQuery');
 var _ = global._;
 
 // When writing these tests, the following command might be helpful:
