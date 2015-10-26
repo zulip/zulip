@@ -30,6 +30,7 @@ APT_DEPENDENCIES = {
         "python-dev",
         "hunspell-en-us",
         "nodejs",
+        "nodejs-legacy",
         "python-virtualenv",
         "supervisor",
         "git",
