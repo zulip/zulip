@@ -164,12 +164,13 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
         streams = get_default_subs(user_profile)
     bulk_add_subscriptions(streams, [user_profile])
 
-    # Give you the last 100 messages on your streams, so you have
+    # Give you the last 100 messages on your public streams, so you have
     # something to look at in your home view once you finish the
     # tutorial.
     one_week_ago = now() - datetime.timedelta(weeks=1)
     recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                              type_id__in=[stream.id for stream in streams])
+                                          type_id__in=[stream.id for stream in streams
+                                                       if not stream.invite_only])
     messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
     if len(messages) > 0:
         ums_to_create = [UserMessage(user_profile=user_profile, message=message,
