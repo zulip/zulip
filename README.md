@@ -148,6 +148,8 @@ will be much faster.
 
 Once that finishes, you can run the development server as follows:
 
+If you weren't able to get vagrant up because your machine could not find the Ubuntu Trusty, then just download vagrant from their website, and run sudo dpkg -i packagename.deb. This will give you a later version of vagrant which should help set up zulip VM on your machine.
+
 ```
 vagrant ssh -- -L9991:localhost:9991
 # Now inside the container
