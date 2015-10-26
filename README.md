@@ -60,7 +60,7 @@ First, subscribe to the Zulip [development discussion mailing list](https://grou
 The Zulip project uses a system of labels in our [issue
 tracker](https://github.com/zulip/zulip/issues) to make it easy to
 find a project if you don't have your own project idea in mind or want
-to get some experience with workng on Zulip before embarking on a
+to get some experience with working on Zulip before embarking on a
 larger project you have in mind:
 
 * [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
