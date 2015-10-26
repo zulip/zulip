@@ -29,6 +29,7 @@ manage.log
 event_queues.json
 .vagrant
 /zproject/dev-secrets.conf
+static/js/bundle.js
 static/third/gemoji/
 static/third/zxcvbn/
 tools/emoji_dump/bitmaps/

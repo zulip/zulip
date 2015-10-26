@@ -704,6 +704,7 @@ JS_SPECS = {
             'js/referral.js',
             'js/custom_markdown.js',
             'js/bot_data.js',
+            # JS bundled by webpack is also included here if PIPELINE setting is true
         ],
         'output_filename': 'min/app.js'
     },
@@ -719,6 +720,9 @@ JS_SPECS = {
         'output_filename': 'min/sockjs-0.3.4.min.js'
     },
 }
+
+if PIPELINE:
+    JS_SPECS['app']['source_filenames'].append('js/bundle.js')
 
 app_srcs = JS_SPECS['app']['source_filenames']
 

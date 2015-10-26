@@ -39,6 +39,10 @@ var page_params = {{ page_params }};
 {% endif %}
 {% minified_js 'app' %}
 
+{% if not pipeline %}
+<script type="text/javascript" src="/webpack/bundle.js"></script>
+{% endif %}
+
 {% if debug %}
 {% minified_js 'app_debug' %}
 {% endif %}

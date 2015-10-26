@@ -28,6 +28,9 @@ STATIC_PATH = 'static/'
 # Compile Handlebars templates
 subprocess.check_call(['tools/compile-handlebars-templates'])
 
+# Create webpack bundle
+subprocess.check_call(['tools/webpack'])
+
 def get_changed_source_files(other_checkout):
     """ Get list of changed static files since other_checkout.
     If git fails to return a reasonable looking list, this returns None,
@@ -69,9 +72,10 @@ if prev_deploy:
     if changed_files is None:
         prev_deploy = None
 
-# Always use the newly compiled handlebars templates.
+# Always use the newly compiled handlebars templates and webpack bundle.
 if prev_deploy:
     changed_files.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
+    changed_files.add(os.path.join(STATIC_PATH, 'js/bundle.js'))
 
 JS_SPECS = settings.JS_SPECS
 CLOSURE_BINARY = '/usr/bin/closure-compiler'
