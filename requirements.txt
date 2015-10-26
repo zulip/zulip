@@ -1,3 +1,7 @@
+# Django
+# sha256: __KMR4vBbACiXESZ33-PwA7bEySpPw8BRrtwouE8Mhw
+https://github.com/rwbarton/django/archive/59f1fc4c7b65d23fceffd5c87e2b6ea350030c56.tar.gz#egg=Django-1.8
+
 # sha256: aKhCt_eAhjiUwzTsC8ExW3ulMUJ3Px_qZkP3LB9UBG0
 GitPython==0.3.2.1
 
@@ -40,9 +44,6 @@ chardet==2.3.0
 # sha256: w7q49DrCDKb17k1Aq0D8qX6JCcWphpZDy3daXtKSlZU
 cryptography==0.9.1
 
-# sha256: BmutQstMZpROfvz3ME09F_ew6yIuU5WM3YZkINLotBI
-django==1.8
-
 # sha256: zVUdWlGLdFQHY1u4URbrgTgY7K8YLnc8NbNiOfw_JHg
 defusedxml==0.4.1
 
@@ -55,8 +56,9 @@ django-auth-ldap==1.2.6
 # sha256: c4pQ4aPsPUj9tXiWzU2vaQF8WWVsR4DSWnTYruYWjzQ
 django-bitfield==1.8.0
 
-# sha256: yY7zECUyGAxtDrno1pd0u97Y2QtnGYjuRV1W_h9xGos
-django-guardian==1.3
+# django-guardian
+# sha256: F4HndEtjXxZriygJhz3NyyJwgmHSkxHY1lqsFPk9R40
+https://github.com/rwbarton/django-guardian/archive/caf9f0c8c035feb3dff5542fb042dd13126cdd69.tar.gz#egg=django-guardian-1.3
 
 # sha256: 7S6lai-LNlhVanhujXREkWofU8ZEh0WwpwnYsV2gUrg
 django-pipeline==1.2.2
