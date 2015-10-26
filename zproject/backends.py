@@ -173,10 +173,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             realm = get_realm(domain)
 
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
-            short_name = full_name = ldap_user.attrs[full_name_attr]
+            short_name = full_name = ldap_user.attrs[full_name_attr][0]
             if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
                 short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
-                short_name = ldap_user.attrs[short_name_attr]
+                short_name = ldap_user.attrs[short_name_attr][0]
 
             user_profile = do_create_user(username, None, realm, full_name, short_name)
             return user_profile, False
