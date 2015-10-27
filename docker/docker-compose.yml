@@ -10,7 +10,7 @@ memcached:
   image: "quay.io/sameersbn/memcached:latest"
   restart: always
 rabbitmq:
-  image: "docker.io/rabbitmq:3.5.5"
+  image: "rabbitmq:3.5.5"
   hostname: zulip-rabbit
   restart: always
   environment:
@@ -39,6 +39,7 @@ zulip:
     MEMCACHED_HOST: "memcached"
     REDIS_HOST: "redis"
     RABBITMQ_HOST: "rabbitmq"
+    RABBITMQ_PASS: "zulip"
     ZULIP_AUTH_BACKENDS: "EmailAuthBackend"
     ZULIP_SECRETS_email_password: "12345"
     ZULIP_SETTINGS_EXTERNAL_HOST: "example.com"
