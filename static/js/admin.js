@@ -151,7 +151,7 @@ exports.setup_page = function () {
 
         var email = $(".active_user_row").find('.email').text();
         channel.post({
-            url: '/json/users/' + $(".active_user_row").find('.email').text() + "/reactivate",
+            url: '/json/users/' + email + "/reactivate",
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_user_row button").closest("td").html(
