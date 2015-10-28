@@ -141,7 +141,41 @@ exports.setup_page = function () {
         $("#deactivation_stream_modal").modal("show");
     });
 
-    $(".admin_user_table").on("click", ".reactivate", function (e) {
+    $(".admin_bot_table").on("click", ".deactivate", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $(".active_user_row").removeClass("active_user_row");
+
+        $(e.target).closest(".user_row").addClass("active_user_row");
+
+        var user_name = $(".active_user_row").find('.user_name').text();
+        var email = $(".active_user_row").find('.email').text();
+        channel.del({
+            url: '/json/bots/' + email,
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    $(".active_user_row button").closest("td").html(
+                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                    );
+                } else {
+                     $(".active_user_row button").text("Failed!");
+                }
+            },
+            success: function () {
+                var row = $(".active_user_row");
+                var button = $(".active_user_row button.deactivate");
+                button.addClass("btn-warning");
+                button.removeClass("btn-danger");
+                button.addClass("reactivate");
+                button.removeClass("deactivate");
+                button.text("Reactivate");
+                row.addClass("deactivated_user");
+            }
+        });
+    });
+
+    $(".admin_user_table, .admin_bot_table").on("click", ".reactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
