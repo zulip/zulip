@@ -255,10 +255,6 @@ def process_stream_message(to, subject, message, debug_info):
     body = filter_footer(extract_body(message))
     body += extract_and_upload_attachments(message, stream.realm)
     debug_info["stream"] = stream
-    if not body:
-        # You can't send empty Zulips, so to avoid confusion over the
-        # email forwarding failing, set a dummy message body.
-        body = "(No email body)"
     send_zulip(stream, subject, body)
 
 def process_missed_message(to, message, pre_checked):
