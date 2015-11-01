@@ -63,7 +63,7 @@ class HomepageForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.domain = kwargs.get("domain")
-        if kwargs.has_key("domain"):
+        if "domain" in kwargs:
             del kwargs["domain"]
         super(HomepageForm, self).__init__(*args, **kwargs)
 
