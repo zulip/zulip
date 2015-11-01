@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Django settings for zulip project.
 ########################################################################
 # Here's how settings for the Zulip project work:
@@ -76,11 +77,11 @@ TUTORIAL_ENABLED = True
 # Import variables like secrets from the local_settings file
 # Import local_settings after determining the deployment/machine type
 if PRODUCTION:
-    from local_settings import *
+    from .local_settings import *
 else:
     # For the Dev VM environment, we use the same settings as the
     # sample local_settings.py file, with a few exceptions.
-    from local_settings_template import *
+    from .local_settings_template import *
     EXTERNAL_HOST = 'localhost:9991'
     ALLOWED_HOSTS = ['localhost']
     AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)

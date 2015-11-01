@@ -1,4 +1,5 @@
-from settings import *
+from __future__ import absolute_import
+from .settings import *
 import os
 
 DATABASES["default"] = {"NAME": "zulip_test",

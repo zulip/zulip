@@ -21,13 +21,14 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import absolute_import
 import sys
 import subprocess
 import os
 import traceback
 import signal
 
-from zephyr_mirror_backend import parse_args
+from .zephyr_mirror_backend import parse_args
 
 def die(signal, frame):
     # We actually want to exit, so run os._exit (so as not to be caught and restarted)
