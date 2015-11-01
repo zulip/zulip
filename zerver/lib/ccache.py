@@ -83,7 +83,7 @@ def der_encode_uint32(val):
     return der_encode_integer(val)
 
 def der_encode_string(val):
-    if not isinstance(val, unicode):
+    if not isinstance(val, six.text_type):
         raise TypeError("unicode")
     return der_encode_tlv(0x1b, val.encode("utf-8"))
 

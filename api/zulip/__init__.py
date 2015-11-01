@@ -21,6 +21,7 @@
 # THE SOFTWARE.
 
 from __future__ import print_function
+from __future__ import absolute_import
 import simplejson
 import requests
 import time
@@ -36,6 +37,7 @@ from distutils.version import LooseVersion
 
 from six.moves.configparser import SafeConfigParser
 import logging
+import six
 
 
 __version__ = "0.2.4"
@@ -244,7 +246,7 @@ class Client(object):
         request = {}
 
         for (key, val) in orig_request.iteritems():
-            if not (isinstance(val, str) or isinstance(val, unicode)):
+            if not (isinstance(val, str) or isinstance(val, six.text_type)):
                 request[key] = simplejson.dumps(val)
             else:
                 request[key] = val

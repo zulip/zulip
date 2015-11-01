@@ -39,6 +39,7 @@ import ujson
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from six.moves import map
+import six
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 # This is a Pool that doesn't close connections.  Therefore it can be used with
@@ -292,7 +293,7 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(cond))
 
 def highlight_string(string, locs):
-    if isinstance(string, unicode):
+    if isinstance(string, six.text_type):
         string = string.encode('utf-8')
 
     highlight_start = '<span class="highlight">'
@@ -326,7 +327,7 @@ def narrow_parameter(json):
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
             if (len(elem) != 2
-                or any(not isinstance(x, str) and not isinstance(x, unicode)
+                or any(not isinstance(x, str) and not isinstance(x, six.text_type)
                        for x in elem)):
                 raise ValueError("element is not a string pair")
             return dict(operator=elem[0], operand=elem[1])
