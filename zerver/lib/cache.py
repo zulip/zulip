@@ -209,7 +209,7 @@ def cache(func):
        Uses a key based on the function's name, filename, and
        the repr() of its arguments."""
 
-    func_uniqifier = '%s-%s' % (func.func_code.co_filename, func.func_name)
+    func_uniqifier = '%s-%s' % (func.__code__.co_filename, func.__name__)
 
     @wraps(func)
     def keyfunc(*args, **kwargs):

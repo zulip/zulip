@@ -251,7 +251,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
                 if response is None:
                     try:
-                        view_name = callback.func_name
+                        view_name = callback.__name__
                     except AttributeError:
                         view_name = callback.__class__.__name__ + '.__call__'
                     raise ValueError("The view %s.%s returned None." %

@@ -351,7 +351,7 @@ class Client(object):
             else:
                 req_url = url
             return self.do_api_query(request, API_VERSTRING + req_url, method=method, **query_kwargs)
-        call.func_name = name
+        call.__name__ = name
         setattr(cls, name, call)
 
     def call_on_each_event(self, callback, event_types=None, narrow=[]):

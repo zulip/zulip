@@ -409,13 +409,13 @@ class REQ(object):
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
 def has_request_variables(view_func):
-    num_params = view_func.func_code.co_argcount
-    if view_func.func_defaults is None:
+    num_params = view_func.__code__.co_argcount
+    if view_func.__defaults__ is None:
         num_default_params = 0
     else:
-        num_default_params = len(view_func.func_defaults)
-    default_param_names = view_func.func_code.co_varnames[num_params - num_default_params:]
-    default_param_values = view_func.func_defaults
+        num_default_params = len(view_func.__defaults__)
+    default_param_names = view_func.__code__.co_varnames[num_params - num_default_params:]
+    default_param_values = view_func.__defaults__
     if default_param_values is None:
         default_param_values = []
 
