@@ -1,3 +1,4 @@
+from __future__ import print_function
 from confirmation.models import Confirmation
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -381,7 +382,7 @@ def clear_followup_emails_queue(email, mail_client=None):
     for email in mail_client.messages.list_scheduled(to=email):
         result = mail_client.messages.cancel_scheduled(id=email["_id"])
         if result.get("status") == "error":
-            print result.get("name"), result.get("error")
+            print(result.get("name"), result.get("error"))
     return
 
 def log_digest_event(msg):

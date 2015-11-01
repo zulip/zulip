@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import sys
 import argparse
@@ -68,7 +69,7 @@ parameters, or specify no parameters for interactive user creation.""")
                         validators.validate_email(email)
                         break
                     except ValidationError:
-                        print >> sys.stderr, "Invalid email address."
+                        print("Invalid email address.", file=sys.stderr)
                 full_name = raw_input("Full name: ")
 
         try:

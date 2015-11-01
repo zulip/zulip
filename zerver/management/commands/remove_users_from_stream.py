@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from optparse import make_option
 
@@ -51,6 +52,6 @@ class Command(BaseCommand):
 
         for user_profile in user_profiles:
             did_remove = do_remove_subscription(user_profile, stream)
-            print "%s %s from %s" % (
+            print("%s %s from %s" % (
                 "Removed" if did_remove else "Couldn't remove",
-                user_profile.email, stream_name)
+                user_profile.email, stream_name))

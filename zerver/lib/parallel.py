@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import pty
@@ -62,10 +63,10 @@ if __name__ == "__main__":
     for (status, job) in run_parallel(wait_and_print, jobs):
         output.append(job)
     if output == expected_output:
-        print "Successfully passed test!"
+        print("Successfully passed test!")
     else:
-        print "Failed test!"
-        print jobs
-        print expected_output
-        print output
+        print("Failed test!")
+        print(jobs)
+        print(expected_output)
+        print(output)
 

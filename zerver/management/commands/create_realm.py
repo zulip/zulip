@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from optparse import make_option
 
 from django.conf import settings
@@ -55,16 +56,16 @@ Usage: python2.7 manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
     def handle(self, *args, **options):
         if options["domain"] is None or options["name"] is None:
-            print >>sys.stderr, "\033[1;31mPlease provide both a domain and name.\033[0m\n"
+            print("\033[1;31mPlease provide both a domain and name.\033[0m\n", file=sys.stderr)
             self.print_help("python2.7 manage.py", "create_realm")
             exit(1)
 
         if options["open_realm"] and options["deployment_id"] is not None:
-            print >>sys.stderr, "\033[1;31mExternal deployments cannot be open realms.\033[0m\n"
+            print("\033[1;31mExternal deployments cannot be open realms.\033[0m\n", file=sys.stderr)
             self.print_help("python2.7 manage.py", "create_realm")
             exit(1)
         if options["deployment_id"] is not None and settings.VOYAGER:
-            print >>sys.stderr, "\033[1;31mExternal deployments are not supported on voyager deployments.\033[0m\n"
+            print("\033[1;31mExternal deployments are not supported on voyager deployments.\033[0m\n", file=sys.stderr)
             exit(1)
 
         domain = options["domain"]
@@ -75,12 +76,12 @@ Usage: python2.7 manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
         realm, created = do_create_realm(
             domain, name, restricted_to_domain=not options["open_realm"])
         if created:
-            print domain, "created."
+            print(domain, "created.")
             if options["deployment_id"] is not None:
                 deployment = Deployment.objects.get(id=options["deployment_id"])
                 deployment.realms.add(realm)
                 deployment.save()
-                print "Added to deployment", str(deployment.id)
+                print("Added to deployment", str(deployment.id))
             elif settings.ZULIP_COM:
                 deployment = Deployment.objects.get(base_site_url="https://zulip.com/")
                 deployment.realms.add(realm)
@@ -89,6 +90,6 @@ Usage: python2.7 manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
             set_default_streams(realm, ["social", "engineering"])
 
-            print "\033[1;36mDefault streams set to social,engineering,zulip!\033[0m"
+            print("\033[1;36mDefault streams set to social,engineering,zulip!\033[0m")
         else:
-            print domain, "already exists."
+            print(domain, "already exists.")

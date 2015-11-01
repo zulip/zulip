@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
 import simplejson
 import requests
 import time
@@ -87,7 +88,7 @@ class RandomExponentialBackoff(CountingBackoff):
         try:
             logger.warning(message)
         except NameError:
-            print message
+            print(message)
         time.sleep(delay)
 
 def _default_client():
@@ -273,9 +274,9 @@ class Client(object):
         def end_error_retry(succeeded):
             if query_state["had_error_retry"] and self.verbose:
                 if succeeded:
-                    print "Success!"
+                    print("Success!")
                 else:
-                    print "Failed!"
+                    print("Failed!")
 
         while True:
             try:
@@ -364,7 +365,7 @@ class Client(object):
 
                 if 'error' in res.get('result'):
                     if self.verbose:
-                        print "Server returned error:\n%s" % res['msg']
+                        print("Server returned error:\n%s" % res['msg'])
                     time.sleep(1)
                 else:
                     return (res['queue_id'], res['last_event_id'])
@@ -378,13 +379,13 @@ class Client(object):
             if 'error' in res.get('result'):
                 if res["result"] == "http-error":
                     if self.verbose:
-                        print "HTTP error fetching events -- probably a server restart"
+                        print("HTTP error fetching events -- probably a server restart")
                 elif res["result"] == "connection-error":
                     if self.verbose:
-                        print "Connection error fetching events -- probably server is temporarily down?"
+                        print("Connection error fetching events -- probably server is temporarily down?")
                 else:
                     if self.verbose:
-                        print "Server returned error:\n%s" % res["msg"]
+                        print("Server returned error:\n%s" % res["msg"])
                     if res["msg"].startswith("Bad event queue id:"):
                         # Our event queue went away, probably because
                         # we were asleep or the server restarted

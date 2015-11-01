@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sys
 import logging
@@ -53,9 +54,9 @@ VENV_PATH="/srv/zulip-venv"
 ZULIP_PATH="/srv/zulip"
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
-    print "Error: No Zulip git repository present at /srv/zulip!"
-    print "To setup the Zulip development environment, you should clone the code"
-    print "from GitHub, rather than using a Zulip production release tarball."
+    print("Error: No Zulip git repository present at /srv/zulip!")
+    print("To setup the Zulip development environment, you should clone the code")
+    print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
 
 # TODO: Parse arguments properly

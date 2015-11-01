@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
@@ -261,7 +262,7 @@ def restore_saved_messages():
     client_set = set(["populate_db", "website", "zephyr_mirror"])
     huddle_user_set = set()
     # First, determine all the objects our messages will need.
-    print datetime.datetime.now(), "Creating realms/streams/etc..."
+    print(datetime.datetime.now(), "Creating realms/streams/etc...")
     def process_line(line):
         old_message_json = line.strip()
 
@@ -376,21 +377,21 @@ def restore_saved_messages():
     huddle_recipients = {}
 
     # Then, create the objects our messages need.
-    print datetime.datetime.now(), "Creating realms..."
+    print(datetime.datetime.now(), "Creating realms...")
     bulk_create_realms(realm_set)
 
     realms = {}
     for realm in Realm.objects.all():
         realms[realm.domain] = realm
 
-    print datetime.datetime.now(), "Creating clients..."
+    print(datetime.datetime.now(), "Creating clients...")
     bulk_create_clients(client_set)
 
     clients = {}
     for client in Client.objects.all():
         clients[client.name] = client
 
-    print datetime.datetime.now(), "Creating streams..."
+    print(datetime.datetime.now(), "Creating streams...")
     bulk_create_streams(realms, stream_dict.values())
 
     streams = {}
@@ -400,7 +401,7 @@ def restore_saved_messages():
         stream_recipients[(streams[recipient.type_id].realm_id,
                            streams[recipient.type_id].name.lower())] = recipient
 
-    print datetime.datetime.now(), "Creating users..."
+    print(datetime.datetime.now(), "Creating users...")
     bulk_create_users(realms, user_set)
 
     users = {}
@@ -411,7 +412,7 @@ def restore_saved_messages():
     for recipient in Recipient.objects.filter(type=Recipient.PERSONAL):
         user_recipients[users_by_id[recipient.type_id].email] = recipient
 
-    print datetime.datetime.now(), "Creating huddles..."
+    print(datetime.datetime.now(), "Creating huddles...")
     bulk_create_huddles(users, huddle_user_set)
 
     huddles_by_id = {}
@@ -423,14 +424,14 @@ def restore_saved_messages():
     # TODO: Add a special entry type in the log that is a subscription
     # change and import those as we go to make subscription changes
     # take effect!
-    print datetime.datetime.now(), "Importing subscriptions..."
+    print(datetime.datetime.now(), "Importing subscriptions...")
     subscribers = {}
     for s in Subscription.objects.select_related().all():
         if s.active:
             subscribers.setdefault(s.recipient.id, set()).add(s.user_profile.id)
 
     # Then create all the messages, without talking to the DB!
-    print datetime.datetime.now(), "Importing messages, part 1..."
+    print(datetime.datetime.now(), "Importing messages, part 1...")
     first_message_id = None
     if Message.objects.exists():
         first_message_id = Message.objects.all().order_by("-id")[0].id + 1
@@ -482,12 +483,12 @@ def restore_saved_messages():
             raise ValueError('Bad message type')
         messages_to_create.append(message)
 
-    print datetime.datetime.now(), "Importing messages, part 2..."
+    print(datetime.datetime.now(), "Importing messages, part 2...")
     Message.objects.bulk_create(messages_to_create)
     messages_to_create = []
 
     # Finally, create all the UserMessage objects
-    print datetime.datetime.now(), "Importing usermessages, part 1..."
+    print(datetime.datetime.now(), "Importing usermessages, part 1...")
     personal_recipients = {}
     for r in Recipient.objects.filter(type = Recipient.PERSONAL):
         personal_recipients[r.id] = True
@@ -500,7 +501,7 @@ def restore_saved_messages():
         messages_by_id[message.id] = message
 
     if len(messages_by_id) == 0:
-        print datetime.datetime.now(), "No old messages to replay"
+        print(datetime.datetime.now(), "No old messages to replay")
         return
 
     if first_message_id is None:
@@ -526,8 +527,8 @@ def restore_saved_messages():
             try:
                 subscribers[stream_recipients[stream_key].id].remove(user_id)
             except KeyError:
-                print "Error unsubscribing %s from %s: not subscribed" % (
-                    old_message["user"], old_message["name"])
+                print("Error unsubscribing %s from %s: not subscribed" % (
+                    old_message["user"], old_message["name"]))
             pending_subs[(stream_recipients[stream_key].id,
                           users[old_message["user"]].id)] = False
             continue
@@ -627,11 +628,11 @@ def restore_saved_messages():
             UserMessage.objects.bulk_create(user_messages_to_create)
             user_messages_to_create = []
 
-    print datetime.datetime.now(), "Importing usermessages, part 2..."
+    print(datetime.datetime.now(), "Importing usermessages, part 2...")
     tot_user_messages += len(user_messages_to_create)
     UserMessage.objects.bulk_create(user_messages_to_create)
 
-    print datetime.datetime.now(), "Finalizing subscriptions..."
+    print(datetime.datetime.now(), "Finalizing subscriptions...")
     current_subs = {}
     current_subs_obj = {}
     for s in Subscription.objects.select_related().all():
@@ -666,14 +667,14 @@ def restore_saved_messages():
     # TODO: do restore of subscription colors -- we're currently not
     # logging changes so there's little point in having the code :(
 
-    print datetime.datetime.now(), "Finished importing %s messages (%s usermessages)" % \
-        (len(all_messages), tot_user_messages)
+    print(datetime.datetime.now(), "Finished importing %s messages (%s usermessages)" % \
+        (len(all_messages), tot_user_messages))
 
     site = Site.objects.get_current()
     site.domain = 'zulip.com'
     site.save()
 
-    print datetime.datetime.now(), "Filling in user pointers..."
+    print(datetime.datetime.now(), "Filling in user pointers...")
 
     # Set restored pointers to the very latest messages
     for user_profile in UserProfile.objects.all():
@@ -685,7 +686,7 @@ def restore_saved_messages():
             user_profile.pointer = -1
         user_profile.save(update_fields=["pointer"])
 
-    print datetime.datetime.now(), "Done replaying old messages"
+    print(datetime.datetime.now(), "Done replaying old messages")
 
 # Create some test messages, including:
 # - multiple streams

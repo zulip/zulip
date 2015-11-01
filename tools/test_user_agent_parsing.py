@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import re
 from collections import defaultdict
 import os
@@ -15,19 +16,19 @@ for line in file(user_agents_path).readlines():
     line = line.strip()
     match = re.match('^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
     if match is None:
-        print line
+        print(line)
         continue
     groupdict = match.groupdict()
     count = groupdict["count"]
     user_agent = groupdict["user_agent"]
     ret = parse_user_agent(user_agent)
     if ret is None:
-        print "parse error", line
+        print("parse error", line)
         parse_errors += 1
         continue
     user_agents_parsed[ret["name"]] += int(count)
 
 for key in user_agents_parsed:
-    print "    ", key, user_agents_parsed[key]
+    print("    ", key, user_agents_parsed[key])
 
-print "%s parse errors!" % (parse_errors,)
+print("%s parse errors!" % (parse_errors,))

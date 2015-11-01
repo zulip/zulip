@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import datetime
 import monthdelta
 
@@ -26,7 +27,7 @@ class Company(object):
             delta = flow.cashflow(start_date, end_date, (end_date - start_date).days)
             cash += delta
             if self.verbose:
-                print flow.name, round(delta, 2)
+                print(flow.name, round(delta, 2))
         return round(cash, 2)
 
     def cash_at_date(self, start, end):
@@ -39,10 +40,10 @@ class Company(object):
         cur_date = parse_date(start)
         end_date = parse_date(end)
         while cur_date <= end_date:
-            print cur_date, self.cash_at_date_internal(start_date, cur_date)
+            print(cur_date, self.cash_at_date_internal(start_date, cur_date))
             cur_date += monthdelta.MonthDelta(1)
             if self.verbose:
-                print
+                print()
 
 # CashFlow objects fundamentally just provide a function that says how
 # much cash has been spent by that source at each time
@@ -208,5 +209,5 @@ if __name__ == "__main__":
     assert(c.cash_at_date("2012-01-01", "2012-02-15") == 499207.33)
     c.add_flow(SemiMonthlyWages("Payroll", -4000, "2012-01-01"))
 
-    print c
+    print(c)
     c.cash_monthly_summary("2012-01-01", "2012-07-01")

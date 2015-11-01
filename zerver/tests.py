@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.test import TestCase
 
@@ -40,7 +41,7 @@ import time
 import ujson
 
 def bail(msg):
-    print '\nERROR: %s\n' % (msg,)
+    print('\nERROR: %s\n' % (msg,))
     sys.exit(1)
 
 try:

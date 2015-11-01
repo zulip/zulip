@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from django.db.models import Count
@@ -48,8 +49,8 @@ python2.7 manage.py client_activity jesstess@zulip.com"""
         counts.sort()
 
         for count in counts:
-            print "%25s %15d" % (count[1], count[0])
-        print "Total:", total
+            print("%25s %15d" % (count[1], count[0]))
+        print("Total:", total)
 
 
     def handle(self, *args, **options):
@@ -70,5 +71,5 @@ python2.7 manage.py client_activity jesstess@zulip.com"""
                     self.compute_activity(UserActivity.objects.filter(
                             user_profile__realm=realm))
                 except Realm.DoesNotExist:
-                    print "Unknown user or domain %s" % (arg,)
+                    print("Unknown user or domain %s" % (arg,))
                     exit(1)

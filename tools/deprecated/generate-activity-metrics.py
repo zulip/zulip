@@ -2,6 +2,7 @@
 #
 # Generates % delta activity metrics from graphite/statsd data
 #
+from __future__ import print_function
 import os, sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -43,7 +44,7 @@ def get_data(url, username, pw):
     res = requests.get(url, auth=HTTPDigestAuth(username, pw), verify=False)
 
     if res.status_code != 200:
-        print "Failed to fetch data url: %s" % (res.error,)
+        print("Failed to fetch data url: %s" % (res.error,))
         return []
 
     return extract_json_response(res)
@@ -98,8 +99,8 @@ def parse_data(data, today):
                         percent = percent_diff(best_last_time, best)
 
                 if best is not None:
-                    print "Last %s, %s %s ago:\t%.01f\t\t%s" \
-                        % (day.strftime("%A"), i, "days", best, percent)
+                    print("Last %s, %s %s ago:\t%.01f\t\t%s" \
+                        % (day.strftime("%A"), i, "days", best, percent))
                 best_last_time = best
 
     for metric in data:
@@ -108,12 +109,12 @@ def parse_data(data, today):
         metric['datapoints'].sort(key=lambda p: p[1])
 
         best_today = best_during_day(metric['datapoints'], today)
-        print "Date\t\t\t\tUsers\t\tChange from then to today"
-        print "Today, 0 days ago:\t\t%.01f" % (best_today,)
+        print("Date\t\t\t\tUsers\t\tChange from then to today")
+        print("Today, 0 days ago:\t\t%.01f" % (best_today,))
         print_results(xrange(1, 1000), [0, 1, 2, 3, 4, 7])
 
-        print "\n\nWeekly Wednesday results"
-        print "Date\t\t\t\tUsers\t\tDelta from previous week"
+        print("\n\nWeekly Wednesday results")
+        print("Date\t\t\t\tUsers\t\tDelta from previous week")
         print_results(reversed(xrange(1, 1000)), [2], True)
 
 
@@ -151,7 +152,7 @@ if __name__ == '__main__':
     startfrom = noon_of(day=datetime.now())
     if options.start_from != 'today':
         startfrom = noon_of(day=datetime.fromtimestamp(int(options.start_from)))
-        print "Using baseline of today as %s" % (startfrom,)
+        print("Using baseline of today as %s" % (startfrom,))
 
     realm_key = statsd_key(options.realm, True)
     buckets = [options.bucket]

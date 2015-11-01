@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import os
 import shutil
 import subprocess
@@ -66,13 +67,13 @@ for name, code_point in emoji_map.items():
         try:
             bw_font(name, code_point)
         except Exception as e:
-            print e
-            print 'Missing {}, {}'.format(name, code_point)
+            print(e)
+            print('Missing {}, {}'.format(name, code_point))
             failed = True
             continue
 
     os.symlink('unicode/{}.png'.format(code_point), 'out/{}.png'.format(name))
 
 if failed:
-    print "Errors dumping emoji!"
+    print("Errors dumping emoji!")
     sys.exit(1)

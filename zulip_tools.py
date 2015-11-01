@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import os
 import sys
 import datetime
@@ -27,4 +28,4 @@ def make_deploy_path():
 if __name__ == '__main__':
     cmd = sys.argv[1]
     if cmd == 'make_deploy_path':
-        print make_deploy_path()
+        print(make_deploy_path())

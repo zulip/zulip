@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.conf import settings
 settings.RUNNING_INSIDE_TORNADO = True
@@ -73,11 +74,11 @@ class Command(BaseCommand):
             from django.utils import translation
             translation.activate(settings.LANGUAGE_CODE)
 
-            print "Validating Django models.py..."
+            print("Validating Django models.py...")
             self.validate(display_num_errors=True)
-            print "\nDjango version %s" % (django.get_version())
-            print "Tornado server is running at http://%s:%s/" % (addr, port)
-            print "Quit the server with %s." % (quit_command,)
+            print("\nDjango version %s" % (django.get_version()))
+            print("Tornado server is running at http://%s:%s/" % (addr, port))
+            print("Quit the server with %s." % (quit_command,))
 
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()

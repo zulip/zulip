@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from zerver.models import get_user_profile_by_email, UserProfile
@@ -23,4 +24,4 @@ class Command(BaseCommand):
             user_profile.api_key = api_key
             user_profile.save(update_fields=["api_key"])
         except UserProfile.DoesNotExist:
-            print "User %s does not exist; not syncing API key" % (email,)
+            print("User %s does not exist; not syncing API key" % (email,))

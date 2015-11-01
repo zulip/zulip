@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from django.core.management import CommandError
@@ -15,4 +16,4 @@ class Command(BaseCommand):
         queue = SimpleQueueClient()
         queue.ensure_queue(queue_name, lambda: None)
         queue.channel.queue_purge(queue_name)
-        print "Done"
+        print("Done")

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from django.test.runner import DiscoverRunner
 
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -46,7 +47,7 @@ def enforce_timely_test_completion(test_method, test_name, delay):
     max_delay = max_delay * 3
 
     if delay > max_delay:
-        print 'Test is TOO slow: %s (%.3f s)' % (test_name, delay)
+        print('Test is TOO slow: %s (%.3f s)' % (test_name, delay))
 
 def fast_tests_only():
     return os.environ.get('FAST_TESTS_ONLY', False)
@@ -61,10 +62,10 @@ def run_test(test):
 
     bounce_key_prefix_for_testing(test_name)
 
-    print 'Running', test_name
+    print('Running', test_name)
     if not hasattr(test, "_pre_setup"):
-        print "somehow the test doesn't have _pre_setup; it may be an import fail."
-        print "Here's a debugger. Good luck!"
+        print("somehow the test doesn't have _pre_setup; it may be an import fail.")
+        print("Here's a debugger. Good luck!")
         import pdb; pdb.set_trace()
     test._pre_setup()
 
@@ -99,5 +100,5 @@ class Runner(DiscoverRunner):
         get_sqlalchemy_connection()
         self.run_suite(suite)
         self.teardown_test_environment()
-        print 'DONE!'
-        print
+        print('DONE!')
+        print()

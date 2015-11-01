@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from zerver.lib.queue import queue_json_publish
@@ -47,7 +48,7 @@ You can use "-" to represent stdin.
             except IndexError:
                 payload = line
 
-            print 'Queueing to queue %s: %s' % (queue_name, payload)
+            print('Queueing to queue %s: %s' % (queue_name, payload))
 
             # Verify that payload is valid json.
             data = ujson.loads(payload)

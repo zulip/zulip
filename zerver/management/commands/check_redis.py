@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from zerver.models import get_user_profile_by_id
 from zerver.lib.rate_limiter import client, max_api_calls, max_api_window
@@ -44,7 +45,7 @@ than max_api_calls! (trying to trim) %s %s" % (key, count))
 
     def handle(self, *args, **options):
         if not settings.RATE_LIMITING:
-            print "This machine is not using redis or rate limiting, aborting"
+            print("This machine is not using redis or rate limiting, aborting")
             exit(1)
 
         # Find all keys, and make sure they're all within size constraints

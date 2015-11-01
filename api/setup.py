@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import os
 import sys
 
@@ -60,13 +61,13 @@ except ImportError:
     try:
         import simplejson
     except ImportError:
-        print >>sys.stderr, "simplejson is not installed"
+        print("simplejson is not installed", file=sys.stderr)
         sys.exit(1)
     try:
         import requests
         assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
     except (ImportError, AssertionError):
-        print >>sys.stderr, "requests >=0.12.1 is not installed"
+        print("requests >=0.12.1 is not installed", file=sys.stderr)
         sys.exit(1)
 
 

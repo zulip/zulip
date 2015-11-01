@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from confirmation.models import Confirmation
@@ -26,7 +27,7 @@ class Command(BaseCommand):
         for email in options['emails']:
             try:
                 get_user_profile_by_email(email)
-                print email + ": There is already a user registered with that address."
+                print(email + ": There is already a user registered with that address.")
                 duplicates = True
                 continue
             except UserProfile.DoesNotExist:
@@ -40,8 +41,8 @@ class Command(BaseCommand):
         if domain:
             realm = get_realm(domain)
         if not realm:
-            print "The realm %s doesn't exist yet, please create it first." % (domain,)
-            print "Don't forget default streams!"
+            print("The realm %s doesn't exist yet, please create it first." % (domain,))
+            print("Don't forget default streams!")
             exit(1)
 
         for email in options['emails']:
@@ -49,14 +50,14 @@ class Command(BaseCommand):
                 if realm.restricted_to_domain and \
                         domain.lower() != email.split("@", 1)[-1].lower() and \
                         not options["force"]:
-                    print "You've asked to add an external user (%s) to a closed realm (%s)." % (
-                        email, domain)
-                    print "Are you sure? To do this, pass --force."
+                    print("You've asked to add an external user (%s) to a closed realm (%s)." % (
+                        email, domain))
+                    print("Are you sure? To do this, pass --force.")
                     exit(1)
                 else:
                     prereg_user = PreregistrationUser(email=email, realm=realm)
             else:
                 prereg_user = PreregistrationUser(email=email)
             prereg_user.save()
-            print email + ": " + Confirmation.objects.get_link_for_object(prereg_user)
+            print(email + ": " + Confirmation.objects.get_link_for_object(prereg_user))
 

@@ -22,6 +22,7 @@
 # SOFTWARE.
 
 from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import subprocess
 import os
@@ -53,30 +54,30 @@ if options.forward_class_messages and not options.noshard:
     if options.on_startup_command is not None:
         subprocess.call([options.on_startup_command])
     from zerver.lib.parallel import run_parallel
-    print "Starting parallel zephyr class mirroring bot"
+    print("Starting parallel zephyr class mirroring bot")
     jobs = list("0123456789abcdef")
     def run_job(shard):
         subprocess.call(args + ["--shard=%s" % (shard,)])
         return 0
     for (status, job) in run_parallel(run_job, jobs, threads=16):
-        print "A mirroring shard died!"
+        print("A mirroring shard died!")
         pass
     sys.exit(0)
 
 backoff = RandomExponentialBackoff(timeout_success_equivalent=300)
 while backoff.keep_going():
-    print "Starting zephyr mirroring bot"
+    print("Starting zephyr mirroring bot")
     try:
         subprocess.call(args)
     except:
         traceback.print_exc()
     backoff.fail()
 
-print ""
-print ""
-print "ERROR: The Zephyr mirroring bot is unable to continue mirroring Zephyrs."
-print "This is often caused by failing to maintain unexpired Kerberos tickets"
-print "or AFS tokens.  See https://zulip.com/zephyr for documentation on how to"
-print "maintain unexpired Kerberos tickets and AFS tokens."
-print ""
+print("")
+print("")
+print("ERROR: The Zephyr mirroring bot is unable to continue mirroring Zephyrs.")
+print("This is often caused by failing to maintain unexpired Kerberos tickets")
+print("or AFS tokens.  See https://zulip.com/zephyr for documentation on how to")
+print("maintain unexpired Kerberos tickets and AFS tokens.")
+print("")
 sys.exit(1)
