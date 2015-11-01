@@ -2321,7 +2321,7 @@ class P4Sync(Command, P4UserMap):
 
         l = p4CmdList(["labels"] + ["%s..." % p for p in self.depotPaths])
         if len(l) > 0 and not self.silent:
-            print "Finding files belonging to labels in %s" % `self.depotPaths`
+            print "Finding files belonging to labels in %s" % repr(self.depotPaths)
 
         for output in l:
             label = output["label"]
