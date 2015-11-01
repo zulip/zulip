@@ -15,6 +15,7 @@ from zerver.lib.upload import upload_message_image
 from zerver.lib.utils import generate_random_token
 from zerver.models import Stream, Recipient, get_user_profile_by_email, \
     get_user_profile_by_id, get_display_recipient, get_recipient
+import six
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ def send_to_missed_message_address(address, message):
 
     # Testing with basestring so we don't depend on the list return type from
     # get_display_recipient
-    if not isinstance(display_recipient, basestring):
+    if not isinstance(display_recipient, six.string_types):
         display_recipient = ','.join([user['email'] for user in display_recipient])
 
     body = filter_footer(extract_body(message))

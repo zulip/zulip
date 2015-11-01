@@ -33,6 +33,7 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
+import six
 
 
 # Format version of the bugdown rendering; stored along with rendered
@@ -849,7 +850,7 @@ class AtomicLinkPattern(LinkPattern):
         ret = LinkPattern.handleMatch(self, m)
         if ret is None:
             return None
-        if not isinstance(ret, basestring):
+        if not isinstance(ret, six.string_types):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 

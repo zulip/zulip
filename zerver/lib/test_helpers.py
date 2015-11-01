@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.test import TestCase
 
 from zerver.lib.initial_password import initial_password
@@ -32,6 +33,7 @@ import ujson
 import urllib
 
 from contextlib import contextmanager
+import six
 
 API_KEYS = {}
 
@@ -256,7 +258,7 @@ class AuthedTestCase(TestCase):
             message_type_name = "private"
         else:
             message_type_name = "stream"
-        if isinstance(recipient_list, basestring):
+        if isinstance(recipient_list, six.string_types):
             recipient_list = [recipient_list]
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 

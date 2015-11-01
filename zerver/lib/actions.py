@@ -29,6 +29,7 @@ from django.core.mail import EmailMessage
 from django.utils.timezone import now
 
 from confirmation.models import Confirmation
+import six
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
@@ -764,7 +765,7 @@ def extract_recipients(s):
     except ValueError:
         data = s
 
-    if isinstance(data, basestring):
+    if isinstance(data, six.string_types):
         data = data.split(',')
 
     if not isinstance(data, list):
@@ -892,7 +893,7 @@ def check_message(sender, client, message_type_name, message_to,
             recipient = recipient_for_emails(message_to, not_forged_mirror_message,
                                              forwarder_user_profile, sender)
         except ValidationError as e:
-            assert isinstance(e.messages[0], basestring)
+            assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
     else:
         raise JsonableError("Invalid message type")

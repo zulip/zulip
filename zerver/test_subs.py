@@ -30,6 +30,7 @@ from zerver.lib.actions import (
 import random
 import ujson
 import urllib
+import six
 
 
 class StreamAdminTest(AuthedTestCase):
@@ -656,8 +657,8 @@ class SubscriptionAPITest(AuthedTestCase):
         json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
         for stream in json['subscriptions']:
-            self.assertIsInstance(stream['name'], basestring)
-            self.assertIsInstance(stream['color'], basestring)
+            self.assertIsInstance(stream['name'], six.string_types)
+            self.assertIsInstance(stream['color'], six.string_types)
             self.assertIsInstance(stream['invite_only'], bool)
             # check that the stream name corresponds to an actual stream
             try:
