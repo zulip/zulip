@@ -94,7 +94,7 @@ class TestStreamEmailMessagesEmptyBody(AuthedTestCase):
                 incoming_valid_message['Subject'],
                 incoming_valid_message,
                 debug_info)
-        except ZulipEmailForwardError, e:
+        except ZulipEmailForwardError as e:
             # empty body throws exception
             exception_message = e.message
         self.assertEqual(exception_message, "Unable to find plaintext or HTML message body")

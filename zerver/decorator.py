@@ -242,7 +242,7 @@ def authenticated_rest_api_view(view_func):
         try:
             # Could be a UserProfile or a Deployment
             profile = validate_api_key(role, api_key)
-        except JsonableError, e:
+        except JsonableError as e:
             return json_unauthorized(e.error)
         request.user = profile
         process_client(request, profile)

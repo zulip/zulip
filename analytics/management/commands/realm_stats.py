@@ -71,7 +71,7 @@ class Command(BaseCommand):
         if options['realms']:
             try:
                 realms = [get_realm(domain) for domain in options['realms']]
-            except Realm.DoesNotExist, e:
+            except Realm.DoesNotExist as e:
                 print e
                 exit(1)
         else:

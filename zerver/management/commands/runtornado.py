@@ -238,7 +238,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         if response is RespondAsynchronously:
                             async_request_stop(request)
                             return
-                    except Exception, e:
+                    except Exception as e:
                         # If the view raised an exception, run it through exception
                         # middleware, and if the exception middleware returns a
                         # response, use that. Otherwise, reraise the exception.
@@ -265,7 +265,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                     response = response.render()
 
 
-            except http.Http404, e:
+            except http.Http404 as e:
                 if settings.DEBUG:
                     from django.views import debug
                     response = debug.technical_404_response(request, e)
@@ -298,7 +298,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             except SystemExit:
                 # See https://code.djangoproject.com/ticket/4701
                 raise
-            except Exception, e:
+            except Exception as e:
                 exc_info = sys.exc_info()
                 signals.got_request_exception.send(sender=self.__class__, request=request)
                 return self.handle_uncaught_exception(request, resolver, exc_info)

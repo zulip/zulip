@@ -890,7 +890,7 @@ def check_message(sender, client, message_type_name, message_to,
         try:
             recipient = recipient_for_emails(message_to, not_forged_mirror_message,
                                              forwarder_user_profile, sender)
-        except ValidationError, e:
+        except ValidationError as e:
             assert isinstance(e.messages[0], basestring)
             raise JsonableError(e.messages[0])
     else:
@@ -940,7 +940,7 @@ def internal_prep_message(sender_email, recipient_type_name, recipients,
     try:
         return check_message(sender, get_client("Internal"), recipient_type_name,
                              parsed_recipients, subject, content, realm)
-    except JsonableError, e:
+    except JsonableError as e:
         logging.error("Error queueing internal message by %s: %s" % (sender_email, str(e)))
 
     return None

@@ -99,7 +99,7 @@ class SimpleQueueClient(object):
             try:
                 consumer(ch, method, properties, body)
                 ch.basic_ack(delivery_tag=method.delivery_tag)
-            except Exception, e:
+            except Exception as e:
                 ch.basic_nack(delivery_tag=method.delivery_tag)
                 raise e
 

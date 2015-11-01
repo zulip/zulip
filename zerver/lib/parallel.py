@@ -22,7 +22,7 @@ def run_parallel(job, data, threads=6):
             sys.stdin.close()
             try:
                 os.close(pty.STDIN_FILENO)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != errno.EBADF:
                     raise
             sys.stdin = open("/dev/null", "r")
@@ -43,7 +43,7 @@ def run_parallel(job, data, threads=6):
         try:
             (status, item) = wait_for_one()
             yield (status, item)
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ECHILD:
                 break
             else:
