@@ -731,8 +731,7 @@ def p4ChangesForPaths(depotPaths, changeRange):
         changeNum = int(line.split(" ")[1])
         changes[changeNum] = True
 
-    changelist = changes.keys()
-    changelist.sort()
+    changelist = sorted(changes.keys())
     return changelist
 
 def p4PathStartsWith(path, prefix):

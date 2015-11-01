@@ -445,7 +445,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                'tags': tags,
                }
     # ignore any delays smaller than 1-minute because it's cheaper just to sent them immediately
-    if type(delay) is not datetime.timedelta:
+    if not isinstance(delay, datetime.timedelta):
         raise TypeError("specified delay is of the wrong type: %s" % (type(delay),))
     if delay < datetime.timedelta(minutes=1):
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool")

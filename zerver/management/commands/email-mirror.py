@@ -87,9 +87,8 @@ def fetch(result, proto, mailboxes):
     if not result:
         return proto.logout()
 
-    message_uids = result.keys()
     # Make sure we forward the messages in time-order.
-    message_uids.sort()
+    message_uids = sorted(result.keys())
     for uid in message_uids:
         message = email.message_from_string(result[uid]["RFC822"])
         process_message(message)
