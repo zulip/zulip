@@ -110,7 +110,7 @@ def select_mailbox(result, proto):
 
 def list_mailboxes(res, proto):
     # List all of the mailboxes for this account.
-    return proto.list("","*").addCallback(select_mailbox, proto)
+    return proto.list("", "*").addCallback(select_mailbox, proto)
 
 def connected(proto):
     d = proto.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)

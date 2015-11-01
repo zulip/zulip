@@ -39,12 +39,12 @@ class DecoratorTestCase(TestCase):
             get_total(request)
         self.assertEqual(str(cm.exception), "Bad value for 'numbers': bad_value")
 
-        request.REQUEST['numbers'] = ujson.dumps([2,3,5,8,13,21])
+        request.REQUEST['numbers'] = ujson.dumps([2, 3, 5, 8, 13, 21])
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), "13 is an unlucky number!")
 
-        request.REQUEST['numbers'] = ujson.dumps([1,2,3,4,5,6])
+        request.REQUEST['numbers'] = ujson.dumps([1, 2, 3, 4, 5, 6])
         result = get_total(request)
         self.assertEqual(result, 21)
 
@@ -68,12 +68,12 @@ class DecoratorTestCase(TestCase):
             get_total(request)
         self.assertEqual(str(cm.exception), 'argument "numbers" is not valid json.')
 
-        request.REQUEST['numbers'] = ujson.dumps([1,2,"what?",4,5,6])
+        request.REQUEST['numbers'] = ujson.dumps([1, 2, "what?", 4, 5, 6])
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), 'numbers[2] is not an integer')
 
-        request.REQUEST['numbers'] = ujson.dumps([1,2,3,4,5,6])
+        request.REQUEST['numbers'] = ujson.dumps([1, 2, 3, 4, 5, 6])
         result = get_total(request)
         self.assertEqual(result, 21)
 

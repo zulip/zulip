@@ -623,7 +623,7 @@ def finish_google_oauth2(request):
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
 
 def login_page(request, **kwargs):
-    extra_context = kwargs.pop('extra_context',{})
+    extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():
         users = UserProfile.objects.filter(is_bot=False, is_active=True)
         extra_context['direct_admins'] = sorted([u.email for u in users if u.is_admin()])
@@ -1039,7 +1039,7 @@ def export(request, user_profile):
     userprofile_ids = set(userprofile["id"] for userprofile in response['zerver_userprofile'])
 
     response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"])
-                                 for x in Stream.objects.select_related().filter(realm=user_profile.realm,invite_only=False)]
+                                 for x in Stream.objects.select_related().filter(realm=user_profile.realm, invite_only=False)]
 
     stream_ids = set(x["id"] for x in response['zerver_stream'])
 
@@ -1161,8 +1161,8 @@ def get_public_streams_backend(request, user_profile):
 @has_request_variables
 def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
                  restricted_to_domain=REQ(validator=check_bool, default=None),
-                 invite_required=REQ(validator=check_bool,default=None),
-                 invite_by_admins_only=REQ(validator=check_bool,default=None)):
+                 invite_required=REQ(validator=check_bool, default=None),
+                 invite_by_admins_only=REQ(validator=check_bool, default=None)):
     realm = user_profile.realm
     data = {}
     if name is not None and realm.name != name:
@@ -1536,7 +1536,7 @@ def json_change_settings(request, user_profile,
 
 @authenticated_json_post_view
 @has_request_variables
-def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator=check_bool,default=None)):
+def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator=check_bool, default=None)):
     result = {}
     if twenty_four_hour_time is not None and \
         user_profile.twenty_four_hour_time != twenty_four_hour_time:
@@ -1548,7 +1548,7 @@ def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator
 
 @authenticated_json_post_view
 @has_request_variables
-def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool,default=None)):
+def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool, default=None)):
     result = {}
     if left_side_userlist is not None and \
         user_profile.left_side_userlist != left_side_userlist:

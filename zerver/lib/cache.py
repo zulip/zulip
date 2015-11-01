@@ -215,7 +215,7 @@ def cache(func):
     def keyfunc(*args, **kwargs):
         # Django complains about spaces because memcached rejects them
         key = func_uniqifier + repr((args, kwargs))
-        return key.replace('-','--').replace(' ','-s')
+        return key.replace('-', '--').replace(' ', '-s')
 
     return cache_with_key(keyfunc)(func)
 

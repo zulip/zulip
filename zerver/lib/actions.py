@@ -2416,9 +2416,9 @@ def get_realm_user_dicts(user_profile):
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
 def get_realm_bot_dicts(user_profile):
-    return [{'email'     : botdict['email'],
-             'full_name' : botdict['full_name'],
-             'api_key'   : botdict['api_key'],
+    return [{'email': botdict['email'],
+             'full_name': botdict['full_name'],
+             'api_key': botdict['api_key'],
              'default_sending_stream': botdict['default_sending_stream__name'],
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],

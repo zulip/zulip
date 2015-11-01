@@ -1070,7 +1070,7 @@ class GetOldMessagesTest(AuthedTestCase):
         error is returned.
         """
         self.login("hamlet@zulip.com")
-        bad_stream_content = (0, [], ["x","y"])
+        bad_stream_content = (0, [], ["x", "y"])
         self.exercise_bad_narrow_operand("pm-with", bad_stream_content,
             "Bad value for 'narrow'")
 

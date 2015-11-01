@@ -763,7 +763,7 @@ class EventQueueTest(TestCase):
                            "all": False,
                            "flag": "read",
                            "operation": "add",
-                           "messages": [1,2,3,4,5,6],
+                           "messages": [1, 2, 3, 4, 5, 6],
                            "timestamp": "1"}])
 
     def test_flag_remove_collapsing(self):
@@ -786,7 +786,7 @@ class EventQueueTest(TestCase):
                            "all": False,
                            "flag": "collapsed",
                            "operation": "remove",
-                           "messages": [1,2,3,4,5,6],
+                           "messages": [1, 2, 3, 4, 5, 6],
                            "timestamp": "1"}])
 
     def test_collapse_event(self):

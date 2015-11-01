@@ -85,7 +85,7 @@ class MonthDelta:
                     day = 29
                 elif day > 28:
                     day = 28
-            elif month in (4,6,9,11) and day > 30:
+            elif month in (4, 6, 9, 11) and day > 30:
                 day = 30
             try:
                 return other.replace(year, month, day)

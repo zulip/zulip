@@ -319,7 +319,7 @@ class AuthedTestCase(TestCase):
 
     def fixture_data(self, type, action, file_type='json'):
         return open(os.path.join(os.path.dirname(__file__),
-                                 "../fixtures/%s/%s_%s.%s" % (type, type, action,file_type))).read()
+                                 "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read()
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):

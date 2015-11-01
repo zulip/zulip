@@ -52,7 +52,7 @@ def p4_build_cmd(cmd):
     """
     real_cmd = ["p4"]
 
-    if isinstance(cmd,basestring):
+    if isinstance(cmd, basestring):
         real_cmd = ' '.join(real_cmd) + ' ' + cmd
     else:
         real_cmd += cmd
@@ -91,7 +91,7 @@ def write_pipe(c, stdin):
     if verbose:
         sys.stderr.write('Writing pipe: %s\n' % str(c))
 
-    expand = isinstance(c,basestring)
+    expand = isinstance(c, basestring)
     p = subprocess.Popen(c, stdin=subprocess.PIPE, shell=expand)
     pipe = p.stdin
     val = pipe.write(stdin)
@@ -109,7 +109,7 @@ def read_pipe(c, ignore_error=False):
     if verbose:
         sys.stderr.write('Reading pipe: %s\n' % str(c))
 
-    expand = isinstance(c,basestring)
+    expand = isinstance(c, basestring)
     p = subprocess.Popen(c, stdout=subprocess.PIPE, shell=expand)
     pipe = p.stdout
     val = pipe.read()
@@ -169,7 +169,7 @@ def p4_has_move_command():
     return True
 
 def system(cmd):
-    expand = isinstance(cmd,basestring)
+    expand = isinstance(cmd, basestring)
     if verbose:
         sys.stderr.write("executing %s\n" % str(cmd))
     retcode = subprocess.call(cmd, shell=expand)
@@ -356,7 +356,7 @@ def getP4OpenedType(file):
 # Return the set of all p4 labels
 def getP4Labels(depotPaths):
     labels = set()
-    if isinstance(depotPaths,basestring):
+    if isinstance(depotPaths, basestring):
         depotPaths = [depotPaths]
 
     for l in p4CmdList(["labels"] + ["%s..." % p for p in depotPaths]):
@@ -423,7 +423,7 @@ def isModeExecChanged(src_mode, dst_mode):
 
 def p4CmdList(cmd, stdin=None, stdin_mode='w+b', cb=None):
 
-    if isinstance(cmd,basestring):
+    if isinstance(cmd, basestring):
         cmd = "-G " + cmd
         expand = True
     else:
@@ -440,7 +440,7 @@ def p4CmdList(cmd, stdin=None, stdin_mode='w+b', cb=None):
     stdin_file = None
     if stdin is not None:
         stdin_file = tempfile.TemporaryFile(prefix='p4-stdin', mode=stdin_mode)
-        if isinstance(stdin,basestring):
+        if isinstance(stdin, basestring):
             stdin_file.write(stdin)
         else:
             for i in stdin:
@@ -1074,21 +1074,21 @@ class P4Submit(Command, P4UserMap):
 
         print "Patched up RCS keywords in %s" % file
 
-    def p4UserForCommit(self,id):
+    def p4UserForCommit(self, id):
         # Return the tuple (perforce user,git email) for a given git commit id
         self.getUserMapFromPerforceServer()
         gitEmail = read_pipe(["git", "log", "--max-count=1",
                               "--format=%ae", id])
         gitEmail = gitEmail.strip()
         if gitEmail not in self.emails:
-            return (None,gitEmail)
+            return (None, gitEmail)
         else:
-            return (self.emails[gitEmail],gitEmail)
+            return (self.emails[gitEmail], gitEmail)
 
-    def checkValidP4Users(self,commits):
+    def checkValidP4Users(self, commits):
         # check if any git authors cannot be mapped to p4 users
         for id in commits:
-            (user,email) = self.p4UserForCommit(id)
+            (user, email) = self.p4UserForCommit(id)
             if not user:
                 msg = "Cannot find p4 user for email %s in commit %s." % (email, id)
                 if gitConfigBool("git-p4.allowMissingP4Users"):
@@ -1322,7 +1322,7 @@ class P4Submit(Command, P4UserMap):
 
                 for file in kwfiles:
                     if verbose:
-                        print "zapping %s with %s" % (line,pattern)
+                        print "zapping %s with %s" % (line, pattern)
                     # File is being deleted, so not open in p4.  Must
                     # disable the read-only bit on windows.
                     if self.isWindows and file not in editedFiles:
@@ -2227,7 +2227,7 @@ class P4Sync(Command, P4UserMap):
 
         gitStream.write("tagger %s\n" % tagger)
 
-        print "labelDetails=",labelDetails
+        print "labelDetails=", labelDetails
         if 'Description' in labelDetails:
             description = labelDetails['Description']
         else:
@@ -2361,7 +2361,7 @@ class P4Sync(Command, P4UserMap):
 
             if not m.match(name):
                 if verbose:
-                    print "label %s does not match regexp %s" % (name,validLabelRegexp)
+                    print "label %s does not match regexp %s" % (name, validLabelRegexp)
                 continue
 
             if name in ignoredP4Labels:
@@ -2673,7 +2673,7 @@ class P4Sync(Command, P4UserMap):
         newestRevision = 0
 
         fileCnt = 0
-        fileArgs = ["%s...%s" % (p,revision) for p in self.depotPaths]
+        fileArgs = ["%s...%s" % (p, revision) for p in self.depotPaths]
 
         for info in p4CmdList(["files"] + fileArgs):
 

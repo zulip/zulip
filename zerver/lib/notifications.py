@@ -220,7 +220,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'url': 'https://%s' % (settings.EXTERNAL_HOST,),
         'reply_warning': False,
         'external_host': settings.EXTERNAL_HOST,
-        'mention':missed_messages[0].recipient.type == Recipient.STREAM,
+        'mention': missed_messages[0].recipient.type == Recipient.STREAM,
         'reply_to_zulip': True,
     }
 
