@@ -23,6 +23,7 @@ import base64
 import logging
 import cProfile
 from zerver.lib.mandrill_client import get_mandrill_client
+from six.moves import zip
 
 if settings.ZULIP_COM:
     from zilencer.models import get_deployment_by_domain, Deployment

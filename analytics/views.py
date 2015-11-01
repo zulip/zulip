@@ -19,6 +19,7 @@ import pytz
 from six.moves import filter
 from six.moves import map
 from six.moves import range
+from six.moves import zip
 eastern_tz = pytz.timezone('US/Eastern')
 
 def make_table(title, cols, rows, has_row_class=False):
@@ -41,7 +42,7 @@ def dictfetchall(cursor):
     "Returns all rows from a cursor as a dict"
     desc = cursor.description
     return [
-        dict(zip([col[0] for col in desc], row))
+        dict(list(zip([col[0] for col in desc], row)))
         for row in cursor.fetchall()
     ]
 
