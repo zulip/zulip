@@ -65,8 +65,8 @@ def generate_support_stats():
 
     if True:
         words = word_count.keys()
-        words = filter(lambda w: word_count[w] >= 10, words)
-        words = filter(lambda w: len(w) >= 5, words)
+        words = [w for w in words if word_count[w] >= 10]
+        words = [w for w in words if len(w) >= 5]
         words = sorted(words, key=lambda w: word_count[w], reverse=True)
         for word in words:
             print(word, word_count[word])

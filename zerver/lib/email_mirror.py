@@ -189,8 +189,7 @@ def extract_body(message):
 
 def filter_footer(text):
     # Try to filter out obvious footers.
-    possible_footers = filter(lambda line: line.strip().startswith("--"),
-                              text.split("\n"))
+    possible_footers = [line for line in text.split("\n") if line.strip().startswith("--")]
     if len(possible_footers) != 1:
         # Be conservative and don't try to scrub content if there
         # isn't a trivial footer structure.

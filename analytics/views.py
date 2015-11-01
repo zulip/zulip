@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.db import connection
 from django.template import RequestContext, loader
 from django.utils.html import mark_safe
@@ -15,6 +16,7 @@ import itertools
 import time
 import re
 import pytz
+from six.moves import filter
 eastern_tz = pytz.timezone('US/Eastern')
 
 def make_table(title, cols, rows, has_row_class=False):
@@ -226,7 +228,7 @@ def realm_summary_table(realm_minutes):
     def meets_goal(row):
         return row['active_user_count'] >= 5
 
-    num_active_sites = len(filter(meets_goal, rows))
+    num_active_sites = len(list(filter(meets_goal, rows)))
 
     # create totals
     total_active_user_count = 0

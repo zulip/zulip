@@ -106,12 +106,11 @@ class Command(BaseCommand):
                 print("%d messages sent via the API" % (self.api_messages(realm, days_ago),))
                 print("%d group private messages" % (self.group_private_messages(realm, days_ago),))
 
-            num_notifications_enabled = len(filter(lambda x: x.enable_desktop_notifications == True,
-                                                   active_users))
+            num_notifications_enabled = len([x for x in active_users if x.enable_desktop_notifications == True])
             self.report_percentage(num_notifications_enabled, num_active,
                                    "active users have desktop notifications enabled")
 
-            num_enter_sends = len(filter(lambda x: x.enter_sends, active_users))
+            num_enter_sends = len([x for x in active_users if x.enter_sends])
             self.report_percentage(num_enter_sends, num_active,
                                    "active users have enter-sends")
 

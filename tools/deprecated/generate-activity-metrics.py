@@ -58,7 +58,7 @@ def points_during_day(data, noon):
     before =datetime_to_timestamp(noon - timedelta(hours=12))
     after = datetime_to_timestamp(noon + timedelta(hours=12))
 
-    between = filter(lambda pt: pt[1] > before and pt[1] < after, data)
+    between = [pt for pt in data if pt[1] > before and pt[1] < after]
     return between
 
 def best_during_day(data, day):

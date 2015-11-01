@@ -30,6 +30,7 @@ from django.utils.timezone import now
 
 from confirmation.models import Confirmation
 import six
+from six.moves import filter
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
@@ -569,8 +570,7 @@ def do_send_messages(messages):
             raise ValueError('Bad recipient type')
 
         # Only deliver the message to active user recipients
-        message['active_recipients'] = filter(lambda user_profile: user_profile.is_active,
-                                              message['recipients'])
+        message['active_recipients'] = [user_profile for user_profile in message['recipients'] if user_profile.is_active]
         message['message'].maybe_render_content(None)
         message['message'].update_calculated_fields()
 
@@ -974,8 +974,7 @@ def pick_color_helper(user_profile, subs):
         "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
         "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
     used_colors = [sub.color for sub in subs if sub.active]
-    available_colors = filter(lambda x: x not in used_colors,
-                              stream_assignment_colors)
+    available_colors = [x for x in stream_assignment_colors if x not in used_colors]
 
     if available_colors:
         return available_colors[0]
@@ -1083,7 +1082,7 @@ def get_subscriber_ids(stream):
 
 def get_other_subscriber_ids(stream, user_profile_id):
     ids = get_subscriber_ids(stream)
-    return filter(lambda id: id != user_profile_id, ids)
+    return [id for id in ids if id != user_profile_id]
 
 def maybe_get_subscriber_emails(stream):
     """ Alternate version of get_subscriber_emails that takes a Stream object only
@@ -2559,8 +2558,7 @@ def apply_events(state, events, user_profile):
                 state['streams'] += event['streams']
             elif event['op'] == "vacate":
                 stream_ids = [s["stream_id"] for s in event['streams']]
-                state['streams'] = filter(lambda s: s["stream_id"] not in stream_ids,
-                                          state['streams'])
+                state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
         elif event['type'] == 'realm':
             field = 'realm_' + event['property']
             state[field] = event['value']
@@ -2589,11 +2587,11 @@ def apply_events(state, events, user_profile):
                 was_removed = lambda s: name(s) in removed_names
 
                 # Find the subs we are affecting.
-                removed_subs = filter(was_removed, state['subscriptions'])
+                removed_subs = list(filter(was_removed, state['subscriptions']))
 
                 # Remove our user from the subscribers of the removed subscriptions.
                 for sub in removed_subs:
-                    sub['subscribers'] = filter(lambda id: id != user_profile.id, sub['subscribers'])
+                    sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
 
                 # We must effectively copy the removed subscriptions from subscriptions to
                 # unsubscribe, since we only have the name in our data structure.

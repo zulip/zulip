@@ -40,7 +40,7 @@ def add_ratelimit_rule(range_seconds, num_requests):
 
 def remove_ratelimit_rule(range_seconds, num_requests):
     global rules
-    rules = filter(lambda x: x[0] != range_seconds and x[1] != num_requests, rules)
+    rules = [x for x in rules if x[0] != range_seconds and x[1] != num_requests]
 
 def block_user(user, seconds, domain='all'):
     "Manually blocks a user id for the desired number of seconds"

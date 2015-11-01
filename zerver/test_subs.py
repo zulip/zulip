@@ -896,7 +896,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_length(queries, 43)
 
         self.assert_length(events, 6, exact=True)
-        for ev in filter(lambda x: x['event']['type'] not in ('message', 'stream'), events):
+        for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
             self.assertEqual(ev['event']['op'], 'add')
             self.assertEqual(
                     set(ev['event']['subscriptions'][0]['subscribers']),
