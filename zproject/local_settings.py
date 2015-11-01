@@ -7,10 +7,10 @@
 # On a normal Zulip production server, zproject/local_settings.py is a
 # symlink to /etc/zulip/settings.py (based off local_settings_template.py).
 import platform
-import ConfigParser
+import six.moves.configparser
 from base64 import b64decode
 
-config_file = ConfigParser.RawConfigParser()
+config_file = six.moves.configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether we're running in a production environment. Note that PRODUCTION does

@@ -10,7 +10,7 @@ import glob
 import twitter
 import platform
 import time
-import HTMLParser
+import six.moves.html_parser
 import httplib2
 import itertools
 import urllib
@@ -433,7 +433,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
             ## TODO: unescape is an internal function, so we should
             ## use something else if we can find it
-            text = HTMLParser.HTMLParser().unescape(res['text'])
+            text = six.moves.html_parser.HTMLParser().unescape(res['text'])
             urls = res.get('urls', {})
             user_mentions = res.get('user_mentions', [])
             media = res.get('media', [])

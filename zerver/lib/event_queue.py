@@ -10,7 +10,7 @@ import socket
 import logging
 import ujson
 import requests
-import cPickle as pickle
+import six.moves.cPickle as pickle
 import atexit
 import sys
 import signal

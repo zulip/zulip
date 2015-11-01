@@ -34,7 +34,7 @@ import urllib
 import random
 from distutils.version import LooseVersion
 
-from ConfigParser import SafeConfigParser
+from six.moves.configparser import SafeConfigParser
 import logging
 
 

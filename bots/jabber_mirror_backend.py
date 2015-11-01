@@ -44,7 +44,7 @@ import optparse
 
 from sleekxmpp import ClientXMPP, InvalidJID, JID
 from sleekxmpp.exceptions import IqError, IqTimeout
-from ConfigParser import SafeConfigParser
+from six.moves.configparser import SafeConfigParser
 import os, sys, zulip, getpass
 import re
 

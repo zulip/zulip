@@ -4,7 +4,7 @@ from __future__ import print_function
 from django.core.management.base import BaseCommand
 from zerver.models import get_user_profile_by_email, UserProfile
 import os
-from ConfigParser import SafeConfigParser
+from six.moves.configparser import SafeConfigParser
 
 class Command(BaseCommand):
     help = """Sync your API key from ~/.zuliprc into your development instance"""
