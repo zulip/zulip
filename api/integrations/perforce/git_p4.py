@@ -11,6 +11,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import sys
 import six
+from six.moves import input
 if sys.hexversion < 0x02040000:
     # The limiter is the subprocess module
     sys.stderr.write("git-p4: requires Python 2.4 or later.\n")
@@ -1213,7 +1214,7 @@ class P4Submit(Command, P4UserMap):
             return True
 
         while True:
-            response = raw_input("Submit template unchanged. Submit anyway? [y]es, [n]o (skip this patch) ")
+            response = input("Submit template unchanged. Submit anyway? [y]es, [n]o (skip this patch) ")
             if response == 'y':
                 return True
             if response == 'n':
@@ -1707,7 +1708,7 @@ class P4Submit(Command, P4UserMap):
                         # prompt for what to do, or use the option/variable
                         if self.conflict_behavior == "ask":
                             print("What do you want to do?")
-                            response = raw_input("[s]kip this commit but apply"
+                            response = input("[s]kip this commit but apply"
                                                  " the rest, or [q]uit? ")
                             if not response:
                                 continue

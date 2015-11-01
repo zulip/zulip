@@ -13,6 +13,7 @@ from zerver.models import Realm, get_realm, email_to_username
 from zerver.lib.actions import do_create_user
 from zerver.views import notify_new_user
 from zerver.lib.initial_password import initial_password
+from six.moves import input
 
 class Command(BaseCommand):
     help = """Create the specified user with a default initial password.
@@ -64,13 +65,13 @@ Terms of Service by passing --this-user-has-accepted-the-tos.""")
 parameters, or specify no parameters for interactive user creation.""")
             else:
                 while True:
-                    email = raw_input("Email: ")
+                    email = input("Email: ")
                     try:
                         validators.validate_email(email)
                         break
                     except ValidationError:
                         print("Invalid email address.", file=sys.stderr)
-                full_name = raw_input("Full name: ")
+                full_name = input("Full name: ")
 
         try:
             notify_new_user(do_create_user(email, initial_password(email),
