@@ -278,7 +278,7 @@ To start the development server:
 ./tools/run-dev.py
 ```
 
-… and visit [http://localhost:9991/](http://localhost:9991/).
+… and visit [http://localhost:9992/](http://localhost:9992/).
 
 
 Running the test suite
