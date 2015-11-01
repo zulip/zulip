@@ -31,6 +31,7 @@ from django.utils.timezone import now
 from confirmation.models import Confirmation
 import six
 from six.moves import filter
+from six.moves import map
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
@@ -2272,7 +2273,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             'id': um.user_profile_id,
             'flags': um.flags_list()
         }
-    send_event(event, map(user_info, ums))
+    send_event(event, list(map(user_info, ums)))
 
 def encode_email_address(stream):
     return encode_email_address_helper(stream.name, stream.email_token)
@@ -2409,7 +2410,7 @@ def get_status_dict(requesting_user_profile):
 def get_realm_user_dicts(user_profile):
     # Due to our permission model, it is advantageous to find the admin users in bulk.
     admins = user_profile.realm.get_admin_users()
-    admin_emails = set(map(lambda up: up.email, admins))
+    admin_emails = set([up.email for up in admins])
     return [{'email'     : userdict['email'],
              'is_admin'  : userdict['email'] in admin_emails,
              'is_bot'    : userdict['is_bot'],
@@ -2573,7 +2574,7 @@ def apply_events(state, events, user_profile):
                 return sub['name'].lower()
 
             if event['op'] == "add":
-                added_names = map(name, event["subscriptions"])
+                added_names = list(map(name, event["subscriptions"]))
                 was_added = lambda s: name(s) in added_names
 
                 # add the new subscriptions
@@ -2583,7 +2584,7 @@ def apply_events(state, events, user_profile):
                 state['unsubscribed'] = list(itertools.ifilterfalse(was_added, state['unsubscribed']))
 
             elif event['op'] == "remove":
-                removed_names = map(name, event["subscriptions"])
+                removed_names = list(map(name, event["subscriptions"]))
                 was_removed = lambda s: name(s) in removed_names
 
                 # Find the subs we are affecting.

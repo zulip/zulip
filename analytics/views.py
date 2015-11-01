@@ -17,6 +17,7 @@ import time
 import re
 import pytz
 from six.moves import filter
+from six.moves import map
 eastern_tz = pytz.timezone('US/Eastern')
 
 def make_table(title, cols, rows, has_row_class=False):
@@ -24,7 +25,7 @@ def make_table(title, cols, rows, has_row_class=False):
     if not has_row_class:
         def fix_row(row):
             return dict(cells=row, row_class=None)
-        rows = map(fix_row, rows)
+        rows = list(map(fix_row, rows))
 
     data = dict(title=title, cols=cols, rows=rows)
 
@@ -377,7 +378,7 @@ def ad_hoc_queries():
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
-        rows = map(list, rows)
+        rows = list(map(list, rows))
         cursor.close()
 
         def fix_rows(i, fixup_func):
@@ -611,7 +612,7 @@ def raw_user_activity_table(records):
                 format_date_for_activity_reports(record.last_visit)
         ]
 
-    rows = map(row, records)
+    rows = list(map(row, records))
     title = 'Raw Data'
     return make_table(title, cols, rows)
 

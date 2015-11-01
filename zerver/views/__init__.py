@@ -95,6 +95,7 @@ import hmac
 from collections import defaultdict
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
+from six.moves import map
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
@@ -2198,7 +2199,7 @@ def get_bots_backend(request, user_profile):
             default_all_public_streams=bot_profile.default_all_public_streams,
         )
 
-    return json_success({'bots': map(bot_info, bot_profiles)})
+    return json_success({'bots': list(map(bot_info, bot_profiles))})
 
 @authenticated_json_post_view
 @has_request_variables
