@@ -7,6 +7,7 @@ import base64
 import ujson
 import os
 import string
+from six.moves import range
 
 def random_api_key():
     choices = string.ascii_letters + string.digits

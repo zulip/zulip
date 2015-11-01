@@ -31,6 +31,7 @@ import random
 import ujson
 import urllib
 import six
+from six.moves import range
 
 
 class StreamAdminTest(AuthedTestCase):
@@ -962,7 +963,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_bulk_subscribe_MIT(self):
         realm = get_realm("mit.edu")
-        streams = ["stream_%s" % i for i in xrange(40)]
+        streams = ["stream_%s" % i for i in range(40)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
 
@@ -981,7 +982,7 @@ class SubscriptionAPITest(AuthedTestCase):
     def test_bulk_subscribe_many(self):
         # Create a whole bunch of streams
         realm = get_realm("zulip.com")
-        streams = ["stream_%s" % i for i in xrange(20)]
+        streams = ["stream_%s" % i for i in range(20)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
 
@@ -1402,7 +1403,7 @@ class GetSubscribersTest(AuthedTestCase):
         gather_subscriptions returns correct results with only 3 queries
         """
         realm = get_realm("zulip.com")
-        streams = ["stream_%s" % i for i in xrange(10)]
+        streams = ["stream_%s" % i for i in range(10)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
         users_to_subscribe = [self.email, "othello@zulip.com", "cordelia@zulip.com"]

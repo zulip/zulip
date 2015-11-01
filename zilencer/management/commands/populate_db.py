@@ -28,6 +28,7 @@ import random
 import glob
 import os
 from optparse import make_option
+from six.moves import range
 
 settings.TORNADO_SERVER = None
 
@@ -126,7 +127,7 @@ class Command(BaseCommand):
             names = [("Othello, the Moor of Venice", "othello@zulip.com"), ("Iago", "iago@zulip.com"),
                      ("Prospero from The Tempest", "prospero@zulip.com"),
                      ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com")]
-            for i in xrange(options["extra_users"]):
+            for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(realms, names)
             iago = UserProfile.objects.get(email="iago@zulip.com")
@@ -156,16 +157,16 @@ class Command(BaseCommand):
         user_profiles = [user_profile.id for user_profile in UserProfile.objects.all()]
 
         # Create several initial huddles
-        for i in xrange(options["num_huddles"]):
+        for i in range(options["num_huddles"]):
             get_huddle(random.sample(user_profiles, random.randint(3, 4)))
 
         # Create several initial pairs for personals
         personals_pairs = [random.sample(user_profiles, 2)
-                           for i in xrange(options["num_personals"])]
+                           for i in range(options["num_personals"])]
 
         threads = options["threads"]
         jobs = []
-        for i in xrange(threads):
+        for i in range(threads):
             count = options["num_messages"] / threads
             if i < options["num_messages"] % threads:
                 count += 1
@@ -313,7 +314,7 @@ def restore_saved_messages():
         if message_type == 'personal':
             old_message["recipient"][0]["email"] = fix_email(old_message["recipient"][0]["email"])
         elif message_type == "huddle":
-            for i in xrange(len(old_message["recipient"])):
+            for i in range(len(old_message["recipient"])):
                 old_message["recipient"][i]["email"] = fix_email(old_message["recipient"][i]["email"])
 
         old_messages.append(old_message)

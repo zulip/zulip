@@ -40,6 +40,7 @@ import datetime
 import time
 import re
 import ujson
+from six.moves import range
 
 
 def get_sqlalchemy_query_params(query):

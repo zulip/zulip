@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from django.conf import settings
 from django.test import TestCase
 
@@ -25,6 +26,7 @@ import re
 import ujson
 
 from urlparse import urlparse
+from six.moves import range
 
 
 class PublicURLTest(TestCase):
@@ -122,7 +124,7 @@ class LoginTest(AuthedTestCase):
 
     def test_register(self):
         realm = get_realm("zulip.com")
-        streams = ["stream_%s" % i for i in xrange(40)]
+        streams = ["stream_%s" % i for i in range(40)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
 
@@ -170,7 +172,7 @@ class LoginTest(AuthedTestCase):
         You can log in even if your password contain non-ASCII characters.
         """
         email = "test@zulip.com"
-        password = u"hümbüǵ"
+        password = u"hÃ¼mbÃ¼Çµ"
 
         # Registering succeeds.
         self.register("test", password)
@@ -445,7 +447,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.login("hamlet@zulip.com")
         invitee = "alice-test@zulip.com"
 
-        stream_name = u"hümbüǵ"
+        stream_name = u"hÃ¼mbÃ¼Çµ"
         realm = get_realm("zulip.com")
         stream, _ = create_stream_if_needed(realm, stream_name)
 

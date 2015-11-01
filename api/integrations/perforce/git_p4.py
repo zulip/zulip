@@ -12,6 +12,7 @@ from __future__ import absolute_import
 import sys
 import six
 from six.moves import input
+from six.moves import range
 if sys.hexversion < 0x02040000:
     # The limiter is the subprocess module
     sys.stderr.write("git-p4: requires Python 2.4 or later.\n")

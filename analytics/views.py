@@ -18,6 +18,7 @@ import re
 import pytz
 from six.moves import filter
 from six.moves import map
+from six.moves import range
 eastern_tz = pytz.timezone('US/Eastern')
 
 def make_table(title, cols, rows, has_row_class=False):

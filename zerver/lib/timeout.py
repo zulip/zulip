@@ -5,6 +5,7 @@ import time
 import ctypes
 import threading
 import six
+from six.moves import range
 
 # Based on http://code.activestate.com/recipes/483752/
 
@@ -70,7 +71,7 @@ def timeout(timeout, func, *args, **kwargs):
         #
         # We need to retry, because an async exception received while the
         # thread is in a system call is simply ignored.
-        for i in xrange(10):
+        for i in range(10):
             thread.raise_async_timeout()
             time.sleep(0.1)
             if not thread.isAlive():

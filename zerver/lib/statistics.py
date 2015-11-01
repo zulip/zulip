@@ -7,6 +7,7 @@ from django.utils.timezone import utc
 
 from datetime import timedelta
 from itertools import chain
+from six.moves import range
 
 def median(data):
     data = sorted(data)

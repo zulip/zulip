@@ -34,6 +34,7 @@ from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 import six
+from six.moves import range
 
 
 # Format version of the bugdown rendering; stored along with rendered
@@ -727,7 +728,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
         inserts = 0
         fence = None
         copy = lines[:]
-        for i in xrange(len(lines) - 1):
+        for i in range(len(lines) - 1):
             # Ignore anything that is inside a fenced code block
             m = FENCE_RE.match(lines[i])
             if not fence and m:

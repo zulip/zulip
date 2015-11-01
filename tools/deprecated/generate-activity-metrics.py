@@ -3,7 +3,9 @@
 # Generates % delta activity metrics from graphite/statsd data
 #
 from __future__ import print_function
+from __future__ import absolute_import
 import os, sys
+from six.moves import range
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
@@ -111,11 +113,11 @@ def parse_data(data, today):
         best_today = best_during_day(metric['datapoints'], today)
         print("Date\t\t\t\tUsers\t\tChange from then to today")
         print("Today, 0 days ago:\t\t%.01f" % (best_today,))
-        print_results(xrange(1, 1000), [0, 1, 2, 3, 4, 7])
+        print_results(range(1, 1000), [0, 1, 2, 3, 4, 7])
 
         print("\n\nWeekly Wednesday results")
         print("Date\t\t\t\tUsers\t\tDelta from previous week")
-        print_results(reversed(xrange(1, 1000)), [2], True)
+        print_results(reversed(range(1, 1000)), [2], True)
 
 
 
