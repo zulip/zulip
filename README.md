@@ -60,7 +60,7 @@ First, subscribe to the Zulip [development discussion mailing list](https://grou
 The Zulip project uses a system of labels in our [issue
 tracker](https://github.com/zulip/zulip/issues) to make it easy to
 find a project if you don't have your own project idea in mind or want
-to get some experience with workng on Zulip before embarking on a
+to get some experience with working on Zulip before embarking on a
 larger project you have in mind:
 
 * [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
@@ -130,11 +130,7 @@ Using Vagrant
 
 This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 14.04.
 
-* The best performing way to run the Zulip development environment is
-  using an LXC container.  If your host is Ubuntu 14.04 (or newer;
-  what matters is having support for LXC containers), you'll want to
-  install and configure the LXC Vagrant provider like this:
-  `sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir && vagrant plugin install vagrant-lxc`
+* If your host is Ubuntu 14.04 (or newer), then just download Vagrant from their website(https://www.vagrantup.com/downloads.html) and download it for Ubuntu, then go to the directory of which you downloaded the file, and run "sudo dpkg -i packagename.deb", where 'packagename.deb' is the name of the file you downloaded from their website. This will give you the updated version of Vagrant which should help set up your Zulip on your machine. 
 
 * If your host is OS X, [download VirtualBox](https://www.virtualbox.org/wiki/Downloads),
   [download Vagrant](https://www.vagrantup.com/downloads.html), and install them both.
@@ -146,10 +142,7 @@ download the Ubuntu Trusty base image, but later you can run `vagrant
 destroy` and then `vagrant up` again to rebuild the environment and it
 will be much faster.
 
-If you weren't able to get vagrant up on your ubuntu machine because your machine could not find the Ubuntu Trusty, then just download vagrant from their website, and run sudo dpkg -i packagename.deb. This will give you a later version of vagrant which should help set up zulip VM on your machine.
-
 Once that finishes, you can run the development server as follows:
-
 
 ```
 vagrant ssh -- -L9991:localhost:9991
