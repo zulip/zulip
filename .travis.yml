@@ -6,6 +6,7 @@ env:
   - TEST_SUITE=frontend
   - TEST_SUITE=backend
   - TEST_SUITE=production
+  - TEST_SUITE=py3k
 language: python
 python:
   - "2.7"
