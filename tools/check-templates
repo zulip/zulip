@@ -129,6 +129,7 @@ def is_django_block_tag(tag):
         'if',
         'ifequal',
         'verbatim',
+        'blocktrans',
     ]
 
 def get_handlebars_tag(text, i):
