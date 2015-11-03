@@ -1,12 +1,12 @@
 {% extends "zerver/portico.html" %}
-
+{% load i18n %}
 {# API information page #}
 
 {% block portico_content %}
-    <div class="apps-page-header">Do&nbsp;we&nbsp;have&nbsp;apps? App&#8209;solutely.</div>
-    <div class="apps-muted">Ok, I take it back, I'm sorry, please don't go.</div>
+    <div class="apps-page-header">{% blocktrans %}Do we have apps? Appsolutely.{% endblocktrans %}</div>
+    <div class="apps-muted">{% blocktrans %}Ok, I take it back, I'm sorry, please don't go.{% endblocktrans %}</div>
 
-    <h3 class="apps-instructions-header">Installation instructions</h3>
+    <h3 class="apps-instructions-header">{% blocktrans %}Installation instructions{% endblocktrans %}</h3>
     <ul class="nav nav-tabs" id="apps-tabs">
     {% if not_voyager %}
       <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
@@ -23,10 +23,10 @@
       <div class="tab-pane active" id="android">
         <img class="screenshot android-screenshot pull-left" src="/static/images/app-screenshots/zulip-android.png" alt="screenshot of the Zulip app on Android" />
 
-        <p>Zulip has a free, <strong>100% native app</strong> for Android,
+        <p>{% blocktrans %}Zulip has a free, <strong>100% native app</strong> for Android,
           and you can easily grab it from
           the <a href="https://play.google.com/store/apps/details?id=com.zulip.android">Google
-          Play Store</a>.</p>
+          Play Store</a>{% endblocktrans %}.</p>
 
         <a href="https://play.google.com/store/apps/details?id=com.zulip.android">
           <img alt="Get it on Google Play"
@@ -37,9 +37,9 @@
       <div class="tab-pane" id="iphone">
         <img class="screenshot iphone-screenshot pull-left" src="/static/images/app-screenshots/zulip-iphone.png" alt="screenshot of the Zulip app on iOS" />
 
-        <p>Zulip has a free, <strong>100% native app</strong> for iPhone and
+        <p>{% blocktrans %}Zulip has a free, <strong>100% native app</strong> for iPhone and
         iPad. Please grab it from
-        the <a href="http://itunes.com/apps/zulip">App Store</a>!</p>
+        the <a href="http://itunes.com/apps/zulip">App Store</a>{% endblocktrans %}!</p>
 
         <a href="http://itunes.com/apps/zulip">
           <img alt="Get it in the App Store" src="/static/images/app-screenshots/ios_badge.png" alt="Apple App Store icon for Zulip" />
@@ -48,16 +48,16 @@
       </div>
       {% endif %}
       <div class="tab-pane" id="mac">
-        <p>You love your Mac. And you love Zulip. So what could be
+        <p>{% blocktrans %}You love your Mac. And you love Zulip. So what could be
         better than a Zulip app for Mac? Enjoy notifications for
         messages and PMs in your dock whether you're in Sublime,
-        emacs, or Photoshop.</p>
+        emacs, or Photoshop.{% endblocktrans %}</p>
 
         <p style="text-align: center">
         {% if not_voyager %}
-          <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
+          <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Mac{% endblocktrans %}</a>
         {% else %}
-          <a href="https://zulip.com/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Mac</a>
+          <a href="https://zulip.com/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Mac{% endblocktrans %}</a>
         {% endif %}
         </p>
 
@@ -65,12 +65,12 @@
       </div>
 
       <div class="tab-pane" id="linux">
-        <p>Zulip provides a native Linux app that runs standalone
+        <p>{% blocktrans %}Zulip provides a native Linux app that runs standalone
         outside of your browser. How you install it depends on what
-        you're running:</p>
+        you're running:{% endblocktrans %}</p>
 
-        <h3>Debian and Ubuntu</h3>
-        We have an APT repository for Zulip, so adding and installing the app is easy:
+        <h3>{% blocktrans %}Debian and Ubuntu{% endblocktrans %}</h3>
+        {% blocktrans %}We have an APT repository for Zulip, so adding and installing the app is easy:{% endblocktrans %}
         <div class="codehilite"><pre>wget https://zulip.com/dist/keys/user-apt.asc
 cat user-apt.asc | sudo apt-key add -
 sudo apt-add-repository http://apt.zulip.com/user/
@@ -83,29 +83,29 @@ sudo apt-get install zulip-desktop-sso
 
 
 
-        <h3>Other</h3>
+        <h3>{% trans "Other" %}</h3>
         {% if not_voyager %}
-          <p>We provide a <a href="https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.
+          <p>{% blocktrans %}We provide a <a href="https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endblocktrans %}
           </p>
         {% else %}
-          <p>We provide a <a href="https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.
+          <p>{% blocktrans %}We provide a <a href="https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endblocktrans %}
           </p>
         {% endif %}
       </div>
 
       <div class="tab-pane" id="windows">
-        <p>Windows. It's the best OS for your needs: gaming,
+        <p>{% blocktrans %}Windows. It's the best OS for your needs: gaming,
         coding, expense reports. But you always felt that something
-        was missing... until now.</p>
+        was missing... until now.{% endblocktrans %}</p>
 
-        <p>We proudly present <b>Zulip for Windows</b>: the second-best app for Windows on the market today (after
-        Solitaire, obviously.)</p>
+        <p>{% blocktrans %}We proudly present <b>Zulip for Windows</b>: the second-best app for Windows on the market today (after
+        Solitaire, obviously.){% endblocktrans %}</p>
 
         <p style="text-align: center">
           {% if not_voyager %}
-            <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Windows</a>
+            <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Windows{% endblocktrans %}</a>
           {% else %}
-            <a href="https://zulip.com/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> Download Zulip for Windows</a>
+            <a href="https://zulip.com/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Windows{% endblocktrans %}</a>
           {% endif %}
         </p>
 
@@ -113,10 +113,10 @@ sudo apt-get install zulip-desktop-sso
       </div>
 
       <div class="tab-pane" id="plan9">
-        <p>First, connect to our hosted 9P filesystem
+        <p>{% blocktrans %}First, connect to our hosted 9P filesystem
         at <code>plan9.zulip.com</code> and then... no, we're
         totally kidding. There definitely isn't a version of Zulip
-        for Plan 9.</p>
+        for Plan 9.{% endblocktrans %}</p>
       </div>
 
 

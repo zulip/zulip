@@ -2,6 +2,7 @@
 
 {# Login page. #}
 
+{% load i18n %}
 {% load minified_js %}
 
 {% block customhead %}
@@ -15,10 +16,10 @@
     <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
     <div class="main-headline-text">
       <span class="tagline os-tagline">
-         Zulip has been released as open source software!
+         {% trans 'Zulip has been released as open source software!' %}
       </span>
       <span class="footnote os-footnote">
-         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
+         {% trans 'Read the' %} <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">{% trans 'announcement' %}</a> {% trans 'or go to' %} <a href="https://www.zulip.org" target="_blank">{% trans 'the Zulip open source project website'%}</a>.
       </span>
     </div>
   </div>
@@ -44,19 +45,19 @@ autofocus('#id_username');
   <div class="app-main login-page-container">
 
     {% if dev_auth_enabled %}
-    <h3 class="login-page-header">Zulip Dev Login</h3>
+    <h3 class="login-page-header">{% trans 'Zulip Dev Login'%}</h3>
     {% if not password_auth_enabled %}
-    <h4 class="login-page-subheader">Choose a user:</h4>
+    <h4 class="login-page-subheader">{% trans 'Choose a user'%}:</h4>
     {% endif %}
     {% else %}
-    <h3 class="login-page-header">You look familiar.</h3>
+    <h3 class="login-page-header">{% trans 'You look familiar'%}.</h3>
     {% endif %}
 
 {% if only_sso %}
     {% comment %}SSO users don't have a password.{% endcomment %}
 
     <div class="login-sso">
-      <a href="/accounts/login/sso" class="btn btn-large btn-primary">Sign in with SSO</a>
+      <a href="/accounts/login/sso" class="btn btn-large btn-primary">{% trans 'Sign in with SSO'%}</a>
     </div>
 
 {% else %}
@@ -65,7 +66,7 @@ autofocus('#id_username');
 {% if form.errors or desktop_sso_unknown_email %}
 <div class="alert alert-error">
     {% if desktop_sso_unknown_email %}
-        Zulip is not currently available for your domain. <br />
+        {% trans 'Zulip is not currently available for your domain'%}. <br />
     {% else %}
         {% for error in form.errors.values %}
         <div>{{ error | striptags }}</div>
@@ -76,7 +77,7 @@ autofocus('#id_username');
 
     {% if email %}
     <div class="alert">
-        You've already registered with this email address. Please log in below.
+        {% trans "You've already registered with this email address. Please log in below"%}.
     </div>
     {% endif %}
 
@@ -91,7 +92,7 @@ autofocus('#id_username');
         >
             {% csrf_token %}
             <div class="control-group">
-                <label for="id_username" class="control-label">Email</label>
+                <label for="id_username" class="control-label">{% trans 'Email'%}</label>
                 <div class="controls">
                     <input id="id_username" type="email" name="username" class="email required" value="{{ email }}" maxlength="72" />
                 </div>
@@ -99,7 +100,7 @@ autofocus('#id_username');
 
             {% if not desktop_sso_dispatch %}
             <div class="control-group">
-                <label for="id_password" class="control-label">Password</label>
+                <label for="id_password" class="control-label">{% trans 'Password'%}</label>
                 <div class="controls">
                     <input id="id_password" name="password" class="required" type="password" />
                 </div>
@@ -110,7 +111,7 @@ autofocus('#id_username');
                     <input type="submit" class="btn btn-large btn-primary" value="Log in" />
                     {% if not desktop_sso_dispatch %}
                     <span class="login-forgot-password">
-                      <a href="{% url 'django.contrib.auth.views.password_reset' %}">Forgot password?</a>
+                      <a href="{% url 'django.contrib.auth.views.password_reset' %}">{% trans 'Forgot password?'%}</a>
                     </span>
                     {% endif %}
                 </div>
@@ -123,14 +124,14 @@ autofocus('#id_username');
             {% csrf_token %}
 	    <div class="control-group">
 	        {% if password_auth_enabled %}
-	        <label for="direct_email" class="direct-label">or Choose a user:</label>
+	        <label for="direct_email" class="direct-label">{% trans 'or Choose a user'%}:</label>
 		{% endif %}
 	        <div class="controls">
-                    <p>(Administrators)</p>
+                    <p>({% trans 'Administrators'%})</p>
 		    {% for user_email in direct_admins %}
 		    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
 		    {% endfor %}
-                    <p>(Normal users)</p>
+                    <p>({% trans 'Normal users'%})</p>
 		    {% for user_email in direct_users %}
 		    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
 		    {% endfor %}
@@ -141,7 +142,7 @@ autofocus('#id_username');
 
     {% if google_auth_enabled %}
     <div class="login-google">
-    or <a href="{% url 'zerver.views.start_google_oauth2' %}" class="login-google-button zocial google">Sign in with Google</a>
+    or <a href="{% url 'zerver.views.start_google_oauth2' %}" class="login-google-button zocial google">{% trans 'Sign in with Google'%}</a>
     </div>
     {% endif %}
 
