@@ -1,5 +1,5 @@
 {% extends "zerver/base.html" %}
-
+{% load i18n %}
 {# The app itself. #}
 {# Includes some other templates as tabs. #}
 
@@ -46,8 +46,8 @@ var page_params = {{ page_params }};
 {% endblock %}
 {% block content %}
 <div id="css-loading">
-    <h3>Loading...</h3>
-    <p>If this message does not go away, please wait a couple seconds and <a href="javascript:location.reload(true)">reload</a> the page.</p>
+    <h3>{% trans 'Loading' %}...</h3>
+    <p>{% trans 'If this message does not go away, please wait a couple seconds and' %} <a href="javascript:location.reload(true)">{% trans 'reload' %}</a> {% trans 'the page' %}.</p>
 </div>
 
 <div id="top-screen" class="screen"></div>

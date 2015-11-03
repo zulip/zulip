@@ -1,46 +1,47 @@
+{% load i18n %}
           <div class="right-sidebar" id="right-sidebar">
               <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
-                <strong>Unable to connect to {{product_name}}.</strong>  Updates may be delayed.
-                <br /><br /> Retrying soon... <br /><br /> <a class="restart_get_updates_button">Try now</a>.
+                <strong>{% trans 'Unable to connect to' %} {{product_name}}.</strong>  {% trans 'Updates may be delayed' %}.
+                <br /><br /> {% trans 'Retrying soon' %}... <br /><br /> <a class="restart_get_updates_button">{% trans 'Try now' %}</a>.
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="get_old_messages_error">
-                <strong>Unable to connect to {{product_name}}.</strong>  Could not fetch messages.
-                <br /><br /> Retrying soon... <br /><br />
+                <strong>{% trans 'Unable to connect to' %} {{product_name}}.</strong>  {% trans 'Could not fetch messages' %}.
+                <br /><br /> {% trans 'Retrying soon' %}... <br /><br />
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
-                <strong>Your Zephyr mirror is not working.</strong>
-                  <span id="normal-zephyr-mirror-error-text">We
+                <strong>{% trans 'Your Zephyr mirror is not working' %}.</strong>
+                  <span id="normal-zephyr-mirror-error-text">{% blocktrans %}We
                   recommend that you <a class="webathena_login">give
                   {{product_name}} the ability to mirror the messages for you via
                   WebAthena</a>.  If you'd prefer, you can instead
                   <a href="/zephyr-mirror" target="_blank">run the Zephyr mirror script yourself</a>
-                  in a screen session.</span>
-                  <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">To fix
+                  in a screen session{% endblocktrans %}.</span>
+                  <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">{% blocktrans %}To fix
                   this, you'll need
-                  to use <a href="https://zephyr.zulip.com">the web interface</a></span>
+                  to use <a href="https://zephyr.zulip.com">the web interface</a>{% endblocktrans %}</span>
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
               {% if enable_feedback %}
               <div id="feedback_section">
                 <button type="button" class="btn btn-default btn-large" id="feedback_button">
-                  <i class="icon-vector-comment"></i>&nbsp;&nbsp;Send feedback
+                  <i class="icon-vector-comment"></i>&nbsp;&nbsp;{% trans 'Send feedback' %}
                 </button>
               </div>
               {% endif %}
               <div id="user-list">
                 <div id="userlist-header">
-                  <h4 class='sidebar-title' id='userlist-title'>USERS</h4>
+                  <h4 class='sidebar-title' id='userlist-title'>{% trans 'USERS' %}</h4>
                 </div>
                  <input class="user-list-filter" type="text" placeholder="Search people" />
                  <ul id="user_presences" class="filters scrolling_list"></ul>
               {% if show_invites %}
-                 <a id="invite-user-link" href="#invite-user" data-toggle="modal"><i class="icon-vector-plus-sign"></i>Invite coworkers</a>
+                 <a id="invite-user-link" href="#invite-user" data-toggle="modal"><i class="icon-vector-plus-sign"></i>{% trans 'Invite coworkers' %}</a>
               {% endif %}
               </div>
               <div id="group-pm-list">
                 <div id="group-pm-header">
-                  <h4 class='sidebar-title' id='group-pm-title'>GROUP PMs</h4>
+                  <h4 class='sidebar-title' id='group-pm-title'>{% trans 'GROUP PMs' %}</h4>
                 </div>
                 <ul id="group-pms" class="filters scrolling_list">
                 </ul>

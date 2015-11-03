@@ -1,17 +1,18 @@
+{% load i18n %}
 <div class="modal hide" id="bankruptcy" tabindex="-1" role="dialog"
      aria-labelledby="bankruptcy-label" aria-hidden="true">
 
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="bankruptcy-label">Welcome back</h3>
+        <h3 id="bankruptcy-label">{% trans 'Welcome back' %}</h3>
     </div>
 
     <div id="bankruptcy-unread-count"></div>
 
     <div class="modal-footer">
         <button id="yes-bankrupt" class="bankruptcy_button btn btn-primary"
-                aria-hidden="true">Yes, please!</button>
+                aria-hidden="true">{% trans 'Yes, please!' %}</button>
         <button id="no-bankrupt" class="bankruptcy_button btn btn-default"
-                data-dismiss="modal" aria-hidden="true">No, I'll catch up.</button>
+                data-dismiss="modal" aria-hidden="true">{% trans "No, I'll catch up" %}.</button>
     </div>
 </div>
