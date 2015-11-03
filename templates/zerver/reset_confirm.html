@@ -1,5 +1,5 @@
 {% extends "zerver/portico_signup.html" %}
-
+{% load i18n %}
 {% block customhead %}
 {{ block.super }}
 <script type="text/javascript" src="/static/third/zxcvbn/zxcvbn.js"></script>
@@ -9,14 +9,14 @@
 
 <div class="pitch">
     <hr/>
-    <h3>Reset your password.</h3>
+    <h3>{% trans 'Reset your password' %}.</h3>
 </div>
 
 {% if validlink %}
     <form method="post" id="password_reset" class="form-horizontal">
     {% csrf_token %}
         <div class="control-group">
-            <label for="id_new_password1" class="control-label">Password</label>
+            <label for="id_new_password1" class="control-label">{% trans 'Password' %}</label>
             <div class="controls">
                 <input id="id_new_password1" class="required" type="password" name="new_password1"
                        value="{% if form.new_password1.value %}{{ form.new_password1.value }}{% endif %}"
@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="control-group">
-            <label class="control-label">Password strength</label>
+            <label class="control-label">{% trans 'Password strength' %}</label>
             <div class="controls">
                 <div class="progress" id="pw_strength">
                     <div class="bar bar-danger" style="width: 10%;"></div>
@@ -37,7 +37,7 @@
             </div>
         </div>
         <div class="control-group">
-            <label for="id_new_password2" class="control-label">Confirm password</label>
+            <label for="id_new_password2" class="control-label">{% trans 'Confirm password' %}</label>
             <div class="controls">
                 <input id="id_new_password2" class="required" type="password" name="new_password2"
                        value="{% if form.new_password2.value %}{{ form.new_password2.value }}{% endif %}"
@@ -61,7 +61,7 @@
     autofocus('#id_new_password1');
 </script>
 {% else %}
-    <p>Sorry, the link you provided is invalid or has already been used.</p>
+    <p>{% trans 'Sorry, the link you provided is invalid or has already been used' %}.</p>
 {% endif %}
 
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends "zerver/portico.html" %}
+{% load i18n %}
 {% block hello_page_container %} hello-main{% endblock %}
 {% block hello_page_footer %} hello-footer{% endblock %}
 {% block os_announcement %}
@@ -7,10 +8,10 @@
     <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
     <div class="main-headline-text">
       <span class="tagline os-tagline">
-         Zulip has been released as open source software!
+         {% trans 'Zulip has been released as open source software!' %}
       </span>
       <span class="footnote os-footnote">
-         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
+         {% blocktrans %}Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.{% endblocktrans %}
       </span>
     </div>
   </div>
@@ -23,14 +24,14 @@
     <img src="/static/images/logo/textlogo@2x.png" class="main-headline-logo" alt="Zulip logo" />
     <div class="main-headline-text">
       <span class="tagline">
-        Finally, workplace chat that actually improves your productivity.*
+        {% trans 'Finally, workplace chat that actually improves your productivity.*' %}
       </span>
-      <span class="footnote">* It's also great for sharing cat pictures.</span>
+      <span class="footnote">{% trans "* It's also great for sharing cat pictures" %}.</span>
         {% if not_voyager %}
         {% elif only_sso %}
-          <a href="{% url 'login-sso' %}" class="main-signup-button btn btn-large btn-primary">Log in now!</a>
+          <a href="{% url 'login-sso' %}" class="main-signup-button btn btn-large btn-primary">{% trans 'Log in now!' %}</a>
         {% else %}
-          <a href="{% url 'register' %}" class="main-signup-button btn btn-large btn-primary">Register now!</a>
+          <a href="{% url 'register' %}" class="main-signup-button btn btn-large btn-primary">{% trans 'Register now!' %}</a>
         {% endif %}
     </div>
     <img src="/static/images/landing-page/laptop-screenshot.png" class="main-image" alt="Screenshot of Zulip" />
@@ -41,15 +42,15 @@
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
-      Conversations, not&nbsp;messages.
+      {% trans 'Conversations, not messages' %}.
     </span>
     <span class="description">
-      <p>Every conversation in Zulip has a <em>topic</em>, so it&rsquo;s
+      <p>{% blocktrans %}Every conversation in Zulip has a <em>topic</em>, so it&rsquo;s
       easy to keep conversations straight. Are your coworkers discussing
       a software bug and the content of your website at the same time?
-      No problem.
+      No problem.{% endblocktrans %}
     </p>
-    <p>You wouldn’t tolerate email without subject lines or threading, so why do you for chat?</p>
+    <p>{% trans "You wouldn’t tolerate email without subject lines or threading, so why do you for chat?" %}</p>
     </span>
   </div>
   <div class="feature-illustration">
@@ -62,15 +63,15 @@
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
-      Easily&nbsp;read&nbsp;just the&nbsp;important&nbsp;things.
+      {% trans 'Easily read just the important things' %}.
     </span>
     <span class="description">
-      <p>Sometimes, important things get discussed when you&rsquo;re not
-      around. Unfortunately, so do a lot of unimportant things.</p>
+      <p>{% blocktrans %}Sometimes, important things get discussed when you&rsquo;re not
+      around. Unfortunately, so do a lot of unimportant things.{% endblocktrans %}</p>
 
-      <p><em>Narrowing</em> by stream or topic lets you focus on that important
+      <p>{% blocktrans %}<em>Narrowing</em> by stream or topic lets you focus on that important
       customer project without having to read about how Jim&rsquo;s guitar lessons
-      are going.</p>
+      are going.{% endblocktrans %}</p>
     </span>
   </div>
   <div class="feature-illustration">
@@ -83,12 +84,12 @@
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
-      Search&nbsp;that&rsquo;s&nbsp;better than&nbsp;Gmail&rsquo;s.
+      {% trans "Search that's better than Gmail's" %}.
     </span>
     <span class="description">
-      An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s
+      {%  blocktrans %}An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s
       powerful and fast search will delight you with how quickly you can find
-      exactly what you&rsquo;re looking for.
+      exactly what you&rsquo;re looking for.{% endblocktrans %}
     </span>
   </div>
   <div class="feature-illustration">
@@ -101,14 +102,14 @@
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
-      Integrations&nbsp;that don&rsquo;t&nbsp;intrude.
+      {% trans "Integrations that don't intrude" %}.
     </span>
     <span class="description">
-      <p>Zulip has <a href="/integrations">many integrations</a> and
+      <p>{% blocktrans %}Zulip has <a href="/integrations">many integrations</a> and
       a powerful <a href="/api">API</a> to match. But here&rsquo;s
       where it gets interesting: thanks to how Zulip categorizes messages,
       automated messages never overwhelm you. As with any topic in Zulip,
-      they&rsquo;re easy to focus on, skim, defer to later, or ignore&mdash;as appropriate.</p>
+      they&rsquo;re easy to focus on, skim, defer to later, or ignore&mdash;as appropriate.{% endblocktrans %}</p>
     </span>
   </div>
   <div class="feature-illustration">
@@ -121,12 +122,12 @@
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
-      As&nbsp;technical&nbsp;as you&nbsp;want&nbsp;to&nbsp;be.
+      {% trans 'As technical as you want to be' %}.
     </span>
     <span class="description">
-      <p>Keyboard shortcuts? Check.<br />
-        Syntax highlighting? Check.<br />
-        Discuss code and technical topics with ease.</p>
+      <p>{% trans 'Keyboard shortcuts? Check.' %}<br />
+        {% trans 'Syntax highlighting? Check.' %}<br />
+        {% trans 'Discuss code and technical topics with ease.' %}</p>
     </span>
   </div>
   <div class="feature-illustration">
@@ -139,12 +140,12 @@
   <div class="app-main feature-line-container">
    <div class="feature-text">
     <span class="tagline">
-      &hellip;and&nbsp;all&nbsp;the obvious&nbsp;stuff,&nbsp;too.
+      &hellip; {% trans 'and all the obvious stuff, too.' %}
     </span>
     <span class="description">
-      <p>Drag-and-drop file uploads, image pasting, group private messages,
+      <p>{% blocktrans %}Drag-and-drop file uploads, image pasting, group private messages,
          audible notifications, missed-message emails, desktop apps, and
-        <a href="/features">everything else you might want</a>. Including emoji, naturally.</p>
+        <a href="/features">everything else you might want</a>. Including emoji, naturally.{% endblocktrans %}</p>
     </span>
   </div>
   <div class="feature-illustration">
@@ -157,7 +158,7 @@
   <div class="app-main feature-line-container">
    <div class="platform-text">
     <span class="tagline">
-      On&nbsp;the&nbsp;platform of&nbsp;your&nbsp;choice.
+      {% trans 'On the platform of your choice.' %}
     </span>
    </div>
    <div class="platform-icons">
@@ -193,9 +194,9 @@
   <div class="app-main feature-line-container centered-content">
     {% if not_voyager %}
     {% elif only_sso %}
-      <a href="{% url 'login-sso' %}" class="bottom-signup-button btn btn-large btn-primary">Log in now</a>
+      <a href="{% url 'login-sso' %}" class="bottom-signup-button btn btn-large btn-primary">{% trans 'Log in now' %}</a>
     {% else %}
-      <a href="{% url 'register' %}" class="bottom-signup-button btn btn-large btn-primary">Register now</a>
+      <a href="{% url 'register' %}" class="bottom-signup-button btn btn-large btn-primary">{% trans 'Register now' %}</a>
     {% endif %}
   </div>
 </div>

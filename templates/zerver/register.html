@@ -1,5 +1,5 @@
 {% extends "zerver/portico_signup.html" %}
-
+{% load i18n %}
 {% comment %}
 Gather other user information, after having confirmed
 their email address.
@@ -17,21 +17,21 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
 <div class="pitch">
 
-    <p style="margin-top:30px;">You're almost there. We just need you to do one last thing.</p>
-    <h3>Tell us a bit about yourself.</h3>
+    <p style="margin-top:30px;">{% trans "You're almost there. We just need you to do one last thing" %}.</p>
+    <h3>{% trans 'Tell us a bit about yourself' %}.</h3>
 </div>
 
 <form method="post" class="form-horizontal" id="registration" action="{% url 'zerver.views.accounts_register' %}">
 {% csrf_token %}
     <div class="control-group">
-        <label for="id_email" class="control-label">Email</label>
+        <label for="id_email" class="control-label">{% trans 'Email' %}</label>
         <div class="controls fakecontrol">
             <input type='hidden' name='key' value='{{ key }}' />
             <p>{{ email }}</p>
         </div>
     </div>
     <div class="control-group">
-        <label for="id_full_name" class="control-label">Full name</label>
+        <label for="id_full_name" class="control-label">{% trans 'Full name' %}</label>
         <div class="controls">
             {% if lock_name %}
                 <p class="fakecontrol">{{ full_name }}</p>
@@ -49,13 +49,13 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
     </div>
     {% if password_auth_enabled %}
         <div class="control-group">
-            <label for="id_password" class="control-label">Password</label>
+            <label for="id_password" class="control-label">{% trans 'Password' %}</label>
             <div class="controls">
                 <input id="id_password" class="required" type="password" name="password"
                        value="{% if form.password.value %}{{ form.password.value }}{% endif %}"
                        maxlength="100" />
                 {% if full_name %}
-                <span class="help-inline">This is used for mobile applications and other tools that require a password.</span>
+                <span class="help-inline">{% trans 'This is used for mobile applications and other tools that require a password' %}.</span>
                 {% endif %}
                 {% if form.password.errors %}
                     {% for error in form.password.errors %}
@@ -65,7 +65,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             </div>
         </div>
         <div class="control-group">
-            <label class="control-label">Password strength</label>
+            <label class="control-label">{% trans 'Password strength' %}</label>
             <div class="controls">
                 <div class="progress" id="pw_strength">
                     <div class="bar bar-danger" style="width: 10%;"></div>
@@ -89,7 +89,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% endcomment %}
                     <input id="id_terms" class="required" type="checkbox" name="terms"
                            {% if form.terms.value %}checked="checked"{% endif %} />
-                    I agree to the <a href="/terms" target="_blank">Terms of Service</a>.
+                    {% trans 'I agree to the' %} <a href="/terms" target="_blank">{% trans 'Terms of Service' %}</a>.
                 </label>
                 {% if form.terms.errors %}
                     {% for error in form.terms.errors %}

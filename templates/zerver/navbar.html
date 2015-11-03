@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="header">
 <div class="header-main rightside-userlist" id="top_navbar">
   <div class="column-left">
@@ -16,7 +17,7 @@
             <form id="searchbox_form" class="form-search navbar-search">
               <div id="search_arrows" class="input-append">
                 <i class="icon-vector-search"></i>
-                <input class="search-query input-block-level" id="search_query" type="text" placeholder="Search"
+                <input class="search-query input-block-level" id="search_query" type="text" placeholder="{% trans 'Search' %}"
                        autocomplete="off" />
                 {# Start the button off disabled since there is no active search #}
                 <button class="btn search_button" type="button" id="search_exit" disabled="disabled"><i class="icon-vector-remove"></i></button>
@@ -46,62 +47,62 @@
                   <li style="display:none;"><a href="#home" data-toggle="tab"></a></li>
                   <li title="Manage Streams">
                     <a href="#subscriptions" data-toggle="tab">
-                      <i class="icon-vector-exchange"></i> Manage Streams
+                      <i class="icon-vector-exchange"></i> {% trans 'Manage Streams' %}
                     </a>
                   </li>
                   <li title="Settings">
                     <a href="#settings" data-toggle="tab">
-                      <i class="icon-vector-wrench"></i> Settings
+                      <i class="icon-vector-wrench"></i> {% trans 'Settings' %}
                     </a>
                   </li>
                   <li title="Keyboard shortcuts">
                     <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
-                      <i class="icon-vector-question-sign"></i> Keyboard shortcuts
+                      <i class="icon-vector-question-sign"></i> {% trans 'Keyboard shortcuts' %}
                     </a>
                   </li>
                   <li title="Message formatting">
                     <a href="#markdown-help" role="button" data-toggle="modal">
-                      <i class="icon-vector-pencil"></i> Message formatting
+                      <i class="icon-vector-pencil"></i> {% trans 'Message formatting' %}
                     </a>
                   </li>
                   <li title="Search help">
                     <a href="#search-operators" role="button" data-toggle="modal">
-                      <i class="icon-vector-search"></i> Search help
+                      <i class="icon-vector-search"></i> {% trans 'Search help' %}
                     </a>
                   </li>
                   <li class="divider"></li>
                   <li title="Desktop & mobile apps">
                     <a href="/apps" target="_blank" role="button">
-                      <i class="icon-vector-desktop"></i> Desktop & mobile apps
+                      <i class="icon-vector-desktop"></i> {% trans 'Desktop & mobile apps' %}
                     </a>
                   </li>
                   <li title="Integrations">
                     <a href="/integrations" target="_blank" role="button">
-                      <i class="icon-vector-github"></i> Integrations
+                      <i class="icon-vector-github"></i> {% trans 'Integrations' %}
                     </a>
                   </li>
                   <li title="API documentation">
                     <a href="/api" target="_blank" role="button">
-                      <i class="icon-vector-sitemap"></i> API documentation
+                      <i class="icon-vector-sitemap"></i> {% trans 'API documentation' %}
                     </a>
                   </li>
                   <li class="divider"></li>
                   <li title="Administration" class="admin-menu-item">
                     <a href="#administration" role="button" data-toggle="tab">
-                      <i class="icon-vector-bolt"></i> Administration
+                      <i class="icon-vector-bolt"></i> {% trans 'Administration' %}
                     </a>
                   </li>
                   {% if show_invites %}
                   <li title="Invite coworkers to {{product_name}}">
                     <a href="#invite-user" role="button" data-toggle="modal">
-                      <i class="icon-vector-plus-sign"></i> Invite coworkers
+                      <i class="icon-vector-plus-sign"></i> {% trans 'Invite coworkers' %}
                     </a>
                   </li>
                   {% endif %}
                   {% if enable_feedback %}
                   <li title="Feedback">
                     <a href="#feedback" class="feedback">
-                      <i class="icon-vector-comment"></i> Feedback
+                      <i class="icon-vector-comment"></i> {% trans 'Feedback' %}
                     </a>
                   </li>
                   {% endif %}
@@ -109,19 +110,19 @@
                   {% if show_webathena %}
                   <li title="Grant {{product_name}} the Kerberos tickets needed to run your Zephyr mirror via Webathena" id="webathena_login_menu">
                     <a href="#webathena" class="webathena_login">
-                      <i class="icon-vector-bolt"></i>Link with Webathena
+                      <i class="icon-vector-bolt"></i>{% trans 'Link with Webathena' %}
                     </a>
                   </li>
                   {% endif %}
                   <li title="Log out">
                     <a href="#logout" class="logout_button">
-                      <i class="icon-vector-off"></i> Log out
+                      <i class="icon-vector-off"></i> {% trans 'Log out' %}
                     </a>
                   </li>
                   {% if show_debug %}
                   <li title="Debug">
                     <a href="#debug" data-toggle="tab">
-                      <i class="icon-vector-barcode"></i> Debug
+                      <i class="icon-vector-barcode"></i> {% trans 'Debug' %}
                     </a>
                   </li>
                   {% endif %}

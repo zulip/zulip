@@ -1,7 +1,7 @@
 {% extends "zerver/portico_signup.html" %}
-
+{% load i18n %}
 {% block portico_content %}
-<h1 style="margin-top: 20px">We just sent you a password reset!</h1>
-<h1>Check your email to finish the process.</h1>
-<p>(Or don't, but then why did you fill out this form?)</p>
+<h1 style="margin-top: 20px">{% trans 'We just sent you a password reset!' %}</h1>
+<h1>{% trans 'Check your email to finish the process' %}.</h1>
+<p>({% trans "Or don't, but then why did you fill out this form?" %})</p>
 {% endblock %}

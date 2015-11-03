@@ -1,54 +1,55 @@
+{% load i18n %}
 {# Home tab of the app, containing messages. #}
     <div class="message_area_padder message_list" id="main_div">
       <div id="loading_more_messages_indicator"></div>
       <div id="page_loading_indicator"></div>
       <div id="first_run_message" class="empty_feed_notice">
-        <h4>Welcome to {{product_name}}</h4>
-        <p>See, the thing about it is... there aren't any messages
+        <h4>{% trans 'Welcome to' %} {{product_name}}</h4>
+        <p>{% blocktrans %}See, the thing about it is... there aren't any messages
         here for you right now. I'm sure someone will eventually send
-        you one.</p>
+        you one.{% endblocktrans %}</p>
 
-        <p>Or, <strong>take matters into your own hands</strong>,
-        and <a href="#" class="empty_feed_compose_stream">
-        compose a new stream message</a>.</p>
+        <p>{% trans 'Or' %}, <strong>{% trans 'take matters into your own hands' %}</strong>,
+        {% trans 'and' %} <a href="#" class="empty_feed_compose_stream">
+        {% trans 'compose a new stream message' %}</a>.</p>
       </div>
       <div id="empty_narrow_message" class="empty_feed_notice">
-        <h4>Nothing's been sent here yet!</h4>
+        <h4>{% trans "Nothing's been sent here yet!" %}</h4>
 
-        <p>Why not <a href="#" class="empty_feed_compose_stream">
-            start the conversation</a>?</p>
+        <p>{% trans 'Why not' %} <a href="#" class="empty_feed_compose_stream">
+            {% trans 'start the conversation' %}</a>?</p>
       </div>
       <div id="empty_narrow_all_private_message" class="empty_feed_notice">
-        <h4>You have no private messages yet!</h4>
+        <h4>{% trans 'You have no private messages yet!' %}</h4>
 
-        <p>Why not <a href="#" class="empty_feed_compose_private">
-            start the conversation</a>?</p>
+        <p>{% trans 'Why not' %} <a href="#" class="empty_feed_compose_private">
+            {% trans 'start the conversation' %}</a>?</p>
       </div>
       <div id="empty_narrow_private_message" class="empty_feed_notice">
-        <h4>You have no private messages with this person yet!</h4>
+        <h4>{% trans 'You have no private messages with this person yet!' %}</h4>
 
-        <p>Why not <a href="#" class="empty_feed_compose_private">
-            start the conversation</a>?</p>
+        <p>{% trans 'Why not' %} <a href="#" class="empty_feed_compose_private">
+            {% trans 'start the conversation' %}</a>?</p>
       </div>
       <div id="empty_narrow_multi_private_message" class="empty_feed_notice">
-        <h4>You have no private messages with these people yet!</h4>
+        <h4>{% trans 'You have no private messages with these people yet!' %}</h4>
 
-        <p>Why not <a href="#" class="empty_feed_compose_private">
-            start the conversation</a>?</p>
+        <p>{% trans 'Why not' %} <a href="#" class="empty_feed_compose_private">
+            {% trans 'start the conversation' %}</a>?</p>
       </div>
       <div id="nonsubbed_stream_narrow_message" class="empty_feed_notice">
-        <h4>You aren't subscribed to this stream!</h4>
+        <h4>{% trans "You aren't subscribed to this stream!" %}</h4>
 
-        <p>Want to <a href="#" class="empty_feed_join">join it</a>?</p>
+        <p>{% trans 'Want to' %} <a href="#" class="empty_feed_join">{% trans 'join it' %}</a>?</p>
       </div>
       <div id="empty_star_narrow_message" class="empty_feed_notice">
-        <h4>You haven't starred anything yet!</h4>
+        <h4>{% trans "You haven't starred anything yet!" %}</h4>
       </div>
       <div id="empty_narrow_all_mentioned" class="empty_feed_notice">
-        <h4>You haven't been mentioned yet.</h4>
+        <h4>{% trans "You haven't been mentioned yet" %}.</h4>
       </div>
       <div id="empty_search_narrow_message" class="empty_feed_notice">
-        <h4>Nobody has talked about that yet!</h4>
+        <h4>{% trans 'Nobody has talked about that yet!' %}</h4>
       </div>
       <div class="message_table focused_table" id="zhome">
       </div>
