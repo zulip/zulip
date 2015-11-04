@@ -120,32 +120,9 @@ These instructions are experimental and may have bugs; patches welcome!
 
 ```
 sudo dnf install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server postgresql-devel postgresql libmemcached-devel freetype-devel
-wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/tsearch-extras_0.1.3.tar.gz
-tar xvzf tsearch-extras_0.1.3.tar.gz
-cd ts2
-make
-sudo make install
-
-# Hack around missing dictionary files -- need to fix this to get
-# the proper dictionaries from what in debian is the hunspell-en-us package.
-sudo touch /usr/share/pgsql/tsearch_data/english.stop
-sudo touch /usr/share/pgsql/tsearch_data/en_us.dict
-sudo touch /usr/share/pgsql/tsearch_data/en_us.affix
-
-# Edit the postgres settings:
-sudo vi /var/lib/pgsql/data/pg_hba.conf
-
-# Add this line before the first uncommented line to enable password auth:
-host    all             all             127.0.0.1/32            md5
-
-# Start the services
-sudo systemctl start redis memcached rabbitmq-server postgresql
-
-# Enable automatic service startup after the system startup
-sudo systemctl enable redis rabbitmq-server memcached postgresql
 ```
 
-Now continue with the All Systems instructions below.
+Now continue with the Common to Fedora/CentOS instructions below.
 
 ### On CentOS 7 Core (experimental):
 
@@ -178,10 +155,34 @@ zlib-devel nodejs
 # We need these packages to compile tsearch-extras
 sudo yum groupinstall "Development Tools"
 
-cd && wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/tsearch-extras_0.1.3.tar.gz
+# clone Zulip's git repo and cd into it
+cd && git clone https://github.com/zulip/zulip && cd zulip/
+
+## NEEDS TESTING: The next few DB setup items may not be required at all.
+# Initialize the postgres db
+sudo postgresql-setup initdb
+
+# Edit the postgres settings:
+sudo vi /var/lib/pgsql/data/pg_hba.conf
+
+# Change these lines:
+host    all             all             127.0.0.1/32            ident
+host    all             all             ::1/128                 ident
+# to this:
+host    all             all             127.0.0.1/32            md5
+host    all             all             ::1/128                 md5
+```
+
+Now continue with the Common to Fedora/CentOS instructions below.
+
+### Common to Fedora/CentOS instructions
+
+```
+# Build and install postgres tsearch-extras module
+wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/tsearch-extras_0.1.3.tar.gz
 tar xvzf tsearch-extras_0.1.3.tar.gz
 cd ts2
-make -j $(nproc)
+make
 sudo make install
 
 # Hack around missing dictionary files -- need to fix this to get
@@ -190,34 +191,20 @@ sudo touch /usr/share/pgsql/tsearch_data/english.stop
 sudo touch /usr/share/pgsql/tsearch_data/en_us.dict
 sudo touch /usr/share/pgsql/tsearch_data/en_us.affix
 
-# clone Zulip's git repo and cd into it
-cd && git clone https://github.com/zulip/zulip && cd zulip/
-
-# Initialize the postgres db
-sudo postgresql-setup initdb
-
 # Edit the postgres settings:
 sudo vi /var/lib/pgsql/data/pg_hba.conf
 
-# Add these two lines after line 80:
-local   zulip           zulip                                   md5
+# Add this line before the first uncommented line to enable password auth:
 host    all             all             127.0.0.1/32            md5
-
-# Change these lines:
-host    all             all             127.0.0.1/32            ident
-host    all             all             ::1/128                 ident
-# to this:
-host    all             all             127.0.0.1/32            md5
-host    all             all             ::1/128                 md5
 
 # Start the services
-sudo systemctl start redis rabbitmq-server memcached postgresql
+sudo systemctl start redis memcached rabbitmq-server postgresql
 
 # Enable automatic service startup after the system startup
 sudo systemctl enable redis rabbitmq-server memcached postgresql
 ```
 
-Now continue with the All Systems instructions below.
+Finally continue with the All Systems instructions below.
 
 ### All Systems:
 
