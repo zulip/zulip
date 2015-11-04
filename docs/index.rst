@@ -13,6 +13,7 @@ Contents:
 
    new-feature-tutorial
    code-style
+   front-end-build-process
    directory-structure
    testing
 
