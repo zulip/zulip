@@ -37,6 +37,7 @@ APT_DEPENDENCIES = {
         "node-jquery",
         "yui-compressor",
         "puppet",               # Used by lint-all
+        "gettext",              # Used by makemessages i18n
     ]
 }
 

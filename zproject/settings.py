@@ -218,6 +218,7 @@ USE_TZ = True
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 TEMPLATE_DIRS = ( os.path.join(DEPLOY_ROOT, 'templates'), )
+LOCALE_PATHS = ( os.path.join(DEPLOY_ROOT, 'locale'), )
 
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
