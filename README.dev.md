@@ -11,16 +11,42 @@ Start by cloning this repository: `git clone https://github.com/zulip/zulip.git`
 Using Vagrant
 -------------
 
-This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 14.04.
+This is the recommended approach for all platforms, and will install
+the Zulip development environment inside a VM or container and works
+on any platform that supports Vagrant.
 
-* The best performing way to run the Zulip development environment is
-  using an LXC container.  If your host is Ubuntu 14.04 (or newer;
-  what matters is having support for LXC containers), you'll want to
-  install and configure the LXC Vagrant provider like this:
-  `sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir && vagrant plugin install vagrant-lxc`
+The best performing way to run the Zulip development environment is
+using an LXC container on a Linux host, but we support other platforms
+such as Mac via Virtualbox (but everything will be 2-3x slower).
 
-* If your host is OS X, [download VirtualBox](https://www.virtualbox.org/wiki/Downloads),
+* If your host is Ubuntu 15.04 or newer, you can install and configure
+  the LXC Vagrant provider directly using apt:
+  ```
+  sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
+  vagrant plugin install vagrant-lxc
+  ```
+
+* If your host is Ubuntu 14.04, you will need to [download a newer
+  version of Vagrant](https://www.vagrantup.com/downloads.html), and
+  then do the following:
+  ```
+  sudo apt-get install lxc lxc-templates cgroup-lite redir
+  sudo dpkg -i vagrant*.deb # in directory where you downloaded vagrant
+  vagrant plugin install vagrant-lxc
+  ```
+
+* For other Linux hosts with a kernel above 3.12, [follow the Vagrant
+  LXC installation
+  instructions](https://github.com/fgrehm/vagrant-lxc) to get Vagrant
+  with LXC for your platform.
+
+* If your host is OS X or older Linux, [download VirtualBox](https://www.virtualbox.org/wiki/Downloads),
   [download Vagrant](https://www.vagrantup.com/downloads.html), and install them both.
+
+* If you're on OS X and have VMWare, it should be possible to patch
+  Vagrantfile to use the VMWare vagrant provider which should perform
+  much better than Virtualbox.  Patches to do this by default if
+  VMWare is available are welcome!
 
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal to install the development server.  This
@@ -74,6 +100,10 @@ cd /srv/zulip
 source /srv/zulip-venv/bin/activate
 ./tools/run-dev.py
 ```
+
+Note that there is no supported uninstallation process without Vagrant
+(with Vagrant, you can just do `vagrant destroy` to clean up the
+development environment).
 
 By hand
 -------
