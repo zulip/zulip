@@ -54,10 +54,10 @@
         emacs, or Photoshop.{% endblocktrans %}</p>
 
         <p style="text-align: center">
-        {% if not_voyager %}
-          <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Mac{% endblocktrans %}</a>
-        {% else %}
+        {% if only_sso %}
           <a href="https://zulip.com/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Mac{% endblocktrans %}</a>
+        {% else %}
+          <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Mac{% endblocktrans %}</a>
         {% endif %}
         </p>
 
@@ -75,20 +75,20 @@
 cat user-apt.asc | sudo apt-key add -
 sudo apt-add-repository http://apt.zulip.com/user/
 sudo apt-get update
-{% if not_voyager %}
-sudo apt-get install zulip-desktop
-{% else %}
+{% if only_sso %}
 sudo apt-get install zulip-desktop-sso
+{% else %}
+sudo apt-get install zulip-desktop
 {% endif %}</pre></div>
 
 
 
         <h3>{% trans "Other" %}</h3>
-        {% if not_voyager %}
-          <p>{% blocktrans %}We provide a <a href="https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endblocktrans %}
+        {% if only_sso %}
+          <p>{% blocktrans %}We provide a <a href="https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endblocktrans %}
           </p>
         {% else %}
-          <p>{% blocktrans %}We provide a <a href="https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endblocktrans %}
+          <p>{% blocktrans %}We provide a <a href="https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endblocktrans %}
           </p>
         {% endif %}
       </div>
@@ -102,10 +102,10 @@ sudo apt-get install zulip-desktop-sso
         Solitaire, obviously.){% endblocktrans %}</p>
 
         <p style="text-align: center">
-          {% if not_voyager %}
-            <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Windows{% endblocktrans %}</a>
-          {% else %}
+          {% if only_sso %}
             <a href="https://zulip.com/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Windows{% endblocktrans %}</a>
+          {% else %}
+            <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% blocktrans %}Download Zulip for Windows{% endblocktrans %}</a>
           {% endif %}
         </p>
 
