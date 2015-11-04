@@ -91,7 +91,7 @@ Install the following non-Python dependencies:
  * tsearch-extras — better text search
  * libfreetype6-dev - needed before you pip install Pillow to properly generate emoji PNGs
 
-On Debian or Ubuntu systems:
+### On Debian or Ubuntu systems:
 
 ```
 sudo apt-get install libffi-dev memcached rabbitmq-server libldap2-dev python-dev redis-server postgresql-server-dev-all libmemcached-dev libfreetype6-dev
@@ -114,7 +114,7 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 
 Now continue with the "All systems" instructions below.
 
-On Fedora 22 (experimental):
+### On Fedora 22 (experimental):
 
 These instructions are experimental and may have bugs; patches welcome!
 
@@ -147,7 +147,7 @@ sudo systemctl enable redis rabbitmq-server memcached postgresql
 
 Now continue with the All Systems instructions below.
 
-On CentOS 7 Core (experimental):
+### On CentOS 7 Core (experimental):
 
 These instructions are experimental and may have bugs; patches welcome!
 
@@ -219,7 +219,7 @@ sudo systemctl enable redis rabbitmq-server memcached postgresql
 
 Now continue with the All Systems instructions below.
 
-All Systems:
+### All Systems:
 
 ```
 pip install -r requirements.txt
