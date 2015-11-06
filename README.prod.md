@@ -127,7 +127,7 @@ r.save() # save to the database
 
 If you realize you set `ADMIN_DOMAIN` wrong, in addition to fixing the
 value in settings.py, you will also want to do a similar manage.py
-process to set `r.domain = newexample.com`.
+process to set `r.domain = "newexample.com"`.
 
 Depending what authentication backend you're planning to use, you will
 need to do some additional setup documented in the `settings.py` template:
