@@ -130,11 +130,7 @@ Using Vagrant
 
 This is the recommended approach, and is tested on OS X 10.10 as well as Ubuntu 14.04.
 
-* The best performing way to run the Zulip development environment is
-  using an LXC container.  If your host is Ubuntu 14.04 (or newer;
-  what matters is having support for LXC containers), you'll want to
-  install and configure the LXC Vagrant provider like this:
-  `sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir && vagrant plugin install vagrant-lxc`
+* If your host is Ubuntu 14.04 (or newer), then just download Vagrant from their website(https://www.vagrantup.com/downloads.html) and download it for Ubuntu, then go to the directory of which you downloaded the file, and run "sudo dpkg -i packagename.deb", where 'packagename.deb' is the name of the file you downloaded from their website. This will give you the updated version of Vagrant which should help set up your Zulip on your machine. 
 
 * If your host is OS X, [download VirtualBox](https://www.virtualbox.org/wiki/Downloads),
   [download Vagrant](https://www.vagrantup.com/downloads.html), and install them both.
