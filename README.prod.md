@@ -235,8 +235,11 @@ problems and how to resolve them:
   service nginx restart
   ```
 
-If you run into additional problems, [please report them](https://github.com/zulip/zulip/issues) so that we can
-update these lists!
+If you run into additional problems, [please report
+them](https://github.com/zulip/zulip/issues) so that we can update
+these lists!  The Zulip installation scripts logs its full output to
+`/var/log/zulip/install.log`, so please include the context for any
+tracebacks from that log.
 
 
 Making your Zulip instance awesome
@@ -351,6 +354,20 @@ Maintaining Zulip in production
 
   You can create your own release tarballs from a copy of zulip.git
   repository using `tools/build-release-tarball`.
+
+* The Zulip upgrade script automatically logs output to
+  /var/log/zulip/upgrade.log; please use those logs to include output
+  that shows all errors in any bug reports.
+
+* The Zulip upgrade process works by creating a new deployment under
+  /home/zulip/deployments/ containing a complete copy of the Zulip
+  server code, and then moving the symlinks at
+  `/home/zulip/deployments/current` and /root/zulip` as part of the
+  upgrade process.  This means that if the new version isn't working,
+  you can quickly downgrade to the old version by using
+  `/home/zulip/deployments/<date>/scripts/restart-server` to return to
+  a previous version that you've deployed (the version is specified
+  via the path to the copy of `restart-server` you call).
 
 * To update your settings, simply edit `/etc/zulip/settings.py` and then
   run `/home/zulip/deployments/current/scripts/restart-server` to
