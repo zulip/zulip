@@ -10,10 +10,10 @@ worry about setting up SSL certificates and an authentication mechanism.
 
 Recommended requirements:
 
-* Server running Ubuntu Precise or Debian Wheezy
+* Server running Ubuntu Trusty
 * At least 2 CPUs for production use with 100+ users
-* At least 4GB of RAM for production use with 100+ users.  We strongly
-  recommend against installing with less than 2GB of RAM, as you will
+* At least 4GB of RAM for production use with 100+ users.  We **strongly
+  recommend against installing with less than 2GB of RAM**, as you will
   likely experience OOM issues.  In the future we expect Zulip's RAM
   requirements to decrease to support smaller installations (see
   https://github.com/zulip/zulip/issues/32).
