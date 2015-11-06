@@ -48,6 +48,12 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   much better than Virtualbox.  Patches to do this by default if
   VMWare is available are welcome!
 
+* On Windows: You can use Vagrant and Virtualbox/VMWare on Windows
+  with Cygwin, similar to the Mac setup.  Be sure to create your git
+  clone using `git clone https://github.com/zulip/zulip.git -c
+  core.autocrlf=false` to avoid Windows line endings being added to
+  files (this causes weird errors).
+
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal to install the development server.  This
 will take a long time on the first run because Vagrant needs to
