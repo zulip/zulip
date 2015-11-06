@@ -114,7 +114,7 @@ The `ADMIN_DOMAIN` realm is by default configured with the following settings:
 * `mandatory_topics=False`: Users are not required to specify a topic when sending messages.
 
 If you would like to change these settings, you can do so using the
-following process as the zulip user:
+Django management python shell (as the zulip user):
 
 ```
 cd /home/zulip/deployments/current
@@ -127,7 +127,11 @@ r.save() # save to the database
 
 If you realize you set `ADMIN_DOMAIN` wrong, in addition to fixing the
 value in settings.py, you will also want to do a similar manage.py
-process to set `r.domain = "newexample.com"`.
+process to set `r.domain = "newexample.com"`.  If you've already
+changed `ADMIN_DOMAIN` in settings.py, you can use
+`Realm.objects.all()` in the management shell to find the list of
+realms and pass the domain of the realm that is not "zulip.com" to
+`get_realm`.
 
 Depending what authentication backend you're planning to use, you will
 need to do some additional setup documented in the `settings.py` template:
