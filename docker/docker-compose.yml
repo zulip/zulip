@@ -16,15 +16,12 @@ rabbitmq:
   environment:
       RABBITMQ_DEFAULT_USER: "zulip"
       RABBITMQ_DEFAULT_PASS: "zulip"
-camo:
-  image: "quay.io/galexrt/camo:latest"
-  restart: always
 redis:
   image: "quay.io/sameersbn/redis:latest"
   volumes:
     - "/opt/docker/zulip/redis:/var/lib/redis:rw"
 zulip:
-  image: "quay.io/galexrt/zulip:v1.3.7-1"
+  image: "quay.io/galexrt/zulip:v1.3.7-2"
   ports:
     - "80:80"
     - "443:443"
@@ -32,7 +29,6 @@ zulip:
     - database
     - memcached
     - rabbitmq
-    - camo
     - redis
   environment:
     DB_HOST: "database"

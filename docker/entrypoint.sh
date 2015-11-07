@@ -1,4 +1,5 @@
 #!/bin/bash
+# Maintainer Alexander Trost <galexrt@googlemail.com>
 
 if [ "$DEBUG" == "true" ] || [ "$DEBUG" == "True" ]; then
     set -x
@@ -69,17 +70,18 @@ ZULIP_SETTINGS="/etc/zulip/settings.py"
 # === initialConfiguration ===
 prepareDirectories() {
     if [ ! -d "$DATA_DIR/backups" ]; then
-        mkdir -p "$DATA_DIR/backups"
+        mkdir -p "$DATA_DIR/backups" || :
     fi
     if [ ! -d "$DATA_DIR/certs" ]; then
-        mkdir -p "$DATA_DIR/certs"
-    fi
-    if [ ! -d /home/zulip/uploads ]; then
-        mkdir -p /home/zulip/uploads
+        mkdir -p "$DATA_DIR/certs" || :
     fi
     if [ ! -d "$DATA_DIR/uploads" ]; then
-        mkdir -p "$DATA_DIR/uploads"
-        mv -f /home/zulip/uploads "$DATA_DIR/uploads"
+        mkdir -p "$DATA_DIR/uploads" || :
+        if [ -d /home/zulip/uploads ]; then
+            mv -f /home/zulip/uploads "$DATA_DIR/uploads"
+        else
+            mkdir -p /home/zulip/uploads || :
+        fi
     else
         rm -rf /home/zulip/uploads
     fi
@@ -492,7 +494,7 @@ appRun() {
     echo "=== Begin Run Phase ==="
     echo "Starting Zulip using supervisor with \"/etc/supervisor/supervisord.conf\" ..."
     echo ""
-    exec supervisord -c "/etc/supervisor/supervisord.conf"
+    exec supervisord -n -c "/etc/supervisor/supervisord.conf"
 }
 appManagePy() {
     COMMAND="$1"

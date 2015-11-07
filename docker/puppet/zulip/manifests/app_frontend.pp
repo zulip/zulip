@@ -140,7 +140,7 @@ class zulip::app_frontend {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/cron.d/check-apns-tokens",
+    source => "puppet:///modules/zulip_internal/cron.d/check-apns-tokens",
   }
 
   file { "/etc/supervisor/conf.d/cron.conf":
@@ -157,6 +157,6 @@ class zulip::app_frontend {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/cron.d/clearsessions",
+    source => "puppet:///modules/zulip_internal/cron.d/clearsessions",
   }
 }
