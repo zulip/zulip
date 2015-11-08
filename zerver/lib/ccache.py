@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #!/usr/bin/env python2.7
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
 # https://github.com/davidben/webathena, which has the following
@@ -27,6 +28,7 @@
 
 import base64
 import struct
+import six
 
 # Some DER encoding stuff. Bleh. This is because the ccache contains a
 # DER-encoded krb5 Ticket structure, whereas Webathena deserializes
@@ -48,7 +50,7 @@ def der_encode_tlv(tag, value):
     return chr(tag) + der_encode_length(len(value)) + value
 
 def der_encode_integer_value(val):
-    if not isinstance(val, (int, long)):
+    if not isinstance(val, six.integer_types):
         raise TypeError("int")
     # base 256, MSB first, two's complement, minimum number of octets
     # necessary. This has a number of annoying edge cases:
@@ -81,7 +83,7 @@ def der_encode_uint32(val):
     return der_encode_integer(val)
 
 def der_encode_string(val):
-    if not isinstance(val, unicode):
+    if not isinstance(val, six.text_type):
         raise TypeError("unicode")
     return der_encode_tlv(0x1b, val.encode("utf-8"))
 

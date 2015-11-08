@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import re
 import os.path
 import sourcemap
+from six.moves import map
 
 
 class SourceMap(object):
@@ -31,7 +32,7 @@ class SourceMap(object):
                 minified_src = match.groups()[0] + '.js'
                 index = self._index_for(minified_src)
 
-                gen_line, gen_col = map(int, match.groups()[2:4])
+                gen_line, gen_col = list(map(int, match.groups()[2:4]))
                 # The sourcemap lib is 0-based, so subtract 1 from line and col.
                 try:
                     result = index.lookup(line=gen_line-1, column=gen_col-1)

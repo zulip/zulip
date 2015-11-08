@@ -116,11 +116,11 @@ exports.setup_page = function () {
         e.stopPropagation();
 
         $(".active_user_row").removeClass("active_user_row");
+        var row = $(e.target).closest(".user_row");
+        row.addClass("active_user_row");
 
-        $(e.target).closest(".user_row").addClass("active_user_row");
-
-        var user_name = $(".active_user_row").find('.user_name').text();
-        var email = $(".active_user_row").find('.email').text();
+        var user_name = row.find('.user_name').text();
+        var email = row.find('.email').text();
 
         $("#deactivation_user_modal .email").text(email);
         $("#deactivation_user_modal .user_name").text(user_name);
@@ -132,38 +132,72 @@ exports.setup_page = function () {
         e.stopPropagation();
 
         $(".active_stream_row").removeClass("active_stream_row");
+        var row = $(e.target).closest(".stream_row");
+        row.addClass("active_stream_row");
 
-        $(e.target).closest(".stream_row").addClass("active_stream_row");
-
-        var stream_name = $(".active_stream_row").find('.stream_name').text();
+        var stream_name = row.find('.stream_name').text();
 
         $("#deactivation_stream_modal .stream_name").text(stream_name);
         $("#deactivation_stream_modal").modal("show");
     });
 
-    $(".admin_user_table").on("click", ".reactivate", function (e) {
+    $(".admin_bot_table").on("click", ".deactivate", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $(".active_user_row").removeClass("active_user_row");
+        var row = $(e.target).closest(".user_row");
+        row.addClass("active_user_row");
+
+        var user_name = row.find('.user_name').text();
+        var email = row.find('.email').text();
+        channel.del({
+            url: '/json/bots/' + email,
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    row.find("button").closest("td").html(
+                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                    );
+                } else {
+                    row.find("button").text("Failed!");
+                }
+            },
+            success: function () {
+                var button = row.find("button.deactivate");
+                button.addClass("btn-warning");
+                button.removeClass("btn-danger");
+                button.addClass("reactivate");
+                button.removeClass("deactivate");
+                button.text("Reactivate");
+                row.addClass("deactivated_user");
+            }
+        });
+    });
+
+    $(".admin_user_table, .admin_bot_table").on("click", ".reactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the email element
         $(".active_user_row").removeClass("active_user_row");
-        $(e.target).closest(".user_row").addClass("active_user_row");
+        var row = $(e.target).closest(".user_row");
+        row.addClass("active_user_row");
 
-        var email = $(".active_user_row").find('.email').text();
+        var email = row.find('.email').text();
         channel.post({
-            url: '/json/users/' + $(".active_user_row").find('.email').text() + "/reactivate",
+            url: '/json/users/' + email + "/reactivate",
             error: function (xhr, error_type) {
+                var button = row.find("button");
                 if (xhr.status.toString().charAt(0) === "4") {
-                    $(".active_user_row button").closest("td").html(
+                    button.closest("td").html(
                         $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
                     );
                 } else {
-                     $(".active_user_row button").text("Failed!");
+                     button.text("Failed!");
                 }
             },
             success: function () {
-                var row = $(".active_user_row");
-                var button = $(".active_user_row button.reactivate");
+                var button = row.find("button.reactivate");
                 button.addClass("btn-danger");
                 button.removeClass("btn-warning");
                 button.addClass("deactivate");
@@ -254,8 +288,9 @@ exports.setup_page = function () {
 
         // Go up the tree until we find the user row, then grab the email element
         $(".active_user_row").removeClass("active_user_row");
-        $(e.target).closest(".user_row").addClass("active_user_row");
-        var email = $(".active_user_row").find('.email').text();
+        var row = $(e.target).closest(".user_row");
+        row.addClass("active_user_row");
+        var email = row.find('.email').text();
 
         var url = "/json/users/" + email;
         var data = {
@@ -266,8 +301,7 @@ exports.setup_page = function () {
             url: url,
             data: data,
             success: function () {
-                var row = $(".active_user_row");
-                var button = $(".active_user_row button.make-admin");
+                var button = row.find("button.make-admin");
                 button.addClass("btn-danger");
                 button.removeClass("btn-warning");
                 button.addClass("remove-admin");
@@ -275,7 +309,7 @@ exports.setup_page = function () {
                 button.text("Remove admin");
             },
             error: function (xhr, error) {
-                var status = $(".active_user_row .admin-user-status");
+                var status = row.find(".admin-user-status");
                 ui.report_error("Failed!", xhr, status);
             }
         });
@@ -287,8 +321,9 @@ exports.setup_page = function () {
 
         // Go up the tree until we find the user row, then grab the email element
         $(".active_user_row").removeClass("active_user_row");
-        $(e.target).closest(".user_row").addClass("active_user_row");
-        var email = $(".active_user_row").find('.email').text();
+        var row = $(e.target).closest(".user_row");
+        row.addClass("active_user_row");
+        var email = row.find('.email').text();
 
         var url = "/json/users/" + email;
         var data = {
@@ -299,8 +334,7 @@ exports.setup_page = function () {
             url: url,
             data: data,
             success: function () {
-                var row = $(".active_user_row");
-                var button = $(".active_user_row button.remove-admin");
+                var button = row.find("button.remove-admin");
                 button.addClass("btn-warning");
                 button.removeClass("btn-danger");
                 button.addClass("make-admin");
@@ -308,34 +342,35 @@ exports.setup_page = function () {
                 button.text("Make admin");
             },
             error: function (xhr, error) {
-                var status = $(".active_user_row .admin-user-status");
+                var status = row.find(".admin-user-status");
                 ui.report_error("Failed!", xhr, status);
             }
         });
     });
 
     $("#do_deactivate_user_button").click(function (e) {
-        if ($("#deactivation_user_modal .email").html() !== $(".active_user_row").find('.email').text()) {
+        var row = $(".active_user_row");
+        var email = row.find(".email").text();
+        if ($("#deactivation_user_modal .email").html() !== email) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
             ui.report_message("Deactivation encountered an error. Please reload and try again.",
                $("#home-error"), 'alert-error');
         }
         $("#deactivation_user_modal").modal("hide");
-        $(".active_user_row button").prop("disabled", true).text("Working…");
+        row.find("button").prop("disabled", true).text("Working…");
         channel.del({
-            url: '/json/users/' + $(".active_user_row").find('.email').text(),
+            url: '/json/users/' + email,
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
-                    $(".active_user_row button").closest("td").html(
+                    row.find("button").closest("td").html(
                         $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
                     );
                 } else {
-                     $(".active_user_row button").text("Failed!");
+                     row.find("button").text("Failed!");
                 }
             },
             success: function () {
-                var row = $(".active_user_row");
-                var button = $(".active_user_row button.deactivate");
+                var button = row.find("button.deactivate");
                 button.prop("disabled", false);
                 button.addClass("btn-warning");
                 button.removeClass("btn-danger");

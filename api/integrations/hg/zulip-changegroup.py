@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Zulip hook for Mercurial changeset pushes.
-# Copyright © 2012-2014 Zulip, Inc.
+# Copyright Â© 2012-2014 Zulip, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,10 @@
 #
 # This hook is called when changesets are pushed to the master repository (ie
 # `hg push`). See https://zulip.com/integrations for installation instructions.
+from __future__ import absolute_import
 
 import zulip
+from six.moves import range
 
 VERSION = "0.9"
 

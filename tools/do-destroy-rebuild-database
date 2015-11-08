@@ -1,5 +1,7 @@
 #!/bin/sh -xe
 
+"$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip zulip zulip_base
+
 psql -h localhost postgres zulip <<EOF
 DROP DATABASE IF EXISTS zulip;
 CREATE DATABASE zulip TEMPLATE zulip_base;

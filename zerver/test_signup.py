@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from django.conf import settings
 from django.test import TestCase
 
@@ -6,7 +7,7 @@ from zilencer.models import Deployment
 
 from zerver.models import (
     get_realm, get_user_profile_by_email,
-    PreregistrationUser, Realm, ScheduledJob, UserProfile,
+    PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
 )
 
 from zerver.lib.actions import (
@@ -25,6 +26,7 @@ import re
 import ujson
 
 from urlparse import urlparse
+from six.moves import range
 
 
 class PublicURLTest(TestCase):
@@ -122,7 +124,7 @@ class LoginTest(AuthedTestCase):
 
     def test_register(self):
         realm = get_realm("zulip.com")
-        streams = ["stream_%s" % i for i in xrange(40)]
+        streams = ["stream_%s" % i for i in range(40)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
 
@@ -170,7 +172,7 @@ class LoginTest(AuthedTestCase):
         You can log in even if your password contain non-ASCII characters.
         """
         email = "test@zulip.com"
-        password = u"hümbüǵ"
+        password = u"hÃ¼mbÃ¼Çµ"
 
         # Registering succeeds.
         self.register("test", password)
@@ -298,6 +300,31 @@ class InviteUserTest(AuthedTestCase):
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee])
 
+    def test_invite_user_signup_initial_history(self):
+        """
+        Test that a new user invited to a stream receives some initial
+        history but only from public streams.
+        """
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        private_stream_name = "Secret"
+        (stream, _) = create_stream_if_needed(user_profile.realm, private_stream_name, invite_only=True)
+        do_add_subscription(user_profile, stream)
+        public_msg_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                                          "Public topic", "Public message")
+        secret_msg_id = self.send_message("hamlet@zulip.com", private_stream_name, Recipient.STREAM,
+                                          "Secret topic", "Secret message")
+        invitee = "alice-test@zulip.com"
+        self.assert_json_success(self.invite(invitee, [private_stream_name, "Denmark"]))
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user("alice-test", "password")
+        invitee_profile = get_user_profile_by_email(invitee)
+        invitee_msg_ids = [um.message_id for um in
+                           UserMessage.objects.filter(user_profile=invitee_profile)]
+        self.assertTrue(public_msg_id in invitee_msg_ids)
+        self.assertFalse(secret_msg_id in invitee_msg_ids)
+
     def test_multi_user_invite(self):
         """
         Invites multiple users with a variety of delimiters.
@@ -420,7 +447,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.login("hamlet@zulip.com")
         invitee = "alice-test@zulip.com"
 
-        stream_name = u"hümbüǵ"
+        stream_name = u"hÃ¼mbÃ¼Çµ"
         realm = get_realm("zulip.com")
         stream, _ = create_stream_if_needed(realm, stream_name)
 

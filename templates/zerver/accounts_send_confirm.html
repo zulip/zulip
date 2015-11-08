@@ -1,15 +1,15 @@
 {% extends "zerver/portico_signup.html" %}
-
+{% load i18n %}
 {# Displayed after a user attempts to sign up. #}
 
 {% block portico_content %}
 <div class="app portico-page">
   <div class="app-main portico-page-container">
-            <h2>Thanks for signing up!</h2>
-            <p class="lead">Check your email so we can get started.</p>
+            <h2>{% trans "Thanks for signing up!" %}</h2>
+            <p class="lead">{% trans "Check your email so we can get started" %}.</p>
 
-            <p>Still no email? We can <a href="#" id="resend_email_link">resend it</a>.<br/>
-            <small>(Just in case, take a look at your Spam folder.)</small></p>
+            <p>{% blocktrans %}Still no email? We can <a href="#" id="resend_email_link">resend it</a>{% endblocktrans %}.<br/>
+            <small>({% trans "Just in case, take a look at your Spam folder" %}.)</small></p>
             <form id="resend_confirm" action="/accounts/home/" method="post" style="position: absolute;">
                 {% csrf_token %}
                 <input type="hidden" class="email" id="email" value="{{ email }}" name="email"/>&nbsp;

@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from zerver.models import UserProfile, get_user_profile_by_email
 from zerver.lib.rate_limiter import block_user, unblock_user
@@ -36,7 +37,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if (not options['api_key'] and not options['email']) or \
            (options['api_key'] and options['email']):
-            print "Please enter either an email or API key to manage"
+            print("Please enter either an email or API key to manage")
             exit(1)
 
         if options['email']:
@@ -45,7 +46,7 @@ class Command(BaseCommand):
             try:
                 user_profile = UserProfile.objects.get(api_key=options['api_key'])
             except:
-                print "Unable to get user profile for api key %s" % (options['api_key'], )
+                print("Unable to get user profile for api key %s" % (options['api_key'], ))
                 exit(1)
 
         users = [user_profile]
@@ -55,7 +56,7 @@ class Command(BaseCommand):
 
         operation = options['operation']
         for user in users:
-            print "Applying operation to User ID: %s: %s" % (user.id, operation)
+            print("Applying operation to User ID: %s: %s" % (user.id, operation))
 
             if operation == 'block':
                 block_user(user, options['seconds'], options['domain'])

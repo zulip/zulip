@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Django settings for zulip project.
 ########################################################################
 # Here's how settings for the Zulip project work:
@@ -11,7 +12,7 @@ import os
 import platform
 import time
 import sys
-import ConfigParser
+import six.moves.configparser
 
 from zerver.lib.db import TimeTrackingConnection
 
@@ -19,14 +20,14 @@ from zerver.lib.db import TimeTrackingConnection
 # INITIAL SETTINGS
 ########################################################################
 
-config_file = ConfigParser.RawConfigParser()
+config_file = six.moves.configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
 PRODUCTION = config_file.has_option('machine', 'deploy_type')
 DEVELOPMENT = not PRODUCTION
 
-secrets_file = ConfigParser.RawConfigParser()
+secrets_file = six.moves.configparser.RawConfigParser()
 if PRODUCTION:
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
 else:
@@ -76,11 +77,11 @@ TUTORIAL_ENABLED = True
 # Import variables like secrets from the local_settings file
 # Import local_settings after determining the deployment/machine type
 if PRODUCTION:
-    from local_settings import *
+    from .local_settings import *
 else:
     # For the Dev VM environment, we use the same settings as the
     # sample local_settings.py file, with a few exceptions.
-    from local_settings_template import *
+    from .local_settings_template import *
     EXTERNAL_HOST = 'localhost:9991'
     ALLOWED_HOSTS = ['localhost']
     AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
@@ -217,6 +218,7 @@ USE_TZ = True
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 TEMPLATE_DIRS = ( os.path.join(DEPLOY_ROOT, 'templates'), )
+LOCALE_PATHS = ( os.path.join(DEPLOY_ROOT, 'locale'), )
 
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
@@ -373,7 +375,7 @@ try:
     domain = config_file.get('django', 'cookie_domain')
     SESSION_COOKIE_DOMAIN = '.' + domain
     CSRF_COOKIE_DOMAIN    = '.' + domain
-except ConfigParser.Error:
+except six.moves.configparser.Error:
     # Failing here is OK
     pass
 
@@ -702,6 +704,7 @@ JS_SPECS = {
             'js/referral.js',
             'js/custom_markdown.js',
             'js/bot_data.js',
+            # JS bundled by webpack is also included here if PIPELINE setting is true
         ],
         'output_filename': 'min/app.js'
     },
@@ -717,6 +720,9 @@ JS_SPECS = {
         'output_filename': 'min/sockjs-0.3.4.min.js'
     },
 }
+
+if PIPELINE:
+    JS_SPECS['app']['source_filenames'].append('js/bundle.js')
 
 app_srcs = JS_SPECS['app']['source_filenames']
 

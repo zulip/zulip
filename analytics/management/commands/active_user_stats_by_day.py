@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import datetime
 import pytz
@@ -19,6 +20,6 @@ class Command(BaseCommand):
             date = datetime.datetime.now() - datetime.timedelta(days=1)
         else:
             date = datetime.datetime.strptime(options["date"], "%Y-%m-%d")
-        print "Activity data for", date
-        print activity_averages_during_day(date)
-        print "Please note that the total registered user count is a total for today"
+        print("Activity data for", date)
+        print(activity_averages_during_day(date))
+        print("Please note that the total registered user count is a total for today")

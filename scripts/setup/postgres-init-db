@@ -1,7 +1,16 @@
-#!/bin/sh -xe
+#!/bin/bash
+set -e
+set -x
 
 # Make sure the current working directory is readable
 cd /
+
+# Shut down all services to ensure a quiescent state.
+supervisorctl stop all
+
+# Drop any open connections to any old database.  Hackishly call using
+# source because postgres user can't read /root/zulip/scripts/setup.
+source "$(dirname "$0")/terminate-psql-sessions" postgres zulip zulip_base
 
 su postgres -c psql <<EOF
 CREATE USER zulip;
@@ -15,6 +24,7 @@ CREATE SCHEMA zulip AUTHORIZATION zulip;
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 EOF
 
+# Clear memcached to avoid contamination from previous database state
 sh "$(dirname "$0")/flush-memcached"
 
 echo "Database created"

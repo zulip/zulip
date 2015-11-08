@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sys
 import logging
@@ -29,23 +30,14 @@ APT_DEPENDENCIES = {
         "python-dev",
         "hunspell-en-us",
         "nodejs",
+        "nodejs-legacy",
         "python-virtualenv",
         "supervisor",
         "git",
         "npm",
-        "node-jquery",
         "yui-compressor",
         "puppet",               # Used by lint-all
-    ]
-}
-
-# TODO: backport node-{cssstyle,htmlparser2,nwmatcher} to trusty,
-# so we can eliminate npm (above) and this section.
-NPM_DEPENDENCIES = {
-    "trusty": [
-        "cssstyle",
-        "htmlparser2",
-        "nwmatcher",
+        "gettext",              # Used by makemessages i18n
     ]
 }
 
@@ -53,9 +45,9 @@ VENV_PATH="/srv/zulip-venv"
 ZULIP_PATH="/srv/zulip"
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
-    print "Error: No Zulip git repository present at /srv/zulip!"
-    print "To setup the Zulip development environment, you should clone the code"
-    print "from GitHub, rather than using a Zulip production release tarball."
+    print("Error: No Zulip git repository present at /srv/zulip!")
+    print("To setup the Zulip development environment, you should clone the code")
+    print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
 
 # TODO: Parse arguments properly
@@ -160,12 +152,10 @@ def main():
     with sh.sudo:
         sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH, **LOUD)
 
-    # Add additional node packages for test-js-with-node.
-    with sh.sudo:
-        sh.npm.install(*NPM_DEPENDENCIES["trusty"], g=True, prefix="/usr", **LOUD)
-
-    # Management commands expect to be run from the root of the project.
+    # npm install and management commands expect to be run from the root of the project.
     os.chdir(ZULIP_PATH)
+
+    sh.npm.install(**LOUD)
 
     os.system("tools/download-zxcvbn")
     os.system("tools/emoji_dump/build_emoji")

@@ -59,7 +59,7 @@ with ``tools/test-backend``.
 Web frontend black-box tests
 ----------------------------
 
-These live in ``zerver/tests/frontend/tests/``. This is a "black box"
+These live in ``frontend_tests/tests/``. This is a "black box"
 test; we load the frontend in a real (headless) browser, from a real dev
 server, and simulate UI interactions like sending messages, narrowing,
 etc.
@@ -67,7 +67,7 @@ etc.
 Since this is interacting with a real dev server, it can catch backend
 bugs as well.
 
-You can run this with ``./zerver/tests/frontend/run``. You will need
+You can run this with ``./frontend_tests/run``. You will need
 `PhantomJS <http://phantomjs.org/>`__ 1.7.0 or later.
 
 Debugging Casper.JS
@@ -78,7 +78,7 @@ is not perfect. Here are some steps for using it and gotchas you might
 want to know.
 
 To turn on remote debugging, pass ``--remote-debug`` to the
-``./zerver/frontend/tests/run`` script. This will run the tests with
+``./frontend_tests/tests/run`` script. This will run the tests with
 port ``7777`` open for remote debugging. You can now connect to
 ``localhost:7777`` in a Webkit browser. Somewhat recent versions of
 Chrome or Safari might be required.
@@ -114,7 +114,7 @@ bottom of ``foobar.js``:
 This makes ``foobar.js`` follow the CommonJS module pattern, so it can
 be required in Node.js, which runs our tests.
 
-Now create ``zerver/tests/frontend/node/foobar.js``. At the top, require
+Now create ``frontend_tests/node_tests/foobar.js``. At the top, require
 the `Node.js assert module <http://nodejs.org/api/assert.html>`__, and
 the module you're testing, like so:
 
@@ -140,7 +140,7 @@ asserts, the *actual* value comes first, the *expected* value second.
      }());
 
 The test runner (index.js) automatically runs all .js files in the
-zerver/tests/frontend/node directory.
+frontend_tests/node directory.
 
 .. _handling-dependencies:
 

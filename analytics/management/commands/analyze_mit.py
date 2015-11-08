@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from optparse import make_option
 from django.core.management.base import BaseCommand
@@ -63,7 +64,7 @@ def compute_stats(log_level):
         logging.info("Top %6s | %s%%" % (size, round(top_percents[size], 1)))
 
     grand_total = sum(total_counts.values())
-    print grand_total
+    print(grand_total)
     logging.info("%15s | %s" % ("Client", "Percentage"))
     for client in total_counts.keys():
         logging.info("%15s | %s%%" % (client, round(100. * total_counts[client] / grand_total, 1)))

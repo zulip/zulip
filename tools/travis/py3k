@@ -1,0 +1,51 @@
+#!/bin/bash
+set -e
+fixers="
+lib2to3.fixes.fix_apply
+lib2to3.fixes.fix_except
+lib2to3.fixes.fix_exitfunc
+lib2to3.fixes.fix_funcattrs
+lib2to3.fixes.fix_has_key
+lib2to3.fixes.fix_idioms
+lib2to3.fixes.fix_intern
+lib2to3.fixes.fix_isinstance
+lib2to3.fixes.fix_methodattrs
+lib2to3.fixes.fix_ne
+lib2to3.fixes.fix_numliterals
+lib2to3.fixes.fix_paren
+lib2to3.fixes.fix_reduce
+lib2to3.fixes.fix_renames
+lib2to3.fixes.fix_repr
+lib2to3.fixes.fix_standarderror
+lib2to3.fixes.fix_sys_exc
+lib2to3.fixes.fix_throw
+lib2to3.fixes.fix_tuple_params
+lib2to3.fixes.fix_types
+lib2to3.fixes.fix_ws_comma
+lib2to3.fixes.fix_xreadlines
+libfuturize.fixes.fix_absolute_import
+libfuturize.fixes.fix_next_call
+libfuturize.fixes.fix_print_with_import
+libfuturize.fixes.fix_raise
+libmodernize.fixes.fix_basestring
+libmodernize.fixes.fix_filter
+libmodernize.fixes.fix_imports_six
+libmodernize.fixes.fix_input_six
+libmodernize.fixes.fix_int_long_tuple
+libmodernize.fixes.fix_map
+libmodernize.fixes.fix_raise_six
+libmodernize.fixes.fix_xrange_six
+libmodernize.fixes.fix_zip
+libmodernize.fixes.fix_unicode_type
+libpasteurize.fixes.fix_newstyle
+"
+
+echo; echo "Testing for additions of Python 2 patterns we've removed as part of moving towards Python 3 compatibility."; echo
+
+for fixer in $fixers; do
+    echo "Running Python 3 compatibility test $fixer"
+    futurize -f $fixer -j4 -n -w . >/dev/null 2>/dev/null
+    git diff --exit-code || (echo; echo "Python 3 compatibility error(s) detected!  See diff above for what you need to change." && exit 1)
+done
+
+echo "No issues detected!"

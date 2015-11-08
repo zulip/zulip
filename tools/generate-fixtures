@@ -11,7 +11,8 @@ if [ "$template_grep_error_code" == "0" ]; then
     if [ -e zerver/fixtures/migration-status ] &&
         cmp -s zerver/fixtures/available-migrations zerver/fixtures/migration-status &&
         [ "$1" != "--force" ]; then
-            psql -h localhost postgres zulip_test << EOF
+        "$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
+        psql -h localhost postgres zulip_test << EOF
 DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_template;
 EOF
@@ -21,6 +22,8 @@ EOF
 fi
 
 mkdir -p zerver/fixtures
+
+"$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
 
 psql -h localhost postgres zulip_test <<EOF
 DROP DATABASE IF EXISTS zulip_test;

@@ -121,7 +121,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         output = []
 
-        class Record:
+        class Record(object):
             pass
 
         processor = self
@@ -133,7 +133,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         def pop():
             handlers.pop()
 
-        class OuterHandler:
+        class OuterHandler(object):
             def __init__(self, output):
                 self.output = output
 
@@ -159,7 +159,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             else:
                 return CodeHandler(output, fence, lang)
 
-        class QuoteHandler:
+        class QuoteHandler(object):
             def __init__(self, output, fence):
                 self.output = output
                 self.fence = fence
@@ -180,7 +180,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 self.output.append('')
                 pop()
 
-        class CodeHandler:
+        class CodeHandler(object):
             def __init__(self, output, fence, lang):
                 self.output = output
                 self.fence = fence

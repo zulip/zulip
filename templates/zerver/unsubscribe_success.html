@@ -1,11 +1,12 @@
 {% extends "zerver/portico.html" %}
+{% load i18n %}
 
 {% block portico_content %}
 
-<h1>Email settings updated</h1>
+<h1>{% blocktrans %}Email settings updated{% endblocktrans %}</h1>
 
-<p>We've updated your email subscription settings, and you won't get {{ subscription_type }} emails anymore.</p>
+<p>{% blocktrans %}We've updated your email subscription settings, and you won't get {{ subscription_type }} emails anymore.{% endblocktrans %}</p>
 
-<p>To undo this change or review your other subscription settings, please visit your <a href="https://{{ external_host }}/#settings">Zulip Settings page</a>.</p>
+<p>{% blocktrans %}To undo this change or review your other subscription settings, please visit your <a href="https://{{ external_host }}/#settings">Zulip Settings page</a>{% endblocktrans %}.</p>
 
 {% endblock %}

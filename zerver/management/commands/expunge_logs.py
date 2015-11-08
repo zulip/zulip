@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import sys
@@ -60,7 +61,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if len(options['log_files']) == 0:
-            print >>sys.stderr, 'WARNING: No log files specified; doing nothing.'
+            print('WARNING: No log files specified; doing nothing.', file=sys.stderr)
 
         for infile in options['log_files']:
             try:
@@ -68,5 +69,5 @@ class Command(BaseCommand):
             except KeyboardInterrupt:
                 raise
             except:
-                print >>sys.stderr, 'WARNING: Could not expunge from', infile
+                print('WARNING: Could not expunge from', infile, file=sys.stderr)
                 traceback.print_exc()

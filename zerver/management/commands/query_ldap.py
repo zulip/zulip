@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import sys
 
@@ -16,10 +17,10 @@ def query_ldap(**options):
         if isinstance(backend, LDAPBackend):
             ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
             if ldap_attrs is None:
-                print "No such user found"
+                print("No such user found")
             else:
                 for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-                    print "%s: %s" % (django_field, ldap_attrs[ldap_field])
+                    print("%s: %s" % (django_field, ldap_attrs[ldap_field]))
 
 class Command(BaseCommand):
     def add_arguments(self, parser):

@@ -1,7 +1,8 @@
+{% load i18n %}
 {# Subscriptions management tab of the app. #}
 
     <div class="subscriptions">
-      <h1><i class="icon-vector-exchange streams-icon"></i>Streams</h1>
+      <h1><i class="icon-vector-exchange streams-icon"></i>{% trans "Streams" %}</h1>
       <div class="alert" id="subscriptions-status"></div>
       <div id="subs_page_loading_indicator"></div>
       <div id="subscriptions_table">

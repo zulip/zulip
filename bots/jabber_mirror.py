@@ -21,6 +21,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import print_function
 import sys
 import subprocess
 import os
@@ -39,7 +40,7 @@ args.extend(sys.argv[1:])
 
 backoff = RandomExponentialBackoff(timeout_success_equivalent=300)
 while backoff.keep_going():
-    print "Starting Jabber mirroring bot"
+    print("Starting Jabber mirroring bot")
     try:
         ret = subprocess.call(args)
     except:
@@ -51,9 +52,9 @@ while backoff.keep_going():
 
     backoff.fail()
 
-print ""
-print ""
-print "ERROR: The Jabber mirroring bot is unable to continue mirroring Jabber."
-print "Please contact zulip-devel@googlegroups.com if you need assistance."
-print ""
+print("")
+print("")
+print("ERROR: The Jabber mirroring bot is unable to continue mirroring Jabber.")
+print("Please contact zulip-devel@googlegroups.com if you need assistance.")
+print("")
 sys.exit(1)

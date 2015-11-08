@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import sys
 import pstats
 
@@ -12,10 +13,10 @@ can find more advanced tools for showing profiler results.
 try:
     fn = sys.argv[1]
 except:
-    print '''
+    print('''
     Please supply a filename.  (If you use the profiled decorator,
     the file will have a suffix of ".profile".)
-    '''
+    ''')
     sys.exit(1)
 
 p = pstats.Stats(fn)

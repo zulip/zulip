@@ -15,6 +15,7 @@ from zerver.lib.upload import upload_message_image
 from zerver.lib.utils import generate_random_token
 from zerver.models import Stream, Recipient, get_user_profile_by_email, \
     get_user_profile_by_id, get_display_recipient, get_recipient
+import six
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ def send_to_missed_message_address(address, message):
 
     # Testing with basestring so we don't depend on the list return type from
     # get_display_recipient
-    if not isinstance(display_recipient, basestring):
+    if not isinstance(display_recipient, six.string_types):
         display_recipient = ','.join([user['email'] for user in display_recipient])
 
     body = filter_footer(extract_body(message))
@@ -188,8 +189,7 @@ def extract_body(message):
 
 def filter_footer(text):
     # Try to filter out obvious footers.
-    possible_footers = filter(lambda line: line.strip().startswith("--"),
-                              text.split("\n"))
+    possible_footers = [line for line in text.split("\n") if line.strip().startswith("--")]
     if len(possible_footers) != 1:
         # Be conservative and don't try to scrub content if there
         # isn't a trivial footer structure.
@@ -255,10 +255,6 @@ def process_stream_message(to, subject, message, debug_info):
     body = filter_footer(extract_body(message))
     body += extract_and_upload_attachments(message, stream.realm)
     debug_info["stream"] = stream
-    if not body:
-        # You can't send empty Zulips, so to avoid confusion over the
-        # email forwarding failing, set a dummy message body.
-        body = "(No email body)"
     send_zulip(stream, subject, body)
 
 def process_missed_message(to, message, pre_checked):
@@ -282,6 +278,6 @@ def process_message(message, rcpt_to=None, pre_checked=False):
             process_missed_message(to, message, pre_checked)
         else:
             process_stream_message(to, subject, message, debug_info)
-    except ZulipEmailForwardError, e:
+    except ZulipEmailForwardError as e:
         # TODO: notify sender of error, retry if appropriate.
         log_and_report(message, e.message, debug_info)

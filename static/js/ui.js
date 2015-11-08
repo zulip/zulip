@@ -474,12 +474,12 @@ $(function () {
     reload.initialize();
     composebox_typeahead.initialize();
     search.initialize();
+    tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
     hashchange.initialize();
     invite.initialize();
     activity.initialize();
-    tutorial.initialize();
 });
 
 

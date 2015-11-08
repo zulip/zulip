@@ -10,7 +10,7 @@ import glob
 import twitter
 import platform
 import time
-import HTMLParser
+import six.moves.html_parser
 import httplib2
 import itertools
 import urllib
@@ -33,6 +33,8 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
+import six
+from six.moves import range
 
 
 # Format version of the bugdown rendering; stored along with rendered
@@ -432,7 +434,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
             ## TODO: unescape is an internal function, so we should
             ## use something else if we can find it
-            text = HTMLParser.HTMLParser().unescape(res['text'])
+            text = six.moves.html_parser.HTMLParser().unescape(res['text'])
             urls = res.get('urls', {})
             user_mentions = res.get('user_mentions', [])
             media = res.get('media', [])
@@ -726,7 +728,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
         inserts = 0
         fence = None
         copy = lines[:]
-        for i in xrange(len(lines) - 1):
+        for i in range(len(lines) - 1):
             # Ignore anything that is inside a fenced code block
             m = FENCE_RE.match(lines[i])
             if not fence and m:
@@ -849,7 +851,7 @@ class AtomicLinkPattern(LinkPattern):
         ret = LinkPattern.handleMatch(self, m)
         if ret is None:
             return None
-        if not isinstance(ret, basestring):
+        if not isinstance(ret, six.string_types):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 

@@ -34,6 +34,7 @@ This script can be used via two mechanisms:
 
 
 from __future__ import absolute_import
+from __future__ import print_function
 
 import email
 import os
@@ -87,9 +88,8 @@ def fetch(result, proto, mailboxes):
     if not result:
         return proto.logout()
 
-    message_uids = result.keys()
     # Make sure we forward the messages in time-order.
-    message_uids.sort()
+    message_uids = sorted(result.keys())
     for uid in message_uids:
         message = email.message_from_string(result[uid]["RFC822"])
         process_message(message)
@@ -111,7 +111,7 @@ def select_mailbox(result, proto):
 
 def list_mailboxes(res, proto):
     # List all of the mailboxes for this account.
-    return proto.list("","*").addCallback(select_mailbox, proto)
+    return proto.list("", "*").addCallback(select_mailbox, proto)
 
 def connected(proto):
     d = proto.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)
@@ -145,13 +145,13 @@ class Command(BaseCommand):
                 try:
                     mark_missed_message_address_as_used(rcpt_to)
                 except ZulipEmailForwardError:
-                    print "5.1.1 Bad destination mailbox address: Bad or expired missed message address."
+                    print("5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
                     exit(posix.EX_NOUSER)
             else:
                 try:
                     extract_and_validate(rcpt_to)
                 except ZulipEmailForwardError:
-                    print "5.1.1 Bad destination mailbox address: Please use the address specified in your Streams page."
+                    print("5.1.1 Bad destination mailbox address: Please use the address specified in your Streams page.")
                     exit(posix.EX_NOUSER)
 
             # Read in the message, at most 25MiB. This is the limit enforced by
@@ -160,7 +160,7 @@ class Command(BaseCommand):
 
             if len(sys.stdin.read(1)) != 0:
                 # We're not at EOF, reject large mail.
-                print "5.3.4 Message too big for system: Max size is 25MiB"
+                print("5.3.4 Message too big for system: Max size is 25MiB")
                 exit(posix.EX_DATAERR)
 
             queue_json_publish(
@@ -176,7 +176,7 @@ class Command(BaseCommand):
             if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
                 not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
                 not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER):
-                print "Please configure the Email Mirror Gateway in your local_settings.py, or specify $ORIGINAL_RECIPIENT if piping a single mail."
+                print("Please configure the Email Mirror Gateway in your local_settings.py, or specify $ORIGINAL_RECIPIENT if piping a single mail.")
                 exit(1)
             reactor.callLater(0, main)
             reactor.run()

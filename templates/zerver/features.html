@@ -1,150 +1,151 @@
 {% extends "zerver/portico.html" %}
+{% load i18n %}
 
 {% block portico_content %}
-    <div class="feature-page-header">Zulip Features</div>
+    <div class="feature-page-header">{% blocktrans %}Zulip Features{% endblocktrans %}</div>
       <div class="feature-block left">
         <i class="icon-vector-random icon-vector-3x feature-icon"></i>
-        <h4>Threaded group conversations</h4>
-        <p>Talk about multiple topics at once without getting lost or
-        overwhelmed.</p>
+        <h4>{% blocktrans %}Threaded group conversations{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Talk about multiple topics at once without getting lost or
+        overwhelmed.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-comments icon-vector-3x feature-icon"></i>
-        <h4>One-on-one and group private conversations</h4>
-        <p>Have private conversations with one or as many people as you need.</p>
+        <h4>{% blocktrans %}One-on-one and group private conversations{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Have private conversations with one or as many people as you need.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-home icon-vector-3x feature-icon"></i>
-        <h4>Persistence</h4>
-        <p>We're always receiving messages for you, even when you're
-        logged out.</p>
+        <h4>{% trans "Persistence" %}</h4>
+        <p>{% blocktrans %}We're always receiving messages for you, even when you're
+        logged out.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-road icon-vector-3x feature-icon"></i>
-        <h4>History</h4>
-        <p>Join a stream and see its history, so even new team
-        members are never out of the loop.</p>
+        <h4>{% trans "History" %}</h4>
+        <p>{% blocktrans %}Join a stream and see its history, so even new team
+        members are never out of the loop.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-search icon-vector-3x feature-icon"></i>
-        <h4>Full-history search</h4>
-        <p>Search is both snappy and smart, helping you look for text,
+        <h4>{% blocktrans %}Full-history search{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Search is both snappy and smart, helping you look for text,
         people, and threads of conversation, with advanced search
-        operators for fine-grained control.</p>
+        operators for fine-grained control.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-group icon-vector-3x feature-icon"></i>
-        <h4>Team presence and buddy list</h4>
-        <p>See who is online at a glance.</p>
+        <h4>{% blocktrans %}Team presence and buddy list{% endblocktrans %}</h4>
+        <p>{% blocktrans %}See who is online at a glance.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-picture icon-vector-3x feature-icon"></i>
-        <h4>Inline image, video, and tweet previews</h4>
-        <p>Send a link and we'll automatically generate an inline
-        preview.</p>
+        <h4>{% blocktrans %}Inline image, video, and tweet previews{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Send a link and we'll automatically generate an inline
+        preview.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-paper-clip icon-vector-3x feature-icon"></i>
-        <h4>Drag-and-drop file uploads</h4>
-        <p>Drag a file into the compose box and we'll upload and
+        <h4>{% blocktrans %}Drag-and-drop file uploads{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Drag a file into the compose box and we'll upload and
         preview it for you. Sharing and discussing work with team
-        mates has never been easier.</p>
+        mates has never been easier.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-user icon-vector-3x feature-icon"></i>
-        <h4>@-notifications</h4>
-        <p>Want someone's attention in a conversation? @-notify them
-        and they'll be right over.</p>
+        <h4>{% trans "@-notifications" %}</h4>
+        <p>{% blocktrans %}Want someone's attention in a conversation? @-notify them
+        and they'll be right over.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-bullhorn icon-vector-3x feature-icon"></i>
-        <h4>Stream-wide announcements</h4>
-        <p>Use <code>@all</code> or <code>@everyone</code> to get the
-        attention of everyone in a stream.</p>
+        <h4>{% blocktrans %}Stream-wide announcements{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Use <code>@all</code> or <code>@everyone</code> to get the
+        attention of everyone in a stream.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-envelope icon-vector-3x feature-icon"></i>
-        <h4>Emails for important missed messages</h4>
-        <p>If you're missing important conversations when you're away from
+        <h4>{% blocktrans %}Emails for important missed messages{% endblocktrans %}</h4>
+        <p>{% blocktrans %}If you're missing important conversations when you're away from
         Zulip, we'll send you an email summary so you're always in the
-        loop.</p>
+        loop.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-info-sign icon-vector-3x feature-icon"></i>
-        <h4>Desktop notifications</h4>
-        <p>Configurable for private and stream messages.</p>
+        <h4>{% blocktrans %}Desktop notifications{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Configurable for private and stream messages.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-bell icon-vector-3x feature-icon"></i>
-        <h4>Audible notifications</h4>
-        <p>So you don't miss important messages even when your eyes
-        are elsewhere.</p>
+        <h4>{% blocktrans %}Audible notifications{% endblocktrans %}</h4>
+        <p>{% blocktrans %}So you don't miss important messages even when your eyes
+        are elsewhere.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-font icon-vector-3x feature-icon"></i>
-        <h4>Hotkeys</h4>
-        <p>Communicate as efficiently as you use your favorite text editor.</p>
+        <h4>{% trans "Hotkeys" %}</h4>
+        <p>{% blocktrans %}Communicate as efficiently as you use your favorite text editor.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-thumbs-up icon-vector-3x feature-icon"></i>
-        <h4>Emoji</h4>
-        <p>Sometimes it's the simple things in life, like being able
-        to give a <tt>:thumbsup:</tt> while chatting.</p>
+        <h4>{% trans "Emoji" %}</h4>
+        <p>{% blocktrans %}Sometimes it's the simple things in life, like being able
+        to give a <tt>:thumbsup:</tt> while chatting.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-edit icon-vector-3x feature-icon"></i>
-        <h4>Code</h4>
-        <p>Discuss code, even multi-line code, with ease, including
-        syntax-highlighting.</p>
+        <h4>{% trans "Code" %}</h4>
+        <p>{% blocktrans %}Discuss code, even multi-line code, with ease, including
+        syntax-highlighting.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-quote-left icon-vector-3x feature-icon"></i>
-        <h4>Lightweight markup</h4>
-        <p>Get bulleted lists, clickable links, and nicely-formatted
-        e-mail pastes automatically.</p>
+        <h4>{% blocktrans %}Lightweight markup{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Get bulleted lists, clickable links, and nicely-formatted
+        e-mail pastes automatically.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-eraser icon-vector-3x feature-icon"></i>
-        <h4>Message editing</h4>
-        <p>Don't worry, you can always fix that typo.</p>
+        <h4>{% blocktrans %}Message editing{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Don't worry, you can always fix that typo.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-lock icon-vector-3x feature-icon"></i>
-        <h4>Invite-only streams</h4>
-        <p>Enjoy the benefits of threaded conversations while
-        controlling your audience and privacy.</p>
+        <h4>{% blocktrans %}Invite-only streams{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Enjoy the benefits of threaded conversations while
+        controlling your audience and privacy.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-star-empty icon-vector-3x feature-icon"></i>
-        <h4>Starred messages</h4>
-        <p>Keep a todo list or keep track of interesting
-        conversations.</p>
+        <h4>{% blocktrans %}Starred messages{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Keep a todo list or keep track of interesting
+        conversations.{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-github icon-vector-3x feature-icon"></i>
-        <h4>Integrations</h4>
-        <p>Get alerts and updates from your favorite services with
+        <h4>{% trans "Integrations" %}</h4>
+        <p>{% blocktrans %}Get alerts and updates from your favorite services with
         off-the-shelf <a href="/integrations">integrations</a> for
-        Trac, Nagios, Github, Jenkins, and more.</p>
+        Trac, Nagios, Github, Jenkins, and more.{% endblocktrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-sitemap icon-vector-3x feature-icon"></i>
-        <h4>API</h4>
-        <p>Want to roll your own notifications? We've got a
+        <h4>{% trans "API" %}</h4>
+        <p>{% blocktrans %}Want to roll your own notifications? We've got a
         dead-simple RESTful <a href="/api">API and Python bindings</a>
         that will make integrations&mdash;both sending and
-        receiving&mdash;a snap!</p>
+        receiving&mdash;a snap!{% endblocktrans %}</p>
       </div>
       <div class="feature-block left">
         <i class="icon-vector-mobile-phone icon-vector-3x feature-icon"></i>
-        <h4>Mobile apps</h4>
-        <p>Check Zulip on the go with native <a href="/apps">iOS and
-        Android apps</a>.</p>
+        <h4>{% blocktrans %}Mobile apps{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Check Zulip on the go with native <a href="/apps">iOS and
+        Android apps</a>{% endblocktrans %}.</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-desktop icon-vector-3x feature-icon"></i>
-        <h4>Desktop apps</h4>
-        <p>Prefer Zulip in its own window and rich, OS-level notifications?
-          Enjoy <a href="/apps">Zulip on your desktop</a>.</p>
+        <h4>{% blocktrans %}Desktop apps{% endblocktrans %}</h4>
+        <p>{% blocktrans %}Prefer Zulip in its own window and rich, OS-level notifications?
+          Enjoy <a href="/apps">Zulip on your desktop</a>{% endblocktrans %}.</p>
       </div>
 {% endblock %}

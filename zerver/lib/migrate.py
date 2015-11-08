@@ -1,14 +1,15 @@
+from __future__ import print_function
 import re
 import time
 
 def timed_ddl(db, stmt):
-    print
-    print time.asctime()
-    print stmt
+    print()
+    print(time.asctime())
+    print(stmt)
     t = time.time()
     db.execute(stmt)
     delay = time.time() - t
-    print 'Took %.2fs' % (delay,)
+    print('Took %.2fs' % (delay,))
 
 def validate(sql_thingy):
     # Do basic validation that table/col name is safe.
@@ -24,16 +25,16 @@ def do_batch_update(db, table, cols, vals, batch_size=10000, sleep=0.1):
         SET (%s) = (%s)
         WHERE id >= %%s AND id < %%s
     ''' % (table, ', '.join(cols), ', '.join(['%s'] * len(cols)))
-    print stmt
+    print(stmt)
     (min_id, max_id) = db.execute("SELECT MIN(id), MAX(id) FROM %s" % (table,))[0]
     if min_id is None:
         return
 
-    print "%s rows need updating" % (max_id - min_id,)
+    print("%s rows need updating" % (max_id - min_id,))
     while min_id <= max_id:
         lower = min_id
         upper = min_id + batch_size
-        print '%s about to update range [%s,%s)' % (time.asctime(), lower, upper)
+        print('%s about to update range [%s,%s)' % (time.asctime(), lower, upper))
         db.start_transaction()
         params = list(vals) + [lower, upper]
         db.execute(stmt, params=params)
@@ -73,7 +74,7 @@ def create_index_if_nonexistant(db, table, col, index):
     test = """SELECT relname FROM pg_class
               WHERE relname = %s"""
     if len(db.execute(test, params=[index])) != 0:
-        print "Not creating index '%s' because it already exists" % (index,)
+        print("Not creating index '%s' because it already exists" % (index,))
     else:
         stmt = "CREATE INDEX %s ON %s (%s)" % (index, table, col)
         timed_ddl(db, stmt)
@@ -88,13 +89,13 @@ def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
     try:
         min_id = all_objects.all().order_by('id')[0].id
     except IndexError:
-        print 'There is no work to do'
+        print('There is no work to do')
         return
 
     max_id = all_objects.all().order_by('-id')[0].id
-    print "max_id = %d" % (max_id,)
+    print("max_id = %d" % (max_id,))
     overhead = int((max_id + 1 - min_id)/ batch_size * sleep / 60)
-    print "Expect this to take at least %d minutes, just due to sleeps alone." % (overhead,)
+    print("Expect this to take at least %d minutes, just due to sleeps alone." % (overhead,))
 
     while min_id <= max_id:
         lower = min_id
@@ -102,7 +103,7 @@ def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
         if upper > max_id:
             upper = max_id
 
-        print '%s about to update range %s to %s' % (time.asctime(), lower, upper)
+        print('%s about to update range %s to %s' % (time.asctime(), lower, upper))
 
         db.start_transaction()
         for filterer, action in tasks:

@@ -104,7 +104,7 @@ class SignupWorker(QueueProcessingWorker):
                         merge_vars=merge_vars,
                         double_optin=False,
                         send_welcome=False)
-            except MailChimpException, e:
+            except MailChimpException as e:
                 if e.code == 214:
                     logging.warning("Attempted to sign up already existing email to list: %s" % (data['EMAIL'],))
                 else:

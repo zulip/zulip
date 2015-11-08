@@ -30,6 +30,8 @@ from zerver.lib.actions import (
 import random
 import ujson
 import urllib
+import six
+from six.moves import range
 
 
 class StreamAdminTest(AuthedTestCase):
@@ -656,8 +658,8 @@ class SubscriptionAPITest(AuthedTestCase):
         json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
         for stream in json['subscriptions']:
-            self.assertIsInstance(stream['name'], basestring)
-            self.assertIsInstance(stream['color'], basestring)
+            self.assertIsInstance(stream['name'], six.string_types)
+            self.assertIsInstance(stream['color'], six.string_types)
             self.assertIsInstance(stream['invite_only'], bool)
             # check that the stream name corresponds to an actual stream
             try:
@@ -895,7 +897,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_length(queries, 43)
 
         self.assert_length(events, 6, exact=True)
-        for ev in filter(lambda x: x['event']['type'] not in ('message', 'stream'), events):
+        for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
             self.assertEqual(ev['event']['op'], 'add')
             self.assertEqual(
                     set(ev['event']['subscriptions'][0]['subscribers']),
@@ -961,7 +963,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_bulk_subscribe_MIT(self):
         realm = get_realm("mit.edu")
-        streams = ["stream_%s" % i for i in xrange(40)]
+        streams = ["stream_%s" % i for i in range(40)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
 
@@ -980,7 +982,7 @@ class SubscriptionAPITest(AuthedTestCase):
     def test_bulk_subscribe_many(self):
         # Create a whole bunch of streams
         realm = get_realm("zulip.com")
-        streams = ["stream_%s" % i for i in xrange(20)]
+        streams = ["stream_%s" % i for i in range(20)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
 
@@ -1401,7 +1403,7 @@ class GetSubscribersTest(AuthedTestCase):
         gather_subscriptions returns correct results with only 3 queries
         """
         realm = get_realm("zulip.com")
-        streams = ["stream_%s" % i for i in xrange(10)]
+        streams = ["stream_%s" % i for i in range(10)]
         for stream in streams:
             create_stream_if_needed(realm, stream)
         users_to_subscribe = [self.email, "othello@zulip.com", "cordelia@zulip.com"]

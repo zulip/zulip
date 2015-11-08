@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.db import connection
 from django.template import RequestContext, loader
 from django.utils.html import mark_safe
@@ -15,6 +16,10 @@ import itertools
 import time
 import re
 import pytz
+from six.moves import filter
+from six.moves import map
+from six.moves import range
+from six.moves import zip
 eastern_tz = pytz.timezone('US/Eastern')
 
 def make_table(title, cols, rows, has_row_class=False):
@@ -22,7 +27,7 @@ def make_table(title, cols, rows, has_row_class=False):
     if not has_row_class:
         def fix_row(row):
             return dict(cells=row, row_class=None)
-        rows = map(fix_row, rows)
+        rows = list(map(fix_row, rows))
 
     data = dict(title=title, cols=cols, rows=rows)
 
@@ -37,7 +42,7 @@ def dictfetchall(cursor):
     "Returns all rows from a cursor as a dict"
     desc = cursor.description
     return [
-        dict(zip([col[0] for col in desc], row))
+        dict(list(zip([col[0] for col in desc], row)))
         for row in cursor.fetchall()
     ]
 
@@ -226,7 +231,7 @@ def realm_summary_table(realm_minutes):
     def meets_goal(row):
         return row['active_user_count'] >= 5
 
-    num_active_sites = len(filter(meets_goal, rows))
+    num_active_sites = len(list(filter(meets_goal, rows)))
 
     # create totals
     total_active_user_count = 0
@@ -375,7 +380,7 @@ def ad_hoc_queries():
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
-        rows = map(list, rows)
+        rows = list(map(list, rows))
         cursor.close()
 
         def fix_rows(i, fixup_func):
@@ -609,7 +614,7 @@ def raw_user_activity_table(records):
                 format_date_for_activity_reports(record.last_visit)
         ]
 
-    rows = map(row, records)
+    rows = list(map(row, records))
     title = 'Raw Data'
     return make_table(title, cols, rows)
 

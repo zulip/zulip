@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 
@@ -36,8 +37,8 @@ python2.7 manage.py set_default_streams --domain=foo.com --streams=
 
     def handle(self, **options):
         if options["domain"] is None or options["streams"] is None:
-            print >>sys.stderr, "Please provide both a domain name and a default \
-set of streams (which can be empty, with `--streams=`)."
+            print("Please provide both a domain name and a default \
+set of streams (which can be empty, with `--streams=`).", file=sys.stderr)
             exit(1)
 
         stream_names = [stream.strip() for stream in options["streams"].split(",")]

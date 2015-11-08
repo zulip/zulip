@@ -1,5 +1,5 @@
 {% extends "zerver/portico_signup.html" %}
-
+{% load i18n %}
 {% comment %}
 Allow the user to accept the terms, creating an email record of that fact.
 {% endcomment %}
@@ -7,24 +7,25 @@ Allow the user to accept the terms, creating an email record of that fact.
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
 {% block portico_content %}
 
-<p>(Welcome! We think you'll like it here.)</p>
+<p>({% trans "Welcome! We think you'll like it here" %}.)</p>
+
 
 <div class="pitch">
     <hr/>
-    <p>You're almost there. We just need you to do one last thing.</p>
-    <h3>Accept the Zulip terms of service</h3>
+    <p>{% trans "You're almost there. We just need you to do one last thing" %}.</p>
+    <h3>{% trans "Accept the Zulip terms of service" %}</h3>
 </div>
 
 <form method="post" class="form-horizontal" id="registration" action="{% url 'zerver.views.accounts_accept_terms' %}">
 {% csrf_token %}
     <div class="control-group">
-        <label for="id_email" class="control-label">Email</label>
+        <label for="id_email" class="control-label">{% trans "Email" %}</label>
         <div class="controls fakecontrol">
             <p>{{ email }}</p>
         </div>
     </div>
     <div class="control-group">
-        <label for="id_full_name" class="control-label">Your name</label>
+        <label for="id_full_name" class="control-label">{% trans "Your name" %}</label>
         <div class="controls">
             <input id="id_full_name" class="required" type="text" name="full_name"
                    value="{% if form.full_name.value %}{{ form.full_name.value }}{% endif %}"
@@ -50,7 +51,7 @@ Allow the user to accept the terms, creating an email record of that fact.
                 {% endcomment %}
                 <input id="id_terms" class="required" type="checkbox" name="terms"
                        {% if form.terms.value %}checked="checked"{% endif %} />
-                I agree to the <a href="/terms">Terms of Service</a>.
+                {% trans "I agree to the" %} <a href="/terms">{% trans "Terms of Service" %}</a>.
             </label>
             {% if form.terms.errors %}
                 {% for error in form.terms.errors %}

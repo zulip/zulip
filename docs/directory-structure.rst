@@ -76,11 +76,11 @@ Tests
 =====
 
 +------------------------+-----------------------------------+
-| ``zerver/test*.py``             | Backend tests            |       |
+| ``zerver/test*.py``             | Backend tests            |
 +------------------------+-----------------------------------+
-| ``zerver/tests/frontend/node``  | Node Frontend unit tests |
+| ``frontend_tests/node``         | Node Frontend unit tests |
 +------------------------+-----------------------------------+
-| ``zerver/tests/frontend/tests`` | Casper frontend tests    |
+| ``frontend_tests/tests``        | Casper frontend tests    |
 +------------------------+-----------------------------------+
 
 Documentation

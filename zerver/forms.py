@@ -34,7 +34,7 @@ def not_mit_mailing_list(value):
         try:
             DNS.dnslookup("%s.pobox.ns.athena.mit.edu" % username, DNS.Type.TXT)
             return True
-        except DNS.Base.ServerError, e:
+        except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
                 raise ValidationError(mark_safe(u'That user does not exist at MIT or is a <a href="https://ist.mit.edu/email-lists">mailing list</a>. If you want to sign up an alias for Zulip, <a href="mailto:support@zulip.com">contact us</a>.'))
             else:
@@ -63,7 +63,7 @@ class HomepageForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.domain = kwargs.get("domain")
-        if kwargs.has_key("domain"):
+        if "domain" in kwargs:
             del kwargs["domain"]
         super(HomepageForm, self).__init__(*args, **kwargs)
 

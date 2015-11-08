@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.test import TestCase
 
 from zerver.lib.initial_password import initial_password
@@ -32,6 +33,7 @@ import ujson
 import urllib
 
 from contextlib import contextmanager
+import six
 
 API_KEYS = {}
 
@@ -147,10 +149,10 @@ def get_user_messages(user_profile):
         order_by('message')
     return [um.message for um in query]
 
-class DummyObject:
+class DummyObject(object):
     pass
 
-class DummyTornadoRequest:
+class DummyTornadoRequest(object):
     def __init__(self):
         self.connection = DummyObject()
         self.connection.stream = DummyStream()
@@ -176,7 +178,7 @@ class DummyHandler(object):
 class DummySession(object):
     session_key = "0"
 
-class DummyStream:
+class DummyStream(object):
     def closed(self):
         return False
 
@@ -256,7 +258,7 @@ class AuthedTestCase(TestCase):
             message_type_name = "private"
         else:
             message_type_name = "stream"
-        if isinstance(recipient_list, basestring):
+        if isinstance(recipient_list, six.string_types):
             recipient_list = [recipient_list]
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
@@ -319,7 +321,7 @@ class AuthedTestCase(TestCase):
 
     def fixture_data(self, type, action, file_type='json'):
         return open(os.path.join(os.path.dirname(__file__),
-                                 "../fixtures/%s/%s_%s.%s" % (type, type, action,file_type))).read()
+                                 "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read()
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):

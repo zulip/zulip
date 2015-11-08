@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+set -x
+source /srv/zulip-venv/bin/activate
+export PATH=$PATH:/srv/zulip-venv/bin
+./tools/test-js-with-node
+./tools/test-js-with-casper

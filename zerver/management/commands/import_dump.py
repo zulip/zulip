@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from optparse import make_option
 
@@ -41,9 +42,9 @@ Usage: python2.7 manage.py import_dump [--destroy-rebuild-database] [--chunk-siz
     def new_instance_check(self, model):
         count = model.objects.count()
         if count:
-            print "Zulip instance is not empty, found %d rows in %s table. " \
-                % (count, model._meta.db_table)
-            print "You may use --destroy-rebuild-database to destroy and rebuild the database prior to import."
+            print("Zulip instance is not empty, found %d rows in %s table. " \
+                % (count, model._meta.db_table))
+            print("You may use --destroy-rebuild-database to destroy and rebuild the database prior to import.")
             exit(1)
 
 
@@ -110,7 +111,7 @@ Usage: python2.7 manage.py import_dump [--destroy-rebuild-database] [--chunk-siz
         encoding = sys.getfilesystemencoding()
 
         if len(args) == 0:
-            print "Please provide at least one database dump file name."
+            print("Please provide at least one database dump file name.")
             exit(1)
 
         if not options["destroy_rebuild_database"]:
@@ -133,10 +134,10 @@ Usage: python2.7 manage.py import_dump [--destroy-rebuild-database] [--chunk-siz
             try:
                 fp = open(file_name, 'r')
             except IOError:
-                print "File not found: '%s'" % (file_name,)
+                print("File not found: '%s'" % (file_name,))
                 exit(1)
 
-            print "Processing file: %s ..." % (file_name,)
+            print("Processing file: %s ..." % (file_name,))
 
             # parse the database dump and load in memory
             # TODO: change this to a streaming parser to support loads > RAM size
@@ -146,19 +147,19 @@ Usage: python2.7 manage.py import_dump [--destroy-rebuild-database] [--chunk-siz
                 self.increment_row_counter(row_counter, database_dump, model)
                 self.import_table(database_dump, realm_notification_map, model)
 
-            print ""
+            print("")
 
         # set notifications_stream_id on realm objects to correct value now
         # that foreign keys are in streams table
         if len(realm_notification_map):
-            print "Setting realm notification stream..."
+            print("Setting realm notification stream...")
             for id, notifications_stream_id in realm_notification_map.items():
                 Realm.objects \
                     .filter(id=id) \
                     .update(notifications_stream = notifications_stream_id)
 
-        print ""
-        print "Testing data import: "
+        print("")
+        print("Testing data import: ")
 
         # test that everything from all json dumps made it into the database
         for model in models_to_import:

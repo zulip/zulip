@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from django.test import TestCase
 
 from zerver.models import (
@@ -52,6 +53,7 @@ from zerver.tornadoviews import get_events_backend
 
 from collections import OrderedDict
 import ujson
+from six.moves import range
 
 
 class GetEventsTest(AuthedTestCase):
@@ -691,7 +693,7 @@ class EventQueueTest(TestCase):
 
     def test_event_collapsing(self):
         queue = EventQueue("1")
-        for pointer_val in xrange(1, 10):
+        for pointer_val in range(1, 10):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
@@ -702,13 +704,13 @@ class EventQueueTest(TestCase):
                            "timestamp": "9"}])
 
         queue = EventQueue("2")
-        for pointer_val in xrange(1, 10):
+        for pointer_val in range(1, 10):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
         queue.push({"type": "unknown"})
         queue.push({"type": "restart", "server_generation": "1"})
-        for pointer_val in xrange(11, 20):
+        for pointer_val in range(11, 20):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
@@ -723,7 +725,7 @@ class EventQueueTest(TestCase):
                           {"id": 20,
                            "type": "restart",
                            "server_generation": "2"}])
-        for pointer_val in xrange(21, 23):
+        for pointer_val in range(21, 23):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
@@ -763,7 +765,7 @@ class EventQueueTest(TestCase):
                            "all": False,
                            "flag": "read",
                            "operation": "add",
-                           "messages": [1,2,3,4,5,6],
+                           "messages": [1, 2, 3, 4, 5, 6],
                            "timestamp": "1"}])
 
     def test_flag_remove_collapsing(self):
@@ -786,7 +788,7 @@ class EventQueueTest(TestCase):
                            "all": False,
                            "flag": "collapsed",
                            "operation": "remove",
-                           "messages": [1,2,3,4,5,6],
+                           "messages": [1, 2, 3, 4, 5, 6],
                            "timestamp": "1"}])
 
     def test_collapse_event(self):

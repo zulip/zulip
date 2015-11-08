@@ -5,6 +5,7 @@ Shows backlog count of ScheduledJobs of type Email
 """
 
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -24,7 +25,7 @@ Usage: python2.7 manage.py print_email_delivery_backlog
 """
 
     def handle(self, *args, **options):
-        print len(ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
-                                                  scheduled_timestamp__lte=datetime.utcnow()-timedelta(minutes=1)))
+        print(len(ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
+                                                  scheduled_timestamp__lte=datetime.utcnow()-timedelta(minutes=1))))
         return
 

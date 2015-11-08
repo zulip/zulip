@@ -33,6 +33,7 @@ For example:
   1234 //depot/security/src/
 
 '''
+from __future__ import print_function
 
 import os
 import sys
@@ -59,12 +60,12 @@ try:
     changelist = int(sys.argv[1])
     changeroot = sys.argv[2]
 except IndexError:
-    print >> sys.stderr, "Wrong number of arguments.\n\n",
-    print >> sys.stderr,  __doc__
+    print("Wrong number of arguments.\n\n", end=' ', file=sys.stderr)
+    print(__doc__, file=sys.stderr)
     sys.exit(-1)
 except ValueError:
-    print >> sys.stderr, "First argument must be an integer.\n\n",
-    print >> sys.stderr, __doc__
+    print("First argument must be an integer.\n\n", end=' ', file=sys.stderr)
+    print(__doc__, file=sys.stderr)
     sys.exit(-1)
 
 metadata = git_p4.p4_describe(changelist)
