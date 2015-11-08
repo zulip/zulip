@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from optparse import make_option
 
@@ -51,6 +52,6 @@ class Command(BaseCommand):
             for user_profile in user_profiles:
                 stream, _ = create_stream_if_needed(user_profile.realm, stream_name)
                 did_subscribe = do_add_subscription(user_profile, stream)
-                print "%s %s to %s" % (
+                print("%s %s to %s" % (
                     "Subscribed" if did_subscribe else "Already subscribed",
-                    user_profile.email, stream_name)
+                    user_profile.email, stream_name))

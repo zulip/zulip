@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+set -x
+
+cd /
+if [ "$EUID" -eq 0 ]; then
+    version=$(su postgres -c 'psql -A -t -d postgres -c "show server_version"')
+else
+    version=$(psql -A -t -d postgres -c "show server_version")
+fi
+
+major=$(echo $version | cut -d. -f1,2)
+pid_style=$(echo "$major > 9.1" | bc -l)
+username=$1
+shift
+tables=$(echo "'$@'" | sed "s/ /','/g")
+if [ "$pid_style" = "1" ]; then
+    pidname="pid"
+else
+    pidname="procpid"
+fi
+
+if [ "$EUID" -eq 0 ]; then
+    su postgres -c psql postgres postgres <<EOF
+SELECT pg_terminate_backend($pidname) FROM pg_stat_activity WHERE datname IN ($tables);
+EOF
+else
+    psql -h localhost postgres "$username" <<EOF
+SELECT pg_terminate_backend($pidname) FROM pg_stat_activity WHERE datname IN ($tables);
+EOF
+fi

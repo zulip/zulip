@@ -4,7 +4,7 @@ cd "$(dirname "$0")"/..
 
 export NODE_PATH=/usr/lib/nodejs:static
 
-INDEX_JS=zerver/tests/frontend/node/index.js
+INDEX_JS=frontend_tests/node_tests/index.js
 NODEJS=$(which nodejs || which node)
 if [ "$1" = "cover" ]; then
   # Run a coverage test with Istanbul.

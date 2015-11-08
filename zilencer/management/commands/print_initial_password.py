@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from zerver.lib.initial_password import initial_password
@@ -14,9 +15,9 @@ class Command(BaseCommand):
                             help="email of user to show password and API key for")
 
     def handle(self, *args, **options):
-        print self.fmt % ('email', 'password', 'API key')
+        print(self.fmt % ('email', 'password', 'API key'))
         for email in options['emails']:
             if '@' not in email:
-                print 'ERROR: %s does not look like an email address' % (email,)
+                print('ERROR: %s does not look like an email address' % (email,))
                 continue
-            print self.fmt % (email, initial_password(email), get_user_profile_by_email(email).api_key)
+            print(self.fmt % (email, initial_password(email), get_user_profile_by_email(email).api_key))

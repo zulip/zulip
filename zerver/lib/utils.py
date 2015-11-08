@@ -7,6 +7,7 @@ import os
 from time import sleep
 
 from django.conf import settings
+from six.moves import range
 
 def statsd_key(val, clean_periods=False):
     if not isinstance(val, str):
@@ -59,7 +60,7 @@ def run_in_batches(all_list, batch_size, callback, sleep_time = 0, logger = None
         return
 
     limit = (len(all_list) / batch_size) + 1;
-    for i in xrange(limit):
+    for i in range(limit):
         start = i*batch_size
         end = (i+1) * batch_size
         if end >= len(all_list):

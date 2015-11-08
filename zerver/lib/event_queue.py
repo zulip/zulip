@@ -10,7 +10,7 @@ import socket
 import logging
 import ujson
 import requests
-import cPickle as pickle
+import six.moves.cPickle as pickle
 import atexit
 import sys
 import signal
@@ -322,8 +322,7 @@ def do_gc_event_queues(to_remove, affected_users, affected_realms):
         if key not in client_dict:
             return
 
-        new_client_list = filter(lambda c: c.event_queue.id not in to_remove,
-                                client_dict[key])
+        new_client_list = [c for c in client_dict[key] if c.event_queue.id not in to_remove]
         if len(new_client_list) == 0:
             del client_dict[key]
         else:

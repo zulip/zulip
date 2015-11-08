@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.test import TestCase
 
@@ -40,7 +41,7 @@ import time
 import ujson
 
 def bail(msg):
-    print '\nERROR: %s\n' % (msg,)
+    print('\nERROR: %s\n' % (msg,))
     sys.exit(1)
 
 try:
@@ -198,7 +199,7 @@ class PermissionTest(AuthedTestCase):
         self.assert_json_error(result, 'Insufficient permission')
 
 class WorkerTest(TestCase):
-    class FakeClient:
+    class FakeClient(object):
         def __init__(self):
             self.consumers = {}
             self.queue = []
@@ -242,11 +243,11 @@ class WorkerTest(TestCase):
     def test_error_handling(self):
         processed = []
 
-        @queue_processors.assign_queue('flake')
-        class FlakyWorker(queue_processors.QueueProcessingWorker):
+        @queue_processors.assign_queue('unreliable_worker')
+        class UnreliableWorker(queue_processors.QueueProcessingWorker):
             def consume(self, data):
-                if data == 'freak out':
-                    raise Exception('Freaking out!')
+                if data == 'unexpected behaviour':
+                    raise Exception('Worker task not performing as expected!')
                 processed.append(data)
 
             def _log_problem(self):
@@ -254,23 +255,23 @@ class WorkerTest(TestCase):
                 pass
 
         fake_client = self.FakeClient()
-        for msg in ['good', 'fine', 'freak out', 'back to normal']:
-            fake_client.queue.append(('flake', msg))
+        for msg in ['good', 'fine', 'unexpected behaviour', 'back to normal']:
+            fake_client.queue.append(('unreliable_worker', msg))
 
-        fn = os.path.join(settings.QUEUE_ERROR_DIR, 'flake.errors')
+        fn = os.path.join(settings.QUEUE_ERROR_DIR, 'unreliable_worker.errors')
         try:
             os.remove(fn)
         except OSError:
             pass
 
         with simulated_queue_client(lambda: fake_client):
-            worker = FlakyWorker()
+            worker = UnreliableWorker()
             worker.start()
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         line = open(fn).readline().strip()
         event = ujson.loads(line.split('\t')[1])
-        self.assertEqual(event, 'freak out')
+        self.assertEqual(event, 'unexpected behaviour')
 
 class ActivityTest(AuthedTestCase):
     def test_activity(self):

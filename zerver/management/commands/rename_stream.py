@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 
@@ -27,7 +28,7 @@ class Command(BaseCommand):
         try:
             realm = get_realm(domain)
         except Realm.DoesNotExist:
-            print "Unknown domain %s" % (domain,)
+            print("Unknown domain %s" % (domain,))
             exit(1)
 
         do_rename_stream(realm, old_name.decode(encoding),

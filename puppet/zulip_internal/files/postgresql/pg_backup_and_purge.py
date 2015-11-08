@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 
+from __future__ import print_function
 import subprocess
 import sys
 import logging
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def run(args, dry_run=False):
     if dry_run:
-        print "Would have run: " + " ".join(args)
+        print("Would have run: " + " ".join(args))
         return ""
 
     p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,

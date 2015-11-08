@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from zerver.models import Realm, get_realm
@@ -33,7 +34,7 @@ Example: python2.7 manage.py realm_emoji --realm=zulip.com --op=show
         realm = get_realm(options["domain"])
         if options["op"] == "show":
             for name, url in realm.get_emoji().iteritems():
-                print name, url
+                print(name, url)
             sys.exit(0)
 
         name = options['name']

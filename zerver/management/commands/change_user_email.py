@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 
@@ -20,7 +21,7 @@ class Command(BaseCommand):
         try:
             user_profile = get_user_profile_by_email(old_email)
         except UserProfile.DoesNotExist:
-            print "Old e-mail doesn't exist in the system."
+            print("Old e-mail doesn't exist in the system.")
             exit(1)
 
         do_change_user_email(user_profile, new_email)

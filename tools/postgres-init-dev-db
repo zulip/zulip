@@ -49,6 +49,8 @@ else
 fi
 chmod go-rw ~/.pgpass
 
+"$(dirname "$0")/../scripts/setup/terminate-psql-sessions" "$USERNAME" "$DBNAME" "$DBNAME_BASE"
+
 psql -h localhost postgres "$USERNAME" <<EOF
 DROP DATABASE IF EXISTS $DBNAME;
 DROP DATABASE IF EXISTS $DBNAME_BASE;

@@ -154,7 +154,7 @@ class Realm(models.Model):
     def get_active_users(self):
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
-    class Meta:
+    class Meta(object):
         permissions = (
             ('administer', "Administer a realm"),
             ('api_super_user', "Can send messages as other users for mirroring"),
@@ -204,7 +204,7 @@ class RealmEmoji(models.Model):
     name = models.TextField()
     img_url = models.TextField()
 
-    class Meta:
+    class Meta(object):
         unique_together = ("realm", "name")
 
     def __str__(self):
@@ -230,7 +230,7 @@ class RealmFilter(models.Model):
     pattern = models.TextField()
     url_format_string = models.TextField()
 
-    class Meta:
+    class Meta(object):
         unique_together = ("realm", "pattern")
 
     def __str__(self):
@@ -504,7 +504,7 @@ class Stream(models.Model):
         # All streams are private at MIT.
         return self.realm.domain != "mit.edu" and not self.invite_only
 
-    class Meta:
+    class Meta(object):
         unique_together = ("name", "realm")
 
     @classmethod
@@ -545,7 +545,7 @@ class Recipient(models.Model):
     STREAM = 2
     HUDDLE = 3
 
-    class Meta:
+    class Meta(object):
         unique_together = ("type", "type_id")
 
     # N.B. If we used Django's choice=... we would get this for free (kinda)
@@ -1021,7 +1021,7 @@ class UserMessage(models.Model):
                  'has_alert_word', "historical", 'is_me_message']
     flags = BitField(flags=ALL_FLAGS, default=0)
 
-    class Meta:
+    class Meta(object):
         unique_together = ("user_profile", "message")
 
     def __repr__(self):
@@ -1056,7 +1056,7 @@ class Subscription(models.Model):
     # above.
     notifications = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(object):
         unique_together = ("user_profile", "recipient")
 
     def __repr__(self):
@@ -1145,7 +1145,7 @@ class UserActivity(models.Model):
     count = models.IntegerField()
     last_visit = models.DateTimeField('last visit')
 
-    class Meta:
+    class Meta(object):
         unique_together = ("user_profile", "client", "query")
 
 class UserActivityInterval(models.Model):
@@ -1239,14 +1239,14 @@ class UserPresence(models.Model):
 
         return status_val
 
-    class Meta:
+    class Meta(object):
         unique_together = ("user_profile", "client")
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm)
     stream = models.ForeignKey(Stream)
 
-    class Meta:
+    class Meta(object):
         unique_together = ("realm", "stream")
 
 # FIXME: The foreign key relationship here is backwards.

@@ -10,10 +10,10 @@ worry about setting up SSL certificates and an authentication mechanism.
 
 Recommended requirements:
 
-* Server running Ubuntu Precise or Debian Wheezy
+* Server running Ubuntu Trusty
 * At least 2 CPUs for production use with 100+ users
-* At least 4GB of RAM for production use with 100+ users.  We strongly
-  recommend against installing with less than 2GB of RAM, as you will
+* At least 4GB of RAM for production use with 100+ users.  We **strongly
+  recommend against installing with less than 2GB of RAM**, as you will
   likely experience OOM issues.  In the future we expect Zulip's RAM
   requirements to decrease to support smaller installations (see
   https://github.com/zulip/zulip/issues/32).
@@ -114,7 +114,7 @@ The `ADMIN_DOMAIN` realm is by default configured with the following settings:
 * `mandatory_topics=False`: Users are not required to specify a topic when sending messages.
 
 If you would like to change these settings, you can do so using the
-following process as the zulip user:
+Django management python shell (as the zulip user):
 
 ```
 cd /home/zulip/deployments/current
@@ -127,7 +127,11 @@ r.save() # save to the database
 
 If you realize you set `ADMIN_DOMAIN` wrong, in addition to fixing the
 value in settings.py, you will also want to do a similar manage.py
-process to set `r.domain = newexample.com`.
+process to set `r.domain = "newexample.com"`.  If you've already
+changed `ADMIN_DOMAIN` in settings.py, you can use
+`Realm.objects.all()` in the management shell to find the list of
+realms and pass the domain of the realm that is not "zulip.com" to
+`get_realm`.
 
 Depending what authentication backend you're planning to use, you will
 need to do some additional setup documented in the `settings.py` template:
@@ -231,8 +235,11 @@ problems and how to resolve them:
   service nginx restart
   ```
 
-If you run into additional problems, [please report them](https://github.com/zulip/zulip/issues) so that we can
-update these lists!
+If you run into additional problems, [please report
+them](https://github.com/zulip/zulip/issues) so that we can update
+these lists!  The Zulip installation scripts logs its full output to
+`/var/log/zulip/install.log`, so please include the context for any
+tracebacks from that log.
 
 
 Making your Zulip instance awesome
@@ -347,6 +354,20 @@ Maintaining Zulip in production
 
   You can create your own release tarballs from a copy of zulip.git
   repository using `tools/build-release-tarball`.
+
+* The Zulip upgrade script automatically logs output to
+  /var/log/zulip/upgrade.log; please use those logs to include output
+  that shows all errors in any bug reports.
+
+* The Zulip upgrade process works by creating a new deployment under
+  /home/zulip/deployments/ containing a complete copy of the Zulip
+  server code, and then moving the symlinks at
+  `/home/zulip/deployments/current` and /root/zulip` as part of the
+  upgrade process.  This means that if the new version isn't working,
+  you can quickly downgrade to the old version by using
+  `/home/zulip/deployments/<date>/scripts/restart-server` to return to
+  a previous version that you've deployed (the version is specified
+  via the path to the copy of `restart-server` you call).
 
 * To update your settings, simply edit `/etc/zulip/settings.py` and then
   run `/home/zulip/deployments/current/scripts/restart-server` to

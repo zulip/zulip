@@ -23,6 +23,7 @@ import base64
 import logging
 import cProfile
 from zerver.lib.mandrill_client import get_mandrill_client
+from six.moves import zip
 
 if settings.ZULIP_COM:
     from zilencer.models import get_deployment_by_domain, Deployment
@@ -242,7 +243,7 @@ def authenticated_rest_api_view(view_func):
         try:
             # Could be a UserProfile or a Deployment
             profile = validate_api_key(role, api_key)
-        except JsonableError, e:
+        except JsonableError as e:
             return json_unauthorized(e.error)
         request.user = profile
         process_client(request, profile)
@@ -326,7 +327,7 @@ def internal_notify_view(view_func):
             # We got called through the non-Tornado server somehow.
             # This is not a security check; it's an internal assertion
             # to help us find bugs.
-            raise RuntimeError, 'notify view called with no Tornado handler'
+            raise RuntimeError('notify view called with no Tornado handler')
         request._email = "internal"
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
@@ -409,13 +410,13 @@ class REQ(object):
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
 def has_request_variables(view_func):
-    num_params = view_func.func_code.co_argcount
-    if view_func.func_defaults is None:
+    num_params = view_func.__code__.co_argcount
+    if view_func.__defaults__ is None:
         num_default_params = 0
     else:
-        num_default_params = len(view_func.func_defaults)
-    default_param_names = view_func.func_code.co_varnames[num_params - num_default_params:]
-    default_param_values = view_func.func_defaults
+        num_default_params = len(view_func.__defaults__)
+    default_param_names = view_func.__code__.co_varnames[num_params - num_default_params:]
+    default_param_values = view_func.__defaults__
     if default_param_values is None:
         default_param_values = []
 

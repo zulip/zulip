@@ -92,7 +92,7 @@ in a while.
             return
 
         deployment_domains = domains_for_this_deployment()
-        for realm in Realm.objects.filter(deactivated=False,show_digest_email=True):
+        for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
             domain = realm.domain
             if not should_process_digest(domain, deployment_domains):
                 continue

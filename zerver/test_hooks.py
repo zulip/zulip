@@ -427,7 +427,7 @@ class PivotalV3HookTests(AuthedTestCase):
     def send_pivotal_message(self, name):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
-        return self.send_json_payload(email, "/api/v1/external/pivotal?api_key=%s&stream=%s" % (api_key,"pivotal"),
+        return self.send_json_payload(email, "/api/v1/external/pivotal?api_key=%s&stream=%s" % (api_key, "pivotal"),
                                       self.fixture_data('pivotal', name, file_type='xml'),
                                       stream_name="pivotal",
                                       content_type="application/xml")
@@ -498,7 +498,7 @@ class PivotalV5HookTests(AuthedTestCase):
     def send_pivotal_message(self, name):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
-        return self.send_json_payload(email, "/api/v1/external/pivotal?api_key=%s&stream=%s" % (api_key,"pivotal"),
+        return self.send_json_payload(email, "/api/v1/external/pivotal?api_key=%s&stream=%s" % (api_key, "pivotal"),
                                       self.fixture_data('pivotal', "v5_" + name, file_type='json'),
                                       stream_name="pivotal",
                                       content_type="application/xml")
@@ -583,7 +583,7 @@ class NewRelicHookTests(AuthedTestCase):
     def send_new_relic_message(self, name):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
-        return self.send_json_payload(email, "/api/v1/external/newrelic?api_key=%s&stream=%s" % (api_key,"newrelic"),
+        return self.send_json_payload(email, "/api/v1/external/newrelic?api_key=%s&stream=%s" % (api_key, "newrelic"),
                                       self.fixture_data('newrelic', name, file_type='txt'),
                                       stream_name="newrelic",
                                       content_type="application/x-www-form-urlencoded")

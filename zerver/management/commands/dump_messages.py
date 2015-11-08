@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from optparse import make_option
 from django.core.management.base import BaseCommand
@@ -31,4 +32,4 @@ class Command(BaseCommand):
         messages = Message.objects.filter(pub_date__gt=cutoff, recipient__in=recipients)
 
         for message in messages:
-            print message.to_dict(False)
+            print(message.to_dict(False))

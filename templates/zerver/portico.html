@@ -1,5 +1,5 @@
 {% extends "zerver/base.html" %}
-
+{% load i18n %}
 {% load compressed %}
 
 {% comment %}
@@ -28,13 +28,13 @@ hence the name.
 
   <div class="column-right top-links">
           {% if not only_sso %}
-          <a href="{{login_url}}">Log in</a>
+          <a href="{{login_url}}">{% trans 'Log in' %}</a>
           {% endif %}
 
           {% if only_sso %}
-          <a href="{% url 'login-sso' %}">Log In</a>
+          <a href="{% url 'login-sso' %}">{% trans 'Log In' %}</a>
           {% else %}
-          <a href="{% url 'register' %}">Register</a>
+          <a href="{% url 'register' %}">{% trans 'Register' %}</a>
           {% endif %}
   </div>
 </div>
@@ -55,19 +55,19 @@ hence the name.
 <div class="footer">
   <div class="footer-main">
     <ul class="footer-navigation">
-      <li><a href="/hello">About</a></li>
+      <li><a href="/hello">{% trans 'About' %}</a></li>
       {% if zulip_com %}
       <li><span class="little-bullet">·</span></li>
-      <li><a href="/terms">Legal</a></li>
+      <li><a href="/terms">{% trans 'Legal' %}</a></li>
       {% endif %}
       <li><span class="little-bullet">·</span></li>
-      <li><a href="{{login_url}}">Log in</a></li>
+      <li><a href="{{login_url}}">{% trans 'Log in' %}</a></li>
       {% if not only_sso %}
       <li><span class="little-bullet">·</span></li>
       <li>
           {% if zulip_com %}
           {% else %}
-          <a href="{% url 'register' %}">Register</a>
+          <a href="{% url 'register' %}">{% trans 'Register' %}</a>
           {% endif %}
       </li>
       {% endif %}

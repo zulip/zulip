@@ -1,1 +1,1 @@
-../zerver/tests/frontend/run
+../frontend_tests/run-casper

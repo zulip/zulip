@@ -1,3 +1,4 @@
+from __future__ import print_function
 from confirmation.models import Confirmation
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -220,7 +221,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'url': 'https://%s' % (settings.EXTERNAL_HOST,),
         'reply_warning': False,
         'external_host': settings.EXTERNAL_HOST,
-        'mention':missed_messages[0].recipient.type == Recipient.STREAM,
+        'mention': missed_messages[0].recipient.type == Recipient.STREAM,
         'reply_to_zulip': True,
     }
 
@@ -381,7 +382,7 @@ def clear_followup_emails_queue(email, mail_client=None):
     for email in mail_client.messages.list_scheduled(to=email):
         result = mail_client.messages.cancel_scheduled(id=email["_id"])
         if result.get("status") == "error":
-            print result.get("name"), result.get("error")
+            print(result.get("name"), result.get("error"))
     return
 
 def log_digest_event(msg):
@@ -445,7 +446,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                'tags': tags,
                }
     # ignore any delays smaller than 1-minute because it's cheaper just to sent them immediately
-    if type(delay) is not datetime.timedelta:
+    if not isinstance(delay, datetime.timedelta):
         raise TypeError("specified delay is of the wrong type: %s" % (type(delay),))
     if delay < datetime.timedelta(minutes=1):
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool")

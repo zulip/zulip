@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from django.conf import settings
 from django.test import TestCase
 
@@ -149,7 +150,7 @@ class BugdownTest(TestCase):
         for name, test in format_tests.iteritems():
             converted = bugdown_convert(test['input'])
 
-            print "Running Bugdown test %s" % (name,)
+            print("Running Bugdown test %s" % (name,))
             self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload, url, phrase=''):
@@ -164,7 +165,7 @@ class BugdownTest(TestCase):
             return payload % ("<a href=\"%s\"%s title=\"%s\">%s</a>" % (href, target, href, url),)
 
 
-        print "Running Bugdown Linkify tests"
+        print("Running Bugdown Linkify tests")
         self.maxDiff = None
         for inline_url, reference, url in linkify_tests:
             try:

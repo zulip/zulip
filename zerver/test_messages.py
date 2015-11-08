@@ -40,6 +40,7 @@ import datetime
 import time
 import re
 import ujson
+from six.moves import range
 
 
 def get_sqlalchemy_query_params(query):
@@ -844,8 +845,7 @@ class GetOldMessagesTest(AuthedTestCase):
                             stream, no_log=True)
         self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
         messages = get_user_messages(get_user_profile_by_email("hamlet@zulip.com"))
-        stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
-                                 messages)
+        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
         stream_name = get_display_recipient(stream_messages[0].recipient)
         stream_id = stream_messages[0].recipient.id
 
@@ -883,8 +883,7 @@ class GetOldMessagesTest(AuthedTestCase):
         self.check_well_formed_messages_response(result)
 
         messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
-        stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
-                                 messages)
+        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
 
         self.assertEqual(len(result["messages"]), 2)
         for i, message in enumerate(result["messages"]):
@@ -916,8 +915,7 @@ class GetOldMessagesTest(AuthedTestCase):
         self.check_well_formed_messages_response(result)
 
         messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
-        stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
-                                 messages)
+        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
         self.assertEqual(len(result["messages"]), 2)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
@@ -1070,7 +1068,7 @@ class GetOldMessagesTest(AuthedTestCase):
         error is returned.
         """
         self.login("hamlet@zulip.com")
-        bad_stream_content = (0, [], ["x","y"])
+        bad_stream_content = (0, [], ["x", "y"])
         self.exercise_bad_narrow_operand("pm-with", bad_stream_content,
             "Bad value for 'narrow'")
 
@@ -1125,7 +1123,7 @@ class GetOldMessagesTest(AuthedTestCase):
         with queries_captured() as queries:
             get_old_messages_backend(request, user_profile)
 
-        queries = filter(lambda q: q['sql'].startswith("SELECT message_id, flags"), queries)
+        queries = [q for q in queries if q['sql'].startswith("SELECT message_id, flags")]
 
         ids = {}
         for stream_name in ['Scotland']:

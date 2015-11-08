@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from django.db.models import Q
@@ -15,26 +16,26 @@ class Command(BaseCommand):
         if options['realms']:
             try:
                 realms = [get_realm(domain) for domain in options['realms']]
-            except Realm.DoesNotExist, e:
-                print e
+            except Realm.DoesNotExist as e:
+                print(e)
                 exit(1)
         else:
             realms = Realm.objects.all()
 
         for realm in realms:
-            print realm.domain
-            print "------------"
-            print "%25s %15s %10s" % ("stream", "subscribers", "messages")
+            print(realm.domain)
+            print("------------")
+            print("%25s %15s %10s" % ("stream", "subscribers", "messages"))
             streams = Stream.objects.filter(realm=realm).exclude(Q(name__istartswith="tutorial-"))
             invite_only_count = 0
             for stream in streams:
                 if stream.invite_only:
                     invite_only_count += 1
                     continue
-                print "%25s" % (stream.name,),
+                print("%25s" % (stream.name,), end=' ')
                 recipient = Recipient.objects.filter(type=Recipient.STREAM, type_id=stream.id)
-                print "%10d" % (len(Subscription.objects.filter(recipient=recipient, active=True)),),
+                print("%10d" % (len(Subscription.objects.filter(recipient=recipient, active=True)),), end=' ')
                 num_messages = len(Message.objects.filter(recipient=recipient))
-                print "%12d" % (num_messages,)
-            print "%d invite-only streams" % (invite_only_count,)
-            print ""
+                print("%12d" % (num_messages,))
+            print("%d invite-only streams" % (invite_only_count,))
+            print("")

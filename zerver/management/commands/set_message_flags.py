@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from optparse import make_option
 import logging
@@ -41,7 +42,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not options["flag"] or not options["op"] or not options["email"]:
-            print "Please specify an operation, a flag and an email"
+            print("Please specify an operation, a flag and an email")
             exit(1)
 
         op = options['op']

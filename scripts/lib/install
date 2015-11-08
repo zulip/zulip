@@ -11,7 +11,7 @@ deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu trusty main
 EOF
 
 apt-get update
-apt-get -y dist-upgrade
+apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python
 
 mkdir -p /etc/zulip
@@ -21,6 +21,9 @@ echo -e "[machine]\npuppet_classes = zulip::voyager\ndeploy_type = voyager" > /e
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
 if [ -e "/etc/init.d/nginx" ]; then
+    # Check nginx was configured properly now that we've installed it.
+    # Most common failure mode is certs not having been installed.
+    nginx -t
     service nginx restart
 fi
 

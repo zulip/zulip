@@ -719,7 +719,7 @@ def api_stash_webhook(request, user_profile, stream=REQ(default='')):
                     entry["toCommit"]["message"].split("\n")[0]) for \
                        entry in commit_entries]
         head_ref = commit_entries[-1]["toCommit"]["displayId"]
-    except KeyError, e:
+    except KeyError as e:
         return json_error("Missing key %s in JSON" % (e.message,))
 
     try:

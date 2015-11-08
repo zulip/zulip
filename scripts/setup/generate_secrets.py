@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 # This tools generates local_settings_generated.py using the template
 
+from __future__ import print_function
 import sys, os, os.path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -23,7 +24,7 @@ CAMO_KEY=%s
 """ % (camo_key,)
     with open(CAMO_CONFIG_FILENAME, 'w') as camo_file:
         camo_file.write(camo_config)
-    print "Generated Camo config file %s" % (CAMO_CONFIG_FILENAME,)
+    print("Generated Camo config file %s" % (CAMO_CONFIG_FILENAME,))
 
 def generate_django_secretkey():
     # Secret key generation taken from Django's startproject.py
@@ -55,7 +56,7 @@ def generate_secrets(development=False):
     out.write("".join(lines))
     out.close()
 
-    print "Generated %s with auto-generated secrets!" % (OUTPUT_SETTINGS_FILENAME,)
+    print("Generated %s with auto-generated secrets!" % (OUTPUT_SETTINGS_FILENAME,))
 
 if __name__ == '__main__':
 

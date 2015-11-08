@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+set -x
+
+apt-get install openssl ssl-cert
+ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
+ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
+
+tar -xf zulip-server-travis.tar.gz
+mv zulip-server-travis /root/zulip
+
+export APT_OPTIONS="-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
+/root/zulip/scripts/setup/install
+
+cat >>/etc/zulip/settings.py <<EOF
+# Travis CI override settings above
+EXTERNAL_HOST = 'zulip.travis.example.com'
+ZULIP_ADMINISTRATOR = 'zulip-travis-admin@travis.example.com'
+ADMIN_DOMAIN = 'travis.example.com'
+AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
+NOREPLY_EMAIL_ADDRESS = 'noreply@travis.example.com'
+DEFAULT_FROM_EMAIL = "Zulip <zulip@travis.example.com>"
+EOF
+
+su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database

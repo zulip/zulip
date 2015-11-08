@@ -20,8 +20,11 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import absolute_import
 
 import sys
+from six.moves import map
+from six.moves import range
 try:
     import simplejson
 except ImportError:
@@ -41,8 +44,8 @@ import select
 
 DEFAULT_SITE = "https://api.zulip.com"
 
-class States:
-    Startup, ZulipToZephyr, ZephyrToZulip, ChildSending = range(4)
+class States(object):
+    Startup, ZulipToZephyr, ZephyrToZulip, ChildSending = list(range(4))
 CURRENT_STATE = States.Startup
 
 def to_zulip_username(zephyr_username):

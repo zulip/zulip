@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.conf import settings
 from django.core import validators
@@ -28,6 +29,10 @@ from django.core.mail import EmailMessage
 from django.utils.timezone import now
 
 from confirmation.models import Confirmation
+import six
+from six.moves import filter
+from six.moves import map
+from six.moves import range
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
@@ -164,12 +169,13 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
         streams = get_default_subs(user_profile)
     bulk_add_subscriptions(streams, [user_profile])
 
-    # Give you the last 100 messages on your streams, so you have
+    # Give you the last 100 messages on your public streams, so you have
     # something to look at in your home view once you finish the
     # tutorial.
     one_week_ago = now() - datetime.timedelta(weeks=1)
     recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                              type_id__in=[stream.id for stream in streams])
+                                          type_id__in=[stream.id for stream in streams
+                                                       if not stream.invite_only])
     messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
     if len(messages) > 0:
         ums_to_create = [UserMessage(user_profile=user_profile, message=message,
@@ -566,8 +572,7 @@ def do_send_messages(messages):
             raise ValueError('Bad recipient type')
 
         # Only deliver the message to active user recipients
-        message['active_recipients'] = filter(lambda user_profile: user_profile.is_active,
-                                              message['recipients'])
+        message['active_recipients'] = [user_profile for user_profile in message['recipients'] if user_profile.is_active]
         message['message'].maybe_render_content(None)
         message['message'].update_calculated_fields()
 
@@ -762,7 +767,7 @@ def extract_recipients(s):
     except ValueError:
         data = s
 
-    if isinstance(data, basestring):
+    if isinstance(data, six.string_types):
         data = data.split(',')
 
     if not isinstance(data, list):
@@ -889,8 +894,8 @@ def check_message(sender, client, message_type_name, message_to,
         try:
             recipient = recipient_for_emails(message_to, not_forged_mirror_message,
                                              forwarder_user_profile, sender)
-        except ValidationError, e:
-            assert isinstance(e.messages[0], basestring)
+        except ValidationError as e:
+            assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
     else:
         raise JsonableError("Invalid message type")
@@ -939,7 +944,7 @@ def internal_prep_message(sender_email, recipient_type_name, recipients,
     try:
         return check_message(sender, get_client("Internal"), recipient_type_name,
                              parsed_recipients, subject, content, realm)
-    except JsonableError, e:
+    except JsonableError as e:
         logging.error("Error queueing internal message by %s: %s" % (sender_email, str(e)))
 
     return None
@@ -971,8 +976,7 @@ def pick_color_helper(user_profile, subs):
         "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
         "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
     used_colors = [sub.color for sub in subs if sub.active]
-    available_colors = filter(lambda x: x not in used_colors,
-                              stream_assignment_colors)
+    available_colors = [x for x in stream_assignment_colors if x not in used_colors]
 
     if available_colors:
         return available_colors[0]
@@ -1080,7 +1084,7 @@ def get_subscriber_ids(stream):
 
 def get_other_subscriber_ids(stream, user_profile_id):
     ids = get_subscriber_ids(stream)
-    return filter(lambda id: id != user_profile_id, ids)
+    return [id for id in ids if id != user_profile_id]
 
 def maybe_get_subscriber_emails(stream):
     """ Alternate version of get_subscriber_emails that takes a Stream object only
@@ -2270,7 +2274,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             'id': um.user_profile_id,
             'flags': um.flags_list()
         }
-    send_event(event, map(user_info, ums))
+    send_event(event, list(map(user_info, ums)))
 
 def encode_email_address(stream):
     return encode_email_address_helper(stream.name, stream.email_token)
@@ -2407,7 +2411,7 @@ def get_status_dict(requesting_user_profile):
 def get_realm_user_dicts(user_profile):
     # Due to our permission model, it is advantageous to find the admin users in bulk.
     admins = user_profile.realm.get_admin_users()
-    admin_emails = set(map(lambda up: up.email, admins))
+    admin_emails = set([up.email for up in admins])
     return [{'email'     : userdict['email'],
              'is_admin'  : userdict['email'] in admin_emails,
              'is_bot'    : userdict['is_bot'],
@@ -2415,9 +2419,9 @@ def get_realm_user_dicts(user_profile):
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
 def get_realm_bot_dicts(user_profile):
-    return [{'email'     : botdict['email'],
-             'full_name' : botdict['full_name'],
-             'api_key'   : botdict['api_key'],
+    return [{'email': botdict['email'],
+             'full_name': botdict['full_name'],
+             'api_key': botdict['api_key'],
              'default_sending_stream': botdict['default_sending_stream__name'],
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],
@@ -2556,8 +2560,7 @@ def apply_events(state, events, user_profile):
                 state['streams'] += event['streams']
             elif event['op'] == "vacate":
                 stream_ids = [s["stream_id"] for s in event['streams']]
-                state['streams'] = filter(lambda s: s["stream_id"] not in stream_ids,
-                                          state['streams'])
+                state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
         elif event['type'] == 'realm':
             field = 'realm_' + event['property']
             state[field] = event['value']
@@ -2572,7 +2575,7 @@ def apply_events(state, events, user_profile):
                 return sub['name'].lower()
 
             if event['op'] == "add":
-                added_names = map(name, event["subscriptions"])
+                added_names = list(map(name, event["subscriptions"]))
                 was_added = lambda s: name(s) in added_names
 
                 # add the new subscriptions
@@ -2582,15 +2585,15 @@ def apply_events(state, events, user_profile):
                 state['unsubscribed'] = list(itertools.ifilterfalse(was_added, state['unsubscribed']))
 
             elif event['op'] == "remove":
-                removed_names = map(name, event["subscriptions"])
+                removed_names = list(map(name, event["subscriptions"]))
                 was_removed = lambda s: name(s) in removed_names
 
                 # Find the subs we are affecting.
-                removed_subs = filter(was_removed, state['subscriptions'])
+                removed_subs = list(filter(was_removed, state['subscriptions']))
 
                 # Remove our user from the subscribers of the removed subscriptions.
                 for sub in removed_subs:
-                    sub['subscribers'] = filter(lambda id: id != user_profile.id, sub['subscribers'])
+                    sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
 
                 # We must effectively copy the removed subscriptions from subscriptions to
                 # unsubscribe, since we only have the name in our data structure.

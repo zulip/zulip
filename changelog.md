@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 [Unreleased]
+- Added options to the Python api for working with untrusted server certificates.
 
 [1.3.7] - 2015-10-19
 - Turn off desktop and audible notifications for streams by default.

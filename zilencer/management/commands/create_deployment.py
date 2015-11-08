@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from optparse import make_option
 import sys
 
@@ -31,17 +32,17 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if None in (options["api"], options["web"], options["domain"]):
-            print >>sys.stderr, "\033[1;31mYou must provide a domain, an API URL, and a web URL.\033[0m\n"
+            print("\033[1;31mYou must provide a domain, an API URL, and a web URL.\033[0m\n", file=sys.stderr)
             self.print_help("python2.7 manage.py", "create_realm")
             exit(1)
 
         if not options["no_realm"]:
             CreateRealm().handle(*args, **options)
-            print # Newline
+            print() # Newline
 
         realm = get_realm(options["domain"])
         if realm is None:
-            print >>sys.stderr, "\033[1;31mRealm does not exist!\033[0m\n"
+            print("\033[1;31mRealm does not exist!\033[0m\n", file=sys.stderr)
             exit(2)
 
         dep = Deployment()
@@ -55,6 +56,6 @@ class Command(BaseCommand):
         dep.base_api_url = options["api"]
         dep.base_site_url = options["web"]
         dep.save()
-        print "Deployment %s created." % (dep.id,)
-        print "DEPLOYMENT_ROLE_NAME = %s" % (dep.name,)
-        print "DEPLOYMENT_ROLE_KEY = %s" % (dep.api_key,)
+        print("Deployment %s created." % (dep.id,))
+        print("DEPLOYMENT_ROLE_NAME = %s" % (dep.name,))
+        print("DEPLOYMENT_ROLE_KEY = %s" % (dep.api_key,))

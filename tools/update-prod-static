@@ -25,7 +25,10 @@ os.chdir(settings.DEPLOY_ROOT)
 # Redirect child processes' output to a log file (most recent run only).
 fp = open('update-prod-static.log', 'w')
 
-# Compile Handlebars templates and minify JavaScripts.
+# Install node packages
+subprocess.check_call(['npm', 'install'], stdout=fp, stderr=fp);
+
+# Compile Handlebars templates and minify JavaScript.
 subprocess.check_call(['python', 'tools/minify-js']
                       + (['--prev-deploy', prev_deploy] if prev_deploy else []),
                       stdout=fp, stderr=fp)

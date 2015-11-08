@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import os
 import sys
 
@@ -9,8 +10,8 @@ import itertools
 def version():
     version_py = os.path.join(os.path.dirname(__file__), "zulip", "__init__.py")
     with open(version_py) as in_handle:
-        version_line = itertools.dropwhile(lambda x: not x.startswith("__version__"),
-                                           in_handle).next()
+        version_line = next(itertools.dropwhile(lambda x: not x.startswith("__version__"),
+                                           in_handle))
     version = version_line.split('=')[-1].strip().replace('"', '')
     return version
 
@@ -60,13 +61,13 @@ except ImportError:
     try:
         import simplejson
     except ImportError:
-        print >>sys.stderr, "simplejson is not installed"
+        print("simplejson is not installed", file=sys.stderr)
         sys.exit(1)
     try:
         import requests
         assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
     except (ImportError, AssertionError):
-        print >>sys.stderr, "requests >=0.12.1 is not installed"
+        print("requests >=0.12.1 is not installed", file=sys.stderr)
         sys.exit(1)
 
 

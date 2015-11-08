@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from optparse import make_option
 
@@ -35,12 +36,12 @@ class Command(BaseCommand):
             for email in emails:
                 user_profiles.append(get_user_profile_by_email(email))
 
-        print "Turned off digest emails for:"
+        print("Turned off digest emails for:")
         for user_profile in user_profiles:
             already_disabled_prefix = ""
             if user_profile.enable_digest_emails:
                 do_change_enable_digest_emails(user_profile, False)
             else:
                 already_disabled_prefix = "(already off) "
-            print "%s%s <%s>" % (already_disabled_prefix, user_profile.full_name,
-                                 user_profile.email)
+            print("%s%s <%s>" % (already_disabled_prefix, user_profile.full_name,
+                                 user_profile.email))

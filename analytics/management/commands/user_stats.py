@@ -1,10 +1,12 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import datetime
 import pytz
 
 from django.core.management.base import BaseCommand
 from zerver.models import UserProfile, Realm, Stream, Message, get_realm
+from six.moves import range
 
 class Command(BaseCommand):
     help = "Generate statistics on user activity."
@@ -22,20 +24,20 @@ class Command(BaseCommand):
         if options['realms']:
             try:
                 realms = [get_realm(domain) for domain in options['realms']]
-            except Realm.DoesNotExist, e:
-                print e
+            except Realm.DoesNotExist as e:
+                print(e)
                 exit(1)
         else:
             realms = Realm.objects.all()
 
         for realm in realms:
-            print realm.domain
+            print(realm.domain)
             user_profiles = UserProfile.objects.filter(realm=realm, is_active=True)
-            print "%d users" % (len(user_profiles),)
-            print "%d streams" % (len(Stream.objects.filter(realm=realm)),)
+            print("%d users" % (len(user_profiles),))
+            print("%d streams" % (len(Stream.objects.filter(realm=realm)),))
 
             for user_profile in user_profiles:
-                print "%35s" % (user_profile.email,),
+                print("%35s" % (user_profile.email,), end=' ')
                 for week in range(10):
-                    print "%5d" % (self.messages_sent_by(user_profile, week)),
-                print ""
+                    print("%5d" % (self.messages_sent_by(user_profile, week)), end=' ')
+                print("")

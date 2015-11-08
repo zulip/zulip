@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.conf import settings
 settings.RUNNING_INSIDE_TORNADO = True
@@ -73,11 +74,11 @@ class Command(BaseCommand):
             from django.utils import translation
             translation.activate(settings.LANGUAGE_CODE)
 
-            print "Validating Django models.py..."
+            print("Validating Django models.py...")
             self.validate(display_num_errors=True)
-            print "\nDjango version %s" % (django.get_version())
-            print "Tornado server is running at http://%s:%s/" % (addr, port)
-            print "Quit the server with %s." % (quit_command,)
+            print("\nDjango version %s" % (django.get_version()))
+            print("Tornado server is running at http://%s:%s/" % (addr, port))
+            print("Quit the server with %s." % (quit_command,))
 
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
@@ -238,7 +239,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         if response is RespondAsynchronously:
                             async_request_stop(request)
                             return
-                    except Exception, e:
+                    except Exception as e:
                         # If the view raised an exception, run it through exception
                         # middleware, and if the exception middleware returns a
                         # response, use that. Otherwise, reraise the exception.
@@ -251,7 +252,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
                 if response is None:
                     try:
-                        view_name = callback.func_name
+                        view_name = callback.__name__
                     except AttributeError:
                         view_name = callback.__class__.__name__ + '.__call__'
                     raise ValueError("The view %s.%s returned None." %
@@ -265,7 +266,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                     response = response.render()
 
 
-            except http.Http404, e:
+            except http.Http404 as e:
                 if settings.DEBUG:
                     from django.views import debug
                     response = debug.technical_404_response(request, e)
@@ -298,7 +299,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             except SystemExit:
                 # See https://code.djangoproject.com/ticket/4701
                 raise
-            except Exception, e:
+            except Exception as e:
                 exc_info = sys.exc_info()
                 signals.got_request_exception.send(sender=self.__class__, request=request)
                 return self.handle_uncaught_exception(request, resolver, exc_info)

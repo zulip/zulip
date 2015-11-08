@@ -1,0 +1,24 @@
+{
+  "name": "zulip",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "description": "",
+  "main": "",
+  "dependencies": {},
+  "devDependencies": {
+    "handlebars": "1.3.0",
+    "jQuery": "1.7.4",
+    "jsdom": "0.5.7",
+    "xmlhttprequest": "1.5.0",
+    "nwmatcher": "1.3.6",
+    "htmlparser2": "3.8.3",
+    "cssstyle": "0.2.29",
+    "webpack": "1.12.2",
+    "webpack-dev-server": "1.12.1"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zulip/zulip.git"
+  }
+}

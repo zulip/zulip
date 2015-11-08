@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from zerver.models import Realm, RealmAlias, get_realm
@@ -25,15 +26,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         realm = get_realm(options["domain"])
         if options["op"] == "show":
-            print "Aliases for %s:" % (realm.domain,)
+            print("Aliases for %s:" % (realm.domain,))
             for alias in realm_aliases(realm):
-                print alias
+                print(alias)
             sys.exit(0)
 
         alias = options['alias']
         if options["op"] == "add":
             if get_realm(alias) is not None:
-                print "A Realm already exists for this domain, cannot add it as an alias for another realm!"
+                print("A Realm already exists for this domain, cannot add it as an alias for another realm!")
                 sys.exit(1)
             RealmAlias.objects.create(realm=realm, domain=alias)
             sys.exit(0)

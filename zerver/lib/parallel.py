@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import pty
@@ -22,7 +23,7 @@ def run_parallel(job, data, threads=6):
             sys.stdin.close()
             try:
                 os.close(pty.STDIN_FILENO)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != errno.EBADF:
                     raise
             sys.stdin = open("/dev/null", "r")
@@ -43,7 +44,7 @@ def run_parallel(job, data, threads=6):
         try:
             (status, item) = wait_for_one()
             yield (status, item)
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ECHILD:
                 break
             else:
@@ -62,10 +63,10 @@ if __name__ == "__main__":
     for (status, job) in run_parallel(wait_and_print, jobs):
         output.append(job)
     if output == expected_output:
-        print "Successfully passed test!"
+        print("Successfully passed test!")
     else:
-        print "Failed test!"
-        print jobs
-        print expected_output
-        print output
+        print("Failed test!")
+        print(jobs)
+        print(expected_output)
+        print(output)
 

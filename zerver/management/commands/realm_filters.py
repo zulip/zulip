@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
@@ -39,7 +40,7 @@ Example: python2.7 manage.py realm_filters --realm=zulip.com --op=show
     def handle(self, *args, **options):
         realm = get_realm(options["domain"])
         if options["op"] == "show":
-            print "%s: %s" % (realm.domain, all_realm_filters().get(realm.domain, ""))
+            print("%s: %s" % (realm.domain, all_realm_filters().get(realm.domain, "")))
             sys.exit(0)
 
         pattern = options['pattern']
