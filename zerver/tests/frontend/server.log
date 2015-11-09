@@ -1,0 +1,563 @@
+[clean-repo] Deleting ./confirmation/management/__init__.pyc
+[clean-repo] Deleting ./confirmation/migrations/0001_initial.pyc
+[clean-repo] Deleting ./confirmation/migrations/__init__.pyc
+[clean-repo] Deleting ./confirmation/views.pyc
+[clean-repo] Deleting ./confirmation/models.pyc
+[clean-repo] Deleting ./confirmation/util.pyc
+[clean-repo] Deleting ./confirmation/__init__.pyc
+[clean-repo] Deleting ./zilencer/management/commands/__init__.pyc
+[clean-repo] Deleting ./zilencer/management/commands/print_initial_password.pyc
+[clean-repo] Deleting ./zilencer/management/__init__.pyc
+[clean-repo] Deleting ./zilencer/error_notify.pyc
+[clean-repo] Deleting ./zilencer/urls/pages.pyc
+[clean-repo] Deleting ./zilencer/urls/__init__.pyc
+[clean-repo] Deleting ./zilencer/urls/api.pyc
+[clean-repo] Deleting ./zilencer/migrations/0001_initial.pyc
+[clean-repo] Deleting ./zilencer/migrations/__init__.pyc
+[clean-repo] Deleting ./zilencer/views.pyc
+[clean-repo] Deleting ./zilencer/models.pyc
+[clean-repo] Deleting ./zilencer/__init__.pyc
+[clean-repo] Deleting ./analytics/management/__init__.pyc
+[clean-repo] Deleting ./analytics/urls.pyc
+[clean-repo] Deleting ./analytics/views.pyc
+[clean-repo] Deleting ./analytics/__init__.pyc
+[clean-repo] Deleting ./zproject/backends.pyc
+[clean-repo] Deleting ./zproject/local_settings_template.pyc
+[clean-repo] Deleting ./zproject/urls.pyc
+[clean-repo] Deleting ./zproject/settings.pyc
+[clean-repo] Deleting ./zproject/test_settings.pyc
+[clean-repo] Deleting ./zproject/__init__.pyc
+[clean-repo] Deleting ./zerver/decorator.pyc
+[clean-repo] Deleting ./zerver/exceptions.pyc
+[clean-repo] Deleting ./zerver/management/__init__.pyc
+[clean-repo] Deleting ./zerver/test_messages.pyc
+[clean-repo] Deleting ./zerver/test_subs.pyc
+[clean-repo] Deleting ./zerver/templatetags/minified_js.pyc
+[clean-repo] Deleting ./zerver/templatetags/__init__.pyc
+[clean-repo] Deleting ./zerver/middleware.pyc
+[clean-repo] Deleting ./zerver/test_external.pyc
+[clean-repo] Deleting ./zerver/forms.pyc
+[clean-repo] Deleting ./zerver/test_bugdown.pyc
+[clean-repo] Deleting ./zerver/tests.pyc
+[clean-repo] Deleting ./zerver/worker/queue_processors.pyc
+[clean-repo] Deleting ./zerver/worker/__init__.pyc
+[clean-repo] Deleting ./zerver/lib/create_user.pyc
+[clean-repo] Deleting ./zerver/lib/response.pyc
+[clean-repo] Deleting ./zerver/lib/timestamp.pyc
+[clean-repo] Deleting ./zerver/lib/unminify.pyc
+[clean-repo] Deleting ./zerver/lib/initial_password.pyc
+[clean-repo] Deleting ./zerver/lib/digest.pyc
+[clean-repo] Deleting ./zerver/lib/mention.pyc
+[clean-repo] Deleting ./zerver/lib/context_managers.pyc
+[clean-repo] Deleting ./zerver/lib/db.pyc
+[clean-repo] Deleting ./zerver/lib/rate_limiter.pyc
+[clean-repo] Deleting ./zerver/lib/timeout.pyc
+[clean-repo] Deleting ./zerver/lib/mandrill_client.pyc
+[clean-repo] Deleting ./zerver/lib/user_agent.pyc
+[clean-repo] Deleting ./zerver/lib/query.pyc
+[clean-repo] Deleting ./zerver/lib/test_helpers.pyc
+[clean-repo] Deleting ./zerver/lib/actions.pyc
+[clean-repo] Deleting ./zerver/lib/ccache.pyc
+[clean-repo] Deleting ./zerver/lib/session_user.pyc
+[clean-repo] Deleting ./zerver/lib/notifications.pyc
+[clean-repo] Deleting ./zerver/lib/redis_utils.pyc
+[clean-repo] Deleting ./zerver/lib/rest.pyc
+[clean-repo] Deleting ./zerver/lib/alert_words.pyc
+[clean-repo] Deleting ./zerver/lib/html_diff.pyc
+[clean-repo] Deleting ./zerver/lib/cache.pyc
+[clean-repo] Deleting ./zerver/lib/avatar.pyc
+[clean-repo] Deleting ./zerver/lib/narrow.pyc
+[clean-repo] Deleting ./zerver/lib/queue.pyc
+[clean-repo] Deleting ./zerver/lib/email_mirror.pyc
+[clean-repo] Deleting ./zerver/lib/bugdown/testing_mocks.pyc
+[clean-repo] Deleting ./zerver/lib/bugdown/fenced_code.pyc
+[clean-repo] Deleting ./zerver/lib/bugdown/codehilite.pyc
+[clean-repo] Deleting ./zerver/lib/bugdown/__init__.pyc
+[clean-repo] Deleting ./zerver/lib/validator.pyc
+[clean-repo] Deleting ./zerver/lib/upload.pyc
+[clean-repo] Deleting ./zerver/lib/socket.pyc
+[clean-repo] Deleting ./zerver/lib/test_runner.pyc
+[clean-repo] Deleting ./zerver/lib/logging_util.pyc
+[clean-repo] Deleting ./zerver/lib/push_notifications.pyc
+[clean-repo] Deleting ./zerver/lib/cache_helpers.pyc
+[clean-repo] Deleting ./zerver/lib/__init__.pyc
+[clean-repo] Deleting ./zerver/lib/event_queue.pyc
+[clean-repo] Deleting ./zerver/lib/utils.pyc
+[clean-repo] Deleting ./zerver/test_signup.pyc
+[clean-repo] Deleting ./zerver/test_unread.pyc
+[clean-repo] Deleting ./zerver/migrations/0005_auto_20150920_1340.pyc
+[clean-repo] Deleting ./zerver/migrations/0004_userprofile_left_side_userlist.pyc
+[clean-repo] Deleting ./zerver/migrations/0001_initial.pyc
+[clean-repo] Deleting ./zerver/migrations/0002_django_1_8.pyc
+[clean-repo] Deleting ./zerver/migrations/0006_subscription_starred.pyc
+[clean-repo] Deleting ./zerver/migrations/0003_custom_indexes.pyc
+[clean-repo] Deleting ./zerver/migrations/__init__.pyc
+[clean-repo] Deleting ./zerver/tornadoviews.pyc
+[clean-repo] Deleting ./zerver/test_hooks.pyc
+[clean-repo] Deleting ./zerver/views/webhooks.pyc
+[clean-repo] Deleting ./zerver/views/__init__.pyc
+[clean-repo] Deleting ./zerver/views/messages.pyc
+[clean-repo] Deleting ./zerver/models.pyc
+[clean-repo] Deleting ./zerver/context_processors.pyc
+[clean-repo] Deleting ./zerver/test_decorators.pyc
+[clean-repo] Deleting ./zerver/handlers.pyc
+[clean-repo] Deleting ./zerver/test_events.pyc
+[clean-repo] Deleting ./zerver/__init__.pyc
+[clean-repo] Deleting ./corporate/urls.pyc
+[clean-repo] Deleting ./corporate/__init__.pyc
+2015-10-16 22:35:42,111 INFO: process_fts_updates starting
+2015-10-16 22:35:42,223 INFO: Not in recovery; listening for FTS updates
+Validating Django models.py...
+
+Django version 1.8
+Tornado server is running at http://localhost:9983/
+Quit the server with CTRL-C.
+2015-10-16 18:35:51,267 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-16 18:35:51,280 INFO     Tornado loaded 0 event queues in 0.051s
+2015-10-16 18:35:52,121 INFO     Tornado  39.9% busy over the past  0.8 seconds
+2015-10-16 18:35:57,956 INFO     Tornado  35.7% busy over the past  6.7 seconds
+2015-10-16 18:36:03,192 INFO     Tornado  38.6% busy over the past 11.9 seconds
+2015-10-16 18:36:09,041 INFO     Tornado  40.1% busy over the past 17.8 seconds
+2015-10-16 18:36:14,101 INFO     Tornado  39.8% busy over the past 22.8 seconds
+Traceback (most recent call last):
+  File "manage.py", line 24, in <module>
+    execute_from_command_line(sys.argv)
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/django/core/management/__init__.py", line 338, in execute_from_command_line
+    utility.execute()
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/django/core/management/__init__.py", line 312, in execute
+    django.setup()
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/django/__init__.py", line 17, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/django/utils/log.py", line 86, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python2.7/logging/config.py", line 794, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python2.7/logging/config.py", line 568, in configure
+    handler = self.configure_handler(handlers[name])
+  File "/usr/lib/python2.7/logging/config.py", line 711, in configure_handler
+    klass = self.resolve(cname)
+  File "/usr/lib/python2.7/logging/config.py", line 394, in resolve
+    self.importer(used)
+  File "/srv/zulip/zerver/handlers.py", line 13, in <module>
+    from zerver.lib.queue import queue_json_publish
+  File "/srv/zulip/zerver/lib/queue.py", line 4, in <module>
+    import pika
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/pika/__init__.py", line 20, in <module>
+    from pika.adapters import BaseConnection
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/pika/adapters/__init__.py", line 36, in <module>
+    from pika.adapters.twisted_connection import TwistedConnection
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/pika/adapters/twisted_connection.py", line 16, in <module>
+    from twisted.internet import defer, error, reactor
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/twisted/internet/reactor.py", line 38, in <module>
+    from twisted.internet import default
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/twisted/internet/default.py", line 56, in <module>
+    install = _getInstallFunction(platform)
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/twisted/internet/default.py", line 44, in _getInstallFunction
+    from twisted.internet.epollreactor import install
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/twisted/internet/epollreactor.py", line 24, in <module>
+    from twisted.internet import posixbase
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/twisted/internet/posixbase.py", line 23, in <module>
+    from twisted.internet import error, udp, tcp
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/twisted/internet/tcp.py", line 29, in <module>
+    from twisted.internet._newtls import (
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/twisted/internet/_newtls.py", line 21, in <module>
+    from twisted.protocols.tls import TLSMemoryBIOFactory, TLSMemoryBIOProtocol
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/twisted/protocols/tls.py", line 41, in <module>
+    from OpenSSL.SSL import Error, ZeroReturnError, WantReadError
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/OpenSSL/__init__.py", line 8, in <module>
+    from OpenSSL import rand, crypto, SSL
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/OpenSSL/rand.py", line 11, in <module>
+    from OpenSSL._util import (
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/OpenSSL/_util.py", line 7, in <module>
+    binding = Binding()
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/cryptography/hazmat/bindings/openssl/binding.py", line 114, in __init__
+    self._ensure_ffi_initialized()
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/cryptography/hazmat/bindings/openssl/binding.py", line 126, in _ensure_ffi_initialized
+    cls._modules,
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/cryptography/hazmat/bindings/utils.py", line 31, in load_library_for_binding
+    lib = ffi.verifier.load_library()
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/cffi/verifier.py", line 97, in load_library
+    return self._load_library()
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/cffi/verifier.py", line 207, in _load_library
+    return self._vengine.load_library()
+  File "/srv/zulip-venv/local/lib/python2.7/site-packages/cffi/vengine_cpy.py", line 155, in load_library
+    raise ffiplatform.VerificationError(error)
+cffi.ffiplatform.VerificationError: importing '/srv/zulip-venv/local/lib/python2.7/site-packages/cryptography/_Cryptography_cffi_a269d620xd5c405b7.so': /srv/zulip-venv/local/lib/python2.7/site-packages/cryptography/_Cryptography_cffi_a269d620xd5c405b7.so: failed to map segment from shared object: Cannot allocate memory
+2015-10-16 18:36:24,001 INFO     Tornado  42.1% busy over the past 32.7 seconds
+2015-10-16 18:36:30,430 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,456 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,494 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,510 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,540 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,569 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+[16/Oct/2015 18:36:31]"GET /accounts/home HTTP/1.0" 301 0
+2015-10-16 18:36:31,254 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+[16/Oct/2015 18:36:31]"GET /accounts/home/ HTTP/1.0" 200 4623
+2015-10-16 18:36:32,220 INFO     Tornado  43.1% busy over the past 40.9 seconds
+[16/Oct/2015 18:36:34]"GET / HTTP/1.0" 302 0
+[16/Oct/2015 18:36:34]"GET /login?next=/ HTTP/1.0" 301 0
+[16/Oct/2015 18:36:34]"GET /login/?next=/ HTTP/1.0" 200 6360
+[16/Oct/2015 18:36:34]"GET /static/third/bootstrap/css/bootstrap.css HTTP/1.0" 200 101361
+[16/Oct/2015 18:36:34]"GET /static/third/bootstrap/css/bootstrap-btn.css HTTP/1.0" 200 9524
+[16/Oct/2015 18:36:34]"GET /static/third/bootstrap/css/bootstrap-responsive.css HTTP/1.0" 200 30323
+[16/Oct/2015 18:36:34]"GET /static/third/jquery/jquery-1.7.2.js HTTP/1.0" 200 252881
+[16/Oct/2015 18:36:34]"GET /static/js/blueslip.js HTTP/1.0" 200 13642
+[16/Oct/2015 18:36:34]"GET /static/third/underscore/underscore.js HTTP/1.0" 200 42472
+[16/Oct/2015 18:36:34]"GET /static/js/common.js HTTP/1.0" 200 1556
+[16/Oct/2015 18:36:34]"GET /static/third/bootstrap/js/bootstrap.js HTTP/1.0" 200 67480
+[16/Oct/2015 18:36:34]"GET /static/third/zocial/zocial.css HTTP/1.0" 200 7103
+[16/Oct/2015 18:36:34]"GET /static/styles/portico.css HTTP/1.0" 200 36020
+[16/Oct/2015 18:36:34]"GET /static/styles/pygments.css HTTP/1.0" 200 3968
+[16/Oct/2015 18:36:34]"GET /static/styles/thirdparty-fonts.css HTTP/1.0" 200 31868
+[16/Oct/2015 18:36:34]"GET /static/styles/fonts.css HTTP/1.0" 200 6626
+[16/Oct/2015 18:36:34]"GET /static/js/signup.js HTTP/1.0" 200 1771
+[16/Oct/2015 18:36:34]"GET /static/third/jquery-validate/jquery.validate.js HTTP/1.0" 200 39473
+[16/Oct/2015 18:36:34]"GET /static/images/logo/zulipcornerlogo%402x.png HTTP/1.0" 200 10142
+[16/Oct/2015 18:36:34]"GET /static/third/sourcesans/SourceSansPro-Regular-webfont.woff HTTP/1.0" 200 86252
+[16/Oct/2015 18:36:34]"GET /static/third/sourcesans/SourceSansPro-Light-webfont.woff HTTP/1.0" 200 82976
+[16/Oct/2015 18:36:34]"GET /static/third/sourcesans/SourceSansPro-Bold-webfont.woff HTTP/1.0" 200 86712
+[16/Oct/2015 18:36:34]"GET /static/third/sourcesans/SourceSansPro-ExtraLight-webfont.woff HTTP/1.0" 200 79444
+[16/Oct/2015 18:36:34]"GET /static/third/sourcesans/SourceSansPro-Semibold-webfont.woff HTTP/1.0" 200 86712
+[16/Oct/2015 18:36:34]"GET /static/third/sourcesans/SourceSansPro-Black-webfont.woff HTTP/1.0" 200 82844
+[16/Oct/2015 18:36:35]"POST /accounts/login/?next=/ HTTP/1.0" 302 0
+2015-10-16 18:36:35,627 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:36:35,866 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:36:36]"GET / HTTP/1.0" 200 55158
+[16/Oct/2015 18:36:36]"GET /static/third/bootstrap-notify/css/bootstrap-notify.css HTTP/1.0" 200 10609
+[16/Oct/2015 18:36:36]"GET /static/third/spectrum/spectrum.css HTTP/1.0" 200 13485
+[16/Oct/2015 18:36:36]"GET /static/styles/zulip.css HTTP/1.0" 200 76774
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-perfect-scrollbar/css/perfect-scrollbar.css HTTP/1.0" 200 3756
+[16/Oct/2015 18:36:36]"GET /static/third/bootstrap-notify/js/bootstrap-notify.js HTTP/1.0" 200 12415
+[16/Oct/2015 18:36:36]"GET /static/third/html5-formdata/formdata.js HTTP/1.0" 200 1209
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-filedrop/jquery.filedrop.js HTTP/1.0" 200 18882
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-form/jquery.form.js HTTP/1.0" 200 38140
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-caret/jquery.caret.1.02.js HTTP/1.0" 200 2648
+[16/Oct/2015 18:36:36]"GET /static/third/xdate/xdate.dev.js HTTP/1.0" 200 21091
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-mousewheel/jquery.mousewheel.js HTTP/1.0" 200 2401
+[16/Oct/2015 18:36:36]"GET /static/third/spin/spin.js HTTP/1.0" 200 11419
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-idle/jquery.idle.js HTTP/1.0" 200 4817
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-autosize/jquery.autosize.js HTTP/1.0" 200 8977
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js HTTP/1.0" 200 10254
+[16/Oct/2015 18:36:36]"GET /static/third/jquery-perfect-scrollbar/js/perfect-scrollbar.js HTTP/1.0" 200 20406
+[16/Oct/2015 18:36:36]"GET /static/third/lazyload/lazyload.js HTTP/1.0" 200 13271
+[16/Oct/2015 18:36:36]"GET /static/third/spectrum/spectrum.js HTTP/1.0" 200 58246
+[16/Oct/2015 18:36:36]"GET /static/third/winchan/winchan.js HTTP/1.0" 200 9235
+[16/Oct/2015 18:36:36]"GET /static/third/sockjs/sockjs-0.3.4.js HTTP/1.0" 200 77471
+[16/Oct/2015 18:36:36]"GET /static/third/handlebars/handlebars.runtime.js HTTP/1.0" 200 17473
+[16/Oct/2015 18:36:36]"GET /static/third/marked/lib/marked.js HTTP/1.0" 200 31045
+[16/Oct/2015 18:36:36]"GET /static/js/feature_flags.js HTTP/1.0" 200 1206
+[16/Oct/2015 18:36:36]"GET /static/templates/compiled.js HTTP/1.0" 200 168945
+[16/Oct/2015 18:36:36]"GET /static/js/util.js HTTP/1.0" 200 6289
+[16/Oct/2015 18:36:36]"GET /static/js/dict.js HTTP/1.0" 200 3670
+[16/Oct/2015 18:36:36]"GET /static/js/loading.js HTTP/1.0" 200 2970
+[16/Oct/2015 18:36:36]"GET /static/js/localstorage.js HTTP/1.0" 200 520
+[16/Oct/2015 18:36:36]"GET /static/js/channel.js HTTP/1.0" 200 3883
+[16/Oct/2015 18:36:36]"GET /static/js/muting.js HTTP/1.0" 200 1294
+[16/Oct/2015 18:36:36]"GET /static/js/muting_ui.js HTTP/1.0" 200 1505
+[16/Oct/2015 18:36:36]"GET /static/js/setup.js HTTP/1.0" 200 1865
+[16/Oct/2015 18:36:36]"GET /static/js/viewport.js HTTP/1.0" 200 11206
+[16/Oct/2015 18:36:36]"GET /static/js/unread.js HTTP/1.0" 200 9037
+[16/Oct/2015 18:36:36]"GET /static/js/rows.js HTTP/1.0" 200 3216
+[16/Oct/2015 18:36:36]"GET /static/js/filter.js HTTP/1.0" 200 14504
+[16/Oct/2015 18:36:36]"GET /static/js/narrow.js HTTP/1.0" 200 22150
+[16/Oct/2015 18:36:36]"GET /static/js/stream_list.js HTTP/1.0" 200 17740
+[16/Oct/2015 18:36:36]"GET /static/js/reload.js HTTP/1.0" 200 8287
+[16/Oct/2015 18:36:36]"GET /static/js/compose_fade.js HTTP/1.0" 200 8478
+[16/Oct/2015 18:36:36]"GET /static/js/fenced_code.js HTTP/1.0" 200 5135
+[16/Oct/2015 18:36:36]"GET /static/js/echo.js HTTP/1.0" 200 19061
+[16/Oct/2015 18:36:36]"GET /static/js/socket.js HTTP/1.0" 200 16212
+[16/Oct/2015 18:36:36]"GET /static/js/compose.js HTTP/1.0" 200 33102
+[16/Oct/2015 18:36:36]"GET /static/js/stream_color.js HTTP/1.0" 200 6767
+[16/Oct/2015 18:36:36]"GET /static/js/stream_data.js HTTP/1.0" 200 4908
+[16/Oct/2015 18:36:36]"GET /static/js/admin.js HTTP/1.0" 200 15484
+[16/Oct/2015 18:36:36]"GET /static/js/message_edit.js HTTP/1.0" 200 7046
+[16/Oct/2015 18:36:36]"GET /static/js/condense.js HTTP/1.0" 200 5106
+[16/Oct/2015 18:36:36]"GET /static/js/subs.js HTTP/1.0" 200 43794
+[16/Oct/2015 18:36:36]"GET /static/js/resize.js HTTP/1.0" 200 8570
+[16/Oct/2015 18:36:36]"GET /static/js/floating_recipient_bar.js HTTP/1.0" 200 3284
+[16/Oct/2015 18:36:36]"GET /static/js/ui.js HTTP/1.0" 200 19765
+[16/Oct/2015 18:36:36]"GET /static/js/click_handlers.js HTTP/1.0" 200 13650
+[16/Oct/2015 18:36:36]"GET /static/js/scroll_bar.js HTTP/1.0" 200 2009
+[16/Oct/2015 18:36:37]"GET /static/js/gear_menu.js HTTP/1.0" 200 2555
+[16/Oct/2015 18:36:37]"GET /static/js/popovers.js HTTP/1.0" 200 21837
+[16/Oct/2015 18:36:37]"GET /static/js/typeahead_helper.js HTTP/1.0" 200 5371
+[16/Oct/2015 18:36:37]"GET /static/js/copy_and_paste.js HTTP/1.0" 200 5134
+[16/Oct/2015 18:36:37]"GET /static/js/search_suggestion.js HTTP/1.0" 200 12831
+[16/Oct/2015 18:36:37]"GET /static/js/search.js HTTP/1.0" 200 5209
+[16/Oct/2015 18:36:37]"GET /static/js/composebox_typeahead.js HTTP/1.0" 200 16046
+[16/Oct/2015 18:36:37]"GET /static/js/navigate.js HTTP/1.0" 200 3502
+[16/Oct/2015 18:36:37]"GET /static/js/hotkey.js HTTP/1.0" 200 12591
+[16/Oct/2015 18:36:37]"GET /static/js/favicon.js HTTP/1.0" 200 948
+[16/Oct/2015 18:36:37]"GET /static/js/notifications.js HTTP/1.0" 200 22135
+[16/Oct/2015 18:36:37]"GET /static/js/invite.js HTTP/1.0" 200 4293
+[16/Oct/2015 18:36:37]"GET /static/js/hashchange.js HTTP/1.0" 200 5649
+[16/Oct/2015 18:36:37]"GET /static/js/message_list_view.js HTTP/1.0" 200 38694
+[16/Oct/2015 18:36:37]"GET /static/js/message_list.js HTTP/1.0" 200 21969
+[16/Oct/2015 18:36:37]"GET /static/js/message_flags.js HTTP/1.0" 200 2875
+[16/Oct/2015 18:36:37]"GET /static/js/alert_words.js HTTP/1.0" 200 1691
+[16/Oct/2015 18:36:37]"GET /static/js/alert_words_ui.js HTTP/1.0" 200 2110
+[16/Oct/2015 18:36:37]"GET /static/js/people.js HTTP/1.0" 200 5190
+[16/Oct/2015 18:36:37]"GET /static/js/message_store.js HTTP/1.0" 200 22943
+[16/Oct/2015 18:36:37]"GET /static/js/server_events.js HTTP/1.0" 200 14311
+[16/Oct/2015 18:36:37]"GET /static/js/zulip.js HTTP/1.0" 200 12398
+[16/Oct/2015 18:36:37]"GET /static/js/activity.js HTTP/1.0" 200 13835
+[16/Oct/2015 18:36:37]"GET /static/js/colorspace.js HTTP/1.0" 200 1677
+[16/Oct/2015 18:36:37]"GET /static/js/timerender.js HTTP/1.0" 200 5913
+[16/Oct/2015 18:36:37]"GET /static/js/templates.js HTTP/1.0" 200 2543
+[16/Oct/2015 18:36:37]"GET /static/js/avatar.js HTTP/1.0" 200 6231
+[16/Oct/2015 18:36:37]"GET /static/js/tutorial.js HTTP/1.0" 200 21143
+[16/Oct/2015 18:36:37]"GET /static/js/settings.js HTTP/1.0" 200 26868
+[16/Oct/2015 18:36:37]"GET /static/js/tab_bar.js HTTP/1.0" 200 6028
+[16/Oct/2015 18:36:37]"GET /static/js/emoji.js HTTP/1.0" 200 12306
+[16/Oct/2015 18:36:37]"GET /static/js/referral.js HTTP/1.0" 200 3746
+[16/Oct/2015 18:36:37]"GET /static/js/custom_markdown.js HTTP/1.0" 200 4328
+[16/Oct/2015 18:36:37]"GET /static/js/bot_data.js HTTP/1.0" 200 1700
+2015-10-16 18:36:37,356 INFO     Tornado  41.0% busy over the past 46.1 seconds
+[16/Oct/2015 18:36:37]"GET /static/third/fontawesome/fontawesome-webfont.woff?v=3.2.1 HTTP/1.0" 200 43572
+[16/Oct/2015 18:36:37]"GET /static/third/zxcvbn/zxcvbn.js?_=1445034997381 HTTP/1.0" 200 698425
+2015-10-16 18:36:37,619 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:36:37]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+2015-10-16 18:36:37,850 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:36:37]"POST /json/update_active_status HTTP/1.0" 200 190
+[16/Oct/2015 18:36:38]"POST /json/get_old_messages HTTP/1.0" 200 16774
+[16/Oct/2015 18:36:38]"POST /accounts/logout/ HTTP/1.0" 302 0
+[16/Oct/2015 18:36:38]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:36:38]"GET /accounts/login HTTP/1.0" 301 0
+[16/Oct/2015 18:36:39]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:36:39]"POST /accounts/login/?next= HTTP/1.0" 302 0
+2015-10-16 18:36:39,608 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:36:39,677 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:36:39]"GET / HTTP/1.0" 200 55273
+[16/Oct/2015 18:36:40]"GET /static/third/zxcvbn/zxcvbn.js?_=1445035000008 HTTP/1.0" 200 698425
+2015-10-16 18:36:40,363 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:36:40]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+[16/Oct/2015 18:36:40]"POST /json/update_active_status HTTP/1.0" 200 191
+[16/Oct/2015 18:36:40]"POST /json/get_old_messages HTTP/1.0" 200 16774
+2015-10-16 18:36:41,026 INFO     Disconnected handler for queue 1445034943:1 (iago@zulip.com/website)
+[16/Oct/2015 18:36:41]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:41]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:41]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:42]"POST /json/report_send_time HTTP/1.0" 200 30
+2015-10-16 18:36:42,410 INFO     Tornado  40.7% busy over the past 51.1 seconds
+[16/Oct/2015 18:36:42]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:42]"POST /json/report_send_time HTTP/1.0" 200 30
+2015-10-16 18:36:44,800 INFO     Disconnected handler for queue 1445034943:1 (iago@zulip.com/website)
+[16/Oct/2015 18:36:45]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:45]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:45]"POST /accounts/logout/ HTTP/1.0" 302 0
+[16/Oct/2015 18:36:45]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:36:46]"GET /accounts/login HTTP/1.0" 301 0
+[16/Oct/2015 18:36:46]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:36:46]"POST /accounts/login/?next= HTTP/1.0" 302 0
+2015-10-16 18:36:46,987 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:36:47,058 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:36:47]"GET / HTTP/1.0" 200 55273
+[16/Oct/2015 18:36:47]"GET /static/templates/compiled.js HTTP/1.0" 304 0
+[16/Oct/2015 18:36:47]"GET /static/third/zxcvbn/zxcvbn.js?_=1445035007418 HTTP/1.0" 200 698425
+2015-10-16 18:36:47,615 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:36:47]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+[16/Oct/2015 18:36:47]"POST /json/update_active_status HTTP/1.0" 200 191
+2015-10-16 18:36:47,780 INFO     Tornado  38.9% busy over the past 56.5 seconds
+[16/Oct/2015 18:36:47]"POST /json/get_old_messages HTTP/1.0" 200 22212
+2015-10-16 18:36:48,332 INFO     Disconnected handler for queue 1445034943:2 (iago@zulip.com/website)
+[16/Oct/2015 18:36:48]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:48]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:49]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:49]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:49]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:50]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:50]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:50]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:51]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:51]"POST /json/report_send_time HTTP/1.0" 200 30
+2015-10-16 18:36:52,818 INFO     Tornado  37.9% busy over the past 59.3 seconds
+2015-10-16 18:36:53,531 INFO     Disconnected handler for queue 1445034943:2 (iago@zulip.com/website)
+[16/Oct/2015 18:36:53]"POST /json/get_old_messages HTTP/1.0" 200 5560
+[16/Oct/2015 18:36:53]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:54]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:54]"POST /json/get_old_messages HTTP/1.0" 200 3139
+[16/Oct/2015 18:36:54]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:54]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:54]"POST /json/get_old_messages HTTP/1.0" 200 5299
+[16/Oct/2015 18:36:54]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:55]"POST /json/get_old_messages HTTP/1.0" 200 5560
+[16/Oct/2015 18:36:55]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:55]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:55]"POST /json/get_old_messages HTTP/1.0" 200 789
+[16/Oct/2015 18:36:55]"POST /json/get_old_messages HTTP/1.0" 200 2281
+2015-10-16 18:36:55,610 INFO     Disconnected handler for queue 1445034943:2 (iago@zulip.com/website)
+[16/Oct/2015 18:36:55]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:55]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:56]"POST /json/get_old_messages HTTP/1.0" 200 5560
+[16/Oct/2015 18:36:56]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:56]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:56]"POST /json/get_old_messages HTTP/1.0" 200 3139
+[16/Oct/2015 18:36:56]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:56]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:57]"POST /json/get_old_messages HTTP/1.0" 200 3654
+[16/Oct/2015 18:36:57]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:57]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+2015-10-16 18:36:57,601 INFO     Disconnected handler for queue 1445034943:2 (iago@zulip.com/website)
+[16/Oct/2015 18:36:57]"POST /json/get_old_messages HTTP/1.0" 200 5560
+[16/Oct/2015 18:36:57]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:57]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+2015-10-16 18:36:57,922 INFO     Tornado  36.6% busy over the past 59.5 seconds
+[16/Oct/2015 18:36:58]"POST /json/get_old_messages HTTP/1.0" 200 7537
+[16/Oct/2015 18:36:58]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:58]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:36:58]"POST /accounts/logout/ HTTP/1.0" 302 0
+[16/Oct/2015 18:36:58]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:36:59]"GET /accounts/login HTTP/1.0" 301 0
+[16/Oct/2015 18:36:59]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:36:59]"POST /accounts/login/?next= HTTP/1.0" 302 0
+2015-10-16 18:36:59,858 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:36:59,926 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:00]"GET / HTTP/1.0" 200 55273
+[16/Oct/2015 18:37:00]"GET /static/templates/compiled.js HTTP/1.0" 304 0
+[16/Oct/2015 18:37:00]"GET /static/third/zxcvbn/zxcvbn.js?_=1445035020211 HTTP/1.0" 200 698425
+2015-10-16 18:37:00,406 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:37:00]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+[16/Oct/2015 18:37:00]"POST /json/update_active_status HTTP/1.0" 200 191
+[16/Oct/2015 18:37:00]"POST /json/get_old_messages HTTP/1.0" 200 28911
+2015-10-16 18:37:01,155 INFO     Disconnected handler for queue 1445034943:3 (iago@zulip.com/website)
+[16/Oct/2015 18:37:01]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:37:01]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:37:02]"POST /json/get_old_messages HTTP/1.0" 200 3042
+[16/Oct/2015 18:37:02]"POST /json/report_narrow_time HTTP/1.0" 200 30
+2015-10-16 18:37:03,204 INFO     Tornado  35.3% busy over the past 59.5 seconds
+[16/Oct/2015 18:37:03]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:37:03]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:37:03]"POST /accounts/logout/ HTTP/1.0" 302 0
+[16/Oct/2015 18:37:04]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:37:04]"GET /accounts/login HTTP/1.0" 301 0
+[16/Oct/2015 18:37:04]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:37:05]"POST /accounts/login/?next= HTTP/1.0" 302 0
+2015-10-16 18:37:05,301 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:05,449 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:05]"GET / HTTP/1.0" 200 55273
+[16/Oct/2015 18:37:05]"GET /static/third/zxcvbn/zxcvbn.js?_=1445035025796 HTTP/1.0" 200 698425
+2015-10-16 18:37:06,130 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:37:06]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+[16/Oct/2015 18:37:06]"POST /json/update_active_status HTTP/1.0" 200 191
+[16/Oct/2015 18:37:06]"POST /json/get_public_streams HTTP/1.0" 200 388
+[16/Oct/2015 18:37:06]"POST /json/get_old_messages HTTP/1.0" 200 31103
+[16/Oct/2015 18:37:06]"POST /json/subscriptions/exists HTTP/1.0" 404 45
+2015-10-16 18:37:06,706 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:06,763 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:06,798 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:06]"POST /json/get_subscribers HTTP/1.0" 200 63
+[16/Oct/2015 18:37:07]"POST /json/subscriptions/exists HTTP/1.0" 200 62
+[16/Oct/2015 18:37:07]"POST /json/subscriptions/add HTTP/1.0" 200 99
+[16/Oct/2015 18:37:07]"POST /json/subscriptions/exists HTTP/1.0" 400 61
+[16/Oct/2015 18:37:07]"POST /json/subscriptions/add HTTP/1.0" 400 51
+2015-10-16 18:37:07,527 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,538 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,551 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,564 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,576 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,587 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,612 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,640 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,660 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,713 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:07,816 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:07]"POST /json/subscriptions/add HTTP/1.0" 200 99
+[16/Oct/2015 18:37:07]"POST /accounts/logout/ HTTP/1.0" 302 0
+[16/Oct/2015 18:37:08]"GET /accounts/login/ HTTP/1.0" 200 6359
+2015-10-16 18:37:08,229 INFO     Tornado  34.2% busy over the past 59.8 seconds
+[16/Oct/2015 18:37:08]"GET /accounts/login HTTP/1.0" 301 0
+[16/Oct/2015 18:37:08]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:37:09]"POST /accounts/login/?next= HTTP/1.0" 302 0
+2015-10-16 18:37:09,164 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:09,220 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:09]"GET / HTTP/1.0" 200 55571
+[16/Oct/2015 18:37:09]"GET /static/templates/compiled.js HTTP/1.0" 304 0
+[16/Oct/2015 18:37:09]"GET /static/third/zxcvbn/zxcvbn.js?_=1445035029597 HTTP/1.0" 200 698425
+2015-10-16 18:37:09,739 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:37:09]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+[16/Oct/2015 18:37:09]"POST /json/update_active_status HTTP/1.0" 200 191
+[16/Oct/2015 18:37:10]"GET /json/streams HTTP/1.0" 200 459
+[16/Oct/2015 18:37:10]"POST /json/get_old_messages HTTP/1.0" 200 31103
+2015-10-16 18:37:10,516 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:10]"POST /json/settings/change HTTP/1.0" 200 52
+[16/Oct/2015 18:37:10]"POST /json/fetch_api_key HTTP/1.0" 200 75
+2015-10-16 18:37:10,878 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:10]"POST /json/settings/change HTTP/1.0" 200 49
+2015-10-16 18:37:11,220 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:11,252 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:11]"POST /json/bots HTTP/1.0" 200 277
+[16/Oct/2015 18:37:11]"POST /accounts/logout/ HTTP/1.0" 302 0
+[16/Oct/2015 18:37:11]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:37:12]"GET /accounts/login HTTP/1.0" 301 0
+[16/Oct/2015 18:37:12]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:37:13]"POST /accounts/login/?next= HTTP/1.0" 302 0
+2015-10-16 18:37:13,049 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:13,109 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:13]"GET / HTTP/1.0" 200 55990
+2015-10-16 18:37:13,363 INFO     Tornado  32.7% busy over the past 59.8 seconds
+[16/Oct/2015 18:37:13]"GET /static/third/zxcvbn/zxcvbn.js?_=1445035033494 HTTP/1.0" 200 698425
+2015-10-16 18:37:13,797 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:37:13]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+[16/Oct/2015 18:37:13]"POST /json/update_active_status HTTP/1.0" 200 191
+[16/Oct/2015 18:37:13]"POST /json/get_old_messages HTTP/1.0" 200 31103
+2015-10-16 18:37:14,577 INFO     Disconnected handler for queue 1445034943:6 (iago@zulip.com/website)
+[16/Oct/2015 18:37:14]"POST /json/get_old_messages HTTP/1.0" 200 44
+[16/Oct/2015 18:37:14]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:37:15]"POST /json/report_unnarrow_time HTTP/1.0" 200 30
+2015-10-16 18:37:15,175 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:15,191 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:15]"POST /json/update_message_flags HTTP/1.0" 200 46
+[16/Oct/2015 18:37:15]"POST /json/update_message_flags HTTP/1.0" 200 46
+[16/Oct/2015 18:37:15]"POST /accounts/logout/ HTTP/1.0" 302 0
+[16/Oct/2015 18:37:15]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:37:15]"GET /accounts/login HTTP/1.0" 301 0
+[16/Oct/2015 18:37:16]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:37:16]"POST /accounts/login/?next= HTTP/1.0" 302 0
+2015-10-16 18:37:16,546 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:16,600 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:16]"GET / HTTP/1.0" 200 55991
+[16/Oct/2015 18:37:17]"GET /static/third/zxcvbn/zxcvbn.js?_=1445035036996 HTTP/1.0" 200 698425
+2015-10-16 18:37:17,220 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:37:17]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+[16/Oct/2015 18:37:17]"POST /json/update_active_status HTTP/1.0" 200 191
+[16/Oct/2015 18:37:17]"POST /json/get_old_messages HTTP/1.0" 200 31616
+2015-10-16 18:37:17,920 INFO     Disconnected handler for queue 1445034943:7 (iago@zulip.com/website)
+[16/Oct/2015 18:37:18]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:37:18]"POST /json/fetch_raw_message HTTP/1.0" 200 59
+2015-10-16 18:37:18,517 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:18,519 INFO     Tornado  27.6% busy over the past 58.5 seconds
+[16/Oct/2015 18:37:18]"POST /json/update_message HTTP/1.0" 200 30
+[16/Oct/2015 18:37:19]"POST /json/report_send_time HTTP/1.0" 200 30
+[16/Oct/2015 18:37:19]"POST /json/fetch_raw_message HTTP/1.0" 200 62
+2015-10-16 18:37:19,636 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:19]"POST /json/update_message HTTP/1.0" 200 30
+[16/Oct/2015 18:37:19]"GET /accounts/login HTTP/1.0" 301 0
+[16/Oct/2015 18:37:20]"GET /accounts/login/ HTTP/1.0" 200 6359
+[16/Oct/2015 18:37:20]"POST /accounts/login/?next= HTTP/1.0" 302 0
+2015-10-16 18:37:20,734 INFO     Starting new HTTP connection (1): localhost
+2015-10-16 18:37:20,824 INFO     Starting new HTTP connection (1): localhost
+[16/Oct/2015 18:37:21]"GET / HTTP/1.0" 200 55991
+[16/Oct/2015 18:37:21]"GET /static/templates/compiled.js HTTP/1.0" 304 0
+[16/Oct/2015 18:37:21]"GET /static/third/zxcvbn/zxcvbn.js?_=1445035041171 HTTP/1.0" 200 698425
+2015-10-16 18:37:21,398 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+[16/Oct/2015 18:37:21]"GET /static/third/gemoji/images/emoji/heart.png HTTP/1.0" 404 1847
+[16/Oct/2015 18:37:21]"POST /json/update_active_status HTTP/1.0" 200 191
+[16/Oct/2015 18:37:21]"POST /json/get_old_messages HTTP/1.0" 200 33273
+[16/Oct/2015 18:37:21]"GET /json/streams HTTP/1.0" 200 459
+[16/Oct/2015 18:37:22]"POST /json/get_public_streams HTTP/1.0" 200 459
+[16/Oct/2015 18:37:23]"POST /json/get_old_messages HTTP/1.0" 200 7311
+[16/Oct/2015 18:37:23]"POST /json/report_narrow_time HTTP/1.0" 200 30
+2015-10-16 18:37:23,576 INFO     Tornado  28.4% busy over the past 59.4 seconds
+2015-10-16 18:37:23,581 INFO     Disconnected handler for queue 1445034943:8 (iago@zulip.com/website)
+[16/Oct/2015 18:37:23]"POST /json/get_public_streams HTTP/1.0" 200 459
+[16/Oct/2015 18:37:23]"POST /json/get_old_messages HTTP/1.0" 200 10148
+[16/Oct/2015 18:37:23]"POST /json/report_narrow_time HTTP/1.0" 200 30
+[16/Oct/2015 18:37:24]"POST /accounts/logout/ HTTP/1.0" 302 0
+[16/Oct/2015 18:37:24]"GET /accounts/login/ HTTP/1.0" 200 6359
+2015-10-16 18:37:24,658 INFO     Client disconnected for queue 1445034943:8 (iago@zulip.com via website)
+System check identified no issues (0 silenced).
+2015-10-16 18:37:24,684 INFO     Tornado dumped 9 event queues in 0.012s

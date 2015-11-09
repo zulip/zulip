@@ -62,10 +62,6 @@ function update_stream_sidebar_swatch_color(id, color) {
     $("#stream_sidebar_privacy_swatch_" + id).css('color', color);
 }
 
-function update_stream_sidebar_star_color(id, color) {
-    $("#stream_sidebar_swatch_" + id).css('color', color);
-    $("#stream_sidebar_privacy_swatch_" + id).css('color', color);
-}
 function update_historical_message_color(stream_name, color) {
     update_table_stream_color($(".focused_table"), stream_name, color);
     if ($(".focused_table").attr("id") !== "#zhome") {
@@ -103,12 +99,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     if (opts.update_historical) {
         update_historical_message_color(stream_name, color);
     }
-    if (sub.starred) {
-        update_stream_sidebar_star_color(id, color);
-    }
-    else {
-        update_stream_sidebar_swatch_color(id, color);
-    }
+    update_stream_sidebar_swatch_color(id, color);
     tab_bar.colorize_tab_bar();
 };
 

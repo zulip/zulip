@@ -1,0 +1,201 @@
+2015-10-12 15:43:45,017 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-12 16:30:28,202 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-12 16:30:29,837 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-14 17:04:51,026 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-14 17:04:51,121 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-14 17:16:14,837 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-14 17:17:37,880 WARNING  Not Found: /admin
+2015-10-14 17:17:38,327 WARNING  Not Found: /favicon.ico
+2015-10-14 17:20:55,154 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-14 18:07:35,446 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 10:51:26,405 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 11:26:43,908 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-15 11:27:26,297 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 11:38:58,734 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 11:46:29,273 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 11:55:03,455 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 12:04:09,679 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 12:34:00,335 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 12:35:53,352 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 12:52:23,043 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 13:34:16,893 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 13:34:17,166 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 13:35:08,557 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 13:37:28,590 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 13:41:57,236 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:22:20,111 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:32:34,535 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:34:29,641 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:35:08,402 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:36:03,690 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:37:00,184 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:42:28,504 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:42:42,448 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:43:01,152 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 14:43:25,831 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:07:19,668 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-15 15:07:26,284 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:08:05,788 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:09:34,746 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:11:31,206 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:12:16,706 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:21:13,272 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:23:45,343 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:40:03,297 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-15 15:40:11,469 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:44:54,573 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:46:34,138 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:47:26,757 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:51:07,964 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:54:10,626 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 15:57:38,774 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:02:21,155 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:03:10,931 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:03:11,484 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:07:27,421 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:08:25,793 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-15 16:08:56,967 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:08:57,600 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:10:53,529 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:11:47,179 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:13:33,824 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:24:00,031 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:51:37,076 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-15 16:51:41,902 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:51:43,797 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:52:12,015 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:52:12,539 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:52:51,667 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:52:52,590 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:53:58,411 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 16:54:00,289 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 17:05:23,043 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 17:13:55,826 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 17:15:44,655 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 17:18:37,713 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 18:38:07,172 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:05:18,693 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:07:04,473 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:08:11,215 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:08:41,713 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:10:37,322 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:11:08,580 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:11:50,614 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:13:08,826 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:13:21,664 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:18:03,889 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:18:27,140 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:21:56,355 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:24:14,622 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:28:35,510 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:29:55,637 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:33:37,109 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:35:46,837 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:37:14,202 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:39:27,572 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:46:09,938 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-15 19:46:14,072 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:46:52,520 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 19:48:15,904 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-15 20:06:45,089 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 13:34:06,905 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 13:40:16,832 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 13:41:01,191 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 14:28:17,285 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-16 14:34:19,060 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 14:34:19,424 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 14:34:35,746 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 14:36:40,984 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 14:37:18,134 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 14:58:44,402 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-16 16:08:28,085 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 17:02:01,559 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 17:08:12,649 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-16 17:08:17,417 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 17:08:18,151 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 17:08:52,705 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-16 17:09:01,154 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 17:09:02,381 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:24:55,454 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-16 18:25:00,580 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:25:01,507 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:27:17,227 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-16 18:27:21,177 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:27:21,862 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:29:05,834 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-16 18:29:15,333 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:29:16,408 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:33:50,809 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-16 18:33:55,149 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:33:55,901 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:35:51,267 ERROR    Could not deserialize event queues
+Traceback (most recent call last):
+  File "/srv/zulip/zerver/lib/event_queue.py", line 392, in load_event_queues
+    for (qid, client) in ujson.loads(json_data))
+ValueError: Expected object or value
+2015-10-16 18:36:30,430 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,456 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,510 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,494 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,540 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,569 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:30,569 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:31,254 ERROR    Cannot run a queue processor when USING_RABBITMQ is False!
+2015-10-16 18:36:37,619 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:36:40,363 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:36:47,615 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:37:00,406 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:37:06,130 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:37:09,739 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:37:13,797 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:37:17,220 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 18:37:21,398 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 19:34:38,643 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-16 19:34:39,179 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-17 12:37:41,049 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-17 12:37:42,288 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-17 21:05:27,727 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-17 21:05:31,322 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-17 21:38:17,651 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-17 21:38:17,916 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-17 21:38:18,092 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-17 21:38:44,680 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-19 08:24:15,623 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-19 08:24:31,345 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-19 10:59:30,782 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-19 10:59:36,266 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-19 11:13:46,032 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-19 11:44:22,591 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-19 17:56:52,004 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-19 17:58:23,472 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-19 17:58:24,141 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
+2015-10-19 19:08:29,090 WARNING  Failed to send to rabbitmq, trying to reconnect and send again
+2015-10-19 22:34:05,430 WARNING  Not Found: /static/third/gemoji/images/emoji/heart.png
