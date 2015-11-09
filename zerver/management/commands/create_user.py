@@ -11,7 +11,7 @@ from django.core import validators
 
 from zerver.models import Realm, get_realm, email_to_username
 from zerver.lib.actions import do_create_user
-from zerver.views import notify_new_user
+from zerver.lib.actions import notify_new_user
 from zerver.lib.initial_password import initial_password
 from six.moves import input
 
