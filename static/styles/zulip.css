@@ -316,8 +316,7 @@ a:hover code {
 }
 
 .sidebar-title, .share-the-love-title {
-    font-size: 11px;
-    font-weight: normal;
+    font-size: 14px;
     display: inline;
 }
 
@@ -368,6 +367,16 @@ a:hover code {
 .narrow-filter {
     display: block;
     position: relative;
+}
+
+.stream-filters-label {
+    font-size: 12px;
+    color: #808080;
+    padding-left: 33px;
+}
+
+#stream_filters li.stream-filters-label:hover { 
+    background-color: transparent;
 }
 
 #stream_filters li:hover {
@@ -2811,17 +2820,6 @@ button.topic_edit_cancel {
     left: 10px;
     top: 5px;
     box-shadow: inset 0px 0px 3px -2px #000;
-}
-
-.streamlist_star{
-    display: block;
-    width: 11px;
-    height: 11px;
-    vertical-align: middle;
-    float: left;
-    position: absolute;
-    left: 10px;
-    top: 5px;
 }
 
 .streamlist_swatch.private-stream-swatch {

@@ -9,14 +9,8 @@
 
     <div class="subscription_block selectable_sidebar_block" data-name="{{name}}">
 
-      {{#if starred}}
-      <div id="stream_sidebar_swatch_{{id}}" class="streamlist_star icon-vector-star{{#if invite_only}} private-stream-swatch{{/if}}"
-       style="color: {{color}}">&nbsp;</div>
-
-      {{else}}
       <div id="stream_sidebar_swatch_{{id}}" class="streamlist_swatch{{#if invite_only}} private-stream-swatch{{/if}}"
        style="background-color: {{color}}">&nbsp;</div>
-      {{/if}}
 
       <a href="{{uri}}" class="subscription_name">{{name}}
       </a>
