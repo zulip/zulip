@@ -2,6 +2,10 @@
 set -e
 set -x
 
+vergte() {
+    [ "$1" = "`echo -e "$1\n$2" | sort -V | tail -n1`" ]
+}
+
 cd /
 if [ "$EUID" -eq 0 ]; then
     version=$(su postgres -c 'psql -A -t -d postgres -c "show server_version"')
@@ -10,11 +14,11 @@ else
 fi
 
 major=$(echo $version | cut -d. -f1,2)
-pid_style=$(echo "$major > 9.1" | bc -l)
 username=$1
+
 shift
 tables=$(echo "'$@'" | sed "s/ /','/g")
-if [ "$pid_style" = "1" ]; then
+if vergte "$major" "9.2"; then
     pidname="pid"
 else
     pidname="procpid"
