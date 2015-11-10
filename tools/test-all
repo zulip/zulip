@@ -18,5 +18,7 @@ run ./tools/lint-all
 run ./tools/test-js-with-node
 run ./tools/test-backend
 run ./tools/test-js-with-casper
+# Not running management test since it takes 40s and thus is too slow to be worth it.
+# run ./tools/test-management
 
 printf '\n\e[32mAll OK!\e[0m\n'
