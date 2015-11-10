@@ -17,7 +17,7 @@ function remove_pending_request (jqXHR) {
     if (!feature_flags.cleanup_before_reload) { return; }
 
     var pending_request_index = _.indexOf(pending_requests, jqXHR);
-    if (pending_request_index !== -1){
+    if (pending_request_index !== -1) {
         pending_requests.splice(pending_request_index, 1);
     }
 }

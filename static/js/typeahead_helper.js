@@ -60,7 +60,7 @@ exports.highlight_query_in_phrase = function (query, phrase) {
 };
 
 exports.render_person = function (person) {
-    if (person.special_item_text){
+    if (person.special_item_text) {
         return person.special_item_text;
     }
     return person.full_name + " <" + person.email + ">";

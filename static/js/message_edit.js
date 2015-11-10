@@ -187,7 +187,7 @@ exports.end = function (row) {
 };
 
 exports.maybe_show_edit = function (row, id) {
-    if (currently_editing_messages[id] !== undefined){
+    if (currently_editing_messages[id] !== undefined) {
         current_msg_list.show_edit_message(row, currently_editing_messages[id]);
     }
 };

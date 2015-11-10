@@ -29,7 +29,7 @@ function preserve_state(send_after_reload) {
         url += "+recipient=" + encodeURIComponent(compose.recipient());
     }
 
-    if (compose.composing()){
+    if (compose.composing()) {
         url += "+msg=" + encodeURIComponent(compose.message_content());
     }
 
@@ -87,7 +87,7 @@ exports.initialize = function reload__initialize() {
         return;
     }
 
-    if (vars.msg !== undefined){
+    if (vars.msg !== undefined) {
         var send_now = parseInt(vars.send_after_reload, 10);
 
         // TODO: preserve focus

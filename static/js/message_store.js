@@ -366,7 +366,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
 
         // Iterate backwards to find the last message sent_by_me, stopping at
         // the pointer position.
-        for (i = messages.length-1; i>=0; i--){
+        for (i = messages.length-1; i>=0; i--) {
             var id = messages[i].id;
             if (id <= selected_id) {
                 break;
