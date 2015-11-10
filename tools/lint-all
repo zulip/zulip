@@ -81,6 +81,12 @@ def check_whitespace(fn):
         if re.search('\s+$', line.strip('\n')):
             sys.stdout.write('Fix whitespace at %s line %s\n' % (fn, i+1))
             failed = True
+        if re.search('[)]{$', line.strip()):
+            sys.stdout.write('Missing space between ) and { at %s line %s\n' % (fn, i+1))
+            failed = True
+        if re.search('else{$', line.strip()):
+            sys.stdout.write('Missing space between else and { at %s line %s\n' % (fn, i+1))
+            failed = True
         if re.search('\t', line):
             sys.stdout.write('Fix tab-based whitespace at %s line %s\n' % (fn, i+1))
             failed = True
