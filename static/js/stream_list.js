@@ -20,21 +20,41 @@ function active_stream_name() {
 
 exports.build_stream_list = function () {
     var streams = stream_data.subscribed_streams();
+    var sort_recent = (streams.length > 40);
+    var starred_streams = [];
+    var unstarred_streams = [];
+    var parent = $('#stream_filters');
+    var elems = [];
+
+    function add_label(label_text){
+        var label = document.createElement('li');
+        label.innerHTML = label_text;
+        label.className = 'stream-filters-label';
+        elems.push(label);
+    }
+
+    function add_sidebar_li(stream){
+        var li = $(stream_data.get_sub(stream).sidebar_li);
+        if (sort_recent) {
+            if (! recent_subjects.has(stream)) {
+                li.addClass('inactive_stream');
+            } else {
+                li.removeClass('inactive_stream');
+            }
+        }
+        elems.push(li.get(0));
+    }
+
     if (streams.length === 0) {
         return;
     }
-
-    var sort_recent = (streams.length > 40);
-
-    var starred_streams = [];
-    var unstarred_streams = [];
 
     _.each(streams, function (stream) {
         var starred = stream_data.get_sub(stream).starred;
         if (starred) {
             starred_streams.push(stream);
         }
-        else{
+        else {
             unstarred_streams.push(stream);
         }
     });
@@ -55,53 +75,15 @@ exports.build_stream_list = function () {
     if (previous_sort_order !== undefined && util.array_compare(previous_sort_order, streams)) {
         return;
     }
-
     previous_sort_order = streams;
-
-    var parent = $('#stream_filters');
     parent.empty();
-    var label;
-    var elems = [];
     elems.push(document.createElement('hr'));
-
     if (starred_streams.length > 0){
-        label = document.createElement('li');
-        label.innerHTML = 'STARRED';
-        label.className = 'stream-filters-label';
-        elems.push(label);
+        add_label('STARRED');
+        _.each(starred_streams, add_sidebar_li);
+        add_label('OTHERS');
     }
-
-    _.each(starred_streams, function (stream) {
-        var li = $(stream_data.get_sub(stream).sidebar_li);
-        if (sort_recent) {
-            if (! recent_subjects.has(stream)) {
-                li.addClass('inactive_stream');
-            } else {
-                li.removeClass('inactive_stream');
-            }
-        }
-        elems.push(li.get(0));
-    });
-
-    if (starred_streams.length > 0){
-        label = document.createElement('li');
-        label.innerHTML = 'OTHER';
-        label.className = 'stream-filters-label';
-        elems.push(document.createElement('hr'));
-        elems.push(label);
-    }
-
-    _.each(unstarred_streams, function (stream) {
-        var li = $(stream_data.get_sub(stream).sidebar_li);
-        if (sort_recent) {
-            if (! recent_subjects.has(stream)) {
-                li.addClass('inactive_stream');
-            } else {
-                li.removeClass('inactive_stream');
-            }
-        }
-        elems.push(li.get(0));
-    });
+    _.each(unstarred_streams, add_sidebar_li);
 
     $(elems).appendTo(parent);
 };

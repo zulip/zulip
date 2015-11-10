@@ -123,7 +123,7 @@ class GetEventsTest(AuthedTestCase):
         self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
 
         result = self.tornado_call(get_events_backend, user_profile,
-                                    {"queue_id": queue_id,
+                                   {"queue_id": queue_id,
                                     "user_client": "website",
                                     "last_event_id": last_event_id,
                                     "dont_block": ujson.dumps(True),

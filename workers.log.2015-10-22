@@ -1,0 +1,3 @@
+2015-11-03 13:27:39,966 INFO     Worker 0 connecting to queue invites
+2015-11-03 13:27:39,968 INFO     Worker 0 connecting to queue feedback_messages
+2015-11-03 13:272015-11-03 13:27:40,030 INFO     SimpleQueueClient connected (connecting took 0.036s)
