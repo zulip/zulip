@@ -161,6 +161,12 @@ function update_stream_audible_notifications(sub, value) {
     sub.audible_notifications = value;
 }
 
+function update_stream_star(sub, value){
+    var star_checkbox = $('#starstream-' + sub.stream_id);
+    star_checkbox.attr('checked', value);
+    sub.starred = value;
+}
+
 function update_stream_name(sub, new_name) {
     // Rename the stream internally.
     var old_name = sub.name;
@@ -201,6 +207,14 @@ function stream_audible_notifications_clicked(e) {
     var sub = stream_data.get_sub(stream);
     sub.audible_notifications = ! sub.audible_notifications;
     set_stream_property(stream, 'audible_notifications', sub.audible_notifications);
+}
+
+function stream_star_clicked(e) {
+    var sub_row = $(e.target).closest('.subscription_row');
+    var stream = sub_row.find('.subscription_name').text();
+
+    var sub = stream_data.get_sub(stream);
+    exports.toggle_star_stream(stream);
 }
 
 exports.set_color = function (stream_name, color) {
@@ -560,7 +574,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
         sub.email_address = value;
         break;
     case 'starred':
-        sub.starred = value;
+        update_stream_star(sub, value);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
@@ -892,6 +906,8 @@ $(function () {
                                  stream_desktop_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",
                                  stream_audible_notifications_clicked);
+    $("#subscriptions_table").on("click", "#sub_star_setting",
+                                 stream_star_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
