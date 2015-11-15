@@ -71,24 +71,16 @@ source /srv/zulip-venv/bin/activate
 ./tools/run-dev.py --interface=''
 ```
 
-You can now visit <http://localhost:9991/> in your browser.  To get
-shell access to the virtual machine running the server, use `vagrant ssh`.
+To get shell access to the virtual machine running the server to run
+lint, management commands, etc., use `vagrant ssh`.
 
 (A small note on tools/run-dev.py: the `--interface=''` option will make
 the development server listen on all network interfaces.  While this
 is correct for the Vagrant guest sitting behind a NAT, you probably
 don't want to use that option when using run-dev.py in other environments).
 
-The run-dev.py console output will show any errors your Zulip
-development server encounters.  It runs on top of Django's [manage.py
-runserver](https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port)
-tool, which will automatically restart the Zulip Django and Tornado
-servers whenever you save changes to Python code.
+At this point you should [read about using the development environment](https://github.com/zulip/zulip/blob/master/README.dev.md#using-the-development-environment).
 
-However, the Zulip queue workers will not automatically restart when
-you save changes, so you will need to ctrl-C and then restart
-`run-dev.py` manually if you are testing changes to the queue workers
-or if a queue worker has crashed.
 
 Using provision.py without Vagrant
 ----------------------------------
@@ -266,13 +258,69 @@ To start the development server:
 … and visit [http://localhost:9991/](http://localhost:9991/).
 
 
+Using the Development Environment
+=================================
+
+Once the development environment is running, you can visit
+<http://localhost:9991/> in your browser.  By default, the development
+server homepage just shows a list of the users that exist on the
+server and you can login as any of them by just clicking on a user.
+This setup saves time for the common case where you want to test
+something other than the login process; to test the login process
+you'll want to change AUTHENTICATION_BACKENDS in the not-PRODUCTION
+case of `zproject/settings.py` from zproject.backends.DevAuthBackend
+to use the auth method(s) you'd like to test.
+
+While developing, it's helpful to watch the `run-dev.py` console
+output, which will show any errors your Zulip development server
+encounters.
+
+When you make a change, here's a guide for what you need to do in
+order to see your change take effect in Development:
+
+* If you change Javascript or CSS, you'll just need to reload the
+browser window to see changes take effect.
+
+* If you change Python code used by the the main Django/Tornado server
+processes, these services are run on top of Django's [manage.py
+runserver](https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port),
+which will automatically restart the Zulip Django and Tornado servers
+whenever you save changes to Python code.  You can watch this happen
+in the `run-dev.py` console to make sure the backend has reloaded.
+
+* The Python queue workers don't automatically restart when you save
+changes (or when they stop running), so you will want to ctrl-C and
+then restart `run-dev.py` manually if you are testing changes to the
+queue workers or if a queue worker has crashed.
+
+* If you change the database schema, you'll need to use the standard
+Django migrations process to create and then run your migrations; see
+the [new feature
+tutorial](http://zulip.readthedocs.org/en/latest/new-feature-tutorial.html)
+for an example.  Additionally you should check out the [detailed
+testing docs](http://zulip.readthedocs.org/en/latest/testing.html) for
+how to run the tests properly after doing a migration.
+
+(In production, everything runs under supervisord and thus will
+restart if it crashes, and `upgrade-zulip` will take care of running
+migrations and then cleanly restaring the server for you).
+
 Running the test suite
 ======================
 
-Run all tests:
+For more details, check out the [detailed testing
+docs](http://zulip.readthedocs.org/en/latest/testing.html).
 
+To run all the tests, do this:
 ```
 ./tools/test-all
+```
+
+For the Vagrant environment, you'll want to first enter the environment:
+```
+vagrant ssh
+source /srv/zulip-venv/bin/activate
+cd /srv/zulip
 ```
 
 This runs the linter (`tools/lint-all`) plus all of our test suites;
@@ -281,14 +329,15 @@ them).  You can also run individual tests which can save you a lot of
 time debugging a test failure, e.g.:
 
 ```
+./tools/lint-all # Runs all the linters in parallel
 ./tools/test-backend zerver.test_bugdown.BugdownTest.test_inline_youtube
 ./tools/test-js-with-casper 10-navigation.js
 ./tools/test-js-with-node # Runs all node tests but is very fast
 ```
 
-The above instructions include the first-time setup of test databases,
-but you may need to rebuild the test database occasionally if you're
-working on new database migrations.  To do this, run:
+The above setup instructions include the first-time setup of test
+databases, but you may need to rebuild the test database occasionally
+if you're working on new database migrations.  To do this, run:
 
 ```
 ./tools/postgres-init-test-db
@@ -297,11 +346,6 @@ working on new database migrations.  To do this, run:
 
 Possible testing issues
 =======================
-
-- The Casper tests are flaky on the Virtualbox environment (probably
-  due to some performance-sensitive races; they work reliably in
-  Travis CI).  Until this issue is debugged, you may need to rerun
-  them to get them to pass.
 
 - When running the test suite, if you get an error like this:
 
