@@ -335,25 +335,44 @@ everything anyone might want to know about running Zulip in
 production.
 
 
-Maintaining Zulip in production
-===============================
+Maintaining and upgrading Zulip in production
+=============================================
 
-* To upgrade to a new version, download the appropriate release
-  tarball from https://www.zulip.com/dist/releases/ to a path readable
-  by the zulip user (e.g. /home/zulip), and then run as root:
+We recommend reading this entire section before doing your first
+upgrade.
+
+* To upgrade to a new version of the zulip server, download the
+  appropriate release tarball from
+  https://www.zulip.com/dist/releases/ to a path readable by the zulip
+  user (e.g. /home/zulip), and then run as root:
   ```
   /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
   ```
+  Be sure to download to a path readable by the Zulip user (see
+  https://github.com/zulip/zulip/issues/208 for details on this
+  issue) but then run the upgrade as root.
 
   The upgrade process will shut down the service, run `apt-get
-  upgrade` and any database migrations, and then bring the service
-  back up.  This will result in some brief downtime for the service,
-  which should be under 30 seconds unless there is an expensive
-  transition involved.  Unless you have tested the upgrade in advance,
-  we recommend doing upgrades at off hours.
+  upgrade`, a puppet apply, and any database migrations, and then
+  bring the service back up.  This will result in some brief downtime
+  for the service, which should be under 30 seconds unless there is an
+  expensive transition involved.  Unless you have tested the upgrade
+  in advance, we recommend doing upgrades at off hours.
 
   You can create your own release tarballs from a copy of zulip.git
   repository using `tools/build-release-tarball`.
+
+* **Warning**: If you have modified configuration files installed by
+  Zulip (e.g. the nginx configuration), the Zulip upgrade process will
+  overwrite your configuration when it does the `puppet apply`.  You
+  can test whether this will happen assuming no upstream changes to
+  the configuration using `scripts/zulip-puppet-apply` (without the
+  `-f` option), which will do a test puppet run and output and changes
+  it would make.  Using this list, you can save a copy of any files
+  that you've modified, do the upgrade, and then restore your
+  configuration.  If you need to do this, please report the issue so
+  that we can make the Zulip puppet configuration flexible enough to
+  handle your setup.
 
 * The Zulip upgrade script automatically logs output to
   /var/log/zulip/upgrade.log; please use those logs to include output
