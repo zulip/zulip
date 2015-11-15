@@ -114,12 +114,22 @@ INLINE_IMAGE_PREVIEW = True
 
 # By default, files uploaded by users and user avatars are stored
 # directly on the Zulip server.  If file storage in Amazon S3 is
-# desired, you can configure that by setting s3_key and s3_secret_key
-# in /etc/zulip/zulip-secrets.conf to be the S3 access and secret keys
-# that you want to use, and setting the S3_AUTH_UPLOADS_BUCKET and
-# S3_AVATAR_BUCKET to be the S3 buckets you've created to store file
-# uploads and user avatars, respectively.
+# desired, you can configure that as follows:
+#
+# (1) Set s3_key and s3_secret_key in /etc/zulip/zulip-secrets.conf to
+# be the S3 access and secret keys that you want to use, and setting
+# the S3_AUTH_UPLOADS_BUCKET and S3_AVATAR_BUCKET to be the S3 buckets
+# you've created to store file uploads and user avatars, respectively.
+# Then restart Zulip (scripts/restart-zulip).
+#
+# (2) Edit /etc/nginx/sites-available/zulip-enterprise to comment out
+# the nginx configuration for /user_uploads and /user_avatars (see
+# https://github.com/zulip/zulip/issues/291 for discussion of a better
+# solution that won't be automatically reverted by the Zulip upgrade
+# script), and then restart nginx.
 LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
+#S3_AUTH_UPLOADS_BUCKET = ""
+#S3_AVATAR_BUCKET = ""
 
 # Controls whether name changes are completely disabled for this installation
 # This is useful in settings where you're syncing names from an integrated LDAP/Active Directory
