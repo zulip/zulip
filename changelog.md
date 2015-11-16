@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 [Unreleased]
 
+[1.3.9] - 2015-11-16
+- Fixed buggy #! lines in upgrade scripts.
+
 [1.3.8] - 2015-11-15
 - Added options to the Python api for working with untrusted server certificates.
 - Added a lot of documentation on the development environment and testing.
