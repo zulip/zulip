@@ -123,7 +123,7 @@ Install the following non-Python dependencies:
 ### On Debian or Ubuntu systems:
 
 ```
-sudo apt-get install libffi-dev memcached rabbitmq-server libldap2-dev python-dev redis-server postgresql-server-dev-all libmemcached-dev libfreetype6-dev nodejs nodejs-legacy npm
+sudo apt-get install closure-compiler libfreetype6-dev libffi-dev memcached rabbitmq-server libldap2-dev redis-server postgresql-server-dev-all libmemcached-dev python-dev hunspell-en-us nodejs nodejs-legacy npm git yui-compressor puppet gettext
 
 # If on 12.04 or wheezy:
 sudo apt-get install postgresql-9.1
@@ -148,7 +148,7 @@ Now continue with the "All systems" instructions below.
 These instructions are experimental and may have bugs; patches welcome!
 
 ```
-sudo dnf install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server postgresql-devel postgresql libmemcached-devel freetype-devel nodejs npm
+sudo dnf install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server postgresql-devel postgresql libmemcached-devel freetype-devel nodejs npm yuicompressor closure-compiler gettext
 ```
 
 Now continue with the Common to Fedora/CentOS instructions below.
@@ -179,7 +179,7 @@ sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noa
 # Install dependencies
 sudo yum install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server \
 postgresql-devel postgresql libmemcached-devel wget python-pip openssl-devel freetype-devel libjpeg-turbo-devel \
-zlib-devel nodejs
+zlib-devel nodejs yuicompressor closure-compiler gettext
 
 # We need these packages to compile tsearch-extras
 sudo yum groupinstall "Development Tools"
