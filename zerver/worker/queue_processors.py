@@ -255,7 +255,7 @@ class SlowQueryWorker(QueueProcessingWorker):
             return
 
         if len(slow_queries) > 0:
-            topic = "%s: slow queries" % (settings.STATSD_PREFIX,)
+            topic = "%s: slow queries" % (settings.EXTERNAL_HOST,)
 
             content = ""
             for query in slow_queries:
