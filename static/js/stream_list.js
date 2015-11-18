@@ -26,14 +26,12 @@ exports.build_stream_list = function () {
     var parent = $('#stream_filters');
     var elems = [];
 
-    function add_label(label_text){
-        var label = document.createElement('li');
-        label.innerHTML = label_text;
-        label.className = 'stream-filters-label';
-        elems.push(label);
+    function add_label(label_text) {
+        var label = $('<li class = "stream-filters-label">' + label_text + '</li>');
+        elems.push(label.get(0));
     }
 
-    function add_sidebar_li(stream){
+    function add_sidebar_li(stream) {
         var li = $(stream_data.get_sub(stream).sidebar_li);
         if (sort_recent) {
             if (! recent_subjects.has(stream)) {
@@ -77,8 +75,8 @@ exports.build_stream_list = function () {
     }
     previous_sort_order = streams;
     parent.empty();
-    elems.push(document.createElement('hr'));
-    if (starred_streams.length > 0){
+    elems.push($('<hr>').get(0));
+    if (starred_streams.length > 0) {
         add_label('STARRED');
         _.each(starred_streams, add_sidebar_li);
         add_label('OTHERS');
@@ -427,7 +425,7 @@ exports.rename_stream = function (sub) {
     exports.build_stream_list(); // big hammer
 };
 
-exports.refresh_stream_in_sidebar = function (sub){
+exports.refresh_stream_in_sidebar = function (sub) {
 // used by subs.mark_starred_or_unstarred,
 // since starring/unstarring requires reordering of streams in the sidebar
     sub.sidebar_li = build_stream_sidebar_row(sub.name);

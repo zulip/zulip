@@ -162,7 +162,7 @@ function update_stream_audible_notifications(sub, value) {
     sub.audible_notifications = value;
 }
 
-function update_stream_star(sub, value){
+function update_stream_star(sub, value) {
     var star_checkbox = $('#starstream-' + sub.stream_id);
     star_checkbox.attr('checked', value);
     sub.starred = value;
@@ -407,7 +407,7 @@ exports.mark_sub_unsubscribed = function (sub) {
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 };
 
-exports.mark_starred_or_unstarred = function (stream_name){
+exports.mark_starred_or_unstarred = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
     if (stream_name === undefined) {
         return;
