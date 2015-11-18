@@ -104,9 +104,9 @@ global.use_template('stream_privacy');
         name: 'devel',
         stream_id: 1000,
         color: 'blue',
-        id: 5, 
-        starred: false, 
-        subscribed: true, 
+        id: 5,
+        starred: false,
+        subscribed: true,
         sidebar_li: stream_list.add_stream_to_sidebar('devel')
     };
     global.stream_data.add_sub('devel', develSub);
@@ -115,13 +115,12 @@ global.use_template('stream_privacy');
         name: 'social',
         stream_id: 2000,
         color: 'green',
-        id: 6, 
+        id: 6,
         starred: true,
-        subscribed: true, 
+        subscribed: true,
         sidebar_li: stream_list.add_stream_to_sidebar('social')
     };
     global.stream_data.add_sub('social', socialSub);
-    
     stream_list.build_stream_list();
     assert.equal(socialSub.sidebar_li.nextAll().find('[ data-name="devel"]').length, 1);
 }());
