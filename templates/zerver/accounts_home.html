@@ -35,9 +35,11 @@ $(function () {
             <div class="alert alert-pitch" id="company-email">{% blocktrans %}Please use your
             company email address to sign up. Otherwise, we won’t be able to
             connect you with your coworkers{% endblocktrans %}.</div>
-            <div class="register-google">
-                <a href="{% url 'zerver.views.start_google_oauth2' %}" class="zocial google register-google-button">{% trans "Sign up with Google" %}</a>
-            </div>
+            {% if google_auth_enabled %}
+                <div class="register-google">
+                    <a href="{% url 'zerver.views.start_google_oauth2' %}" class="zocial google register-google-button">{% trans "Sign up with Google" %}</a>
+                </div>
+            {% endif %}
         </div>
 
 </div>
