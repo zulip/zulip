@@ -953,7 +953,7 @@ $(function () {
         url: "json/upload_file",
         fallback_id: "file_input",
         paramname: "file",
-        maxfilesize: 25,
+        maxfilesize: page_params.maxfilesize,
         data: {
             // the token isn't automatically included in filedrop's post
             csrfmiddlewaretoken: csrf_token

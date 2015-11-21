@@ -131,6 +131,11 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 #S3_AUTH_UPLOADS_BUCKET = ""
 #S3_AVATAR_BUCKET = ""
 
+# Maximum allowed size of uploaded files, in megabytes.  DO NOT SET
+# ABOVE 80MB.  The file upload implementation doesn't support chunked
+# uploads, so browsers will crash if you try uploading larger files.
+MAX_FILE_UPLOAD_SIZE = 25
+
 # Controls whether name changes are completely disabled for this installation
 # This is useful in settings where you're syncing names from an integrated LDAP/Active Directory
 NAME_CHANGES_DISABLED = False
