@@ -418,6 +418,192 @@ upgrade.
   every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
   precise configuration.
 
+### Backups for Zulip
+
+There are several pieces of data that you might want to back up:
+
+* The postgres database.  That you can back up like any postgres
+database; we have some example tooling for doing that incrementally
+into S3 using [wal-e](https://github.com/wal-e/wal-e) in
+`puppet/zulip_internal/manifests/postgres_common.pp` (that's what we
+use for zulip.com's database backups).  Note that this module isn't
+part of the Zulip server releases since it's part of the zulip.com
+configuration (see https://github.com/zulip/zulip/issues/293 for a
+ticket about fixing this to make life easier for running backups).
+
+* Any user-uploaded files.  If you're using S3 as storage for file
+uploads, this is backed up in S3, but if you have instead set
+LOCAL_UPLOADS_DIR, any files uploaded by users (including avatars)
+will be stored in that directory and you'll want to back it up.
+
+* Your Zulip configuration including secrets from /etc/zulip/.
+E.g. if you lose the value of secret_key, all users will need to login
+again when you setup a replacement server since you won't be able to
+verify their cookies; if you lose avatar_salt, any user-uploaded
+avatars will need to be re-uploaded (since avatar filenames are
+computed using a hash of avatar_salt and user's email), etc.
+
+* The logs under /var/log/zulip can be handy to have backed up, but
+they do get large on a busy server, and it's definitely
+lower-priority.
+
+### Restoration
+
+To restore from backups, the process is basically the reverse of the above:
+
+* Install new server as normal by downloading a Zulip release tarball
+  and then using `scripts/setup/install`, you don't need
+  to run the `initialize-database` second stage which puts default
+  data into the database.
+
+* Unpack to /etc/zulip the settings.py and secrets.conf files from your backups.
+
+* Restore your database from the backup using wal-e; if you ran
+  `initialize-database` anyway above, you'll want to first
+  `scripts/setup/postgres-init-db` to drop the initial database first.
+
+* If you're using local file uploads, restore those files to the path
+  specified by `settings.LOCAL_UPLOADS_DIR` and (if appropriate) any
+  logs.
+
+* Start the server using scripts/restart-server
+
+This restoration process can also be used to migrate a Zulip
+installation from one server to another.
+
+We recommend running a disaster recovery after you setup backups to
+confirm that your backups are working; you may also want to monitor
+that they are up to date using the Nagios plugin at:
+`puppet/zulip_internal/files/nagios_plugins/check_postgres_backup`.
+
+Contributions to more fully automate this process or make this section
+of the guide much more explicit and detailed are very welcome!
+
+### Postgres streaming replication
+
+Zulip has database configuration for doing with Postgres streaming
+replication ; you can see the configuration in these files:
+
+* puppet/zulip_internal/manifests/postgres_slave.pp
+* puppet/zulip_internal/manifests/postgres_master.pp
+* puppet/zulip_internal/files/postgresql/*
+
+Contribution of a step-by-step guide for setting this up (and moving
+this configuration to be available in the main `puppet/zulip/` tree)
+would be very welcome!
+
+### Using a remote postgres host
+
+This is a bit annoying to setup, but you can configure Zulip to use a
+dedicated postgres server by setting the `REMOTE_POSTGRES_HOST`
+variable in /etc/zulip/settings.py, and configuring Postgres
+certificate authentication (see
+http://www.postgresql.org/docs/9.1/static/ssl-tcp.html and
+http://www.postgresql.org/docs/9.1/static/libpq-ssl.html for
+documentation on how to set this up and deploy the certificates) to
+make the DATABASES configuration in `zproject/settings.py` work (or
+override that configuration).
+
+### Monitoring Zulip
+
+The complete Nagios configuration (sans secret keys) we used to
+monitor zulip.com is available under `puppet/zulip_internal` in the
+Zulip Git repository (those files are not installed in the release
+tarballs); there are a number of useful Nagios plugins available
+there, including:
+
+Frontend server monitoring:
+
+* check_send_receive_time (sends a test message through the system
+  between two bot users to check that end-to-end message sending works)
+* check_website_response.sh (standard HTTP check)
+
+Queue worker monitoring:
+
+* check_rabbitmq_consumers and check_rabbitmq_queues (checks for
+  rabbitmq being down or the queue workers being behind)
+* check_queue_worker_errors (checks for errors reported by the queue workers)
+* check_worker_memory (monitors for memory leaks in queue workers)
+* check_email_deliverer_backlog and check_email_deliverer_process
+  (monitors for whether outgoing emails are being sent)
+
+Database monitoring:
+
+* check_pg_replication_lag
+* check_postgres (checks the health of the postgres database)
+* check_postgres_backup (checks backups are up to date; see above)
+* check_fts_update_log (monitors for whether full-text search updates
+  are being processed)
+
+Standard server monitoring:
+
+* check_debian_packages
+
+Contributions on making it easier to monitor Zulip and maintain it in
+production, e.g.  https://github.com/zulip/zulip/issues/371, are very
+welcome!
+
+### Scalability of Zulip
+
+This section attempts to address the considerations involved with
+running Zulip with a large team (>1000 users).
+
+* We recommend using a remote postgres database (see
+  REMOTE_POSTGRES_HOST docs above) for isolation, though it is not
+  required.  In the following, we discuss a relatively simple
+  configuration with two types of servers: application servers
+  (running Django, Tornado, RabbitMQ, Redis, Memcached, etc.) and
+  database servers.
+
+* You can scale to a pretty large installation (O(~1000) concurrently
+  active users using it to chat all day) with just a single reasonably
+  large application server (e.g. AWS c3.2xlarge with 8 cores and 16GB
+  of RAM) sitting mostly idle (<10% CPU used and only 4GB of the 16GB
+  RAM actively in use).  You can probably get away with half that
+  (e.g. c3.xlarge), but ~8GB of RAM is highly recommended at scale.
+  Beyond a 1000 active users, you will eventually want to increase the
+  memory cap in `memcached.conf` from the default 512MB to avoid high
+  rates of memcached misses.
+
+* For the database server, we highly recommend SSD disks, and RAM is
+  the primary resource limitation.  We have not aggressively tested
+  for the minimum resources required, but 8 cores with 30GB of RAM
+  (e.g. AWS's m3.2xlarge) should suffice; you may be able to get away
+  with less especially on the CPU side.  The database load per user is
+  pretty optimized as long as `memcached` is working correctly.  This
+  has not been tested, but from extrapolating the load profile, it
+  should be possible to scale a Zulip installation to 10,000s of
+  active users using a single large database server without doing
+  anything complicated like sharding the database.
+
+* For reasonably high availability, it's easy to run a hot spare
+  application server and a hot spare database (using Postgres
+  streaming replication; see the section on configuring this).  Be
+  sure to check out the section on backups if you're hoping to run a
+  spare application server; in particular you probably want to use the
+  S3 backend for storing user-uploaded files and avatars and will want
+  to make sure secrets are available on the hot spare.
+
+* Zulip does not support dividing traffic for a given Zulip realm
+  between multiple application servers.  There are two issues: you
+  need to share the memcached/redis/rabbitmq instance (these should
+  can be moved to a network service shared by multiple servers with a
+  bit of configuration) and the Tornado event system for pushing to
+  browsers currently has no mechanism for multiple frontend servers
+  (or event processes) talking to each other.  One can probably get a
+  factor of 10 in a single server's scalability by [supporting
+  multiple tornado processes on a single
+  server](https://github.com/zulip/zulip/issues/372), which is also
+  likely the first part of any project to support exchanging events
+  amongst multiple servers.
+
+* The first scalability issue encountered by a very large realm (more
+  than a few thousand users), will be with the [frontend buddy list
+  perf and UI](https://github.com/zulip/zulip/issues/262).  Fixing
+  this should be a small project; the code for that part of the UI
+  layer doesn't do proper incremental updates.
+
+Questions about this area of Zulip are very welcome!
 
 Remote User SSO Authentication
 ==============================
