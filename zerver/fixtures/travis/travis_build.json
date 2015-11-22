@@ -1,0 +1,97 @@
+{
+  "id": 92495257,
+  "repository": {
+    "id": 2176580,
+    "name": "fhir-svn",
+    "owner_name": "hl7-fhir",
+    "url": null
+  },
+  "number": "4601",
+  "config": {
+    "langauge": "java",
+    "jdk": [
+      "oraclejdk8"
+    ],
+    "script": "./build.sh",
+    "sudo": false,
+    "notifications": {
+      "email": [ ],
+      "webhooks": [
+        "https://zulip.example.com/api/v1/external/travis?stream=travis&/topic=builds&api_key=abcdefg"
+      ]
+    },
+    "after_success": [ ],
+    "env": [
+      "[One+of+the+secure+variables+in+your+.travis.yml+has+an+invalid+format.]"
+    ],
+    ".result": "configured"
+  },
+  "status": 0,
+  "result": 0,
+  "status_message": "Passed",
+  "result_message": "Passed",
+  "started_at": "2015-11-21T23:28:22Z",
+  "finished_at": "2015-11-21T23:45:25Z",
+  "duration": 1023,
+  "build_url": "https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257",
+  "commit_id": 26300989,
+  "commit": "6c457d366a31696c989c011ab75b734d8485a9ba",
+  "base_commit": null,
+  "head_commit": null,
+  "branch": "master",
+  "message": "Debug+build+hooks\n\ngit-svn-id:+http://gforge.hl7.org/svn/fhir/trunk/build@7323+2f0db536-2c49-4257-a3fa-e771ed206c19",
+  "compare_url": "https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31",
+  "committed_at": "2015-11-21T23:27:13Z",
+  "author_name": "josh_mandel",
+  "author_email": "josh_mandel@2f0db536-2c49-4257-a3fa-e771ed206c19",
+  "committer_name": "josh_mandel",
+  "committer_email": "josh_mandel@2f0db536-2c49-4257-a3fa-e771ed206c19",
+  "matrix": [
+    {
+      "id": 92495258,
+      "repository_id": 2176580,
+      "parent_id": 92495257,
+      "number": "4601.1",
+      "state": "finished",
+      "config": {
+        "langauge": "java",
+        "jdk": "oraclejdk8",
+        "script": "./build.sh",
+        "sudo": false,
+        "notifications": {
+          "email": [ ],
+          "webhooks": [
+            "https://zulip.example.com/api/v1/external/travis?stream=travis&topic=builds&api_key=abcdefg"
+          ]
+        },
+        "after_success": [ ],
+        ".result": "configured",
+        "global_env": [  ],
+        "language": "ruby",
+        "group": "stable",
+        "dist": "precise",
+        "os": "linux"
+      },
+      "status": 0,
+      "result": 0,
+      "commit": "6c457d366a31696c989c011ab75b734d8485a9ba",
+      "branch": "master",
+      "message": "Debug+build+hooks\n\ngit-svn-id:+http://gforge.hl7.org/svn/fhir/trunk/build@7323+2f0db536-2c49-4257-a3fa-e771ed206c19",
+      "compare_url": "https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31",
+      "started_at": "2015-11-21T23:28:22Z",
+      "finished_at": "2015-11-21T23:45:25Z",
+      "committed_at": "2015-11-21T23:27:13Z",
+      "author_name": "josh_mandel",
+      "author_email": "josh_mandel@2f0db536-2c49-4257-a3fa-e771ed206c19",
+      "committer_name": "josh_mandel",
+      "committer_email": "josh_mandel@2f0db536-2c49-4257-a3fa-e771ed206c19",
+      "allow_failure": false
+    }
+  ],
+  "type": "push",
+  "state": "passed",
+  "pull_request": false,
+  "pull_request_number": null,
+  "pull_request_title": null,
+  "tag": null
+}
