@@ -1003,3 +1003,34 @@ def api_pagerduty_webhook(request, user_profile, stream=REQ(default='pagerduty')
             send_formated_pagerduty(user_profile, stream, message_type, format_dict, topic)
 
     return json_success()
+
+@api_key_only_webhook_view
+@has_request_variables
+def api_travis_webhook(request, user_profile, stream=REQ(default='travis'), topic=REQ(default=None)):
+    message = ujson.loads(request.POST['payload'])
+
+    author = message['author_name']
+    message_type = message['status_message']
+    changes = message['compare_url']
+
+    good_status = ['Passed', 'Fixed']
+    bad_status  = ['Failed', 'Broken', 'Still Failing']
+    emoji = ''
+    if message_type in good_status:
+        emoji = ':thumbsup:'
+    elif message_type in bad_status:
+        emoji = ':thumbsdown:'
+    else:
+        emoji = "(No emoji specified for status '%s'.)" % (message_type,)
+
+    build_url = message['build_url']
+
+    template = (
+        u'Author: %s\n'
+        u'Build status: %s %s\n'
+        u'Details: [changes](%s), [build log](%s)')
+
+    body = template % (author, message_type, emoji, changes, build_url)
+
+    check_send_message(user_profile, get_client('ZulipTravisWebhook'), 'stream', [stream], topic, body)
+    return json_success()
