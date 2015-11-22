@@ -71,7 +71,9 @@ def validate(fn, check_indent=True):
         if looking_at("<") and not looking_at("</"):
             s = get_html_tag(text, state.i)
             tag = s[1:-1].split()[0]
-            ignore = s.startswith('<!--') or s.endswith('/>') or tag in ['meta', '!DOCTYPE']
+            ignore = (s.startswith('<!--') or
+                      s.endswith('/>') or
+                      tag in ['link', 'meta', '!DOCTYPE'])
             if not ignore:
                 start_tag_matcher(s, tag)
             advance(len(s))
