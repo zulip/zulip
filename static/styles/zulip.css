@@ -321,16 +321,17 @@ a:hover code {
 }
 
 
-#streams_list:hover #streams_inline_cog {
+#streams_list:hover .streams_inline_cog {
    visibility: visible;
    opacity: 0.5;
 }
 
-#streams_list #streams_inline_cog:hover {
+#streams_list .streams_inline_cog:hover {
    opacity: 1.0;
+   text-decoration: none;
 }
 
-#streams_inline_cog {
+.streams_inline_cog {
     float: right;
     color: #000;
     text-decoration: none;
@@ -371,8 +372,8 @@ a:hover code {
 
 .stream-filters-label {
     font-size: 12px;
-    color: #808080;
-    padding-left: 33px;
+    padding-left: 10px;
+    padding-top: 10px;
 }
 
 #stream_filters li.stream-filters-label:hover { 
@@ -3038,11 +3039,6 @@ li.expanded_subject {
     border-top: 1px solid #e2e2e2;
     margin-top: 5px;
     margin-right: 10px;
-}
-
-#streams_header {
-    margin-right: 0px;
-    padding-left: 10px;
 }
 
 #stream_filters .inactive_stream {
