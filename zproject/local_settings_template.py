@@ -205,11 +205,11 @@ EMAIL_GATEWAY_PATTERN = ""
 # which will check that inbox and batch-process any new messages.
 #
 # You will need to configure authentication for the email mirror
-# command to access the IMAP mailbox below.
+# command to access the IMAP mailbox below and in zulip-secrets.conf.
 #
-# The IMAP login and password
+# The IMAP login; username here and password as email_gateway_login in
+# zulip-secrets.conf.
 EMAIL_GATEWAY_LOGIN = ""
-EMAIL_GATEWAY_PASSWORD = ""
 # The IMAP server & port to connect to
 EMAIL_GATEWAY_IMAP_SERVER = ""
 EMAIL_GATEWAY_IMAP_PORT = 993
