@@ -192,7 +192,8 @@ EMAIL_GATEWAY_PATTERN = ""
 # to change in this file.  You will also need to enable the Zulip postfix
 # configuration to support local delivery by adding
 #   , zulip::postfix_localmail
-# to puppet_classes in /etc/zulip/zulip.conf.
+# to puppet_classes in /etc/zulip/zulip.conf and then running
+# `scripts/zulip-puppet-apply -f` to do the installation.
 #
 # If you are using polling, you will need to setup an IMAP email
 # account dedicated to Zulip email gateway messages.  The model is
