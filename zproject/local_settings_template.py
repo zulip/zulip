@@ -264,10 +264,10 @@ from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 # Zulip. Example: "ldaps://ldap.example.com"
 AUTH_LDAP_SERVER_URI = ""
 
-# This DN and password will be used to bind to your server. If unset, anonymous
-# binds are performed.
+# This DN will be used to bind to your server. If unset, anonymous
+# binds are performed.  If set, you need to specify the password as
+# 'auth_ldap_bind_password' in zulip-secrets.conf.
 AUTH_LDAP_BIND_DN = ""
-AUTH_LDAP_BIND_PASSWORD = ""
 
 # Specify the search base and the property to filter on that corresponds to the
 # username.
