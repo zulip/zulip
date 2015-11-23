@@ -60,7 +60,9 @@ exports.build_stream_list = function () {
     var elems = [];
 
     function add_label(label_text) {
-        var label = $('<li class = "stream-filters-label">' + label_text + '</li>');
+        var label = $('<li class = "stream-filters-label">' + label_text
+            + '<a href=""><i class="streams_inline_cog icon-vector-cog" data-toggle="tooltip"'
+            + 'title="Subscribe, add, or configure streams"></i></a></li>');
         elems.push(label.get(0));
     }
 
@@ -133,7 +135,7 @@ exports.build_stream_list = function () {
     if (starred_streams.length > 0) {
         add_label('STARRED');
         _.each(starred_streams, add_sidebar_li);
-        add_label('OTHERS');
+        add_label('STREAMS');
     }
     _.each(unstarred_streams, add_sidebar_li);
 
