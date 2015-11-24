@@ -31,7 +31,6 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     do_set_realm_invite_required, do_set_realm_invite_by_admins_only, \
     get_default_subs, do_deactivate_user, do_reactivate_user, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
-    do_add_alert_words, do_remove_alert_words, do_set_alert_words, \
     do_set_muted_topics, clear_followup_emails_queue, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_regenerate_api_key, do_update_pointer, do_change_avatar_source, realm_user_count
@@ -42,7 +41,6 @@ from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
 from django.views.decorators.csrf import csrf_exempt
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.lib import bugdown
-from zerver.lib.alert_words import user_alert_words
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.decorator import require_post, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, to_non_negative_int, \
@@ -1479,34 +1477,6 @@ def json_refer_friend(request, user_profile, email=REQ):
 
     do_refer_friend(user_profile, email);
 
-    return json_success()
-
-def list_alert_words(request, user_profile):
-    return json_success({'alert_words': user_alert_words(user_profile)})
-
-@authenticated_json_post_view
-@has_request_variables
-def json_set_alert_words(request, user_profile,
-                         alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_set_alert_words(user_profile, alert_words)
-    return json_success()
-
-@has_request_variables
-def set_alert_words(request, user_profile,
-                    alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_set_alert_words(user_profile, alert_words)
-    return json_success()
-
-@has_request_variables
-def add_alert_words(request, user_profile,
-                    alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_add_alert_words(user_profile, alert_words)
-    return json_success()
-
-@has_request_variables
-def remove_alert_words(request, user_profile,
-                       alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_remove_alert_words(user_profile, alert_words)
     return json_success()
 
 @authenticated_json_post_view
