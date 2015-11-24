@@ -20,13 +20,46 @@ function active_stream_name() {
 
 exports.build_stream_list = function () {
     var streams = stream_data.subscribed_streams();
+    var sort_recent = (streams.length > 40);
+    var starred_streams = [];
+    var unstarred_streams = [];
+    var parent = $('#stream_filters');
+    var elems = [];
+
+    function add_label(label_text) {
+        var label = $('<li class = "stream-filters-label">' + label_text
+            + '<a href=""><i class="streams_inline_cog icon-vector-cog" data-toggle="tooltip"'
+            + 'title="Subscribe, add, or configure streams"></i></a></li>');
+        elems.push(label.get(0));
+    }
+
+    function add_sidebar_li(stream) {
+        var li = $(stream_data.get_sub(stream).sidebar_li);
+        if (sort_recent) {
+            if (! recent_subjects.has(stream)) {
+                li.addClass('inactive_stream');
+            } else {
+                li.removeClass('inactive_stream');
+            }
+        }
+        elems.push(li.get(0));
+    }
+
     if (streams.length === 0) {
         return;
     }
 
-    var sort_recent = (streams.length > 40);
+    _.each(streams, function (stream) {
+        var starred = stream_data.get_sub(stream).starred;
+        if (starred) {
+            starred_streams.push(stream);
+        }
+        else {
+            unstarred_streams.push(stream);
+        }
+    });
 
-    streams.sort(function (a, b) {
+    unstarred_streams.sort(function (a, b) {
         if (sort_recent) {
             if (recent_subjects.has(b) && ! recent_subjects.has(a)) {
                 return 1;
@@ -37,28 +70,20 @@ exports.build_stream_list = function () {
         return util.strcmp(a, b);
     });
 
-    if (previous_sort_order !== undefined
-        && util.array_compare(previous_sort_order, streams)) {
+    streams = starred_streams.concat(unstarred_streams);
+
+    if (previous_sort_order !== undefined && util.array_compare(previous_sort_order, streams)) {
         return;
     }
-
     previous_sort_order = streams;
-
-    var parent = $('#stream_filters');
     parent.empty();
+    if (starred_streams.length > 0) {
+        add_label('STARRED');
+        _.each(starred_streams, add_sidebar_li);
+        add_label('STREAMS');
+    }
+    _.each(unstarred_streams, add_sidebar_li);
 
-    var elems = [];
-    _.each(streams, function (stream) {
-        var li = $(stream_data.get_sub(stream).sidebar_li);
-        if (sort_recent) {
-            if (! recent_subjects.has(stream)) {
-                li.addClass('inactive_stream');
-            } else {
-                li.removeClass('inactive_stream');
-            }
-        }
-        elems.push(li.get(0));
-    });
     $(elems).appendTo(parent);
 };
 
@@ -126,14 +151,15 @@ exports.set_in_home_view = function (stream, in_home) {
     }
 };
 
-function build_stream_sidebar_row(name) {
+function build_stream_sidebar_row (name) {
     var sub = stream_data.get_sub(name);
     var args = {name: name,
                 id: sub.stream_id,
                 uri: narrow.by_stream_uri(name),
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: sub.invite_only,
-                color: stream_data.get_color(name)
+                color: stream_data.get_color(name),
+                starred: sub.starred
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
@@ -398,6 +424,13 @@ exports.update_dom_with_unread_counts = function (counts) {
 exports.rename_stream = function (sub) {
     sub.sidebar_li = build_stream_sidebar_row(sub.name);
     exports.build_stream_list(); // big hammer
+};
+
+exports.refresh_stream_in_sidebar = function (sub) {
+// used by subs.mark_starred_or_unstarred,
+// since starring/unstarring requires reordering of streams in the sidebar
+    sub.sidebar_li = build_stream_sidebar_row(sub.name);
+    exports.build_stream_list();
 };
 
 $(function () {

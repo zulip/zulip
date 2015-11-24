@@ -453,7 +453,7 @@ $(function () {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $('#streams_inline_cog').tooltip({ placement: 'left',
+    $('.streams_inline_cog').tooltip({ placement: 'left',
                                        animation: false });
 
     if (feature_flags.disable_message_editing) {
