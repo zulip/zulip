@@ -766,6 +766,7 @@ def home(request):
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
         login_page            = settings.HOME_NOT_LOGGED_IN,
+        maxfilesize           = settings.MAX_UPLOAD_FILE_SIZE,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
         have_initial_messages = user_has_messages,
         subbed_info           = register_ret['subscriptions'],
@@ -1030,6 +1031,9 @@ def json_upload_file(request, user_profile):
         return json_error("You may only upload one file at a time")
 
     user_file = request.FILES.values()[0]
+    if ((settings.MAX_UPLOAD_FILE_SIZE * 1024 * 1024) < user_file._get_size()):
+        return json_error("File Upload is larger than allowed limit")
+
     uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
 

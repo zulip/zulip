@@ -357,6 +357,15 @@ REDIS_PORT = 6379
 RATE_LIMITING_RULES = [
     (60, 100),     # 100 requests max every minute
     ]
+    
+########################################################################
+# MAX FILE UPLOAD SIZE
+########################################################################
+# DO NOT SET ABOVE 80MB.  The jquery-filedrop setup and the backend do 
+# not yet support file chunking. This will need to be implemented before
+# uploads increase above the 100MB limit otherwise browsers will crash
+
+MAX_UPLOAD_FILE_SIZE = 50 
 
 ########################################################################
 # SECURITY SETTINGS
