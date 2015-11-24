@@ -1004,35 +1004,6 @@ def get_profile_backend(request, user_profile):
 
     return json_success(result)
 
-@authenticated_json_post_view
-@has_request_variables
-def json_tutorial_send_message(request, user_profile, type=REQ,
-                               recipient=REQ, topic=REQ, content=REQ):
-    """
-    This function, used by the onboarding tutorial, causes the Tutorial Bot to
-    send you the message you pass in here. (That way, the Tutorial Bot's
-    messages to you get rendered by the server and therefore look like any other
-    message.)
-    """
-    sender_name = "welcome-bot@zulip.com"
-    if type == 'stream':
-        internal_send_message(sender_name, "stream", recipient, topic, content,
-                              realm=user_profile.realm)
-        return json_success()
-    # For now, there are no PM cases.
-    return json_error('Bad data passed in to tutorial_send_message')
-
-@authenticated_json_post_view
-@has_request_variables
-def json_tutorial_status(request, user_profile, status=REQ('status')):
-    if status == 'started':
-        user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
-    elif status == 'finished':
-        user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
-    user_profile.save(update_fields=["tutorial_status"])
-
-    return json_success()
-
 @require_realm_admin
 @has_request_variables
 def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
