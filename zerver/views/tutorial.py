@@ -13,8 +13,9 @@ rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(req
 
 @authenticated_json_post_view
 @has_request_variables
-def json_tutorial_send_message(request, user_profile, type=REQ,
-                               recipient=REQ, topic=REQ, content=REQ):
+def json_tutorial_send_message(request, user_profile, type=REQ(validator=check_string),
+                               recipient=REQ(validator=check_string), topic=REQ(validator=check_string),
+                               content=REQ(validator=check_string)):
     """
     This function, used by the onboarding tutorial, causes the Tutorial Bot to
     send you the message you pass in here. (That way, the Tutorial Bot's
@@ -31,7 +32,8 @@ def json_tutorial_send_message(request, user_profile, type=REQ,
 
 @authenticated_json_post_view
 @has_request_variables
-def json_tutorial_status(request, user_profile, status=REQ('status')):
+def json_tutorial_status(request, user_profile,
+                         status=REQ(validator=check_string)):
     if status == 'started':
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
     elif status == 'finished':
