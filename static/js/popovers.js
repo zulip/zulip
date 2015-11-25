@@ -157,12 +157,21 @@ exports.hide_streamlist_sidebar = function () {
     $(".app-main .column-left").removeClass("expanded");
 };
 
+exports.hide_pm_list_sidebar = function () {
+    $(".app-main .column-left").removeClass("expanded");
+};
+
 exports.show_userlist_sidebar = function () {
     $(".app-main .column-right").addClass("expanded");
     resize.resize_page_components();
 };
 
 exports.show_streamlist_sidebar = function () {
+    $(".app-main .column-left").addClass("expanded");
+    resize.resize_page_components();
+};
+
+exports.show_pm_list_sidebar = function () {
     $(".app-main .column-left").addClass("expanded");
     resize.resize_page_components();
 };
