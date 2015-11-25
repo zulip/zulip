@@ -13,6 +13,9 @@ add_dependencies({
 
 set_global('recent_subjects', new global.Dict());
 set_global('unread', {});
+set_global('message_store', {
+    recent_private_messages: new global.Array()
+});
 
 var stream_list = require('js/stream_list.js');
 
@@ -23,6 +26,7 @@ $.fn.expectOne = function () {
 };
 
 global.use_template('sidebar_subject_list');
+global.use_template('sidebar_private_message_list');
 global.use_template('stream_sidebar_row');
 global.use_template('stream_privacy');
 
@@ -45,6 +49,29 @@ global.use_template('stream_privacy');
     var topic = $(topic_html).find('a').text().trim();
     assert.equal(topic, 'coding');
 }());
+
+(function test_build_private_messages_list() {
+    var reply_tos = "alice@zulip.com,bob@zulip.com";
+    var active_conversation = "Alice, Bob";
+    var max_conversations = 5;
+
+
+    var conversations = {reply_to: reply_tos,
+                      display_reply_to: active_conversation,
+                      timestamp: 0 };
+    global.message_store.recent_private_messages.push(conversations);
+
+    global.unread.num_unread_for_person = function () {
+        return 1;
+    };
+
+    var convos_html = stream_list._build_private_messages_list(active_conversation, max_conversations);
+    global.write_test_output("test_build_private_messages_list", convos_html);
+
+    var conversation = $(convos_html).find('a').text().trim();
+    assert.equal(conversation, active_conversation);
+}());
+
 
 (function test_add_stream_to_sidebar() {
     // Make a couple calls to add_stream_to_sidebar() and make sure they

@@ -484,7 +484,7 @@ ul.filters hr {
 
 li.active-filter,
 li.active-sub-filter {
-    font-weight: 600;
+    font-weight: 600 !important;
     background: #ddedf6;
     position: relative;
 }
@@ -596,6 +596,21 @@ ul.filters {
     position: absolute;
     line-height: 1em;
     right: 20px;
+    top: 2px;
+    padding: 2px 3px 0px 3px;
+    background: #a6ada4;
+    color: #ffffff;
+    border-radius: 1px;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.6px;
+}
+
+.private_message_count {
+    display: block;
+    position: absolute;
+    line-height: 1em;
+    right: 10px;
     top: 2px;
     padding: 2px 3px 0px 3px;
     background: #a6ada4;
@@ -2460,6 +2475,13 @@ div.floating_recipient {
     text-overflow: ellipsis;
 }
 
+.conversation-partners {
+    display: block;
+    line-height: 1.2em;
+    width: 90%;
+    overflow: hidden;
+}
+
 .subscription_header {
     min-height: 47px;
 }
@@ -2831,10 +2853,30 @@ ul.expanded_subjects {
     padding-bottom: 2px;
 }
 
+ul.expanded_private_messages {
+    list-style-type: none;
+    font-weight: 300;
+    font-size: 84%;
+    margin-left: 0px;
+    padding-bottom: 2px;
+}
+
 li.show-more-topics,
 li.expanded_subject {
     position: relative;
     padding-left: 33px;
+}
+
+li.show-more-private-messages,
+li.expanded_private_message {
+    position: relative;
+    padding-left: 24px;
+    padding-bottom: 1px;
+    padding-top: 2px;
+}
+
+#global_filters li:hover {
+    background-color: #e2e8dd;
 }
 
 .show-all-streams a {
@@ -2846,12 +2888,14 @@ li.expanded_subject {
     margin-bottom: -5px;
 }
 
-.expanded_subject .subject_box {
+.expanded_subject .subject_box,
+#private .expanded_private_message .subject_box {
     display: block;
     margin-right: 38px;
 }
 
-.expanded_subject.zero-subject-unreads .subject_box {
+.expanded_subject.zero-subject-unreads .subject_box,
+#private .expanded_private_messages.zero-subject-unreads .subject_box {
     display: block;
     margin-right: 15px;
 }
@@ -3979,7 +4023,15 @@ li.show-more-topics a {
     font-size: 75%;
 }
 
+li.show-more-private-messages a {
+    font-size: 90%
+}
+
 .zoom-in .show-more-topics {
+    display: none;
+}
+
+.zoom-in .show-more-private-messages {
     display: none;
 }
 
