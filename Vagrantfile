@@ -24,7 +24,7 @@ set -x
 set -e
 sudo apt-get update
 sudo apt-get install -y python-pbs
-python /srv/zulip/provision.py
+/usr/bin/python /srv/zulip/provision.py
 SCRIPT
 
   config.vm.provision "shell",
