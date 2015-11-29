@@ -290,7 +290,7 @@ function get_events(options) {
                     reload.initiate({immediate: true,
                                      save_pointer: false,
                                      save_narrow: false,
-                                     save_compose: false});
+                                     save_compose: true});
                 }
 
                 if (error_type === 'abort') {
