@@ -199,6 +199,12 @@ exports.initiate = function (options) {
         send_after_reload: false
     });
 
+    if (options.save_pointer === undefined ||
+        options.save_narrow === undefined ||
+        options.save_compose === undefined) {
+        blueslip.error("reload.initiate() called without explicit save options.");
+    }
+
     if (options.immediate) {
         do_reload_app(options.send_after_reload,
                       options.save_pointer,

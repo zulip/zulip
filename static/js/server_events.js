@@ -67,7 +67,11 @@ function get_events_success(events) {
             new_pointer = event.pointer;
             break;
         case 'restart':
-            reload.initiate({message: "The application has been updated; reloading!"});
+            reload.initiate({save_pointer: true,
+                             save_narrow: true,
+                             save_compose: true,
+                             message: "The application has been updated; reloading!"
+                            });
             break;
         case 'update_message':
             messages_to_update.push(event);
