@@ -360,7 +360,7 @@ var send_options;
 
 function send_message_ajax(request, success, error) {
     channel.post({
-        url: '/json/send_message',
+        url: '/json/messages',
         data: request,
         success: success,
         error: function (xhr, error_type) {

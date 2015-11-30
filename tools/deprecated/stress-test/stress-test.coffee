@@ -78,7 +78,7 @@ class ZulipSession extends Session
         @post "/json/update_active_status", {status: "active"}, update_status_time.cbTimer()
 
     send_stream_message: (stream, subject, content) ->
-        @post '/json/send_message', {
+        @post '/json/messages', {
             client: 'website'
             type: 'stream'
             to: JSON.stringify([stream])
@@ -88,7 +88,7 @@ class ZulipSession extends Session
         }, message_send_time.cbTimer()
 
     send_private_message: (recipients, content) ->
-        @post '/json/send_message', {
+        @post '/json/messages', {
             client: 'website'
             type: 'private'
             to: JSON.stringify(recipients)

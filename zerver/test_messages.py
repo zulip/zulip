@@ -574,11 +574,11 @@ class MessagePOSTTest(AuthedTestCase):
         successful.
         """
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/send_message", {"type": "stream",
-                                                         "to": "Verona",
-                                                         "client": "test suite",
-                                                         "content": "Test message",
-                                                         "subject": "Test subject"})
+        result = self.client.post("/json/messages", {"type": "stream",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject"})
         self.assert_json_success(result)
 
     def test_api_message_to_self(self):
@@ -623,11 +623,11 @@ class MessagePOSTTest(AuthedTestCase):
         """
         self.login("hamlet@zulip.com")
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
-        result = self.client.post("/json/send_message", {"type": "stream",
-                                                         "to": "nonexistent_stream",
-                                                         "client": "test suite",
-                                                         "content": "Test message",
-                                                         "subject": "Test subject"})
+        result = self.client.post("/json/messages", {"type": "stream",
+                                                     "to": "nonexistent_stream",
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject"})
         self.assert_json_error(result, "Stream does not exist")
 
     def test_personal_message(self):
@@ -635,10 +635,10 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a personal message to a valid username is successful.
         """
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/send_message", {"type": "private",
-                                                         "content": "Test message",
-                                                         "client": "test suite",
-                                                         "to": "othello@zulip.com"})
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "Test message",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
         self.assert_json_success(result)
 
     def test_personal_message_to_nonexistent_user(self):
@@ -646,10 +646,10 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a personal message to an invalid email returns error JSON.
         """
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/send_message", {"type": "private",
-                                                         "content": "Test message",
-                                                         "client": "test suite",
-                                                         "to": "nonexistent"})
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "Test message",
+                                                     "client": "test suite",
+                                                     "to": "nonexistent"})
         self.assert_json_error(result, "Invalid email 'nonexistent'")
 
     def test_invalid_type(self):
@@ -657,10 +657,10 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a message of unknown type returns error JSON.
         """
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/send_message", {"type": "invalid type",
-                                                         "content": "Test message",
-                                                         "client": "test suite",
-                                                         "to": "othello@zulip.com"})
+        result = self.client.post("/json/messages", {"type": "invalid type",
+                                                     "content": "Test message",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
         self.assert_json_error(result, "Invalid message type")
 
     def test_empty_message(self):
@@ -668,10 +668,10 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a message that is empty or only whitespace should fail
         """
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/send_message", {"type": "private",
-                                                         "content": " ",
-                                                         "client": "test suite",
-                                                         "to": "othello@zulip.com"})
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": " ",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
         self.assert_json_error(result, "Message must not be empty")
 
 
@@ -680,12 +680,12 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a mirrored huddle message works
         """
         self.login("starnine@mit.edu")
-        result = self.client.post("/json/send_message", {"type": "private",
-                                                         "sender": "sipbtest@mit.edu",
-                                                         "content": "Test message",
-                                                         "client": "zephyr_mirror",
-                                                         "to": ujson.dumps(["starnine@mit.edu",
-                                                                            "espuser@mit.edu"])})
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "sender": "sipbtest@mit.edu",
+                                                     "content": "Test message",
+                                                     "client": "zephyr_mirror",
+                                                     "to": ujson.dumps(["starnine@mit.edu",
+                                                                        "espuser@mit.edu"])})
         self.assert_json_success(result)
 
     def test_mirrored_personal(self):
@@ -693,11 +693,11 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a mirrored personal message works
         """
         self.login("starnine@mit.edu")
-        result = self.client.post("/json/send_message", {"type": "private",
-                                                         "sender": "sipbtest@mit.edu",
-                                                         "content": "Test message",
-                                                         "client": "zephyr_mirror",
-                                                         "to": "starnine@mit.edu"})
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "sender": "sipbtest@mit.edu",
+                                                     "content": "Test message",
+                                                     "client": "zephyr_mirror",
+                                                     "to": "starnine@mit.edu"})
         self.assert_json_success(result)
 
     def test_duplicated_mirrored_huddle(self):
@@ -712,9 +712,9 @@ class MessagePOSTTest(AuthedTestCase):
                                   "starnine@mit.edu"])}
 
         self.login("starnine@mit.edu")
-        result1 = self.client.post("/json/send_message", msg)
+        result1 = self.client.post("/json/messages", msg)
         self.login("sipbcert@mit.edu")
-        result2 = self.client.post("/json/send_message", msg)
+        result2 = self.client.post("/json/messages", msg)
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
 
@@ -727,7 +727,7 @@ class MessagePOSTTest(AuthedTestCase):
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
                      "content": long_message, "subject": "Test subject"}
-        result = self.client.post("/json/send_message", post_data)
+        result = self.client.post("/json/messages", post_data)
         self.assert_json_success(result)
 
         sent_message = Message.objects.all().order_by('-id')[0]
@@ -743,7 +743,7 @@ class MessagePOSTTest(AuthedTestCase):
         long_topic = "A" * (MAX_SUBJECT_LENGTH + 1)
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
                      "content": "test content", "subject": long_topic}
-        result = self.client.post("/json/send_message", post_data)
+        result = self.client.post("/json/messages", post_data)
         self.assert_json_success(result)
 
         sent_message = Message.objects.all().order_by('-id')[0]
