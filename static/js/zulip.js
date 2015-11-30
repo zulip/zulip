@@ -276,7 +276,7 @@ function fast_forward_pointer() {
                     reload.initiate({immediate: true,
                                      save_pointer: false,
                                      save_narrow: false,
-                                     save_compose: false});
+                                     save_compose: true});
                 });
             });
         }
