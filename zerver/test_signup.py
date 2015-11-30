@@ -64,7 +64,7 @@ class PublicURLTest(TestCase):
                      401: ["/json/get_public_streams",
                            "/json/get_old_messages",
                            "/json/update_pointer",
-                           "/json/send_message",
+                           "/json/messages",
                            "/json/invite_users",
                            "/json/settings/change",
                            "/json/subscriptions/remove",
