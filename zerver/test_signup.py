@@ -69,7 +69,6 @@ class PublicURLTest(TestCase):
                            "/json/settings/change",
                            "/json/subscriptions/remove",
                            "/json/subscriptions/exists",
-                           "/json/subscriptions/add",
                            "/json/subscriptions/property",
                            "/json/get_subscribers",
                            "/json/fetch_api_key",

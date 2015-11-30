@@ -548,7 +548,7 @@ function ajaxSubscribe(stream) {
     var true_stream_name;
 
     return channel.post({
-        url: "/json/subscriptions/add",
+        url: "/json/users/me/subscriptions",
         data: {"subscriptions": JSON.stringify([{"name": stream}]) },
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
@@ -588,7 +588,7 @@ function ajaxUnsubscribe(stream) {
 function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
-        url: "/json/subscriptions/add",
+        url: "/json/users/me/subscriptions",
         data: {"subscriptions": JSON.stringify([{"name": stream}]),
                "principals": JSON.stringify(principals),
                "invite_only": JSON.stringify(invite_only),
@@ -642,7 +642,7 @@ function show_new_stream_modal() {
 
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
     return channel.post({
-        url: "/json/subscriptions/add",
+        url: "/json/users/me/subscriptions",
         data: {"subscriptions": JSON.stringify([{"name": stream_name}]),
                "principals": JSON.stringify([user_email])},
         success: success,
