@@ -1861,9 +1861,9 @@ def set_default_streams(realm, stream_names):
         stream, _ = create_stream_if_needed(realm, stream_name)
         DefaultStream.objects.create(stream=stream, realm=realm)
 
-    # All realms get a notifications stream by default
-    notifications_stream, _ = create_stream_if_needed(realm, Realm.NOTIFICATION_STREAM_NAME)
-    DefaultStream.objects.create(stream=notifications_stream, realm=realm)
+    # Always include the realm's default notifications streams, if it exists
+    if realm.notifications_stream is not None:
+        DefaultStream.objects.create(stream=realm.notifications_stream, realm=realm)
 
     log_event({'type': 'default_streams',
                'domain': realm.domain,

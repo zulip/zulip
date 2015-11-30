@@ -426,6 +426,16 @@ class DefaultStreamTest(AuthedTestCase):
         stream_names = self.get_default_stream_names(realm)
         self.assertEqual(stream_names, set(expected_names))
 
+    def test_set_default_streams_no_notifications_stream(self):
+        (realm, _) = do_create_realm("testrealm.com", "Test Realm")
+        realm.notifications_stream = None
+        realm.save(update_fields=["notifications_stream"])
+        stream_names = ['apple', 'banana', 'Carrot Cake']
+        expected_names = stream_names
+        set_default_streams(realm, stream_names)
+        stream_names = self.get_default_stream_names(realm)
+        self.assertEqual(stream_names, set(expected_names))
+
     def test_add_and_remove_default_stream(self):
         realm = get_realm("zulip.com")
         orig_stream_names = self.get_default_stream_names(realm)
