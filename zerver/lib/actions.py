@@ -1705,7 +1705,7 @@ def do_create_realm(domain, name, restricted_to_domain=True):
         realm.save()
 
         # Create stream once Realm object has been saved
-        notifications_stream, _ = create_stream_if_needed(realm, Realm.NOTIFICATION_STREAM_NAME)
+        notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
         realm.notifications_stream = notifications_stream
         realm.save(update_fields=['notifications_stream'])
 
