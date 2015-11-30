@@ -262,7 +262,7 @@ class StreamAdminTest(AuthedTestCase):
 
         # Even if you could guess the new name, you can't subscribe to it.
         result = self.client.post(
-            "/json/subscriptions/add",
+            "/json/users/me/subscriptions",
             {"subscriptions": ujson.dumps([{"name": deactivated_stream_name}])})
         self.assert_json_error(
             result, "Unable to access stream (%s)." % (deactivated_stream_name,))
@@ -708,7 +708,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_successful_subscriptions_add(self):
         """
-        Calling /json/subscriptions/add should successfully add streams, and
+        Calling POST /json/users/me/subscriptions should successfully add streams, and
         should determine which are new subscriptions vs which were already
         subscribed. We randomly generate stream names to add, because it
         doesn't matter whether the stream already exists.
@@ -724,7 +724,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_successful_subscriptions_notifies_pm(self):
         """
-        Calling /json/subscriptions/add should notify when a new stream is created.
+        Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
         invitee = "iago@zulip.com"
         invitee_full_name = 'Iago'
@@ -753,7 +753,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_successful_subscriptions_notifies_stream(self):
         """
-        Calling /json/subscriptions/add should notify when a new stream is created.
+        Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
         invitee = "iago@zulip.com"
         invitee_full_name = 'Iago'
@@ -791,7 +791,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_successful_subscriptions_notifies_with_escaping(self):
         """
-        Calling /json/subscriptions/add should notify when a new stream is created.
+        Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
         invitee = "iago@zulip.com"
         invitee_full_name = 'Iago'
@@ -825,7 +825,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_subscriptions_add_too_long(self):
         """
-        Calling /json/subscriptions/add on a stream whose name is >60
+        Calling POST /json/users/me/subscriptions on a stream whose name is >60
         characters should return a JSON error.
         """
         # character limit is 60 characters
@@ -845,7 +845,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_subscriptions_add_invalid_stream(self):
         """
-        Calling /json/subscriptions/add on a stream whose name is invalid (as
+        Calling POST /json/users/me/subscriptions on a stream whose name is invalid (as
         defined by valid_stream_name in zerver/views.py) should return a JSON
         error.
         """
@@ -857,7 +857,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def assert_adding_subscriptions_for_principal(self, invitee, streams, invite_only=False):
         """
-        Calling /json/subscriptions/add on behalf of another principal (for
+        Calling POST /json/users/me/subscriptions on behalf of another principal (for
         whom you have permission to add subscriptions) should successfully add
         those subscriptions and send a message to the subscribee notifying
         them.

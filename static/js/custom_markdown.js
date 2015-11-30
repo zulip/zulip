@@ -11,7 +11,7 @@ var exports = {};
 
     function add_sub(stream_name, $status_message) {
         channel.post({
-            url: '/json/subscriptions/add',
+            url: '/users/me/subscriptions',
             data: {
                 subscriptions: JSON.stringify([{'name': stream_name}])
             }
