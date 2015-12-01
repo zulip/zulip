@@ -110,7 +110,7 @@ def handle_event(event):
         project_name = raw_props.get('name')
         project_repo_type = raw_props.get('scm_type')
 
-        url = make_url("projects/%s" % project_link)
+        url = make_url("projects/%s" % (project_link,))
         scm = "of type %s" % (project_repo_type,) if project_repo_type else ""
 
 

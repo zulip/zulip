@@ -26,9 +26,9 @@ def minified_js(parser, token):
     try:
         tag_name, sourcefile = token.split_contents()
     except ValueError:
-        raise TemplateSyntaxError("%s tag requires an argument" % tag_name)
+        raise TemplateSyntaxError("%s tag requires an argument" % (tag_name,))
     if not (sourcefile[0] == sourcefile[-1] and sourcefile[0] in ('"', "'")):
-        raise TemplateSyntaxError("%s tag should be quoted" % tag_name)
+        raise TemplateSyntaxError("%s tag should be quoted" % (tag_name,))
 
     sourcefile = sourcefile[1:-1]
     if sourcefile not in settings.JS_SPECS:

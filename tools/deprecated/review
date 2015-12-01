@@ -66,7 +66,7 @@ Name a range of commits, or name a single commit (e.g., 'HEAD^' or
 If you set REVIEW_USE_SENDMAIL to be nonempty, /usr/bin/sendmail will
 be used to mail the review request. Otherwise, msmtp will be used by
 default.
-""".strip() % CC_EMAIL
+""".strip() % (CC_EMAIL,)
 
 
 def parse_options(args):
@@ -126,7 +126,7 @@ def get_reponame(repo):
   remote = get_default_remote(repo)
 
   try:
-    url = repo.git.config('--get', 'remote.%s.url' % remote)
+    url = repo.git.config('--get', 'remote.%s.url' % (remote,))
   except git.exc.GitCommandError:
     url = repo.wd
 

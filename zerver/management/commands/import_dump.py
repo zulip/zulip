@@ -59,19 +59,19 @@ Usage: python2.7 manage.py import_dump [--destroy-rebuild-database] [--chunk-siz
 
     def test_table_row_count(self, row_counter, model):
         table_name = model._meta.db_table
-        sys.stdout.write("%s: " % table_name)
+        sys.stdout.write("%s: " % (table_name,))
         expected_count = row_counter.get(table_name) or 0
         actual_count = model.objects.count()
         status = "PASSED" if expected_count == actual_count else "FAILED"
-        params = (expected_count, actual_count, status)
-        sys.stdout.write("expected %d rows, got %d. %s\n" % params)
+        sys.stdout.write("expected %d rows, got %d. %s\n" %
+                         (expected_count, actual_count, status))
 
 
     def import_table(self, database_dump, realm_notification_map, model):
         table_name = model._meta.db_table
         if table_name in database_dump:
             cursor = connection.cursor()
-            sys.stdout.write("Importing %s: " % table_name)
+            sys.stdout.write("Importing %s: " % (table_name,))
             accumulator = [ ]
             for row in database_dump[table_name]:
                 # hack to filter out notifications_stream_id circular reference

@@ -338,7 +338,7 @@ dave-test@zulip.com
 
 earl-test@zulip.com""", ["Denmark"]))
         for user in ("bob", "carol", "dave", "earl"):
-            self.assertTrue(find_key_by_email("%s-test@zulip.com" % user))
+            self.assertTrue(find_key_by_email("%s-test@zulip.com" % (user,)))
         self.check_sent_emails(["bob-test@zulip.com", "carol-test@zulip.com",
                                 "dave-test@zulip.com", "earl-test@zulip.com"])
 
