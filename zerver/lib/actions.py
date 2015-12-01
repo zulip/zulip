@@ -2756,17 +2756,17 @@ def handle_push_notification(user_profile_id, missed_message):
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" %(missed_message['message_id'],))
 
-def is_inactive(value):
+def is_inactive(email):
     try:
-        if get_user_profile_by_email(value).is_active:
-            raise ValidationError(u'%s is already active' % value)
+        if get_user_profile_by_email(email).is_active:
+            raise ValidationError(u'%s is already active' % (email,))
     except UserProfile.DoesNotExist:
         pass
 
-def user_email_is_unique(value):
+def user_email_is_unique(email):
     try:
-        get_user_profile_by_email(value)
-        raise ValidationError(u'%s is already registered' % value)
+        get_user_profile_by_email(email)
+        raise ValidationError(u'%s is already registered' % (email,))
     except UserProfile.DoesNotExist:
         pass
 

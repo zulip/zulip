@@ -37,7 +37,7 @@ def get_ticket_number():
         ticket_number = int(open(fn).read()) + 1
     except:
         ticket_number = 1
-    open(fn, 'w').write('%d' % ticket_number)
+    open(fn, 'w').write('%d' % (ticket_number,))
     return ticket_number
 
 @has_request_variables

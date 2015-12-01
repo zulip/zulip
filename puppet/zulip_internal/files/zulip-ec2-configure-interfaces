@@ -93,7 +93,7 @@ for device in macs.values():
 
     if address_of(device_number) is None:
         # If the device was not autoconfigured, do so now.
-        log.info("Device eth%i not configured, starting dhcpd" % device_number)
+        log.info("Device eth%i not configured, starting dhcpd" % (device_number,))
         subprocess.check_call(['/sbin/dhcpcd', 'eth%i' % device_number])
 
         # Horrible hack to route return packets on the correct interface

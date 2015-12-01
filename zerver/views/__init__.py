@@ -333,7 +333,7 @@ def json_invite_users(request, user_profile, invitee_emails=REQ):
     for stream_name in stream_names:
         stream = get_stream(stream_name, user_profile.realm)
         if stream is None:
-            return json_error("Stream does not exist: %s. No invites were sent." % stream_name)
+            return json_error("Stream does not exist: %s. No invites were sent." % (stream_name,))
         streams.append(stream)
 
     ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
@@ -515,7 +515,7 @@ def finish_google_oauth2(request):
         if email['type'] == 'account':
             break
     else:
-        raise Exception('Google oauth2 account email not found %r' % body)
+        raise Exception('Google oauth2 account email not found %r' % (body,))
     email_address = email['value']
     user_profile = authenticate(username=email_address, use_dummy_backend=True)
     return login_or_register_remote_user(request, email_address, user_profile, full_name)

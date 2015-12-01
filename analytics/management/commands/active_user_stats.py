@@ -37,7 +37,7 @@ class Command(BaseCommand):
                     user_info[last_presence.user_profile.realm.domain][bucket].append(last_presence.user_profile.email)
 
         for realm, buckets in user_info.items():
-            print("Realm %s" % realm)
+            print("Realm %s" % (realm,))
             for hr, users in sorted(buckets.items()):
                 print("\tUsers for %s: %s" % (hr, len(users)))
                 statsd.gauge("users.active.%s.%shr" %  (statsd_key(realm, True), statsd_key(hr, True)), len(users))
@@ -52,7 +52,7 @@ class Command(BaseCommand):
                 if datetime.now(activity.last_visit.tzinfo) - activity.last_visit < timedelta(hours=bucket):
                     user_info[activity.user_profile.realm.domain][bucket].append(activity.user_profile.email)
         for realm, buckets in user_info.items():
-            print("Realm %s" % realm)
+            print("Realm %s" % (realm,))
             for hr, users in sorted(buckets.items()):
                 print("\tUsers reading for %s: %s" % (hr, len(users)))
                 statsd.gauge("users.reading.%s.%shr" %  (statsd_key(realm, True), statsd_key(hr, True)), len(users))

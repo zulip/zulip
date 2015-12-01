@@ -148,7 +148,7 @@ class ConnectionHandler:
                 return
 
         self._connect_target()
-        payload = '%s %s %s\n'%(self.method, self.path, self.protocol)
+        payload = '%s %s %s\n' % (self.method, self.path, self.protocol)
         buf = payload
         try:
             headers, rest = self.client_buffer.split('\r\n\r\n')
@@ -235,7 +235,7 @@ def start_server(host='localhost', port=PORT, IPv6=False, timeout=60,
     soc = socket.socket(soc_type)
     soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     soc.bind((host, port))
-    print "Serving on %s:%d."%(host, port)#debug
+    print "Serving on %s:%d." % (host, port) #debug
     soc.listen(0)
     while 1:
         thread.start_new_thread(handler, soc.accept()+(timeout,))
