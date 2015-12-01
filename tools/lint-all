@@ -81,6 +81,9 @@ def check_whitespace(fn):
         if re.search('\s+$', line.strip('\n')):
             sys.stdout.write('Fix whitespace at %s line %s\n' % (fn, i+1))
             failed = True
+        if re.search('".*"%\([a-z_].*\)$', line.strip()):
+            sys.stdout.write('Missing space around "%%" at %s line %s\n' % (fn, i+1))
+            failed = True
         if re.search('[)]{$', line.strip()):
             sys.stdout.write('Missing space between ) and { at %s line %s\n' % (fn, i+1))
             failed = True
@@ -106,7 +109,6 @@ def perform_extra_js_checks(fn):
             failed = True
     return failed
 
-
 def check_python_gotchas(fn):
     '''
     Check for certain Python gotchas that pyflakes doesn't catch.
@@ -124,7 +126,7 @@ def check_python_gotchas(fn):
         gotcha_regexes = [
                 "'[^']*'\s+\([^']*$", # 'foo'(2) makes no sense
                 '"[^"]*"\s+\([^"]*$', # ditto
-                '% [a-z_]*$', # "%s" % s [we prefer "%s" % (s,)]
+                '% [a-z_]*\)?$', # "%s" % s [we prefer "%s" % (s,)]
         ]
         for gotcha_regex in gotcha_regexes:
             if re.search(gotcha_regex, line):
