@@ -119,6 +119,9 @@ def custom_check_file(fn, rules, skip_rules=[]):
         if skip:
             continue
         for rule in rules:
+            exclude_list = rule.get('exclude', set())
+            if fn in exclude_list:
+                continue
             try:
                 if re.search(rule['pattern'], line.strip(rule.get('strip', None))):
                     sys.stdout.write(rule['description'] + ' at %s line %s:\n' % (fn, i+1))
@@ -135,28 +138,32 @@ whitespace_rules = [
      'description': 'Fix trailing whitespace'},
     {'pattern': '\t',
      'strip': '\n',
+     'exclude': set(['zerver/lib/bugdown/codehilite.py']),
      'description': 'Fix tab-based whitespace'},
-    {'pattern': '".*"%\([a-z_].*\)$',
-     'description': 'Missing space around "%"'},
-    {'pattern': '[)]{$',
-     'description': 'Missing space between ) and {'},
-    {'pattern': 'else{$',
-     'description': 'Missing space between else and {'},
     ]
 js_rules = [
     {'pattern': '[^_]function\(',
      'description': 'The keyword "function" should be followed by a space'},
     {'pattern': '.*blueslip.warning\(.*',
      'description': 'The module blueslip has no function warning, try using blueslip.warn'},
-    ]
+    {'pattern': '[)]{$',
+     'description': 'Missing space between ) and {'},
+    {'pattern': 'else{$',
+     'description': 'Missing space between else and {'},
+    ] + whitespace_rules
 python_rules = [
     {'pattern': "'[^']*'\s+\([^']*$",
      'description': "Suspicious code with quoting around function name"},
     {'pattern': '"[^"]*"\s+\([^"]*$',
      'description': "Suspicious code with quoting around function name"},
+    {'pattern': '".*"%\([a-z_].*\)$',
+     'description': 'Missing space around "%"'},
+    # This next check could have false positives, but it seems pretty
+    # rare; if we find any, they can be added to the exclude list for
+    # this rule.
     {'pattern': '% [a-z_]*\)?$',
      'description': 'Used % comprehension without a tuple'},
-    ]
+    ] + whitespace_rules
 python_line_skip_rules = [
     '\s*[*#]', # comments
     ]
@@ -170,13 +177,6 @@ def check_custom_checks():
 
     for fn in by_lang['.js']:
         if custom_check_file(fn, js_rules):
-            failed = True
-
-    whitespace_exceptions = set(['zerver/lib/bugdown/codehilite.py'])
-    whitespace_targets = by_lang['.js'] + by_lang['.py']
-    whitespace_targets = [x for x in whitespace_targets if not x in whitespace_exceptions]
-    for fn in whitespace_targets:
-        if custom_check_file(fn, whitespace_rules):
             failed = True
 
     return failed
