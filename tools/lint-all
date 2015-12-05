@@ -156,7 +156,9 @@ python_rules = [
      'description': "Suspicious code with quoting around function name"},
     {'pattern': '"[^"]*"\s+\([^"]*$',
      'description': "Suspicious code with quoting around function name"},
-    {'pattern': '".*"%\([a-z_].*\)$',
+    {'pattern': '".*"%\([a-z_].*\)?$',
+     'description': 'Missing space around "%"'},
+    {'pattern': "'.*'%\([a-z_].*\)?$",
      'description': 'Missing space around "%"'},
     # This next check could have false positives, but it seems pretty
     # rare; if we find any, they can be added to the exclude list for
