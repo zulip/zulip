@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 
 [Unreleased]
+- Added new integration for Travis CI.
+- Added settings option to control maximum file upload size.
+- Added support for running Zulip development environment in Docker.
+- Made it possible to set LDAP and EMAIL_HOST passwords in
+  /etc/zulip/secrets.conf.
+- Improved the styling for the Administration page.
+- Substantially improved loading performance on slow networks by enabling
+  GZIP compression on more assets.
+- Changed the page title in narrowed views to include the current narrow.
+- Fixed bugs where draft compose content might be lost when reloading site.
+- Fixed support for disabling the "zulip" notifications stream.
+- Fixed missing step in postfix_localmail installation instructions.
 
 [1.3.9] - 2015-11-16
 - Fixed buggy #! lines in upgrade scripts.
