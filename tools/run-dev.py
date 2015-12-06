@@ -77,7 +77,7 @@ os.setpgrp()
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['./tools/webpack', 'watch'],
-        ['python', 'manage.py', 'runserver', '--nostatic'] +
+        ['python', 'manage.py', 'rundjango'] +
           manage_args + ['localhost:%d' % (django_port,)],
         ['python', 'manage.py', 'runtornado'] +
           manage_args + ['localhost:%d' % (tornado_port,)],
