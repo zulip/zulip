@@ -607,7 +607,10 @@ var JSLINT = (function () {
             use_object: "Use the object literal notation {}.",
             use_or: "Use the || operator.",
             use_param: "Use a named parameter.",
-            used_before_a: "'{a}' was used before it was defined.",
+            used_before_a: "'{a}' was used before it was defined. (If you " +
+                "have added a new module, you need to add it to the whitelist " +
+                "in tools/jslist/check-all.js; if it's a new global you should " +
+                "change it to be an export of the appropriate module)",
             var_a_not: "Variable {a} was not declared correctly.",
             weird_assignment: "Weird assignment.",
             weird_condition: "Weird condition.",
