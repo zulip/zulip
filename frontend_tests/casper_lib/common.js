@@ -129,11 +129,11 @@ exports.then_send_message = function (type, params) {
         else {
             casper.test.assertTrue(false, "send_message got valid message type");
         }
-        casper.fill('form[action^="/json/send_message"]', params);
+        casper.fill('form[action^="/json/messages"]', params);
         casper.click('#compose-send-button');
     });
     casper.waitFor(function emptyComposeBox() {
-        return casper.getFormValues('form[action^="/json/send_message"]').content === '';
+        return casper.getFormValues('form[action^="/json/messages"]').content === '';
     }, function () {
         last_send_or_update = timestamp();
     });

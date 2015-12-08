@@ -31,7 +31,7 @@
      </div>
      <div class="composition-area">
       <button type="button" class="close" id='compose_close'>×</button>
-      <form id="send_message_form" action="/json/send_message" method="post">
+      <form id="send_message_form" action="/json/messages" method="post">
         {% csrf_token %}
         <table class="compose_table">
           <tbody>
