@@ -319,7 +319,7 @@ elif REMOTE_POSTGRES_HOST != '':
             })
     if REMOTE_POSTGRES_SSLMODE != '':
         DATABASES['default']['OPTIONS']['sslmode'] = REMOTE_POSTGRES_SSLMODE
-    else
+    else:
         DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
 ########################################################################
