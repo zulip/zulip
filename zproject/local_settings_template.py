@@ -149,6 +149,12 @@ ENABLE_GRAVATAR = True
 # and uncomment the following line.
 #DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
 
+# To access an external postgres database you should define the host name in
+# REMOTE_POSTGRES_HOST, you can define the password in the secrets file in the
+# property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
+#REMOTE_POSTGRES_HOST = 'dbserver.example.com'
+#REMOTE_POSTGRES_SSLMODE = 'require'
+
 ### TWITTER INTEGRATION
 
 # Zulip supports showing inline Tweet previews when a tweet is linked

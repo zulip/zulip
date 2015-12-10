@@ -4,6 +4,18 @@ import psycopg2.extensions
 import select
 import time
 import logging
+import six.moves.configparser
+
+REMOTE_POSTGRES_HOST=''
+REMOTE_POSTGRES_SSLMODE=''
+execfile("/etc/zulip/settings.py")
+secrets_file = six.moves.configparser.RawConfigParser()
+secrets_file.read("/etc/zulip/zulip-secrets.conf")
+
+def get_secret(key):
+    if secrets_file.has_option('secrets', key):
+        return secrets_file.get('secrets', key)
+    return None
 
 def update_fts_columns(cursor):
     cursor.execute("SELECT id, message_id FROM fts_update_log;")
@@ -27,7 +39,17 @@ logger.setLevel(logging.DEBUG)
 
 logger.info("process_fts_updates starting")
 
-conn = psycopg2.connect("user=zulip")
+if REMOTE_POSTGRES_HOST != '':
+    postgre_password = ''
+    if get_secret("postgres_password") is not None:
+        postgre_password = "password='%s'" % get_secret("postgres_password")
+    if REMOTE_POSTGRES_SSLMODE != '':
+        postgre_sslmode = REMOTE_POSTGRES_SSLMODE
+    else:
+        postgre_sslmode = 'verify-full'
+    conn = psycopg2.connect("user=zulip %s host='%s' dbname=zulip connect_timeout=600 sslmode='%s'" % (postgre_password, REMOTE_POSTGRES_HOST, postgre_sslmode))
+else:
+    conn = psycopg2.connect("user=zulip")
 cursor = conn.cursor()
 
 conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
