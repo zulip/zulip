@@ -149,6 +149,19 @@ ENABLE_GRAVATAR = True
 # and uncomment the following line.
 #DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
 
+# To access an external postgres database you should define the host name in
+# REMOTE_POSTGRES_HOST, you can define the password in the secrets file in the
+# property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
+# Different options are:
+#   disable: I don't care about security, and I don't want to pay the overhead of encryption.
+#   allow: I don't care about security, but I will pay the overhead of encryption if the server insists on it.
+#   prefer: I don't care about encryption, but I wish to pay the overhead of encryption if the server supports it.
+#   require: I want my data to be encrypted, and I accept the overhead. I trust that the network will make sure I always connect to the server I want.
+#   verify-ca: I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server that I trust.
+#   verify-full: I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server I trust, and that it's the one I specify.
+#REMOTE_POSTGRES_HOST = 'dbserver.example.com'
+#REMOTE_POSTGRES_SSLMODE = 'require'
+
 ### TWITTER INTEGRATION
 
 # Zulip supports showing inline Tweet previews when a tweet is linked
