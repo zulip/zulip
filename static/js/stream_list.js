@@ -110,6 +110,11 @@ function zoom_out() {
     $("#stream_filters li.narrow-filter").show();
 }
 
+function remove_expanded_subjects() {
+    popovers.hide_topic_sidebar_popover();
+    $("ul.expanded_subjects").remove();
+}
+
 function get_subject_filter_li(stream, subject) {
     var stream_li = get_filter_li('stream', stream);
     return iterate_to_find(".expanded_subjects li.expanded_subject", subject, stream_li);
@@ -246,11 +251,6 @@ exports.set_subject_count = function (stream, subject, count) {
 exports.remove_narrow_filter = function (name, type) {
     get_filter_li(type, name).remove();
 };
-
-function remove_expanded_subjects() {
-    popovers.hide_topic_sidebar_popover();
-    $("ul.expanded_subjects").remove();
-}
 
 exports._build_subject_list = function (stream, active_topic, max_subjects) {
     var subjects = recent_subjects.get(stream) || [];
