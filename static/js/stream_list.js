@@ -115,6 +115,15 @@ function remove_expanded_subjects() {
     $("ul.expanded_subjects").remove();
 }
 
+function reset_to_unnarrowed(narrowed_within_same_stream) {
+    if (zoomed_to_topics && narrowed_within_same_stream !== true) {
+        zoom_out();
+    }
+
+    $("ul.filters li").removeClass('active-filter active-subject-filter');
+    remove_expanded_subjects();
+}
+
 function get_subject_filter_li(stream, subject) {
     var stream_li = get_filter_li('stream', stream);
     return iterate_to_find(".expanded_subjects li.expanded_subject", subject, stream_li);
@@ -400,12 +409,7 @@ exports.rename_stream = function (sub) {
 
 $(function () {
     $(document).on('narrow_activated.zulip', function (event) {
-        if (zoomed_to_topics && (active_stream_name() !== zoomed_stream)) {
-            zoom_out();
-        }
-
-        $("ul.filters li").removeClass('active-filter active-subject-filter');
-        remove_expanded_subjects();
+        reset_to_unnarrowed(active_stream_name() === zoomed_stream);
 
         // TODO: handle confused filters like "in:all stream:foo"
         var op_in = event.filter.operands('in');
@@ -440,11 +444,7 @@ $(function () {
     });
 
     $(document).on('narrow_deactivated.zulip', function (event) {
-        if (zoomed_to_topics) {
-            zoom_out();
-        }
-        $("ul.filters li").removeClass('active-filter active-subject-filter');
-        remove_expanded_subjects();
+        reset_to_unnarrowed();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });
 
