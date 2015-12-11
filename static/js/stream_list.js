@@ -89,8 +89,7 @@ function get_filter_li(type, name) {
 function zoom_in() {
     popovers.hide_all();
     zoomed_to_topics = true;
-    $("#streams_list").expectOne().removeClass("zoom-out");
-    $("#streams_list").expectOne().addClass("zoom-in");
+    $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
     zoomed_stream = active_stream_name();
 
     $("#stream_filters li.narrow-filter").each(function () {
@@ -107,8 +106,7 @@ function zoom_in() {
 function zoom_out() {
     popovers.hide_all();
     zoomed_to_topics = false;
-    $("#streams_list").expectOne().removeClass("zoom-in");
-    $("#streams_list").expectOne().addClass("zoom-out");
+    $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
 }
 
