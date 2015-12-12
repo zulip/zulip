@@ -1,0 +1,9 @@
+#!/bin/bash
+
+sudo service rabbitmq-server restart
+sudo service postgresql restart
+sudo service redis-server restart
+sudo service memcached restart
+source /home/zulip/.bash_profile
+/srv/zulip/scripts/setup/configure-rabbitmq
+/srv/zulip/tools/run-dev.py --interface=''

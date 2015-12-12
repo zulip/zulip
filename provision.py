@@ -51,7 +51,7 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
     sys.exit(1)
 
 # TODO: Parse arguments properly
-if "--travis" in sys.argv:
+if "--travis" in sys.argv or "--docker" in sys.argv:
     ZULIP_PATH="."
 
 # tsearch-extras is an extension to postgres's built-in full-text search.
@@ -162,6 +162,12 @@ def main():
     os.system("generate_secrets.py -d")
     if "--travis" in sys.argv:
         os.system("sudo service rabbitmq-server restart")
+        os.system("sudo service redis-server restart")
+        os.system("sudo service memcached restart")
+    elif "--docker" in sys.argv:
+        os.system("sudo service rabbitmq-server restart")
+        os.system("sudo pg_dropcluster --stop 9.3 main")
+        os.system("sudo pg_createcluster -e utf8 --start 9.3 main")
         os.system("sudo service redis-server restart")
         os.system("sudo service memcached restart")
     sh.configure_rabbitmq(**LOUD)
