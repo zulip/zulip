@@ -188,15 +188,16 @@ var fake_messages = [
 ];
 
 function send_delayed_stream_message(stream, topic, content, delay) {
+    var data = {'type': JSON.stringify('stream'),
+                'recipient': JSON.stringify(stream),
+                'topic': JSON.stringify(topic),
+                'content': JSON.stringify(content)};
     setTimeout(function () {
         $.ajax({
             dataType: 'json',
             url: '/json/tutorial_send_message',
             type: 'POST',
-            data: {'type': 'stream',
-                   'recipient': stream,
-                   'topic': topic,
-                   'content': content}
+            data: data
         });
     }, delay * 1000); // delay is in seconds.
 }
@@ -233,7 +234,7 @@ function enable_event_handlers() {
 function set_tutorial_status(status, callback) {
     return channel.post({
         url:      '/json/tutorial_status',
-        data:     {status: status},
+        data:     {status: JSON.stringify(status)},
         success:  callback
     });
 }

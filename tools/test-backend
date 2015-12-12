@@ -12,4 +12,5 @@ esac
 cd "$(dirname "$0")"/..
 ./tools/generate-fixtures
 # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
-/usr/bin/env python2.7 -u ./manage.py test "$target" --settings=zproject.test_settings "$@"
+export PYTHONUNBUFFERED="y"
+/usr/bin/env python2.7 ./manage.py test "$target" --settings=zproject.test_settings "$@"

@@ -17,7 +17,7 @@ function remove_pending_request (jqXHR) {
     if (!feature_flags.cleanup_before_reload) { return; }
 
     var pending_request_index = _.indexOf(pending_requests, jqXHR);
-    if (pending_request_index !== -1){
+    if (pending_request_index !== -1) {
         pending_requests.splice(pending_request_index, 1);
     }
 }
@@ -35,7 +35,10 @@ function call(args, idempotent) {
         if (xhr.status === 403) {
             try {
                 if ($.parseJSON(xhr.responseText).msg.indexOf("CSRF Error:") !== -1) {
-                    reload.initiate({immediate: true});
+                    reload.initiate({immediate: true,
+                                     save_pointer: true,
+                                     save_narrow: true,
+                                     save_compose: true});
                 }
             } catch (ex) {
                 blueslip.error('Unexpected 403 response from server',

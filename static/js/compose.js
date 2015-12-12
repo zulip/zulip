@@ -366,7 +366,11 @@ function send_message_ajax(request, success, error) {
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && reload.is_pending()) {
                 // The error might be due to the server changing
-                reload.initiate({immediate: true, send_after_reload: true});
+                reload.initiate({immediate: true,
+                                 save_pointer: true,
+                                 save_narrow: true,
+                                 save_compose: true,
+                                 send_after_reload: true});
                 return;
             }
 
@@ -953,7 +957,7 @@ $(function () {
         url: "json/upload_file",
         fallback_id: "file_input",
         paramname: "file",
-        maxfilesize: 25,
+        maxfilesize: page_params.maxfilesize,
         data: {
             // the token isn't automatically included in filedrop's post
             csrfmiddlewaretoken: csrf_token

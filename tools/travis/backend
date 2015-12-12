@@ -5,3 +5,4 @@ source /srv/zulip-venv/bin/activate
 export PATH=$PATH:/srv/zulip-venv/bin
 ./tools/lint-all
 ./tools/test-backend
+./tools/test-management

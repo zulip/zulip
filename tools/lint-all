@@ -4,6 +4,7 @@ import re
 import sys
 import optparse
 import subprocess
+import traceback
 
 from os          import path
 from collections import defaultdict
@@ -75,59 +76,6 @@ for filepath in files:
 
     by_lang[exn].append(filepath)
 
-def check_whitespace(fn):
-    failed = False
-    for i, line in enumerate(open(fn)):
-        if re.search('\s+$', line.strip('\n')):
-            sys.stdout.write('Fix whitespace at %s line %s\n' % (fn, i+1))
-            failed = True
-        if re.search('\t', line):
-            sys.stdout.write('Fix tab-based whitespace at %s line %s\n' % (fn, i+1))
-            failed = True
-    return failed
-
-def perform_extra_js_checks(fn):
-    failed = False
-    for i, line in enumerate(open(fn)):
-        line = line.strip('\n')
-        if re.search('[^_]function\(', line):
-            sys.stdout.write('The keyword "function" should be followed by a space in %s line %s\n' % (fn, i+1))
-            print line
-            failed = True
-        if 'blueslip.warning(' in line:
-            sys.stdout.write('The module blueslip has no function warning, try using blueslip.warn on line %s' % (i+1, ))
-            print line
-            failed = True
-    return failed
-
-
-def check_python_gotchas(fn):
-    '''
-    Check for certain Python gotchas that pyflakes doesn't catch.
-    '''
-    failed = False
-    for i, line in enumerate(open(fn)):
-        line = line.strip('\n')
-
-        # Hacks to skip lines that confuse our dirt simple code:
-        if re.match('\s*[*#]', line):
-            continue
-        if 'help=' in line:
-            continue
-
-        gotcha_regexes = [
-                "'[^']*'\s+\([^']*$", # 'foo'(2) makes no sense
-                '"[^"]*"\s+\([^"]*$', # ditto
-                '% [a-z_]*$', # "%s" % s [we prefer "%s" % (s,)]
-        ]
-        for gotcha_regex in gotcha_regexes:
-            if re.search(gotcha_regex, line):
-                sys.stdout.write('Suspicious code at %s line %s (regex=%r)\n' % (fn, i+1, gotcha_regex))
-                print line
-                failed = True
-                break
-    return failed
-
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
 
@@ -161,22 +109,76 @@ def check_pyflakes():
                 failed = True
     return failed
 
+def custom_check_file(fn, rules, skip_rules=[]):
+    failed = False
+    for i, line in enumerate(open(fn)):
+        skip = False
+        for rule in skip_rules:
+            if re.match(rule, line):
+                skip = True
+        if skip:
+            continue
+        for rule in rules:
+            exclude_list = rule.get('exclude', set())
+            if fn in exclude_list:
+                continue
+            try:
+                if re.search(rule['pattern'], line.strip(rule.get('strip', None))):
+                    sys.stdout.write(rule['description'] + ' at %s line %s:\n' % (fn, i+1))
+                    print line
+                    failed = True
+            except Exception:
+                print "Exception with %s at %s line %s" % (rule['pattern'], fn, i+1)
+                traceback.print_exc()
+    return failed
+
+whitespace_rules = [
+    {'pattern': '\s+$',
+     'strip': '\n',
+     'description': 'Fix trailing whitespace'},
+    {'pattern': '\t',
+     'strip': '\n',
+     'exclude': set(['zerver/lib/bugdown/codehilite.py']),
+     'description': 'Fix tab-based whitespace'},
+    ]
+js_rules = [
+    {'pattern': '[^_]function\(',
+     'description': 'The keyword "function" should be followed by a space'},
+    {'pattern': '.*blueslip.warning\(.*',
+     'description': 'The module blueslip has no function warning, try using blueslip.warn'},
+    {'pattern': '[)]{$',
+     'description': 'Missing space between ) and {'},
+    {'pattern': 'else{$',
+     'description': 'Missing space between else and {'},
+    ] + whitespace_rules
+python_rules = [
+    {'pattern': "'[^']*'\s+\([^']*$",
+     'description': "Suspicious code with quoting around function name"},
+    {'pattern': '"[^"]*"\s+\([^"]*$',
+     'description': "Suspicious code with quoting around function name"},
+    {'pattern': '".*"%\([a-z_].*\)?$',
+     'description': 'Missing space around "%"'},
+    {'pattern': "'.*'%\([a-z_].*\)?$",
+     'description': 'Missing space around "%"'},
+    # This next check could have false positives, but it seems pretty
+    # rare; if we find any, they can be added to the exclude list for
+    # this rule.
+    {'pattern': '% [a-z_]*\)?$',
+     'description': 'Used % comprehension without a tuple'},
+    ] + whitespace_rules
+python_line_skip_rules = [
+    '\s*[*#]', # comments
+    ]
+
 def check_custom_checks():
     failed = False
 
     for fn in by_lang['.py']:
-        if check_python_gotchas(fn):
+        if custom_check_file(fn, python_rules, skip_rules=python_line_skip_rules):
             failed = True
 
     for fn in by_lang['.js']:
-        if perform_extra_js_checks(fn):
-            failed = True
-
-    whitespace_exceptions = set(['zerver/lib/bugdown/codehilite.py'])
-    whitespace_targets = by_lang['.js'] + by_lang['.py']
-    whitespace_targets = [x for x in whitespace_targets if not x in whitespace_exceptions]
-    for fn in whitespace_targets:
-        if check_whitespace(fn):
+        if custom_check_file(fn, js_rules):
             failed = True
 
     return failed

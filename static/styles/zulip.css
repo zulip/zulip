@@ -3074,11 +3074,6 @@ li.expanded_subject {
     margin-top: 8px;
 }
 
-#word-alert-settings {
-    margin-top: 15px;
-    margin-bottom: 15px;
-}
-
 .remove-alert-word,
 .add-alert-word {
     float: right;
@@ -3290,6 +3285,7 @@ div.edit_bot {
     margin-left: 15px;
 }
 
+#administration .settings-section,
 #settings .settings-section {
     background-color: #f1f1f1;
     border: 1px solid #e3e3e3;
@@ -3297,6 +3293,8 @@ div.edit_bot {
     padding: 45px 0px 15px 0px;
     margin-right: 5px;
     position: relative;
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 
 #settings #notify-settings-status,#ui-settings-status,#display-settings-status {
@@ -3307,6 +3305,7 @@ div.edit_bot {
     margin-bottom: 10px;
 }
 
+#administration .settings-section .admin-realm-form,
 #settings .settings-section .account-settings-form,
 #settings .settings-section .new-bot-form,
 #settings .settings-section .edit-bot-form-box {
@@ -3314,6 +3313,7 @@ div.edit_bot {
     margin: auto;
 }
 
+#administration .settings-section .admin-realm-form,
 #settings .settings-section .new-bot-form,
 #settings .settings-section .edit-bot-form-box {
     margin-top: 35px;
@@ -3385,6 +3385,7 @@ div.edit_bot {
 }
 
 #settings .settings-section .notification-settings-form .notification-submission,
+#administration .settings-section .organization-submission,
 #settings .settings-section .ui-settings-form .ui-submission {
     margin-left: 140px;
 }
@@ -3395,10 +3396,9 @@ div.edit_bot {
     width: 250px;
     font-size: 13px;
     line-height: 14px;
-    margin-top: 15px;
-    margin-bottom: 20px;
 }
 
+#administration .admin-streams-note,
 #settings .bot-settings-note {
     margin-left: 38px;
     font-size: 13px;
@@ -3485,6 +3485,7 @@ div.edit_bot {
     margin: auto;
 }
 
+#administration .settings-section .organization-settings .admin-realm-form,
 #settings .settings-section .account-settings-form,
 #settings .settings-section .new-bot-form,
 #settings .settings-section .notification-settings-form,
@@ -3493,6 +3494,7 @@ div.edit_bot {
     width: 100%;
 }
 
+#administration .settings-section .admin-realm-form .control-label,
 #settings .settings-section .account-settings-form .control-label,
 #settings .settings-section .new-bot-form .control-label,
 #settings .settings-section .edit-bot-form-box .control-label {
@@ -3505,6 +3507,7 @@ div.edit_bot {
     float: none;
 }
 
+#administration .settings-section .admin-realm-form .controls,
 #settings .settings-section .account-settings-form .controls,
 #settings .settings-section .new-bot-form .controls,
 #settings .settings-section .edit-bot-form-box .controls {
@@ -3512,6 +3515,8 @@ div.edit_bot {
     text-align: center;
 }
 
+#administration .settings-section .admin-realm-form .controls button,
+#administration .settings-section .admin-realm-form .controls input,
 #settings .settings-section .account-settings-form .controls button,
 #settings .settings-section .account-settings-form .controls input,
 #settings .settings-section .new-bot-form .controls button,
@@ -3532,6 +3537,7 @@ div.edit_bot {
     margin-left: 80px;
 }
 
+#administration .settings-section .organization-submission,
 #settings .settings-section .notification-settings-form .notification-submission {
     margin: 0px;
     width: 100%;
@@ -3540,6 +3546,7 @@ div.edit_bot {
 
 }
 
+#administration .settings-section .settings-section-title,
 #settings .settings-section .settings-section-title {
     font-size: 18px;
     font-weight: 300;
@@ -3548,24 +3555,23 @@ div.edit_bot {
     top: 15px;
 }
 
+#administration .settings-section .settings-section-icon,
 #settings .settings-section .settings-section-icon {
     margin-right: 8px;
 }
 
+#administration h1,
 #settings h1,
 #subscriptions h1 {
     font-size: 25px;
     font-weight: 300;
 }
 
+#administration .administration-icon,
 #settings .settings-icon,
 #subscriptions .streams-icon {
     margin-right: 10px;
     font-size: 20px;
-}
-
-#settings #notification-settings {
-    margin-top: 15px;
 }
 
 #notification-settings .notification-reminder {

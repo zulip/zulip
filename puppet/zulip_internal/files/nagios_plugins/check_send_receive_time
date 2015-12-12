@@ -16,6 +16,8 @@ import random
 import traceback
 import os
 
+import django
+
 def total_seconds(timedelta):
     return (timedelta.microseconds + (timedelta.seconds + timedelta.days * 24 * 3600) * 10**6) / 10.**6
 
@@ -64,6 +66,9 @@ import zulip
 
 sys.path.append('/home/zulip/deployments/current')
 os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
+
+django.setup()
+
 from zerver.models import get_user_profile_by_email
 from django.conf import settings
 

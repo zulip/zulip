@@ -67,7 +67,11 @@ function get_events_success(events) {
             new_pointer = event.pointer;
             break;
         case 'restart':
-            reload.initiate({message: "The application has been updated; reloading!"});
+            reload.initiate({save_pointer: true,
+                             save_narrow: true,
+                             save_compose: true,
+                             message: "The application has been updated; reloading!"
+                            });
             break;
         case 'update_message':
             messages_to_update.push(event);
@@ -287,7 +291,10 @@ function get_events(options) {
                     ($.parseJSON(xhr.responseText).msg.indexOf("too old") !== -1 ||
                      $.parseJSON(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
                     page_params.event_queue_expired = true;
-                    reload.initiate({immediate: true, save_state: false});
+                    reload.initiate({immediate: true,
+                                     save_pointer: false,
+                                     save_narrow: false,
+                                     save_compose: true});
                 }
 
                 if (error_type === 'abort') {

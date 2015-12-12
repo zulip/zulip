@@ -22,7 +22,7 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     create_stream_if_needed, do_add_default_stream, do_add_subscription,
-    do_change_is_admin, do_remove_default_stream, gather_subscriptions,
+    do_change_is_admin, do_create_realm, do_remove_default_stream, gather_subscriptions,
     get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams,
 )
@@ -419,9 +419,19 @@ class DefaultStreamTest(AuthedTestCase):
         return set(stream_names)
 
     def test_set_default_streams(self):
-        realm = get_realm("zulip.com")
+        (realm, _) = do_create_realm("testrealm.com", "Test Realm")
         stream_names = ['apple', 'banana', 'Carrot Cake']
         expected_names = stream_names + ['zulip']
+        set_default_streams(realm, stream_names)
+        stream_names = self.get_default_stream_names(realm)
+        self.assertEqual(stream_names, set(expected_names))
+
+    def test_set_default_streams_no_notifications_stream(self):
+        (realm, _) = do_create_realm("testrealm.com", "Test Realm")
+        realm.notifications_stream = None
+        realm.save(update_fields=["notifications_stream"])
+        stream_names = ['apple', 'banana', 'Carrot Cake']
+        expected_names = stream_names
         set_default_streams(realm, stream_names)
         stream_names = self.get_default_stream_names(realm)
         self.assertEqual(stream_names, set(expected_names))

@@ -2,8 +2,17 @@
 *~
 /all_messages_log.*
 /event_log/*
-/server.log
+/digest.log*
+/errors.log*
+/manage.log*
+/server.log*
+/workers.log*
+/email-deliverer.log
+/email-mirror.log
+/sync_ldap_user_data.log
 /update-prod-static.log
+frontend_tests/casper_tests/server.log
+frontend_tests/casper_lib/test_credentials.js
 /prod-static
 /errors/*
 *.sw[po]
@@ -18,11 +27,7 @@ zulip.kdev4
 memcached_prefix
 coverage/
 /queue_error
-/workers.log
 .test-js-with-node.html
-digest.log
-errors.log
-manage.log
 .kateproject.d/
 .kateproject
 *.kate-swp
@@ -34,4 +39,5 @@ static/third/gemoji/
 static/third/zxcvbn/
 tools/emoji_dump/bitmaps/
 tools/emoji_dump/*.ttx
+tools/phantomjs
 node_modules

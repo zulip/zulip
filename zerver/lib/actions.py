@@ -1705,7 +1705,7 @@ def do_create_realm(domain, name, restricted_to_domain=True):
         realm.save()
 
         # Create stream once Realm object has been saved
-        notifications_stream, _ = create_stream_if_needed(realm, Realm.NOTIFICATION_STREAM_NAME)
+        notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
         realm.notifications_stream = notifications_stream
         realm.save(update_fields=['notifications_stream'])
 
@@ -1861,9 +1861,9 @@ def set_default_streams(realm, stream_names):
         stream, _ = create_stream_if_needed(realm, stream_name)
         DefaultStream.objects.create(stream=stream, realm=realm)
 
-    # All realms get a notifications stream by default
-    notifications_stream, _ = create_stream_if_needed(realm, Realm.NOTIFICATION_STREAM_NAME)
-    DefaultStream.objects.create(stream=notifications_stream, realm=realm)
+    # Always include the realm's default notifications streams, if it exists
+    if realm.notifications_stream is not None:
+        DefaultStream.objects.create(stream=realm.notifications_stream, realm=realm)
 
     log_event({'type': 'default_streams',
                'domain': realm.domain,
@@ -2756,17 +2756,17 @@ def handle_push_notification(user_profile_id, missed_message):
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" %(missed_message['message_id'],))
 
-def is_inactive(value):
+def is_inactive(email):
     try:
-        if get_user_profile_by_email(value).is_active:
-            raise ValidationError(u'%s is already active' % value)
+        if get_user_profile_by_email(email).is_active:
+            raise ValidationError(u'%s is already active' % (email,))
     except UserProfile.DoesNotExist:
         pass
 
-def user_email_is_unique(value):
+def user_email_is_unique(email):
     try:
-        get_user_profile_by_email(value)
-        raise ValidationError(u'%s is already registered' % value)
+        get_user_profile_by_email(email)
+        raise ValidationError(u'%s is already registered' % (email,))
     except UserProfile.DoesNotExist:
         pass
 

@@ -59,7 +59,7 @@ class Command(BaseCommand):
             addr = '127.0.0.1'
 
         if not port.isdigit():
-            raise CommandError("%r is not a valid port number." % port)
+            raise CommandError("%r is not a valid port number." % (port,))
 
         xheaders = options.get('xheaders', True)
         no_keep_alive = options.get('no_keep_alive', False)

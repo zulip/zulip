@@ -13,65 +13,39 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
-from django.db.models import Q, F
 from django.forms.models import model_to_dict
 from django.core.mail import send_mail
 from django.middleware.csrf import get_token
-from django.db import transaction
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
-    RealmFilter, bulk_get_recipients, \
+    RealmFilter, \
     PreregistrationUser, get_client, MitUser, UserActivity, PushDeviceToken, \
-    get_stream, bulk_get_streams, UserPresence, \
-    get_recipient, valid_stream_name, \
+    get_stream, UserPresence, get_recipient, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
-    completely_open, get_unique_open_realm, get_active_user_dicts_in_realm, remote_user_to_email
-from zerver.lib.actions import bulk_remove_subscriptions, do_change_password, \
-    do_change_full_name, do_change_enable_desktop_notifications, do_change_is_admin, \
-    do_change_enter_sends, do_change_enable_sounds, do_activate_user, do_create_user, \
-    do_change_subscription_property, internal_send_message, \
-    create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
-    update_user_presence, bulk_add_subscriptions, do_events_register, \
+    completely_open, get_unique_open_realm, remote_user_to_email
+from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
+    do_activate_user, do_create_user, \
+    internal_send_message, update_user_presence, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, \
-    do_set_realm_invite_required, do_set_realm_invite_by_admins_only, internal_prep_message, \
-    do_send_messages, get_default_subs, do_deactivate_user, do_reactivate_user, \
+    do_set_realm_invite_required, do_set_realm_invite_by_admins_only, get_default_subs, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
-    do_add_alert_words, do_remove_alert_words, do_set_alert_words, get_subscriber_emails, \
-    do_set_muted_topics, do_rename_stream, clear_followup_emails_queue, \
-    do_change_enable_offline_push_notifications, \
-    do_deactivate_stream, do_change_autoscroll_forever, do_make_stream_public, \
-    do_add_default_stream, do_change_default_all_public_streams, \
-    do_change_default_desktop_notifications, \
-    do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
-    do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_regenerate_api_key, do_remove_default_stream, do_update_pointer, \
-    do_change_avatar_source, do_change_twenty_four_hour_time, do_change_left_side_userlist, \
-    realm_user_count
-
-from zerver.lib.create_user import random_api_key
+    do_set_muted_topics, clear_followup_emails_queue, do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
     CreateUserForm, is_inactive, OurAuthenticationForm
 from django.views.decorators.csrf import csrf_exempt
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.lib import bugdown
-from zerver.lib.alert_words import user_alert_words
-from zerver.lib.validator import check_string, check_list, check_dict, \
-    check_int, check_bool, check_variable_type
-from zerver.decorator import require_post, \
-    authenticated_api_view, authenticated_json_post_view, \
+from zerver.lib.validator import check_string, check_list, check_bool
+from zerver.decorator import require_post, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, to_non_negative_int, \
-    JsonableError, get_user_profile_by_email, REQ, require_realm_admin, \
-    RequestVariableConversionError
-from zerver.lib.avatar import avatar_url, get_avatar_url
-from zerver.lib.upload import upload_message_image_through_web_client, upload_avatar_image, \
+    JsonableError, get_user_profile_by_email, REQ, require_realm_admin
+from zerver.lib.avatar import avatar_url
+from zerver.lib.upload import upload_message_image_through_web_client, \
     get_signed_upload_url, get_realm_for_filename
-from zerver.lib.response import json_success, json_error, json_response
-from zerver.lib.unminify import SourceMap
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.utils import statsd, generate_random_token, statsd_key
+from zerver.lib.response import json_success, json_error
+from zerver.lib.utils import statsd, generate_random_token
 from zproject.backends import password_auth_enabled, dev_auth_enabled
 
 from confirmation.models import Confirmation
@@ -88,89 +62,12 @@ import urllib
 import base64
 import time
 import logging
-import os
 import jwt
 import hashlib
 import hmac
-from collections import defaultdict
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
-from six.moves import map
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
-
-def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
-    """Converts plaintext stream names to a list of Streams, validating input in the process
-
-    For each stream name, we validate it to ensure it meets our
-    requirements for a proper stream name: that is, that it is shorter
-    than Stream.MAX_NAME_LENGTH characters and passes
-    valid_stream_name.
-
-    This function in autocreate mode should be atomic: either an exception will be raised
-    during a precheck, or all the streams specified will have been created if applicable.
-
-    @param streams_raw The list of stream names to process
-    @param user_profile The user for whom we are retreiving the streams
-    @param autocreate Whether we should create streams if they don't already exist
-    @param invite_only Whether newly created streams should have the invite_only bit set
-    """
-    existing_streams = []
-    created_streams = []
-    # Validate all streams, getting extant ones, then get-or-creating the rest.
-    stream_set = set(stream_name.strip() for stream_name in streams_raw)
-    rejects = []
-    for stream_name in stream_set:
-        if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            raise JsonableError("Stream name (%s) too long." % (stream_name,))
-        if not valid_stream_name(stream_name):
-            raise JsonableError("Invalid stream name (%s)." % (stream_name,))
-
-    existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
-
-    for stream_name in stream_set:
-        stream = existing_stream_map.get(stream_name.lower())
-        if stream is None:
-            rejects.append(stream_name)
-        else:
-            existing_streams.append(stream)
-    if autocreate:
-        for stream_name in rejects:
-            stream, created = create_stream_if_needed(user_profile.realm,
-                                                      stream_name,
-                                                      invite_only=invite_only)
-            if created:
-                created_streams.append(stream)
-            else:
-                existing_streams.append(stream)
-    elif rejects:
-        raise JsonableError("Stream(s) (%s) do not exist" % ", ".join(rejects))
-
-    return existing_streams, created_streams
-
-class PrincipalError(JsonableError):
-    def __init__(self, principal):
-        self.principal = principal
-
-    def to_json_error_msg(self):
-        return ("User not authorized to execute queries on behalf of '%s'"
-                % (self.principal,))
-
-def principal_to_user_profile(agent, principal):
-    principal_doesnt_exist = False
-    try:
-        principal_user_profile = get_user_profile_by_email(principal)
-    except UserProfile.DoesNotExist:
-        principal_doesnt_exist = True
-
-    if (principal_doesnt_exist
-        or agent.realm != principal_user_profile.realm):
-        # We have to make sure we don't leak information about which users
-        # are registered for Zulip in a different realm.  We could do
-        # something a little more clever and check the domain part of the
-        # principal to maybe give a better error message
-        raise PrincipalError(principal)
-
-    return principal_user_profile
 
 def name_changes_disabled(realm):
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
@@ -436,7 +333,7 @@ def json_invite_users(request, user_profile, invitee_emails=REQ):
     for stream_name in stream_names:
         stream = get_stream(stream_name, user_profile.realm)
         if stream is None:
-            return json_error("Stream does not exist: %s. No invites were sent." % stream_name)
+            return json_error("Stream does not exist: %s. No invites were sent." % (stream_name,))
         streams.append(stream)
 
     ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
@@ -618,7 +515,7 @@ def finish_google_oauth2(request):
         if email['type'] == 'account':
             break
     else:
-        raise Exception('Google oauth2 account email not found %r' % body)
+        raise Exception('Google oauth2 account email not found %r' % (body,))
     email_address = email['value']
     user_profile = authenticate(username=email_address, use_dummy_backend=True)
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
@@ -869,6 +766,7 @@ def home(request):
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
         login_page            = settings.HOME_NOT_LOGGED_IN,
+        maxfilesize           = settings.MAX_FILE_UPLOAD_SIZE,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
         have_initial_messages = user_has_messages,
         subbed_info           = register_ret['subscriptions'],
@@ -1102,63 +1000,6 @@ def get_profile_backend(request, user_profile):
 
     return json_success(result)
 
-@authenticated_json_post_view
-@has_request_variables
-def json_change_enter_sends(request, user_profile,
-                            enter_sends=REQ('enter_sends', validator=check_bool)):
-    do_change_enter_sends(user_profile, enter_sends)
-    return json_success()
-
-
-@authenticated_json_post_view
-@has_request_variables
-def json_tutorial_send_message(request, user_profile, type=REQ,
-                               recipient=REQ, topic=REQ, content=REQ):
-    """
-    This function, used by the onboarding tutorial, causes the Tutorial Bot to
-    send you the message you pass in here. (That way, the Tutorial Bot's
-    messages to you get rendered by the server and therefore look like any other
-    message.)
-    """
-    sender_name = "welcome-bot@zulip.com"
-    if type == 'stream':
-        internal_send_message(sender_name, "stream", recipient, topic, content,
-                              realm=user_profile.realm)
-        return json_success()
-    # For now, there are no PM cases.
-    return json_error('Bad data passed in to tutorial_send_message')
-
-@authenticated_json_post_view
-@has_request_variables
-def json_tutorial_status(request, user_profile, status=REQ('status')):
-    if status == 'started':
-        user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
-    elif status == 'finished':
-        user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
-    user_profile.save(update_fields=["tutorial_status"])
-
-    return json_success()
-
-@authenticated_json_post_view
-def json_get_public_streams(request, user_profile):
-    return get_public_streams_backend(request, user_profile)
-
-# By default, lists all streams that the user has access to --
-# i.e. public streams plus invite-only streams that the user is on
-@has_request_variables
-def get_streams_backend(request, user_profile,
-                        include_public=REQ(validator=check_bool, default=True),
-                        include_subscribed=REQ(validator=check_bool, default=True),
-                        include_all_active=REQ(validator=check_bool, default=False)):
-
-    streams = do_get_streams(user_profile, include_public, include_subscribed,
-                             include_all_active)
-    return json_success({"streams": streams})
-
-def get_public_streams_backend(request, user_profile):
-    return get_streams_backend(request, user_profile, include_public=True,
-                               include_subscribed=False, include_all_active=False)
-
 @require_realm_admin
 @has_request_variables
 def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
@@ -1181,284 +1022,6 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
         data['invite_by_admins_only'] = invite_by_admins_only
     return json_success(data)
 
-@require_realm_admin
-@has_request_variables
-def add_default_stream(request, user_profile, stream_name=REQ):
-    return json_success(do_add_default_stream(user_profile.realm, stream_name))
-
-@require_realm_admin
-@has_request_variables
-def remove_default_stream(request, user_profile, stream_name=REQ):
-    return json_success(do_remove_default_stream(user_profile.realm, stream_name))
-
-@authenticated_json_post_view
-@require_realm_admin
-@has_request_variables
-def json_rename_stream(request, user_profile, old_name=REQ, new_name=REQ):
-    return json_success(do_rename_stream(user_profile.realm, old_name, new_name))
-
-@authenticated_json_post_view
-@require_realm_admin
-@has_request_variables
-def json_make_stream_public(request, user_profile, stream_name=REQ):
-    return json_success(do_make_stream_public(user_profile, user_profile.realm, stream_name))
-
-@authenticated_json_post_view
-@require_realm_admin
-@has_request_variables
-def json_make_stream_private(request, user_profile, stream_name=REQ):
-    return json_success(do_make_stream_private(user_profile.realm, stream_name))
-
-@require_realm_admin
-@has_request_variables
-def update_stream_backend(request, user_profile, stream_name,
-                          description=REQ(validator=check_string, default=None)):
-    if description is not None:
-       do_change_stream_description(user_profile.realm, stream_name, description)
-    return json_success({})
-
-def list_subscriptions_backend(request, user_profile):
-    return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
-
-@transaction.atomic
-@has_request_variables
-def update_subscriptions_backend(request, user_profile,
-                                 delete=REQ(validator=check_list(check_string), default=[]),
-                                 add=REQ(validator=check_list(check_dict([['name', check_string]])), default=[])):
-    if not add and not delete:
-        return json_error('Nothing to do. Specify at least one of "add" or "delete".')
-
-    json_dict = {}
-    for method, items in ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)):
-        response = method(request, user_profile, streams_raw=items)
-        if response.status_code != 200:
-            transaction.rollback()
-            return response
-        json_dict.update(ujson.loads(response.content))
-    return json_success(json_dict)
-
-@authenticated_json_post_view
-def json_remove_subscriptions(request, user_profile):
-    return remove_subscriptions_backend(request, user_profile)
-
-@has_request_variables
-def remove_subscriptions_backend(request, user_profile,
-                                 streams_raw = REQ("subscriptions", validator=check_list(check_string)),
-                                 principals = REQ(validator=check_list(check_string), default=None)):
-
-    removing_someone_else = principals and \
-        set(principals) != set((user_profile.email,))
-    if removing_someone_else and not user_profile.is_admin():
-        # You can only unsubscribe other people from a stream if you are a realm
-        # admin.
-        return json_error("This action requires administrative rights")
-
-    streams, _ = list_to_streams(streams_raw, user_profile)
-
-    for stream in streams:
-        if removing_someone_else and stream.invite_only and \
-                not subscribed_to_stream(user_profile, stream):
-            # Even as an admin, you can't remove other people from an
-            # invite-only stream you're not on.
-            return json_error("Cannot administer invite-only streams this way")
-
-    if principals:
-        people_to_unsub = set(principal_to_user_profile(
-                user_profile, principal) for principal in principals)
-    else:
-        people_to_unsub = [user_profile]
-
-    result = dict(removed=[], not_subscribed=[])
-    (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams)
-
-    for (subscriber, stream) in removed:
-        result["removed"].append(stream.name)
-    for (subscriber, stream) in not_subscribed:
-        result["not_subscribed"].append(stream.name)
-
-    return json_success(result)
-
-@authenticated_json_post_view
-def json_add_subscriptions(request, user_profile):
-    return add_subscriptions_backend(request, user_profile)
-
-def filter_stream_authorization(user_profile, streams):
-    streams_subscribed = set()
-    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
-    subs = Subscription.objects.filter(user_profile=user_profile,
-                                       recipient__in=recipients_map.values(),
-                                       active=True)
-
-    for sub in subs:
-        streams_subscribed.add(sub.recipient.type_id)
-
-    unauthorized_streams = []
-    for stream in streams:
-        # The user is authorized for his own streams
-        if stream.id in streams_subscribed:
-            continue
-
-        # The user is not authorized for invite_only streams
-        if stream.invite_only:
-            unauthorized_streams.append(stream)
-
-    streams = [stream for stream in streams if
-               stream.id not in set(stream.id for stream in unauthorized_streams)]
-    return streams, unauthorized_streams
-
-def stream_link(stream_name):
-    "Escapes a stream name to make a #narrow/stream/stream_name link"
-    return "#narrow/stream/%s" % (urllib.quote(stream_name.encode('utf-8')),)
-
-def stream_button(stream_name):
-    stream_name = stream_name.replace('\\', '\\\\')
-    stream_name = stream_name.replace(')', '\\)')
-    return '!_stream_subscribe_button(%s)' % (stream_name,)
-
-@has_request_variables
-def add_subscriptions_backend(request, user_profile,
-                              streams_raw = REQ("subscriptions",
-                              validator=check_list(check_dict([['name', check_string]]))),
-                              invite_only = REQ(validator=check_bool, default=False),
-                              announce = REQ(validator=check_bool, default=False),
-                              principals = REQ(validator=check_list(check_string), default=None),
-                              authorization_errors_fatal = REQ(validator=check_bool, default=True)):
-
-    if not user_profile.can_create_streams():
-        return json_error('User cannot create streams.')
-
-    stream_names = []
-    for stream in streams_raw:
-        stream_name = stream["name"].strip()
-        if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            return json_error("Stream name (%s) too long." % (stream_name,))
-        if not valid_stream_name(stream_name):
-            return json_error("Invalid stream name (%s)." % (stream_name,))
-        stream_names.append(stream_name)
-
-    existing_streams, created_streams = \
-        list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
-    authorized_streams, unauthorized_streams = \
-        filter_stream_authorization(user_profile, existing_streams)
-    if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        return json_error("Unable to access stream (%s)." % unauthorized_streams[0].name)
-    # Newly created streams are also authorized for the creator
-    streams = authorized_streams + created_streams
-
-    if principals is not None:
-        if user_profile.realm.domain == 'mit.edu' and not all(stream.invite_only for stream in streams):
-            return json_error("You can only invite other mit.edu users to invite-only streams.")
-        subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
-    else:
-        subscribers = [user_profile]
-
-    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
-
-    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
-    for (subscriber, stream) in subscribed:
-        result["subscribed"][subscriber.email].append(stream.name)
-    for (subscriber, stream) in already_subscribed:
-        result["already_subscribed"][subscriber.email].append(stream.name)
-
-    private_streams = dict((stream.name, stream.invite_only) for stream in streams)
-    bots = dict((subscriber.email, subscriber.is_bot) for subscriber in subscribers)
-
-    # Inform the user if someone else subscribed them to stuff,
-    # or if a new stream was created with the "announce" option.
-    notifications = []
-    if principals and result["subscribed"]:
-        for email, subscriptions in result["subscribed"].iteritems():
-            if email == user_profile.email:
-                # Don't send a Zulip if you invited yourself.
-                continue
-            if bots[email]:
-                # Don't send invitation Zulips to bots
-                continue
-
-            if len(subscriptions) == 1:
-                msg = ("Hi there!  We thought you'd like to know that %s just "
-                       "subscribed you to the%s stream [%s](%s)."
-                       % (user_profile.full_name,
-                          " **invite-only**" if private_streams[subscriptions[0]] else "",
-                          subscriptions[0],
-                          stream_link(subscriptions[0]),
-                        ))
-            else:
-                msg = ("Hi there!  We thought you'd like to know that %s just "
-                       "subscribed you to the following streams: \n\n"
-                       % (user_profile.full_name,))
-                for stream in subscriptions:
-                    msg += "* [%s](%s)%s\n" % (
-                        stream,
-                        stream_link(stream),
-                        " (**invite-only**)" if private_streams[stream] else "")
-
-            if len([s for s in subscriptions if not private_streams[s]]) > 0:
-                msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
-            notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
-                                                       "private", email, "", msg))
-
-    if announce and len(created_streams) > 0:
-        notifications_stream = user_profile.realm.notifications_stream
-        if notifications_stream is not None:
-            if len(created_streams) > 1:
-                stream_msg = "the following streams: %s" % \
-                              (", ".join('`%s`' % (s.name,) for s in created_streams),)
-            else:
-                stream_msg = "a new stream `%s`" % (created_streams[0].name)
-
-            stream_buttons = ' '.join(stream_button(s.name) for s in created_streams)
-            msg = ("%s just created %s. %s" % (user_profile.full_name,
-                                                stream_msg, stream_buttons))
-            notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
-                                   "stream",
-                                   notifications_stream.name, "Streams", msg,
-                                   realm=notifications_stream.realm))
-        else:
-            msg = ("Hi there!  %s just created a new stream '%s'. %s"
-                       % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))
-            for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
-                # Don't announce to yourself or to people you explicitly added
-                # (who will get the notification above instead).
-                if realm_user_dict['email'] in principals or realm_user_dict['email'] == user_profile.email:
-                    continue
-                notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
-                                                           "private",
-                                                           realm_user_dict['email'], "", msg))
-
-    if len(notifications) > 0:
-        do_send_messages(notifications)
-
-    result["subscribed"] = dict(result["subscribed"])
-    result["already_subscribed"] = dict(result["already_subscribed"])
-    if not authorization_errors_fatal:
-        result["unauthorized"] = [stream.name for stream in unauthorized_streams]
-    return json_success(result)
-
-def get_members_backend(request, user_profile):
-    realm = user_profile.realm
-    admins = set(user_profile.realm.get_admin_users())
-    members = []
-    for profile in UserProfile.objects.select_related().filter(realm=realm):
-        avatar_url = get_avatar_url(
-            profile.avatar_source,
-            profile.email
-        )
-        member = {"full_name": profile.full_name,
-                  "is_bot": profile.is_bot,
-                  "is_active": profile.is_active,
-                  "is_admin": (profile in admins),
-                  "email": profile.email,
-                  "avatar_url": avatar_url,}
-        if profile.is_bot and profile.bot_owner is not None:
-            member["bot_owner"] = profile.bot_owner.email
-        members.append(member)
-    return json_success({'members': members})
-
-@authenticated_json_post_view
-def json_get_subscribers(request, user_profile):
-    return get_subscribers_backend(request, user_profile)
-
 @authenticated_json_post_view
 @has_request_variables
 def json_upload_file(request, user_profile):
@@ -1468,6 +1031,9 @@ def json_upload_file(request, user_profile):
         return json_error("You may only upload one file at a time")
 
     user_file = request.FILES.values()[0]
+    if ((settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024) < user_file._get_size()):
+        return json_error("File Upload is larger than allowed limit")
+
     uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
 
@@ -1497,131 +1063,6 @@ def get_uploaded_file(request, realm_id, filename,
     else:
         return HttpResponseForbidden()
 
-@has_request_variables
-def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
-    stream = get_stream(stream_name, user_profile.realm)
-    if stream is None:
-        raise JsonableError("Stream does not exist: %s" % (stream_name,))
-
-    subscribers = get_subscriber_emails(stream, user_profile)
-
-    return json_success({'subscribers': subscribers})
-
-@authenticated_json_post_view
-@has_request_variables
-def json_change_settings(request, user_profile,
-                         full_name=REQ,
-                         old_password=REQ(default=""),
-                         new_password=REQ(default=""),
-                         confirm_password=REQ(default="")):
-    if new_password != "" or confirm_password != "":
-        if new_password != confirm_password:
-            return json_error("New password must match confirmation password!")
-        if not authenticate(username=user_profile.email, password=old_password):
-            return json_error("Wrong password!")
-        do_change_password(user_profile, new_password)
-
-    result = {}
-    if user_profile.full_name != full_name and full_name.strip() != "":
-        if name_changes_disabled(user_profile.realm):
-            # Failingly silently is fine -- they can't do it through the UI, so
-            # they'd have to be trying to break the rules.
-            pass
-        else:
-            new_full_name = full_name.strip()
-            if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
-                return json_error("Name too long!")
-            do_change_full_name(user_profile, new_full_name)
-            result['full_name'] = new_full_name
-
-    return json_success(result)
-
-@authenticated_json_post_view
-@has_request_variables
-def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator=check_bool, default=None)):
-    result = {}
-    if twenty_four_hour_time is not None and \
-        user_profile.twenty_four_hour_time != twenty_four_hour_time:
-        do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
-
-    result['twenty_four_hour_time'] = twenty_four_hour_time
-
-    return json_success(result)
-
-@authenticated_json_post_view
-@has_request_variables
-def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool, default=None)):
-    result = {}
-    if left_side_userlist is not None and \
-        user_profile.left_side_userlist != left_side_userlist:
-        do_change_left_side_userlist(user_profile, left_side_userlist)
-
-    result['left_side_userlist'] = left_side_userlist
-
-    return json_success(result)
-
-@authenticated_json_post_view
-@has_request_variables
-def json_change_notify_settings(request, user_profile,
-                                enable_stream_desktop_notifications=REQ(validator=check_bool,
-                                                                        default=None),
-                                enable_stream_sounds=REQ(validator=check_bool,
-                                                         default=None),
-                                enable_desktop_notifications=REQ(validator=check_bool,
-                                                                 default=None),
-                                enable_sounds=REQ(validator=check_bool,
-                                                  default=None),
-                                enable_offline_email_notifications=REQ(validator=check_bool,
-                                                                       default=None),
-                                enable_offline_push_notifications=REQ(validator=check_bool,
-                                                                      default=None),
-                                enable_digest_emails=REQ(validator=check_bool,
-                                                         default=None)):
-
-    result = {}
-
-    # Stream notification settings.
-
-    if enable_stream_desktop_notifications is not None and \
-            user_profile.enable_stream_desktop_notifications != enable_stream_desktop_notifications:
-        do_change_enable_stream_desktop_notifications(
-            user_profile, enable_stream_desktop_notifications)
-        result['enable_stream_desktop_notifications'] = enable_stream_desktop_notifications
-
-    if enable_stream_sounds is not None and \
-            user_profile.enable_stream_sounds != enable_stream_sounds:
-        do_change_enable_stream_sounds(user_profile, enable_stream_sounds)
-        result['enable_stream_sounds'] = enable_stream_sounds
-
-    # PM and @-mention settings.
-
-    if enable_desktop_notifications is not None and \
-            user_profile.enable_desktop_notifications != enable_desktop_notifications:
-        do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)
-        result['enable_desktop_notifications'] = enable_desktop_notifications
-
-    if enable_sounds is not None and \
-            user_profile.enable_sounds != enable_sounds:
-        do_change_enable_sounds(user_profile, enable_sounds)
-        result['enable_sounds'] = enable_sounds
-
-    if enable_offline_email_notifications is not None and \
-            user_profile.enable_offline_email_notifications != enable_offline_email_notifications:
-        do_change_enable_offline_email_notifications(user_profile, enable_offline_email_notifications)
-        result['enable_offline_email_notifications'] = enable_offline_email_notifications
-
-    if enable_offline_push_notifications is not None and \
-            user_profile.enable_offline_push_notifications != enable_offline_push_notifications:
-        do_change_enable_offline_push_notifications(user_profile, enable_offline_push_notifications)
-        result['enable_offline_push_notifications'] = enable_offline_push_notifications
-
-    if enable_digest_emails is not None and \
-            user_profile.enable_digest_emails != enable_digest_emails:
-        do_change_enable_digest_emails(user_profile, enable_digest_emails)
-        result['enable_digest_emails'] = enable_digest_emails
-
-    return json_success(result)
-
 @require_realm_admin
 @has_request_variables
 def create_user_backend(request, user_profile, email=REQ, password=REQ,
@@ -1644,111 +1085,6 @@ def create_user_backend(request, user_profile, email=REQ, password=REQ,
 
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
-
-@authenticated_json_post_view
-@has_request_variables
-def json_change_ui_settings(request, user_profile,
-                            autoscroll_forever=REQ(validator=check_bool,
-                                                   default=None),
-                            default_desktop_notifications=REQ(validator=check_bool,
-                                                              default=None)):
-
-    result = {}
-
-    if autoscroll_forever is not None and \
-            user_profile.autoscroll_forever != autoscroll_forever:
-        do_change_autoscroll_forever(user_profile, autoscroll_forever)
-        result['autoscroll_forever'] = autoscroll_forever
-
-    if default_desktop_notifications is not None and \
-            user_profile.default_desktop_notifications != default_desktop_notifications:
-        do_change_default_desktop_notifications(user_profile, default_desktop_notifications)
-        result['default_desktop_notifications'] = default_desktop_notifications
-
-    return json_success(result)
-
-@authenticated_json_post_view
-@has_request_variables
-def json_stream_exists(request, user_profile, stream=REQ,
-                       autosubscribe=REQ(default=False)):
-    return stream_exists_backend(request, user_profile, stream, autosubscribe)
-
-def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
-    if not valid_stream_name(stream_name):
-        return json_error("Invalid characters in stream name")
-    stream = get_stream(stream_name, user_profile.realm)
-    result = {"exists": bool(stream)}
-    if stream is not None:
-        recipient = get_recipient(Recipient.STREAM, stream.id)
-        if autosubscribe:
-            bulk_add_subscriptions([stream], [user_profile])
-        result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
-                                                           recipient=recipient,
-                                                           active=True).exists()
-        return json_success(result) # results are ignored for HEAD requests
-    return json_response(data=result, status=404)
-
-def get_subscription_or_die(stream_name, user_profile):
-    stream = get_stream(stream_name, user_profile.realm)
-    if not stream:
-        raise JsonableError("Invalid stream %s" % (stream.name,))
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-    subscription = Subscription.objects.filter(user_profile=user_profile,
-                                               recipient=recipient, active=True)
-
-    if not subscription.exists():
-        raise JsonableError("Not subscribed to stream %s" % (stream_name,))
-
-    return subscription
-
-@authenticated_json_view
-@has_request_variables
-def json_subscription_property(request, user_profile, subscription_data=REQ(
-        validator=check_list(
-            check_dict([["stream", check_string],
-                        ["property", check_string],
-                        ["value", check_variable_type(
-                            [check_string, check_bool])]])))):
-    """
-    This is the entry point to changing subscription properties. This
-    is a bulk endpoint: requestors always provide a subscription_data
-    list containing dictionaries for each stream of interest.
-
-    Requests are of the form:
-
-    [{"stream": "devel", "property": "in_home_view", "value": False},
-     {"stream": "devel", "property": "color", "value": "#c2c2c2"}]
-    """
-    if request.method != "POST":
-        return json_error("Invalid verb")
-
-    property_converters = {"color": check_string, "in_home_view": check_bool,
-                           "desktop_notifications": check_bool,
-                           "audible_notifications": check_bool}
-    response_data = []
-
-    for change in subscription_data:
-        stream_name = change["stream"]
-        property = change["property"]
-        value = change["value"]
-
-        if property not in property_converters:
-            return json_error("Unknown subscription property: %s" % (property,))
-
-        sub = get_subscription_or_die(stream_name, user_profile)[0]
-
-        property_conversion = property_converters[property](property, value)
-        if property_conversion:
-            return json_error(property_conversion)
-
-        do_change_subscription_property(user_profile, sub, stream_name,
-                                        property, value)
-
-        response_data.append({'stream': stream_name,
-                              'property': property,
-                              'value': value})
-
-    return json_success({"subscription_data": response_data})
 
 @csrf_exempt
 @require_post
@@ -1818,92 +1154,6 @@ def json_update_active_status(request, user_profile):
 def json_get_active_statuses(request, user_profile):
     return json_success(get_status_list(user_profile))
 
-# Read the source map information for decoding JavaScript backtraces
-js_source_map = None
-if not (settings.DEBUG or settings.TEST_SUITE):
-    js_source_map = SourceMap(os.path.join(
-        settings.DEPLOY_ROOT, 'prod-static/source-map'))
-
-@authenticated_json_post_view
-@has_request_variables
-def json_report_send_time(request, user_profile,
-                          time=REQ(converter=to_non_negative_int),
-                          received=REQ(converter=to_non_negative_int, default="(unknown)"),
-                          displayed=REQ(converter=to_non_negative_int, default="(unknown)"),
-                          locally_echoed=REQ(validator=check_bool, default=False),
-                          rendered_content_disparity=REQ(validator=check_bool, default=False)):
-    request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
-        % (time, received, displayed, locally_echoed, rendered_content_disparity)
-    statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), time)
-    if received != "(unknown)":
-        statsd.timing("endtoend.receive_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), received)
-    if displayed != "(unknown)":
-        statsd.timing("endtoend.displayed_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), displayed)
-    if locally_echoed:
-        statsd.incr('locally_echoed')
-    if rendered_content_disparity:
-        statsd.incr('render_disparity')
-    return json_success()
-
-@authenticated_json_post_view
-@has_request_variables
-def json_report_narrow_time(request, user_profile,
-                            initial_core=REQ(converter=to_non_negative_int),
-                            initial_free=REQ(converter=to_non_negative_int),
-                            network=REQ(converter=to_non_negative_int)):
-    request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
-    statsd.timing("narrow.initial_core.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_core)
-    statsd.timing("narrow.initial_free.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_free)
-    statsd.timing("narrow.network.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), network)
-    return json_success()
-
-@authenticated_json_post_view
-@has_request_variables
-def json_report_unnarrow_time(request, user_profile,
-                            initial_core=REQ(converter=to_non_negative_int),
-                            initial_free=REQ(converter=to_non_negative_int)):
-    request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
-    statsd.timing("unnarrow.initial_core.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_core)
-    statsd.timing("unnarrow.initial_free.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_free)
-    return json_success()
-
-@authenticated_json_post_view
-@has_request_variables
-def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
-                      ui_message=REQ(validator=check_bool), user_agent=REQ,
-                      href=REQ, log=REQ,
-                      more_info=REQ(validator=check_dict([]), default=None)):
-
-    if not settings.ERROR_REPORTING:
-        return json_success()
-
-    if js_source_map:
-        stacktrace = js_source_map.annotate_stacktrace(stacktrace)
-
-    try:
-        version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"])
-    except Exception:
-        version = None
-
-    queue_json_publish('error_reports', dict(
-        type = "browser",
-        report = dict(
-            user_email = user_profile.email,
-            user_full_name = user_profile.full_name,
-            user_visible = ui_message,
-            server_path = settings.DEPLOY_ROOT,
-            version = version,
-            user_agent = user_agent,
-            href = href,
-            message = message,
-            stacktrace = stacktrace,
-            log = log,
-            more_info = more_info,
-        )
-    ), lambda x: None)
-
-    return json_success()
-
 @authenticated_json_post_view
 def json_events_register(request, user_profile):
     return events_register_backend(request, user_profile)
@@ -1945,263 +1195,6 @@ def events_register_backend(request, user_profile, apply_markdown=True,
     return json_success(ret)
 
 
-def deactivate_user_backend(request, user_profile, email):
-    try:
-        target = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        return json_error('No such user')
-    if target.is_bot:
-        return json_error('No such user')
-    return _deactivate_user_profile_backend(request, user_profile, target)
-
-def deactivate_bot_backend(request, user_profile, email):
-    try:
-        target = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        return json_error('No such bot')
-    if not target.is_bot:
-        return json_error('No such bot')
-    return _deactivate_user_profile_backend(request, user_profile, target)
-
-def _deactivate_user_profile_backend(request, user_profile, target):
-    if not user_profile.can_admin_user(target):
-        return json_error('Insufficient permission')
-
-    do_deactivate_user(target)
-    return json_success({})
-
-def reactivate_user_backend(request, user_profile, email):
-    try:
-        target = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        return json_error('No such user')
-
-    if not user_profile.can_admin_user(target):
-        return json_error('Insufficient permission')
-
-    do_reactivate_user(target)
-    return json_success({})
-
-@has_request_variables
-def update_user_backend(request, user_profile, email,
-                        is_admin=REQ(default=None, validator=check_bool)):
-    try:
-        target = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        return json_error('No such user')
-
-    if not user_profile.can_admin_user(target):
-        return json_error('Insufficient permission')
-
-    if is_admin is not None:
-        do_change_is_admin(target, is_admin)
-    return json_success({})
-
-@require_realm_admin
-def deactivate_stream_backend(request, user_profile, stream_name):
-    target = get_stream(stream_name, user_profile.realm)
-    if not target:
-        return json_error('No such stream name')
-
-    if target.invite_only and not subscribed_to_stream(user_profile, target):
-        return json_error('Cannot administer invite-only streams this way')
-
-    do_deactivate_stream(target)
-    return json_success({})
-
-def avatar(request, email):
-    try:
-        user_profile = get_user_profile_by_email(email)
-        avatar_source = user_profile.avatar_source
-    except UserProfile.DoesNotExist:
-        avatar_source = 'G'
-    url = get_avatar_url(avatar_source, email)
-    if '?' in url:
-        sep = '&'
-    else:
-        sep = '?'
-    url += sep + request.META['QUERY_STRING']
-    return redirect(url)
-
-def get_stream_name(stream):
-    if stream:
-        name = stream.name
-    else :
-        name = None
-    return name
-
-def stream_or_none(stream_name, realm):
-    if stream_name == '':
-        return None
-    else:
-        stream = get_stream(stream_name, realm)
-        if not stream:
-            raise JsonableError('No such stream \'%s\'' %  (stream_name, ))
-        return stream
-
-@has_request_variables
-def patch_bot_backend(request, user_profile, email,
-                      full_name=REQ(default=None),
-                      default_sending_stream=REQ(default=None),
-                      default_events_register_stream=REQ(default=None),
-                      default_all_public_streams=REQ(default=None, validator=check_bool)):
-    try:
-        bot = get_user_profile_by_email(email)
-    except:
-        return json_error('No such user')
-
-    if not user_profile.can_admin_user(bot):
-        return json_error('Insufficient permission')
-
-    if full_name is not None:
-        do_change_full_name(bot, full_name)
-    if default_sending_stream is not None:
-        stream = stream_or_none(default_sending_stream, bot.realm)
-        do_change_default_sending_stream(bot, stream)
-    if default_events_register_stream is not None:
-        stream = stream_or_none(default_events_register_stream, bot.realm)
-        do_change_default_events_register_stream(bot, stream)
-    if default_all_public_streams is not None:
-        do_change_default_all_public_streams(bot, default_all_public_streams)
-
-    if len(request.FILES) == 0:
-        pass
-    elif len(request.FILES) == 1:
-        user_file = request.FILES.values()[0]
-        upload_avatar_image(user_file, user_profile, bot.email)
-        avatar_source = UserProfile.AVATAR_FROM_USER
-        do_change_avatar_source(bot, avatar_source)
-    else:
-        return json_error("You may only upload one file at a time")
-
-    json_result = dict(
-        full_name=bot.full_name,
-        avatar_url=avatar_url(bot),
-        default_sending_stream=get_stream_name(bot.default_sending_stream),
-        default_events_register_stream=get_stream_name(bot.default_events_register_stream),
-        default_all_public_streams=bot.default_all_public_streams,
-    )
-    return json_success(json_result)
-
-@authenticated_json_post_view
-def json_set_avatar(request, user_profile):
-    if len(request.FILES) != 1:
-        return json_error("You must upload exactly one avatar.")
-
-    user_file = request.FILES.values()[0]
-    upload_avatar_image(user_file, user_profile, user_profile.email)
-    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_USER)
-    user_avatar_url = avatar_url(user_profile)
-
-    json_result = dict(
-        avatar_url = user_avatar_url
-    )
-    return json_success(json_result)
-
-@has_request_variables
-def regenerate_api_key(request, user_profile):
-    do_regenerate_api_key(user_profile)
-    json_result = dict(
-        api_key = user_profile.api_key
-    )
-    return json_success(json_result)
-
-@has_request_variables
-def regenerate_bot_api_key(request, user_profile, email):
-    try:
-        bot = get_user_profile_by_email(email)
-    except:
-        return json_error('No such user')
-
-    if not user_profile.can_admin_user(bot):
-        return json_error('Insufficient permission')
-
-    do_regenerate_api_key(bot)
-    json_result = dict(
-        api_key = bot.api_key
-    )
-    return json_success(json_result)
-
-@has_request_variables
-def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ,
-                    default_sending_stream=REQ(default=None),
-                    default_events_register_stream=REQ(default=None),
-                    default_all_public_streams=REQ(validator=check_bool, default=None)):
-    short_name += "-bot"
-    email = short_name + "@" + user_profile.realm.domain
-    form = CreateUserForm({'full_name': full_name, 'email': email})
-    if not form.is_valid():
-        # We validate client-side as well
-        return json_error('Bad name or username')
-
-    try:
-        get_user_profile_by_email(email)
-        return json_error("Username already in use")
-    except UserProfile.DoesNotExist:
-        pass
-
-    if len(request.FILES) == 0:
-        avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-    elif len(request.FILES) != 1:
-        return json_error("You may only upload one file at a time")
-    else:
-        user_file = request.FILES.values()[0]
-        upload_avatar_image(user_file, user_profile, email)
-        avatar_source = UserProfile.AVATAR_FROM_USER
-
-    if default_sending_stream is not None:
-        default_sending_stream = stream_or_none(default_sending_stream, user_profile.realm)
-    if default_sending_stream and not default_sending_stream.is_public() and not \
-        subscribed_to_stream(user_profile, default_sending_stream):
-        return json_error('Insufficient permission')
-
-    if default_events_register_stream is not None:
-        default_events_register_stream = stream_or_none(default_events_register_stream,
-                                                         user_profile.realm)
-    if default_events_register_stream and not default_events_register_stream.is_public() and not \
-        subscribed_to_stream(user_profile, default_events_register_stream):
-        return json_error('Insufficient permission')
-
-
-    bot_profile = do_create_user(email=email, password='',
-                                 realm=user_profile.realm, full_name=full_name,
-                                 short_name=short_name, active=True, bot=True,
-                                 bot_owner=user_profile,
-                                 avatar_source=avatar_source,
-                                 default_sending_stream=default_sending_stream,
-                                 default_events_register_stream=default_events_register_stream,
-                                 default_all_public_streams=default_all_public_streams)
-    json_result = dict(
-            api_key=bot_profile.api_key,
-            avatar_url=avatar_url(bot_profile),
-            default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
-            default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
-            default_all_public_streams=bot_profile.default_all_public_streams,
-    )
-    return json_success(json_result)
-
-def get_bots_backend(request, user_profile):
-    bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
-                                              bot_owner=user_profile)
-    bot_profiles = bot_profiles.select_related('default_sending_stream', 'default_events_register_stream')
-    bot_profiles = bot_profiles.order_by('date_joined')
-
-    def bot_info(bot_profile):
-        default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
-        default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
-
-        return dict(
-            username=bot_profile.email,
-            full_name=bot_profile.full_name,
-            api_key=bot_profile.api_key,
-            avatar_url=avatar_url(bot_profile),
-            default_sending_stream=default_sending_stream,
-            default_events_register_stream=default_events_register_stream,
-            default_all_public_streams=bot_profile.default_all_public_streams,
-        )
-
-    return json_success({'bots': list(map(bot_info, bot_profiles))})
-
 @authenticated_json_post_view
 @has_request_variables
 def json_refer_friend(request, user_profile, email=REQ):
@@ -2212,34 +1205,6 @@ def json_refer_friend(request, user_profile, email=REQ):
 
     do_refer_friend(user_profile, email);
 
-    return json_success()
-
-def list_alert_words(request, user_profile):
-    return json_success({'alert_words': user_alert_words(user_profile)})
-
-@authenticated_json_post_view
-@has_request_variables
-def json_set_alert_words(request, user_profile,
-                         alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_set_alert_words(user_profile, alert_words)
-    return json_success()
-
-@has_request_variables
-def set_alert_words(request, user_profile,
-                    alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_set_alert_words(user_profile, alert_words)
-    return json_success()
-
-@has_request_variables
-def add_alert_words(request, user_profile,
-                    alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_add_alert_words(user_profile, alert_words)
-    return json_success()
-
-@has_request_variables
-def remove_alert_words(request, user_profile,
-                       alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_remove_alert_words(user_profile, alert_words)
     return json_success()
 
 @authenticated_json_post_view

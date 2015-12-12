@@ -2,7 +2,7 @@
 set -e
 set -x
 
-apt-get install openssl ssl-cert
+apt-get install -y openssl ssl-cert
 ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
 ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
 

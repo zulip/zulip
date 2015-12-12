@@ -124,7 +124,7 @@ class Realm(models.Model):
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True)
     deactivated = models.BooleanField(default=False)
 
-    NOTIFICATION_STREAM_NAME = 'zulip'
+    DEFAULT_NOTIFICATION_STREAM_NAME = 'zulip'
 
     def __repr__(self):
         return (u"<Realm: %s %s>" % (self.domain, self.id)).encode("utf-8")

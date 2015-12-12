@@ -224,6 +224,12 @@
             <span class="integration-label">Zendesk</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-travis">
+         <a class="integration-link integration-travis" href="#travis">
+            <img class="integration-logo" src="/static/images/integrations/logos/travis.png" alt="Travis CI logo" />
+            <span class="integration-label">Travis CI</span>
+         </a>
+       </div>
     </div>
 
 <div id="integration-instructions-group">
@@ -1695,6 +1701,30 @@ access_token_secret =</pre>
       specified stream, with the search term as the topic.</p>
 
       <img class="screenshot" src="/static/images/integrations/twitter/001.png" />
+    </div>
+
+    <div id="travis" class="integration-instructions">
+
+      <p>See your Travis CI build notifications in Zulip!</p>
+
+      <p>First, create the stream you'd like to use for notifications, and subscribe
+      all interested parties to this stream. We recommend the name <code>travis</code>.</p>
+
+      <p>Next, set up a bot for the integration. You'll need the bot's API key
+      to construct a URL for Travis CI.</p>
+
+      <p>Finally, set up a webhook in your <code>.travis.yml</code> file:</p>
+
+<pre>
+notifications:
+  webhooks:
+    - https://zulip.example.com/api/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
+</pre>
+
+      <p><b>Congratulations! You're done!</b><br /> When a code build occurs,
+      you're receive a notification on the specified stream and topic.</p>
+
+      <img class="screenshot" src="/static/images/integrations/travis/001.png" />
     </div>
 
     <div id="zendesk" class="integration-instructions">
