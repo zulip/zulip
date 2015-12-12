@@ -259,6 +259,62 @@ To start the development server:
 
 … and visit [http://localhost:9991/](http://localhost:9991/).
 
+Using Docker
+-------------
+
+You can also use Docker to develop, first you need to install Docker in your development machine following the [instructions](https://docs.docker.com/engine/installation/). Some other interesting links for somebody new in Docker are:
+
+* [Get Started](https://docs.docker.com/linux/started/)
+* [Understand the architecture](https://docs.docker.com/engine/introduction/understanding-docker/)
+* [Docker run reference]https://docs.docker.com/engine/reference/run/()
+* [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
+
+Then you should create the Docker image based on Ubuntu Linux, first go to the directory with the Zulip source code:
+
+```
+docker build -t user/zulipdev .
+```
+
+Now you're going to install Zulip dependencies in the image:
+
+```
+docker run -itv $(pwd):/srv/zulip -p 80:9991 user/zulipdev /bin/bash
+$ /usr/bin/python /srv/zulip/provision.py --docker 
+docker ps -af ancestor=user/zulipdev
+docker commit -m "Zulip installed" <container id> user/zulipdev:v2
+```
+
+Finally you can run the docker server with:
+
+```
+docker run -itv $(pwd):/srv/zulip -p 80:9991 user/zulipdev:v2 /srv/zulip/scripts/start-dockers
+```
+
+If you want to connect to the Docker instance to build a release tarball you can use:
+
+```
+docker ps
+docker exec -it <container id> /bin/bash
+$ source /home/zulip/.bash_profile
+$ <Your commands>
+$ exit
+```
+
+To stop the server use:
+```
+docker ps
+docker kill <container id>
+```
+
+If you want to run all the tests you need to start the servers first, you can do it with:
+
+```
+docker run -itv $(pwd):/srv/zulip user/zulipdev:v2 /bin/bash
+$ scripts/test-all-docker
+```
+
+You can modify the source code in your development machine and review the results in your browser.
+
 
 Using the Development Environment
 =================================
