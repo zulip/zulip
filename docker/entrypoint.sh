@@ -1,5 +1,4 @@
 #!/bin/bash
-# Maintainer Alexander Trost <galexrt@googlemail.com>
 
 if [ "$DEBUG" == "true" ] || [ "$DEBUG" == "True" ]; then
     set -x
@@ -48,6 +47,7 @@ ZULIP_CERTIFICATE_O="${ZULIP_CERTIFICATE_O:-Dis}"
 ZULIP_CERTIFICATE_CN="${ZULIP_CERTIFICATE_CN:-}"
 # Zulip related settings
 ZULIP_AUTH_BACKENDS="${ZULIP_AUTH_BACKENDS:-EmailAuthBackend}"
+ZULIP_LDAP_ENABLED="${ZULIP_LDAP_ENABLED:-False}"
 ZULIP_RUN_POST_SETUP_SCRIPTS="${ZULIP_RUN_POST_SETUP_SCRIPTS:-True}"
 # Zulip user setup
 export ZULIP_USER_CREATION_ENABLED="${ZULIP_USER_CREATION_ENABLED:-True}"
@@ -61,32 +61,29 @@ unset ZULIP_USER_PASSWORD
 AUTO_BACKUP_ENABLED="${AUTO_BACKUP_ENABLED:-True}"
 AUTO_BACKUP_INTERVAL="${AUTO_BACKUP_INTERVAL:-30 3 * * *}"
 
-# entrypoint.sh specific variables
-ZULIP_CURRENT_DEPLOY="/home/zulip/deployments/current"
-ZPROJECT_SETTINGS="$ZULIP_CURRENT_DEPLOY/zproject/settings.py"
-ZULIP_SETTINGS="/etc/zulip/settings.py"
-
 # BEGIN appRun functions
 # === initialConfiguration ===
 prepareDirectories() {
     if [ ! -d "$DATA_DIR/backups" ]; then
-        mkdir -p "$DATA_DIR/backups" || :
+        echo "Creating backups folder ..."
+        mkdir -p "$DATA_DIR/backups"
+        echo "Created backups folder."
     fi
     if [ ! -d "$DATA_DIR/certs" ]; then
-        mkdir -p "$DATA_DIR/certs" || :
+        echo "Creating certs folder ..."
+        mkdir -p "$DATA_DIR/certs"
+        echo "Created certs folder."
     fi
     if [ ! -d "$DATA_DIR/uploads" ]; then
-        mkdir -p "$DATA_DIR/uploads" || :
-        if [ -d /home/zulip/uploads ]; then
-            mv -f /home/zulip/uploads "$DATA_DIR/uploads"
-        else
-            mkdir -p /home/zulip/uploads || :
-        fi
-    else
-        rm -rf /home/zulip/uploads
+        echo "Creating uploads folder ..."
+        mkdir -p "$DATA_DIR/uploads"
+        echo "Created uploads folder."
     fi
+    echo "Preparing and linking the uploads folder ..."
+    rm -rf /home/zulip/uploads
     ln -sfT "$DATA_DIR/uploads" /home/zulip/uploads
     chown zulip:zulip -R "$DATA_DIR/uploads"
+    echo "Prepared and linked the uploads directory."
 }
 setConfigurationValue() {
     if [ -z "$1" ]; then
@@ -203,7 +200,7 @@ secretsConfiguration() {
     fi
     ln -sfT "$DATA_DIR/zulip-secrets.conf" /etc/zulip/zulip-secrets.conf
     set +e
-    local SECRETS=($(env | sed -nr "s/ZULIP_SECRETS_([A-Z_a-z-]*).*/\1/p"))
+    local SECRETS=($(env | sed -nr "s/ZULIP_SECRETS_([0-9A-Z_a-z-]*).*/\1/p"))
     for SECRET_KEY in "${SECRETS[@]}"; do
         local KEY="ZULIP_SECRETS_$SECRET_KEY"
         local SECRET_VAR="${!KEY}"
@@ -242,7 +239,7 @@ databaseConfiguration() {
     },
   },
 }"
-    setConfigurationValue "DATABASES" "$VALUE" "$ZPROJECT_SETTINGS" "array"
+    setConfigurationValue "DATABASES" "$VALUE" "/home/zulip/deployments/current/zproject/settings.py" "array"
     sed -i "s~psycopg2.connect\(.*\)~psycopg2.connect(\"host=$DB_HOST port=$DB_HOST_PORT dbname=$DB_NAME user=$DB_USER password=$DB_PASS\")~g" /usr/local/bin/process_fts_updates
     echo "Database configuration succeeded."
 }
@@ -264,7 +261,7 @@ cacheRatelimitConfiguration() {
         }
     },
 }"
-    setConfigurationValue "CACHES" "$VALUE" "$ZPROJECT_SETTINGS" "array"
+    setConfigurationValue "CACHES" "$VALUE" "/home/zulip/deployments/current/zproject/settings.py" "array"
     echo "Caches configuration succeeded."
 }
 authenticationBackends() {
@@ -272,38 +269,55 @@ authenticationBackends() {
     local FIRST=true
     echo "$ZULIP_AUTH_BACKENDS" | sed -n 1'p' | tr ',' '\n' | while read AUTH_BACKEND; do
         if [ "$FIRST" = true ]; then
-            setConfigurationValue "AUTHENTICATION_BACKENDS" "('zproject.backends.${AUTH_BACKEND//\'/\'}',)" "$ZULIP_SETTINGS" "array"
+            setConfigurationValue "AUTHENTICATION_BACKENDS" "('zproject.backends.${AUTH_BACKEND//\'/\'}',)" "/etc/zulip/settings.py" "array"
             FIRST=false
         else
-            setConfigurationValue "AUTHENTICATION_BACKENDS += ('zproject.backends.${AUTH_BACKEND//\'/\'}',)" "" "$ZULIP_SETTINGS" "literal"
+            setConfigurationValue "AUTHENTICATION_BACKENDS += ('zproject.backends.${AUTH_BACKEND//\'/\'}',)" "" "/etc/zulip/settings.py" "literal"
         fi
         echo "Adding authentication backend \"$AUTH_BACKEND\"."
     done
     echo "Authentication backend activation succeeded."
+    echo "Setting LDAP settings if set ..."
+    if [ ! -z "$ZULIP_LDAP_ENABLED" ] && ([ "$ZULIP_LDAP_ENABLED" != "True" ] && [ "$ZULIP_LDAP_ENABLED" != "true" ]); then
+        if [ ! -z "$ZULIP_SETTINGS_AUTH_LDAP_USER_SEARCH" ]; then
+            setConfigurationValue "AUTH_LDAP_USER_SEARCH" "$ZULIP_SETTINGS_AUTH_LDAP_USER_SEARCH" "/etc/zulip/settings.py" "array"
+        fi
+        if [ ! -z "$ZULIP_SETTINGS_LDAP_APPEND_DOMAIN" ]; then
+            setConfigurationValue "LDAP_APPEND_DOMAIN" "$ZULIP_SETTINGS_LDAP_APPEND_DOMAIN" "/etc/zulip/settings.py" "string"
+        fi
+        if [ ! -z "$ZULIP_SETTINGS_AUTH_LDAP_USER_ATTR_MAP" ]; then
+            setConfigurationValue "AUTH_LDAP_USER_ATTR_MAP" "$ZULIP_SETTINGS_AUTH_LDAP_USER_ATTR_MAP" "/etc/zulip/settings.py" "array"
+        fi
+        if [ ! -z "$ZULIP_SETTINGS_POPULATE_PROFILE_VIA_LDAPP" ]; then
+            setConfigurationValue "POPULATE_PROFILE_VIA_LDAP" "$ZULIP_SETTINGS_POPULATE_PROFILE_VIA_LDAPP" "/etc/zulip/settings.py" "bool"
+        fi
+    fi
+    unset ZULIP_SETTINGS_AUTH_LDAP_USER_SEARCH ZULIP_SETTINGS_LDAP_APPEND_DOMAIN ZULIP_SETTINGS_AUTH_LDAP_USER_ATTR_MAP ZULIP_SETTINGS_POPULATE_PROFILE_VIA_LDAPP
+    echo "LDAP settings set."
 }
 redisConfiguration() {
     echo "Setting redis configuration ..."
-    setConfigurationValue "RATE_LIMITING" "$REDIS_RATE_LIMITING" "$ZPROJECT_SETTINGS" "bool"
-    setConfigurationValue "REDIS_HOST" "$REDIS_HOST" "$ZPROJECT_SETTINGS"
-    setConfigurationValue "REDIS_HOST_PORT" "$REDIS_HOST_PORT" "$ZPROJECT_SETTINGS" "int"
+    setConfigurationValue "RATE_LIMITING" "$REDIS_RATE_LIMITING" "/home/zulip/deployments/current/zproject/settings.py" "bool"
+    setConfigurationValue "REDIS_HOST" "$REDIS_HOST" "/home/zulip/deployments/current/zproject/settings.py"
+    setConfigurationValue "REDIS_HOST_PORT" "$REDIS_HOST_PORT" "/home/zulip/deployments/current/zproject/settings.py" "int"
     echo "Redis configuration succeeded."
 }
 rabbitmqConfiguration() {
     echo "Setting rabbitmq configuration ..."
-    setConfigurationValue "RABBITMQ_HOST" "$RABBITMQ_HOST" "$ZPROJECT_SETTINGS"
-    sed -i "s~pika.ConnectionParameters('localhost',~pika.ConnectionParameters(settings.RABBITMQ_HOST,~g" "$ZULIP_CURRENT_DEPLOY/zerver/lib/queue.py"
-    setConfigurationValue "RABBITMQ_USERNAME" "$RABBITMQ_USERNAME" "$ZPROJECT_SETTINGS"
+    setConfigurationValue "RABBITMQ_HOST" "$RABBITMQ_HOST" "/home/zulip/deployments/current/zproject/settings.py"
+    sed -i "s~pika.ConnectionParameters('localhost',~pika.ConnectionParameters(settings.RABBITMQ_HOST,~g" "/home/zulip/deployments/current/zerver/lib/queue.py"
+    setConfigurationValue "RABBITMQ_USERNAME" "$RABBITMQ_USERNAME" "/home/zulip/deployments/current/zproject/settings.py"
     echo "Rabbitmq configuration succeeded."
 }
 camoConfiguration() {
-    setConfigurationValue "CAMO_URI" "$CAMO_URI" "$ZPROJECT_SETTINGS" "emptyreturn"
+    setConfigurationValue "CAMO_URI" "$CAMO_URI" "/home/zulip/deployments/current/zproject/settings.py" "emptyreturn"
 }
 zulipConfiguration() {
     echo "Executing Zulip configuration ..."
     if [ ! -z "$ZULIP_CUSTOM_SETTINGS" ]; then
-        echo -e "\n$ZULIP_CUSTOM_SETTINGS" >> "$ZPROJECT_SETTINGS"
+        echo -e "\n$ZULIP_CUSTOM_SETTINGS" >> "/home/zulip/deployments/current/zproject/settings.py"
     fi
-    local SET_SETTINGS=($(env | sed -n -r "s/ZULIP_SETTINGS_([A-Z_]*).*/\1/p"))
+    local SET_SETTINGS=($(env | sed -n -r "s/ZULIP_SETTINGS_([0-9A-Za-z_]*).*/\1/p"))
     for SETTING_KEY in "${SET_SETTINGS[@]}"; do
         local KEY="ZULIP_SETTINGS_$SETTING_KEY"
         local SETTING_VAR="${!KEY}"
@@ -311,7 +325,7 @@ zulipConfiguration() {
             echo "Empty var for key \"$SETTING_KEY\"."
             continue
         fi
-        setConfigurationValue "$SETTING_KEY" "$SETTING_VAR" "$ZPROJECT_SETTINGS"
+        setConfigurationValue "$SETTING_KEY" "$SETTING_VAR" "/home/zulip/deployments/current/zproject/settings.py"
     done
     unset SETTING_KEY SETTING_VAR KEY
     if ! su zulip -c "/home/zulip/deployments/current/manage.py checkconfig"; then
@@ -331,6 +345,7 @@ autoBackupConfiguration() {
 }
 initialConfiguration() {
     echo "=== Begin Initial Configuration Phase ==="
+    prepareDirectories
     nginxConfiguration
     configureCerts
     secretsConfiguration
@@ -488,7 +503,6 @@ bootstrappingEnvironment() {
 }
 # END appRun functionss
 appRun() {
-    prepareDirectories
     initialConfiguration
     bootstrappingEnvironment
     echo "=== Begin Run Phase ==="

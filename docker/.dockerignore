@@ -9,3 +9,4 @@ TODO.md
 kubernetes/
 scripts/
 docker-compose.yml
+docker-compose-*.yml

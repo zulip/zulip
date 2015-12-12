@@ -21,7 +21,7 @@ redis:
   volumes:
     - "/opt/docker/zulip/redis:/var/lib/redis:rw"
 zulip:
-  image: "quay.io/galexrt/zulip:v1.3.7-2"
+  image: "quay.io/galexrt/zulip:latest"
   ports:
     - "80:80"
     - "443:443"
@@ -36,6 +36,7 @@ zulip:
     REDIS_HOST: "redis"
     RABBITMQ_HOST: "rabbitmq"
     RABBITMQ_PASS: "zulip"
+    ZULIP_LDAP_ENABLED: "False"
     ZULIP_AUTH_BACKENDS: "EmailAuthBackend"
     ZULIP_SECRETS_email_password: "12345"
     ZULIP_SETTINGS_EXTERNAL_HOST: "example.com"
