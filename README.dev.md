@@ -262,7 +262,12 @@ To start the development server:
 Using Docker
 -------------
 
-You can also use Docker to develop, first you need to install Docker in your development machine following the [instructions](https://docs.docker.com/engine/installation/).
+You can also use Docker to develop, first you need to install Docker in your development machine following the [instructions](https://docs.docker.com/engine/installation/). Some other interesting links for somebody new in Docker are:
+
+* [Get Started](https://docs.docker.com/linux/started/)
+* [Understand the architecture](https://docs.docker.com/engine/introduction/understanding-docker/)
+* [Docker run reference]https://docs.docker.com/engine/reference/run/()
+* [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
 
 Then you should create the Docker image based on Ubuntu Linux, first go to the directory with the Zulip source code:
 
@@ -285,7 +290,7 @@ Finally you can run the docker server with:
 docker run -itv $(pwd):/srv/zulip -p 80:9991 user/zulipdev:v2 /srv/zulip/scripts/start-dockers
 ```
 
-If you want to connect to the Docker instance to generate the package, or run the tests you can use:
+If you want to connect to the Docker instance to build a release tarball you can use:
 
 ```
 docker ps
