@@ -701,10 +701,6 @@ def same_realm_jabber_user(user_profile, email):
 def api_send_message(request, user_profile):
     return send_message_backend(request, user_profile)
 
-@authenticated_json_post_view
-def json_send_message(request, user_profile):
-    return send_message_backend(request, user_profile)
-
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling
 # send_message_backend should either check the API key or check that
