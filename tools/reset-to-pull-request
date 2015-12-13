@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+set -x
+
+request_id="$1"
+git fetch origin "pull/$request_id/head"
+git reset --hard FETCH_HEAD

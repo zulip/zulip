@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+set -x
+
+request_id="$1"
+git fetch origin "pull/$request_id/head"
+git checkout origin/master -b "review-${request_id}"
+git reset --hard FETCH_HEAD
+git pull --rebase
+
