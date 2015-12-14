@@ -847,6 +847,11 @@ LOGGING = {
             'level':    'INFO',
             'propagate': False,
         },
+        'zulip.queue': {
+            'handlers': ['console', 'file', 'errors_file'],
+            'level':    'WARNING',
+            'propagate': False,
+        },
         'zulip.management': {
             'handlers': ['file', 'errors_file'],
             'level':    'INFO',
