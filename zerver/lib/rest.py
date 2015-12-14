@@ -50,6 +50,8 @@ def rest_dispatch(request, globals_list, **kwargs):
     method_to_use = request.method
     if request.POST and 'method' in request.POST:
         method_to_use = request.POST['method']
+    if method_to_use == "SOCKET" and "zulip.emulated_method" in request.META:
+        method_to_use = request.META["zulip.emulated_method"]
 
     if method_to_use in supported_methods.keys():
         target_function = globals_list[supported_methods[method_to_use]]

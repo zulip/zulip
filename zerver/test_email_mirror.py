@@ -106,10 +106,10 @@ class TestMissedPersonalMessageEmailMessages(AuthedTestCase):
         # have Hamlet send Othello a PM. Othello will reply via email
         # Hamlet will receive the message.
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/send_message", {"type": "private",
-                                                         "content": "test_receive_missed_message_email_messages",
-                                                         "client": "test suite",
-                                                         "to": "othello@zulip.com"})
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "test_receive_missed_message_email_messages",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
         self.assert_json_success(result)
 
         user_profile = get_user_profile_by_email("othello@zulip.com")
@@ -145,11 +145,11 @@ class TestMissedHuddleMessageEmailMessages(AuthedTestCase):
         # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
         # Iago and Othello will receive the message.
         self.login("othello@zulip.com")
-        result = self.client.post("/json/send_message", {"type": "private",
-                                                         "content": "test_receive_missed_message_email_messages",
-                                                         "client": "test suite",
-                                                         "to": ujson.dumps(["cordelia@zulip.com",
-                                                                            "iago@zulip.com"])})
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "test_receive_missed_message_email_messages",
+                                                     "client": "test suite",
+                                                     "to": ujson.dumps(["cordelia@zulip.com",
+                                                                        "iago@zulip.com"])})
         self.assert_json_success(result)
 
         user_profile = get_user_profile_by_email("cordelia@zulip.com")

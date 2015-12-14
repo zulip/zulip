@@ -211,10 +211,6 @@ def remove_subscriptions_backend(request, user_profile,
 
     return json_success(result)
 
-@authenticated_json_post_view
-def json_add_subscriptions(request, user_profile):
-    return add_subscriptions_backend(request, user_profile)
-
 def filter_stream_authorization(user_profile, streams):
     streams_subscribed = set()
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
