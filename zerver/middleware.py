@@ -183,7 +183,10 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     logger_line = '%-15s %-7s %3d %s%s %s' % \
                     (remote_ip, method, status_code,
                      logger_timing, extra_request_data, logger_client)
-    logger.info(logger_line)
+    if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
+        logger.debug(logger_line)
+    else:
+        logger.info(logger_line)
 
     if (is_slow_query(time_delta, path)):
         queue_json_publish("slow_queries", "%s (%s)" % (logger_timing, email), lambda e: None)
