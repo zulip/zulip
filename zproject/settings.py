@@ -857,6 +857,11 @@ LOGGING = {
             'level':    'INFO',
             'propagate': False,
         },
+        'requests': {
+            'handlers': ['console', 'file', 'errors_file'],
+            'level':    'WARNING',
+            'propagate': False,
+        },
         ## Uncomment the following to get all database queries logged to the console
         # 'django.db': {
         #     'handlers': ['console'],
