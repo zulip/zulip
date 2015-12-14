@@ -8,4 +8,4 @@
 #     chmod +x .git/hooks/post-checkout
 
 cd "$(dirname "$0")/.."
-find . -name '*.pyc' -print -delete | sed 's|^|[clean-repo] Deleting |'
+find . -name '*.pyc' -delete
