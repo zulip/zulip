@@ -603,7 +603,172 @@ running Zulip with a large team (>1000 users).
   this should be a small project; the code for that part of the UI
   layer doesn't do proper incremental updates.
 
-Questions about this area of Zulip are very welcome!
+Questions, concerns, and bug reports about this area of Zulip are very
+welcome!  This is an area we are hoping to improve.
+
+### Security Model
+
+This section attempts to document the Zulip security model.  Since
+this is new documentation, it likely does not cover every issue; if
+there are details you're curious about, please feel free to ask
+questions on the Zulip development mailing list (or if you think
+you've found a security bug, please report it to support@zulip.com so
+we can do a responsible security announcement).
+
+#### Secure your Zulip server like your email server
+
+* It's reasonable to think about security for a Zulip server like you
+  do security for a team email server -- only trusted administrators
+  within an organization should have shell access to the server.
+
+  In particular, anyone with root access to a Zulip application server
+  or Zulip database server, or with access to the `zulip` user on a
+  Zulip application server, has complete control over the Zulip
+  installation and all of its data (so they can read messages, modify
+  history, etc.).  It would be difficult or impossible to avoid this,
+  because the server needs access to the data to support features
+  expected of a group chat system like the ability to search the
+  entire message history, and thus someone with control over the
+  server has access to that data as well.
+
+#### Encryption and Authentication
+
+* Traffic between clients (web, desktop and mobile) and the Zulip is
+  encrypted using HTTPS.  By default, all Zulip services talk to each
+  other either via a localhost connection or using an encrypted SSL
+  connection.
+
+* The preferred way to login to Zulip is using an SSO solution like
+  Google Auth, LDAP, or similar.  Zulip stores user passwords using
+  the standard PBKDF2 algorithm.  Password strength is checked and
+  weak passwords are visually discouraged using the zxcvbn library,
+  but Zulip does not by default have strong requirements on user
+  password strength.  Modify `static/js/common.js` to adjust the
+  password strength requirements (Patches welcome to make controlled
+  by an easy setting!).
+
+* Zulip requires CSRF tokens in all interactions with the web API to
+  prevent CSRF attacks.
+
+#### Messages and History
+
+* Zulip message content is rendering using a specialized Markdown
+  parser which escapes content to protect against cross-site scripting
+  attacks.
+
+* Zulip supports both public streams and private ("invite-only")
+  streams.  Any Zulip user can join any public stream in the realm
+  (and can view the complete message of any public stream history
+  without joining the stream).
+
+* Users who are not members of a private stream cannot read messages
+  on the stream, send messages to the stream, or join the stream, even
+  if they are a Zulip administrator.  However, any member of a private
+  stream can invite other users to the stream.  When a new user joins
+  a private stream, they can see future messages sent to the stream,
+  but they do not receive access to the stream's message history.
+
+* Zulip supports editing the content or topics of messages that have
+  already been sent (and even updating the topic of messages sent by
+  other users when editing the topic of the overall thread).
+
+  While edited messages are synced immediately to open browser
+  windows, editing messages is not a safe way to redact secret content
+  (e.g. a password) unintentionally shared via Zulip, because other
+  users may have seen and saved the content of the original message
+  (for example, they could have taken a screenshot immediately after
+  you sent the message, or have an API tool recording all messages
+  they receive).
+
+  Zulip stores and sends to clients the content of every historical
+  version of a message, so that future versions of Zulip could support
+  displaying the diffs between previous versions.
+
+#### Users and Bots
+
+* There are three types of users in a Zulip realm: Administrators,
+  normal users, and botsq.  Administrators have the ability to
+  deactivate and reactivate other human and bot users, delete streams,
+  add/remove administrator privileges, as well as change configuration
+  for the overall realm (e.g. whether an invitation is required to
+  join the realm).  Being a Zulip administrator does not provide the
+  ability to interact with other users' private messages or the
+  messages sent private streams to which the administrator is not
+  subscribed.  However, a Zulip administrator subscribed to a stream
+  can toggle whether that stream is public or private.
+
+* Every Zulip user has an API key, available on the settings page.
+  This API key can be used to do essentially everything the user can
+  do; for that reason, users should keep their API key safe.  Users
+  can rotate their own API key if it is accidentally compromised.
+
+* To properly remove a user's access to a Zulip team, it does not
+  suffice to change their password or deactivate their account in the
+  SSO system, since neither of those prevents authenticating with the
+  user's API key or those of bots the user has created.  Instead, you
+  should deactivate the user's account in the Zulip administration
+  interface (/#administration); this will automatically also
+  deactivate any bots the user had created.
+
+* The Zulip mobile apps authenticate to the server by sending the
+  user's password and retrieving the user's API key; the apps then use
+  the API key to authenticate all future interactions with the site.
+  Thus, if a user's phone is lost, in addition to changing passwords,
+  you should rotate the user's Zulip API key.
+
+* Zulip bots are used for integrations.  A Zulip bot can do everything
+  a normal user in the realm can do including reading other, with a
+  few exceptions (e.g. a bot cannot login to the web application or
+  create other bots).  In particular, with the API key for a Zulip
+  bot, one can read any message sent to a public stream in that bot's
+  realm.  A likely future feature for Zulip is [limited bots that can
+  only send messages](https://github.com/zulip/zulip/issues/373).
+
+* Certain Zulip bots can be marked as "API super users"; these special
+  bots have the ability to send messages that appear to have been sent
+  by another user (an important feature for implementing integrations
+  like the Jabber, IRC, and Zephyr mirrors).
+
+#### User-uploaded content
+
+* Zulip supports user-uploaded files; ideally they should be hosted
+  from a separate domain from the main Zulip server to protect against
+  various same-domain attacks (e.g. zulip-user-content.example.com)
+  using the S3 integration.
+
+  The URLs of user-uploaded files are secret; if you are using the
+  "local file upload" integration, anyone with the URL of an uploaded
+  file can access the file.  This means the local uploads integration
+  is vulnerable to a subtle attack where if a user clicks on a link in
+  a secret .PDF or .HTML file that had been uploaded to Zulip, access
+  to the file might be leaked to the other server via the Referrer
+  header (see https://github.com/zulip/zulip/issues/320).
+
+  The Zulip S3 file upload integration is relatively safe against that
+  attack, because the URLs of files presented to users don't host the
+  content.  Instead, the S3 integration checks the user has a valid
+  Zulip session in the relevant realm, and if so then redirects the
+  browser to a one-time S3 URL that expires a short time later.
+  Keeping the URL secret is still important to avoid other users in
+  the Zulip realm from being able to access the file.
+
+* Zulip supports using the Camo image proxy to proxy content like
+  inline image previews that can be inserted into the Zulip message
+  feed by other users over HTTPS.
+
+* By default, Zulip will provide image previews inline in the body of
+  messages when a message contains a link to an image.  You can
+  control this using the `INLINE_IMAGE_PREVIEW` setting.
+
+#### Final notes and security response
+
+If you find some aspect of Zulip that seems inconsistent with this
+security model, please report it to support@zulip.com so that we can
+investigate and coordinate an appropriate security release if needed.
+
+Zulip security announcements will be sent to
+zulip-announce@googlegroups.com, so you should subscribe if you are
+running Zulip in production.
 
 Remote User SSO Authentication
 ==============================
