@@ -11,6 +11,7 @@ module.exports = {
     },
     devServer: {
         port: 9994,
+        stats: "errors-only",
         watchOptions: {
             aggregateTimeout: 300,
             poll: 1000
