@@ -374,7 +374,7 @@ a:hover code {
     background-color: #e2e8dd;
 }
 
-#stream_filters li.active-subject-filter:hover {
+#stream_filters li.active-sub-filter:hover {
     background-color: #ccd6cc;
 }
 
@@ -483,7 +483,7 @@ ul.filters hr {
 }
 
 li.active-filter,
-li.active-subject-filter {
+li.active-sub-filter {
     font-weight: 600;
     background: #ddedf6;
     position: relative;

@@ -120,7 +120,7 @@ function reset_to_unnarrowed(narrowed_within_same_stream) {
         zoom_out();
     }
 
-    $("ul.filters li").removeClass('active-filter active-subject-filter');
+    $("ul.filters li").removeClass('active-filter active-sub-filter');
     remove_expanded_subjects();
 }
 
@@ -312,7 +312,7 @@ function rebuild_recent_subjects(stream, active_topic) {
     stream_li.append(topic_dom);
 
     if (active_topic) {
-        get_subject_filter_li(stream, active_topic).addClass('active-subject-filter');
+        get_subject_filter_li(stream, active_topic).addClass('active-sub-filter');
     }
 }
 
