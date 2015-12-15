@@ -217,14 +217,49 @@ If one of these services is not installed or functioning correctly,
 Zulip will not work.  Below we detail some common configuration
 problems and how to resolve them:
 
-* An AMQPConnectionError traceback or error running rabbitmqctl
-  usually means that RabbitMQ is not running; to fix this, try:
+* An AMQPConnectionError exception, ConnectionClosed exception or
+  error running `rabbitmqctl status` usually means that RabbitMQ is
+  not running; to fix this, try:
+
   ```
   service rabbitmq-server restart
   ```
+
   If RabbitMQ fails to start, the problem is often that you are using
-  a virtual machine with broken DNS configuration; you can often
-  correct this by configuring `/etc/hosts` properly.
+  a virtual machine or container with `/etc/hosts` configured oddly in
+  a way that EPMD/RabbitMQ's networking stack doesn't like.  Things to
+  check include:
+
+  * Making sure there aren't multiple entries for `localhost` with
+  different IP addresses (e.g. broken configuration with entries for
+  `localhost` under both IPv4 and IPv6).
+
+  * Confusing mismatches between DNS, the output of `hostname`, and
+  what's configured in `/etc/hosts`.
+
+  * (Possibly other issues; if you track one down in detail, please
+    submit a pull request adding it here so others can benefit!).
+
+  This sort of RabbitMQ failure frequently shows up when suspending a
+  server and then booting it back up with a different IP address than
+  it had before the server was shut down or suspended.  Running the
+  following sequence of commands to reinstall and reconfigure Zulip
+  authentication in RabbitMQ (and then restart the Zulip server)
+  sometimes helps:
+
+  ```
+  apt-get purge rabbitmq-server
+  apt-get install rabbitmq-server
+  /home/zulip/deployments/current/scripts/setup/configure-rabbitmq
+  supervisorctl restart all
+  ```
+
+  Finally, if you get frustrated, you can edit
+  `/etc/default/rabbitmq-server` and comment out the `export
+  ERL_EPMD_ADDRESS=127.0.0.1` line before restarting RabbitMQ; this
+  makes RabbitMQ no longer strictly require that connections come from
+  `localhost`; this is a potential security issue but can be addressed
+  using iptables firewall rules to block the port.
 
 * If your browser reports no webserver is running, that is likely
   because nginx is not configured properly and thus failed to start.
