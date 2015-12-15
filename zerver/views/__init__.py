@@ -239,7 +239,7 @@ def accounts_accept_terms(request):
                         {'name': full_name,
                          'email': email,
                          'ip': request.META['REMOTE_ADDR'],
-                         'browser': request.META['HTTP_USER_AGENT']}),
+                         'browser': request.META.get('HTTP_USER_AGENT', "Unspecified")}),
                         settings.EMAIL_HOST_USER,
                         ["all@zulip.com"])
             do_change_full_name(request.user, full_name)
@@ -856,7 +856,7 @@ def home(request):
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
                                    'page_params' : simplejson.encoder.JSONEncoderForHTML().encode(page_params),
-                                   'nofontface': is_buggy_ua(request.META["HTTP_USER_AGENT"]),
+                                   'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
                                    'avatar_url': avatar_url(user_profile),
                                    'show_debug':
                                        settings.DEBUG and ('show_debug' in request.GET),
