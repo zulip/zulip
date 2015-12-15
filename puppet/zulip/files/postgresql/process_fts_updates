@@ -1,4 +1,11 @@
 #!/usr/bin/env python2.7
+# Processes updates to postgres Full Text Search for new/edited messages.
+#
+# Zulip manages its postgres full-text search as follows.  When the
+# content of a message is modified, a postgres trigger logs the
+# message ID to the `fts_update_log` table.  In the background, this
+# program processes `fts_update_log`, updating the postgres full-text
+# search column search_tsvector in the main zerver_message.
 import psycopg2
 import psycopg2.extensions
 import select
