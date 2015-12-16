@@ -261,6 +261,7 @@ ROOT_URLCONF = 'zproject.urls'
 WSGI_APPLICATION = 'zproject.wsgi.application'
 
 INSTALLED_APPS = [
+    'redis_cache',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
