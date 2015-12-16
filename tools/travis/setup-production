@@ -13,7 +13,7 @@ mv /tmp/tmp.*/zulip-server-travis.tar.gz ./
 sudo supervisorctl stop all
 # Clear redis to avoid contamination between development and prod
 # environments.
-sudo /etc/init.d/redis-server restart
+sudo service redis-server restart
 
 # Drop any open connections to the development postgres installation.
 sudo "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" postgres zulip zulip_base
