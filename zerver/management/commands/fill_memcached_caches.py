@@ -7,7 +7,7 @@ from zerver.lib.cache_helpers import fill_memcached_cache, cache_fillers
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--cache', dest="cache", default=None),)
-    help = "Populate the memcached cache of messages."
+    help = "Populate the redis cache of messages."
 
     def handle(self, *args, **options):
         if options["cache"] is not None:

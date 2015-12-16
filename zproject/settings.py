@@ -330,8 +330,8 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 CACHES = {
     'default': {
-        'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': '127.0.0.1:11211',
+        'BACKEND':  'django_redis.cache.RedisCache',
+        'LOCATION': "redis://%s:%s/1" %(REDIS_HOST, REDIS_PORT),
         'TIMEOUT':  3600
     },
     'database': {
@@ -346,18 +346,6 @@ CACHES = {
         }
     },
 }
-
-########################################################################
-# REDIS-BASED RATE LIMITING CONFIGURATION
-########################################################################
-
-RATE_LIMITING = True
-REDIS_HOST = '127.0.0.1'
-REDIS_PORT = 6379
-
-RATE_LIMITING_RULES = [
-    (60, 100),     # 100 requests max every minute
-    ]
 
 ########################################################################
 # SECURITY SETTINGS

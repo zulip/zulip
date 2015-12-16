@@ -284,3 +284,16 @@ AUTH_LDAP_USER_ATTR_MAP = {
 }
 
 CAMO_URI = ''
+
+########################################################################
+# REDIS-BASED RATE LIMITING CONFIGURATION
+########################################################################
+
+RATE_LIMITING = True
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+
+RATE_LIMITING_RULES = [
+    (60, 100),     # 100 requests max every minute
+    ]
+

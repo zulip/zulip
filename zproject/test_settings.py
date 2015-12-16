@@ -40,7 +40,7 @@ USING_RABBITMQ = False
 # Disable the tutorial because it confuses the client tests.
 TUTORIAL_ENABLED = False
 
-# Disable use of memcached for caching
+# Disable use of redis for caching
 CACHES['database'] = {
     'BACKEND':  'django.core.cache.backends.dummy.DummyCache',
     'LOCATION': 'zulip-database-test-cache',

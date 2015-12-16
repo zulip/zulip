@@ -24,7 +24,7 @@ CREATE SCHEMA zulip AUTHORIZATION zulip;
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 EOF
 
-# Clear memcached to avoid contamination from previous database state
+# Clear redis to avoid contamination from previous database state
 sh "$(dirname "$0")/flush-memcached"
 
 echo "Database created"

@@ -22,7 +22,7 @@ if pwd.getpwuid(os.getuid())[0] != "zulip":
 # Send a statsd event on restarting the server
 subprocess.check_call(["python2.7", "./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
 
-logging.info("Filling memcached caches")
+logging.info("Filling redis caches")
 subprocess.check_call(["python2.7", "./manage.py", "fill_memcached_caches"])
 
 # Restart the FastCGI and related processes via supervisorctl.
