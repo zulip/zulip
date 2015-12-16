@@ -19,7 +19,6 @@ django-auth-ldap==1.2.6
 django-bitfield==1.8.0
 git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69
 django-pipeline==1.2.2
-django-redis==4.3.0
 docopt==0.4.0
 enum34==1.0.4
 fonttools==3.0
@@ -47,7 +46,8 @@ pydns==2.3.6
 pyflakes==0.9.1
 python-ldap==2.4.19
 pytz==2015.4
-redis==2.10.3
+redis==2.10.5
+django-redis==4.3.0
 requests==2.7.0
 rsa==3.1.4
 simplejson==3.7.3
