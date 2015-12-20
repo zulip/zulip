@@ -82,7 +82,7 @@ NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 # domains/IP addresses for your site. This is a security measure to
 # prevent an attacker from poisoning caches and triggering password
 # reset emails with links to malicious hosts by submitting requests
-# with a fake HTTP Host header.
+# with a fake HTTP Host header. You must include 'localhost' here.
 ALLOWED_HOSTS = ['*']
 
 ### OPTIONAL SETTINGS
