@@ -1326,5 +1326,5 @@ def mobile_redirect(request):
         "domain": settings.EXTERNAL_HOST
     }
     msg = "%s:///?%s" % ("zulip", urlencode(params))
-    page = "<meta HTTP-EQUIV='REFRESH' content='0; url=%s'>" % msg
+    page = "<meta HTTP-EQUIV='REFRESH' content='0; url=%s'>" % (msg)
     return HttpResponse(page)
