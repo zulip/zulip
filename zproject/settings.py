@@ -697,6 +697,7 @@ JS_SPECS = {
             'js/colorspace.js',
             'js/timerender.js',
             'js/tutorial.js',
+            'js/mobile_redirect.js',
             'js/templates.js',
             'js/avatar.js',
             'js/settings.js',

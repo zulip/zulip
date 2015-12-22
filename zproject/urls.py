@@ -19,6 +19,8 @@ urlpatterns = patterns('',
     # want to require a new desktop app build for everyone in that case
     url(r'^desktop_home/$', 'zerver.views.desktop_home'),
 
+    url(r'^accounts/login/mobile_redirect/$', 'zerver.views.mobile_redirect'),
+
     url(r'^accounts/login/sso/$', 'zerver.views.remote_user_sso', name='login-sso'),
     url(r'^accounts/login/jwt/$', 'zerver.views.remote_user_jwt', name='login-jwt'),
     url(r'^accounts/login/google/$', 'zerver.views.start_google_oauth2'),

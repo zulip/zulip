@@ -480,6 +480,7 @@ $(function () {
     hashchange.initialize();
     invite.initialize();
     activity.initialize();
+    mobile_redirect.initialize();
 });
 
 
