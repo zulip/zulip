@@ -21,6 +21,15 @@ class zulip::base {
     '15.10' => 'wily',
   }
 
+  $postgres_version = $release_name ? {
+    'wheezy'  => '9.1',
+    'jessie'  => '9.4',
+    'precise' => '9.1',
+    'trusty'  => '9.3',
+    'vivid'   => '9.4',
+    'wily'    => '9.4',
+  }
+
   group { 'zulip':
     ensure     => present,
   }

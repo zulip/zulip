@@ -26,7 +26,7 @@ class zulip::app_frontend_base {
                     # Used for Hesiod lookups, etc.
                     "python-dns",
                     # Needed to access our database
-                    "postgresql-client-9.3",
+                    "postgresql-client-${zulip::base::postgres_version}",
                     "python-psycopg2",
                     # Needed for building complex DB queries
                     "python-sqlalchemy",

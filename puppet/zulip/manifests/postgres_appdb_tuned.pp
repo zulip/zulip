@@ -1,10 +1,10 @@
-# postgres_appdb extends postgres_appdb_base by automatically
+# postgres_appdb_tuned extends postgres_appdb_base by automatically
 # generating tuned database configuration.
-class zulip::postgres_appdb {
+class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
-  file { '/etc/postgresql/9.3/main/postgresql.conf.template':
-    require => Package["postgresql-9.3"],
+  file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template":
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
     owner  => "postgres",
     group  => "postgres",
@@ -41,12 +41,12 @@ vm.dirty_background_ratio = 5
   exec { 'pgtune':
     require => Package["pgtune"],
     # Let Postgres use half the memory on the machine
-    command => "pgtune -T Web -M $half_memory -i /etc/postgresql/9.3/main/postgresql.conf.template -o /etc/postgresql/9.3/main/postgresql.conf",
+    command => "pgtune -T Web -M $half_memory -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
     refreshonly => true,
-    subscribe => File['/etc/postgresql/9.3/main/postgresql.conf.template']
+    subscribe => File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template"]
   }
 
-  exec { 'pg_ctlcluster 9.3 main restart':
+  exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
     require => Exec["sysctl_p"],
     refreshonly => true,
     subscribe => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
