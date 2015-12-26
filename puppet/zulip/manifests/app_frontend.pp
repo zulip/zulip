@@ -132,6 +132,11 @@ class zulip::app_frontend {
     owner  => 'zulip',
     group  => 'zulip',
   }
+  file { '/home/zulip/prod-static':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+  }
   file { '/home/zulip/deployments':
     ensure => 'directory',
     owner  => 'zulip',

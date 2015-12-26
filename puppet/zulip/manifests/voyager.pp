@@ -30,12 +30,6 @@ class zulip::voyager {
     notify => Service["nginx"],
   }
 
-  file { '/home/zulip/prod-static':
-    ensure => 'directory',
-    owner  => 'zulip',
-    group  => 'zulip',
-  }
-
   file { "/etc/cron.d/restart-zulip":
     ensure => file,
     owner  => "root",
