@@ -14,6 +14,18 @@ class zulip_internal::base {
                         "debian-goodies",
                         # For our EC2 network setup script
                         "python-netifaces",
+                        # Popular editors
+                        "vim",
+                        "emacs23-nox",
+                        "puppet-el",
+                        # Prevent accidental reboots
+                        "molly-guard",
+                        # Useful tools in a production environment
+                        "screen",
+                        "strace",
+                        "moreutils",
+                        "host",
+                        "git",
                          ]
   package { $org_base_packages: ensure => "installed" }
 

@@ -1,22 +1,12 @@
 class zulip::base {
   include apt
-  $base_packages = [ # Basic requirements for effective operation of a server
+  $base_packages = [ # Accurate time is essential
                      "ntp",
-                     # This is just good practice
-                     "molly-guard",
                      # Dependencies of our API
                      "python-requests",
                      "python-simplejson",
                      # For development/debugging convenience
                      "ipython",
-                     "screen",
-                     "strace",
-                     "vim",
-                     "moreutils",
-                     "emacs23-nox",
-                     "git",
-                     "puppet-el",
-                     "host",
                      ]
   package { $base_packages: ensure => "installed" }
 
