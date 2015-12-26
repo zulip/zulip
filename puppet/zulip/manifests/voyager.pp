@@ -1,7 +1,7 @@
 class zulip::voyager {
   include zulip::base
   include zulip::app_frontend
-  include zulip::postgres_appdb
+  include zulip::postgres_appdb_base
   include zulip::redis
 
   apt::source {'zulip':
