@@ -1,13 +1,15 @@
 from __future__ import absolute_import
 
+from django.db.models import Q
 import zerver.models
 from zerver.lib.cache import cache_with_key, realm_alert_words_cache_key
 import ujson
 
 @cache_with_key(realm_alert_words_cache_key, timeout=3600*24)
 def alert_words_in_realm(realm):
-    users = zerver.models.UserProfile.objects.filter(realm=realm, is_active=True).values('id', 'alert_words')
-    all_user_words = dict((user['id'], ujson.loads(user['alert_words'])) for user in users)
+    users_query = zerver.models.UserProfile.objects.filter(realm=realm, is_active=True)
+    alert_word_data = users_query.filter(~Q(alert_words=ujson.dumps([]))).values('id', 'alert_words')
+    all_user_words = dict((elt['id'], ujson.loads(elt['alert_words'])) for elt in alert_word_data)
     user_ids_with_words = dict((user_id, w) for (user_id, w) in all_user_words.iteritems() if len(w))
     return user_ids_with_words
 
