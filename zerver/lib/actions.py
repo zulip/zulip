@@ -112,8 +112,7 @@ def bot_owner_userids(user_profile):
         return active_user_ids(user_profile.realm)
 
 def realm_user_count(realm):
-    user_dicts = get_active_user_dicts_in_realm(realm)
-    return len([user_dict for user_dict in user_dicts if not user_dict["is_bot"]])
+    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
 
 def send_signup_message(sender, signups_stream, user_profile,
                         internal=False, realm=None):
