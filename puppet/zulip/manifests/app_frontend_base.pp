@@ -1,4 +1,4 @@
-class zulip::app_frontend {
+class zulip::app_frontend_base {
   include zulip::rabbit
   include zulip::nginx
   include zulip::supervisor
