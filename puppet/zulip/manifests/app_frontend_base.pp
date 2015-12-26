@@ -1,6 +1,4 @@
 class zulip::app_frontend_base {
-  include zulip::rabbit
-  include zulip::memcached
   include zulip::nginx
   include zulip::supervisor
 

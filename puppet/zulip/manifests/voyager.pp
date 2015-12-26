@@ -3,6 +3,8 @@ class zulip::voyager {
   include zulip::base
   include zulip::app_frontend_base
   include zulip::postgres_appdb_tuned
+  include zulip::memcached
+  include zulip::rabbit
   include zulip::redis
 
   file { "/etc/nginx/sites-available/zulip-enterprise":
