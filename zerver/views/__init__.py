@@ -1159,10 +1159,6 @@ def json_update_active_status(request, user_profile):
 def json_get_active_statuses(request, user_profile):
     return json_success(get_status_list(user_profile))
 
-@authenticated_json_post_view
-def json_events_register(request, user_profile):
-    return events_register_backend(request, user_profile)
-
 # Does not need to be authenticated because it's called from rest_dispatch
 @has_request_variables
 def api_events_register(request, user_profile,
