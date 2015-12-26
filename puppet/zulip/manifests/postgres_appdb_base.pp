@@ -6,7 +6,7 @@ class zulip::postgres_appdb_base {
   $appdb_packages = [# Needed to run process_fts_updates
                      "python-psycopg2",
                      # Needed for our full text search system
-                     "postgresql-9.3-tsearch-extras",
+                     "postgresql-${zulip::base::postgres_version}-tsearch-extras",
                      ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
@@ -38,16 +38,16 @@ class zulip::postgres_appdb_base {
     notify => Service[supervisor],
   }
 
-  file { '/usr/share/postgresql/9.3/tsearch_data/en_us.dict':
+  file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.dict":
     ensure => 'link',
     target => '/var/cache/postgresql/dicts/en_us.dict',
   }
-  file { '/usr/share/postgresql/9.3/tsearch_data/en_us.affix':
+  file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.affix":
     ensure => 'link',
     target => '/var/cache/postgresql/dicts/en_us.affix',
   }
-  file { "/usr/share/postgresql/9.3/tsearch_data/zulip_english.stop":
-    require => Package["postgresql-9.3"],
+  file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/zulip_english.stop":
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
     owner => "root",
     group => "root",
