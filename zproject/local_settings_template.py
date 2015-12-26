@@ -192,7 +192,8 @@ EMAIL_GATEWAY_PATTERN = ""
 # to change in this file.  You will also need to enable the Zulip postfix
 # configuration to support local delivery by adding
 #   , zulip::postfix_localmail
-# to puppet_classes in /etc/zulip/zulip.conf.
+# to puppet_classes in /etc/zulip/zulip.conf and then running
+# `scripts/zulip-puppet-apply -f` to do the installation.
 #
 # If you are using polling, you will need to setup an IMAP email
 # account dedicated to Zulip email gateway messages.  The model is
@@ -204,11 +205,11 @@ EMAIL_GATEWAY_PATTERN = ""
 # which will check that inbox and batch-process any new messages.
 #
 # You will need to configure authentication for the email mirror
-# command to access the IMAP mailbox below.
+# command to access the IMAP mailbox below and in zulip-secrets.conf.
 #
-# The IMAP login and password
+# The IMAP login; username here and password as email_gateway_login in
+# zulip-secrets.conf.
 EMAIL_GATEWAY_LOGIN = ""
-EMAIL_GATEWAY_PASSWORD = ""
 # The IMAP server & port to connect to
 EMAIL_GATEWAY_IMAP_SERVER = ""
 EMAIL_GATEWAY_IMAP_PORT = 993
@@ -263,10 +264,10 @@ from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 # Zulip. Example: "ldaps://ldap.example.com"
 AUTH_LDAP_SERVER_URI = ""
 
-# This DN and password will be used to bind to your server. If unset, anonymous
-# binds are performed.
+# This DN will be used to bind to your server. If unset, anonymous
+# binds are performed.  If set, you need to specify the password as
+# 'auth_ldap_bind_password' in zulip-secrets.conf.
 AUTH_LDAP_BIND_DN = ""
-AUTH_LDAP_BIND_PASSWORD = ""
 
 # Specify the search base and the property to filter on that corresponds to the
 # username.

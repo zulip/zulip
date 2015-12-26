@@ -929,6 +929,10 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST_PASSWORD = get_secret('email_password')
+if "EMAIL_GATEWAY_PASSWORD" not in vars():
+    EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
+if "AUTH_LDAP_BIND_PASSWORD" not in vars():
+    AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password')
 
 ########################################################################
 # MISC SETTINGS
