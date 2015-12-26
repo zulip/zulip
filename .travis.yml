@@ -1,9 +1,11 @@
 before_install:
-   - nvm install 0.10 
+   - nvm install 0.10
 install:
   - tools/travis/setup-$TEST_SUITE
 cache:
   - apt: false
+  - directories:
+    - /srv/phantomjs
 env:
   - TEST_SUITE=frontend
   - TEST_SUITE=backend
