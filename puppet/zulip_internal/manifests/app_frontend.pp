@@ -1,5 +1,5 @@
 class zulip_internal::app_frontend {
-  include zulip::app_frontend
+  include zulip::app_frontend_base
   include zulip::postfix_localmail
   $app_packages = [# Needed for minify-js
                    "yui-compressor",
