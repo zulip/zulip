@@ -278,8 +278,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # which we don't use; email is modified to make it indexed and unique.
     email = models.EmailField(blank=False, db_index=True, unique=True)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    is_bot = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True, db_index=True)
+    is_bot = models.BooleanField(default=False, db_index=True)
     date_joined = models.DateTimeField(default=timezone.now)
     is_mirror_dummy = models.BooleanField(default=False)
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
