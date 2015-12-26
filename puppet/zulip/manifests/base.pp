@@ -10,6 +10,17 @@ class zulip::base {
                      ]
   package { $base_packages: ensure => "installed" }
 
+  $release_name = $operatingsystemrelease ? {
+    # Debian releases
+    /7.[0-9]*/ => 'wheezy',
+    /8.[0-9]*/ => 'jessie',
+    # Ubuntu releases
+    '12.04' => 'precise',
+    '14.04' => 'trusty',
+    '15.04' => 'vivid',
+    '15.10' => 'wily',
+  }
+
   group { 'zulip':
     ensure     => present,
   }

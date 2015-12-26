@@ -9,8 +9,9 @@
 # configuration in /etc/zulip/settings.py for how to find the various
 # services is also required to make this work).
 class zulip::voyager {
-  include zulip::apt_repository
   include zulip::base
+  # zulip::apt_repository must come after zulip::base
+  include zulip::apt_repository
   include zulip::app_frontend
   include zulip::postgres_appdb_tuned
   include zulip::memcached
