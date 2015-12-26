@@ -1,4 +1,4 @@
-class zulip::postgres_appdb {
+class zulip::postgres_appdb_base {
   include zulip::postgres_common
   include zulip::supervisor
 
