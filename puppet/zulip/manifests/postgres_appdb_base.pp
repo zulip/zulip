@@ -1,3 +1,4 @@
+# Minimal shared configuration needed to run a Zulip postgres database.
 class zulip::postgres_appdb_base {
   include zulip::postgres_common
   include zulip::supervisor
