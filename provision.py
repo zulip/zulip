@@ -113,8 +113,9 @@ def main():
         PHANTOMJS_PATH = "/srv/phantomjs"
         PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, "phantomjs-1.9.8-linux-x86_64.tar.bz2")
         sh.mkdir("-p", PHANTOMJS_PATH, **LOUD)
-        sh.wget("https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.8-linux-x86_64.tar.bz2",
-                output_document=PHANTOMJS_TARBALL, **LOUD)
+        if not os.path.exists(PHANTOMJS_TARBALL):
+            sh.wget("https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.8-linux-x86_64.tar.bz2",
+                    output_document=PHANTOMJS_TARBALL, **LOUD)
         sh.tar("xj", directory=PHANTOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
         sh.ln("-sf", os.path.join(PHANTOMJS_PATH, "phantomjs-1.9.8-linux-x86_64", "bin", "phantomjs"),
               "/usr/local/bin/phantomjs", **LOUD)
