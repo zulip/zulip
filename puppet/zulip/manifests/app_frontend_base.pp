@@ -1,10 +1,10 @@
 class zulip::app_frontend_base {
   include zulip::rabbit
+  include zulip::memcached
   include zulip::nginx
   include zulip::supervisor
 
   $web_packages = [ # Needed for memcached usage
-                    "memcached",
                     "python-pylibmc",
                     # Fast JSON parser
                     "python-ujson",
@@ -100,14 +100,6 @@ class zulip::app_frontend_base {
     group => "root",
     mode => 755,
   }
-  file { "/etc/memcached.conf":
-    require => Package[memcached],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/memcached.conf",
-  }
   file { "/etc/supervisor/conf.d/zulip.conf":
     require => Package[supervisor],
     ensure => file,
@@ -122,10 +114,6 @@ class zulip::app_frontend_base {
     owner => "zulip",
     group => "zulip",
     mode => 755,
-  }
-  service { 'memcached':
-    ensure     => running,
-    subscribe  => File['/etc/memcached.conf'],
   }
   file { '/home/zulip/logs':
     ensure => 'directory',
