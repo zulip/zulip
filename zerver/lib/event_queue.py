@@ -447,40 +447,44 @@ def fetch_events(query):
     client_type_name = query["client_type_name"]
     handler_id = query["handler_id"]
 
-    was_connected = False
-    orig_queue_id = queue_id
-    extra_log_data = ""
-    if queue_id is None:
-        if dont_block:
-            client = allocate_client_descriptor(new_queue_data)
-            queue_id = client.event_queue.id
+    try:
+        was_connected = False
+        orig_queue_id = queue_id
+        extra_log_data = ""
+        if queue_id is None:
+            if dont_block:
+                client = allocate_client_descriptor(new_queue_data)
+                queue_id = client.event_queue.id
+            else:
+                raise JsonableError("Missing 'queue_id' argument")
         else:
-            raise JsonableError("Missing 'queue_id' argument")
-    else:
-        if last_event_id is None:
-            raise JsonableError("Missing 'last_event_id' argument")
-        client = get_client_descriptor(queue_id)
-        if client is None:
-            raise JsonableError("Bad event queue id: %s" % (queue_id,))
-        if user_profile_id != client.user_profile_id:
-            raise JsonableError("You are not authorized to get events from this queue")
-        client.event_queue.prune(last_event_id)
-        was_connected = client.finish_current_handler()
+            if last_event_id is None:
+                raise JsonableError("Missing 'last_event_id' argument")
+            client = get_client_descriptor(queue_id)
+            if client is None:
+                raise JsonableError("Bad event queue id: %s" % (queue_id,))
+            if user_profile_id != client.user_profile_id:
+                raise JsonableError("You are not authorized to get events from this queue")
+            client.event_queue.prune(last_event_id)
+            was_connected = client.finish_current_handler()
 
-    if not client.event_queue.empty() or dont_block:
-        ret = {'events': client.event_queue.contents()}
-        if orig_queue_id is None:
-            ret['queue_id'] = queue_id
-        extra_log_data = "[%s/%s]" % (queue_id, len(ret["events"]))
+        if not client.event_queue.empty() or dont_block:
+            ret = {'events': client.event_queue.contents()}
+            if orig_queue_id is None:
+                ret['queue_id'] = queue_id
+            extra_log_data = "[%s/%s]" % (queue_id, len(ret["events"]))
+            if was_connected:
+                extra_log_data += " [was connected]"
+            return (ret, extra_log_data)
+
+        # After this point, dont_block=False, the queue is empty, and we
+        # have a pre-existing queue, so we wait for new events.
         if was_connected:
-            extra_log_data += " [was connected]"
-        return (ret, extra_log_data)
+            logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
+                                                                        client_type_name))
+    except JsonableError as e:
+        raise e
 
-    # After this point, dont_block=False, the queue is empty, and we
-    # have a pre-existing queue, so we wait for new events.
-    if was_connected:
-        logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
-                                                                    client_type_name))
     client.connect_handler(handler_id, client_type_name)
     return (RespondAsynchronously, None)
 
