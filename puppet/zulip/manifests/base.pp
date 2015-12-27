@@ -7,7 +7,7 @@ class zulip::base {
                      # Dependencies of our API
                      "python-requests",
                      "python-simplejson",
-                     "python-django-redis",
+                     "python-django-redis", 
                      # For development/debugging convenience
                      "ipython",
                      "screen",
