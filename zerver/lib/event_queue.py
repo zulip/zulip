@@ -121,7 +121,7 @@ class ClientDescriptor(object):
         self.event_queue.push(event)
         self.finish_current_handler()
 
-    def finish_current_handler(self):
+    def finish_current_handler(self, need_timeout=False):
         if self.current_handler_id is not None:
             err_msg = "Got error finishing handler for queue %s" % (self.event_queue.id,)
             try:
@@ -130,7 +130,7 @@ class ClientDescriptor(object):
             except Exception:
                 logging.exception(err_msg)
             finally:
-                self.disconnect_handler()
+                self.disconnect_handler(need_timeout=need_timeout)
                 return True
         return False
 
@@ -182,9 +182,13 @@ class ClientDescriptor(object):
             self._timeout_handle = None
 
     def cleanup(self):
-        # Disconnect any existing handler, and don't bother creating a
-        # timeout object that we'll just have to garbage collect later.
-        self.disconnect_handler(need_timeout=False)
+        # Before we can GC the event queue, we need to disconnect the
+        # handler and notify the client (or connection server) so that
+        # they can cleanup their own state related to the GC'd event
+        # queue.  Finishing the handler before we GC ensures the
+        # invariant that event queues are idle when passed to
+        # `do_gc_event_queues` is preserved.
+        self.finish_current_handler(need_timeout=False)
         do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
                            [self.realm_id])
 
@@ -367,6 +371,9 @@ def gc_event_queues():
             affected_users.add(client.user_profile_id)
             affected_realms.add(client.realm_id)
 
+    # We don't need to call e.g. finish_current_handler on the clients
+    # being removed because they are guaranteed to be idle and thus
+    # not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
