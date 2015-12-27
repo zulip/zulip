@@ -23,7 +23,6 @@ from zerver.lib.cache_helpers import cache_with_key
 from zerver.lib.handlers import get_handler_by_id, finish_handler
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
-from zerver.models import Message
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -558,12 +557,6 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         if notify_info.get('send_email', False):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
 
-@cache_with_key(message_cache_key, timeout=3600*24)
-def get_message_by_id_dbwarn(message_id):
-    if not settings.TEST_SUITE:
-        logging.warning("Tornado failed to load message from memcached when delivering!")
-    return Message.objects.select_related().get(id=message_id)
-
 def receiver_is_idle(user_profile_id, realm_presences):
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
@@ -601,15 +594,8 @@ def receiver_is_idle(user_profile_id, realm_presences):
 def process_message_event(event_template, users):
     realm_presences = {int(k): v for k, v in event_template['presences'].items()}
     sender_queue_id = event_template.get('sender_queue_id', None)
-    if "message_dict_markdown" in event_template:
-        message_dict_markdown = event_template['message_dict_markdown']
-        message_dict_no_markdown = event_template['message_dict_no_markdown']
-    else:
-        # We can delete this and get_message_by_id_dbwarn after the
-        # next prod deploy
-        message = get_message_by_id_dbwarn(event_template['message'])
-        message_dict_markdown = message.to_dict(True)
-        message_dict_no_markdown = message.to_dict(False)
+    message_dict_markdown = event_template['message_dict_markdown']
+    message_dict_no_markdown = event_template['message_dict_no_markdown']
     sender_id = message_dict_markdown['sender_id']
     message_id = message_dict_markdown['id']
     message_type = message_dict_markdown['type']
