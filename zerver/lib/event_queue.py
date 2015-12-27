@@ -178,6 +178,10 @@ class ClientDescriptor(object):
     def cleanup(self):
         do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
                            [self.realm_id])
+        # After we GC the event queue, we still need to disconnect the
+        # handler and notify the client (or connection server) so that
+        # they can cleanup their own state related to the GC'd event queue.
+        self.finish_current_handler()
 
 descriptors_by_handler_id = {}
 
@@ -358,6 +362,9 @@ def gc_event_queues():
             affected_users.add(client.user_profile_id)
             affected_realms.add(client.realm_id)
 
+    # We don't need to call e.g. finish_current_handler on the clients
+    # being removed because they are guaranteed to be idle and thus
+    # not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
