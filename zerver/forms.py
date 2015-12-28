@@ -7,7 +7,7 @@ from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm
 from django.conf import settings
 
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    completely_open, resolve_email_to_domain, get_realm
+    completely_open, resolve_email_to_domain, get_realm, get_unique_open_realm
 from zerver.lib.actions import do_change_password, is_inactive
 from zproject.backends import password_auth_enabled
 import DNS
@@ -69,7 +69,9 @@ class HomepageForm(forms.Form):
 
     def clean_email(self):
         data = self.cleaned_data['email']
-        if completely_open(self.domain) or has_valid_realm(data) and not_mit_mailing_list(data):
+        if (get_unique_open_realm() or
+            completely_open(self.domain) or
+            (has_valid_realm(data) and not_mit_mailing_list(data))):
             return data
         raise ValidationError(mark_safe(SIGNUP_STRING))
 

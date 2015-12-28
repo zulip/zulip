@@ -85,11 +85,16 @@ def accounts_register(request):
         existing_user_profile = None
 
     validators.validate_email(email)
-    # If someone invited you, you are joining their realm regardless
-    # of your e-mail address.
-    #
-    # MitUsers can't be referred and don't have a referred_by field.
-    if not mit_beta_user and prereg_user.referred_by:
+
+    unique_open_realm = get_unique_open_realm()
+    if unique_open_realm:
+        realm = unique_open_realm
+        domain = realm.domain
+    elif not mit_beta_user and prereg_user.referred_by:
+        # If someone invited you, you are joining their realm regardless
+        # of your e-mail address.
+        #
+        # MitUsers can't be referred and don't have a referred_by field.
         realm = prereg_user.referred_by.realm
         domain = realm.domain
         if realm.restricted_to_domain and domain != resolve_email_to_domain(email):
@@ -99,10 +104,11 @@ def accounts_register(request):
         # happens if you sign up through a special URL for an open
         # realm.
         domain = prereg_user.realm.domain
+        realm = get_realm(domain)
     else:
         domain = resolve_email_to_domain(email)
+        realm = get_realm(domain)
 
-    realm = get_realm(domain)
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
         # contact support.
@@ -630,13 +636,6 @@ def send_registration_completion_email(email, request):
                                            additional_context=context)
 
 def accounts_home(request):
-    # First we populate request.session with a domain if
-    # there is a single realm, which is open.
-    # This is then used in HomepageForm and in creating a PreregistrationUser
-    unique_realm = get_unique_open_realm()
-    if unique_realm:
-        request.session['domain'] = unique_realm.domain
-
     if request.method == 'POST':
         form = create_homepage_form(request, user_info=request.POST)
         if form.is_valid():
