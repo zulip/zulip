@@ -39,10 +39,12 @@ class zulip::postgres_appdb_base {
   }
 
   file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.dict":
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => 'link',
     target => '/var/cache/postgresql/dicts/en_us.dict',
   }
   file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.affix":
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => 'link',
     target => '/var/cache/postgresql/dicts/en_us.affix',
   }
