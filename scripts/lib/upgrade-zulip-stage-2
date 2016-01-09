@@ -28,7 +28,7 @@ subprocess.check_call(["apt-get", "upgrade"])
 
 logging.info("Stopping Zulip...")
 subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*", "zulip-django",
-                       "zulip-tornado"], preexec_fn=su_to_zulip)
+                       "zulip-tornado", "zulip-senders:*"], preexec_fn=su_to_zulip)
 
 logging.info("Applying puppet changes...")
 subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
