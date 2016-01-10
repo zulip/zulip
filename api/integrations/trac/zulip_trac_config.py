@@ -34,13 +34,13 @@ TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
 # and annoying.  We solve this issue by only sending a notification
 # for changes to the fields listed below.
 #
-# Total list of possible fields is:
+# TRAC_NOTIFY_FIELDS lets you specify which fields will trigger a
+# Zulip notification in response to a trac update; you should change
+# this list to match your team's workflow.  The complete list of
+# possible fields is:
+#
 # (priority, milestone, cc, owner, keywords, component, severity,
 #  type, versions, description, resolution, summary, comment)
-#
-# The following is the list of fields which can be changed without
-# triggering a Zulip notification; change these to match your team's
-# workflow.
 TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment", "owner"]
 
 ## If properly installed, the Zulip API should be in your import
