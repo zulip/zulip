@@ -53,6 +53,7 @@ def get_deployment_lock(error_rerun_script):
             break
         except OSError:
             print(WARNING + "Another deployment in progress; waiting for lock... (If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC)
+            sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:
