@@ -217,14 +217,22 @@ If one of these services is not installed or functioning correctly,
 Zulip will not work.  Below we detail some common configuration
 problems and how to resolve them:
 
-* An AMQPConnectionError traceback or error running rabbitmqctl
-  usually means that RabbitMQ is not running; to fix this, try:
+* An AMQPConnectionError or ConnectionClosed traceback or error running
+* rabbitmqctl usually means that RabbitMQ is not running; to fix this, try:
   ```
   service rabbitmq-server restart
   ```
   If RabbitMQ fails to start, the problem is often that you are using
   a virtual machine with broken DNS configuration; you can often
   correct this by configuring `/etc/hosts` properly.
+  If nothing else helps, try to reconfigure rabbitmq from scratch:
+  ```
+  apt-get purge rabbitmq-server
+  apt-get install rabbitmq-server
+  /home/zulip/deployments/current/scripts/setup/configure-rabbitmq
+  supervisorctl restart all
+  reboot
+  ```
 
 * If your browser reports no webserver is running, that is likely
   because nginx is not configured properly and thus failed to start.
