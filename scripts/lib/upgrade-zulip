@@ -34,7 +34,7 @@ while time.time() - start_time < 300:
         break
     except OSError:
         print WARNING + "Another deployment in progress; waiting for lock... (If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC
-        time.sleep(10)
+        time.sleep(3)
 
 if not got_lock:
     print FAIL + "Deployment already in progress.  Please run\n" \
@@ -45,14 +45,16 @@ if not got_lock:
                + ENDC
     sys.exit(1)
 
-logging.info("Unpacking the tarball")
-deploy_path = subprocess.check_output([os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                                     'unpack-zulip')),
-                                       tarball_path], preexec_fn=su_to_zulip)
-deploy_path = deploy_path.strip()
-os.chdir(deploy_path)
+try:
+    logging.info("Unpacking the tarball")
+    unpack_zulip = os.path.realpath(os.path.join(os.path.dirname(__file__), 'unpack-zulip'))
+    deploy_path = subprocess.check_output([unpack_zulip, tarball_path], preexec_fn=su_to_zulip)
 
-subprocess.check_call(["./scripts/lib/upgrade-zulip-stage-2", deploy_path])
+    deploy_path = deploy_path.strip()
+    os.chdir(deploy_path)
 
-logging.info("Deployment complete")
-shutil.rmtree(LOCK_DIR)
+    subprocess.check_call(["./scripts/lib/upgrade-zulip-stage-2", deploy_path])
+
+    logging.info("Deployment complete")
+finally:
+    shutil.rmtree(LOCK_DIR)
