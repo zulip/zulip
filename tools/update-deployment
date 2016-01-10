@@ -3,14 +3,12 @@ import os
 import sys
 import subprocess
 import logging
-import datetime
-import shutil
-import time
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, FAIL, WARNING, ENDC, make_deploy_path
+from zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
+    get_deployment_lock, release_deployment_lock
 
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
                     level=logging.INFO)
@@ -25,22 +23,8 @@ subprocess.check_call(["mkdir", '-p',
                        DEPLOYMENTS_DIR,
                        '/home/zulip/logs'])
 
-start_time = time.time()
-got_lock = False
-while time.time() - start_time < 300:
-    try:
-        os.mkdir(LOCK_DIR)
-        got_lock = True
-        break
-    except OSError:
-        print WARNING + "Another deployment in progress; waiting for lock..." + ENDC
-        time.sleep(3)
-
-if not got_lock:
-    print FAIL + "Deployment already in progress.  Please run\n" \
-               + "  %s/current/tools/update-deployment %s\n" % (DEPLOYMENTS_DIR, refname) \
-               + "manually when the current deployment finishes." + ENDC
-    sys.exit(1)
+error_rerun_script = "%s/current/tools/update-deployment %s" % (DEPLOYMENTS_DIR, refname)
+get_deployment_lock(error_rerun_script)
 
 try:
     deploy_path = make_deploy_path()
@@ -66,4 +50,4 @@ try:
     logging.info("Deployment complete")
     subprocess.check_call(["./scripts/purge-old-deployments"])
 finally:
-    shutil.rmtree(LOCK_DIR)
+    release_deployment_lock()
