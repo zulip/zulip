@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 from __future__ import print_function
+import errno
 import os
 import sys
 import datetime
@@ -29,3 +30,13 @@ if __name__ == '__main__':
     cmd = sys.argv[1]
     if cmd == 'make_deploy_path':
         print(make_deploy_path())
+
+def mkdir_p(path):
+    # Python doesn't have an analog to `mkdir -p` < Python 3.2.
+    try:
+        os.makedirs(path)
+    except OSError, e:
+        if e.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
