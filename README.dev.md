@@ -55,11 +55,11 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   files (this causes weird errors).
 
 Once that's done, simply change to your zulip directory and run
-`vagrant up` in your terminal to install the development server.  This
-will take a long time on the first run because Vagrant needs to
-download the Ubuntu Trusty base image, but later you can run `vagrant
-destroy` and then `vagrant up` again to rebuild the environment and it
-will be much faster.
+`vagrant up` (or `vagrant up --provider=lxc`) in your terminal to
+install the development server.  This will take a long time on the
+first run because Vagrant needs to download the Ubuntu Trusty base
+image, but later you can run `vagrant destroy` and then `vagrant up`
+again to rebuild the environment and it will be much faster.
 
 Once that finishes, you can run the development server as follows:
 
