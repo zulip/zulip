@@ -343,14 +343,10 @@ upgrade.
 
 * To upgrade to a new version of the zulip server, download the
   appropriate release tarball from
-  https://www.zulip.com/dist/releases/ to a path readable by the zulip
-  user (e.g. /home/zulip), and then run as root:
+  https://www.zulip.com/dist/releases/ and then run as root:
   ```
   /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
   ```
-  Be sure to download to a path readable by the Zulip user (see
-  https://github.com/zulip/zulip/issues/208 for details on this
-  issue) but then run the upgrade as root.
 
   The upgrade process will shut down the service, run `apt-get
   upgrade`, a puppet apply, and any database migrations, and then
