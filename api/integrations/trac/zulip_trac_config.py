@@ -31,17 +31,16 @@ TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
 # Most people find that having every change in Trac result in a
 # notification is too noisy -- in particular, when someone goes
 # through recategorizing a bunch of tickets, that can often be noisy
-# and annoying.  We solve this issue by only sending a notification
+# and annoying. We solve this issue by only sending a notification
 # for changes to the fields listed below.
 #
 # Total list of possible fields is:
 # (priority, milestone, cc, owner, keywords, component, severity,
 #  type, versions, description, resolution, summary, comment)
 #
-# The following is the list of fields which can be changed without
-# triggering a Zulip notification; change these to match your team's
-# workflow.
-TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment", "owner"]
+# The following is the list of fields which will trigger a Zulip notification;
+# change these to match your team's workflow.
+TRAC_NOTIFY_FIELDS = ["priority", "milestone", "owner", "severity", "description", "resolution", "summary", "comment"]
 
 ## If properly installed, the Zulip API should be in your import
 ## path, but if not, set a custom path below
