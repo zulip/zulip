@@ -13,6 +13,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/srv/zulip"
 
+  # Specify LXC provider before VirtualBox provider so it's preferred.
+  config.vm.provider "lxc" do |lxc|
+    LXC_VERSION = `lxc-ls --version`.strip unless defined? LXC_VERSION
+    if LXC_VERSION >= "1.1.0"
+      # Allow start without AppArmor, otherwise Box will not Start on Ubuntu 14.10
+      # see https://github.com/fgrehm/vagrant-lxc/issues/333
+      lxc.customize 'aa_allow_incomplete', 1
+    end
+  end
+
   config.vm.provider "virtualbox" do |vb, override|
     override.vm.box = "ubuntu/trusty64"
     # 2GiB seemed reasonable here. The VM OOMs with only 1024MiB.
