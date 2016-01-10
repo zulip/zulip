@@ -1,10 +1,12 @@
 #!/usr/bin/env python2.7
 from __future__ import print_function
+import datetime
 import errno
 import os
-import sys
-import datetime
 import pwd
+import shutil
+import sys
+import time
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -40,3 +42,27 @@ def mkdir_p(path):
             pass
         else:
             raise
+
+def get_deployment_lock(error_rerun_script):
+    start_time = time.time()
+    got_lock = False
+    while time.time() - start_time < 300:
+        try:
+            os.mkdir(LOCK_DIR)
+            got_lock = True
+            break
+        except OSError:
+            print(WARNING + "Another deployment in progress; waiting for lock... (If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC)
+            time.sleep(3)
+
+    if not got_lock:
+        print(FAIL + "Deployment already in progress.  Please run\n"
+              + "  %s\n" % (error_rerun_script,)
+              + "manually when the previous deployment finishes, or run\n"
+              + "  rmdir %s\n"  % (LOCK_DIR,)
+              + "if the previous deployment crashed."
+              + ENDC)
+        sys.exit(1)
+
+def release_deployment_lock():
+    shutil.rmtree(LOCK_DIR)
