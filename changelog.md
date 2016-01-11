@@ -3,19 +3,27 @@
 All notable changes to this project will be documented in this file.
 
 [Unreleased]
+
+[1.3.10]
 - Added new integration for Travis CI.
 - Added settings option to control maximum file upload size.
 - Added support for running Zulip development environment in Docker.
-- Recent private message threads are now displayed like recent topics.
+- Added easy configuration support for a remote postgres database.
+- Added extensive documentation on scalability, backups, and security.
+- Recent private message threads are now displayed expanded similar to
+  the pre-existing recent topics feature.
 - Made it possible to set LDAP and EMAIL_HOST passwords in
   /etc/zulip/secrets.conf.
-- Improved the styling for the Administration page.
+- Improved the styling for the Administration page and added tabs.
 - Substantially improved loading performance on slow networks by enabling
   GZIP compression on more assets.
 - Changed the page title in narrowed views to include the current narrow.
+- Fixed several backend performance issues affecting very large realms.
 - Fixed bugs where draft compose content might be lost when reloading site.
 - Fixed support for disabling the "zulip" notifications stream.
 - Fixed missing step in postfix_localmail installation instructions.
+- Fixed several bugs/inconveniences in the production upgrade process.
+- Fixed realm restrictions for servers with a unique, open realm.
 - Substantially cleaned up console logging from run-dev.py.
 
 [1.3.9] - 2015-11-16
