@@ -4,7 +4,6 @@ import psycopg2.extensions
 import select
 import time
 import logging
-from django.conf import settings
 import sys
 import os
 
@@ -30,13 +29,17 @@ logger.setLevel(logging.DEBUG)
 
 logger.info("process_fts_updates starting")
 
+# Path to the root of the Zulip codebase in production
 sys.path.insert(0, '/home/zulip/deployments/current')
-sys.path.insert(0, '/srv/zulip')
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+# Path to the root of the Zulip codebase in development
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
 try:
-    import zproject.settings
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+    from django.conf import settings
     remote_postgres_host = settings.REMOTE_POSTGRES_HOST
 except:
+    # process_fts_updates also supports running locally on a remote
+    # postgres server; in that case, one can just connect to localhost
     remote_postgres_host = ''
 
 if remote_postgres_host != '':
