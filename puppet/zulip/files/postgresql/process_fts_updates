@@ -4,6 +4,8 @@ import psycopg2.extensions
 import select
 import time
 import logging
+import sys
+import os
 
 def update_fts_columns(cursor):
     cursor.execute("SELECT id, message_id FROM fts_update_log;")
@@ -27,7 +29,30 @@ logger.setLevel(logging.DEBUG)
 
 logger.info("process_fts_updates starting")
 
-conn = psycopg2.connect("user=zulip")
+# Path to the root of the Zulip codebase in production
+sys.path.insert(0, '/home/zulip/deployments/current')
+# Path to the root of the Zulip codebase in development
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
+try:
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+    from django.conf import settings
+    remote_postgres_host = settings.REMOTE_POSTGRES_HOST
+except:
+    # process_fts_updates also supports running locally on a remote
+    # postgres server; in that case, one can just connect to localhost
+    remote_postgres_host = ''
+
+if remote_postgres_host != '':
+    postgres_password = ''
+    if settings.DATABASES['default']['PASSWORD'] is not None:
+        postgres_password = "password='%s'" % settings.DATABASES['default']['PASSWORD']
+    if settings.REMOTE_POSTGRES_SSLMODE != '':
+        postgres_sslmode = settings.REMOTE_POSTGRES_SSLMODE
+    else:
+        postgres_sslmode = 'verify-full'
+    conn = psycopg2.connect("user=zulip %s host='%s' dbname=zulip connect_timeout=600 sslmode='%s'" % (postgres_password, remote_postgres_host, postgres_sslmode))
+else:
+    conn = psycopg2.connect("user=zulip")
 cursor = conn.cursor()
 
 conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
@@ -51,4 +76,3 @@ while True:
         while conn.notifies:
             conn.notifies.pop()
             update_fts_columns(cursor)
-

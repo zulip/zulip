@@ -150,6 +150,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ZULIP_COM_STAGING': False,
                     'STATSD_HOST': '',
                     'REMOTE_POSTGRES_HOST': '',
+                    'REMOTE_POSTGRES_SSLMODE': '',
                     'GOOGLE_CLIENT_ID': '',
                     'DBX_APNS_CERT_FILE': None,
                     }
@@ -312,7 +313,14 @@ elif REMOTE_POSTGRES_HOST != '':
     DATABASES['default'].update({
             'HOST': REMOTE_POSTGRES_HOST,
             })
-    DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
+    if get_secret("postgres_password") is not None:
+        DATABASES['default'].update({
+            'PASSWORD': get_secret("postgres_password"),
+            })
+    if REMOTE_POSTGRES_SSLMODE != '':
+        DATABASES['default']['OPTIONS']['sslmode'] = REMOTE_POSTGRES_SSLMODE
+    else:
+        DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
 ########################################################################
 # RABBITMQ CONFIGURATION
