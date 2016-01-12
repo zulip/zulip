@@ -204,6 +204,35 @@ host    all             all             ::1/128                 md5
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
+### On OpenBSD 5.8 (experimental):
+
+These instructions are experimental and may have bugs; patches welcome!
+
+```
+doas pkg_add sudo bash gcc postgresql-server redis rabbitmq memcached node libmemcached py-Pillow py-cryptography py-cffi
+
+# Get tsearch_extras and build it (using a modified version which aliases int4 on OpenBSD):
+git clone https://github.com/blablacio/tsearch_extras
+cd tsearch_extras
+gmake && sudo gmake install
+
+# Point environment to custom include locations and use newer GCC (needed for Node modules):
+export CFLAGS="-I/usr/local/include -I/usr/local/include/sasl"
+export CXX=eg++
+
+# Create tsearch_data directory:
+sudo mkdir /var/postgresql/tsearch_data
+
+
+# Hack around missing dictionary files -- need to fix this to get
+# the proper dictionaries from what in debian is the hunspell-en-us package.
+sudo touch /usr/local/share/postgresql/tsearch_data/english.stop
+sudo touch /usr/local/share/postgresql/tsearch_data/en_us.dict
+sudo touch /usr/local/share/postgresql/tsearch_data/en_us.affix
+```
+
+Now continue with the All Systems instructions below.
+
 ### Common to Fedora/CentOS instructions
 
 ```
@@ -243,7 +272,8 @@ npm install
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
-sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/
+sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/ (Linuxes)
+sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/ (OpenBSD)
 ./scripts/setup/configure-rabbitmq
 ./tools/postgres-init-dev-db
 ./tools/do-destroy-rebuild-database
