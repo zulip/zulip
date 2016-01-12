@@ -188,6 +188,19 @@ def resolve_email_to_domain(email):
         domain = alias.realm.domain
     return domain
 
+# Is a user with the given email address allowed to be in the given realm?
+# (This function does not check whether the user has been invited to the realm.
+# So for invite-only realms, this is the test for whether a user can be invited,
+# not whether the user can sign up currently.)
+def email_allowed_for_realm(email, realm):
+    # Anyone can be in an open realm
+    if not realm.restricted_to_domain:
+        return True
+
+    # Otherwise, domains must match (case-insensitively)
+    email_domain = resolve_email_to_domain(email)
+    return email_domain == realm.domain.lower()
+
 def alias_for_realm(domain):
     try:
         return RealmAlias.objects.get(domain=domain)

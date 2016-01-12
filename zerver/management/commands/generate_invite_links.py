@@ -4,7 +4,7 @@ from __future__ import print_function
 from django.core.management.base import BaseCommand
 from confirmation.models import Confirmation
 from zerver.models import UserProfile, PreregistrationUser, \
-    get_user_profile_by_email, get_realm
+    get_user_profile_by_email, get_realm, email_allowed_for_realm
 
 class Command(BaseCommand):
     help = "Generate activation links for users and print them to stdout."
@@ -47,9 +47,7 @@ class Command(BaseCommand):
 
         for email in options['emails']:
             if realm:
-                if realm.restricted_to_domain and \
-                        domain.lower() != email.split("@", 1)[-1].lower() and \
-                        not options["force"]:
+                if not email_allowed_for_realm(email, realm) and not options["force"]:
                     print("You've asked to add an external user (%s) to a closed realm (%s)." % (
                         email, domain))
                     print("Are you sure? To do this, pass --force.")

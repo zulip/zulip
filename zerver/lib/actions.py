@@ -12,7 +12,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
-    resolve_email_to_domain, email_to_username, display_recipient_cache_key, \
+    email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
@@ -2798,7 +2798,7 @@ def do_invite_users(user_profile, invitee_emails, streams):
             errors.append((email, "Invalid address."))
             continue
 
-        if user_profile.realm.restricted_to_domain and resolve_email_to_domain(email) != user_profile.realm.domain.lower():
+        if not email_allowed_for_realm(email, user_profile.realm):
             errors.append((email, "Outside your domain."))
             continue
 

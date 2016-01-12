@@ -22,7 +22,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     PreregistrationUser, get_client, MitUser, UserActivity, PushDeviceToken, \
     get_stream, UserPresence, get_recipient, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
-    completely_open, get_unique_open_realm, remote_user_to_email
+    completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, \
     internal_send_message, update_user_presence, do_events_register, \
@@ -97,7 +97,7 @@ def accounts_register(request):
         # MitUsers can't be referred and don't have a referred_by field.
         realm = prereg_user.referred_by.realm
         domain = realm.domain
-        if realm.restricted_to_domain and domain != resolve_email_to_domain(email):
+        if not email_allowed_for_realm(email, realm):
             return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
     elif not mit_beta_user and prereg_user.realm:
         # You have a realm set, even though nobody referred you. This
