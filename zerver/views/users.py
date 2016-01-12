@@ -16,7 +16,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, get_user_profile_by_email, get_stream, \
-    resolve_email_to_domain
+    email_allowed_for_realm
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
@@ -275,8 +275,7 @@ def create_user_backend(request, user_profile, email=REQ, password=REQ,
     # (Since this is an admin API, we don't require the user to have been
     # invited first.)
     realm = user_profile.realm
-    domain = resolve_email_to_domain(email)
-    if realm.domain != domain:
+    if not email_allowed_for_realm(email, user_profile.realm):
         return json_error("Email '%s' does not belong to domain '%s'" % (email, realm.domain))
 
     try:

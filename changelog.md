@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 [Unreleased]
 - Fixed the disabling of desktop notifications from 1.3.7 for new users.
+- Fixed the (admin) create_user API enforcing restricted_to_domain, even
+  if that setting was disabled for the realm.
 
 [1.3.10]
 - Added new integration for Travis CI.
