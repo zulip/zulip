@@ -1,4 +1,6 @@
-#!/bin/sh -ex
+#!/usr/bin/env bash
+set -e
+set -x
 
 mkdir -p static/third/zxcvbn/
 wget https://raw.githubusercontent.com/dropbox/zxcvbn/0890678ede1488ecb02cda7eb793cd308a59c49d/zxcvbn.js -O static/third/zxcvbn/zxcvbn.js

@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 # Remove .pyc files to prevent loading stale code.
 #
@@ -8,4 +9,4 @@
 #     chmod +x .git/hooks/post-checkout
 
 cd "$(dirname "$0")/.."
-find . -name '*.pyc' -delete
+find . -name "*.pyc" -exec rm -f {} \;

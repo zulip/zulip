@@ -1,4 +1,5 @@
-#!/bin/sh -x
+#!/usr/bin/env bash
+set -x
 
 cd api/
 # Strip out non-send_message bindings.

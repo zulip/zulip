@@ -1,10 +1,21 @@
-#!/bin/bash -xe
+#!/usr/bin/env bash
+set -x
+set -e
 
-ROOT_POSTGRES="sudo -u postgres psql"
+DEFAULT_USER="postgres"
+if [ "$(uname)" = "OpenBSD" ]; then
+  DEFAULT_USER="_postgresql"
+fi
+
+ROOT_POSTGRES="sudo -u "$DEFAULT_USER" psql"
 DEFAULT_DB=""
 if [ "$(uname)" = "Darwin" ]; then
    ROOT_POSTGRES="psql"
    DEFAULT_DB="postgres"
+fi
+
+if [ "$(uname)" = "OpenBSD" ]; then
+  DEFAULT_DB="postgres"
 fi
 
 VAGRANTUSERNAME=$(whoami)

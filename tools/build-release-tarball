@@ -1,4 +1,6 @@
-#!/bin/sh -ex
+#!/usr/bin/env bash
+set -e
+set -x
 
 GITID=$(git rev-parse HEAD)
 

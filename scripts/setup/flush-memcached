@@ -1,4 +1,6 @@
-#!/bin/sh -xe
+#!/usr/bin/env bash
+set -e
+set -x
 
 # Flush memcached
-echo 'flush_all' | nc localhost 11211
+echo 'flush_all' | nc -w 0 localhost 11211

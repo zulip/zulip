@@ -1,4 +1,6 @@
-#!/bin/sh -xe
+#!/usr/bin/env bash
+set -e
+set -x
 
 "$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip zulip zulip_base
 

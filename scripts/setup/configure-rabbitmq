@@ -1,7 +1,9 @@
-#!/bin/sh -xe
+#!/usr/bin/env bash
 #
 # Delete the "guest" default user and replace it with a Zulip user
 # with a real password
+set -e
+set -x
 
 RABBITMQ_USERNAME=$("$(dirname "$0")/../../bin/get-django-setting" RABBITMQ_USERNAME)
 RABBITMQ_PASSWORD=$("$(dirname "$0")/../../bin/get-django-setting" RABBITMQ_PASSWORD)
