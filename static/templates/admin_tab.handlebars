@@ -3,98 +3,122 @@
     <div class="administration">
       <div class="alert" id="administration-status"></div>
       <h1><i class="icon-vector-bolt administration-icon"></i>Administration</h1>
-      <div id="organization-settings" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-gear settings-section-icon"></i>
-      Organization settings</div>
-
-      <form class="form-horizontal admin-realm-form">
-        <div class="control-group admin-realm">
-          <div class="alert" id="admin-realm-name-status"></div>
-	  <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
-	  <div class="alert" id="admin-realm-invite-required-status"></div>
-	  <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
-          <label for="realm_name" class="control-label">Your organization's name</label>
-          <div class="controls">
-            <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
-                   value="{{ realm_name }}" />
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+          <a href="#organization" aria-controls="organization" role="tab" data-toggle="tab"><i class="icon-vector-gear settings-section-icon"></i> Organization settings</a>
+        </li>
+        <li role="presentation">
+          <a href="#users" aria-controls="users" role="tab" data-toggle="tab"><i class="icon-vector-user settings-section-icon"></i> Users</a>
+        </li>
+        <li role="presentation">
+          <a href="#deactivated-users" aria-controls="deactivated-users" role="tab" data-toggle="tab"><i class="icon-vector-trash settings-section-icon"></i> Deactivated Users</a>
+        </li>
+        <li role="presentation">
+          <a href="#bots" aria-controls="bots" role="tab" data-toggle="tab"><i class="icon-vector-github settings-section-icon"></i> Bots</a>
+        </li>
+        <li role="presentation">
+          <a href="#streams" aria-controls="streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> Streams Deletion</a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="organization">
+          <div id="organization-settings" class="settings-section">
+          <div class="settings-section-title"><i class="icon-vector-gear settings-section-icon"></i>
+          Organization settings</div>
+            <form class="form-horizontal admin-realm-form">
+              <div class="control-group admin-realm">
+                <div class="alert" id="admin-realm-name-status"></div>
+	        <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
+	        <div class="alert" id="admin-realm-invite-required-status"></div>
+	        <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
+                <label for="realm_name" class="control-label">Your organization's name</label>
+                <div class="controls">
+                  <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
+                         value="{{ realm_name }}" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label for="realm_restricted_to_domain" title="If checked, only users with an @{{ domain }} e-mail address will be able to join the organization." class="control-label">Users restricted to {{ domain }}</label>
+                <div class="controls">
+	          <input type="checkbox" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain" {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
+                </div>
+              </div>
+              <div class="control-group">
+                <label for="realm_invite_required" title="If checked, users must be invited in order to join your organization." class="control-label">E-mail invitation required</label>
+                <div class="controls">
+	          <input type="checkbox" id="id_realm_invite_required" name="realm_invite_required" {{#if realm_invite_required}}checked="checked"{{/if}} />
+                </div>
+              </div>
+              <div class="control-group">
+                <label for="realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" title="If checked, only administrators may invite new users." class="control-label{{#unless realm_invite_required}} control-label-disabled{{/unless}}">Only admins may invite</label>
+                <div class="controls">
+	          <input type="checkbox" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only" {{#unless realm_invite_required}}disabled="disabled"{{/unless}} {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
+                </div>
+              </div>
+              <div class="controls organization-submission">
+              <input type="submit" class="btn btn-big btn-primary" value="Save changes" />
+              </div>
+            </form>
           </div>
         </div>
-        <div class="control-group">
-          <label for="realm_restricted_to_domain" title="If checked, only users with an @{{ domain }} e-mail address will be able to join the organization." class="control-label">Users restricted to {{ domain }}</label>
-          <div class="controls">
-	    <input type="checkbox" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain" {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
+        <div role="tabpanel" class="tab-pane" id="users">
+          <div id="admin-user-list" class="settings-section">
+          <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>
+          Users</div>
+          <table class="table table-condensed table-striped">
+            <tbody id="admin_users_table" class="admin_user_table">
+              <th>Name</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tbody>
+          </table>
+          <div id="admin_page_users_loading_indicator"></div>
           </div>
         </div>
-        <div class="control-group">
-          <label for="realm_invite_required" title="If checked, users must be invited in order to join your organization." class="control-label">E-mail invitation required</label>
-          <div class="controls">
-	    <input type="checkbox" id="id_realm_invite_required" name="realm_invite_required" {{#if realm_invite_required}}checked="checked"{{/if}} />
+        <div role="tabpanel" class="tab-pane" id="deactivated-users">
+          <div id="admin-deactivated-users-list" class="settings-section">
+          <div class="settings-section-title"><i class="icon-vector-trash settings-section-icon"></i>
+          Deactivated Users</div>
+          <table class="table table-condensed table-striped">
+            <tbody id="admin_deactivated_users_table" class="admin_user_table">
+              <th>Name</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tbody>
+          </table>
+          <div id="admin_page_deactivated_users_loading_indicator"></div>
           </div>
         </div>
-        <div class="control-group">
-          <label for="realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" title="If checked, only administrators may invite new users." class="control-label{{#unless realm_invite_required}} control-label-disabled{{/unless}}">Only admins may invite</label>
-          <div class="controls">
-	    <input type="checkbox" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only" {{#unless realm_invite_required}}disabled="disabled"{{/unless}} {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
+        <div role="tabpanel" class="tab-pane" id="bots">
+          <div id="admin-user-list" class="settings-section">
+          <div class="settings-section-title"><i class="icon-vector-github settings-section-icon"></i>
+          Bots</div>
+          <table class="table table-condensed table-striped">
+            <tbody id="admin_bots_table" class="admin_bot_table">
+              <th>Name</th>
+              <th>Email</th>
+              <th>Owner</th>
+              <th>Actions</th>
+            </tbody>
+          </table>
+          <div id="admin_page_bots_loading_indicator"></div>
           </div>
         </div>
-        <div class="controls organization-submission">
-        <input type="submit" class="btn btn-big btn-primary" value="Save changes" />
+        <div role="tabpanel" class="tab-pane" id="streams">
+          <div id="admin-streams-list" class="settings-section">
+          <div class="settings-section-title"><i class="icon-vector-exchange settings-section-icon"></i>
+          Streams Deletion</div>
+          <p class="admin-streams-note">Most stream administration is done on the <a href="/#subscriptions">subscriptions page</a>.</p>
+
+          <table class="table table-condensed table-striped">
+            <tbody id="admin_streams_table" class="admin_stream_table">
+              <th>Name</th>
+              <th>Actions</th>
+            </tbody>
+          </table>
+          <div id="admin_page_streams_loading_indicator"></div>
+          </div>
         </div>
-      </form>
-      </div>
-
-      <div id="admin-user-list" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>
-      Users</div>
-      <table class="table table-condensed table-striped">
-        <tbody id="admin_users_table" class="admin_user_table">
-          <th>Name</th>
-          <th>Email</th>
-          <th>Actions</th>
-        </tbody>
-      </table>
-      <div id="admin_page_users_loading_indicator"></div>
-      </div>
-
-      <div id="admin-deactivated-users-list" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-trash settings-section-icon"></i>
-      Deactivated Users</div>
-      <table class="table table-condensed table-striped">
-        <tbody id="admin_deactivated_users_table" class="admin_user_table">
-          <th>Name</th>
-          <th>Email</th>
-          <th>Actions</th>
-        </tbody>
-      </table>
-      <div id="admin_page_deactivated_users_loading_indicator"></div>
-      </div>
-
-      <div id="admin-user-list" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-github settings-section-icon"></i>
-      Bots</div>
-      <table class="table table-condensed table-striped">
-        <tbody id="admin_bots_table" class="admin_bot_table">
-          <th>Name</th>
-          <th>Email</th>
-          <th>Owner</th>
-          <th>Actions</th>
-        </tbody>
-      </table>
-      <div id="admin_page_bots_loading_indicator"></div>
-      </div>
-
-      <div id="admin-streams-list" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-exchange settings-section-icon"></i>
-      Streams Deletion</div>
-      <p class="admin-streams-note">Most stream administration is done on the <a href="/#subscriptions">subscriptions page</a>.</p>
-
-      <table class="table table-condensed table-striped">
-        <tbody id="admin_streams_table" class="admin_stream_table">
-          <th>Name</th>
-          <th>Actions</th>
-        </tbody>
-      </table>
-      <div id="admin_page_streams_loading_indicator"></div>
       </div>
 
       <div id="deactivation_user_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_user_modal_label" aria-hidden="true">
