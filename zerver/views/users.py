@@ -4,7 +4,8 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from six.moves import map
 
-from zerver.decorator import has_request_variables, REQ, JsonableError
+from zerver.decorator import has_request_variables, REQ, JsonableError, \
+    require_realm_admin
 from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_full_name, do_change_is_admin, \
     do_create_user, subscribed_to_stream, do_deactivate_user, do_reactivate_user, \
@@ -14,7 +15,8 @@ from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool
-from zerver.models import UserProfile, get_user_profile_by_email, get_stream
+from zerver.models import UserProfile, get_user_profile_by_email, get_stream, \
+    resolve_email_to_domain
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
@@ -260,3 +262,28 @@ def get_members_backend(request, user_profile):
             member["bot_owner"] = profile.bot_owner.email
         members.append(member)
     return json_success({'members': members})
+
+@require_realm_admin
+@has_request_variables
+def create_user_backend(request, user_profile, email=REQ, password=REQ,
+                        full_name=REQ, short_name=REQ):
+    form = CreateUserForm({'full_name': full_name, 'email': email})
+    if not form.is_valid():
+        return json_error('Bad name or username')
+
+    # Check that the new user's email address belongs to the admin's realm
+    # (Since this is an admin API, we don't require the user to have been
+    # invited first.)
+    realm = user_profile.realm
+    domain = resolve_email_to_domain(email)
+    if realm.domain != domain:
+        return json_error("Email '%s' does not belong to domain '%s'" % (email, realm.domain))
+
+    try:
+        get_user_profile_by_email(email)
+        return json_error("Email '%s' already in use" % (email,))
+    except UserProfile.DoesNotExist:
+        pass
+
+    do_create_user(email, password, realm, full_name, short_name)
+    return json_success()

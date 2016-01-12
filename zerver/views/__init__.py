@@ -1074,31 +1074,6 @@ def get_uploaded_file(request, realm_id, filename,
     else:
         return HttpResponseForbidden()
 
-@require_realm_admin
-@has_request_variables
-def create_user_backend(request, user_profile, email=REQ, password=REQ,
-                        full_name=REQ, short_name=REQ):
-    form = CreateUserForm({'full_name': full_name, 'email': email})
-    if not form.is_valid():
-        return json_error('Bad name or username')
-
-    # Check that the new user's email address belongs to the admin's realm
-    # (Since this is an admin API, we don't require the user to have been
-    # invited first.)
-    realm = user_profile.realm
-    domain = resolve_email_to_domain(email)
-    if realm.domain != domain:
-        return json_error("Email '%s' does not belong to domain '%s'" % (email, realm.domain))
-
-    try:
-        get_user_profile_by_email(email)
-        return json_error("Email '%s' already in use" % (email,))
-    except UserProfile.DoesNotExist:
-        pass
-
-    do_create_user(email, password, realm, full_name, short_name)
-    return json_success()
-
 @csrf_exempt
 @require_post
 @has_request_variables
