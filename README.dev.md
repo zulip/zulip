@@ -298,7 +298,6 @@ npm install
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
 if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/; else sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/; fi
-sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/ (OpenBSD)
 ./scripts/setup/configure-rabbitmq
 ./tools/postgres-init-dev-db
 ./tools/do-destroy-rebuild-database
