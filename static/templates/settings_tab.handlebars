@@ -378,7 +378,18 @@
           Enable desktop notifications for new streams
         </label>
 
+        <div class="controls">
+          <input type="checkbox" name="sort_streams_on_activity" id="sort_streams_on_activity"
+                 {{#if page_params.sort_streams_on_activity}}
+                 checked="yes"
+              {{/if}} />
+        </div>
+        <label for="sort_streams_on_activity" class="control-label">
+          Keep active streams always on top of list
+        </label>
+
       </div>
+
       <div class="control-group">
         <div class="controls ui-submission">
           <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />

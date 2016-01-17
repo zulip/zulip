@@ -328,6 +328,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enter_sends = models.NullBooleanField(default=True)
     autoscroll_forever = models.BooleanField(default=False)
     left_side_userlist = models.BooleanField(default=False)
+    sort_streams_on_activity = models.BooleanField(default=False)
 
     # display settings
     twenty_four_hour_time = models.BooleanField(default=False)

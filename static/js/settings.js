@@ -645,7 +645,7 @@ exports.setup_page = function () {
 
     $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
         var labs_updates = {};
-        _.each(["autoscroll_forever", "default_desktop_notifications"],
+        _.each(["autoscroll_forever", "default_desktop_notifications", "sort_streams_on_activity"],
             function (setting) {
                 labs_updates[setting] = $("#" + setting).is(":checked");
         });

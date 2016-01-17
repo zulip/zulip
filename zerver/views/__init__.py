@@ -827,6 +827,7 @@ def home(request):
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         autoscroll_forever = user_profile.autoscroll_forever,
+        sort_streams_on_activity = user_profile.sort_streams_on_activity,
         default_desktop_notifications = user_profile.default_desktop_notifications,
         avatar_url            = avatar_url(user_profile),
         mandatory_topics      = user_profile.realm.mandatory_topics,
