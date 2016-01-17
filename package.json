@@ -15,12 +15,7 @@
     "htmlparser2": "3.8.3",
     "cssstyle": "0.2.29",
     "webpack": "1.12.2",
-    "webpack-dev-server": "1.12.1",
-    "uglify-js": "2.6.1",
-    "bufferutil": "1.2.1",
-    "utf-8-validate": "1.2.1",
-    "tls": "0.0.1",
-    "fs": "0.0.2"
+    "webpack-dev-server": "1.12.1"
   },
   "scripts": {},
   "repository": {
