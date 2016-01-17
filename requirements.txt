@@ -1,7 +1,7 @@
 git+https://github.com/rwbarton/django.git@59f1fc4c7b65d23fceffd5c87e2b6ea350030c56
 GitPython==0.3.2.1
 Markdown==2.1.1
-Pillow>=2.8.1
+Pillow==2.8.2
 Pygments==2.0.2
 SQLAlchemy==0.7.8
 South==1.0.2

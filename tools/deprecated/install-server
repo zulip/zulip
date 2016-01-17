@@ -1,4 +1,5 @@
-#!/bin/bash -xe
+#!/usr/bin/env bash
+set -xe
 
 server=$1
 type=$2

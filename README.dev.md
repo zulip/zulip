@@ -221,7 +221,7 @@ export CFLAGS="-I/usr/local/include -I/usr/local/include/sasl"
 export CXX=eg++
 
 # Create tsearch_data directory:
-sudo mkdir /var/postgresql/tsearch_data
+sudo mkdir /usr/local/share/postgresql/tsearch_data
 
 
 # Hack around missing dictionary files -- need to fix this to get
@@ -272,8 +272,7 @@ npm install
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
-sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/ (Linuxes)
-sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/ (OpenBSD)
+if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/; else sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/; fi
 ./scripts/setup/configure-rabbitmq
 ./tools/postgres-init-dev-db
 ./tools/do-destroy-rebuild-database
