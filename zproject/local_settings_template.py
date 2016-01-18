@@ -298,3 +298,8 @@ AUTH_LDAP_USER_ATTR_MAP = {
 }
 
 CAMO_URI = ''
+
+# By default, Zulip connects to rabbitmq running locally on the machine,
+# but Zulip also supports connecting to RabbitMQ over the network;
+# to use a remote RabbitMQ instance, set RABBITMQ_HOST here.
+# RABBITMQ_HOST = "localhost"
