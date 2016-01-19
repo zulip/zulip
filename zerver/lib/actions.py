@@ -798,6 +798,13 @@ def send_pm_if_empty_stream(sender, stream, stream_name):
         return
 
     if sender.is_bot and sender.bot_owner is not None:
+        # Don't send these notifications for cross-realm bot messages
+        # (e.g. from EMAIL_GATEWAY_BOT) since the owner for
+        # EMAIL_GATEWAY_BOT is probably the server administrator, not
+        # the owner of the bot who could potentially fix the problem.
+        if stream.realm != sender.realm:
+            return
+
         if stream:
             num_subscribers = stream.num_subscribers()
 
