@@ -630,6 +630,7 @@ function render(template_name, args) {
 }());
 
 (function user_presence_rows() {
+    global.use_template('user_presence_row'); // partial
     var args = {
         users: [
             {

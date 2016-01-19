@@ -1,13 +1,4 @@
 {{! User Presence rows }}
 {{#each users}}
-<li data-email="{{email}}" class="user_sidebar_entry {{#if num_unread}}user-with-count {{/if}}narrow-filter user_{{type}}">
-  <span class="selectable_sidebar_block{{#if mobile}}{{/if}}">
-    <span class="user-status-indicator"></span>
-    <span class="user-device-indicator">{{#if mobile}}{{/if}}</span>
-      <a href="#" data-email="{{email}}" data-name="{{name}}" title="{{name}} {{type_desc}}"
-         class="{{#if my_fullname}} my_fullname{{/if}}">{{name}}</a>
-  </span>
-  <span class="count"><span class="value">{{#if num_unread}}{{num_unread}}{{/if}}</span></span>
-  <span class="arrow"><i class="icon-vector-chevron-down"></i></span>
-</li>
+{{partial "user_presence_row"}}
 {{/each}}
