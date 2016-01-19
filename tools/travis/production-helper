@@ -9,14 +9,9 @@ ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
 tar -xf zulip-server-travis.tar.gz
 mv zulip-server-travis /root/zulip
 
+# Do an apt upgrade to start with an up-to-date machine
 export APT_OPTIONS="-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
-
-# Make sure we've done an apt upgrade and then stop postgres to
-# workaround problems with Travis CI having multiple postgres versions
-# installed on the system and 9.1 starting up and conflicting with
-# running 9.3 later.
 apt-get upgrade -y $APT_OPTIONS
-service postgresql stop
 # Install Zulip
 /root/zulip/scripts/setup/install
 

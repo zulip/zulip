@@ -2,6 +2,11 @@
 set -e
 set -x
 
+# Uninstall the unnecessary extra versions of postgres that Travis CI
+# installs since if we don't do this, doing apt upgrades can fail due
+# to conflicts over which version of postgres should be running.
+sudo apt-get remove postgresql-9.1 postgresql-9.2 postgresql-9.4 -y
+
 pip install pbs
 python provision.py --travis
 source /srv/zulip-venv/bin/activate
