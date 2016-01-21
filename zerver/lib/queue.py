@@ -37,7 +37,7 @@ class SimpleQueueClient(object):
         self._connect()
 
     def _get_parameters(self):
-        return pika.ConnectionParameters('localhost',
+        return pika.ConnectionParameters(settings.RABBITMQ_HOST,
             credentials = pika.PlainCredentials(
                 settings.RABBITMQ_USERNAME, settings.RABBITMQ_PASSWORD))
 
@@ -259,4 +259,3 @@ def queue_json_publish(queue_name, event, processor):
             get_queue_client().json_publish(queue_name, event)
         else:
             processor(event)
-
