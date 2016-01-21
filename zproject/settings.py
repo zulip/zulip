@@ -126,6 +126,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'JWT_AUTH_KEYS': {},
                     'NAME_CHANGES_DISABLED': False,
                     'DEPLOYMENT_ROLE_NAME': "",
+                    'RABBITMQ_HOST': 'localhost',
                     # The following bots only exist in non-VOYAGER installs
                     'ERROR_BOT': None,
                     'NEW_USER_BOT': None,
@@ -327,6 +328,7 @@ elif REMOTE_POSTGRES_HOST != '':
 ########################################################################
 
 USING_RABBITMQ = True
+# RABBITMQ_HOST default is 'localhost'
 RABBITMQ_USERNAME = 'zulip'
 RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 
