@@ -126,6 +126,12 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'JWT_AUTH_KEYS': {},
                     'NAME_CHANGES_DISABLED': False,
                     'DEPLOYMENT_ROLE_NAME': "",
+                    'RABBITMQ_HOST': 'localhost',
+                    'RABBITMQ_USERNAME': 'zulip',
+                    'MEMCACHED_LOCATION': '127.0.0.1:11211',
+                    'RATE_LIMITING': True,
+                    'REDIS_HOST': '127.0.0.1',
+                    'REDIS_PORT': 6379,
                     # The following bots only exist in non-VOYAGER installs
                     'ERROR_BOT': None,
                     'NEW_USER_BOT': None,
@@ -327,7 +333,6 @@ elif REMOTE_POSTGRES_HOST != '':
 ########################################################################
 
 USING_RABBITMQ = True
-RABBITMQ_USERNAME = 'zulip'
 RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 
 ########################################################################
@@ -339,7 +344,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 CACHES = {
     'default': {
         'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': '127.0.0.1:11211',
+        'LOCATION': MEMCACHED_LOCATION,
         'TIMEOUT':  3600
     },
     'database': {
@@ -358,10 +363,6 @@ CACHES = {
 ########################################################################
 # REDIS-BASED RATE LIMITING CONFIGURATION
 ########################################################################
-
-RATE_LIMITING = True
-REDIS_HOST = '127.0.0.1'
-REDIS_PORT = 6379
 
 RATE_LIMITING_RULES = [
     (60, 100),     # 100 requests max every minute
