@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 set -x
 
@@ -6,9 +6,14 @@ vergte() {
     [ "$1" = "`echo -e "$1\n$2" | sort -V | tail -n1`" ]
 }
 
+DEFAULT_USER="postgres"
+if [ "$(uname)" = "OpenBSD" ]; then
+  DEFAULT_USER="_postgresql"
+fi
+
 cd /
 if [ "$EUID" -eq 0 ]; then
-    version=$(su postgres -c 'psql -A -t -d postgres -c "show server_version"')
+    version=$(sudo -u "$DEFAULT_USER"  sh -c 'psql -A -t -d postgres -c "show server_version"')
 else
     version=$(psql -A -t -d postgres -c "show server_version")
 fi
@@ -25,7 +30,7 @@ else
 fi
 
 if [ "$EUID" -eq 0 ]; then
-    su postgres -c psql postgres postgres <<EOF
+    sudo -u "$DEFAULT_USER" sh -c 'psql postgres "$DEFAULT_USER"' <<EOF
 SELECT pg_terminate_backend($pidname) FROM pg_stat_activity WHERE datname IN ($tables);
 EOF
 else

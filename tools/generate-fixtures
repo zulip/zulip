@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 function migration_status {
     ./manage.py migrate --list --settings=zproject.test_settings | sed 's/*/ /' > "$1"

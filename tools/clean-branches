@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 # Deletes any local branches which are ancestors of origin/master,
 # and also any branches in origin which are ancestors of

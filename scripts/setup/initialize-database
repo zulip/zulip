@@ -1,4 +1,5 @@
-#!/bin/bash -xe
+#!/usr/bin/env bash
+set -xe
 
 # Change to root directory of the checkout that we're running from
 cd "$(dirname "$0")/../.."

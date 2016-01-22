@@ -1,3 +1,5 @@
-#!/bin/bash -xe
+#!/usr/bin/env bash
+set -x
+set -e
 
 "$(dirname "$0")/postgres-init-dev-db" zulip_test "$("$(dirname "$0")/../bin/get-django-setting" LOCAL_DATABASE_PASSWORD)" zulip_test zulip,public
