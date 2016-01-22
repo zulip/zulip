@@ -522,7 +522,7 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
 @cache_with_key(message_cache_key, timeout=3600*24)
 def get_message_by_id_dbwarn(message_id):
     if not settings.TEST_SUITE:
-        logging.warning("Tornado failed to load message from memcached when delivering!")
+        logging.warning("Tornado failed to load message from redis when delivering!")
     return Message.objects.select_related().get(id=message_id)
 
 def receiver_is_idle(user_profile_id, realm_presences):

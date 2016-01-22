@@ -24,10 +24,10 @@ import zlib
 from bitfield import BitField
 from collections import defaultdict
 from datetime import timedelta
-import pylibmc
 import re
 import ujson
 import logging
+from django.core.cache import cache
 
 bugdown = None
 
@@ -1130,7 +1130,7 @@ def get_realm(domain):
         return None
 
 def clear_database():
-    pylibmc.Client(['127.0.0.1']).flush_all()
+    cache.clear()
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
                   DefaultStream]:

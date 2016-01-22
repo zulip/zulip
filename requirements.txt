@@ -44,10 +44,10 @@ pycparser==2.14
 pycrypto==2.6.1
 pydns==2.3.6
 pyflakes==0.9.1
-pylibmc==1.4.3
 python-ldap==2.4.19
 pytz==2015.4
-redis==2.10.3
+redis==2.10.5
+django-redis==4.3.0
 requests==2.7.0
 rsa==3.1.4
 simplejson==3.7.3

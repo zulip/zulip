@@ -4,6 +4,16 @@ class zulip::voyager {
   include zulip::postgres_appdb
   include zulip::redis
 
+  apt::source {'zulip-testing':
+    location    => 'http://ppa.launchpad.net/tabbott/zulip-testing/ubuntu',
+    release     => 'trusty',
+    repos       => 'main',
+    key         => '84C2BE60E50E336456E4749CE84240474E26AE47',
+    key_source  => 'https://zulip.com/dist/keys/zulip.asc',
+    pin         => '994',
+    include_src => true,
+  }
+
   apt::source {'zulip':
     location    => 'http://ppa.launchpad.net/tabbott/zulip/ubuntu',
     release     => 'trusty',

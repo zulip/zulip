@@ -1,4 +1,4 @@
 #!/bin/sh -xe
 
-# Flush memcached
-echo 'flush_all' | nc localhost 11211
+# Flush redis
+redis-cli FLUSHALL

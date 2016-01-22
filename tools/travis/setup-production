@@ -11,9 +11,9 @@ mv /tmp/tmp.*/zulip-server-travis.tar.gz ./
 # Shut down all services so that restarting postgres and rebuilding
 # the postgres database to match the prod installation setup will work.
 sudo supervisorctl stop all
-# Clear memcached to avoid contamination between development and prod
+# Clear redis to avoid contamination between development and prod
 # environments.
-sudo /etc/init.d/memcached restart
+sudo service redis-server restart
 
 # Drop any open connections to the development postgres installation.
 sudo "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" postgres zulip zulip_base

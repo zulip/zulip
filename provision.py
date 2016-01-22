@@ -20,12 +20,10 @@ APT_DEPENDENCIES = {
         "closure-compiler",
         "libfreetype6-dev",
         "libffi-dev",
-        "memcached",
         "rabbitmq-server",
         "libldap2-dev",
         "redis-server",
         "postgresql-server-dev-all",
-        "libmemcached-dev",
         "postgresql-9.3",
         "python-dev",
         "hunspell-en-us",
@@ -38,6 +36,7 @@ APT_DEPENDENCIES = {
         "yui-compressor",
         "puppet",               # Used by lint-all
         "gettext",              # Used by makemessages i18n
+        "libsasl2-dev",
     ]
 }
 
@@ -164,13 +163,11 @@ def main():
     if "--travis" in sys.argv:
         os.system("sudo service rabbitmq-server restart")
         os.system("sudo service redis-server restart")
-        os.system("sudo service memcached restart")
     elif "--docker" in sys.argv:
         os.system("sudo service rabbitmq-server restart")
         os.system("sudo pg_dropcluster --stop 9.3 main")
         os.system("sudo pg_createcluster -e utf8 --start 9.3 main")
         os.system("sudo service redis-server restart")
-        os.system("sudo service memcached restart")
     sh.configure_rabbitmq(**LOUD)
     sh.postgres_init_dev_db(**LOUD)
     sh.do_destroy_rebuild_database(**LOUD)

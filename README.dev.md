@@ -112,7 +112,6 @@ Install the following non-Python dependencies:
  * libffi-dev — needed for some Python extensions
  * postgresql 9.1 or later — our database (also install development headers)
  * nodejs 0.10 (and npm)
- * memcached (and headers)
  * rabbitmq-server
  * libldap2-dev
  * python-dev
@@ -123,7 +122,7 @@ Install the following non-Python dependencies:
 ### On Debian or Ubuntu systems:
 
 ```
-sudo apt-get install closure-compiler libfreetype6-dev libffi-dev memcached rabbitmq-server libldap2-dev redis-server postgresql-server-dev-all libmemcached-dev python-dev hunspell-en-us nodejs nodejs-legacy npm git yui-compressor puppet gettext
+sudo apt-get install closure-compiler libfreetype6-dev libffi-dev rabbitmq-server libldap2-dev redis-server postgresql-server-dev-all python-dev hunspell-en-us nodejs nodejs-legacy npm git yui-compressor puppet gettext
 
 # If on 12.04 or wheezy:
 sudo apt-get install postgresql-9.1
@@ -148,7 +147,7 @@ Now continue with the "All systems" instructions below.
 These instructions are experimental and may have bugs; patches welcome!
 
 ```
-sudo dnf install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server postgresql-devel postgresql libmemcached-devel freetype-devel nodejs npm yuicompressor closure-compiler gettext
+sudo dnf install libffi-devel rabbitmq-server openldap-devel python-devel redis postgresql-server postgresql-devel postgresql freetype-devel nodejs npm yuicompressor closure-compiler gettext
 ```
 
 Now continue with the Common to Fedora/CentOS instructions below.
@@ -177,8 +176,8 @@ su zulip
 sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 # Install dependencies
-sudo yum install libffi-devel memcached rabbitmq-server openldap-devel python-devel redis postgresql-server \
-postgresql-devel postgresql libmemcached-devel wget python-pip openssl-devel freetype-devel libjpeg-turbo-devel \
+sudo yum install libffi-devel rabbitmq-server openldap-devel python-devel redis postgresql-server \
+postgresql-devel postgresql wget python-pip openssl-devel freetype-devel libjpeg-turbo-devel \
 zlib-devel nodejs yuicompressor closure-compiler gettext
 
 # We need these packages to compile tsearch-extras
@@ -227,10 +226,10 @@ sudo vi /var/lib/pgsql/data/pg_hba.conf
 host    all             all             127.0.0.1/32            md5
 
 # Start the services
-sudo systemctl start redis memcached rabbitmq-server postgresql
+sudo systemctl start redis rabbitmq-server postgresql
 
 # Enable automatic service startup after the system startup
-sudo systemctl enable redis rabbitmq-server memcached postgresql
+sudo systemctl enable redis rabbitmq-server postgresql
 ```
 
 Finally continue with the All Systems instructions below.
