@@ -298,3 +298,25 @@ AUTH_LDAP_USER_ATTR_MAP = {
 }
 
 CAMO_URI = ''
+
+# By default, Zulip connects to rabbitmq running locally on the machine,
+# but Zulip also supports connecting to RabbitMQ over the network;
+# to use a remote RabbitMQ instance, set RABBITMQ_HOST here.
+# RABBITMQ_HOST = "localhost"
+# To use another rabbitmq user than the default 'zulip', set RABBITMQ_USERNAME here.
+# RABBITMQ_USERNAME = 'zulip'
+
+# By default, Zulip connects to memcached running locally on the machine,
+# but Zulip also supports connecting to memcached over the network;
+# to use a remote Memcached instance, set MEMCACHED_LOCATION here.
+# Format HOST:PORT
+# MEMCACHED_LOCATION = 127.0.0.1:11211
+
+# Redis configuration
+# By default, Zulip connects to redis running locally on the machine,
+# but Zulip also supports connecting to redis over the network;
+# to use a remote RabbitMQ instance, set REDIS_HOST here.
+# RATE_LIMITING = True
+# REDIS_HOST = '127.0.0.1'
+# For a different redis port set the REDIS_PORT here.
+# REDIS_PORT = 6379
