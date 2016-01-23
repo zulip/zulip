@@ -1,17 +1,50 @@
-#!/usr/bin/env bash
-set -e
+#!/usr/bin/env python2.7
 
-target='zerver'
+import optparse
+import os
+import sys
 
-case "$1" in
-    zerver*)
-      target="$1"
-      shift
-      ;;
-esac
+import django
+from django.conf import settings
+from django.test.utils import get_runner
 
-cd "$(dirname "$0")"/..
-./tools/generate-fixtures
-# "-u" uses unbuffered IO, which is important when wrapping it in subprocess
-export PYTHONUNBUFFERED="y"
-/usr/bin/env python2.7 ./manage.py test "$target" --settings=zproject.test_settings "$@"
+if __name__ == "__main__":
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+    # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
+    os.environ['PYTHONUNBUFFERED'] = 'y'
+    django.setup()
+
+    parser = optparse.OptionParser()
+    parser.add_option('--coverage', dest='coverage',
+                      action="store_true",
+                      default=False, help='Compute test coverage.')
+
+    (options, args) = parser.parse_args()
+    if len(args) == 0:
+        suites = ["zerver"]
+    else:
+        suites = args
+
+    if options.coverage:
+        import coverage
+        cov = coverage.Coverage()
+        cov.start()
+
+    TestRunner = get_runner(settings)
+    test_runner = TestRunner()
+    failures = test_runner.run_tests(suites)
+
+    if options.coverage:
+        cov.stop()
+        cov.save()
+        print("Printing coverage data")
+        cov.report(show_missing=False)
+        cov.html_report()
+        print("HTML report saved to htmlcov/")
+
+    if failures:
+        print('FAILED!')
+    else:
+        print('DONE!')
+    sys.exit(bool(failures))
