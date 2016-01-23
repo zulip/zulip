@@ -1135,7 +1135,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
         log_event({'type': 'subscription_added',
                    'user': user_profile.email,
                    'names': [stream.name for sub, stream in sub_pairs],
-                   'domain': stream.realm.domain})
+                   'domain': user_profile.realm.domain})
 
     # Send a notification to the user who subscribed.
     payload = [dict(name=stream.name,
@@ -1305,7 +1305,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
         log_event({'type': 'subscription_removed',
                    'user': user_profile.email,
                    'names': [stream.name for stream in streams],
-                   'domain': stream.realm.domain})
+                   'domain': user_profile.realm.domain})
 
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove",
