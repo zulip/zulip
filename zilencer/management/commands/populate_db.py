@@ -245,7 +245,7 @@ class Command(BaseCommand):
         if options["replay_old_messages"]:
             restore_saved_messages()
 
-recipient_hash = {}
+recipient_hash = {} # type: Dict[int, Recipient]
 def get_recipient_by_id(rid):
     if rid in recipient_hash:
         return recipient_hash[rid]
