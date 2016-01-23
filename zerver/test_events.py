@@ -192,7 +192,6 @@ class GetEventsTest(AuthedTestCase):
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
 class EventsRegisterTest(AuthedTestCase):
-    maxDiff = None
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
     bot = get_user_profile_by_email("welcome-bot@zulip.com")
 
