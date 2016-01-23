@@ -12,6 +12,7 @@ boto==2.38.0
 certifi==2015.4.28
 cffi==1.1.2
 chardet==2.3.0
+coverage==4.0.3
 cryptography==0.9.1
 defusedxml==0.4.1
 diff-match-patch==20121119
