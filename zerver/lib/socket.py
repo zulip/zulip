@@ -40,7 +40,7 @@ def get_user_profile(session_id):
     except (UserProfile.DoesNotExist, KeyError):
         return None
 
-connections = dict()
+connections = dict() # type: Dict[int, SocketConnection]
 
 def get_connection(id):
     return connections.get(id)
