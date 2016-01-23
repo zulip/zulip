@@ -47,7 +47,6 @@ parser.add_option('--interface',
 (options, args) = parser.parse_args()
 
 base_port   = 9991
-manage_args = ''
 if options.test:
     base_port   = 9981
     settings_module = "zproject.test_settings"
