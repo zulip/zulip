@@ -273,11 +273,11 @@ class EventQueue(object):
         return contents
 
 # maps queue ids to client descriptors
-clients = {}
+clients = {} # type: Dict[int, ClientDescriptor]
 # maps user id to list of client descriptors
-user_clients = {}
+user_clients = {} # type: Dict[int, List[ClientDescriptor]]
 # maps realm id to list of client descriptors with all_public_streams=True
-realm_clients_all_streams = {}
+realm_clients_all_streams = {} # type: Dict[int, List[ClientDescriptor]]
 
 # list of registered gc hooks.
 # each one will be called with a user profile id, queue, and bool

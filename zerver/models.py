@@ -36,7 +36,7 @@ MAX_MESSAGE_LENGTH = 10000
 
 # Doing 1000 memcached requests to get_display_recipient is quite slow,
 # so add a local cache as well as the memcached cache.
-per_request_display_recipient_cache = {}
+per_request_display_recipient_cache = {} # type: Dict[int, List[Dict[str, Any]]]
 def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id):
     if recipient_id not in per_request_display_recipient_cache:
         result = get_display_recipient_memcached(recipient_id, recipient_type, recipient_type_id)
@@ -240,7 +240,7 @@ def get_realm_filters_cache_key(domain):
     return 'all_realm_filters:%s' % (domain,)
 
 # We have a per-process cache to avoid doing 1000 memcached queries during page load
-per_request_realm_filters_cache = {}
+per_request_realm_filters_cache = {} # type: Dict[str, List[RealmFilter]]
 def realm_filters_for_domain(domain):
     domain = domain.lower()
     if domain not in per_request_realm_filters_cache:
@@ -565,7 +565,7 @@ class Recipient(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
-get_client_cache = {}
+get_client_cache = {} # type: Dict[str, Client]
 def get_client(name):
     if name not in get_client_cache:
         result = get_client_memcached(name)
