@@ -16,6 +16,8 @@ if __name__ == "__main__":
     django.setup()
 
     parser = optparse.OptionParser()
+    parser.add_option('--nonfatal-errors', action="store_false", default=True,
+                      dest="fatal_errors", help="Continue past test failures to run all tests")
     parser.add_option('--coverage', dest='coverage',
                       action="store_true",
                       default=False, help='Compute test coverage.')
@@ -33,7 +35,7 @@ if __name__ == "__main__":
 
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
-    failures = test_runner.run_tests(suites)
+    failures = test_runner.run_tests(suites, fatal_errors=options.fatal_errors)
 
     if options.coverage:
         cov.stop()

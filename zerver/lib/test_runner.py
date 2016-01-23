@@ -6,8 +6,8 @@ from zerver.views.messages import get_sqlalchemy_connection
 
 import os
 import time
+import traceback
 import unittest
-
 
 def slow(expected_run_time, slowness_reason):
     '''
@@ -53,6 +53,7 @@ def fast_tests_only():
     return os.environ.get('FAST_TESTS_ONLY', False)
 
 def run_test(test):
+    failed = False
     test_method = get_test_method(test)
 
     if fast_tests_only() and is_known_slow_test(test_method):
@@ -76,20 +77,30 @@ def run_test(test):
         test_method()
     except unittest.SkipTest:
         pass
+    except Exception:
+        failed = True
+        traceback.print_exc()
+
     test.tearDown()
 
     delay = time.time() - start_time
     enforce_timely_test_completion(test_method, test_name, delay)
 
     test._post_teardown()
+    return failed
 
 class Runner(DiscoverRunner):
     def __init__(self, *args, **kwargs):
         DiscoverRunner.__init__(self, *args, **kwargs)
 
-    def run_suite(self, suite):
+    def run_suite(self, suite, fatal_errors=None):
+        failed = False
         for test in suite:
-            run_test(test)
+            if run_test(test):
+                failed = True
+                if fatal_errors:
+                    return failed
+        return failed
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         self.setup_test_environment()
@@ -98,7 +109,7 @@ class Runner(DiscoverRunner):
         # run a single test and getting an SA connection causes data from
         # a Django connection to be rolled back mid-test.
         get_sqlalchemy_connection()
-        self.run_suite(suite)
+        failed = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
         self.teardown_test_environment()
-        print('DONE!')
+        return failed
         print()
