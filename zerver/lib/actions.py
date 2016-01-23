@@ -16,7 +16,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_stream_cache_key, to_dict_cache_key_id, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
-    ScheduledJob, realm_filters_for_domain, RealmFilter, get_active_bot_dicts_in_realm
+    ScheduledJob, realm_filters_for_domain, get_active_bot_dicts_in_realm
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
 from guardian.shortcuts import assign_perm, remove_perm
