@@ -14,6 +14,7 @@ from zerver.lib.actions import (
 
 from zerver.models import (
     get_realm,
+    get_stream,
     get_user_profile_by_email,
     resolve_email_to_domain,
     Client,
@@ -326,7 +327,9 @@ class AuthedTestCase(TestCase):
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
         realm = get_realm(resolve_email_to_domain(email))
-        stream, _ = create_stream_if_needed(realm, stream_name)
+        stream = get_stream(stream_name, realm)
+        if stream is None:
+            stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
         do_add_subscription(user_profile, stream, no_log=True)
 
