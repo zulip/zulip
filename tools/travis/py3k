@@ -56,6 +56,13 @@ for fixer in $fixers; do
     fi
 done
 
+if git grep -q '\(^\W*import StringIO\|^\W*from StringIO\)'; then
+    echo "ERROR: StringIO imports not compatible with python 2+3:"
+    git grep '\(^\W*import StringIO\|^\W*from StringIO\)'
+    echo "Please use 'from six.moves import cStringIO as StringIO'"
+    failed=1
+fi
+
 echo
 if [ -z "$failed" ]; then
     echo "No issues detected!"

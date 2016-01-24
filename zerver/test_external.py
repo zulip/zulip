@@ -24,7 +24,7 @@ from six.moves import urllib
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from StringIO import StringIO
+from six.moves import StringIO
 from six.moves import range
 
 class MITNameTest(TestCase):

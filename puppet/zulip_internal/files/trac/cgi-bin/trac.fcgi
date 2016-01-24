@@ -41,7 +41,7 @@ except Exception, e:
     print e
     print
     import traceback
-    import StringIO
-    tb = StringIO.StringIO()
+    from six.moves import cStringIO as StringIO
+    tb = StringIO()
     traceback.print_exc(file=tb)
     print tb.getvalue()

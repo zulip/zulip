@@ -10,7 +10,7 @@ from zerver.lib.response import json_error, json_unauthorized
 from django.utils.timezone import now
 from django.conf import settings
 import ujson
-from StringIO import StringIO
+from six.moves import cStringIO as StringIO
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import statsd

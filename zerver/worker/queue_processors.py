@@ -32,7 +32,7 @@ import time
 import datetime
 import logging
 import simplejson
-import StringIO
+from six.moves import cStringIO as StringIO
 
 def assign_queue(queue_name, enabled=True):
     def decorate(clazz):
@@ -283,7 +283,7 @@ class MessageSenderWorker(QueueProcessingWorker):
                    'SERVER_PORT': 9993,
                    'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
                    'wsgi.version': (1, 0),
-                   'wsgi.input': StringIO.StringIO(),
+                   'wsgi.input': StringIO(),
                    'wsgi.errors': sys.stderr,
                    'wsgi.multithread': False,
                    'wsgi.multiprocess': True,

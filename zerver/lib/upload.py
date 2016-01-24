@@ -14,7 +14,7 @@ from zerver.models import get_user_profile_by_id
 import base64
 import os
 from PIL import Image, ImageOps
-from StringIO import StringIO
+from six.moves import cStringIO as StringIO
 import random
 
 # Performance Note:
