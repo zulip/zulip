@@ -2,12 +2,11 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
+from six.moves import zip
 
 import redis
 import time
 import logging
-
-from itertools import izip
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
 # http://blog.domaintools.com/2013/04/rate-limiting-with-redis/
@@ -131,7 +130,7 @@ def is_ratelimited(user, domain='all'):
         return True, blocking_ttl
 
     now = time.time()
-    for timestamp, (range_seconds, num_requests) in izip(rule_timestamps, rules):
+    for timestamp, (range_seconds, num_requests) in zip(rule_timestamps, rules):
         # Check if the nth timestamp is newer than the associated rule. If so,
         # it means we've hit our limit for this rule
         if timestamp is None:
