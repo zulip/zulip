@@ -65,7 +65,7 @@ class QueueProcessingWorker(object):
                 os.mkdir(settings.QUEUE_ERROR_DIR)
             fname = '%s.errors' % (self.queue_name,)
             fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
-            line = '%s\t%s\n' % (time.asctime(), ujson.dumps(data))
+            line = u'%s\t%s\n' % (time.asctime(), ujson.dumps(data))
             lock_fn = fn + '.lock'
             with lockfile(lock_fn):
                 with open(fn, 'a') as f:
