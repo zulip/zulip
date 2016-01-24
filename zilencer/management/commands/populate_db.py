@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 
 from django.core.management.base import BaseCommand
@@ -167,7 +168,7 @@ class Command(BaseCommand):
         threads = options["threads"]
         jobs = []
         for i in range(threads):
-            count = options["num_messages"] / threads
+            count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
             jobs.append((count, personals_pairs, options, self.stdout.write))

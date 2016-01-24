@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from __future__ import division
 
 from zerver.models import UserProfile, UserActivity, UserActivityInterval, Message
 
@@ -84,7 +85,7 @@ def calculate_stats(data, all_users):
         return {"# data points": 0}
 
     active_user_count = len([x for x in data if x > 1])
-    mean_data = sum(data) / active_user_count
+    mean_data = sum(data) // active_user_count
     median_data = median([x for x in data if x > 1])
 
     return {'active users': active_user_count,

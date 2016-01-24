@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 
 import logging
 import time
@@ -68,7 +69,7 @@ class InstrumentedPoll(object):
             total = t1 - self._times[0][0]
             in_poll = sum(b-a for a, b in self._times)
             if total > 0:
-                percent_busy = 100 * (1 - in_poll/total)
+                percent_busy = 100 * (1 - in_poll / total)
                 if settings.PRODUCTION or percent_busy > 20:
                     logging.info('Tornado %5.1f%% busy over the past %4.1f seconds'
                         % (percent_busy, total))

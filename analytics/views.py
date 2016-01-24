@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 from django.db import connection
 from django.template import RequestContext, loader
 from django.utils.html import mark_safe

@@ -9,6 +9,7 @@
 #
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
 import sys
 import six
 from six.moves import input
@@ -2921,7 +2922,7 @@ class P4Sync(Command, P4UserMap):
                     b = b[len(self.projectName):]
                 self.createdBranches.add(b)
 
-        self.tz = "%+03d%02d" % (- time.timezone / 3600, ((- time.timezone % 3600) / 60))
+        self.tz = "%+03d%02d" % (- time.timezone / 3600, ((- time.timezone % 3600) // 60))
 
         self.importProcess = subprocess.Popen(["git", "fast-import"],
                                               stdin=subprocess.PIPE,
