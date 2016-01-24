@@ -2398,7 +2398,9 @@ def gather_subscriptions_helper(user_profile):
                 for subscriber in sub['subscribers']:
                     user_ids.add(subscriber)
     email_dict = get_emails_from_user_ids(list(user_ids))
-    return (sorted(subscribed), sorted(unsubscribed), email_dict)
+    return (sorted(subscribed, key=lambda x: x['name']),
+            sorted(unsubscribed, key=lambda x: x['name']),
+            email_dict)
 
 def gather_subscriptions(user_profile):
     subscribed, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
