@@ -96,7 +96,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         # Remove non-ascii chars from path (there should be none, if there are it's
         # because someone manually entered a nonexistant path), as UTF-8 chars make
         # statsd sad when it sends the key name over the socket
-        statsd_path = statsd_path.encode('ascii', errors='ignore')
+        statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
     blacklisted_requests = ['do_confirm', 'send_confirm',
                             'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
                             'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',

@@ -651,10 +651,10 @@ def linebreak(string):
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
 def extract_message_dict(message_str):
-    return ujson.loads(zlib.decompress(message_str))
+    return ujson.loads(zlib.decompress(message_str).decode("utf-8"))
 
 def stringify_message_dict(message_dict):
-    return zlib.compress(ujson.dumps(message_dict))
+    return zlib.compress(ujson.dumps(message_dict).encode("utf-8"))
 
 def to_dict_cache_key_id(message_id, apply_markdown):
     return 'message_dict:%d:%d' % (message_id, apply_markdown)
