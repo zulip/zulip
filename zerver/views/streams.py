@@ -343,17 +343,6 @@ def add_subscriptions_backend(request, user_profile,
                                    "stream",
                                    notifications_stream.name, "Streams", msg,
                                    realm=notifications_stream.realm))
-        else:
-            msg = ("Hi there!  %s just created a new stream '%s'. %s"
-                       % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))
-            for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
-                # Don't announce to yourself or to people you explicitly added
-                # (who will get the notification above instead).
-                if realm_user_dict['email'] in principals or realm_user_dict['email'] == user_profile.email:
-                    continue
-                notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
-                                                           "private",
-                                                           realm_user_dict['email'], "", msg))
 
     if len(notifications) > 0:
         do_send_messages(notifications)

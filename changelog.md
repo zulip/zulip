@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 [Unreleased]
 - Fixed the disabling of desktop notifications from 1.3.7 for new users.
+- Removed old feature to send PMs announcing new streams if
+  notifications_stream does not exist.
 
 [1.3.10]
 - Added new integration for Travis CI.
