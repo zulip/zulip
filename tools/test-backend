@@ -21,6 +21,9 @@ if __name__ == "__main__":
     parser.add_option('--coverage', dest='coverage',
                       action="store_true",
                       default=False, help='Compute test coverage.')
+    parser.add_option('--profile', dest='profile',
+                      action="store_true",
+                      default=False, help='Profile test runtime.')
 
     (options, args) = parser.parse_args()
     if len(args) == 0:
@@ -32,6 +35,10 @@ if __name__ == "__main__":
         import coverage
         cov = coverage.Coverage()
         cov.start()
+    if options.profile:
+        import cProfile
+        prof = cProfile.Profile()
+        prof.enable()
 
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
@@ -44,6 +51,11 @@ if __name__ == "__main__":
         cov.report(show_missing=False)
         cov.html_report()
         print("HTML report saved to htmlcov/")
+    if options.profile:
+        prof.disable()
+        prof.dump_stats("/tmp/profile.data")
+        print("Profile data saved to /tmp/profile.data")
+        print("You can visualize it using e.g. `runsnake /tmp/profile.data`")
 
     if failures:
         print('FAILED!')
