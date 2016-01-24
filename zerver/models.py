@@ -751,7 +751,7 @@ class Message(models.Model):
 
     @staticmethod
     def need_to_render_content(rendered_content, rendered_content_version):
-        return rendered_content_version < bugdown.version or rendered_content is None
+        return rendered_content is None or rendered_content_version < bugdown.version
 
     def to_dict(self, apply_markdown):
         return extract_message_dict(self.to_dict_json(apply_markdown))
