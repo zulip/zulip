@@ -3193,8 +3193,7 @@ def notify_realm_emoji(realm):
     # type: (Realm) -> None
     event = dict(type="realm_emoji", op="update",
                  realm_emoji=realm.get_emoji())
-    user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
-    send_event(event, user_ids)
+    send_event(event, active_user_ids(realm))
 
 def check_add_realm_emoji(realm, name, img_url, author=None):
     # type: (Realm, Text, Text, Optional[UserProfile]) -> None
@@ -3238,9 +3237,8 @@ def do_set_muted_topics(user_profile, muted_topics):
 def notify_realm_filters(realm):
     # type: (Realm) -> None
     realm_filters = realm_filters_for_realm(realm.id)
-    user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
     event = dict(type="realm_filters", realm_filters=realm_filters)
-    send_event(event, user_ids)
+    send_event(event, active_user_ids(realm))
 
 # NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:
