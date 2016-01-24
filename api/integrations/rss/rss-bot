@@ -32,7 +32,7 @@ import optparse
 import os
 import sys
 import time
-import urlparse
+from six.moves import urllib
 
 import feedparser
 import zulip
@@ -169,7 +169,7 @@ client = zulip.Client(email=opts.email, api_key=opts.api_key,
 first_message = True
 
 for feed_url in feed_urls:
-    feed_file = os.path.join(opts.data_dir, urlparse.urlparse(feed_url).netloc)
+    feed_file = os.path.join(opts.data_dir, urllib.parse.urlparse(feed_url).netloc)
 
     try:
         with open(feed_file, "r") as f:

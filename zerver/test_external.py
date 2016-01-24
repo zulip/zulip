@@ -20,8 +20,7 @@ from zerver.lib.test_runner import slow
 
 import time
 import ujson
-import urllib
-import urllib2
+from six.moves import urllib
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -68,7 +67,7 @@ class S3Test(AuthedTestCase):
         response = self.client.get(uri)
         redirect_url = response['Location']
 
-        self.assertEquals("zulip!", urllib2.urlopen(redirect_url).read().strip())
+        self.assertEquals("zulip!", urllib.request.urlopen(redirect_url).read().strip())
 
     def test_multiple_upload_failure(self):
         """
@@ -99,7 +98,7 @@ class S3Test(AuthedTestCase):
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         for uri in self.test_uris:
             key = Key(conn.get_bucket(settings.S3_BUCKET))
-            key.name = urllib2.urlparse.urlparse(uri).path[1:]
+            key.name = urllib.parse.urlparse(uri).path[1:]
             key.delete()
             self.test_uris.remove(uri)
 
@@ -212,7 +211,7 @@ class GCMTokenTests(AuthedTestCase):
         result = self.client.post('/json/users/me/android_gcm_reg_id', {'token':token})
         self.assert_json_success(result)
 
-        result = self.client.delete('/json/users/me/android_gcm_reg_id', urllib.urlencode({'token': token}))
+        result = self.client.delete('/json/users/me/android_gcm_reg_id', urllib.parse.urlencode({'token': token}))
         self.assert_json_success(result)
 
     def test_change_user(self):

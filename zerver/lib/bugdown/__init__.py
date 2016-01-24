@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import markdown
 import logging
 import traceback
-import urlparse
+from six.moves import urllib
 import re
 import os.path
 import glob
@@ -13,7 +13,7 @@ import time
 import six.moves.html_parser
 import httplib2
 import itertools
-import urllib
+from six.moves import urllib
 import xml.etree.cElementTree as etree
 
 import hashlib
@@ -220,7 +220,7 @@ def fetch_open_graph_image(url):
     return {'image': image, 'title': title, 'desc': desc}
 
 def get_tweet_id(url):
-    parsed_url = urlparse.urlparse(url)
+    parsed_url = urllib.parse.urlparse(url)
     if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
         return False
     to_match = parsed_url.path
@@ -258,7 +258,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url):
         if not settings.INLINE_IMAGE_PREVIEW:
             return False
-        parsed_url = urlparse.urlparse(url)
+        parsed_url = urllib.parse.urlparse(url)
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
             if parsed_url.path.lower().endswith(ext):
@@ -266,7 +266,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return False
 
     def dropbox_image(self, url):
-        parsed_url = urlparse.urlparse(url)
+        parsed_url = urllib.parse.urlparse(url)
         if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')):
             is_album = parsed_url.path.startswith('/sc/') or parsed_url.path.startswith('/photos/')
             # Only allow preview Dropbox shared links
@@ -309,7 +309,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             image_info['is_image'] = True
             parsed_url_list = list(parsed_url)
             parsed_url_list[4] = "dl=1" # Replaces query
-            image_info["image"] = urlparse.urlunparse(parsed_url_list)
+            image_info["image"] = urllib.parse.urlunparse(parsed_url_list)
 
             return image_info
         return None
@@ -364,7 +364,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 to_linkify.append({
                     'start': match.start(),
                     'end': match.end(),
-                    'url': 'https://twitter.com/' + urllib.quote(screen_name),
+                    'url': 'https://twitter.com/' + urllib.parse.quote(screen_name),
                     'text': mention_string,
                 })
         # Build dicts for media
@@ -625,7 +625,7 @@ def sanitize_url(url):
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
     """
     try:
-        parts = urlparse.urlparse(url.replace(' ', '%20'))
+        parts = urllib.parse.urlparse(url.replace(' ', '%20'))
         scheme, netloc, path, params, query, fragment = parts
     except ValueError:
         # Bad url - so bad it couldn't be parsed.
@@ -637,10 +637,10 @@ def sanitize_url(url):
         scheme = 'mailto'
     elif scheme == '' and netloc == '' and len(path) > 0 and path[0] == '/':
         # Allow domain-relative links
-        return urlparse.urlunparse(('', '', path, params, query, fragment))
+        return urllib.parse.urlunparse(('', '', path, params, query, fragment))
     elif (scheme, netloc, path, params, query) == ('', '', '', '', '') and len(fragment) > 0:
         # Allow fragment links
-        return urlparse.urlunparse(('', '', '', '', '', fragment))
+        return urllib.parse.urlunparse(('', '', '', '', '', fragment))
 
     # Zulip modification: If scheme is not specified, assume http://
     # We re-enter sanitize_url because netloc etc. need to be re-parsed.
@@ -663,7 +663,7 @@ def sanitize_url(url):
     # Upstream code scans path, parameters, and query for colon characters
     # because
     #
-    #    some aliases [for javascript:] will appear to urlparse() to have
+    #    some aliases [for javascript:] will appear to urllib.parse to have
     #    no scheme. On top of that relative links (i.e.: "foo/bar.html")
     #    have no scheme.
     #
@@ -671,7 +671,7 @@ def sanitize_url(url):
     # the colon check, which would also forbid a lot of legitimate URLs.
 
     # Url passes all tests. Return url as-is.
-    return urlparse.urlunparse((scheme, netloc, path, params, query, fragment))
+    return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
 def url_to_a(url, text = None):
     a = markdown.util.etree.Element('a')

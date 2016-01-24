@@ -4,7 +4,7 @@ from zerver.lib.test_runner import slow
 from zerver.models import Message
 
 import ujson
-import urllib
+from six.moves import urllib
 
 class JiraHookTests(AuthedTestCase):
 
@@ -846,7 +846,7 @@ class TravisHookTests(AuthedTestCase):
         """
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
-        body = urllib.urlencode({'payload': self.fixture_data("travis", "build", file_type="json")})
+        body = urllib.parse.urlencode({'payload': self.fixture_data("travis", "build", file_type="json")})
 
         stream = "travis"
         url = "/api/v1/external/travis?stream=%s&topic=builds&api_key=%s" % (stream, api_key)

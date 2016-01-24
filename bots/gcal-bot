@@ -3,7 +3,7 @@ import sys
 import time
 import datetime
 import optparse
-import urlparse
+from six.moves import urllib
 import itertools
 import traceback
 import os
@@ -56,13 +56,13 @@ except ImportError:
     parser.error('Install python-gdata')
 
 def get_calendar_url():
-    parts = urlparse.urlparse(options.calendar)
+    parts = urllib.parse.urlparse(options.calendar)
     pat = os.path.split(parts.path)
     if pat[1] != 'basic':
         parser.error('The --calendar URL should be the XML "Private Address" ' +
                      'from your calendar settings')
-    return urlparse.urlunparse((parts.scheme, parts.netloc, pat[0] + '/full',
-                                '', 'futureevents=true&orderby=startdate', ''))
+    return urllib.parse.urlunparse((parts.scheme, parts.netloc, pat[0] + '/full',
+                                   '', 'futureevents=true&orderby=startdate', ''))
 
 calendar_url = get_calendar_url()
 

@@ -25,7 +25,7 @@ from zerver.lib.session_user import get_session_dict_user
 import re
 import ujson
 
-from urlparse import urlparse
+from six.moves import urllib
 from six.moves import range
 
 
@@ -471,7 +471,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
 
         unsubscribe_link = one_click_unsubscribe_link(user_profile,
                                                       "missed_messages")
-        result = self.client.get(urlparse(unsubscribe_link).path)
+        result = self.client.get(urllib.parse.urlparse(unsubscribe_link).path)
 
         self.assertEqual(result.status_code, 200)
         # Circumvent user_profile caching.
@@ -493,7 +493,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-        result = self.client.get(urlparse(unsubscribe_link).path)
+        result = self.client.get(urllib.parse.urlparse(unsubscribe_link).path)
 
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
@@ -519,7 +519,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
-        result = self.client.get(urlparse(unsubscribe_link).path)
+        result = self.client.get(urllib.parse.urlparse(unsubscribe_link).path)
 
         # The setting is toggled off, and scheduled jobs have been removed.
         self.assertEqual(result.status_code, 200)

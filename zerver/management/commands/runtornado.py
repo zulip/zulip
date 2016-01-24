@@ -149,10 +149,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
     def get(self):
         from tornado.wsgi import WSGIContainer
         from django.core.handlers.wsgi import WSGIRequest, get_script_name
-        import urllib
+        from six.moves import urllib
 
         environ  = WSGIContainer.environ(self.request)
-        environ['PATH_INFO'] = urllib.unquote(environ['PATH_INFO'])
+        environ['PATH_INFO'] = urllib.parse.unquote(environ['PATH_INFO'])
         request  = WSGIRequest(environ)
         request._tornado_handler     = self
 

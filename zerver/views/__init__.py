@@ -58,7 +58,7 @@ import datetime
 import ujson
 import simplejson
 import re
-import urllib
+from six.moves import urllib
 import base64
 import time
 import logging
@@ -124,7 +124,7 @@ def accounts_register(request):
             # Other users should not already exist at all.
             user_email_is_unique(email)
     except ValidationError:
-        return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
+        return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.parse.quote_plus(email))
 
     name_validated = False
     full_name = None
@@ -380,7 +380,7 @@ def maybe_send_to_registration(request, email, full_name=''):
             '?full_name=',
             # urllib does not handle Unicode, so coerece to encoded byte string
             # Explanation: http://stackoverflow.com/a/5605354/90777
-            urllib.quote_plus(full_name.encode('utf8')))))
+            urllib.parse.quote_plus(full_name.encode('utf8')))))
     else:
         return render_to_response('zerver/accounts_home.html', {'form': form},
                                   context_instance=RequestContext(request))
@@ -461,7 +461,7 @@ def start_google_oauth2(request):
         'scope': 'profile email',
         'state': csrf_state,
     }
-    return redirect(uri + urllib.urlencode(prams))
+    return redirect(uri + urllib.parse.urlencode(prams))
 
 # Workaround to support the Python-requests 1.0 transition of .json
 # from a property to a function
@@ -652,7 +652,7 @@ def accounts_home(request):
             # Note: We don't check for uniqueness
             is_inactive(email)
         except ValidationError:
-            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
+            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.parse.quote_plus(email))
     else:
         form = create_homepage_form(request)
     return render_to_response('zerver/accounts_home.html',

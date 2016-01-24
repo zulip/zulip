@@ -33,7 +33,7 @@ import os
 import re
 import time
 import ujson
-import urllib
+from six.moves import urllib
 
 from contextlib import contextmanager
 import six
@@ -201,13 +201,13 @@ class POSTRequestMock(object):
 class AuthedTestCase(TestCase):
     # Helper because self.client.patch annoying requires you to urlencode
     def client_patch(self, url, info={}, **kwargs):
-        info = urllib.urlencode(info)
+        info = urllib.parse.urlencode(info)
         return self.client.patch(url, info, **kwargs)
     def client_put(self, url, info={}, **kwargs):
-        info = urllib.urlencode(info)
+        info = urllib.parse.urlencode(info)
         return self.client.put(url, info, **kwargs)
     def client_delete(self, url, info={}, **kwargs):
-        info = urllib.urlencode(info)
+        info = urllib.parse.urlencode(info)
         return self.client.delete(url, info, **kwargs)
 
     def login(self, email, password=None):

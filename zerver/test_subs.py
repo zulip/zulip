@@ -29,9 +29,8 @@ from zerver.lib.actions import (
 
 import random
 import ujson
-import urllib
 import six
-from six.moves import range
+from six.moves import range, urllib
 
 
 class StreamAdminTest(AuthedTestCase):
@@ -796,6 +795,11 @@ class SubscriptionAPITest(AuthedTestCase):
         invitee = "iago@zulip.com"
         invitee_full_name = 'Iago'
 
+        current_stream = self.get_streams(invitee)[0]
+        notifications_stream = Stream.objects.get(name=current_stream, realm=self.realm)
+        self.realm.notifications_stream = notifications_stream
+        self.realm.save()
+
         invite_streams = ['strange ) \\ test']
         result = self.common_subscribe_to_streams(
             invitee,
@@ -810,7 +814,7 @@ class SubscriptionAPITest(AuthedTestCase):
         msg = Message.objects.latest('id')
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
-        expected_msg = "Hi there!  %s just created a new stream '%s'. " \
+        expected_msg = "%s just created a new stream `%s`. " \
                        "!_stream_subscribe_button(strange \\) \\\\ test)" % (
                                                           invitee_full_name,
                                                           invite_streams[0])
@@ -881,7 +885,7 @@ class SubscriptionAPITest(AuthedTestCase):
                         "subscribed you to the %sstream [%s](#narrow/stream/%s)."
                         % (self.user_profile.full_name,
                            '**invite-only** ' if invite_only else '',
-                           streams[0], urllib.quote(streams[0].encode('utf-8'))))
+                           streams[0], urllib.parse.quote(streams[0].encode('utf-8'))))
 
         if not Stream.objects.get(name=streams[0]).invite_only:
             expected_msg += ("\nYou can see historical content on a "

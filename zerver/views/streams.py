@@ -23,7 +23,7 @@ from zerver.models import UserProfile, Stream, Subscription, \
 
 from collections import defaultdict
 import ujson
-import urllib
+from six.moves import urllib
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
@@ -237,7 +237,7 @@ def filter_stream_authorization(user_profile, streams):
 
 def stream_link(stream_name):
     "Escapes a stream name to make a #narrow/stream/stream_name link"
-    return "#narrow/stream/%s" % (urllib.quote(stream_name.encode('utf-8')),)
+    return "#narrow/stream/%s" % (urllib.parse.quote(stream_name.encode('utf-8')),)
 
 def stream_button(stream_name):
     stream_name = stream_name.replace('\\', '\\\\')
