@@ -1878,7 +1878,7 @@ def set_default_streams(realm, stream_names):
 def do_add_default_stream(realm, stream_name):
     stream, _ = create_stream_if_needed(realm, stream_name)
     if DefaultStream.objects.filter(realm=realm, stream=stream).exists():
-        return
+        return {}
     DefaultStream.objects.create(realm=realm, stream=stream)
     return {}
 
