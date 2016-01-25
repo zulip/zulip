@@ -215,7 +215,7 @@ def filter_stream_authorization(user_profile, streams):
     streams_subscribed = set()
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
     subs = Subscription.objects.filter(user_profile=user_profile,
-                                       recipient__in=recipients_map.values(),
+                                       recipient__in=list(recipients_map.values()),
                                        active=True)
 
     for sub in subs:

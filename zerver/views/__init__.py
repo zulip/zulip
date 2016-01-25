@@ -1034,7 +1034,7 @@ def json_upload_file(request, user_profile):
     if len(request.FILES) != 1:
         return json_error("You may only upload one file at a time")
 
-    user_file = request.FILES.values()[0]
+    user_file = list(request.FILES.values())[0]
     if ((settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024) < user_file._get_size()):
         return json_error("File Upload is larger than allowed limit")
 

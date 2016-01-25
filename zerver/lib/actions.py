@@ -1339,7 +1339,7 @@ def bulk_remove_subscriptions(users, streams):
 
     subs_by_user = dict((user_profile.id, []) for user_profile in users)
     for sub in Subscription.objects.select_related("user_profile").filter(user_profile__in=users,
-                                                                          recipient__in=recipients_map.values(),
+                                                                          recipient__in=list(recipients_map.values()),
                                                                           active=True):
         subs_by_user[sub.user_profile_id].append(sub)
 

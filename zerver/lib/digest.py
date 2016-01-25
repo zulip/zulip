@@ -53,10 +53,10 @@ def gather_hot_conversations(user_profile, stream_messages):
             user_message.message.sender.full_name)
         conversation_length[key] += 1
 
-    diversity_list = conversation_diversity.items()
+    diversity_list = list(conversation_diversity.items())
     diversity_list.sort(key=lambda entry: len(entry[1]), reverse=True)
 
-    length_list = conversation_length.items()
+    length_list = list(conversation_length.items())
     length_list.sort(key=lambda entry: entry[1], reverse=True)
 
     # Get up to the 4 best conversations from the diversity list

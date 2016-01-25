@@ -167,7 +167,7 @@ def json_set_avatar(request, user_profile):
     if len(request.FILES) != 1:
         return json_error("You must upload exactly one avatar.")
 
-    user_file = request.FILES.values()[0]
+    user_file = list(request.FILES.values())[0]
     upload_avatar_image(user_file, user_profile, user_profile.email)
     do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_USER)
     user_avatar_url = avatar_url(user_profile)

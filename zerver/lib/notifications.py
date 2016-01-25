@@ -344,7 +344,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             unique_messages = {m.id: m for m in msg_list}
             do_send_missedmessage_events_reply_in_zulip(
                 user_profile,
-                unique_messages.values(),
+                list(unique_messages.values()),
                 mesage_count_by_recipient_subject[recipient_subject],
             )
     else:
@@ -356,7 +356,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
         unique_messages = {m.id: m for m in all_messages}
         do_send_missedmessage_events(
             user_profile,
-            unique_messages.values(),
+            list(unique_messages.values()),
             len(messages),
         )
 

@@ -2347,7 +2347,7 @@ class P4Sync(Command, P4UserMap):
             self.labels[newestChange] = [output, revisions]
 
         if self.verbose:
-            print("Label changes: %s" % self.labels.keys())
+            print("Label changes: %s" % (list(self.labels.keys()),))
 
     # Import p4 labels as git tags. A direct mapping does not
     # exist, so assume that if all the files are at the same revision
@@ -2780,7 +2780,7 @@ class P4Sync(Command, P4UserMap):
                 if short in branches:
                     self.p4BranchesInGit = [ short ]
             else:
-                self.p4BranchesInGit = branches.keys()
+                self.p4BranchesInGit = list(branches.keys())
 
             if len(self.p4BranchesInGit) > 1:
                 if not self.silent:
@@ -3215,7 +3215,7 @@ commands = {
 
 def main():
     if len(sys.argv[1:]) == 0:
-        printUsage(commands.keys())
+        printUsage(list(commands.keys()))
         sys.exit(2)
 
     cmdName = sys.argv[1]
@@ -3225,7 +3225,7 @@ def main():
     except KeyError:
         print("unknown command %s" % cmdName)
         print("")
-        printUsage(commands.keys())
+        printUsage(list(commands.keys()))
         sys.exit(2)
 
     options = cmd.options

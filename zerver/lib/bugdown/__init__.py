@@ -452,7 +452,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
                 # Find the image size that is smaller than
                 # TWITTER_MAX_IMAGE_HEIGHT px tall or the smallest
-                size_name_tuples = media_item['sizes'].items()
+                size_name_tuples = list(media_item['sizes'].items())
                 size_name_tuples.sort(reverse=True,
                                       key=lambda x: x[1]['h'])
                 for size_name, size in size_name_tuples:

@@ -394,7 +394,7 @@ def restore_saved_messages():
         clients[client.name] = client
 
     print(datetime.datetime.now(), "Creating streams...")
-    bulk_create_streams(realms, stream_dict.values())
+    bulk_create_streams(realms, list(stream_dict.values()))
 
     streams = {}
     for stream in Stream.objects.all():

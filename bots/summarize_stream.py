@@ -64,16 +64,14 @@ def generate_support_stats():
     analyze_messages(msgs, word_count, email_count)
 
     if True:
-        words = word_count.keys()
-        words = [w for w in words if word_count[w] >= 10]
-        words = [w for w in words if len(w) >= 5]
+        words = [w for w in word_count.keys() if word_count[w] >= 10 and len(w) >= 5]
         words = sorted(words, key=lambda w: word_count[w], reverse=True)
         for word in words:
             print(word, word_count[word])
 
     if False:
-        emails = email_count.keys()
-        emails = sorted(emails, key=lambda w: email_count[w], reverse=True)
+        emails = sorted(list(email_count.keys()),
+                        key=lambda w: email_count[w], reverse=True)
         for email in emails:
             print(email, email_count[email])
 

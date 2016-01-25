@@ -47,7 +47,7 @@ class AddHeaderMixin(object):
             if processed:
                 ret_dict[old_path] = val
 
-        return ret_dict.itervalues()
+        return list(ret_dict.values())
 
 
 class ZulipStorage(PipelineMixin, AddHeaderMixin, CachedFilesMixin,

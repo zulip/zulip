@@ -186,8 +186,8 @@ class NarrowBuilder(object):
             matching_streams = get_active_streams(self.user_profile.realm).filter(
                 name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
             matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
-            recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
-            cond = column("recipient_id").in_([recipient.id for recipient in recipients])
+            recipients_map = bulk_get_recipients(Recipient.STREAM, matching_stream_ids)
+            cond = column("recipient_id").in_([recipient.id for recipient in recipients_map.values()])
             return query.where(maybe_negate(cond))
 
         recipient = get_recipient(Recipient.STREAM, type_id=stream.id)

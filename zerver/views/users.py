@@ -129,7 +129,7 @@ def patch_bot_backend(request, user_profile, email,
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
-        user_file = request.FILES.values()[0]
+        user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, bot.email)
         avatar_source = UserProfile.AVATAR_FROM_USER
         do_change_avatar_source(bot, avatar_source)
@@ -184,7 +184,7 @@ def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ,
     elif len(request.FILES) != 1:
         return json_error("You may only upload one file at a time")
     else:
-        user_file = request.FILES.values()[0]
+        user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, email)
         avatar_source = UserProfile.AVATAR_FROM_USER
 

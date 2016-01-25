@@ -53,7 +53,7 @@ def rest_dispatch(request, globals_list, **kwargs):
     if method_to_use == "SOCKET" and "zulip.emulated_method" in request.META:
         method_to_use = request.META["zulip.emulated_method"]
 
-    if method_to_use in supported_methods.keys():
+    if method_to_use in supported_methods:
         target_function = globals_list[supported_methods[method_to_use]]
 
         # Set request._query for update_activity_user(), which is called
@@ -90,6 +90,6 @@ def rest_dispatch(request, globals_list, **kwargs):
 
         return target_function(request, **kwargs)
 
-    return json_method_not_allowed(supported_methods.keys())
+    return json_method_not_allowed(list(supported_methods.keys()))
 
 
