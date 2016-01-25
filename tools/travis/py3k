@@ -56,6 +56,30 @@ for fixer in $fixers; do
     fi
 done
 
+# The dict fixer tries to add list() even in for loops over an
+# iterator where it's just counterproductive.  To address this, we run
+# the fixer but check for lines which don't include code that works
+# with iterators (currently for, join, and from_iterable).
+fixer="libmodernize.fixes.fix_dict_six"
+echo "Running python 3 compatability test $fixer"
+python-modernize -f $fixer -j4 -n -w . >/dev/null 2>/dev/null
+if git diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep -v from_iterable; then
+    echo
+    echo "Error: the above are changes suggested by python-modernize "
+    echo "to handle the list=>iterator transition in Python 3."
+    echo "Because 'python-modernize -f libmodernize.fixes.fix_dict_six' is spammy "
+    echo "and also changes places where an iterator works fine, this output "
+    echo "does not display the full context; you can find the diff with context by "
+    echo "searching through the (unfortunately very spammy) full output below:"
+    echo
+    # Clear the output
+    git diff
+    echo
+    echo "That was a lot of text!  Read this output from the top for more readable details."
+    git reset --hard >/dev/null
+    failed=1
+fi
+
 if git grep -q '\(^\W*import StringIO\|^\W*from StringIO\)'; then
     echo "ERROR: StringIO imports not compatible with python 2+3:"
     git grep '\(^\W*import StringIO\|^\W*from StringIO\)'
