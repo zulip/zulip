@@ -379,6 +379,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     'text': expanded_url,
                 })
 
+        to_linkify.sort(key=lambda x: x['start'])
+        p = current_node = markdown.util.etree.Element('p')
+
         def set_text(text):
             """
             Helper to set the text or the tail of the current_node
@@ -388,8 +391,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 current_node.tail = text
 
-        to_linkify.sort(key=lambda x: x['start'])
-        p = current_node = markdown.util.etree.Element('p')
         current_index = 0
         for link in to_linkify:
             # The text we want to link starts in already linked text skip it
