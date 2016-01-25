@@ -63,7 +63,8 @@ def get_or_create_key_prefix():
             time.sleep(0.5)
 
     if not prefix:
-        sys.exit("Could not read memcache key prefix file")
+        print("Could not read memcache key prefix file")
+        sys.exit(1)
 
     return prefix
 
