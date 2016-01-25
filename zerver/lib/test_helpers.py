@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+from typing import *
+
 from django.test import TestCase
 
 from zerver.lib.initial_password import initial_password
@@ -39,10 +41,11 @@ from six.moves import urllib
 from contextlib import contextmanager
 import six
 
-API_KEYS = {}
+API_KEYS = {} # type: Dict[str, str]
 
 @contextmanager
 def stub(obj, name, f):
+    # type: (Any, str, Callable[..., Any]) -> Generator[None, None, None]
     old_f = getattr(obj, name)
     setattr(obj, name, f)
     yield
@@ -50,6 +53,7 @@ def stub(obj, name, f):
 
 @contextmanager
 def simulated_queue_client(client):
+    # type: (Any) -> Generator[None, None, None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client
     yield
@@ -57,6 +61,7 @@ def simulated_queue_client(client):
 
 @contextmanager
 def tornado_redirected_to_list(lst):
+    # type: (List) -> Generator[None, None, None]
     real_event_queue_process_notification = event_queue.process_notification
     event_queue.process_notification = lst.append
     yield
@@ -64,6 +69,7 @@ def tornado_redirected_to_list(lst):
 
 @contextmanager
 def simulated_empty_cache():
+    # type: () -> Generator[List[Tuple[str, str, str]], None, None]
     cache_queries = []
     def my_cache_get(key, cache_name=None):
         cache_queries.append(('get', key, cache_name))
@@ -83,6 +89,7 @@ def simulated_empty_cache():
 
 @contextmanager
 def queries_captured():
+    # type: () -> Generator[List[Dict[str, str]], None, None]
     '''
     Allow a user to capture just the queries executed during
     the with statement.
