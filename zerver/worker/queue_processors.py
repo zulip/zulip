@@ -59,7 +59,7 @@ class QueueProcessingWorker(object):
     queue_name = None
 
     def __init__(self):
-        self.q = None
+        self.q = None # type: SimpleQueueClient
         if self.queue_name is None:
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 

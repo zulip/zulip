@@ -11,7 +11,7 @@ class SourceMap(object):
 
     def __init__(self, sourcemap_dir):
         self._dir = sourcemap_dir
-        self._indices = {}
+        self._indices = {} # type: Dict[str, sourcemap.SourceMapDecoder]
 
     def _index_for(self, minified_src):
         '''Return the source map index for minified_src, loading it if not

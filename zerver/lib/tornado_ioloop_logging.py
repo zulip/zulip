@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
+from typing import *
 
 import logging
 import time
@@ -37,7 +38,7 @@ except:
 class InstrumentedPoll(object):
     def __init__(self):
         self._underlying = orig_poll_impl()
-        self._times = []
+        self._times = [] # type: List[Tuple[float, float]]
         self._last_print = 0.0
 
     # Python won't let us subclass e.g. select.epoll, so instead
