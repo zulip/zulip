@@ -46,7 +46,7 @@ def check_bool(var_name, val):
 def check_none_or(sub_validator):
     def f(var_name, val):
         if val is None:
-            return
+            return None
         else:
             return sub_validator(var_name, val)
     return f
