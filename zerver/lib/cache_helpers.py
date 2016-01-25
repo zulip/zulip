@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import *
 
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zerver.models or we'd have an import
@@ -75,7 +76,7 @@ cache_fillers = {
 def fill_remote_cache(cache):
     remote_cache_time_start = get_remote_cache_time()
     remote_cache_requests_start = get_remote_cache_requests()
-    items_for_remote_cache = {}
+    items_for_remote_cache = {} # type: Dict[str, Any]
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
     for obj in objects():

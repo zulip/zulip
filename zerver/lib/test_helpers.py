@@ -166,7 +166,7 @@ class DummyObject(object):
 class DummyTornadoRequest(object):
     def __init__(self):
         self.connection = DummyObject()
-        self.connection.stream = DummyStream()
+        self.connection.stream = DummyStream() # type: ignore # monkey-patching here
 
 class DummyHandler(object):
     def __init__(self, assert_callback):
@@ -202,7 +202,7 @@ class POSTRequestMock(object):
         self.user = user_profile
         self._tornado_handler = DummyHandler(assert_callback)
         self.session = DummySession()
-        self._log_data = {}
+        self._log_data = {} # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
 
 class AuthedTestCase(TestCase):
