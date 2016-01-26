@@ -30,6 +30,7 @@ import glob
 import os
 from optparse import make_option
 from six.moves import range
+from typing import *
 
 settings.TORNADO_SERVER = None
 
@@ -253,9 +254,9 @@ def get_recipient_by_id(rid):
 
 def restore_saved_messages():
     old_messages = []
-    duplicate_suppression_hash = {}
+    duplicate_suppression_hash = {} # type: Dict[str, bool]
 
-    stream_dict = {}
+    stream_dict = {} # type: Dict[Tuple[str, str], Tuple[str, str]]
     user_set = set()
     email_set = set([u.email for u in UserProfile.objects.all()])
     realm_set = set()
@@ -427,7 +428,7 @@ def restore_saved_messages():
     # change and import those as we go to make subscription changes
     # take effect!
     print(datetime.datetime.now(), "Importing subscriptions...")
-    subscribers = {}
+    subscribers = {} # type: Dict[int, Set[int]]
     for s in Subscription.objects.select_related().all():
         if s.active:
             subscribers.setdefault(s.recipient.id, set()).add(s.user_profile.id)
@@ -662,7 +663,7 @@ def restore_saved_messages():
         current_subs_obj[sub_tuple].active = active
         current_subs_obj[sub_tuple].save(update_fields=["active"])
 
-    subs = {}
+    subs = {} # type: Dict[Tuple[int, int], Subscription]
     for sub in Subscription.objects.all():
         subs[(sub.user_profile_id, sub.recipient_id)] = sub
 
@@ -714,9 +715,9 @@ def send_messages(data):
 
     num_messages = 0
     random_max = 1000000
-    recipients = {}
+    recipients = {} # type: Dict[int, Tuple[int, int, Dict[str, Any]]]
     while num_messages < tot_messages:
-        saved_data = {}
+        saved_data = {} # type: Dict[str, Any]
         message = Message()
         message.sending_client = get_client('populate_db')
         length = random.randint(1, 5)
@@ -768,6 +769,6 @@ def send_messages(data):
         message.pub_date = now()
         do_send_message(message)
 
-        recipients[num_messages] = [message_type, message.recipient.id, saved_data]
+        recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
