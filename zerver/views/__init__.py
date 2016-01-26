@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import *
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
@@ -704,7 +705,7 @@ def home(request):
     request._email = request.user.email
     request.client = get_client("website")
 
-    narrow = []
+    narrow = [] # type: List[List[str]]
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):
@@ -996,7 +997,7 @@ def export(request, user_profile):
                            ("realmalias", RealmAlias),
                            ("realmfilter", RealmFilter)]:
         response["zerver_"+table] = [model_to_dict(x) for x in
-                                     model.objects.select_related().filter(realm_id=user_profile.realm.id)]
+                                     model.objects.select_related().filter(realm_id=user_profile.realm.id)] # type: ignore
 
     return json_success(response)
 
@@ -1078,7 +1079,8 @@ def get_uploaded_file(request, realm_id, filename,
 @require_post
 @has_request_variables
 def api_fetch_api_key(request, username=REQ, password=REQ):
-    return_data = {}
+    # type: (Any, Any, Any) -> Any
+    return_data = {} # type: Dict[str, bool]
     if username == "google-oauth2-token":
         user_profile = authenticate(google_oauth2_token=password, return_data=return_data)
     else:
