@@ -196,7 +196,6 @@ class POSTRequestMock(object):
         self.session = DummySession()
         self._log_data = {}
         self.META = {'PATH_INFO': 'test'}
-        self._log_data = {}
 
 class AuthedTestCase(TestCase):
     # Helper because self.client.patch annoying requires you to urlencode
