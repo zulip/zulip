@@ -34,6 +34,9 @@ import logging
 import simplejson
 from six.moves import cStringIO as StringIO
 
+class WorkerDeclarationException(Exception):
+    pass
+
 def assign_queue(queue_name, enabled=True):
     def decorate(clazz):
         clazz.queue_name = queue_name
@@ -53,8 +56,15 @@ def get_active_worker_queues():
     return list(worker_classes.keys())
 
 class QueueProcessingWorker(object):
+    queue_name = None
+
     def __init__(self):
         self.q = SimpleQueueClient()
+        if self.queue_name is None:
+            raise WorkerDeclarationException("Queue worker declared without queue_name")
+
+    def consume(self, data):
+        raise WorkerDeclarationException("No consumer defined!")
 
     def consume_wrapper(self, data):
         try:

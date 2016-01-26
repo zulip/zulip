@@ -273,6 +273,25 @@ class WorkerTest(TestCase):
         event = ujson.loads(line.split('\t')[1])
         self.assertEqual(event, 'unexpected behaviour')
 
+    def test_worker_noname(self):
+        class TestWorker(queue_processors.QueueProcessingWorker):
+            def __init__(self):
+                super(TestWorker, self).__init__()
+            def consume(self, data):
+                pass
+        with self.assertRaises(queue_processors.WorkerDeclarationException):
+            TestWorker()
+
+    def test_worker_noconsume(self):
+        @queue_processors.assign_queue('test_worker')
+        class TestWorker(queue_processors.QueueProcessingWorker):
+            def __init__(self):
+                super(TestWorker, self).__init__()
+
+        with self.assertRaises(queue_processors.WorkerDeclarationException):
+            worker = TestWorker()
+            worker.consume({})
+
 class ActivityTest(AuthedTestCase):
     def test_activity(self):
         self.login("hamlet@zulip.com")
