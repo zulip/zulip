@@ -115,7 +115,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
 
     def authenticate(self, remote_user):
         if not remote_user:
-            return
+            return None
 
         email = remote_user_to_email(remote_user)
 
