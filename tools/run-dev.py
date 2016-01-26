@@ -14,9 +14,8 @@ from twisted.web      import proxy, server, resource
 from twisted.web.http import Request
 orig_finish = Request.finish
 def patched_finish(self):
-    if self._disconnected:
-        return
-    return orig_finish(self)
+    if not self._disconnected:
+        orig_finish(self)
 Request.finish = patched_finish
 
 if 'posix' in os.name and os.geteuid() == 0:
