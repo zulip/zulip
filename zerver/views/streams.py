@@ -199,7 +199,7 @@ def remove_subscriptions_backend(request, user_profile,
         people_to_unsub = set(principal_to_user_profile(
                 user_profile, principal) for principal in principals)
     else:
-        people_to_unsub = [user_profile]
+        people_to_unsub = set([user_profile])
 
     result = dict(removed=[], not_subscribed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams)
@@ -279,7 +279,7 @@ def add_subscriptions_backend(request, user_profile,
             return json_error("You can only invite other mit.edu users to invite-only streams.")
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
-        subscribers = [user_profile]
+        subscribers = set([user_profile])
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
 
