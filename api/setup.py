@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+from typing import *
+
 import os
 import sys
 
@@ -16,6 +18,7 @@ def version():
     return version
 
 def recur_expand(target_root, dir):
+    # type: (Any, Any) -> Generator[Tuple[str, List[str]], None, None]
     for root, _, files in os.walk(dir):
         paths = [os.path.join(root, f) for f in files]
         if len(paths):
