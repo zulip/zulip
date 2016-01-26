@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import *
 
 import re
 from django.contrib.staticfiles.finders import FileSystemFinder
@@ -9,6 +10,7 @@ class ExcludeUnminifiedMixin(object):
     in production. """
 
     def list(self, ignore_patterns):
+        # type: (Any) -> Generator[Tuple[str, str], None, None]
         # We can't use ignore_patterns because the patterns are
         # applied to just the file part, not the entire path
         excluded = '^(js|styles|templates)/'
