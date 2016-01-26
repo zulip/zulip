@@ -16,8 +16,8 @@ import os
 import os.path
 import hashlib
 
-memcached_time_start = 0
-memcached_total_time = 0
+memcached_time_start = 0.0
+memcached_total_time = 0.0
 memcached_total_requests = 0
 
 def get_memcached_time():

@@ -38,7 +38,7 @@ class InstrumentedPoll(object):
     def __init__(self):
         self._underlying = orig_poll_impl()
         self._times = []
-        self._last_print = 0
+        self._last_print = 0.0
 
     # Python won't let us subclass e.g. select.epoll, so instead
     # we proxy every method.  __getattr__ handles anything we
