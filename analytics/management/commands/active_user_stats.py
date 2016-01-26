@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         # Calculate 10min, 2hrs, 12hrs, 1day, 2 business days (TODO business days), 1 week bucket of stats
         hour_buckets = [0.16, 2, 12, 24, 48, 168]
-        user_info = defaultdict(dict)
+        user_info = defaultdict(dict) # type: Dict[str, Dict[float, List[str]]]
 
         for last_presence in users:
             if last_presence.status == UserPresence.IDLE:
