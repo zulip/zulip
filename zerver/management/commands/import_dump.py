@@ -107,7 +107,7 @@ Usage: python2.7 manage.py import_dump [--destroy-rebuild-database] [--chunk-siz
             Client, Message, UserMessage, Huddle, DefaultStream, RealmAlias,
             RealmFilter]
 
-        self.chunk_size = options["chunk_size"]
+        self.chunk_size = options["chunk_size"] # type: int # ignore mypy options bug
         encoding = sys.getfilesystemencoding()
 
         if len(args) == 0:
@@ -124,11 +124,11 @@ Usage: python2.7 manage.py import_dump [--destroy-rebuild-database] [--chunk-siz
         # maps relationship between realm id and notifications_stream_id
         # generally, there should be only one realm per dump, but the code
         # doesn't make that assumption
-        realm_notification_map = dict()
+        realm_notification_map = dict() # type: Dict[int, int]
 
         # maping between table name and a total expected number of rows across
         # all input json files
-        row_counter = dict()
+        row_counter = dict() # type: Dict[str, int]
 
         for file_name in args:
             try:
