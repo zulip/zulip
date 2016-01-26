@@ -176,6 +176,7 @@ def main():
     sh.do_destroy_rebuild_database(**LOUD)
     sh.postgres_init_test_db(**LOUD)
     sh.do_destroy_rebuild_test_database(**LOUD)
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
