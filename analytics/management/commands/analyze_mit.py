@@ -46,7 +46,7 @@ def compute_stats(log_level):
     logging.debug("%40s | %10s | %s" % ("User", "Messages", "Percentage Zulip"))
     top_percents = {}
     for size in [10, 25, 50, 100, 200, len(total_user_counts.keys())]:
-        top_percents[size] = 0
+        top_percents[size] = 0.0
     for i, email in enumerate(sorted(total_user_counts.keys(),
                                      key=lambda x: -total_user_counts[x])):
         percent_zulip = round(100 - (user_counts[email].get("zephyr_mirror", 0)) * 100. /

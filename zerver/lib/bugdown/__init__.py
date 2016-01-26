@@ -1102,8 +1102,8 @@ def do_convert(md, realm_domain=None, message=None):
         current_message = None
         db_data = None
 
-bugdown_time_start = 0
-bugdown_total_time = 0
+bugdown_time_start = 0.0
+bugdown_total_time = 0.0
 bugdown_total_requests = 0
 
 def get_bugdown_time():
