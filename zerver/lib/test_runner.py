@@ -50,7 +50,7 @@ def enforce_timely_test_completion(test_method, test_name, delay):
         print('Test is TOO slow: %s (%.3f s)' % (test_name, delay))
 
 def fast_tests_only():
-    return os.environ.get('FAST_TESTS_ONLY', False)
+    return "FAST_TESTS_ONLY" in os.environ
 
 def run_test(test):
     failed = False
