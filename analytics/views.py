@@ -817,7 +817,6 @@ def realm_user_summary_table(all_records, admin_emails):
 @zulip_internal
 def get_realm_activity(request, realm):
     data = []
-    all_records = {}
     all_user_records = {}
 
     try:
@@ -828,8 +827,7 @@ def get_realm_activity(request, realm):
     admin_emails = {admin.email for admin in admins}
 
     for is_bot, page_title in [(False,  'Humans'), (True, 'Bots')]:
-        all_records = get_user_activity_records_for_realm(realm, is_bot)
-        all_records = list(all_records)
+        all_records = list(get_user_activity_records_for_realm(realm, is_bot))
 
         user_records, content = realm_user_summary_table(all_records, admin_emails)
         all_user_records.update(user_records)
