@@ -90,7 +90,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
 # For statsd timer name
     if path == '/':
-        statsd_path = 'webreq'
+        statsd_path = u'webreq'
     else:
         statsd_path = u"webreq.%s" % (path[1:].replace('/', '.'),)
         # Remove non-ascii chars from path (there should be none, if there are it's
