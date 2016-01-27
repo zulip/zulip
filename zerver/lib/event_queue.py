@@ -86,7 +86,7 @@ class ClientDescriptor(object):
                     apply_markdown=self.apply_markdown,
                     all_public_streams=self.all_public_streams,
                     narrow=self.narrow,
-                    client_type=self.client_type_name)
+                    client_type_name=self.client_type_name)
 
     @classmethod
     def from_dict(cls, d):
@@ -94,9 +94,12 @@ class ClientDescriptor(object):
             # Temporary migration for the addition of the new user_profile_email field
             from zerver.models import get_user_profile_by_id
             d['user_profile_email'] = get_user_profile_by_id(d['user_profile_id']).email
+        if 'client_type' in d:
+            # Temporary migration for the rename of client_type to client_type_name
+            d['client_type_name'] = d['client_type']
         ret = cls(d['user_profile_id'], d['user_profile_email'], d['realm_id'],
                   EventQueue.from_dict(d['event_queue']), d['event_types'],
-                  d['client_type'], d['apply_markdown'], d['all_public_streams'],
+                  d['client_type_name'], d['apply_markdown'], d['all_public_streams'],
                   d['queue_timeout'], d.get('narrow', []))
         ret.last_connection_time = d['last_connection_time']
         return ret
