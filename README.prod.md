@@ -58,6 +58,13 @@ These instructions should be followed as root.
   self-signed certificates), but this will let you finish the
   installation process.
 
+  When you do get an actual certificate, you will need to install as
+  /etc/ssl/certs/zulip.combined-chain.crt the full certificate
+  authority chain, not just the certificate; see the section on "SSL
+  certificate chains" [in the nginx
+  docs](http://nginx.org/en/docs/http/configuring_https_servers.html)
+  for how to do this:
+
 (2) Download [the latest built server tarball](https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz)
   and unpack it to `/root/zulip`, e.g.
   ```
