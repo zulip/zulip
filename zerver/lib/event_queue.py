@@ -68,7 +68,7 @@ class ClientDescriptor(object):
         self.apply_markdown = apply_markdown
         self.all_public_streams = all_public_streams
         self.client_type_name = client_type_name
-        self._timeout_handle = None
+        self._timeout_handle = None # type: Any # TODO: should be return type of ioloop.add_timeout
         self.narrow = narrow
         self.narrow_filter = build_narrow_filter(narrow)
 
