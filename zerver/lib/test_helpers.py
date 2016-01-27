@@ -55,9 +55,9 @@ def stub(obj, name, f):
 def simulated_queue_client(client):
     # type: (Any) -> Generator[None, None, None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
-    queue_processors.SimpleQueueClient = client
+    queue_processors.SimpleQueueClient = client # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
-    queue_processors.SimpleQueueClient = real_SimpleQueueClient
+    queue_processors.SimpleQueueClient = real_SimpleQueueClient # type: ignore # https://github.com/JukkaL/mypy/issues/1152
 
 @contextmanager
 def tornado_redirected_to_list(lst):
@@ -113,17 +113,17 @@ def queries_captured():
     old_executemany = TimeTrackingCursor.executemany
 
     def cursor_execute(self, sql, params=()):
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)
-    TimeTrackingCursor.execute = cursor_execute
+        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.execute = cursor_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self, sql, params=()):
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)
-    TimeTrackingCursor.executemany = cursor_executemany
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.executemany = cursor_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
 
-    TimeTrackingCursor.execute = old_execute
-    TimeTrackingCursor.executemany = old_executemany
+    TimeTrackingCursor.execute = old_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
 
 def find_key_by_email(address):
