@@ -56,7 +56,10 @@ These instructions should be followed as root.
   You will eventually want to get a properly signed certificate (and
   note that at present the Zulip desktop app doesn't support
   self-signed certificates), but this will let you finish the
-  installation process.
+  installation process.  You can get a free properly signed
+  certificate from the new [Letsencrypt](https://letsencrypt.org/)
+  service, by following their [nginx
+  instructions](https://letsencrypt.readthedocs.org/en/latest/using.html#nginx).
 
   When you do get an actual certificate, you will need to install as
   /etc/ssl/certs/zulip.combined-chain.crt the full certificate
