@@ -13,7 +13,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
     resolve_email_to_domain, email_to_username, display_recipient_cache_key, \
-    get_stream_cache_key, to_dict_cache_key_id, \
+    get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_active_bot_dicts_in_realm
@@ -47,8 +47,7 @@ from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, cache_set_many, \
     cache_delete, cache_delete_many, message_cache_key
-from zerver.decorator import get_user_profile_by_email, JsonableError, \
-     statsd_increment
+from zerver.decorator import JsonableError, statsd_increment
 from zerver.lib.event_queue import request_event_queue, get_user_events, send_event
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
