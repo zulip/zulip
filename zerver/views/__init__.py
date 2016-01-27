@@ -499,7 +499,7 @@ def finish_google_oauth2(request):
         },
     )
     if resp.status_code != 200:
-        raise Exception('Could not convert google oauth2 code to access_token\r%r' % resp.text)
+        raise Exception('Could not convert google oauth2 code to access_token\r%r' % (resp.text,))
     access_token = extract_json_response(resp)['access_token']
 
     resp = requests.get(
@@ -507,7 +507,7 @@ def finish_google_oauth2(request):
         params={'access_token': access_token}
     )
     if resp.status_code != 200:
-        raise Exception('Google login failed making API call\r%r' % resp.text)
+        raise Exception('Google login failed making API call\r%r' % (resp.text,))
     body = extract_json_response(resp)
 
     try:

@@ -77,7 +77,7 @@ for msg in result['messages']:
         msg.pop(k, None)
     messages.append(msg)
 
-filename = "zulip-%s.json" % options.stream
+filename = "zulip-%s.json" % (options.stream,)
 f = codecs.open(filename, encoding='utf-8', mode="wb")
 f.write(json.dumps(messages, indent=0, sort_keys=False))
 f.close()
