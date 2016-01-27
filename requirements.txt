@@ -57,6 +57,7 @@ smmap==0.9.0
 sockjs-tornado==1.0.1
 sourcemap==0.1.8
 tornado==2.4.1
+typing==3.5.0.1
 python-twitter==1.1
 ujson==1.33
 uritemplate==0.6
