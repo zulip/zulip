@@ -716,7 +716,7 @@ def send_messages(data):
     random_max = 1000000
     recipients = {}
     while num_messages < tot_messages:
-        saved_data = ''
+        saved_data = {}
         message = Message()
         message.sending_client = get_client('populate_db')
         length = random.randint(1, 5)
@@ -731,10 +731,10 @@ def send_messages(data):
             # Use an old recipient
             message_type, recipient_id, saved_data = recipients[num_messages - 1]
             if message_type == Recipient.PERSONAL:
-                personals_pair = saved_data
+                personals_pair = saved_data['personals_pair']
                 random.shuffle(personals_pair)
             elif message_type == Recipient.STREAM:
-                message.subject = saved_data
+                message.subject = saved_data['subject']
                 message.recipient = get_recipient_by_id(recipient_id)
             elif message_type == Recipient.HUDDLE:
                 message.recipient = get_recipient_by_id(recipient_id)
@@ -756,14 +756,14 @@ def send_messages(data):
             message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                          type_id=personals_pair[0])
             message.sender = get_user_profile_by_id(personals_pair[1])
-            saved_data = personals_pair
+            saved_data['personals_pair'] = personals_pair
         elif message_type == Recipient.STREAM:
             stream = Stream.objects.get(id=message.recipient.type_id)
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                     recipient=message.recipient)).user_profile
             message.subject = stream.name + str(random.randint(1, 3))
-            saved_data = message.subject
+            saved_data['subject'] = message.subject
 
         message.pub_date = now()
         do_send_message(message)
