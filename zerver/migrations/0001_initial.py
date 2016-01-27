@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
     ]
 
     if "postgres" not in settings.DATABASES["default"]["ENGINE"]:
-        zulip_postgres_migrations = []
+        zulip_postgres_migrations = [] # type: ignore # https://github.com/JukkaL/mypy/issues/1164
     else:
         zulip_postgres_migrations = [
             # Full-text search
