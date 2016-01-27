@@ -477,12 +477,13 @@ def finish_google_oauth2(request):
     if error == 'access_denied':
         return redirect('/')
     elif error is not None:
-        logging.error('Error from google oauth2 login %r', request.GET)
+        logging.warning('Error from google oauth2 login %r', request.GET)
         return HttpResponse(status=400)
 
     value, hmac_value = request.GET.get('state').split(':')
     if hmac_value != google_oauth2_csrf(request, value):
-        raise Exception('Google oauth2 CSRF error')
+        logging.warning('Google oauth2 CSRF error')
+        return HttpResponse(status=400)
 
     resp = requests.post(
         'https://www.googleapis.com/oauth2/v3/token',
@@ -498,7 +499,10 @@ def finish_google_oauth2(request):
             'grant_type': 'authorization_code',
         },
     )
-    if resp.status_code != 200:
+    if resp.status_code == 400:
+        logging.warning('User error converting Google oauth2 login to token: %r' % (resp.text,))
+        return HttpResponse(status=400)
+    elif resp.status_code != 200:
         raise Exception('Could not convert google oauth2 code to access_token\r%r' % (resp.text,))
     access_token = extract_json_response(resp)['access_token']
 
@@ -506,7 +510,10 @@ def finish_google_oauth2(request):
         'https://www.googleapis.com/plus/v1/people/me',
         params={'access_token': access_token}
     )
-    if resp.status_code != 200:
+    if resp.status_code == 400:
+        logging.warning('Google login failed making info API call: %r' % (resp.text,))
+        return HttpResponse(status=400)
+    elif resp.status_code != 200:
         raise Exception('Google login failed making API call\r%r' % (resp.text,))
     body = extract_json_response(resp)
 
