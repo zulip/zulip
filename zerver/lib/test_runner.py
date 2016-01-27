@@ -57,7 +57,7 @@ def run_test(test):
     test_method = get_test_method(test)
 
     if fast_tests_only() and is_known_slow_test(test_method):
-        return
+        return failed
 
     test_name = full_test_name(test)
 
