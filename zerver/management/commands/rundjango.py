@@ -6,7 +6,7 @@ def log_message_monkey(self, format, *args):
     # Filter output for 200 or 304 responses.
     if args[1] == '200' or args[1] == '304':
         return
-    return orig_log_message(self, format, *args)
+    orig_log_message(self, format, *args)
 
 WSGIRequestHandler.log_message = log_message_monkey
 
