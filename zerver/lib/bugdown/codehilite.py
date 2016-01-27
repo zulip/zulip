@@ -105,7 +105,7 @@ class CodeHilite(object):
             txt = txt.replace('"', '&quot;')
             classes = []
             if self.lang:
-                classes.append('language-%s' % self.lang)
+                classes.append('language-%s' % (self.lang,))
             if self.linenos:
                 classes.append('linenums')
             class_str = ''

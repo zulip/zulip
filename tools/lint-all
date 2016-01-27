@@ -165,7 +165,7 @@ python_rules = [
     # This next check could have false positives, but it seems pretty
     # rare; if we find any, they can be added to the exclude list for
     # this rule.
-    {'pattern': '% [a-z_]*\)?$',
+    {'pattern': '% [a-zA-Z0-9_.]*\)?$',
      'description': 'Used % comprehension without a tuple'},
     ] + whitespace_rules
 python_line_skip_rules = [
