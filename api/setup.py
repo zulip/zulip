@@ -70,7 +70,7 @@ except ImportError:
         sys.exit(1)
     try:
         import requests
-        assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
+        assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1')) # type: ignore # https://github.com/JukkaL/mypy/issues/1165
     except (ImportError, AssertionError):
         print("requests >=0.12.1 is not installed", file=sys.stderr)
         sys.exit(1)
