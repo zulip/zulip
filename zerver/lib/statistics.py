@@ -119,5 +119,5 @@ def activity_averages_between(begin, end, by_day=True):
         return dict((day, calculate_stats(values, all_users=users_to_measure))
                     for day, values in six.iteritems(seconds_active))
     else:
-        return calculate_stats(list(chain.from_iterable(seconds_active.values())),
+        return calculate_stats(list(chain.from_iterable(seconds_active.values())), # type: ignore # chain.from_iterable needs overload
                                all_users=users_to_measure)
