@@ -658,9 +658,9 @@ def restore_saved_messages():
                          active=pending_subs[pending_sub])
         subscriptions_to_add.append(s)
     Subscription.objects.bulk_create(subscriptions_to_add)
-    for (sub, active) in subscriptions_to_change:
-        current_subs_obj[sub].active = active
-        current_subs_obj[sub].save(update_fields=["active"])
+    for (sub_tuple, active) in subscriptions_to_change:
+        current_subs_obj[sub_tuple].active = active
+        current_subs_obj[sub_tuple].save(update_fields=["active"])
 
     subs = {}
     for sub in Subscription.objects.all():
