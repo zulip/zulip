@@ -49,7 +49,7 @@ def asynchronous(method):
     def wrapper(request, *args, **kwargs):
         return method(request, handler=request._tornado_handler, *args, **kwargs)
     if getattr(method, 'csrf_exempt', False):
-        wrapper.csrf_exempt = True
+        wrapper.csrf_exempt = True # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
 
 def update_user_activity(request, user_profile):
