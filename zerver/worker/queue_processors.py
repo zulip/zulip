@@ -69,7 +69,7 @@ class QueueProcessingWorker(object):
             lock_fn = fn + '.lock'
             with lockfile(lock_fn):
                 with open(fn, 'a') as f:
-                    f.write(line)
+                    f.write(line.encode('utf-8'))
         reset_queries()
 
     def _log_problem(self):
