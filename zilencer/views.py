@@ -84,7 +84,7 @@ def report_error(request, deployment, type=REQ, report=REQ(validator=check_dict(
         notify_server_error(report)
     else:
         return json_error("Invalid type parameter")
-    return json_response({})
+    return json_success()
 
 def realm_for_email(email):
     try:
