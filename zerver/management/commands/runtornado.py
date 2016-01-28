@@ -146,7 +146,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.client_descriptor = None
         allocate_handler_id(self)
 
-    def get(self):
+    def get(self, *args, **kwargs):
         from tornado.wsgi import WSGIContainer
         from django.core.handlers.wsgi import WSGIRequest, get_script_name
         from six.moves import urllib
@@ -178,14 +178,14 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.finish()
 
 
-    def head(self):
-        self.get()
+    def head(self, *args, **kwargs):
+        self.get(*args, **kwargs)
 
-    def post(self):
-        self.get()
+    def post(self, *args, **kwargs):
+        self.get(*args, **kwargs)
 
-    def delete(self):
-        self.get()
+    def delete(self, *args, **kwargs):
+        self.get(*args, **kwargs)
 
     def on_connection_close(self):
         client_descriptor = get_descriptor_by_handler_id(self.handler_id)
