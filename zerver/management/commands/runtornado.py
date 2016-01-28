@@ -242,7 +242,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         response = callback(request, *callback_args, **callback_kwargs)
                         if response is RespondAsynchronously:
                             async_request_stop(request)
-                            return
+                            return None
                     except Exception as e:
                         # If the view raised an exception, run it through exception
                         # middleware, and if the exception middleware returns a
