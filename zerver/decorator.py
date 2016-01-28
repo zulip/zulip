@@ -30,7 +30,7 @@ if settings.ZULIP_COM:
 else:
     from mock import Mock
     get_deployment_by_domain = Mock()
-    Deployment = Mock()
+    Deployment = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 def get_deployment_or_userprofile(role):
     return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)
