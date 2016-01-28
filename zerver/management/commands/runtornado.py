@@ -28,6 +28,17 @@ from zerver.lib.queue import setup_tornado_rabbitmq
 from zerver.lib.socket import get_sockjs_router, respond_send_message
 from zerver.middleware import async_request_stop
 
+from threading import Lock
+from django.core.handlers import base
+from django.core.urlresolvers import set_script_prefix
+from django.core import signals
+from tornado.wsgi import WSGIContainer
+from django.core.handlers.wsgi import WSGIRequest, get_script_name
+from six.moves import urllib
+from django import http
+from django.core import exceptions, urlresolvers
+from django.conf import settings
+
 if settings.USING_RABBITMQ:
     from zerver.lib.queue import get_queue_client
 
@@ -123,10 +134,6 @@ class Command(BaseCommand):
 #
 #  Modify the base Tornado handler for Django
 #
-from threading import Lock
-from django.core.handlers import base
-from django.core.urlresolvers import set_script_prefix
-from django.core import signals
 
 class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
     initLock = Lock()
@@ -147,10 +154,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         allocate_handler_id(self)
 
     def get(self, *args, **kwargs):
-        from tornado.wsgi import WSGIContainer
-        from django.core.handlers.wsgi import WSGIRequest, get_script_name
-        from six.moves import urllib
-
         environ  = WSGIContainer.environ(self.request)
         environ['PATH_INFO'] = urllib.parse.unquote(environ['PATH_INFO'])
         request  = WSGIRequest(environ)
@@ -195,10 +198,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
     # Based on django.core.handlers.base: get_response
     def get_response(self, request):
         "Returns an HttpResponse object for the given HttpRequest"
-        from django import http
-        from django.core import exceptions, urlresolvers
-        from django.conf import settings
-
         try:
             try:
                 # Setup default url resolver for this thread.
