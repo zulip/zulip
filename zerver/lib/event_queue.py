@@ -385,7 +385,7 @@ def load_event_queues():
     # file reading from the loading so that we don't silently fail if we get
     # bad input.
     try:
-        with file(settings.JSON_PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
+        with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
             json_data = stored_queues.read()
         try:
             clients = dict((qid, ClientDescriptor.from_dict(client))
