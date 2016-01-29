@@ -3,6 +3,9 @@ from django.conf.urls import patterns, url, include
 from django.conf.urls.i18n import i18n_patterns
 from django.views.generic import TemplateView, RedirectView
 from django.utils.module_loading import import_string
+from two_factor.urls import urlpatterns as tf_urls
+from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
+from zerver.views.auth import LoginView
 import os.path
 import zerver.forms
 from zproject import dev_urls
@@ -41,7 +44,7 @@ i18n_urls = [
     url(r'^accounts/login/local/$', 'zerver.views.auth.dev_direct_login'),
     # We have two entries for accounts/login to allow reverses on the Django
     # view we're wrapping to continue to function.
-    url(r'^accounts/login/', 'zerver.views.auth.login_page', {'template_name': 'zerver/login.html'}),
+    url(r'^accounts/login/', LoginView.as_view(template_name='zerver/login.html')),
     url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zerver/login.html'}),
     url(r'^accounts/logout/', 'zerver.views.auth.logout_then_login'),
 
@@ -87,7 +90,12 @@ i18n_urls = [
 
     # Login/registration
     url(r'^register/$', 'zerver.views.accounts_home', name='register'),
+<<<<<<< b1ac48109ff62c87a5581d814395b17528834ebe
     url(r'^login/$',  'zerver.views.auth.login_page', {'template_name': 'zerver/login.html'}),
+=======
+    url(r'^login/$', LoginView.as_view(template_name='zerver/login.html')),
+    url(r'', include('two_factor.urls', 'two_factor')),
+>>>>>>> Integrate two-factor authentication.
 
     # A registration page that passes through the domain, for totally open realms.
     url(r'^register/(?P<domain>\S+)/$', 'zerver.views.accounts_home_with_domain'),
@@ -295,6 +303,8 @@ urls += [
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'zerver.tornadoviews.notify'),
 ]
+
+urls += [url(r'', include(tf_urls + tf_twilio_urls, 'two_factor'))]
 
 # Python Social Auth
 urls += [url(r'^', include('social.apps.django_app.urls', namespace='social'))]

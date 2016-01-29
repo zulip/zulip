@@ -249,6 +249,7 @@ def accounts_register(request):
             },
         request=request)
 
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 @zulip_login_required
 def accounts_accept_terms(request):
     # type: (HttpRequest) -> HttpResponse
@@ -414,6 +415,7 @@ def sent_time_in_epoch_seconds(user_message):
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 @zulip_login_required
 def home(request):
     # type: (HttpRequest) -> HttpResponse
@@ -638,6 +640,7 @@ def home(request):
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 @zulip_login_required
 def desktop_home(request):
     # type: (HttpRequest) -> HttpResponse

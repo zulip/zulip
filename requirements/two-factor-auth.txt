@@ -1,0 +1,6 @@
+django-otp==0.3.4
+django-phonenumber-field==0.7.2
+django-two-factor-auth==1.3.0
+phonenumbers==7.2.3
+qrcode==4.0.4
+twilio==5.2.0

@@ -19,8 +19,8 @@ function log_in(credentials) {
 
     casper.test.info('Logging in');
     casper.fill('form[action^="/accounts/login"]', {
-        username: credentials.username,
-        password: credentials.password
+        'auth-username': credentials.username,
+        'auth-password': credentials.password
     }, true /* submit form */);
 }
 
