@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
 from django.shortcuts import render_to_response, redirect
@@ -16,6 +15,8 @@ from django.contrib.auth.views import login as django_login_page, \
 from django.forms.models import model_to_dict
 from django.core.mail import send_mail
 from django.middleware.csrf import get_token
+from django_otp.decorators import otp_required
+from two_factor.views import LoginView
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
@@ -232,7 +233,7 @@ def accounts_register(request):
             },
         context_instance=RequestContext(request))
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 def accounts_accept_terms(request):
     email = request.user.email
     domain = resolve_email_to_domain(email)
@@ -554,6 +555,26 @@ def login_page(request, **kwargs):
 
     return template_response
 
+class LoginView(LoginView):
+    def get_context_data(self, **kwargs):
+        context = super(LoginView, self).get_context_data(**kwargs)
+        if dev_auth_enabled():
+            # Development environments usually have only a few users, but
+            # it still makes sense to limit how many users we render to
+            # support performance testing with DevAuthBackend.
+            MAX_DEV_BACKEND_USERS = 100
+            users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+            users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
+            context['direct_admins'] = [u.email for u in users if u.is_admin()]
+            context['direct_users'] = [u.email for u in users if not u.is_admin()]
+
+        try:
+            context['email'] = self.request.GET['email']
+        except KeyError:
+            pass
+
+        return context
+
 def dev_direct_login(request, **kwargs):
     # This function allows logging in without a password and should only be called in development environments.
     # It may be called if the DevAuthBackend is included in settings.AUTHENTICATION_BACKENDS
@@ -586,7 +607,7 @@ def json_bulk_invite_users(request, user_profile,
                               user_profile.realm.domain, internal_message)
         return json_success()
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 def initial_invite_page(request):
     user = request.user
     # Only show the bulk-invite page for the first user in a realm
@@ -693,7 +714,7 @@ def sent_time_in_epoch_seconds(user_message):
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 def home(request):
     # We need to modify the session object every two weeks or it will expire.
     # This line makes reloading the page a sufficient action to keep the
@@ -883,7 +904,7 @@ def home(request):
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 def desktop_home(request):
     return HttpResponseRedirect(reverse('zerver.views.home'))
 
@@ -1048,7 +1069,7 @@ def json_upload_file(request, user_profile):
     uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 @has_request_variables
 def get_uploaded_file(request, realm_id, filename,
                       redir=REQ(validator=check_bool, default=True)):

@@ -19,7 +19,10 @@ diff-match-patch==20121119
 django-auth-ldap==1.2.6
 django-bitfield==1.8.0
 git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69
+django-otp==0.3.4
+django-phonenumber-field==0.7.2
 django-pipeline==1.2.2
+django-two-factor-auth==1.3.0
 docopt==0.4.0
 enum34==1.0.4
 fonttools==3.0
@@ -35,6 +38,7 @@ mandrill==1.0.57
 mock==1.0.1
 oauth2client==1.4.11
 oauthlib==1.0.3
+phonenumbers==7.2.3
 pika==0.9.14
 postmonkey==1.0b0
 psycopg2==2.6
@@ -48,6 +52,7 @@ pyflakes==0.9.1
 pylibmc==1.4.3
 python-ldap==2.4.19
 pytz==2015.4
+qrcode==4.0.4
 redis==2.10.3
 requests==2.7.0
 rsa==3.1.4
@@ -57,6 +62,7 @@ smmap==0.9.0
 sockjs-tornado==1.0.1
 sourcemap==0.1.8
 tornado==2.4.1
+twilio==5.2.0
 python-twitter==1.1
 ujson==1.33
 uritemplate==0.6

@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.conf.urls import patterns, url, include
 from django.views.generic import TemplateView, RedirectView
+from two_factor.urls import urlpatterns as tf_urls
+from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
+from zerver.views import LoginView
 import os.path
 import zerver.forms
 
@@ -72,7 +75,8 @@ urlpatterns = patterns('',
 
     # Login/registration
     url(r'^register/$', 'zerver.views.accounts_home', name='register'),
-    url(r'^login/$',  'zerver.views.login_page', {'template_name': 'zerver/login.html'}),
+    url(r'^login/$', LoginView.as_view(template_name='zerver/login.html')),
+    url(r'', include('two_factor.urls', 'two_factor')),
 
     # A registration page that passes through the domain, for totally open realms.
     url(r'^register/(?P<domain>\S+)/$', 'zerver.views.accounts_home_with_domain'),
@@ -263,7 +267,10 @@ v1_api_and_json_patterns = patterns('zerver.views',
     url(r'^events$', 'rest_dispatch',
         {'GET': 'get_events_backend',
          'DELETE': 'cleanup_event_queue'}),
+) + patterns(
+    url(r'', include(tf_urls + tf_twilio_urls, 'two_factor')),
 )
+
 if not settings.VOYAGER:
     v1_api_and_json_patterns += patterns('',
         # Still scoped to api/v1/, but under a different project
