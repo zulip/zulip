@@ -105,6 +105,7 @@ def check_pyflakes():
             if options.full or not \
                     ('imported but unused' in ln or
                      'redefinition of unused' in ln or
+                     "'from typing import *' used; unable to detect undefined names" in ln or
                      ("zerver/models.py" in ln and
                       " undefined name 'bugdown'" in ln) or
                      ("scripts/lib/pythonrc.py" in ln and
