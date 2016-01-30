@@ -1,5 +1,4 @@
 {% load compressed %}
-{% load minified_js %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,7 +10,6 @@
   <![endif]-->
   {% block customhead %}
     {% compressed_css 'common' %}
-    {% minified_js 'common' %}
   {% endblock %}
 </head>
 <body>
