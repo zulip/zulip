@@ -17,9 +17,9 @@ function log_in(credentials) {
     }
 
     casper.test.info('Logging in');
-    casper.fill('form[action^="/accounts/login"]', {
-        username: credentials.username,
-        password: credentials.password
+    casper.fill('form[action^="/account/login"]', {
+        'auth-username': credentials.username,
+        'auth-password': credentials.password
     }, true /* submit form */);
 }
 
@@ -83,7 +83,7 @@ exports.then_log_in = function (credentials) {
 };
 
 exports.start_and_log_in = function (credentials, viewport) {
-    casper.start('http://localhost:9981/accounts/login', function () {
+    casper.start('http://localhost:9981/account/login', function () {
         exports.initialize_casper(viewport);
         log_in(credentials);
     });

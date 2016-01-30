@@ -534,27 +534,6 @@ def finish_google_oauth2(request):
     user_profile = authenticate(username=email_address, use_dummy_backend=True)
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
 
-def login_page(request, **kwargs):
-    extra_context = kwargs.pop('extra_context', {})
-    if dev_auth_enabled():
-        # Development environments usually have only a few users, but
-        # it still makes sense to limit how many users we render to
-        # support performance testing with DevAuthBackend.
-        MAX_DEV_BACKEND_USERS = 100
-        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-        users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
-        extra_context['direct_admins'] = [u.email for u in users if u.is_admin()]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_admin()]
-    template_response = django_login_page(
-        request, authentication_form=OurAuthenticationForm,
-        extra_context=extra_context, **kwargs)
-    try:
-        template_response.context_data['email'] = request.GET['email']
-    except KeyError:
-        pass
-
-    return template_response
-
 class LoginView(LoginView):
     def get_context_data(self, **kwargs):
         context = super(LoginView, self).get_context_data(**kwargs)

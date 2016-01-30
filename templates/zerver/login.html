@@ -90,9 +90,7 @@ autofocus('#id_username');
               action="{% url 'two_factor:login' %}?next={{ next }}"
             {% endif %}
         >
-            <div class="hide">
-            {% include "two_factor/_wizard_forms.html" %}
-            </div>
+            {{ wizard.management_form }}
             {% csrf_token %}
             <div class="control-group">
                 <label for="id_username" class="control-label">{% trans 'Email' %}</label>

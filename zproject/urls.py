@@ -29,7 +29,7 @@ urlpatterns = patterns('',
     url(r'^accounts/login/local/$', 'zerver.views.dev_direct_login'),
     # We have two entries for accounts/login to allow reverses on the Django
     # view we're wrapping to continue to function.
-    url(r'^accounts/login/',  'zerver.views.login_page',         {'template_name': 'zerver/login.html'}),
+    url(r'^accounts/login/', LoginView.as_view(template_name='zerver/login.html')),
     url(r'^accounts/login/',  'django.contrib.auth.views.login', {'template_name': 'zerver/login.html'}),
     url(r'^accounts/logout/', 'zerver.views.logout_then_login'),
     url(r'^accounts/webathena_kerberos_login/', 'zerver.views.webathena_kerberos_login'),
