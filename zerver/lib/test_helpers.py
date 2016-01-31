@@ -215,7 +215,8 @@ class AuthedTestCase(TestCase):
         return self.client.post('/accounts/login/',
                                 {'auth-username':email,
                                  'auth-password':password,
-                                 'login_view-current_step': 'auth'})
+                                 'login_view-current_step': 'auth'},
+                                follow=True)
 
     def register(self, username, password, domain="zulip.com"):
         self.client.post('/accounts/home/',
