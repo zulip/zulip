@@ -39,6 +39,13 @@ class zulip::nginx {
     ensure => absent,
   }
 
+  file { '/var/log/nginx':
+    ensure     => "directory",
+    owner      => "zulip",
+    group      => "adm",
+    mode       => 650
+  }
+
   service { 'nginx':
     ensure     => running,
   }
