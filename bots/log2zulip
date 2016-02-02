@@ -62,7 +62,7 @@ def process_logs():
         file_data = last_data.get(log_file, {})
         if not os.path.exists(log_file):
             # If the file doesn't exist, log an error and then move on to the next file
-            print "Log file %s does not exist!" % (log_file,)
+            print "Log file does not exist or could not stat log file: %s" % (log_file,)
             continue
         length = int(subprocess.check_output(["wc", "-l", log_file]).split()[0])
         if file_data.get("last") is None:
