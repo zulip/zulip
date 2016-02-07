@@ -1083,6 +1083,8 @@ def create_user_backend(request, user_profile, email=REQ, password=REQ,
         return json_error('Bad name or username')
 
     # Check that the new user's email address belongs to the admin's realm
+    # (Since this is an admin API, we don't require the user to have been
+    # invited first.)
     realm = user_profile.realm
     domain = resolve_email_to_domain(email)
     if realm.domain != domain:
