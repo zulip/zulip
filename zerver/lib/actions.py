@@ -1832,9 +1832,16 @@ def do_change_default_desktop_notifications(user_profile, default_desktop_notifi
     user_profile.default_desktop_notifications = default_desktop_notifications
     user_profile.save(update_fields=["default_desktop_notifications"])
 
-def do_change_stream_listing(user_profile, sort_streams_on_activity):
+def do_change_stream_listing(user_profile, sort_streams_on_activity, log=True):
     user_profile.sort_streams_on_activity = sort_streams_on_activity
     user_profile.save(update_fields=["sort_streams_on_activity"])
+    event = {'type': 'update_display_settings',
+             'user': user_profile.email,
+             'setting_name': 'sort_streams_on_activity',
+             'setting': sort_streams_on_activity}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
 
 def do_change_twenty_four_hour_time(user_profile, setting_value, log=True):
     user_profile.twenty_four_hour_time = setting_value
