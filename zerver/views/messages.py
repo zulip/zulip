@@ -708,7 +708,7 @@ def send_message_backend(request, user_profile,
                          local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
     client = request.client
-    is_super_user = request.user.is_api_super_user()
+    is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
 

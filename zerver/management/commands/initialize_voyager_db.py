@@ -53,6 +53,11 @@ class Command(BaseCommand):
             bot.bot_owner = bot
             bot.save()
 
+        # Initialize the email gateway bot as an API Super User
+        email_gateway_bot = UserProfile.objects.get(email__iexact=settings.EMAIL_GATEWAY_BOT)
+        email_gateway_bot.is_api_super_user = True
+        email_gateway_bot.save()
+
         (admin_realm, _) = do_create_realm(settings.ADMIN_DOMAIN,
                                            settings.ADMIN_DOMAIN, True)
 

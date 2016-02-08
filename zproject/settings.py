@@ -144,7 +144,6 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'INITIAL_PASSWORD_SALT': None,
                     'FEEDBACK_BOT': 'feedback@zulip.com',
                     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
-                    'API_SUPER_USERS': set(),
                     'ADMINS': '',
                     'INLINE_IMAGE_PREVIEW': True,
                     'CAMO_URI': '',
@@ -466,8 +465,6 @@ for bot in INTERNAL_BOTS:
         bot_email = bot['email_template'] % (INTERNAL_BOT_DOMAIN,)
         vars()[bot['var_name'] ] = bot_email
 
-if EMAIL_GATEWAY_BOT not in API_SUPER_USERS:
-    API_SUPER_USERS.add(EMAIL_GATEWAY_BOT)
 if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
 
@@ -916,7 +913,6 @@ if (len(AUTHENTICATION_BACKENDS) == 1 and
 else:
     HOME_NOT_LOGGED_IN = '/login'
     ONLY_SSO = False
-AUTHENTICATION_BACKENDS += ('guardian.backends.ObjectPermissionBackend',)
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
