@@ -20,7 +20,6 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledJob, realm_filters_for_domain, get_active_bot_dicts_in_realm
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
-from guardian.shortcuts import assign_perm, remove_perm
 
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
@@ -224,7 +223,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
 def notify_created_user(user_profile):
     event = dict(type="realm_user", op="add",
                  person=dict(email=user_profile.email,
-                             is_admin=user_profile.is_admin(),
+                             is_admin=user_profile.is_realm_admin,
                              full_name=user_profile.full_name,
                              is_bot=user_profile.is_bot))
     send_event(event, active_user_ids(user_profile.realm))
@@ -883,8 +882,8 @@ def check_message(sender, client, message_type_name, message_to,
         elif subscribed_to_stream(sender, stream):
             # Or it is private, but your are subscribed
             pass
-        elif sender.is_api_super_user() or (forwarder_user_profile is not None and
-                                            forwarder_user_profile.is_api_super_user()):
+        elif sender.is_api_super_user or (forwarder_user_profile is not None and
+                                          forwarder_user_profile.is_api_super_user):
             # Or this request is being done on behalf of a super user
             pass
         elif sender.is_bot and subscribed_to_stream(sender.bot_owner, stream):
@@ -1582,16 +1581,20 @@ def do_change_default_all_public_streams(user_profile, value, log=True):
                                 default_all_public_streams=user_profile.default_all_public_streams,)),
                     bot_owner_userids(user_profile))
 
-def do_change_is_admin(user_profile, is_admin, permission='administer'):
-    if is_admin:
-        assign_perm(permission, user_profile, user_profile.realm)
+def do_change_is_admin(user_profile, value, permission='administer'):
+    if permission == "administer":
+        user_profile.is_realm_admin = value
+        user_profile.save(update_fields=["is_realm_admin"])
+    elif permission == "api_super_user":
+        user_profile.is_api_super_user = value
+        user_profile.save(update_fields=["is_api_super_user"])
     else:
-        remove_perm(permission, user_profile, user_profile.realm)
+        raise Exception("Unknown permission")
 
     if permission == 'administer':
         event = dict(type="realm_user", op="update",
                      person=dict(email=user_profile.email,
-                                 is_admin=is_admin))
+                                 is_admin=value))
         send_event(event, active_user_ids(user_profile.realm))
 
 def do_make_stream_public(user_profile, realm, stream_name):
@@ -2165,7 +2168,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     if message.sender == user_profile:
         pass
     elif (content is None) and ((message.subject == "(no topic)") or
-                                user_profile.is_admin()):
+                                user_profile.is_realm_admin):
         pass
     else:
         raise JsonableError("You don't have permission to edit this message")
@@ -2950,7 +2953,7 @@ def get_occupied_streams(realm):
 
 def do_get_streams(user_profile, include_public=True, include_subscribed=True,
                    include_all_active=False):
-    if include_all_active and not user_profile.is_api_super_user():
+    if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError("User not authorized for this query")
 
     # Listing public streams are disabled for the mit.edu realm.

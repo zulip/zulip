@@ -543,8 +543,8 @@ def login_page(request, **kwargs):
         MAX_DEV_BACKEND_USERS = 100
         users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
         users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
-        extra_context['direct_admins'] = [u.email for u in users if u.is_admin()]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_admin()]
+        extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
+        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
@@ -830,7 +830,7 @@ def home(request):
         alert_words           = register_ret['alert_words'],
         muted_topics          = register_ret['muted_topics'],
         realm_filters         = register_ret['realm_filters'],
-        is_admin              = user_profile.is_admin(),
+        is_admin              = user_profile.is_realm_admin,
         can_create_streams    = user_profile.can_create_streams(),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
@@ -859,7 +859,7 @@ def home(request):
     show_invites = True
 
     # Some realms only allow admins to invite users
-    if user_profile.realm.invite_by_admins_only and not user_profile.is_admin():
+    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         show_invites = False
 
     product_name = "Zulip"
@@ -874,7 +874,7 @@ def home(request):
                                        settings.DEBUG and ('show_debug' in request.GET),
                                    'pipeline': settings.PIPELINE,
                                    'show_invites': show_invites,
-                                   'is_admin': user_profile.is_admin(),
+                                   'is_admin': user_profile.is_realm_admin,
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,

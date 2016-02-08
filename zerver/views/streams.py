@@ -184,7 +184,7 @@ def remove_subscriptions_backend(request, user_profile,
 
     removing_someone_else = principals and \
         set(principals) != set((user_profile.email,))
-    if removing_someone_else and not user_profile.is_admin():
+    if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
         # admin.
         return json_error("This action requires administrative rights")

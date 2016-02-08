@@ -209,6 +209,11 @@ class Command(BaseCommand):
             create_users(realms, zulip_realm_bots, bot=True)
 
             if not options["test_suite"]:
+                # Initialize the email gateway bot as an API Super User
+                email_gateway_bot = UserProfile.objects.get(email__iexact=settings.EMAIL_GATEWAY_BOT)
+                email_gateway_bot.is_api_super_user = True
+                email_gateway_bot.save()
+
                 # To keep the messages.json fixtures file for the test
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
