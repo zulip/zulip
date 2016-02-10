@@ -17,6 +17,8 @@ from django.core.mail import send_mail
 from django.middleware.csrf import get_token
 from django_otp.decorators import otp_required
 from two_factor.views import LoginView
+from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
+from two_factor.views.utils import ExtraSessionStorage
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
@@ -534,7 +536,30 @@ def finish_google_oauth2(request):
     user_profile = authenticate(username=email_address, use_dummy_backend=True)
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
 
+
+class PatchedExtraSessionStorage(ExtraSessionStorage):
+    def reset(self):
+        if self.prefix in self.request.session:
+            super(ExtraSessionStorage, self).reset()
+        else:
+            self.init_data()
+
+
 class LoginView(LoginView):
+    storage_name = 'zerver.views.PatchedExtraSessionStorage'
+    form_list = (
+        ('auth', OurAuthenticationForm),
+        ('token', AuthenticationTokenForm),
+        ('backup', BackupTokenForm),
+    )
+
+    def reset(self):
+        print self.request
+        if self.prefix in self.request.session:
+            super(ExtraSessionStorage, self).reset()
+        else:
+            self.init_data()
+
     def get_context_data(self, **kwargs):
         context = super(LoginView, self).get_context_data(**kwargs)
         if dev_auth_enabled():

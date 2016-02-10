@@ -213,10 +213,9 @@ class AuthedTestCase(TestCase):
         if password is None:
             password = initial_password(email)
         return self.client.post('/accounts/login/',
-                                {'auth-username':email,
-                                 'auth-password':password,
-                                 'login_view-current_step': 'auth'},
-                                follow=True)
+                                {'auth-username': email,
+                                 'auth-password': password,
+                                 'login_view-current_step': 'auth'})
 
     def register(self, username, password, domain="zulip.com"):
         self.client.post('/accounts/home/',
