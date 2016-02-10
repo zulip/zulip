@@ -35,12 +35,14 @@ class PublicURLTest(TestCase):
     URLs redirect to a page.
     """
 
-    def fetch(self, method, urls, expected_status):
+    def fetch(self, method, url_set, expected_status):
+        urls = url_set.get('urls', [])
+        params = url_set.get('params', {})
         for url in urls:
             if method == "get":
-                response = self.client.get(url)
+                response = self.client.get(url, params)
             else:
-                response = self.client.post(url)
+                response = self.client.post(url, params)
             self.assertEqual(response.status_code, expected_status,
                              msg="Expected %d, received %d for %s to %s" % (
                     expected_status, response.status_code, method, url))
@@ -52,34 +54,30 @@ class PublicURLTest(TestCase):
         # FIXME: We should also test the Tornado URLs -- this codepath
         # can't do so because this Django test mechanism doesn't go
         # through Tornado.
-        get_urls = {200: ["/accounts/home/", "/accounts/login/"],
-                    302: ["/"],
-                    401: ["/api/v1/streams/Denmark/members",
-                          "/api/v1/users/me/subscriptions",
-                          "/api/v1/messages",
-                          ],
-                }
-        post_urls = {200: ["/accounts/login/"],
-                     302: ["/accounts/logout/"],
-                     401: ["/json/get_public_streams",
-                           "/json/get_old_messages",
-                           "/json/update_pointer",
-                           "/json/messages",
-                           "/json/invite_users",
-                           "/json/settings/change",
-                           "/json/subscriptions/remove",
-                           "/json/subscriptions/exists",
-                           "/json/subscriptions/property",
-                           "/json/get_subscribers",
-                           "/json/fetch_api_key",
-                           "/json/users/me/subscriptions",
-                           "/api/v1/users/me/subscriptions",
-                           ],
-                     400: ["/api/v1/send_message",
-                           "/api/v1/external/github",
-                           "/api/v1/fetch_api_key",
-                           ],
-                }
+        get_urls = {200: {'urls': ["/accounts/home/", "/accounts/login/"]},
+                    302: {'urls': ["/"]},
+                    401: {'urls': ["/api/v1/streams/Denmark/members",
+                                   "/api/v1/users/me/subscriptions",
+                                   "/api/v1/messages", ]}}
+        post_urls = {200: {'urls': ["/accounts/login/"],
+                           'params': {'login_view-current_step': 'auth'}},
+                     302: {'urls': ["/accounts/logout/"]},
+                     401: {'urls': ["/json/get_public_streams",
+                                    "/json/get_old_messages",
+                                    "/json/update_pointer",
+                                    "/json/messages",
+                                    "/json/invite_users",
+                                    "/json/settings/change",
+                                    "/json/subscriptions/remove",
+                                    "/json/subscriptions/exists",
+                                    "/json/subscriptions/property",
+                                    "/json/get_subscribers",
+                                    "/json/fetch_api_key",
+                                    "/json/users/me/subscriptions",
+                                    "/api/v1/users/me/subscriptions", ]},
+                     400: {'urls': ["/api/v1/send_message",
+                                    "/api/v1/external/github",
+                                    "/api/v1/fetch_api_key", ]}}
         for status_code, url_set in get_urls.iteritems():
             self.fetch("get", url_set, status_code)
         for status_code, url_set in post_urls.iteritems():
