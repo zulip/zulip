@@ -553,13 +553,6 @@ class LoginView(LoginView):
         ('backup', BackupTokenForm),
     )
 
-    def reset(self):
-        print self.request
-        if self.prefix in self.request.session:
-            super(ExtraSessionStorage, self).reset()
-        else:
-            self.init_data()
-
     def get_context_data(self, **kwargs):
         context = super(LoginView, self).get_context_data(**kwargs)
         if dev_auth_enabled():
