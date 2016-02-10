@@ -323,15 +323,17 @@ only supports talking to servers with a properly signed SSL
 certificate, so you may find that you get a blank screen when you
 connect to a Zulip server using a self-signed certificate.
 
-The Zulip iOS and Android apps in their respective stores don't yet
-support talking to non-zulip.com servers; the iOS app is waiting on
-Apple's app store review, while the Android app is waiting on someone
-to do the small project of adding a field to specify what Zulip server
-to talk to.
+The Zulip Android app in the Google Play store doesn't yet support
+talking to non-zulip.com servers (and the iOS one doesn't support
+Google auth SSO against non-zulip.com servers; there's a design for
+how to fix that which wouldn't be a ton of work to implement).  If you
+are interested in helping out with the Zulip mobile apps, shoot an
+email to zulip-devel@googlegroups.com and the maintainers can guide
+you on how to help.
 
-These issues will likely all be addressed in the coming weeks; make
-sure to join the zulip-announce@googlegroups.com list so that you can
-receive the announcements when these become available.
+For announcements about improvements to the apps, make sure to join
+the zulip-announce@googlegroups.com list so that you can receive the
+announcements when these become available.
 
 (5) All the other features: Hotkeys, emoji, search filters,
 @-mentions, etc.  Zulip has lots of great features, make sure your
