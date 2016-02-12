@@ -60,6 +60,42 @@
               </div>
             </form>
           </div>
+          <div id="emoji-settings" class="settings-section">
+            <div class="settings-section-title"><i class="icon-vector-smile settings-section-icon"></i>
+            Custom realm emoji</div>
+            <div class="admin-table-wrapper">
+              <table class="table table-condensed table-striped admin_emoji_table">
+                <tbody id="admin_emoji_table">
+                  <th>Name</th>
+                  <th class="image">Image</th>
+                  <th class="actions">Actions</th>
+                </tbody>
+              </table>
+            </div>
+            <form class="form-horizontal admin-emoji-form">
+              <div class="add-new-emoji-box">
+                <div class="new-emoji-form">
+                  <div class="settings-section-title new-emoji-section-title">Add a New Emoji</div>
+                  <div class="alert" id="admin-emoji-status"></div>
+                  <div class="control-group">
+                    <label for="emoji_name" class="control-label">Emoji name</label>
+                    <input type="text" name="name" id="emoji_name" placeholder="mouse_face" />
+                    <div class="alert" id="admin-emoji-name-status"></div>
+                  </div>
+                  <div class="control-group">
+                    <label for="emoji_url" class="control-label">Emoji URL</label>
+                    <input type="text" name="url" id="emoji_url" placeholder="http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png" />
+                    <div class="alert" id="admin-emoji-url-status"></div>
+                  </div>
+                  <div class="control-group">
+                    <div class="controls">
+                      <input type="submit" class="btn btn-big btn-primary" value="Add emoji" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="users">
           <div id="admin-user-list" class="settings-section">

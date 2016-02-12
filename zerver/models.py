@@ -13,12 +13,13 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     active_bot_dicts_in_realm_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
-from django.db import transaction, IntegrityError
+from django.db import transaction
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
+from django.core.validators import MinLengthValidator, RegexValidator
 import zlib
 
 from bitfield import BitField
@@ -214,8 +215,10 @@ def remote_user_to_email(remote_user):
 
 class RealmEmoji(models.Model):
     realm = models.ForeignKey(Realm)
-    name = models.TextField()
-    img_url = models.TextField()
+    # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
+    name = models.TextField(validators=[MinLengthValidator(1),
+                                        RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$')])
+    img_url = models.URLField()
 
     class Meta(object):
         unique_together = ("realm", "name")

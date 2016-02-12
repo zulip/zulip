@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from zerver.lib import bugdown
 from zerver.lib.actions import (
-    do_add_realm_emoji,
+    check_add_realm_emoji,
     do_remove_realm_emoji,
     get_realm,
 )
@@ -307,7 +307,7 @@ class BugdownTest(TestCase):
 
         zulip_realm = get_realm('zulip.com')
         url = "https://zulip.com/test_realm_emoji.png"
-        do_add_realm_emoji(zulip_realm, "test", url)
+        check_add_realm_emoji(zulip_realm, "test", url)
 
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
