@@ -2891,7 +2891,9 @@ def notify_realm_emoji(realm):
     send_event(event, user_ids)
 
 def do_add_realm_emoji(realm, name, img_url):
-    RealmEmoji(realm=realm, name=name, img_url=img_url).save()
+    emoji = RealmEmoji(realm=realm, name=name, img_url=img_url)
+    emoji.full_clean()
+    emoji.save()
     notify_realm_emoji(realm)
 
 def do_remove_realm_emoji(realm, name):

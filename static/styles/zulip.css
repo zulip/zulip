@@ -3371,6 +3371,7 @@ div.edit_bot {
 }
 
 #administration .settings-section .admin-realm-form,
+#administration .settings-section .admin-emoji-form,
 #settings .settings-section .account-settings-form,
 #settings .settings-section .new-bot-form,
 #settings .settings-section .edit-bot-form-box {
@@ -4216,4 +4217,17 @@ li.show-more-private-messages a {
         top: 40px;
     }
 
+}
+
+.admin_emoji_table {
+    margin: 20px auto;
+    width: 90%;
+}
+
+.admin_emoji_table caption {
+    font-size: 18px;
+}
+
+#admin-emoji-name-status, #admin-emoji-url-status {
+    margin: 20px 0 0 0;
 }

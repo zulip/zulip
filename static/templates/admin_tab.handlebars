@@ -59,6 +59,34 @@
               <input type="submit" class="btn btn-big btn-primary" value="Save changes" />
               </div>
             </form>
+            <table class="table table-condensed table-striped admin_emoji_table">
+              <caption>Custom realm emoji:</caption>
+              <tbody id="admin_emoji_table">
+                <th>Name</th>
+                <th>Image</th>
+                <th>Actions</th>
+              </tbody>
+            </table>
+            <form class="form-horizontal admin-emoji-form">
+              <div class="control-group">
+                <div class="alert" id="admin-emoji-status"></div>
+                <label for="emoji_name" class="control-label">Emoji name</label>
+                <div class="controls">
+                  <input type="text" name="name" id="emoji_name" placeholder="MouseFace" />
+                </div>
+                <div class="alert" id="admin-emoji-name-status"></div>
+              </div>
+              <div class="control-group">
+                <label for="emoji_url" class="control-label">Emoji URL</label>
+                <div class="controls">
+                  <input type="text" name="url" id="emoji_url" placeholder="http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png" />
+                </div>
+                <div class="alert" id="admin-emoji-url-status"></div>
+              </div>
+              <div class="controls">
+                <input type="submit" class="btn btn-big btn-primary" value="Add emoji" />
+              </div>
+            </form>
           </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="users">

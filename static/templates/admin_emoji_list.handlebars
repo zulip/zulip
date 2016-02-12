@@ -1,0 +1,15 @@
+{{#with emoji}}
+<tr class="emoji_row" id="emoji_{{name}}">
+  <td>
+    <span class="emoji_name">{{name}}</span>
+  </td>
+  <td>
+    <span class="emoji_image"><img src="{{url}}" alt="{{name}}" /></span>
+  </td>
+  <td>
+    <button class="btn delete btn-danger" data-emoji-name="{{name}}">
+      Delete
+    </button>
+  </td>
+</tr>
+{{/with}}
