@@ -20,7 +20,8 @@ from zerver.decorator import RespondAsynchronously, JsonableError
 from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile
 from zerver.lib.cache_helpers import cache_with_key
-from zerver.lib.handlers import get_handler_by_id, finish_handler
+from zerver.lib.handlers import clear_handler_by_id, get_handler_by_id, \
+    finish_handler
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 from zerver.lib.narrow import build_narrow_filter
@@ -160,7 +161,7 @@ class ClientDescriptor(object):
 
     def disconnect_handler(self, client_closed=False):
         if self.current_handler_id:
-            delete_descriptor_by_handler_id(self.current_handler_id, None)
+            clear_descriptor_by_handler_id(self.current_handler_id, None)
             if client_closed:
                 logging.info("Client disconnected for queue %s (%s via %s)" %
                              (self.event_queue.id, self.user_profile_email,
@@ -184,7 +185,7 @@ def get_descriptor_by_handler_id(handler_id):
 def set_descriptor_by_handler_id(handler_id, client_descriptor):
     descriptors_by_handler_id[handler_id] = client_descriptor
 
-def delete_descriptor_by_handler_id(handler_id, client_descriptor):
+def clear_descriptor_by_handler_id(handler_id, client_descriptor):
     del descriptors_by_handler_id[handler_id]
 
 def compute_full_event_type(event):

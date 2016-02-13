@@ -14,6 +14,9 @@ def allocate_handler_id(handler):
     current_handler_id += 1
     return handler.handler_id
 
+def clear_handler_by_id(handler_id):
+    del handlers[handler_id]
+
 def finish_handler(handler_id, event_queue_id, contents, apply_markdown):
     err_msg = "Got error finishing handler for queue %s" % (event_queue_id,)
     try:

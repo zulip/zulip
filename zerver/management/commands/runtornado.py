@@ -22,7 +22,7 @@ from zerver.lib.debug import interactive_debug_listen
 from zerver.lib.response import json_response
 from zerver.lib.event_queue import process_notification, missedmessage_hook
 from zerver.lib.event_queue import setup_event_queue, add_client_gc_hook, \
-    get_descriptor_by_handler_id
+    get_descriptor_by_handler_id, clear_handler_by_id
 from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.queue import setup_tornado_rabbitmq
 from zerver.lib.socket import get_sockjs_router, respond_send_message
@@ -151,6 +151,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.initLock.release()
         self._auto_finish = False
         self.client_descriptor = None
+        # Handler IDs are allocated here, and the handler ID map must
+        # be cleared when the handler finishes its response
         allocate_handler_id(self)
 
     def get(self, *args, **kwargs):
@@ -243,6 +245,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                             async_request_stop(request)
                             return None
                     except Exception as e:
+                        clear_handler_by_id(self.current_handler_id)
                         # If the view raised an exception, run it through exception
                         # middleware, and if the exception middleware returns a
                         # response, use that. Otherwise, reraise the exception.
