@@ -3221,7 +3221,8 @@ div.edit_bot {
 
 .edit_bot_form .control-label,
 #create_bot_form .control-label,
-.admin-emoji-form .control-label {
+.admin-emoji-form .control-label,
+.admin-filter-form .control-label {
     width: 10em;
     text-align: right;
     margin-right: 20px;
@@ -3382,12 +3383,14 @@ div.edit_bot {
 #administration .settings-section .admin-realm-form,
 #settings .settings-section .new-bot-form,
 #emoji-settings .new-emoji-form,
+#filter-settings .new-filter-form,
 #settings .settings-section .edit-bot-form-box {
     margin-top: 35px;
 }
 
 #settings .settings-section .new-bot-section-title,
-#emoji-settings .new-emoji-section-title {
+#emoji-settings .new-emoji-section-title,
+#filter-settings .new-filter-section-title {
     top: 20px;
     left: 20px;
 }
@@ -3401,6 +3404,7 @@ div.edit_bot {
 #settings .settings-section .account-settings-form .control-label,
 #settings .settings-section .new-bot-form .control-label,
 #emoji-settings .new-emoji-form .control-label,
+#filter-settings .new-filter-form .control-label,
 #settings .settings-section .edit-bot-form-box .control-label {
     width: 120px;
 }
@@ -3408,6 +3412,7 @@ div.edit_bot {
 #settings .settings-section .account-settings-form .controls,
 #settings .settings-section .new-bot-form .controls,
 #emoji-settings .new-emoji-form .controls,
+#filter-settings .new-filter-form .controls,
 #settings .settings-section .edit-bot-form-box .controls  {
     margin-left: 140px;
 }
@@ -3476,7 +3481,8 @@ div.edit_bot {
 
 #settings .bot-information-box,
 #settings .add-new-bot-box,
-#emoji-settings .add-new-emoji-box {
+#emoji-settings .add-new-emoji-box,
+#filter-settings .add-new-filter-box {
     background: #e3e3e3;
     padding: 10px;
     margin-left: 38px;
@@ -3488,7 +3494,8 @@ div.edit_bot {
 }
 
 #settings .add-new-bot-box,
-#emoji-settings .add-new-emoji-box {
+#emoji-settings .add-new-emoji-box,
+#filter-settings .add-new-filter-box {
     background: #cbe3cb;
 }
 
@@ -3539,6 +3546,7 @@ div.edit_bot {
 
 #settings .settings-section .new-bot-form .control-label,
 #emoji-settings .new-emoji-form .control-label,
+#filter-settings .new-filter-form .control-label,
 #settings .settings-section .edit-bot-form-box .control-label {
     float: left;
     width: 120px;
@@ -3547,7 +3555,8 @@ div.edit_bot {
 }
 
 #settings .settings-section .new-bot-form .controls,
-#emoji-settings .new-emoji-form .controls {
+#emoji-settings .new-emoji-form .controls,
+#filter-settings .new-filter-form .controls {
     margin-left: 110px;
 }
 
@@ -3563,6 +3572,7 @@ div.edit_bot {
 #settings .settings-section .account-settings-form,
 #settings .settings-section .new-bot-form,
 #emoji-settings .new-emoji-form,
+#filter-settings .new-filter-form,
 #settings .settings-section .notification-settings-form,
 #settings .settings-section .display-settings-form,
 #settings .settings-section .edit-bot-form-box {
@@ -3573,6 +3583,7 @@ div.edit_bot {
 #settings .settings-section .account-settings-form .control-label,
 #settings .settings-section .new-bot-form .control-label,
 #emoji-settings .new-emoji-form .control-label,
+#filter-settings .new-filter-form .control-label,
 #settings .settings-section .edit-bot-form-box .control-label {
     display: block;
     width: 120px;
@@ -3587,6 +3598,7 @@ div.edit_bot {
 #settings .settings-section .account-settings-form .controls,
 #settings .settings-section .new-bot-form .controls,
 #emoji-settings .new-emoji-form .controls,
+#filter-settings .new-filter-form .controls,
 #settings .settings-section .edit-bot-form-box .controls {
     margin: auto;
     text-align: center;
@@ -3598,15 +3610,18 @@ div.edit_bot {
 #settings .settings-section .account-settings-form .controls input,
 #settings .settings-section .new-bot-form .controls button,
 #emoji-settings .new-emoji-form .controls button,
+#filter-settings .new-filter-form .controls button,
 #settings .settings-section .edit-bot-form-box .controls button,
 #settings .settings-section .new-bot-form .controls input,
 #emoji-settings .new-emoji-form .controls input,
+#filter-settings .new-filter-form .controls input,
 #settings .settings-section .edit-bot-form-box .controls input {
     margin: auto;
 }
 
 #settings .settings-section .new-bot-form,
-#emoji-settings .new-emoji-form {
+#emoji-settings .new-emoji-form,
+#filter-settings .new-filter-form {
     padding: 0px;
     width: 100%;
     text-align: center;
@@ -4233,7 +4248,8 @@ li.show-more-private-messages a {
 
 }
 
-.admin_emoji_table {
+.admin_emoji_table,
+.admin_filters_table {
     margin: 20px auto;
 }
 
@@ -4254,4 +4270,12 @@ li.show-more-private-messages a {
 
 #emoji-settings .new-emoji-form #emoji_url {
     width: 60%;
+}
+
+.admin_filters_table {
+    margin-top: 20px;
+}
+
+#admin-filter-pattern-status, #admin-filter-format-status {
+    margin: 20px 0 0 0;
 }

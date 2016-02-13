@@ -96,6 +96,41 @@
               </div>
             </form>
           </div>
+          <div id="filter-settings" class="settings-section">
+            <div class="settings-section-title"><i class="icon-vector-filter settings-section-icon"></i>Custom realm filters</div>
+            <div class="admin-table-wrapper">
+              <table class="table table-condensed table-striped admin_filters_table">
+                <tbody id="admin_filters_table">
+                  <th>Pattern</th>
+                  <th>URL format</th>
+                  <th>Actions</th>
+                </tbody>
+              </table>
+            </div>
+            <form class="form-horizontal admin-filter-form">
+              <div class="add-new-filter-box">
+                <div class="new-filter-form">
+                  <div class="settings-section-title new-filter-section-title">Add a New Filter</div>
+                  <div class="alert" id="admin-filter-status"></div>
+                  <div class="control-group">
+                    <label for="filter_pattern" class="control-label">Filter pattern</label>
+                    <input type="text" id="filter_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
+                    <div class="alert" id="admin-filter-pattern-status"></div>
+                  </div>
+                  <div class="control-group">
+                    <label for="filter_format_string" class="control-label">URL format</label>
+                    <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://trac.humbughq.com/ticket/%(id)s" />
+                    <div class="alert" id="admin-filter-format-status"></div>
+                  </div>
+                  <div class="control-group">
+                    <div class="controls">
+                      <input type="submit" class="btn btn-big btn-primary" value="Add filter" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="users">
           <div id="admin-user-list" class="settings-section">

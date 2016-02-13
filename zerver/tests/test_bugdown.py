@@ -339,6 +339,15 @@ class BugdownTest(TestCase):
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
 
+        RealmFilter(realm=get_realm('zulip.com'), pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
+                    url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
+        msg = Message(sender=get_user_profile_by_email('hamlet@zulip.com'))
+
+        content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
+        converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
+
+        self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
+
     def test_stream_subscribe_button_simple(self):
         msg = '!_stream_subscribe_button(simple)'
         converted = bugdown_convert(msg)
