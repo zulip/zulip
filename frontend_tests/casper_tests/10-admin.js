@@ -177,6 +177,41 @@ casper.then(function () {
     });
 });
 
+// Test custom realm filters
+casper.waitForSelector('.admin-filter-form', function () {
+    casper.fill('form.admin-filter-form', {
+        'pattern': '#(?P<id>[0-9]+)',
+        'url_format_string': 'https://trac.example.com/ticket/%(id)s'
+    });
+    casper.click('form.admin-filter-form input.btn');
+});
+
+casper.waitUntilVisible('div#admin-filter-status', function () {
+    casper.test.assertSelectorHasText('div#admin-filter-status', 'Custom filter added!');
+});
+
+casper.waitForSelector('.filter_row', function () {
+    casper.test.assertSelectorHasText('.filter_row span.filter_pattern', '#(?P<id>[0-9]+)');
+    casper.test.assertSelectorHasText('.filter_row span.filter_url_format_string', 'https://trac.example.com/ticket/%(id)s');
+    casper.click('.filter_row button');
+});
+
+casper.waitWhileSelector('.filter_row', function () {
+    casper.test.assertDoesntExist('.filter_row');
+});
+
+casper.waitForSelector('.admin-filter-form', function () {
+    casper.fill('form.admin-filter-form', {
+        'pattern': 'a$',
+        'url_format_string': 'https://trac.example.com/ticket/%(id)s'
+    });
+    casper.click('form.admin-filter-form input.btn');
+});
+
+casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
+    casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern, you must use the following format PREFIX-(?P<id>.+)');
+});
+
 function get_suggestions(str) {
     casper.then(function () {
         casper.evaluate(function (str) {

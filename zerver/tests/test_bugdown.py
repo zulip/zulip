@@ -444,7 +444,7 @@ class BugdownTest(TestCase):
                                    url_format_string=url_format_string)
         realm_filter.save()
         self.assertEqual(
-            str(realm_filter),
+            realm_filter.__unicode__(),
             '<RealmFilter(zulip.com): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 
@@ -461,6 +461,15 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_subject,  [u'https://trac.zulip.net/ticket/444'])
 
+        RealmFilter(realm=get_realm_by_string_id('zulip'), pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
+                    url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
+        msg = Message(sender=get_user_profile_by_email('hamlet@zulip.com'))
+
+        content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
+        converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
+
+        self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
+
     def test_maybe_update_realm_filters(self):
         # type: () -> None
         realm = get_realm_by_string_id('zulip')
@@ -476,7 +485,7 @@ class BugdownTest(TestCase):
         zulip_filters = all_filters['zulip.com']
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
-            (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s'))
+            (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
 
     def test_flush_realm_filter(self):
         # type: () -> None
