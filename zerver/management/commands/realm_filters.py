@@ -62,7 +62,7 @@ Example: python manage.py realm_filters --realm=zulip.com --op=show
             do_add_realm_filter(realm, pattern, url_format_string)
             sys.exit(0)
         elif options["op"] == "remove":
-            do_remove_realm_filter(realm, pattern)
+            do_remove_realm_filter(realm, pattern=pattern)
             sys.exit(0)
         else:
             self.print_help("python manage.py", "realm_filters")

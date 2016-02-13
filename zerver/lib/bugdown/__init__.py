@@ -1051,7 +1051,7 @@ class Bugdown(markdown.Extension):
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
-        for (pattern, format_string) in self.getConfig("realm_filters"):
+        for (pattern, format_string, id) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
                                   RealmFilterPattern(pattern, format_string), '>link')
 

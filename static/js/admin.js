@@ -186,6 +186,25 @@ exports.populate_emoji = function (emoji_data) {
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
 
+exports.populate_filters = function (filters_data) {
+    var filters_table = $("#admin_filters_table").expectOne();
+    filters_table.find("tr.filter_row").remove();
+    _.each(filters_data, function (filter) {
+        filters_table.append(
+            templates.render(
+                "admin_filter_list", {
+                    filter: {
+                        pattern: filter[0],
+                        url_format_string: filter[1],
+                        id: filter[2]
+                    }
+                }
+            )
+        );
+    });
+    loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
+};
+
 exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
@@ -285,6 +304,7 @@ function _setup_page() {
     loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));
     loading.make_indicator($('#admin_page_emoji_loading_indicator'));
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
+    loading.make_indicator($('#admin_page_filters_loading_indicator'));
 
     // Populate users and bots tables
     channel.get({
@@ -310,6 +330,9 @@ function _setup_page() {
     // Populate emoji table
     exports.populate_emoji(page_params.realm_emoji);
     exports.update_default_streams_table();
+
+    // Populate filters table
+    exports.populate_filters(page_params.realm_filters);
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
@@ -776,6 +799,43 @@ function _setup_page() {
                 var errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
                 ui.report_error(i18n.t("Failed!"), xhr, emoji_status);
+            }
+        });
+    });
+
+    $(".administration").on("submit", "form.admin-filter-form", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var filter_status = $('#admin-filter-status');
+        var pattern_status = $('#admin-filter-pattern-status');
+        var format_status = $('#admin-filter-format-status');
+        filter_status.hide();
+        pattern_status.hide();
+        format_status.hide();
+        var filter = {};
+        $(this).serializeArray().map(function (x){filter[x.name] = x.value;});
+
+        channel.put({
+            url: "/json/realm/filters",
+            data: $(this).serialize(),
+            success: function (data) {
+                filter.id = data.id;
+                ui.report_success("Custom filter added!", filter_status);
+            },
+            error: function (xhr, error) {
+                var errors = $.parseJSON(xhr.responseText).msg;
+                if (errors.pattern !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.pattern});
+                    ui.report_error("Failed", xhr, pattern_status);
+                }
+                if (errors.url_format_string !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.url_format_string});
+                    ui.report_error("Failed", xhr, format_status);
+                }
+                if (errors.__all__ !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.__all__});
+                    ui.report_error("Failed", xhr, filter_status);
+                }
             }
         });
     });
