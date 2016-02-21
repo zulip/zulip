@@ -12,6 +12,11 @@ missed-message emails, desktop apps, and much more.
 Further information on the Zulip project and its features can be found
 at https://www.zulip.org.
 
+[![Build Status][1]][2]
+
+[1]: https://travis-ci.org/zulip/zulip.svg?branch=master
+[2]: https://travis-ci.org/zulip/zulip
+
 Installing the Zulip Development environment
 ============================================
 
