@@ -112,7 +112,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
                                                      payload['ref'], payload['commits'],
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
-                                                     payload['pusher']['name'],
+                                                     payload['head_commit']['committer']['email'],
                                                      forced=payload['forced'],
                                                      created=payload['created'])
     elif event == 'commit_comment':
