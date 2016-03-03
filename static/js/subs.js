@@ -640,6 +640,10 @@ function show_new_stream_modal() {
     $('#stream-creation').modal("show");
 }
 
+function show_unsubscribe_confirmation_modal() {
+    $('#unsubscribe-confirmation').modal("show");
+}
+
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
     return channel.post({
         url: "/json/users/me/subscriptions",
@@ -692,7 +696,6 @@ $(function () {
 
     $("#subscriptions_table").on("submit", "#add_new_subscription", function (e) {
         e.preventDefault();
-
         if (!should_list_all_streams()) {
             ajaxSubscribe($("#create_stream_name").val());
             return;
@@ -771,13 +774,23 @@ $(function () {
         e.stopPropagation();
         var sub_row = $(e.target).closest('.subscription_row');
         var stream_name = sub_row.find('.subscription_name').text();
+        $("#unsub_stream_name").text(stream_name);
         var sub = stream_data.get_sub(stream_name);
-
         if (sub.subscribed) {
-            ajaxUnsubscribe(stream_name);
+            if(sub.invite_only && Object.keys(sub.subscribers._items).length === 1) {
+                show_unsubscribe_confirmation_modal();
+            } else {
+                ajaxUnsubscribe(stream_name);
+            }
         } else {
             ajaxSubscribe(stream_name);
         }
+    });
+
+    $("#unsubscribe_confirmation_form").on("submit", function (e) {
+        e.preventDefault();
+        $("#unsubscribe-confirmation").modal("hide");
+        ajaxUnsubscribe($("#unsub_stream_name").text());
     });
 
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
@@ -821,7 +834,9 @@ $(function () {
             control.prop("checked", ! control.prop("checked"));
         }
     });
+
     $("#subscriptions_table").on("click", "#sub_setting_not_in_home_view", stream_home_view_clicked);
+
     $("#subscriptions_table").on("click", "#sub_desktop_notifications_setting",
                                  stream_desktop_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",
