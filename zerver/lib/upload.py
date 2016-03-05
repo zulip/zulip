@@ -32,11 +32,16 @@ import random
 # name" is the original filename provided by the user run through Django's
 # slugify.
 
+
+def get_extension(filename):
+    import os
+    ext = str(os.path.basename(filename)).split('.', 1)[1]
+    return '.' + ext if ext else None
+
 def sanitize_name(name):
-    split_name = name.split('.')
-    base = ".".join(split_name[:-1])
-    extension = split_name[-1]
-    return slugify(base) + "." + slugify(extension)
+    extension=get_extension(name)
+    filename=filename.split(extension)[0]
+    return slugify(filename)+extension
 
 def random_name(bytes=60):
     return base64.urlsafe_b64encode(os.urandom(bytes))
