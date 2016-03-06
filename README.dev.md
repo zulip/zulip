@@ -295,7 +295,7 @@ You can also use Docker to develop, first you need to install Docker in your dev
 
 * [Get Started](https://docs.docker.com/linux/started/)
 * [Understand the architecture](https://docs.docker.com/engine/introduction/understanding-docker/)
-* [Docker run reference]https://docs.docker.com/engine/reference/run/()
+* [Docker run reference](https://docs.docker.com/engine/reference/run/)
 * [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
 
 Then you should create the Docker image based on Ubuntu Linux, first go to the directory with the Zulip source code:
