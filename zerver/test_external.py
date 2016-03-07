@@ -41,7 +41,7 @@ class MITNameTest(TestCase):
     def test_notmailinglist(self):
         self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
-class S3Test(AuthedTestCase):
+class S3Test("""AuthedTestCase"""):
     test_uris = [] # full URIs in public bucket
     test_keys = [] # keys in authed bucket
 
@@ -51,18 +51,20 @@ class S3Test(AuthedTestCase):
         """
         A call to /json/upload_file should return a uri and actually create an object.
         """
+        fileNames=['test.txt','.hidden','.hidden.txt','tarball.tar.gz','.hiddentarball.tar.gz']
         self.login("hamlet@zulip.com")
         fp = StringIO("zulip!")
-        fp.name = "zulip.txt"
 
-        result = self.client.post("/json/upload_file", {'file': fp})
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertIn("uri", json)
-        uri = json["uri"]
-        base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
-        self.test_keys.append(uri[len(base):])
+        for i in fileNames:
+            fp.name = i
+            result = self.client.post("/json/upload_file", {'file': fp})
+            self.assert_json_success(result)
+            json = ujson.loads(result.content)
+            self.assertIn("uri", json)
+            uri = json["uri"]
+            base = '/user_uploads/'
+            self.assertEquals(base, uri[:len(base)])
+            self.test_keys.append(uri[len(base):])
 
         response = self.client.get(uri)
         redirect_url = response['Location']
@@ -225,3 +227,6 @@ class GCMTokenTests(AuthedTestCase):
         result = self.client.post('/json/users/me/android_gcm_reg_id', {'token':token})
         self.assert_json_success(result)
 
+testing=S3Test()
+
+testing.test_file_upload_authed()
