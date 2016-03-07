@@ -850,10 +850,11 @@ MessageListView.prototype = {
         trailing_bookend.remove();
     },
 
-    render_trailing_bookend: function MessageListView_render_trailing_bookend(trailing_bookend_content) {
+    render_trailing_bookend: function MessageListView_render_trailing_bookend(trailing_bookend_content, subscribed) {
         var rendered_trailing_bookend = $(templates.render('bookend', {
             bookend_content: trailing_bookend_content,
-            trailing: true
+            trailing: true,
+            subscribed: subscribed
         }));
         rows.get_table(this.table_name).append(rendered_trailing_bookend);
     },

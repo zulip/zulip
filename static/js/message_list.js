@@ -375,7 +375,7 @@ exports.MessageList.prototype = {
             }
         }
         if (trailing_bookend_content !== undefined) {
-            this.view.render_trailing_bookend(trailing_bookend_content);
+            this.view.render_trailing_bookend(trailing_bookend_content, subscribed);
         }
     },
 

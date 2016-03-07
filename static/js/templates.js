@@ -3,7 +3,7 @@ var templates = (function () {
 var exports = {};
 
 exports.render = function (name, arg) {
-     if (Handlebars.templates === undefined) {
+    if (Handlebars.templates === undefined) {
         throw "Cannot find compiled templates!";
     }
 

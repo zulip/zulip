@@ -596,17 +596,30 @@ function render(template_name, args) {
 
 }());
 
-(function trailing_bookend() {
+(function subscribed_trailing_bookend() {
     var args = {
         bookend_content: "subscribed to stream",
-        trailing: true
+        trailing: true,
+        subscribed: true
     };
     var html = '';
     html += render('bookend', args);
 
     global.write_test_output("bookend.handlebars", html);
-
     assert.equal($(html).text().trim(), 'subscribed to stream');
+}());
+
+(function unsubscribed_trailing_bookend() {
+    var args = {
+        bookend_content: "Not subscribed to stream",
+        trailing: true,
+        subscribed: false
+    };
+    var html = '';
+    html += render('bookend', args);
+
+    global.write_test_output("bookend.handlebars", html);
+    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n    \n        \n            Subscribe');
 }());
 
 (function tutorial() {
