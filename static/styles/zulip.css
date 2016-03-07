@@ -2643,6 +2643,12 @@ div.floating_recipient {
     margin-right: 10px;
 }
 
+.stream_sub_unsub_button {
+    min-width: 140px;
+    margin-top: 9px;
+    margin-right: 10px;
+}
+
 button.primary {
     background-color: #89a0b3;
     padding: 2px;

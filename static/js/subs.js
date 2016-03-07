@@ -787,6 +787,23 @@ $(function () {
         }
     });
 
+    $("#zfilt").on("click", ".stream_sub_unsub_button", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var stream_name = narrow.stream();
+        if (stream_name === undefined) {
+            return;
+        }
+        var sub = stream_data.get_sub(stream_name);
+
+        if (sub.subscribed) {
+            ajaxUnsubscribe(stream_name);
+        } else {
+            ajaxSubscribe(stream_name);
+        }
+    });
+
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
         var subrow = $(e.target).closest('.subscription_row');
         var colorpicker = subrow.find('.colorpicker');
