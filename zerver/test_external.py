@@ -227,6 +227,3 @@ class GCMTokenTests(AuthedTestCase):
         result = self.client.post('/json/users/me/android_gcm_reg_id', {'token':token})
         self.assert_json_success(result)
 
-testing=S3Test()
-
-testing.test_file_upload_authed()
