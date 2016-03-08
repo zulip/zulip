@@ -677,6 +677,13 @@ ul.filters li.out_of_home_view {
     opacity: 0.25;
 }
 
+ul.filters li.out_of_home_view li.muted_topic {
+    /* If stream is muted, this resets opacity of muted topics in muted stream
+       to 1. Since, Opacity is multiplied down through child elements. 
+       So, 1*opacity of muted stream results in 0.25 */
+    opacity: 1;
+}
+
 .message_list {
 }
 
