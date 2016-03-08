@@ -11,8 +11,8 @@ from six.moves import range
 
 def random_api_key():
     choices = string.ascii_letters + string.digits
-    altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)])
-    return base64.b64encode(os.urandom(24), altchars=altchars)
+    altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
+    return base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
 
 # create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in

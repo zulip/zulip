@@ -88,7 +88,7 @@ def log_event(event):
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
-            log.write(ujson.dumps(event) + '\n')
+            log.write(ujson.dumps(event) + u'\n')
 
 def active_user_ids(realm):
     return [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import codecs
 import markdown
 import logging
 import traceback
@@ -242,9 +243,11 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
             if not url.startswith("http://"):
                 # Don't rewrite images on our own site (e.g. emoji).
                 continue
-            digest = hmac.new(settings.CAMO_KEY, url, hashlib.sha1).hexdigest()
-            encoded_url = url.encode("hex")
-            img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, encoded_url))
+            encoded_url = url.encode("utf-8")
+            encoded_camo_key = settings.CAMO_KEY.encode("utf-8")
+            digest = hmac.new(encoded_camo_key, encoded_url, hashlib.sha1).hexdigest()
+            hex_encoded_url = codecs.encode(encoded_url, "hex")
+            img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, hex_encoded_url))
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
