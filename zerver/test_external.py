@@ -41,7 +41,7 @@ class MITNameTest(TestCase):
     def test_notmailinglist(self):
         self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
-class S3Test("""AuthedTestCase"""):
+class S3Test(AuthedTestCase):
     test_uris = [] # full URIs in public bucket
     test_keys = [] # keys in authed bucket
 
