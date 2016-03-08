@@ -46,7 +46,7 @@ guidelines](http://zulip.readthedocs.org/en/latest/code-style.html#commit-messag
 * **Testing**. The Zulip automated tests all run automatically when
 you submit a pull request, but you can also run them all in your
 development environment following the instructions in the [testing
-section](https://github.com/zulip/zulip#running-the-test-suite) below.
+docs](https://github.com/zulip/zulip/blob/master/README.dev.md#running-the-test-suite).
 
 * **Developer Documentation**.  Zulip has a growing collection of
 developer documentation on [Read The Docs](https://zulip.readthedocs.org/).
