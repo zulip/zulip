@@ -1019,7 +1019,7 @@ def api_travis_webhook(request, user_profile, stream=REQ(default='travis'), topi
 
     good_status = ['Passed', 'Fixed']
     bad_status  = ['Failed', 'Broken', 'Still Failing']
-    svn_rev = ''.join(re.findall('@\d+', s))
+    svn_rev = ''.join(re.findall('@\d+', message['message']))
 
     emoji = ''
     if message_type in good_status:
