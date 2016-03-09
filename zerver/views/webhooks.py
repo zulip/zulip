@@ -229,6 +229,10 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
     for commit in truncated_commits:
         short_id = commit['id'][:7]
         (short_commit_msg, _, _) = commit['message'].partition("\n")
+        svn_rev = re.search('@\d+', commit['message'])
+        svn_rev = svn_rev and svn_rev.group() or ''
+        short_id += svn_rev
+
         content += "* [%s](%s): %s\n" % (short_id, commit['url'],
                                          short_commit_msg)
     if (num_commits > max_commits):
