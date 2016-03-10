@@ -182,7 +182,7 @@ def make_header(repo, opts, revs):
         print "Attempting to push %s to remote %s" % (local_name, remote)
         repo.git.push(remote, local_name)
         tip_name = '%s (%s)' % (local_name, revs[-1].hexsha[:7])
-      except git.GitCommandError, e:
+      except git.GitCommandError as e:
         print >>sys.stderr, "ERROR: Couldn't push %s to remote" % (local_name,)
         print >>sys.stderr, e
         sys.exit(1)

@@ -40,7 +40,7 @@ from datetime import datetime, timedelta
 
 try:
     import dateutil.parser
-except ImportError, e:
+except ImportError as e:
     print >>sys.stderr, e
     print >>sys.stderr, "Please install the python-dateutil package."
     exit(1)

@@ -87,7 +87,7 @@ def mkdir_p(path):
     # Python doesn't have an analog to `mkdir -p` < Python 3.2.
     try:
         os.makedirs(path)
-    except OSError, e:
+    except OSError as e:
         if e.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else:

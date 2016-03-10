@@ -20,7 +20,7 @@ def mkdir_p(path):
     # Python doesn't have an analog to `mkdir -p` < Python 3.2.
     try:
         os.makedirs(path)
-    except OSError, e:
+    except OSError as e:
         if e.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else:
@@ -98,6 +98,6 @@ if __name__ == "__main__":
     finally:
         try:
             os.remove(lock_path)
-        except OSError, IOError:
+        except OSError as IOError:
             pass
 

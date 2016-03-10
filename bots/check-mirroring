@@ -163,7 +163,7 @@ for tries in xrange(10):
         if missing == 0:
             actually_subscribed = True
             break
-    except IOError, e:
+    except IOError as e:
         if "SERVNAK received" in e:
             logger.error("SERVNAK repeatedly received, punting rest of test")
         else:
