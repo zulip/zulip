@@ -30,6 +30,7 @@
 # python-dateutil is a dependency for this script.
 
 from __future__ import print_function
+from __future__ import absolute_import
 import requests
 import logging
 import time
@@ -37,6 +38,7 @@ import sys
 import os
 
 from datetime import datetime, timedelta
+import six
 
 
 try:
@@ -315,7 +317,7 @@ def check_permissions():
         sys.stderr(e)
 
 if __name__ == "__main__":
-    if not isinstance(config.RESUME_FILE, basestring):
+    if not isinstance(config.RESUME_FILE, six.string_types):
         sys.stderr("RESUME_FILE path not given; refusing to continue")
     check_permissions()
     if config.LOG_FILE:

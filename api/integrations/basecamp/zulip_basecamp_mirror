@@ -26,6 +26,7 @@
 # or preferably on a server.
 # You may need to install the python-requests library.
 
+from __future__ import absolute_import
 import requests
 import logging
 import time
@@ -34,6 +35,7 @@ import sys
 import os
 from datetime import datetime, timedelta
 from HTMLParser import HTMLParser
+import six
 
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_basecamp_config as config
@@ -170,7 +172,7 @@ def run_mirror():
 
 
 if __name__ == "__main__":
-    if not isinstance(config.RESUME_FILE, basestring):
+    if not isinstance(config.RESUME_FILE, six.string_types):
         sys.stderr("RESUME_FILE path not given; refusing to continue")
     check_permissions()
     if config.LOG_FILE:
