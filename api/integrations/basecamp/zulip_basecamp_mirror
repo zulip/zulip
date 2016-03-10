@@ -122,7 +122,7 @@ def run_mirror():
     try:
         # we use an exponential backoff approach when we get 429 (Too Many Requests).
         sleepInterval = 1
-        while 1:
+        while True:
             time.sleep(sleepInterval)
             response = requests.get("https://basecamp.com/%s/api/v1/events.json" % (config.BASECAMP_ACCOUNT_ID),
                                     params={'since': since},

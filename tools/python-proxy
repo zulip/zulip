@@ -105,7 +105,7 @@ class ConnectionHandler:
         self.target.close()
 
     def get_base_header(self):
-        while 1:
+        while True:
             self.client_buffer += self.client.recv(BUFLEN)
             end = self.client_buffer.find('\n')
             if end!=-1:
@@ -195,7 +195,7 @@ class ConnectionHandler:
         time_out_max = self.timeout/3
         socs = [self.client, self.target]
         count = 0
-        while 1:
+        while True:
             count += 1
             (recv, _, error) = select.select(socs, [], socs, 3)
             if error:
@@ -237,7 +237,7 @@ def start_server(host='localhost', port=PORT, IPv6=False, timeout=60,
     soc.bind((host, port))
     print "Serving on %s:%d." % (host, port) #debug
     soc.listen(0)
-    while 1:
+    while True:
         thread.start_new_thread(handler, soc.accept()+(timeout,))
 
 if __name__ == '__main__':

@@ -84,7 +84,7 @@ for device in macs.values():
     #   If you have multiple IPs, local-ipv4s is a list.
     #   If you only have one, local-ipv4s is a string.
     # Who knew?
-    if type(device['local-ipv4s']) is str:
+    if isinstance(device['local-ipv4s'], str):
         # Only do dhcp, don't try to assign addresses
         to_configure = [device['local-ipv4s']]
     else:

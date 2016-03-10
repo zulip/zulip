@@ -29,8 +29,7 @@ users = {}
 
 def gen_next_user():
     global users
-    user_list = users.keys()
-    user_list.sort()
+    user_list = sorted(users.keys())
     while True:
         for user in user_list:
             yield user
