@@ -3,6 +3,7 @@ from django.test import TestCase
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
+from zerver.lib.handlers import allocate_handler_id
 from zerver.lib import cache
 from zerver.lib import event_queue
 from zerver.worker import queue_processors

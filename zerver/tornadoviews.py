@@ -14,6 +14,7 @@ from zerver.lib.event_queue import allocate_client_descriptor, get_client_descri
 from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.narrow import check_supported_events_narrow_filter
 
+import time
 import ujson
 import logging
 
@@ -55,12 +56,39 @@ def get_events_backend(request, user_profile, handler,
     if user_client is None:
         user_client = request.client
 
-    (result, log_data) = fetch_events(
-        user_profile.id, user_profile.realm_id, user_profile.email, queue_id,
-        last_event_id, event_types, user_client.name, apply_markdown, all_public_streams,
-        lifespan_secs, narrow, dont_block, handler.handler_id)
-    request._log_data['extra'] = log_data
-    if result == RespondAsynchronously:
+    events_query = dict(
+        user_profile_id = user_profile.id,
+        user_profile_email = user_profile.email,
+        queue_id = queue_id,
+        last_event_id = last_event_id,
+        event_types = event_types,
+        client_type_name = user_client.name,
+        all_public_streams = all_public_streams,
+        lifespan_secs = lifespan_secs,
+        narrow = narrow,
+        dont_block = dont_block,
+        handler_id = handler.handler_id)
+
+    if queue_id is None:
+        events_query['new_queue_data'] = dict(
+            user_profile_id = user_profile.id,
+            realm_id = user_profile.realm.id,
+            user_profile_email = user_profile.email,
+            event_types = event_types,
+            client_type_name = user_client.name,
+            apply_markdown = apply_markdown,
+            all_public_streams = all_public_streams,
+            queue_timeout = lifespan_secs,
+            last_connection_time = time.time(),
+            narrow = narrow)
+
+    result = fetch_events(events_query)
+    if "extra_log_data" in result:
+        request._log_data['extra'] = result["extra_log_data"]
+
+    if result["type"] == "async":
         handler._request = request
-        return result
-    return json_success(result)
+        return RespondAsynchronously
+    if result["type"] == "error":
+        return json_error(result["message"])
+    return json_success(result["response"])
