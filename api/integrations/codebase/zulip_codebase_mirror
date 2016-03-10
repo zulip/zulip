@@ -271,7 +271,7 @@ def run_mirror():
         else:
             timestamp = int(timestamp, 10)
             since = datetime.fromtimestamp(timestamp)
-    except (ValueError,IOError) as e:
+    except (ValueError, IOError) as e:
         logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
         since = default_since()
 

@@ -56,7 +56,7 @@ f = codecs.open("output-candidate.html", encoding='utf-8', mode="wb")
 def uniwrite(f, s):
     f.write(s)
 
-uniwrite(f,"""
+uniwrite(f, """
 <html>
 
 <head>
@@ -148,19 +148,19 @@ for msg in result['messages']:
         # Don't put tweets in the iframe
         continue
 
-    uniwrite(f,'<div class="message">')
+    uniwrite(f, '<div class="message">')
 
-    uniwrite(f,'<img class="avatar" src="%s" />' % msg['avatar_url'])
+    uniwrite(f, '<img class="avatar" src="%s" />' % msg['avatar_url'])
 
-    uniwrite(f,'<div class="sender-bar">')
-    uniwrite(f,'<div class="recipient" style="background-color: %s;">%s &gt; %s</div>' % (color[msg['display_recipient']], msg['display_recipient'], msg['subject']))
-    uniwrite(f,'<span class="sender">%s</span>' % msg['sender_full_name'])
-    uniwrite(f,'</div>')
+    uniwrite(f, '<div class="sender-bar">')
+    uniwrite(f, '<div class="recipient" style="background-color: %s;">%s &gt; %s</div>' % (color[msg['display_recipient']], msg['display_recipient'], msg['subject']))
+    uniwrite(f, '<span class="sender">%s</span>' % msg['sender_full_name'])
+    uniwrite(f, '</div>')
 
-    uniwrite(f,'<div class="content">%s</div>' % msg['content'])
-    uniwrite(f,"</div>")
+    uniwrite(f, '<div class="content">%s</div>' % msg['content'])
+    uniwrite(f, "</div>")
 
-uniwrite(f,"""
+uniwrite(f, """
 </div>
 </body>
 </html>

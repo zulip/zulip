@@ -92,7 +92,7 @@ def build_message(event):
     action = htmlParser.unescape(re.sub(r"<[^<>]+>", "", event.get('action', '')))
     target = htmlParser.unescape(event.get('target', ''))
     # Some events have "excerpts", which we blockquote
-    excerpt = htmlParser.unescape(event.get('excerpt',''))
+    excerpt = htmlParser.unescape(event.get('excerpt', ''))
     if excerpt.strip() == "":
         message = '**%s** %s [%s](%s).' % (event['creator']['name'], action, target, event['html_url'])
     else:
@@ -116,7 +116,7 @@ def run_mirror():
         since = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}-\d{2}:\d{2}", since)
         assert since, "resume file does not meet expected format"
         since = since.string
-    except (AssertionError,IOError) as e:
+    except (AssertionError, IOError) as e:
         logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
         since = (datetime.utcnow() - timedelta(hours=config.BASECAMP_INITIAL_HISTORY_HOURS)).isoformat() + "-00:00"
     try:

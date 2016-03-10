@@ -189,7 +189,7 @@ def since():
                 timestamp = float(datestring)
                 max_timestamp_processed = datetime.fromtimestamp(timestamp)
                 logging.info("Reading from resume file: " + datestring)
-        except (ValueError,IOError) as e:
+        except (ValueError, IOError) as e:
             logging.warn("Could not open resume file: %s" % (
                     e.message or e.strerror,))
             max_timestamp_processed = default_since()

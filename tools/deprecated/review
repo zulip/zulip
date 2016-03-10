@@ -270,7 +270,7 @@ def edit(repo, opts, revs, headers):
 
   # Open EDITOR to edit buffer.
 
-  editor = os.getenv('EDITOR','emacs')
+  editor = os.getenv('EDITOR', 'emacs')
   subprocess.check_call(shlex.split(editor) + [temp.name])
 
   # Check if buffer is empty, and if so abort.

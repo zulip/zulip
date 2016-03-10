@@ -10,7 +10,7 @@ elems = [tree.getroot().findall(
     ".//*[@id='%s']/{http://www.w3.org/2000/svg}tspan" % (name,))[0]
      for name in ('number_back', 'number_front')]
 
-for i in xrange(1,100):
+for i in xrange(1, 100):
     # Prepare a modified SVG
     s = '%2d' % (i,)
     for e in elems:
