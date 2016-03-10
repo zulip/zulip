@@ -5,6 +5,7 @@ import sys
 import subprocess
 from six.moves import filter
 from six.moves import map
+from six.moves import range
 
 class Record:
     pass

@@ -42,6 +42,7 @@ interfaces.
 
 '''
 
+from __future__ import absolute_import
 import sys
 import logging
 import logging.handlers
@@ -50,6 +51,7 @@ import re
 
 import boto.utils
 import netifaces
+from six.moves import range
 
 def address_of(device_id):
     try:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import time
 import optparse
@@ -8,6 +9,7 @@ import random
 import logging
 import subprocess
 import hashlib
+from six.moves import range
 
 parser = optparse.OptionParser()
 parser.add_option('--verbose',
@@ -150,7 +152,7 @@ for (stream, test) in test_streams:
         zephyr_subs_to_add.append((stream, '*', '*'))
 
 actually_subscribed = False
-for tries in xrange(10):
+for tries in range(10):
     try:
         zephyr.init()
         zephyr._z.subAll(zephyr_subs_to_add)
