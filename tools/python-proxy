@@ -83,7 +83,7 @@ Qual a diferença entre um proxy Elite, Anónimo e Transparente?
 """
 from __future__ import print_function
 
-import socket, thread, select
+import socket, six.moves._thread, select
 PORT = 8085
 
 __version__ = '0.1.0 Draft 1'
@@ -239,7 +239,7 @@ def start_server(host='localhost', port=PORT, IPv6=False, timeout=60,
     print("Serving on %s:%d." % (host, port)) #debug
     soc.listen(0)
     while True:
-        thread.start_new_thread(handler, soc.accept()+(timeout,))
+        six.moves._thread.start_new_thread(handler, soc.accept()+(timeout,))
 
 if __name__ == '__main__':
     start_server()

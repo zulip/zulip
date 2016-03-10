@@ -34,7 +34,7 @@ import re
 import sys
 import os
 from datetime import datetime, timedelta
-from HTMLParser import HTMLParser
+from six.moves.html_parser import HTMLParser
 import six
 
 sys.path.insert(0, os.path.dirname(__file__))

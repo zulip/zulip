@@ -27,7 +27,7 @@ from __future__ import print_function
 import calendar
 import errno
 import hashlib
-from HTMLParser import HTMLParser
+from six.moves.html_parser import HTMLParser
 import logging
 import optparse
 import os
