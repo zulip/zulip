@@ -902,7 +902,8 @@ class Message(ModelReprMixin, models.Model):
     @staticmethod
     def content_has_link(content):
         # type: (text_type) -> bool
-        return 'http://' in content or 'https://' in content or '/user_uploads' in content
+        has_file_link = settings.ENABLE_FILE_LINKS and 'file:///' in content
+        return 'http://' in content or 'https://' in content or '/user_uploads' in content or has_file_link
 
     @staticmethod
     def is_status_message(content, rendered_content):
