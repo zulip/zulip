@@ -91,6 +91,9 @@ CACHES['database'] = {
     }
 }
 
+# Enable file:/// hyperlink support by default in tests
+ENABLE_FILE_LINKS = True
+
 LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
 
