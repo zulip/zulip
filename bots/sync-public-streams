@@ -59,7 +59,7 @@ if __name__ == "__main__":
         if public_streams is None:
             continue
 
-        f = file("/home/zulip/public_streams.tmp", "w")
+        f = open("/home/zulip/public_streams.tmp", "w")
         f.write(simplejson.dumps(list(public_streams)) + "\n")
         f.close()
 

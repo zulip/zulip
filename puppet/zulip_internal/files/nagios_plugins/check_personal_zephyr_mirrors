@@ -31,7 +31,7 @@ down_count = 0
 for results_file_name in os.listdir(RESULTS_DIR):
     this_state = "OK"
     results_file = os.path.join(RESULTS_DIR, results_file_name)
-    data = file(results_file).read().strip()
+    data = open(results_file).read().strip()
     last_check = os.stat(results_file).st_mtime
     time_since_last_check = time.time() - last_check
     # time_since_last_check threshhold needs to be strictly greater

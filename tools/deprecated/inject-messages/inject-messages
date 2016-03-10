@@ -87,7 +87,7 @@ def maybe_assign_character(character):
         characters[character] = dict(users[user])
         characters[character]['intro'] = '(as ' + character.title() + ")\n"
 
-play = file(os.path.dirname(__file__) + os.path.sep + "othello")
+play = open(os.path.dirname(__file__) + os.path.sep + "othello")
 next_character = None
 next_message = ""
 act = ""

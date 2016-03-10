@@ -14,22 +14,22 @@ with open("/home/zulip/ccache/%s" % (program_name,), "w") as f:
 
 # Setup API key
 api_key_path = "/home/zulip/api-keys/%s" % (program_name,)
-file(api_key_path, "w").write(api_key + "\n")
+open(api_key_path, "w").write(api_key + "\n")
 
 # Setup supervisord configuration
 supervisor_path = "/etc/supervisor/conf.d/%s.conf" % (program_name,)
 template = "/home/zulip/zulip/bots/zmirror_private.conf.template"
-template_data = file(template).read()
+template_data = open(template).read()
 session_path = "/home/zulip/zephyr_sessions/%s" % (program_name,)
 
 # Preserve mail zephyrs forwarding setting across rewriting the config file
 
 try:
-    if "--forward-mail-zephyrs" in file(supervisor_path, "r").read():
+    if "--forward-mail-zephyrs" in open(supervisor_path, "r").read():
         template_data = template_data.replace("--use-sessions", "--use-sessions --forward-mail-zephyrs")
 except Exception:
     pass
-file(supervisor_path, "w").write(template_data.replace("USERNAME", short_user))
+open(supervisor_path, "w").write(template_data.replace("USERNAME", short_user))
 
 # Delete your session
 subprocess.check_call(["rm", "-f", session_path])
