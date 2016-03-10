@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import re
 import sys
@@ -9,6 +10,7 @@ import traceback
 
 from os          import path
 from collections import defaultdict
+from six.moves import filter
 
 parser = optparse.OptionParser()
 parser.add_option('--full',
@@ -54,7 +56,7 @@ if not files and not options.modified:
     # If no files are specified on the command line, use the entire git checkout
     files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
 
-files = filter(bool, files) # remove empty file caused by trailing \n
+files = list(filter(bool, files)) # remove empty file caused by trailing \n
 
 if not files:
     raise Exception('There are no files to check!')
@@ -77,7 +79,7 @@ for filepath in files:
 
     by_lang[exn].append(filepath)
 
-by_lang['.sh'] = filter(None, map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(find scripts/ tools/ bin/ -type f | grep -v [.])", shell=True).split('\n')))
+by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(find scripts/ tools/ bin/ -type f | grep -v [.])", shell=True).split('\n')) if _f]
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.

@@ -1,7 +1,9 @@
 #!/usr/bin/env python2.7
+from __future__ import absolute_import
 import os
 import sys
 import subprocess
+from six.moves import filter
 
 class Record:
     pass
@@ -178,7 +180,7 @@ def check_our_files():
         if 'base.html' in fn: return False
         return True
 
-    templates = filter(ok, templates)
+    templates = list(filter(ok, templates))
 
 
     assert len(templates) >= 10 # sanity check that we are actually doing work
