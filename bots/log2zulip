@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import subprocess
 import os
 import sys
@@ -62,7 +63,7 @@ def process_logs():
         file_data = last_data.get(log_file, {})
         if not os.path.exists(log_file):
             # If the file doesn't exist, log an error and then move on to the next file
-            print "Log file does not exist or could not stat log file: %s" % (log_file,)
+            print("Log file does not exist or could not stat log file: %s" % (log_file,))
             continue
         length = int(subprocess.check_output(["wc", "-l", log_file]).split()[0])
         if file_data.get("last") is None:
@@ -82,7 +83,7 @@ def process_logs():
 
 if __name__ == "__main__":
     if os.path.exists(lock_path):
-        print "Log2zulip lock held; not doing anything"
+        print("Log2zulip lock held; not doing anything")
         sys.exit(0)
 
     try:
@@ -91,7 +92,7 @@ if __name__ == "__main__":
         try:
             log_files = ujson.loads(file(control_path, "r").read())
         except Exception:
-            print "Could not load control data from %s" % (control_path,)
+            print("Could not load control data from %s" % (control_path,))
             traceback.print_exc()
             sys.exit(1)
         process_logs()

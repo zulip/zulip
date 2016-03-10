@@ -4,6 +4,7 @@
 Nagios plugin to check the difference between the primary and
 secondary Postgres servers' xlog location.
 """
+from __future__ import print_function
 
 import subprocess
 import re
@@ -16,7 +17,7 @@ states = {
     }
 
 def report(state, msg):
-    print "%s: %s" % (state, msg)
+    print("%s: %s" % (state, msg))
     exit(states[state])
 
 def get_loc_over_ssh(host, func):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import glob
@@ -36,12 +37,12 @@ def run_forever():
                 changed = True
             mtimes[fn] = new_mtime
         if changed:
-            print 'Recompiling templates'
+            print('Recompiling templates')
             try:
                 run()
-                print 'done'
+                print('done')
             except:
-                print '\n\n\nPLEASE FIX!!\n\n'
+                print('\n\n\nPLEASE FIX!!\n\n')
         time.sleep(0.200)
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import sys
 import re
 import json
@@ -98,9 +99,9 @@ def parse_file(fn):
 
 if __name__ == '__main__':
     for fn in sys.argv[1:]:
-        print '===', fn
+        print('===', fn)
         root = parse_file(fn)
         debug(root)
-        print
+        print()
 
 

@@ -6,6 +6,7 @@ Nagios plugin to check that our MIT users' Zephyr mirrors are running.
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
+from __future__ import print_function
 
 import datetime
 import os
@@ -37,7 +38,7 @@ def report(state, short_msg, too_old=None):
                            user.last_visit.strftime("%Y-%m-%d %H:%M %Z")
                            ) for user in too_old]
             )
-    print "%s: %s%s" % (state, short_msg, too_old_data)
+    print("%s: %s%s" % (state, short_msg, too_old_data))
 
     exit(states[state])
 

@@ -3,6 +3,7 @@
 # Minifies JavaScripts, creating source maps
 
 from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import subprocess
@@ -48,7 +49,7 @@ def get_changed_source_files(other_checkout):
     except subprocess.CalledProcessError:
         # If git returned an error, assume we can't reuse any files, and
         # regenerate everything.
-        print "Warning: git returned an error when comparing to the previous"
+        print("Warning: git returned an error when comparing to the previous")
         print ("deploy in %s. Will re-minify JavaScript instead of reusing"
                % (other_checkout,))
         return None
@@ -82,8 +83,8 @@ CLOSURE_BINARY = '/usr/bin/closure-compiler'
 if not os.path.exists(CLOSURE_BINARY):
     CLOSURE_BINARY = 'tools/closure-compiler/run'
     if not os.path.exists(CLOSURE_BINARY):
-        print "closure-compiler not installed; the Vagrant provision.py installs it via apt "\
-            "or you can manually unpack http://dl.google.com/closure-compiler/compiler-latest.zip to tools/closure-compiler"
+        print("closure-compiler not installed; the Vagrant provision.py installs it via apt "\
+            "or you can manually unpack http://dl.google.com/closure-compiler/compiler-latest.zip to tools/closure-compiler")
         sys.exit(1)
 
 # Where to put minified JS and source maps

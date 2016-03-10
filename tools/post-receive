@@ -28,6 +28,7 @@
 #
 # see contrib/hooks/ for a sample
 
+from __future__ import print_function
 import os
 import sys
 import subprocess
@@ -73,6 +74,6 @@ for ln in sys.stdin:
                 commits = subprocess.check_output(["git", "log", "%s..%s" % (oldrev, newrev)])
 
             if '[schema]' in commits:
-                print
-                print FAIL + "Schema change detected!  Please make the appropriate changes manually." + ENDC
-                print
+                print()
+                print(FAIL + "Schema change detected!  Please make the appropriate changes manually." + ENDC)
+                print()

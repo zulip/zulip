@@ -81,6 +81,7 @@ Qual a diferença entre um proxy Elite, Anónimo e Transparente?
      São enviados os cabeçalhos HTTP "Proxy-agent" e "HTTP_X_FORWARDED_FOR".
 
 """
+from __future__ import print_function
 
 import socket, thread, select
 PORT = 8085
@@ -115,7 +116,7 @@ class ConnectionHandler:
         return data
 
     def method_CONNECT(self):
-        print 'self.path', self.path
+        print('self.path', self.path)
         self._connect_target(self.path)
         self.client.send(HTTPVER+' 200 Connection established\n'+
                          'Proxy-agent: %s\n\n'%VERSION)
@@ -123,28 +124,28 @@ class ConnectionHandler:
         self._read_write()
 
     def method_others(self):
-        print
-        print '====================================='
-        print 'method', self.method
-        print 'protocol', self.protocol
-        print 'self.path', self.path
-        print
+        print()
+        print('=====================================')
+        print('method', self.method)
+        print('protocol', self.protocol)
+        print('self.path', self.path)
+        print()
 
         horking = False
         if horking:
             if self.path.endswith('.js'):
-                print 'HORKING JS!!!!!!!'
-                print
+                print('HORKING JS!!!!!!!')
+                print()
                 return
 
             if self.path.endswith('.png'):
-                print 'HORKING PNG!!!!!!!'
-                print
+                print('HORKING PNG!!!!!!!')
+                print()
                 return
 
             if self.path.endswith('.css'):
-                print 'HORKING CSS!!!!!!!'
-                print
+                print('HORKING CSS!!!!!!!')
+                print()
                 return
 
         self._connect_target()
@@ -160,7 +161,7 @@ class ConnectionHandler:
             line = line.strip()
             if not line:
                 continue
-            print repr(line)
+            print(repr(line))
             field, value = line.split(':', 1)
             if line.startswith('Host:'):
                 line = line.replace(str(PORT), '9991')
@@ -173,10 +174,10 @@ class ConnectionHandler:
         buf = buf.replace('\n', '\r\n')
         self.target.send(buf)
         if rest:
-            print 'REST'
-            print repr(self.client_buffer)
-            print repr(buf)
-            print repr(rest)
+            print('REST')
+            print(repr(self.client_buffer))
+            print(repr(buf))
+            print(repr(rest))
             self.target.send(rest)
 
         self.client_buffer = ''
@@ -187,9 +188,9 @@ class ConnectionHandler:
         port = 9991
         (soc_family, _, _, _, address) = socket.getaddrinfo(host, port)[0]
         self.target = socket.socket(soc_family)
-        print 'Connecting...', host, port
+        print('Connecting...', host, port)
         self.target.connect(address)
-        print 'Connected'
+        print('Connected')
 
     def _read_write(self):
         time_out_max = self.timeout/3
@@ -207,19 +208,19 @@ class ConnectionHandler:
                         out = self.target
                     else:
                         if data:
-                            print
-                            print 'OUT'
-                            print 'path =', self.path
-                            print len(data)
-                            print repr(data)
-                            print
+                            print()
+                            print('OUT')
+                            print('path =', self.path)
+                            print(len(data))
+                            print(repr(data))
+                            print()
                         out = self.client
                         # super hacky and fragile
                         data = data.replace('9991', str(PORT))
 
                     if data:
                         if '400 Bad Request' in data:
-                            print 'DONE!'
+                            print('DONE!')
                             import sys; sys.exit(1)
                         out.send(data)
                         count = 0
@@ -235,7 +236,7 @@ def start_server(host='localhost', port=PORT, IPv6=False, timeout=60,
     soc = socket.socket(soc_type)
     soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     soc.bind((host, port))
-    print "Serving on %s:%d." % (host, port) #debug
+    print("Serving on %s:%d." % (host, port)) #debug
     soc.listen(0)
     while True:
         thread.start_new_thread(handler, soc.accept()+(timeout,))

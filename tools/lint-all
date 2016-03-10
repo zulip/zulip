@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import os
 import re
 import sys
@@ -127,10 +128,10 @@ def custom_check_file(fn, rules, skip_rules=[]):
             try:
                 if re.search(rule['pattern'], line.strip(rule.get('strip', None))):
                     sys.stdout.write(rule['description'] + ' at %s line %s:\n' % (fn, i+1))
-                    print line
+                    print(line)
                     failed = True
             except Exception:
-                print "Exception with %s at %s line %s" % (rule['pattern'], fn, i+1)
+                print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                 traceback.print_exc()
     return failed
 

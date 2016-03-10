@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
 import sys
 import os
 import optparse
@@ -45,8 +46,8 @@ parser.add_option('--streams', default='')
 client = zulip.init_from_options(options)
 
 if options.streams == "":
-    print >>sys.stderr, "Usage:", parser.usage
+    print("Usage:", parser.usage, file=sys.stderr)
     sys.exit(1)
 
-print client.add_subscriptions([{"name": stream_name} for stream_name in
-                                options.streams.split()])
+print(client.add_subscriptions([{"name": stream_name} for stream_name in
+                                options.streams.split()]))

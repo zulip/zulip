@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
 import sys
 import os
 import optparse
@@ -42,4 +43,4 @@ parser.add_option_group(zulip.generate_option_group(parser))
 client = zulip.init_from_options(options)
 
 for user in client.get_members()["members"]:
-    print user["full_name"], user["email"]
+    print(user["full_name"], user["email"])

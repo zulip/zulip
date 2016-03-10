@@ -29,6 +29,7 @@
 #
 # python-dateutil is a dependency for this script.
 
+from __future__ import print_function
 import requests
 import logging
 import time
@@ -41,8 +42,8 @@ from datetime import datetime, timedelta
 try:
     import dateutil.parser
 except ImportError as e:
-    print >>sys.stderr, e
-    print >>sys.stderr, "Please install the python-dateutil package."
+    print(e, file=sys.stderr)
+    print("Please install the python-dateutil package.", file=sys.stderr)
     exit(1)
 
 sys.path.insert(0, os.path.dirname(__file__))

@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import sys
 import time
 import optparse
@@ -100,7 +101,7 @@ def print_status_and_exit(status):
     # e.g. true success and punting due to a SERVNAK, result in a
     # non-alert case, so to give us something unambiguous to check in
     # Nagios, print the exit status.
-    print status
+    print(status)
     sys.exit(status)
 
 def send_zulip(message):

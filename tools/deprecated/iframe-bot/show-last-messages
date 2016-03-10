@@ -8,6 +8,7 @@
 ### (to static/third/gemoji/images/)
 
 
+from __future__ import print_function
 import sys
 sys.path.append('zulip')
 import os
@@ -35,7 +36,7 @@ parser.add_option('--count', default=5)
 client = zulip.init_from_options(options)
 
 if options.streams == "":
-    print >>sys.stderr, "Usage:", parser.usage
+    print("Usage:", parser.usage, file=sys.stderr)
     sys.exit(1)
 
 client.add_subscriptions([{"name": stream_name} for stream_name in

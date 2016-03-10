@@ -23,6 +23,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
 import os
 import sys
 import optparse
@@ -112,7 +113,7 @@ api = twitter.Api(consumer_key=consumer_key,
 user = api.VerifyCredentials()
 
 if not user.GetId():
-    print "Unable to log in to twitter with supplied credentials. Please double-check and try again"
+    print("Unable to log in to twitter with supplied credentials. Please double-check and try again")
     sys.exit()
 
 try:
@@ -154,7 +155,7 @@ for status in statuses[::-1][:options.limit_tweets]:
 
     if ret['result'] == 'error':
         # If sending failed (e.g. no such stream), abort and retry next time
-        print "Error sending message to zulip: %s" % ret['msg']
+        print("Error sending message to zulip: %s" % ret['msg'])
         break
     else:
         since_id = status.GetId()
