@@ -51,7 +51,7 @@ server = subprocess.Popen(('tools/run-dev.py', '--test'),
 def assert_server_running():
     # Get the exit code of the server, or None if it is still running.
     if server.poll() is not None:
-        raise RuntimeError, 'Server died unexpectedly! Check frontend_tests/casper_tests/server.log'
+        raise RuntimeError('Server died unexpectedly! Check frontend_tests/casper_tests/server.log')
 
 def server_is_up():
     assert_server_running()
