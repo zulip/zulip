@@ -233,4 +233,9 @@ class SanitizeNameTests(TestCase):
         hiddenFileWithExtension=sanitize_name('.hidden.txt')
         tarball=sanitize_name('tarball.tar.gz')
         hiddenTarball=sanitize_name('.hiddentarball.tar.gz')
+        self.assertEquals(fileName, 'test.txt')
+        self.assertEquals(hiddenFile, '.hidden')
+        self.assertEquals(hiddenFileWithExtension, '.hidden.txt')
+        self.assertEquals(tarball, 'tarball.tar.gz')
+        self.assertEquals(hiddenTarball, '.hiddentarball.tar.gz')
 

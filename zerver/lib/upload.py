@@ -35,7 +35,6 @@ import random
 
 
 def sanitize_name(name):
-    import os
     ext = str(os.path.basename(name)).split('.', 1)[1]
     extension='.' + ext if ext else None
     filename=name.split(extension)[0]
