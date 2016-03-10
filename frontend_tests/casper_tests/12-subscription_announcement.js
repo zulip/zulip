@@ -13,7 +13,7 @@ casper.then(function () {
     this.clickLabel('Unsubscribe from waseemio', 'button');
 });
 casper.waitForText('Subscribe to waseemio', function () {
-        casper.test.assertTextExists('Subscribe to waseemio', "Unsubscribed from waseemio");      
+        casper.test.assertTextExists('Subscribe to waseemio', "Unsubscribed from waseemio");
 });
 
 common.then_log_out();
