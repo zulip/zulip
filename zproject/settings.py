@@ -159,6 +159,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'REMOTE_POSTGRES_SSLMODE': '',
                     'GOOGLE_CLIENT_ID': '',
                     'DBX_APNS_CERT_FILE': None,
+                    'ENABLE_FILE_LINKS' : False,
                     }
 
 for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
