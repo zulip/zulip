@@ -11,6 +11,7 @@ import traceback
 from os          import path
 from collections import defaultdict
 from six.moves import filter
+from six.moves import map
 
 parser = optparse.OptionParser()
 parser.add_option('--full',
@@ -46,7 +47,7 @@ api/integrations/perforce/git_p4.py
 if options.modified:
     # If the user specifies, use `git ls-files -m` to only check modified, non-staged
     # files in the current checkout.  This makes things fun faster.
-    files = map(str.strip, subprocess.check_output(['git', 'ls-files', '-m']).split('\n'))
+    files = list(map(str.strip, subprocess.check_output(['git', 'ls-files', '-m']).split('\n')))
 else:
     files = []
 
@@ -54,7 +55,7 @@ files += args
 
 if not files and not options.modified:
     # If no files are specified on the command line, use the entire git checkout
-    files = map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n'))
+    files = list(map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n')))
 
 files = list(filter(bool, files)) # remove empty file caused by trailing \n
 
