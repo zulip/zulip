@@ -82,7 +82,7 @@ def maybe_assign_character(character):
     global characters
     global users
     if not character in characters:
-        user = next_user.next()
+        user = next(next_user)
         characters[character] = dict(users[user])
         characters[character]['intro'] = '(as ' + character.title() + ")\n"
 
