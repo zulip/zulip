@@ -80,7 +80,7 @@ def check_permissions():
 
 # builds the message dict for sending a message with the Zulip API
 def build_message(event):
-    if not (event.has_key('bucket') and event.has_key('creator') and event.has_key('html_url')):
+    if not ('bucket' in event and 'creator' in event and 'html_url' in event):
         logging.error("Perhaps the Basecamp API changed behavior? "
                       "This event doesn't have the expected format:\n%s" %(event,))
         return None
