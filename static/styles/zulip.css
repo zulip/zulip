@@ -2667,13 +2667,22 @@ button.topic_edit_cancel {
 
 #create_stream_name {
     width: 220px;
-    margin-top: 10px;
+    margin: 5px 0 20px 0;
+}
+
+#listAllStreams{
+    display: none;
+}
+
+
+#listAllStreams.hideAllStreams{
+    display: block;
 }
 
 #create_stream_button {
     min-width: 140px;
     margin-left: 15px;
-    margin-top: 10px;
+    margin-top: -15px;
 }
 
 .sub_settings_title {
