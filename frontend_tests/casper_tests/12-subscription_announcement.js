@@ -5,7 +5,8 @@ common.start_and_log_in(test_credentials_secondary);
 casper.then(function () {
         casper.test.info('Settings page');
         casper.click('a[href^="#"]');
-        casper.test.assertTextExists('Subscribe to waseemio', "Home Page for hamlet loaded");
+        casper.test.assertUrlMatch(/^http:\/\/[^\/]+\//, 'URL suggests we are on home page');
+        casper.test.assertTextExists('Subscribe to waseemio', "Stream waseemio created by iago exists");
         this.clickLabel('Subscribe to waseemio', 'button');
 });
  casper.waitForText('Unsubscribe from waseemio', function () {
