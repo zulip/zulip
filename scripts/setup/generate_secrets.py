@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # This tools generates local_settings_generated.py using the template
 
 from __future__ import print_function

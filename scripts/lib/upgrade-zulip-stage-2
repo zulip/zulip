@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 #
 # This script contains the actual logic for upgrading from an old
 # version of Zulip to the new version.  upgrade-zulip-stage-2 is
