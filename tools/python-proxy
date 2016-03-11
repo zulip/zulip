@@ -82,6 +82,7 @@ Qual a diferença entre um proxy Elite, Anónimo e Transparente?
 
 """
 from __future__ import print_function
+from __future__ import division
 
 import socket, six.moves._thread, select
 PORT = 8085
@@ -193,7 +194,7 @@ class ConnectionHandler(object):
         print('Connected')
 
     def _read_write(self):
-        time_out_max = self.timeout/3
+        time_out_max = self.timeout//3
         socs = [self.client, self.target]
         count = 0
         while True:
