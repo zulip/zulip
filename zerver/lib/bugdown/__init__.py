@@ -634,6 +634,7 @@ def sanitize_url(url):
     except ValueError:
         # Bad url - so bad it couldn't be parsed.
         return ''
+
     # If there is no scheme or netloc and there is a '@' in the path,
     # treat it as a mailto: and set the appropriate scheme
     if scheme == '' and netloc == '' and '@' in path:
