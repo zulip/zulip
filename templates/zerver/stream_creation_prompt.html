@@ -2,10 +2,15 @@
      aria-labelledby="stream-creation-label" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="stream-creation-label">{% trans %}Create stream{% endtrans %} <span id="stream_name"></span></h3>
+    <h3 id="stream-creation-label">{% trans %}Create stream{% endtrans %}</h3>
   </div>
   <form id="stream_creation_form" class="form-inline">
       <div class="modal-body">
+          <div>
+            <b>{% trans %}Stream name{% endtrans %}</b><br />
+            <input type="text" name="stream_name" id="create_stream_name"
+                 placeholder="{{ _('Stream name') }}" value="" />
+          </div>
           <div id="make-invite-only">
             <b>{% trans %}Stream accessibility{% endtrans %}</b><br />
             <label class="radio">

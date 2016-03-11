@@ -471,9 +471,11 @@ exports.setup_page = function () {
         });
 
         $('#subscriptions_table').empty();
+
         var template_data = {
             can_create_streams: page_params.can_create_streams,
-            subscriptions: sub_rows
+            subscriptions: sub_rows,
+            hide_all_streams: !should_list_all_streams()
         };
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
@@ -648,6 +650,10 @@ function show_new_stream_modal() {
     $('#stream-creation').modal("show");
 }
 
+function hide_new_stream_modal() {
+    $('#stream-creation').modal("hide");
+}
+
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
     return channel.post({
         url: "/json/users/me/subscriptions",
@@ -704,15 +710,8 @@ $(function () {
         if (!should_list_all_streams()) {
             ajaxSubscribe($("#create_stream_name").val());
             return;
-        }
-
-        var stream = $.trim($("#create_stream_name").val());
-        var stream_status = compose.check_stream_existence(stream);
-        if (stream_status === "does-not-exist") {
-            $("#stream_name").text(stream);
-            show_new_stream_modal();
         } else {
-            ajaxSubscribe(stream);
+            show_new_stream_modal();
         }
     });
 
