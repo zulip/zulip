@@ -940,7 +940,7 @@ class Bugdown(markdown.Extension):
                     %s           # zero-to-6 sets of paired parens
                 )?)              # Path is optional
                 | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
-                %s
+                %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
             )
             (?=                            # URL must be followed by (not included in group)
                 [!:;\?\),\.\'\"\>]*         # Optional punctuation characters
