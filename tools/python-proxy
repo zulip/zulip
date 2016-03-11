@@ -91,7 +91,7 @@ BUFLEN = 8192
 VERSION = 'Python Proxy/'+__version__
 HTTPVER = 'HTTP/1.1'
 
-class ConnectionHandler:
+class ConnectionHandler(object):
     def __init__(self, connection, address, timeout):
         self.client = connection
         self.client_buffer = ''
