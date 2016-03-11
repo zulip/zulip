@@ -175,6 +175,11 @@ class BugdownTest(TestCase):
             converted = bugdown_convert(inline_url)
             self.assertEqual(match, converted)
 
+    def test_inline_file(self):
+        msg = 'Check out this file file:///Volumes/myserver/Users/Shared/pi.py'
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py" target="_blank" title="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
+
     def test_inline_youtube(self):
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
         converted = bugdown_convert(msg)
