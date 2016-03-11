@@ -835,7 +835,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             allowed_before_punctuation = "|".join([r'\s', '^', r'[\(\".,\';\[\*`>]'])
             allowed_after_punctuation = "|".join([r'\s', '$', r'[\)\"\?:.,\';\]!\*`]'])
 
-            for user_id, words in realm_words.iteritems():
+            for user_id, words in six.iteritems(realm_words):
                 for word in words:
                     escaped = re.escape(word.lower())
                     match_re = re.compile(r'(?:%s)%s(?:%s)' %
@@ -1021,7 +1021,7 @@ def maybe_update_realm_filters(domain):
     if domain is None:
         all_filters = all_realm_filters()
         all_filters['default'] = []
-        for domain, filters in all_filters.iteritems():
+        for domain, filters in six.iteritems(all_filters):
             make_realm_filters(domain, filters)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
         make_realm_filters("mit.edu/zephyr_mirror", [])

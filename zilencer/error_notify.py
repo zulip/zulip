@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from collections import defaultdict
 import logging
 
@@ -5,6 +6,7 @@ from django.conf import settings
 from django.core.mail import mail_admins
 
 from zerver.lib.actions import internal_send_message
+import six
 
 def format_subject(subject):
     """
@@ -41,7 +43,7 @@ def email_browser_error(report):
     more_info = report['more_info']
     if more_info is not None:
         body += "\nAdditional information:"
-        for (key, value) in more_info.iteritems():
+        for (key, value) in six.iteritems(more_info):
             body += "\n  %s: %s" % (key, value)
 
     body += "\n\nLog:\n%s" % (report['log'],)

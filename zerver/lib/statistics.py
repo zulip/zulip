@@ -9,6 +9,7 @@ from django.utils.timezone import utc
 from datetime import timedelta
 from itertools import chain
 from six.moves import range
+import six
 
 def median(data):
     data = sorted(data)
@@ -116,7 +117,7 @@ def activity_averages_between(begin, end, by_day=True):
 
     if by_day:
         return dict((day, calculate_stats(values, all_users=users_to_measure))
-                    for day, values in seconds_active.iteritems())
+                    for day, values in six.iteritems(seconds_active))
     else:
         return calculate_stats(list(chain.from_iterable(seconds_active.values())),
                                all_users=users_to_measure)

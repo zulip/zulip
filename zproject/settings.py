@@ -15,6 +15,7 @@ import sys
 import six.moves.configparser
 
 from zerver.lib.db import TimeTrackingConnection
+import six
 
 ########################################################################
 # INITIAL SETTINGS
@@ -161,7 +162,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'DBX_APNS_CERT_FILE': None,
                     }
 
-for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
+for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
     if not setting_name in vars():
         vars()[setting_name] = setting_val
 

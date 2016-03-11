@@ -1318,7 +1318,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
     #        we should do the same for removes.
     notifications_for = get_subscribers_to_streams(streams)
 
-    for event_recipient, notifications in notifications_for.iteritems():
+    for event_recipient, notifications in six.iteritems(notifications_for):
         # Don't send a peer subscription notice to yourself.
         if event_recipient == user_profile:
             continue

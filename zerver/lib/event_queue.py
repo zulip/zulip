@@ -28,6 +28,7 @@ from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 import copy
+import six
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -353,7 +354,7 @@ def gc_event_queues():
     to_remove = set()
     affected_users = set()
     affected_realms = set()
-    for (id, client) in clients.iteritems():
+    for (id, client) in six.iteritems(clients):
         if client.idle(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
@@ -372,7 +373,7 @@ def dump_event_queues():
     start = time.time()
 
     with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
-        ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.iteritems()],
+        ujson.dump([(qid, client.to_dict()) for (qid, client) in six.iteritems(clients)],
                    stored_queues)
 
     logging.info('Tornado dumped %d event queues in %.3fs'
@@ -396,7 +397,7 @@ def load_event_queues():
     except (IOError, EOFError):
         pass
 
-    for client in clients.itervalues():
+    for client in six.itervalues(clients):
         # Put code for migrations due to event queue data format changes here
 
         add_to_client_dicts(client)
@@ -406,7 +407,7 @@ def load_event_queues():
 
 def send_restart_events():
     event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
-    for client in clients.itervalues():
+    for client in six.itervalues(clients):
         if client.accepts_event(event):
             client.add_event(event.copy())
 
@@ -578,7 +579,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
     latest_active_timestamp = None
     idle = False
 
-    for client, status in user_presence.iteritems():
+    for client, status in six.iteritems(user_presence):
         if (latest_active_timestamp is None or status['timestamp'] > latest_active_timestamp) and \
                 status['status'] == 'active':
             latest_active_timestamp = status['timestamp']
@@ -642,7 +643,7 @@ def process_message_event(event_template, users):
 
             extra_user_data[user_profile_id] = notified
 
-    for client_data in send_to_clients.itervalues():
+    for client_data in six.itervalues(send_to_clients):
         client = client_data['client']
         flags = client_data['flags']
         is_sender = client_data.get('is_sender', False)

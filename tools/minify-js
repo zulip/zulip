@@ -9,6 +9,7 @@ import os
 import subprocess
 import optparse
 import sys
+import six
 
 parser = optparse.OptionParser()
 parser.add_option('--prev-deploy', nargs=1, metavar='DIR',
@@ -92,7 +93,7 @@ MIN_DIR = os.path.join(STATIC_PATH, 'min/')
 MAP_DIR = os.path.join(STATIC_PATH, 'source-map/')
 subprocess.check_call(['mkdir', '-p', MIN_DIR, MAP_DIR])
 
-for js_group, filespec in JS_SPECS.iteritems():
+for js_group, filespec in six.iteritems(JS_SPECS):
     #      JS_SPECS look like        'js/foobar.js'.
     # changed_files look like 'static/js/foobar.js'.
     # So we prepend 'static/' to the JS_SPECS so these match up.

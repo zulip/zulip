@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import absolute_import
 from django.conf import settings
 from django.test import TestCase
 
@@ -18,6 +19,7 @@ from zerver.models import (
 
 import os
 import ujson
+import six
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self):
@@ -147,7 +149,7 @@ class BugdownTest(TestCase):
         format_tests, linkify_tests = self.load_bugdown_tests()
 
         self.maxDiff = None
-        for name, test in format_tests.iteritems():
+        for name, test in six.iteritems(format_tests):
             converted = bugdown_convert(test['input'])
 
             print("Running Bugdown test %s" % (name,))

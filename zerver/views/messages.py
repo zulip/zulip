@@ -419,9 +419,9 @@ def exclude_muting_conditions(user_profile, narrow):
         muted_streams = bulk_get_streams(user_profile.realm,
                                          [muted[0] for muted in muted_topics])
         muted_recipients = bulk_get_recipients(Recipient.STREAM,
-                                               [stream.id for stream in muted_streams.itervalues()])
+                                               [stream.id for stream in six.itervalues(muted_streams)])
         recipient_map = dict((s.name.lower(), muted_recipients[s.id].id)
-                             for s in muted_streams.itervalues())
+                             for s in six.itervalues(muted_streams))
 
         muted_topics = [m for m in muted_topics if m[0].lower() in recipient_map]
 
