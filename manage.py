@@ -9,6 +9,7 @@ if __name__ == "__main__":
         from django.core.management.base import CommandError
         raise CommandError("manage.py should not be run as root.")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
+    os.environ.setdefault("PYTHONSTARTUP", os.path.join(os.path.dirname(__file__), "scripts/lib/pythonrc.py"))
 
     from django.conf import settings
 

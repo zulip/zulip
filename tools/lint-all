@@ -107,6 +107,8 @@ def check_pyflakes():
                      'redefinition of unused' in ln or
                      ("zerver/models.py" in ln and
                       " undefined name 'bugdown'" in ln) or
+                     ("scripts/lib/pythonrc.py" in ln and
+                      " import *' used; unable to detect undefined names" in ln) or
                      ("zerver/lib/tornado_ioloop_logging.py" in ln and
                       "redefinition of function 'instrument_tornado_ioloop'" in ln) or
                      ("zephyr_mirror_backend.py:" in ln and
