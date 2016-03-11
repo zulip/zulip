@@ -233,9 +233,7 @@ class SanitizeNameTests(TestCase):
         self.assertEquals(sanitize_name('.hidden.txt'), '.hidden.txt')
         self.assertEquals(sanitize_name('tarball.tar.gz'), 'tarball.tar.gz')
         self.assertEquals(sanitize_name('.hiddentarball.tar.gz'), '.hiddentarball.tar.gz')
-        self.assertEquals(sanitize_name('.testing{}*&(%)#**#*#().ta&&%$##&&r.gz'),
-                '.testing.tar.gz')
+        self.assertEquals(sanitize_name('.testing{}*&*#().ta&&%$##&&r.gz'), '.testing.tar.gz')
         self.assertEquals(sanitize_name('*testingfile?*.txt'), 'testingfile.txt')
-        self.assertEquals(sanitize_name('``~/."\`\?*"u0`000ssh/testing_file.t**{}ar.gz'),
-                '.u0000ssh.testing_file.tar.gz')
+        self.assertEquals(sanitize_name('~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), '.u0000sshtest.tar.gz')
 
