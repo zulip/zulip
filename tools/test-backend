@@ -4,13 +4,15 @@ from __future__ import print_function
 import optparse
 import os
 import sys
+import subprocess
 
 import django
 from django.conf import settings
 from django.test.utils import get_runner
 
 if __name__ == "__main__":
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+    TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, os.path.dirname(TOOLS_DIR))
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
     os.environ['PYTHONUNBUFFERED'] = 'y'
@@ -40,6 +42,8 @@ if __name__ == "__main__":
         import cProfile
         prof = cProfile.Profile()
         prof.enable()
+
+    subprocess.call(os.path.join(TOOLS_DIR, 'generate-fixtures'))
 
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
