@@ -23,10 +23,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
 import calendar
 import errno
 import hashlib
-from HTMLParser import HTMLParser
+from six.moves.html_parser import HTMLParser
 import logging
 import optparse
 import os
@@ -87,7 +88,7 @@ def mkdir_p(path):
     # Python doesn't have an analog to `mkdir -p` < Python 3.2.
     try:
         os.makedirs(path)
-    except OSError, e:
+    except OSError as e:
         if e.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else:
@@ -97,7 +98,7 @@ try:
     mkdir_p(opts.data_dir)
 except OSError:
     # We can't write to the logfile, so just print and give up.
-    print >>sys.stderr, "Unable to store RSS data at %s." % (opts.data_dir,)
+    print("Unable to store RSS data at %s." % (opts.data_dir,), file=sys.stderr)
     exit(1)
 
 log_file = os.path.join(opts.data_dir, "rss-bot.log")

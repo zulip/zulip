@@ -3,6 +3,7 @@
 """
 Nagios plugin to check the length of the FTS update log.
 """
+from __future__ import print_function
 
 import psycopg2
 
@@ -14,7 +15,7 @@ states = {
     }
 
 def report(state, num):
-    print "%s: %s rows in fts_update_log table" % (state, num)
+    print("%s: %s rows in fts_update_log table" % (state, num))
     exit(states[state])
 
 conn = psycopg2.connect("user=zulip")

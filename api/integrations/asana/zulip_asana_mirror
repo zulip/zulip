@@ -30,6 +30,7 @@
 #
 # python-dateutil is a dependency for this script.
 
+from __future__ import print_function
 import base64
 from datetime import datetime, timedelta
 
@@ -44,9 +45,9 @@ import sys
 try:
     import dateutil.parser
     import dateutil.tz
-except ImportError, e:
-    print >>sys.stderr, e
-    print >>sys.stderr, "Please install the python-dateutil package."
+except ImportError as e:
+    print(e, file=sys.stderr)
+    print("Please install the python-dateutil package.", file=sys.stderr)
     exit(1)
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -189,7 +190,7 @@ def since():
                 timestamp = float(datestring)
                 max_timestamp_processed = datetime.fromtimestamp(timestamp)
                 logging.info("Reading from resume file: " + datestring)
-        except (ValueError,IOError) as e:
+        except (ValueError, IOError) as e:
             logging.warn("Could not open resume file: %s" % (
                     e.message or e.strerror,))
             max_timestamp_processed = default_since()

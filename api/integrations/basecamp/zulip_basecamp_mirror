@@ -26,6 +26,7 @@
 # or preferably on a server.
 # You may need to install the python-requests library.
 
+from __future__ import absolute_import
 import requests
 import logging
 import time
@@ -33,7 +34,8 @@ import re
 import sys
 import os
 from datetime import datetime, timedelta
-from HTMLParser import HTMLParser
+from six.moves.html_parser import HTMLParser
+import six
 
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_basecamp_config as config
@@ -80,7 +82,7 @@ def check_permissions():
 
 # builds the message dict for sending a message with the Zulip API
 def build_message(event):
-    if not (event.has_key('bucket') and event.has_key('creator') and event.has_key('html_url')):
+    if not ('bucket' in event and 'creator' in event and 'html_url' in event):
         logging.error("Perhaps the Basecamp API changed behavior? "
                       "This event doesn't have the expected format:\n%s" %(event,))
         return None
@@ -92,7 +94,7 @@ def build_message(event):
     action = htmlParser.unescape(re.sub(r"<[^<>]+>", "", event.get('action', '')))
     target = htmlParser.unescape(event.get('target', ''))
     # Some events have "excerpts", which we blockquote
-    excerpt = htmlParser.unescape(event.get('excerpt',''))
+    excerpt = htmlParser.unescape(event.get('excerpt', ''))
     if excerpt.strip() == "":
         message = '**%s** %s [%s](%s).' % (event['creator']['name'], action, target, event['html_url'])
     else:
@@ -116,13 +118,13 @@ def run_mirror():
         since = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}-\d{2}:\d{2}", since)
         assert since, "resume file does not meet expected format"
         since = since.string
-    except (AssertionError,IOError) as e:
+    except (AssertionError, IOError) as e:
         logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
         since = (datetime.utcnow() - timedelta(hours=config.BASECAMP_INITIAL_HISTORY_HOURS)).isoformat() + "-00:00"
     try:
         # we use an exponential backoff approach when we get 429 (Too Many Requests).
         sleepInterval = 1
-        while 1:
+        while True:
             time.sleep(sleepInterval)
             response = requests.get("https://basecamp.com/%s/api/v1/events.json" % (config.BASECAMP_ACCOUNT_ID),
                                     params={'since': since},
@@ -170,7 +172,7 @@ def run_mirror():
 
 
 if __name__ == "__main__":
-    if not isinstance(config.RESUME_FILE, basestring):
+    if not isinstance(config.RESUME_FILE, six.string_types):
         sys.stderr("RESUME_FILE path not given; refusing to continue")
     check_permissions()
     if config.LOG_FILE:

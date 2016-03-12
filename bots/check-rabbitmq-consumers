@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 
+from __future__ import print_function
 import sys
 import time
 import optparse
@@ -15,7 +16,7 @@ states = {
 }
 
 if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
-    print "This script must be run as the root or rabbitmq user"
+    print("This script must be run as the root or rabbitmq user")
 
 
 usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""

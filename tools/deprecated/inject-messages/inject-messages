@@ -2,6 +2,7 @@
 #
 # This is tool for injecting messages during a usability study.  It's
 # likely useless for other applications.
+from __future__ import print_function
 import sys
 import os
 import optparse
@@ -29,8 +30,7 @@ users = {}
 
 def gen_next_user():
     global users
-    user_list = users.keys()
-    user_list.sort()
+    user_list = sorted(users.keys())
     while True:
         for user in user_list:
             yield user
@@ -69,25 +69,25 @@ def send_message(character, text, subject):
                'subject': truncate(subject, 60)}
     response = client.send_message(request)
     if response['result'] != 'success':
-        print "Could not send message (API Key " + characters[character]["api-key"] + "):"
-        print "  Request:", request
-        print "  Response:", response
+        print("Could not send message (API Key " + characters[character]["api-key"] + "):")
+        print("  Request:", request)
+        print("  Response:", response)
         exit(1)
     last_character = character
 
     num_messages_sent += 1
     if num_messages_sent % 100 == 0:
-        print "Sent %s messages" % (num_messages_sent,)
+        print("Sent %s messages" % (num_messages_sent,))
 
 def maybe_assign_character(character):
     global characters
     global users
     if not character in characters:
-        user = next_user.next()
+        user = next(next_user)
         characters[character] = dict(users[user])
         characters[character]['intro'] = '(as ' + character.title() + ")\n"
 
-play = file(os.path.dirname(__file__) + os.path.sep + "othello")
+play = open(os.path.dirname(__file__) + os.path.sep + "othello")
 next_character = None
 next_message = ""
 act = ""
@@ -116,4 +116,4 @@ for line in play:
             send_message(next_character, next_message, subject)
             next_message = ''
 
-print "Sent %s messages" % (num_messages_sent,)
+print("Sent %s messages" % (num_messages_sent,))

@@ -19,8 +19,11 @@
 # Author: Greg Price <price@ksplice.com>
 
 from __future__ import unicode_literals
+from __future__ import print_function
 
 ## CC_EMAIL: All review requests will be CC'd here.
+from __future__ import absolute_import
+import six
 CC_EMAIL = 'listname@example.com'
 
 ## DOMAIN: Reviewers without an '@' will be assumed to be localparts here.
@@ -117,7 +120,7 @@ def get_default_remote(repo):
     except TypeError:
       return 'origin'
     try:
-      return repo.git.config('--get', ('branch.%s.remote' % unicode(str(branch), "utf-8")).encode("utf-8"))
+      return repo.git.config('--get', ('branch.%s.remote' % six.text_type(str(branch), "utf-8")).encode("utf-8"))
     except git.exc.GitCommandError:
       return 'origin'
 
@@ -146,7 +149,7 @@ def parse_revs(repo, opts, args):
 
 
 def get_current_user(repo):
-  ident = unicode(repo.git.var('GIT_AUTHOR_IDENT'), 'utf-8', 'replace')
+  ident = six.text_type(repo.git.var('GIT_AUTHOR_IDENT'), 'utf-8', 'replace')
   return ident[:ident.rindex('>') + 1]
 
 def get_current_user_email(repo):
@@ -161,7 +164,7 @@ def make_header(repo, opts, revs):
   (sha, name) = repo.git.name_rev(revs[-1].hexsha,
                                   refs='refs/remotes/%s/*' % (remote,),
                                   always=True).split()
-  name = unicode(name, "utf-8")
+  name = six.text_type(name, "utf-8")
   prefix = 'remotes/' + remote + "/"
   if name.startswith(prefix):
       name = name[len(prefix):]
@@ -170,24 +173,24 @@ def make_header(repo, opts, revs):
     (_, local_name) = repo.git.name_rev(revs[-1].hexsha,
                                         refs='refs/heads/*',
                                         always=True).split()
-    local_name = unicode(local_name, "utf-8")
+    local_name = six.text_type(local_name, "utf-8")
     if local_name == "undefined":
-      print >>sys.stderr, "ERROR: Can't find this commit in remote or identify local branch!"
+      print("ERROR: Can't find this commit in remote or identify local branch!", file=sys.stderr)
       sys.exit(1)
 
     email_basename = get_current_user_email(repo).split("@")[0]
     if local_name.startswith("%s-" % (email_basename,)):
       # Try to push the local branch to the remote automatically
       try:
-        print "Attempting to push %s to remote %s" % (local_name, remote)
+        print("Attempting to push %s to remote %s" % (local_name, remote))
         repo.git.push(remote, local_name)
         tip_name = '%s (%s)' % (local_name, revs[-1].hexsha[:7])
-      except git.GitCommandError, e:
-        print >>sys.stderr, "ERROR: Couldn't push %s to remote" % (local_name,)
-        print >>sys.stderr, e
+      except git.GitCommandError as e:
+        print("ERROR: Couldn't push %s to remote" % (local_name,), file=sys.stderr)
+        print(e, file=sys.stderr)
         sys.exit(1)
     else:
-      print >>sys.stderr, "ERROR: Can't find this commit in remote -- did you push %s?" % (local_name)
+      print("ERROR: Can't find this commit in remote -- did you push %s?" % (local_name), file=sys.stderr)
       sys.exit(1)
 
   objective_summary = '%d commit(s) to %s' % (len(revs), tip_name)
@@ -204,44 +207,44 @@ def make_header(repo, opts, revs):
 def write_template(target, repo, opts):
   me = get_current_user(repo)
 
-  print >>target, 'Dear %s,' % ", ".join(opts.reviewers)
-  print >>target
-  print >>target, 'At your convenience, please review the following commits.'
-  print >>target
+  print('Dear %s,' % ", ".join(opts.reviewers), file=target)
+  print(file=target)
+  print('At your convenience, please review the following commits.', file=target)
+  print(file=target)
   if opts.message:
-    print >>target, opts.message
-    print >>target
-  print >>target, 'Testing:'
+    print(opts.message, file=target)
+    print(file=target)
+  print('Testing:', file=target)
   if opts.testing:
-    print >>target, opts.testing
+    print(opts.testing, file=target)
   else:
-    print >>target, '(No formal testing done, or none specified.)'
-  print >>target
-  print >>target, 'Thanks,'
-  print >>target, me
+    print('(No formal testing done, or none specified.)', file=target)
+  print(file=target)
+  print('Thanks,', file=target)
+  print(me, file=target)
 
 
 def write_commitmsg(target, repo, opts, revs):
 
   if opts.format == 'oneline':
     for r in revs:
-      print >>target, unicode(repo.git.log('-n1', '--oneline', r), 'utf-8', 'replace')
+      print(six.text_type(repo.git.log('-n1', '--oneline', r), 'utf-8', 'replace'), file=target)
   elif opts.format == 'message' or opts.format is None and len(revs) > 1:
     for r in revs:
       if opts.first_parent:
-        print >>target, unicode(repo.git.log('-n1', r), 'utf-8', 'replace')
-        print >>target, unicode(repo.git.diff('--stat', str(r)+'^', r), 'utf-8', 'replace')
+        print(six.text_type(repo.git.log('-n1', r), 'utf-8', 'replace'), file=target)
+        print(six.text_type(repo.git.diff('--stat', str(r)+'^', r), 'utf-8', 'replace'), file=target)
       else:
-        print >>target, unicode(repo.git.log('-n1', '--stat', r), 'utf-8', 'replace')
-      print >>target
+        print(six.text_type(repo.git.log('-n1', '--stat', r), 'utf-8', 'replace'), file=target)
+      print(file=target)
   elif opts.format == 'patch' or opts.format is None and len(revs) == 1:
     for r in revs:
       if opts.first_parent:
-        print >>target, unicode(repo.git.log('-n1', r), 'utf-8', 'replace')
-        print >>target, unicode(repo.git.diff('--stat', '-p', str(r)+'^', r), 'utf-8', 'replace')
+        print(six.text_type(repo.git.log('-n1', r), 'utf-8', 'replace'), file=target)
+        print(six.text_type(repo.git.diff('--stat', '-p', str(r)+'^', r), 'utf-8', 'replace'), file=target)
       else:
-        print >>target, unicode(repo.git.log('-n1', '--stat', '-p', r), 'utf-8', 'replace')
-      print >>target
+        print(six.text_type(repo.git.log('-n1', '--stat', '-p', r), 'utf-8', 'replace'), file=target)
+      print(file=target)
   else:
     raise Exception("Bad format option.")
 
@@ -257,26 +260,26 @@ def edit(repo, opts, revs, headers):
 
   # Prepare editable buffer.
 
-  print >>temp, """# This is an editable review request.  All lines beginning with # will
-# be ignored.  To abort the commit, remove all lines from this buffer."""
-  print >>temp, "#"
+  print("""# This is an editable review request.  All lines beginning with # will
+# be ignored.  To abort the commit, remove all lines from this buffer.""", file=temp)
+  print("#", file=temp)
   for (key, value) in headers:
-    print >>temp, u"# %s: %s" % (key, value)
-  print >>temp
-  print >>temp, template.getvalue()
+    print(u"# %s: %s" % (key, value), file=temp)
+  print(file=temp)
+  print(template.getvalue(), file=temp)
   for line in commitmsg.getvalue().splitlines():
-    print >>temp, "# " + line
+    print("# " + line, file=temp)
   temp.flush()
 
   # Open EDITOR to edit buffer.
 
-  editor = os.getenv('EDITOR','emacs')
+  editor = os.getenv('EDITOR', 'emacs')
   subprocess.check_call(shlex.split(editor) + [temp.name])
 
   # Check if buffer is empty, and if so abort.
 
   if (os.path.getsize(temp.name) == 0):
-    print >>sys.stderr, "Aborting due to empty buffer."
+    print("Aborting due to empty buffer.", file=sys.stderr)
     sys.exit(2)
 
   # Reopen temp file, slurp it in, and reconstruct mail.
@@ -301,7 +304,7 @@ def edit(repo, opts, revs, headers):
   return msg
 
 def clone_to_tmp(repo, tmp_path, test_existence_only=False):
-  print "Cloning into", tmp_path
+  print("Cloning into", tmp_path)
   assert not os.path.exists(tmp_path), \
     'Path ' + tmp_path + ' exists. Either another test is running there ' \
     'or it was left there so that you could view the testing log. If you are sure ' \
@@ -313,7 +316,7 @@ def clone_to_tmp(repo, tmp_path, test_existence_only=False):
   return clone
 
 def cleanup_tmp(cloned_repo):
-  print "Cleaning up..."
+  print("Cleaning up...")
   assert os.path.exists(cloned_repo.working_tree_dir), "could not find " + cloned_repo.working_tree_dir
   rmtree(cloned_repo.working_tree_dir)
   return
@@ -337,7 +340,7 @@ def run_test_script(repo, tmp_path):
   os.environ["PWD"] = os.getcwd()
   log = open("test.log", 'w')
   log_path = os.getcwd() + "/" + log.name
-  print "Testing [log=%s] ..." % (log_path,)
+  print("Testing [log=%s] ..." % (log_path,))
   try:
     proc = subprocess.Popen(TEST_SCRIPT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=sys.stdin)
     # Set the proc.stdout.read() to be non-blocking
@@ -358,8 +361,8 @@ def run_test_script(repo, tmp_path):
           continue
       sleep(.5)
   except KeyboardInterrupt as e:
-    print "\nkilling tests..."
-    print "You may find the testing log in", log_path
+    print("\nkilling tests...")
+    print("You may find the testing log in", log_path)
     proc.send_signal(SIGINT)
     sleep(2)
     proc.send_signal(SIGTERM)
@@ -372,8 +375,8 @@ def run_test_script(repo, tmp_path):
   sys.stdout.write(buf)
   log.write(buf)
   if proc.returncode!=0:
-    print TEST_SCRIPT, "exited with status code", proc.returncode
-    print "You may find the testing log in", log_path
+    print(TEST_SCRIPT, "exited with status code", proc.returncode)
+    print("You may find the testing log in", log_path)
   else:
     os.chdir(working_dir)
     os.environ["PWD"] = os.getcwd()
@@ -385,19 +388,19 @@ def main(args):
   repo = git.Repo()
   revs = parse_revs(repo, opts, args[1:])
   if not revs:
-    print >>sys.stderr, '%s: no revisions specified' % os.path.basename(args[0])
+    print('%s: no revisions specified' % os.path.basename(args[0]), file=sys.stderr)
     return 2
 
   if not opts.stdout:
     client = zulip.Client(verbose=True, client="ZulipReview/0.1")
 
     if 'staging' in client.base_url:
-      print '''
+      print('''
 
         HEY!  You still have your .zuliprc pointing to staging.
         ABORTING
 
-        '''
+        ''')
       sys.exit(1)
 
   # Attempt to catch permissions/invalid paths early for tmp_dir
@@ -438,15 +441,15 @@ def main(args):
       if testing_status_code != 0:
         commit_message_path = opts.tmp_dir + "/commit.msg"
         open(commit_message_path, 'w').write(msg.get_payload(decode=True))
-        print "You may find your commit message at", commit_message_path
+        print("You may find your commit message at", commit_message_path)
 
-  print "Processing review message..."
+  print("Processing review message...")
   # Send or print the message, as appropriate.
   if opts.stdout:
     for (key, value) in msg.items():
-      print >>sys.stdout, u"%s: %s" % (key, value)
-    print >>sys.stdout
-    print >>sys.stdout, msg.get_payload(decode=True),
+      print(u"%s: %s" % (key, value), file=sys.stdout)
+    print(file=sys.stdout)
+    print(msg.get_payload(decode=True), end=' ', file=sys.stdout)
   else:
     reviewer_usernames = [x.split("@")[0] for x in opts.reviewers]
 

@@ -23,10 +23,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
 import os
 import sys
 import optparse
-import ConfigParser
+import six.moves.configparser
 
 import zulip
 VERSION = "0.9"
@@ -107,14 +108,14 @@ if not opts.search_terms:
     parser.error('You must specify a search term.')
 
 try:
-    config = ConfigParser.ConfigParser()
+    config = six.moves.configparser.ConfigParser()
     config.read(CONFIGFILE)
 
     consumer_key = config.get('twitter', 'consumer_key')
     consumer_secret = config.get('twitter', 'consumer_secret')
     access_token_key = config.get('twitter', 'access_token_key')
     access_token_secret = config.get('twitter', 'access_token_secret')
-except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+except (six.moves.configparser.NoSectionError, six.moves.configparser.NoOptionError):
    parser.error("Please provide a ~/.zulip_twitterrc")
 
 if not (consumer_key and consumer_secret and access_token_key and access_token_secret):
@@ -122,7 +123,7 @@ if not (consumer_key and consumer_secret and access_token_key and access_token_s
 
 try:
     since_id = config.getint('search', 'since_id')
-except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+except (six.moves.configparser.NoOptionError, six.moves.configparser.NoSectionError):
     since_id = 0
 
 try:
@@ -138,8 +139,8 @@ api = twitter.Api(consumer_key=consumer_key,
 user = api.VerifyCredentials()
 
 if not user.GetId():
-    print "Unable to log in to Twitter with supplied credentials.\
-Please double-check and try again."
+    print("Unable to log in to Twitter with supplied credentials.\
+Please double-check and try again.")
     sys.exit()
 
 client = zulip.Client(
@@ -182,7 +183,7 @@ for status in statuses[::-1][:opts.limit_tweets]:
 
     if ret['result'] == 'error':
         # If sending failed (e.g. no such stream), abort and retry next time
-        print "Error sending message to zulip: %s" % ret['msg']
+        print("Error sending message to zulip: %s" % ret['msg'])
         break
     else:
         since_id = status.GetId()

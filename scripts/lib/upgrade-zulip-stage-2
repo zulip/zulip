@@ -4,6 +4,7 @@
 # version of Zulip to the new version.  upgrade-zulip-stage-2 is
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
+from __future__ import print_function
 import subprocess
 import os
 import sys
@@ -22,7 +23,7 @@ if os.getuid() != 0:
     sys.exit(1)
 
 if len(sys.argv) != 2:
-    print FAIL + "Usage: %s <deploy path>" % (sys.argv[0],) + ENDC
+    print(FAIL + "Usage: %s <deploy path>" % (sys.argv[0],) + ENDC)
     sys.exit(1)
 
 deploy_path = sys.argv[1]

@@ -8,6 +8,7 @@ This script works by just monitoring the files under
 mirrors when they receive the messages sent every minute by
 /etc/cron.d/test_zephyr_personal_mirrors
 """
+from __future__ import print_function
 
 import os
 import time
@@ -22,7 +23,7 @@ states = {
     }
 
 def report(state, output):
-    print "%s\n%s" % (state, output)
+    print("%s\n%s" % (state, output))
     exit(states[state])
 
 output = ""
@@ -30,7 +31,7 @@ down_count = 0
 for results_file_name in os.listdir(RESULTS_DIR):
     this_state = "OK"
     results_file = os.path.join(RESULTS_DIR, results_file_name)
-    data = file(results_file).read().strip()
+    data = open(results_file).read().strip()
     last_check = os.stat(results_file).st_mtime
     time_since_last_check = time.time() - last_check
     # time_since_last_check threshhold needs to be strictly greater
