@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.template.defaultfilters import slugify
+from django.utils.encoding import force_text
 
 from zerver.lib.avatar import user_avatar_hash
 
@@ -13,6 +14,7 @@ from zerver.models import get_user_profile_by_id
 
 import base64
 import os
+import re
 from PIL import Image, ImageOps
 from six.moves import cStringIO as StringIO
 import random
@@ -32,11 +34,11 @@ import random
 # name" is the original filename provided by the user run through Django's
 # slugify.
 
+
+
 def sanitize_name(name):
-    split_name = name.split('.')
-    base = ".".join(split_name[:-1])
-    extension = split_name[-1]
-    return slugify(base) + "." + slugify(extension)
+    fileName = force_text(name).strip().replace(' ', '_')
+    return re.sub(r'(?u)[^-\w.]', '', fileName)
 
 def random_name(bytes=60):
     return base64.urlsafe_b64encode(os.urandom(bytes))
