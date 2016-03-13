@@ -247,7 +247,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
             encoded_camo_key = settings.CAMO_KEY.encode("utf-8")
             digest = hmac.new(encoded_camo_key, encoded_url, hashlib.sha1).hexdigest()
             hex_encoded_url = codecs.encode(encoded_url, "hex")
-            img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, hex_encoded_url))
+            img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, hex_encoded_url.decode("utf-8")))
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
