@@ -35,33 +35,6 @@ def api_deskdotcom_webhook(request, user_profile, data=REQ(),
 
 @authenticated_rest_api_view
 @has_request_variables
-def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dict([])),
-                          stream=REQ(default='commits')):
-    repository = payload['repository']
-    commits = [{'id': commit['raw_node'], 'message': commit['message'],
-                'url': '%s%scommits/%s' % (payload['canon_url'],
-                                           repository['absolute_url'],
-                                           commit['raw_node'])}
-               for commit in payload['commits']]
-
-    subject = repository['name']
-    if len(commits) == 0:
-        # Bitbucket doesn't give us enough information to really give
-        # a useful message :/
-        content = ("%s [force pushed](%s)"
-                   % (payload['user'],
-                      payload['canon_url'] + repository['absolute_url']))
-    else:
-        branch = payload['commits'][-1]['branch']
-        content = build_commit_list_content(commits, branch, None, payload['user'])
-        subject += '/%s' % (branch,)
-
-    check_send_message(user_profile, get_client("ZulipBitBucketWebhook"), "stream",
-                       [stream], subject, content)
-    return json_success()
-
-@authenticated_rest_api_view
-@has_request_variables
 def api_stash_webhook(request, user_profile, stream=REQ(default='')):
     try:
         payload = ujson.loads(request.body)
