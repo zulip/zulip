@@ -154,7 +154,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/fetch_google_client_id$', 'api_fetch_google_client_id'),
 
     # These are integration-specific web hook callbacks
-    url(r'^api/v1/external/beanstalk$',     'webhooks.api_beanstalk_webhook'),
+    url(r'^api/v1/external/beanstalk$',     'webhooks.beanstalk.api_beanstalk_webhook'),
     url(r'^api/v1/external/github$',        'webhooks.github.api_github_landing'),
     url(r'^api/v1/external/jira$',          'webhooks.api_jira_webhook'),
     url(r'^api/v1/external/pivotal$',       'webhooks.api_pivotal_webhook'),
