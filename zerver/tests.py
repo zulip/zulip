@@ -1208,7 +1208,7 @@ class UserPresenceTests(AuthedTestCase):
             self.assertEqual(split_email_to_domain(email), 'zulip.com')
 
 class AlertWordTests(AuthedTestCase):
-    interesting_alert_word_list = ['alert', 'multi-word word', '☃'.decode("utf-8")]
+    interesting_alert_word_list = ['alert', 'multi-word word', u'☃']
 
     def test_internal_endpoint(self):
         email = "cordelia@zulip.com"
