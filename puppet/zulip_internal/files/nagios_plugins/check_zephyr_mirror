@@ -8,6 +8,7 @@ itself lives in api/bots/check-mirroring and should be run out of cron.
 
 See bots/zephyr-mirror-crontab for the crontab details.
 """
+from __future__ import print_function
 
 import os
 import time
@@ -22,12 +23,12 @@ states = {
     }
 
 def report(state, data, last_check):
-    print "%s: Last test run completed at %s\n%s" % (
+    print("%s: Last test run completed at %s\n%s" % (
         state, time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)),
-        data)
+        data))
     exit(states[state])
 
-data = file(RESULTS_FILE).read().strip()
+data = open(RESULTS_FILE).read().strip()
 if data.split("\n")[-1].strip() == "0":
     state = "OK"
 else:

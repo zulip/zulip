@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import os
 import sys
 import pwd
@@ -42,4 +43,4 @@ if using_sso.strip() == 'True':
     subprocess.check_call(["pkill", "-f", "apache2", "-u", "zulip"])
 
 logging.info("Done!")
-print OKGREEN + "Application restarted successfully!" + ENDC
+print(OKGREEN + "Application restarted successfully!" + ENDC)

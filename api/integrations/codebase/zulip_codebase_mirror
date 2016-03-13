@@ -29,6 +29,8 @@
 #
 # python-dateutil is a dependency for this script.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import requests
 import logging
 import time
@@ -36,13 +38,14 @@ import sys
 import os
 
 from datetime import datetime, timedelta
+import six
 
 
 try:
     import dateutil.parser
-except ImportError, e:
-    print >>sys.stderr, e
-    print >>sys.stderr, "Please install the python-dateutil package."
+except ImportError as e:
+    print(e, file=sys.stderr)
+    print("Please install the python-dateutil package.", file=sys.stderr)
     exit(1)
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -271,13 +274,13 @@ def run_mirror():
         else:
             timestamp = int(timestamp, 10)
             since = datetime.fromtimestamp(timestamp)
-    except (ValueError,IOError) as e:
+    except (ValueError, IOError) as e:
         logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
         since = default_since()
 
     try:
         sleepInterval = 1
-        while 1:
+        while True:
             events = make_api_call("activity")[::-1]
             if events is not None:
                 sleepInterval = 1
@@ -314,7 +317,7 @@ def check_permissions():
         sys.stderr(e)
 
 if __name__ == "__main__":
-    if not isinstance(config.RESUME_FILE, basestring):
+    if not isinstance(config.RESUME_FILE, six.string_types):
         sys.stderr("RESUME_FILE path not given; refusing to continue")
     check_permissions()
     if config.LOG_FILE:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 
+from __future__ import print_function
 import sys
 import re
 import time
@@ -30,7 +31,7 @@ max_count = 0
 warn_queues = []
 
 if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
-    print "This script must be run as the root or rabbitmq user"
+    print("This script must be run as the root or rabbitmq user")
 
 for line in output.split("\n"):
     line = line.strip()

@@ -8,6 +8,7 @@
 ### (to static/third/gemoji/images/)
 
 
+from __future__ import print_function
 import sys
 sys.path.append('zulip')
 import os
@@ -35,7 +36,7 @@ parser.add_option('--count', default=5)
 client = zulip.init_from_options(options)
 
 if options.streams == "":
-    print >>sys.stderr, "Usage:", parser.usage
+    print("Usage:", parser.usage, file=sys.stderr)
     sys.exit(1)
 
 client.add_subscriptions([{"name": stream_name} for stream_name in
@@ -56,7 +57,7 @@ f = codecs.open("output-candidate.html", encoding='utf-8', mode="wb")
 def uniwrite(f, s):
     f.write(s)
 
-uniwrite(f,"""
+uniwrite(f, """
 <html>
 
 <head>
@@ -148,19 +149,19 @@ for msg in result['messages']:
         # Don't put tweets in the iframe
         continue
 
-    uniwrite(f,'<div class="message">')
+    uniwrite(f, '<div class="message">')
 
-    uniwrite(f,'<img class="avatar" src="%s" />' % msg['avatar_url'])
+    uniwrite(f, '<img class="avatar" src="%s" />' % msg['avatar_url'])
 
-    uniwrite(f,'<div class="sender-bar">')
-    uniwrite(f,'<div class="recipient" style="background-color: %s;">%s &gt; %s</div>' % (color[msg['display_recipient']], msg['display_recipient'], msg['subject']))
-    uniwrite(f,'<span class="sender">%s</span>' % msg['sender_full_name'])
-    uniwrite(f,'</div>')
+    uniwrite(f, '<div class="sender-bar">')
+    uniwrite(f, '<div class="recipient" style="background-color: %s;">%s &gt; %s</div>' % (color[msg['display_recipient']], msg['display_recipient'], msg['subject']))
+    uniwrite(f, '<span class="sender">%s</span>' % msg['sender_full_name'])
+    uniwrite(f, '</div>')
 
-    uniwrite(f,'<div class="content">%s</div>' % msg['content'])
-    uniwrite(f,"</div>")
+    uniwrite(f, '<div class="content">%s</div>' % msg['content'])
+    uniwrite(f, "</div>")
 
-uniwrite(f,"""
+uniwrite(f, """
 </div>
 </body>
 </html>

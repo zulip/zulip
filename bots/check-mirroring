@@ -1,4 +1,6 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import time
 import optparse
@@ -7,6 +9,7 @@ import random
 import logging
 import subprocess
 import hashlib
+from six.moves import range
 
 parser = optparse.OptionParser()
 parser.add_option('--verbose',
@@ -100,7 +103,7 @@ def print_status_and_exit(status):
     # e.g. true success and punting due to a SERVNAK, result in a
     # non-alert case, so to give us something unambiguous to check in
     # Nagios, print the exit status.
-    print status
+    print(status)
     sys.exit(status)
 
 def send_zulip(message):
@@ -149,7 +152,7 @@ for (stream, test) in test_streams:
         zephyr_subs_to_add.append((stream, '*', '*'))
 
 actually_subscribed = False
-for tries in xrange(10):
+for tries in range(10):
     try:
         zephyr.init()
         zephyr._z.subAll(zephyr_subs_to_add)
@@ -163,7 +166,7 @@ for tries in xrange(10):
         if missing == 0:
             actually_subscribed = True
             break
-    except IOError, e:
+    except IOError as e:
         if "SERVNAK received" in e:
             logger.error("SERVNAK repeatedly received, punting rest of test")
         else:

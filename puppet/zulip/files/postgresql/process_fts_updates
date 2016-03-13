@@ -44,7 +44,7 @@ try:
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
     from django.conf import settings
     remote_postgres_host = settings.REMOTE_POSTGRES_HOST
-except ImportError, e:
+except ImportError as e:
     # process_fts_updates also supports running locally on a remote
     # postgres server; in that case, one can just connect to localhost
     remote_postgres_host = ''

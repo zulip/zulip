@@ -17,6 +17,7 @@ from zerver.lib.actions import compute_mit_user_fullname
 from zerver.lib.test_helpers import AuthedTestCase
 from zerver.models import get_user_profile_by_email
 from zerver.lib.test_runner import slow
+from zerver.lib.upload import sanitize_name
 
 import time
 import ujson
@@ -224,4 +225,15 @@ class GCMTokenTests(AuthedTestCase):
         self.login("hamlet@zulip.com")
         result = self.client.post('/json/users/me/android_gcm_reg_id', {'token':token})
         self.assert_json_success(result)
+
+class SanitizeNameTests(TestCase):
+    def test_file_name(self):
+        self.assertEquals(sanitize_name('test.txt'), 'test.txt')
+        self.assertEquals(sanitize_name('.hidden'), '.hidden')
+        self.assertEquals(sanitize_name('.hidden.txt'), '.hidden.txt')
+        self.assertEquals(sanitize_name('tarball.tar.gz'), 'tarball.tar.gz')
+        self.assertEquals(sanitize_name('.hiddentarball.tar.gz'), '.hiddentarball.tar.gz')
+        self.assertEquals(sanitize_name('.testing{}*&*#().ta&&%$##&&r.gz'), '.testing.tar.gz')
+        self.assertEquals(sanitize_name('*testingfile?*.txt'), 'testingfile.txt')
+        self.assertEquals(sanitize_name('~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), '.u0000sshtest.tar.gz')
 

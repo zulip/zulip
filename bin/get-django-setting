@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import sys
@@ -8,4 +9,4 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 
-print getattr(settings, sys.argv[1])
+print(getattr(settings, sys.argv[1]))

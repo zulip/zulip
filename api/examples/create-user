@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
 import sys
 from os import path
 import optparse
@@ -46,9 +47,9 @@ parser.add_option('--new-short-name')
 
 client = zulip.init_from_options(options)
 
-print client.create_user({
+print(client.create_user({
         'email': options.new_email,
         'password': options.new_password,
         'full_name': options.new_full_name,
         'short_name': options.new_short_name
-        })
+        }))

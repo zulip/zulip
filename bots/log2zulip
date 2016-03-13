@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import subprocess
 import os
 import sys
@@ -20,7 +21,7 @@ def mkdir_p(path):
     # Python doesn't have an analog to `mkdir -p` < Python 3.2.
     try:
         os.makedirs(path)
-    except OSError, e:
+    except OSError as e:
         if e.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else:
@@ -55,14 +56,14 @@ def process_logs():
         data_file_path = "/var/tmp/log2zulip.state"
     mkdir_p(os.path.dirname(data_file_path))
     if not os.path.exists(data_file_path):
-        file(data_file_path, "w").write("{}")
-    last_data = ujson.loads(file(data_file_path).read())
+        open(data_file_path, "w").write("{}")
+    last_data = ujson.loads(open(data_file_path).read())
     new_data = {}
     for log_file in log_files:
         file_data = last_data.get(log_file, {})
         if not os.path.exists(log_file):
             # If the file doesn't exist, log an error and then move on to the next file
-            print "Log file does not exist or could not stat log file: %s" % (log_file,)
+            print("Log file does not exist or could not stat log file: %s" % (log_file,))
             continue
         length = int(subprocess.check_output(["wc", "-l", log_file]).split()[0])
         if file_data.get("last") is None:
@@ -78,26 +79,26 @@ def process_logs():
             process_lines(new_lines, filename)
             file_data["last"] += len(new_lines)
         new_data[log_file] = file_data
-    file(data_file_path, "w").write(ujson.dumps(new_data))
+    open(data_file_path, "w").write(ujson.dumps(new_data))
 
 if __name__ == "__main__":
     if os.path.exists(lock_path):
-        print "Log2zulip lock held; not doing anything"
+        print("Log2zulip lock held; not doing anything")
         sys.exit(0)
 
     try:
-        file(lock_path, "w").write("1")
+        open(lock_path, "w").write("1")
         zulip_client = zulip.Client(config_file="/etc/log2zulip.zuliprc")
         try:
-            log_files = ujson.loads(file(control_path, "r").read())
+            log_files = ujson.loads(open(control_path, "r").read())
         except Exception:
-            print "Could not load control data from %s" % (control_path,)
+            print("Could not load control data from %s" % (control_path,))
             traceback.print_exc()
             sys.exit(1)
         process_logs()
     finally:
         try:
             os.remove(lock_path)
-        except OSError, IOError:
+        except OSError as IOError:
             pass
 

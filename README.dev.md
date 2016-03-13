@@ -295,7 +295,7 @@ You can also use Docker to develop, first you need to install Docker in your dev
 
 * [Get Started](https://docs.docker.com/linux/started/)
 * [Understand the architecture](https://docs.docker.com/engine/introduction/understanding-docker/)
-* [Docker run reference]https://docs.docker.com/engine/reference/run/()
+* [Docker run reference](https://docs.docker.com/engine/reference/run/)
 * [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
 
 Then you should create the Docker image based on Ubuntu Linux, first go to the directory with the Zulip source code:
@@ -308,7 +308,7 @@ Now you're going to install Zulip dependencies in the image:
 
 ```
 docker run -itv $(pwd):/srv/zulip -p 80:9991 user/zulipdev /bin/bash
-$ /usr/bin/python /srv/zulip/provision.py --docker 
+$ /usr/bin/python /srv/zulip/provision.py --docker
 docker ps -af ancestor=user/zulipdev
 docker commit -m "Zulip installed" <container id> user/zulipdev:v2
 ```
@@ -395,7 +395,8 @@ migrations and then cleanly restaring the server for you).
 Running the test suite
 ======================
 
-For more details, check out the [detailed testing
+For more details, especially on how to write tests, check out the
+[detailed testing
 docs](http://zulip.readthedocs.org/en/latest/testing.html).
 
 To run all the tests, do this:
@@ -447,4 +448,4 @@ Possible testing issues
   `do-destroy-rebuild*-database` scripts.
 
 - When building the development environment using Vagrant and the LXC provider, if you encounter permissions errors, you may need to `chown -R 1000:$(whoami) /path/to/zulip` on the host before running `vagrant up` in order to ensure that the synced directory has the correct owner during provision. This issue will arise if you run `id username` on the host where `username` is the user running Vagrant and the output is anything but 1000.
-  This seems to be caused by Vagrant behavior; more information can be found here https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
+  This seems to be caused by Vagrant behavior; more information can be found [here](https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner).

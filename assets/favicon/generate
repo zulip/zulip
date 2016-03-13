@@ -1,6 +1,8 @@
 #!/usr/bin/env python2.7
+from __future__ import absolute_import
 import xml.etree.ElementTree as ET
 import subprocess
+from six.moves import range
 
 # Generates the favicon images containing unread message counts.
 
@@ -10,7 +12,7 @@ elems = [tree.getroot().findall(
     ".//*[@id='%s']/{http://www.w3.org/2000/svg}tspan" % (name,))[0]
      for name in ('number_back', 'number_front')]
 
-for i in xrange(1,100):
+for i in range(1, 100):
     # Prepare a modified SVG
     s = '%2d' % (i,)
     for e in elems:
