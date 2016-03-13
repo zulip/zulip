@@ -454,13 +454,15 @@ Possible testing issues
 
 On ubuntu, Set the proxy environment variable using 
 
- ``` export https_proxy=https://proxy_host:port 
+ ``` 
+     export https_proxy=https://proxy_host:port 
      export http_proxy=https://proxy_host:port 
  ```
 
 Set the npm proxy and https-proxy separately as
 
- ``` npm config set proxy http://proxy_host:port
+ ``` 
+     npm config set proxy http://proxy_host:port
      npm config set https-proxy http://proxy_host:port
  ```
 
