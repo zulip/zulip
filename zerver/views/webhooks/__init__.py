@@ -9,11 +9,8 @@ from zerver.decorator import REQ, \
     has_request_variables, authenticated_rest_api_view, \
     api_key_only_webhook_view
 
-from defusedxml.ElementTree import fromstring as xml_fromstring
-
 import pprint
 import logging
-import re
 import ujson
 
 from .github import build_commit_list_content, build_message_from_gitlog
@@ -35,33 +32,6 @@ def api_deskdotcom_webhook(request, user_profile, data=REQ(),
                        [stream], topic, data)
     return json_success()
 
-@api_key_only_webhook_view
-@has_request_variables
-def api_newrelic_webhook(request, user_profile, alert=REQ(validator=check_dict([]), default=None),
-                             deployment=REQ(validator=check_dict([]), default=None)):
-    try:
-        stream = request.GET['stream']
-    except (AttributeError, KeyError):
-        return json_error("Missing stream parameter.")
-
-    if alert:
-        # Use the message as the subject because it stays the same for
-        # "opened", "acknowledged", and "closed" messages that should be
-        # grouped.
-        subject = alert['message']
-        content = "%(long_description)s\n[View alert](%(alert_url)s)" % (alert)
-    elif deployment:
-        subject = "%s deploy" % (deployment['application_name'])
-        content = """`%(revision)s` deployed by **%(deployed_by)s**
-%(description)s
-
-%(changelog)s""" % (deployment)
-    else:
-        return json_error("Unknown webhook request")
-
-    check_send_message(user_profile, get_client("ZulipNewRelicWebhook"), "stream",
-                       [stream], subject, content)
-    return json_success()
 
 @authenticated_rest_api_view
 @has_request_variables
