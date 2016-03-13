@@ -352,8 +352,8 @@ styles (separate lines for each selector)::
 Python
 ------
 
--  Scripts should start with ``#!/usr/bin/env python2.7`` and not
-   ``#!/usr/bin/env python2.7``. See commit ``437d4aee`` for an explanation of
+-  Scripts should start with ``#!/usr/bin/env python`` and not
+   ``#!/usr/bin/env python``. See commit ``437d4aee`` for an explanation of
    why. Don't put such a line on a Python file unless it's meaningful to
    run it as a script. (Some libraries can also be run as scripts, e.g.
    to run a test suite.)

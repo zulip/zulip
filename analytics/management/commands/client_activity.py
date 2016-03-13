@@ -14,9 +14,9 @@ class Command(BaseCommand):
 
 Usage examples:
 
-python2.7 manage.py client_activity
-python2.7 manage.py client_activity zulip.com
-python2.7 manage.py client_activity jesstess@zulip.com"""
+python manage.py client_activity
+python manage.py client_activity zulip.com
+python manage.py client_activity jesstess@zulip.com"""
 
     def add_arguments(self, parser):
         parser.add_argument('arg', metavar='<arg>', type=str, nargs='?', default=None,
