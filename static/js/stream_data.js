@@ -46,6 +46,24 @@ exports.get_colors = function () {
     return _.pluck(exports.subscribed_subs(), 'color');
 };
 
+exports.get_subscribers_count = function (stream_name) {
+    var sub = exports.get_sub(stream_name);
+    if (typeof sub === 'undefined') {
+        return undefined;
+    }
+    var count = Object.keys(sub.subscribers._items).length;
+
+    if (sub.subscribed === false && sub.subscribers.has(page_params.email) === true) {
+        // If user is not subscribed (i.e. sub.subscribed is false)
+        // and user's email present in subscribers list
+        // Then, substracting count by 1
+        // Else count is correct.
+        count -= 1;
+    }
+    sub.subscriber_count = count;
+    return count;
+};
+
 exports.all_subscribed_streams_are_in_home_view = function () {
     return _.every(exports.subscribed_subs(), function (sub) {
         return sub.in_home_view; }
