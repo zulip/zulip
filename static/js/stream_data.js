@@ -18,6 +18,10 @@ exports.clear_subscriptions();
 
 
 exports.add_sub = function (stream_name, sub) {
+    if (!_.has(sub, 'subscribers')) {
+        sub.subscribers = Dict.from_array([], {fold_case: true});
+    }
+
     stream_info.set(stream_name, sub);
     subs_by_stream_id.set(sub.stream_id, sub);
 };
@@ -44,6 +48,11 @@ exports.subscribed_streams = function () {
 
 exports.get_colors = function () {
     return _.pluck(exports.subscribed_subs(), 'color');
+};
+
+exports.update_subscribers_count = function (sub) {
+    var count = sub.subscribers.num_items();
+    sub.subscriber_count = count;
 };
 
 exports.all_subscribed_streams_are_in_home_view = function () {
@@ -253,10 +262,11 @@ exports.get_streams_for_settings_page = function (public_streams) {
     unsubscribed_rows.sort(by_name);
     var all_subs = subscribed_rows.concat(unsubscribed_rows);
 
-    // Add in admin options.
+    // Add in admin options and stream counts.
     var sub_rows = [];
     _.each(all_subs, function (sub) {
         sub = exports.add_admin_options(sub);
+        exports.update_subscribers_count(sub);
         sub_rows.push(sub);
     });
 
