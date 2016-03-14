@@ -161,6 +161,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
     url(r'^api/v1/external/pagerduty$',     'webhooks.pagerduty.api_pagerduty_webhook'),
     url(r'^api/v1/external/travis$',        'webhooks.travis.api_travis_webhook'),
+    url(r'^api/v1/external/pingdom$',       'webhooks.pingdom.api_pingdom_webhook'),
 
     url(r'^user_uploads/(?P<realm_id>(\d*|unk))/(?P<filename>.*)', 'get_uploaded_file'),
 )
