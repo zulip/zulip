@@ -18,6 +18,15 @@ class zulip::app_frontend {
     notify => Service["nginx"],
   }
 
+  # Trigger daily digest e-mails
+  file { "/etc/cron.d/send-digest-emails":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/send-digest-emails",
+  }
+
   # Restart the server regularly to avoid potential memory leak problems.
   file { "/etc/cron.d/restart-zulip":
     ensure => file,
