@@ -2534,7 +2534,7 @@ def apply_events(state, events, user_profile):
             if event['op'] == "add":
                 state['realm_users'].append(person)
             elif event['op'] == "remove":
-                state['realm_users'] = itertools.ifilterfalse(our_person, state['realm_users'])
+                state['realm_users'] = [x for x in state['realm_users'] if not our_person(x)]
             elif event['op'] == 'update':
                 for p in state['realm_users']:
                     if our_person(p):
@@ -2585,17 +2585,17 @@ def apply_events(state, events, user_profile):
                 return sub['name'].lower()
 
             if event['op'] == "add":
-                added_names = list(map(name, event["subscriptions"]))
+                added_names = set(map(name, event["subscriptions"]))
                 was_added = lambda s: name(s) in added_names
 
                 # add the new subscriptions
                 state['subscriptions'] += event['subscriptions']
 
                 # remove them from unsubscribed if they had been there
-                state['unsubscribed'] = list(itertools.ifilterfalse(was_added, state['unsubscribed']))
+                state['unsubscribed'] = [x for x in state['unsubscribed'] if not was_added(x)]
 
             elif event['op'] == "remove":
-                removed_names = list(map(name, event["subscriptions"]))
+                removed_names = set(map(name, event["subscriptions"]))
                 was_removed = lambda s: name(s) in removed_names
 
                 # Find the subs we are affecting.
@@ -2610,7 +2610,7 @@ def apply_events(state, events, user_profile):
                 state['unsubscribed'] += removed_subs
 
                 # Now filter out the removed subscriptions from subscriptions.
-                state['subscriptions'] = list(itertools.ifilterfalse(was_removed, state['subscriptions']))
+                state['subscriptions'] = [x for x in state['subscriptions'] if not was_removed(x)]
 
             elif event['op'] == 'update':
                 for sub in state['subscriptions']:
