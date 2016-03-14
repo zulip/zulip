@@ -11,7 +11,8 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
     split_email_to_domain, email_to_username
 from zerver.lib.actions import do_send_message, set_default_streams, \
-    do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin
+    do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin, \
+    internal_prep_message, do_send_messages
 from zerver.lib.parallel import run_parallel
 from django.db.models import Count
 from django.conf import settings
@@ -45,6 +46,11 @@ def create_streams(realms, realm, stream_list):
     for stream_name in stream_list:
         stream_set.add((realm.domain, stream_name))
     bulk_create_streams(realms, stream_set)
+
+def stream_button(stream_name):
+    stream_name = stream_name.replace('\\', '\\\\')
+    stream_name = stream_name.replace(')', '\\)')
+    return '!_stream_subscribe_button(%s)' % (stream_name,)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -127,14 +133,15 @@ class Command(BaseCommand):
             # as are subscriptions to the ability to receive personals).
             names = [("Othello, the Moor of Venice", "othello@zulip.com"), ("Iago", "iago@zulip.com"),
                      ("Prospero from The Tempest", "prospero@zulip.com"),
-                     ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com")]
+                     ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com"),
+                     ("Sir John Falstaff", "falstaff@zulip.com")]
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(realms, names)
             iago = UserProfile.objects.get(email="iago@zulip.com")
             do_change_is_admin(iago, True)
             # Create public streams.
-            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome", "zulip"]
             create_streams(realms, zulip_realm, stream_list)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list]
 
@@ -149,6 +156,8 @@ class Command(BaseCommand):
                     s = Subscription(recipient=r, user_profile=profile)
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
+            zulip_realm.notifications_stream = Stream.objects.get(name="zulip", realm=zulip_realm)
+            zulip_realm.save()
         else:
             zulip_realm = get_realm("zulip.com")
             recipient_streams = [klass.type_id for klass in
@@ -183,16 +192,6 @@ class Command(BaseCommand):
             get_client("website")
             get_client("API")
 
-            if options["test_suite"]:
-                # Create test users; the MIT ones are needed to test
-                # the Zephyr mirroring codepaths.
-                testsuite_mit_users = [
-                    ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
-                    ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
-                    ("Esp Classroom (MIT)", "espuser@mit.edu"),
-                    ]
-                create_users(realms, testsuite_mit_users)
-
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
             all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
@@ -203,6 +202,30 @@ class Command(BaseCommand):
                 ]
             zulip_realm_bots.extend(all_realm_bots)
             create_users(realms, zulip_realm_bots, bot=True)
+
+            if options["test_suite"]:
+                # Create test users; the MIT ones are needed to test
+                # the Zephyr mirroring codepaths.
+                testsuite_mit_users = [
+                    ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
+                    ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
+                    ("Esp Classroom (MIT)", "espuser@mit.edu"),
+                    ]
+                create_users(realms, testsuite_mit_users)
+                zulip_realm = Realm.objects.get(domain="zulip.com", name="Zulip Dev")
+                realms = {}
+                for realm in Realm.objects.all():
+                    realms[realm.domain] = realm
+                stream_list = ["Announcement"]
+                create_streams(realms, zulip_realm, stream_list)
+                notifications = []
+                msg = ("Bot created a new stream 'Announcement'. %s"
+                       % (stream_button(stream_list[0])))
+                notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
+                                   "stream",
+                                   "zulip", "Streams", msg,
+                                   realm=zulip_realm))
+                do_send_messages(notifications)
 
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test
@@ -715,6 +738,7 @@ def send_messages(data):
     num_messages = 0
     random_max = 1000000
     recipients = {}
+
     while num_messages < tot_messages:
         saved_data = {}
         message = Message()
