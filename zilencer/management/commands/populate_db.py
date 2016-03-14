@@ -33,7 +33,7 @@ from optparse import make_option
 from six.moves import range
 
 settings.TORNADO_SERVER = None
-
+DEFAULT_NOTIFICATION_STREAM_NAME = "notifications"
 def create_users(realms, name_list, bot=False):
     user_set = set()
     for full_name, email in name_list:
@@ -141,7 +141,7 @@ class Command(BaseCommand):
             iago = UserProfile.objects.get(email="iago@zulip.com")
             do_change_is_admin(iago, True)
             # Create public streams.
-            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome", "zulip"]
+            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome", DEFAULT_NOTIFICATION_STREAM_NAME]
             create_streams(realms, zulip_realm, stream_list)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list]
 
@@ -156,7 +156,7 @@ class Command(BaseCommand):
                     s = Subscription(recipient=r, user_profile=profile)
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
-            zulip_realm.notifications_stream = Stream.objects.get(name="zulip", realm=zulip_realm)
+            zulip_realm.notifications_stream = Stream.objects.get(name=DEFAULT_NOTIFICATION_STREAM_NAME, realm=zulip_realm)
             zulip_realm.save()
         else:
             zulip_realm = get_realm("zulip.com")
@@ -223,7 +223,7 @@ class Command(BaseCommand):
                        % (stream_button(stream_list[0])))
                 notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
                                    "stream",
-                                   "zulip", "Streams", msg,
+                                   DEFAULT_NOTIFICATION_STREAM_NAME, "Streams", msg,
                                    realm=zulip_realm))
                 do_send_messages(notifications)
 

@@ -3,15 +3,14 @@ var common = require('../casper_lib/common.js').common;
 common.start_and_log_in();
 
 casper.then(function () {
-    casper.test.info('Narrowing to stream zulip');
+    casper.test.info('Narrowing to stream notifications');
     // this.debugHTML();
-    casper.click('a[href^="#narrow/stream/zulip"]');
-
+    casper.click('a[href^="#narrow/stream/notifications"]');
 });
 
 
 casper.then(function(){
-	casper.test.assertSelectorHasText('title', 'zulip - Zulip Dev - Zulip', 'Narrowed to stream zulip');
+	casper.test.assertSelectorHasText('title', 'notifications - Zulip Dev - Zulip', 'Narrowed to stream notifications');
 	casper.test.assertTextExists('Bot created', "Stream Announcement exists");
 	this.clickLabel('Subscribe to announcement', 'button');
 });
