@@ -62,7 +62,7 @@ TSEARCH_URL_BASE = "https://dl.dropboxusercontent.com/u/283158365/zuliposs/"
 TSEARCH_PACKAGE_NAME = {
     "trusty": "postgresql-9.3-tsearch-extras"
 }
-TSEARCH_VERSION = "0.1.2"
+TSEARCH_VERSION = "0.1.3"
 # TODO: this path is platform-specific!
 TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/9.3/tsearch_data/"
 REPO_STOPWORDS_PATH = os.path.join(
@@ -79,11 +79,16 @@ LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 def main():
     log = logging.getLogger("zulip-provisioner")
-    # TODO: support other architectures
+
     if platform.architecture()[0] == '64bit':
         arch = 'amd64'
+        phantomjs_arch = 'x86_64'
+    elif platform.architecture()[0] == '32bit':
+        arch = "i386"
+        phantomjs_arch = 'i686'
     else:
-        log.critical("Only amd64 is supported.")
+        log.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
+        sys.exit(1)
 
     vendor, version, codename = platform.dist()
 
@@ -113,13 +118,15 @@ def main():
 
     with sh.sudo:
         PHANTOMJS_PATH = "/srv/phantomjs"
-        PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, "phantomjs-1.9.8-linux-x86_64.tar.bz2")
+        PHANTOMJS_BASENAME = "phantomjs-1.9.8-linux-%s" % (phantomjs_arch,)
+        PHANTOMJS_TARBALL_BASENAME = PHANTOMJS_BASENAME + ".tar.bz2"
+        PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, PHANTOMJS_TARBALL_BASENAME)
+        PHANTOMJS_URL = "https://bitbucket.org/ariya/phantomjs/downloads/%s" % (PHANTOMJS_TARBALL_BASENAME,)
         sh.mkdir("-p", PHANTOMJS_PATH, **LOUD)
         if not os.path.exists(PHANTOMJS_TARBALL):
-            sh.wget("https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.8-linux-x86_64.tar.bz2",
-                    output_document=PHANTOMJS_TARBALL, **LOUD)
+            sh.wget(PHANTOMJS_URL, output_document=PHANTOMJS_TARBALL, **LOUD)
         sh.tar("xj", directory=PHANTOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
-        sh.ln("-sf", os.path.join(PHANTOMJS_PATH, "phantomjs-1.9.8-linux-x86_64", "bin", "phantomjs"),
+        sh.ln("-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME, "bin", "phantomjs"),
               "/usr/local/bin/phantomjs", **LOUD)
 
     with sh.sudo:

@@ -605,12 +605,6 @@ running Zulip with a large team (>1000 users).
   likely the first part of any project to support exchanging events
   amongst multiple servers.
 
-* The first scalability issue encountered by a very large realm (more
-  than a few thousand users), will be with the [frontend buddy list
-  perf and UI](https://github.com/zulip/zulip/issues/262).  Fixing
-  this should be a small project; the code for that part of the UI
-  layer doesn't do proper incremental updates.
-
 Questions, concerns, and bug reports about this area of Zulip are very
 welcome!  This is an area we are hoping to improve.
 

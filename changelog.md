@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 [Unreleased]
+- Fixed rerendering the complete buddy list whenever a user came back from
+  idle, which was a significant performance issue in larger realms.
 - Fixed the disabling of desktop notifications from 1.3.7 for new users.
 - Fixed the (admin) create_user API enforcing restricted_to_domain, even
   if that setting was disabled for the realm.
