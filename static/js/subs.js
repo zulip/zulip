@@ -489,7 +489,8 @@ exports.setup_page = function () {
 
     function failed_listing(xhr, error) {
         loading.destroy_indicator($('#subs_page_loading_indicator'));
-        ui.report_error("Error listing streams or subscriptions", xhr, $("#subscriptions-status"));
+        ui.report_error("Error listing streams or subscriptions", xhr,
+                        $("#subscriptions-status"), 'subscriptions-status');
     }
 
     if (should_list_all_streams()) {
@@ -558,13 +559,13 @@ function ajaxSubscribe(stream) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[page_params.email][0];
                 ui.report_success("Already subscribed to " + true_stream_name,
-                                  $("#subscriptions-status"));
+                                  $("#subscriptions-status"), 'subscriptions-status');
             }
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
-            $("#create_stream_name").focus();
+            ui.report_error("Error adding subscription", xhr,
+                            $("#subscriptions-status"), 'subscriptions-status');
         }
     });
 }
@@ -579,8 +580,8 @@ function ajaxUnsubscribe(stream) {
             // The rest of the work is done via the unsubscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error("Error removing subscription", xhr, $("#subscriptions-status"));
-            $("#create_stream_name").focus();
+            ui.report_error("Error removing subscription", xhr,
+                            $("#subscriptions-status"), 'subscriptions-status');
         }
     });
 }
@@ -601,7 +602,8 @@ function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error("Error creating stream", xhr, $("#subscriptions-status"));
+            ui.report_error("Error creating stream", xhr,
+                            $("#subscriptions-status"), 'subscriptions-status');
             $('#stream-creation').modal("hide");
         }
     });
@@ -760,6 +762,10 @@ $(function () {
         $(e.target).addClass("btn-danger").text("Unsubscribe");
     }).on("mouseout", ".subscribed-button", function (e) {
         $(e.target).removeClass("btn-danger").text("Subscribed");
+    });
+
+    $("#subscriptions-status").on("click", "#close-subscriptions-status", function (e) {
+        $("#subscriptions-status").hide();
     });
 
     $("#subscriptions_table").on("click", ".email-address", function (e) {
@@ -922,10 +928,12 @@ $(function () {
                 old_name_box.text(new_name);
                 sub_row.find(".email-address").text(data.email_address);
 
-                ui.report_success("The stream has been renamed!", $("#subscriptions-status"));
+                ui.report_success("The stream has been renamed!", $("#subscriptions-status "),
+                                  'subscriptions-status');
             },
             error: function (xhr) {
-                ui.report_error("Error renaming stream", xhr, $("#subscriptions-status"));
+                ui.report_error("Error renaming stream", xhr,
+                                $("#subscriptions-status"), 'subscriptions-status');
             }
         });
     });
@@ -938,7 +946,7 @@ $(function () {
         var stream_name = $sub_row.find('.subscription_name').text();
         var description = $sub_row.find('input[name="description"]').val();
 
-        $('#subscription_status').hide();
+        $('#subscriptions-status').hide();
 
         channel.patch({
             url: '/json/streams/' + stream_name,
@@ -947,10 +955,12 @@ $(function () {
             },
             success: function () {
                 // The event from the server will update the rest of the UI
-                ui.report_success("The stream description has been updated!", $("#subscriptions-status"));
+                ui.report_success("The stream description has been updated!",
+                                 $("#subscriptions-status"), 'subscriptions-status');
             },
             error: function (xhr) {
-                ui.report_error("Error updating the stream description", xhr, $("#subscriptions-status"));
+                ui.report_error("Error updating the stream description", xhr,
+                                $("#subscriptions-status"), 'subscriptions-status');
             }
         });
     });

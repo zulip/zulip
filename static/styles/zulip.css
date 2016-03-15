@@ -2467,6 +2467,26 @@ div.floating_recipient {
     text-align: center;
 }
 
+#subscriptions-status {
+    position: fixed;
+    z-index: 999;
+    display: block;
+    left: 300px;
+    right: 300px;
+    margin: 0px auto;
+    opacity: 0.9 !important;
+    top: 55px;
+    max-width: 800px;
+}
+
+#close-subscriptions-status {
+    position: absolute;
+    top: 8px;
+    cursor: pointer;
+    font-size: 17px;
+    right: 8px;
+}
+
 .subject-name {
     display: block;
     line-height: 1.3em;
@@ -3612,6 +3632,10 @@ div.edit_bot {
     font-weight: 300;
 }
 
+#subscriptions h1 {
+    padding-top: 40px;
+}
+
 #administration .administration-icon,
 #settings .settings-icon,
 #subscriptions .streams-icon {
@@ -3896,6 +3920,11 @@ form.admin-realm .control-label {
         margin-right: 7px;
     }
 
+    #subscriptions-status {
+        left: 300px;
+        right: 50px;
+    }
+
 }
 
 @media (max-width: 775px) {
@@ -3980,6 +4009,10 @@ form.admin-realm .control-label {
 
     .navbar-search {
         margin-right: 81px;
+    }
+
+    #subscriptions-status {
+        left: 35px;
     }
 
 }
