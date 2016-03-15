@@ -9,20 +9,20 @@ casper.then(function () {
 });
 
 
-casper.then(function(){
-	casper.test.assertSelectorHasText('title', 'notifications - Zulip Dev - Zulip', 'Narrowed to stream notifications');
-	casper.test.assertTextExists('Bot created', "Stream Announcement exists");
-	this.clickLabel('Subscribe to announcement', 'button');
+casper.then(function () {
+    casper.test.assertSelectorHasText('title', 'notifications - Zulip Dev - Zulip', 'Narrowed to stream notifications');
+    casper.test.assertTextExists('Bot created', "Stream Announcement exists");
+    this.clickLabel('Subscribe to announcement', 'button');
 });
 
-casper.waitForText('Unsubscribe from announcement', function(){
+casper.waitForText('Unsubscribe from announcement', function () {
     // this.clickLabel('Subscribe to waseemio', 'button');
     casper.test.assertTextExists('Unsubscribe from announcement', "Subscribed to Announcement");
     this.clickLabel('Unsubscribe from announcement', 'button');
     // this.debugHTML();
 });
 
-casper.waitForText('Subscribe to announcement', function(){
+casper.waitForText('Subscribe to announcement', function () {
     // this.clickLabel('Subscribe to waseemio', 'button');
     casper.test.assertTextExists('Subscribe to announcement', "Unsubscribed from Announcement");
 });
