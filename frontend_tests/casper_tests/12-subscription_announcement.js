@@ -4,7 +4,6 @@ common.start_and_log_in();
 
 casper.then(function () {
     casper.test.info('Narrowing to stream notifications');
-    // this.debugHTML();
     casper.click('a[href^="#narrow/stream/notifications"]');
 });
 
@@ -16,14 +15,11 @@ casper.then(function () {
 });
 
 casper.waitForText('Unsubscribe from announcement', function () {
-    // this.clickLabel('Subscribe to waseemio', 'button');
     casper.test.assertTextExists('Unsubscribe from announcement', "Subscribed to Announcement");
     this.clickLabel('Unsubscribe from announcement', 'button');
-    // this.debugHTML();
 });
 
 casper.waitForText('Subscribe to announcement', function () {
-    // this.clickLabel('Subscribe to waseemio', 'button');
     casper.test.assertTextExists('Subscribe to announcement', "Unsubscribed from Announcement");
 });
 
