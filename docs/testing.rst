@@ -117,7 +117,7 @@ below:
   collect a series of steps (each being a ``casper.then`` or
   ``casper.wait...`` call).  Then, usually at the end of the test
   file, you'll have a ``casper.run`` call which actually runs that
-  series of steps.  This means that if you If you write code in your
+  series of steps.  This means that if you write code in your
   test file outside a ``casper.then`` or ``casper.wait...`` method, it
   will actually run before all the Casper test steps that are declared
   in the file, which can lead to confusing failures where the new code
