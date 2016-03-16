@@ -117,8 +117,10 @@ def check_pyflakes():
 
 def custom_check_file(fn, rules, skip_rules=[]):
     failed = False
+    lineFlag = False
     for i, line in enumerate(open(fn)):
         skip = False
+        lineFlag = True
         for rule in skip_rules:
             if re.match(rule, line):
                 skip = True
@@ -136,6 +138,10 @@ def custom_check_file(fn, rules, skip_rules=[]):
             except Exception:
                 print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                 traceback.print_exc()
+        lastLine = line
+    if lineFlag and '\n' not in lastLine:
+        print("No new line at the end of %s" % (fn,))
+        failed = True
     return failed
 
 whitespace_rules = [
