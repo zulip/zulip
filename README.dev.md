@@ -449,3 +449,20 @@ Possible testing issues
 
 - When building the development environment using Vagrant and the LXC provider, if you encounter permissions errors, you may need to `chown -R 1000:$(whoami) /path/to/zulip` on the host before running `vagrant up` in order to ensure that the synced directory has the correct owner during provision. This issue will arise if you run `id username` on the host where `username` is the user running Vagrant and the output is anything but 1000.
   This seems to be caused by Vagrant behavior; more information can be found [here](https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner).
+
+Troubleshooting development environment setup
+=============================================
+If you are building the development environment behind network proxy
+then make sure your proxy variables are set.
+
+- On Ubuntu, set the proxy environment variables using : 
+ ``` 
+ export https_proxy=http://proxy_host:port 
+ export http_proxy=http://proxy_host:port 
+ ```
+
+- And set the npm proxy and https-proxy separately as :		
+  ``` 		
+  npm config set proxy http://proxy_host:port		
+  npm config set https-proxy http://proxy_host:port		
+  ```
