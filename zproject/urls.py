@@ -298,7 +298,10 @@ urlpatterns += patterns('',
 
 
 if settings.DEVELOPMENT:
-    use_prod_static = getattr(settings, 'PIPELINE', False)
+    try:
+        use_prod_static = settings.PIPELINE['PIPELINE_ENABLED']
+    except (AttributeError, KeyError):
+        use_prod_static = False
     static_root = os.path.join(settings.DEPLOY_ROOT,
         'prod-static/serve' if use_prod_static else 'static')
 

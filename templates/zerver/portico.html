@@ -1,6 +1,6 @@
 {% extends "zerver/base.html" %}
 {% load i18n %}
-{% load compressed %}
+{% load pipeline %}
 
 {% comment %}
 A base template for stuff like login, register, etc.
@@ -10,7 +10,7 @@ hence the name.
 {% endcomment %}
 
     {% block customhead %}
-    {% compressed_css 'portico' %}
+    {% stylesheet 'portico' %}
     {% endblock %}
 
 {% block content %}

@@ -11,7 +11,7 @@ class ExcludeUnminifiedMixin(object):
     def list(self, ignore_patterns):
         # We can't use ignore_patterns because the patterns are
         # applied to just the file part, not the entire path
-        excluded = '^(js|styles|templates)/'
+        excluded = '^(js|templates)/'
 
         # source-map/ should also not be included.
         # However, we work around that by moving it later,

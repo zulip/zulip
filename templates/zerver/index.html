@@ -3,7 +3,7 @@
 {# The app itself. #}
 {# Includes some other templates as tabs. #}
 
-{% load compressed %}
+{% load pipeline %}
 {% load minified_js %}
 
 {% block page_params %}
@@ -35,9 +35,9 @@ var page_params = {{ page_params }};
 
 {% if nofontface %}
 {# We can't use @font-face on qtwebkit, so use differently minified CSS #}
-{% compressed_css 'app-fontcompat' %}
+{% stylesheet 'app-fontcompat' %}
 {% else %}
-{% compressed_css 'app' %}
+{% stylesheet 'app' %}
 {% endif %}
 {% minified_js 'app' %}
 

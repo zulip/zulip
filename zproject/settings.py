@@ -511,14 +511,15 @@ STATIC_URL = '/static/'
 
 # This is the default behavior from Pipeline, but we set it
 # here so that urls.py can read it.
-PIPELINE = not DEBUG
+PIPELINE_ENABLED = not DEBUG
 
 if DEBUG:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+        'pipeline.finders.PipelineFinder',
     )
-    if PIPELINE:
+    if PIPELINE_ENABLED:
         STATIC_ROOT = 'prod-static/serve'
     else:
         STATIC_ROOT = 'static/'
@@ -714,7 +715,7 @@ JS_SPECS = {
             'js/referral.js',
             'js/custom_markdown.js',
             'js/bot_data.js',
-            # JS bundled by webpack is also included here if PIPELINE setting is true
+            # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'
     },
@@ -731,16 +732,17 @@ JS_SPECS = {
     },
 }
 
-if PIPELINE:
+if PIPELINE_ENABLED:
     JS_SPECS['app']['source_filenames'].append('js/bundle.js')
 
 app_srcs = JS_SPECS['app']['source_filenames']
 
-PIPELINE_JS = {}  # Now handled in tools/minify-js
-PIPELINE_JS_COMPRESSOR  = None
-
-PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
-PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
+PIPELINE = {
+    'PIPELINE_ENABLED': PIPELINE_ENABLED,
+    'STYLESHEETS': PIPELINE_CSS,
+    'CSS_COMPRESSOR': 'pipeline.compressors.yui.YUICompressor',
+    'YUI_BINARY': '/usr/bin/env yui-compressor',
+}
 
 ########################################################################
 # LOGGING SETTINGS
