@@ -218,7 +218,7 @@ exports.setup_page = function () {
         }
     });
 
-    $(".administration").on("submit", "form.admin-realm", function (e) {
+    $(".administration").on("submit", "form.admin-realm-form", function (e) {
         var name_status = $("#admin-realm-name-status").expectOne();
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
