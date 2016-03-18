@@ -667,6 +667,7 @@ class EventsRegisterTest(AuthedTestCase):
         self.assert_on_error(error)
 
         action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
+        self.maxDiff = None
         events = self.do_test(action)
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
