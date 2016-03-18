@@ -719,7 +719,7 @@ class SubscriptionAPITest(AuthedTestCase):
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                 add_streams, self.streams, self.test_email, self.streams + add_streams)
-        self.assert_length(events, 4, True)
+        self.assert_length(events, 7, True)
 
     def test_successful_subscriptions_notifies_pm(self):
         """
@@ -730,6 +730,12 @@ class SubscriptionAPITest(AuthedTestCase):
 
         current_stream = self.get_streams(invitee)[0]
         invite_streams = self.make_random_stream_names(current_stream)[:1]
+
+        #Remove the default notification stream to check pm notifications
+        notification_stream = Stream.objects.get(name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME, realm=self.realm)
+        self.realm.notifications_stream = None
+        self.realm.save()
+
         result = self.common_subscribe_to_streams(
             invitee,
             invite_streams,
@@ -749,6 +755,9 @@ class SubscriptionAPITest(AuthedTestCase):
                                                           invite_streams[0],
                                                           invite_streams[0])
         self.assertEqual(msg.content, expected_msg)
+        #Add the default notification stream
+        self.realm.notifications_stream = notification_stream
+        self.realm.save()
 
     def test_successful_subscriptions_notifies_stream(self):
         """
@@ -759,10 +768,6 @@ class SubscriptionAPITest(AuthedTestCase):
 
         current_stream = self.get_streams(invitee)[0]
         invite_streams = self.make_random_stream_names(current_stream)[:1]
-
-        notifications_stream = Stream.objects.get(name=current_stream, realm=self.realm)
-        self.realm.notifications_stream = notifications_stream
-        self.realm.save()
 
         # Delete the UserProfile from the cache so the realm change will be
         # picked up

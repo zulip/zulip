@@ -11,8 +11,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
     split_email_to_domain, email_to_username
 from zerver.lib.actions import do_send_message, set_default_streams, \
-    do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin, \
-    internal_prep_message, do_send_messages
+    do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin
 from zerver.lib.parallel import run_parallel
 from django.db.models import Count
 from django.conf import settings
@@ -33,7 +32,6 @@ from optparse import make_option
 from six.moves import range
 
 settings.TORNADO_SERVER = None
-DEFAULT_NOTIFICATION_STREAM_NAME = "notifications"
 def create_users(realms, name_list, bot=False):
     user_set = set()
     for full_name, email in name_list:
@@ -46,11 +44,6 @@ def create_streams(realms, realm, stream_list):
     for stream_name in stream_list:
         stream_set.add((realm.domain, stream_name))
     bulk_create_streams(realms, stream_set)
-
-def stream_button(stream_name):
-    stream_name = stream_name.replace('\\', '\\\\')
-    stream_name = stream_name.replace(')', '\\)')
-    return '!_stream_subscribe_button(%s)' % (stream_name,)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -141,7 +134,7 @@ class Command(BaseCommand):
             iago = UserProfile.objects.get(email="iago@zulip.com")
             do_change_is_admin(iago, True)
             # Create public streams.
-            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome", DEFAULT_NOTIFICATION_STREAM_NAME]
+            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome", Realm.DEFAULT_NOTIFICATION_STREAM_NAME]
             create_streams(realms, zulip_realm, stream_list)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list]
 
@@ -156,7 +149,7 @@ class Command(BaseCommand):
                     s = Subscription(recipient=r, user_profile=profile)
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
-            zulip_realm.notifications_stream = Stream.objects.get(name=DEFAULT_NOTIFICATION_STREAM_NAME, realm=zulip_realm)
+            zulip_realm.notifications_stream = Stream.objects.get(name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME, realm=zulip_realm)
             zulip_realm.save()
         else:
             zulip_realm = get_realm("zulip.com")
@@ -212,27 +205,13 @@ class Command(BaseCommand):
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
                     ]
                 create_users(realms, testsuite_mit_users)
-                zulip_realm = Realm.objects.get(domain="zulip.com", name="Zulip Dev")
-                realms = {}
-                for realm in Realm.objects.all():
-                    realms[realm.domain] = realm
-                stream_list = ["Announcement"]
-                create_streams(realms, zulip_realm, stream_list)
-                notifications = []
-                msg = ("Bot created a new stream 'Announcement'. %s"
-                       % (stream_button(stream_list[0])))
-                notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
-                                   "stream",
-                                   DEFAULT_NOTIFICATION_STREAM_NAME, "Streams", msg,
-                                   realm=zulip_realm))
-                do_send_messages(notifications)
 
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
-                zulip_stream_list = ["devel", "all", "zulip", "design", "support", "social", "test",
+                zulip_stream_list = ["devel", "all", "design", "support", "social", "test",
                                       "errors", "sales"]
                 create_streams(realms, zulip_realm, zulip_stream_list)
 
