@@ -80,7 +80,7 @@ for filepath in files:
 
     by_lang[exn].append(filepath)
 
-by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(find scripts/ tools/ bin/ -type f | grep -v [.])", shell=True).split('\n')) if _f]
+by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(git ls-tree --name-only -r HEAD scripts/ tools/ bin/ | grep -v [.])", shell=True).split('\n')) if _f]
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
