@@ -254,6 +254,8 @@ MIDDLEWARE_CLASSES = (
     'zerver.middleware.SessionHostDomainMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
+    'two_factor.middleware.threadlocals.ThreadLocals',
 )
 
 ANONYMOUS_USER_ID = None
@@ -277,6 +279,10 @@ INSTALLED_APPS = [
     'guardian',
     'pipeline',
     'zerver',
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
 ]
 
 if not VOYAGER:
@@ -887,6 +893,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 ACCOUNT_ACTIVATION_DAYS=7
 
+LOGIN_URL = '/'
 LOGIN_REDIRECT_URL='/'
 
 # Client-side polling timeout for get_events, in milliseconds.
@@ -955,3 +962,9 @@ if PRODUCTION:
 PROFILE_ALL_REQUESTS = False
 
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
+
+########################################################################
+# TWO-FACTOR AUTHENTICATION SETTINGS
+########################################################################
+TWO_FACTOR_CALL_GATEWAY = 'two_factor.gateways.twilio.gateway.Twilio'
+TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.twilio.gateway.Twilio'

@@ -16,8 +16,8 @@ casper.waitForSelector('#zhome', function () {
 });
 
 casper.then(function () {
-    casper.test.assertHttpStatus(200);
-    casper.test.assertUrlMatch(/accounts\/login\/$/);
+    casper.test.assertHttpStatus(302);
+    casper.test.assertUrlMatch(/login\/?(.+)$/);
 });
 
 // Run the above queued actions.

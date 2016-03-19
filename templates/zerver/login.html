@@ -87,14 +87,15 @@ autofocus('#id_username');
             {# desktop_sso_dispatch is only set when this template is invoked by zilencer.views #}
               action="{% url 'zilencer.views.account_deployment_dispatch' %}"
             {% else %}
-              action="{% url 'django.contrib.auth.views.login' %}?next={{ next }}"
+              action="{% url 'two_factor:login' %}?next={{ next }}"
             {% endif %}
         >
+            {{ wizard.management_form }}
             {% csrf_token %}
             <div class="control-group">
                 <label for="id_username" class="control-label">{% trans 'Email' %}</label>
                 <div class="controls">
-                    <input id="id_username" type="email" name="username" class="email required" value="{{ email }}" maxlength="72" />
+                    <input id="id_username" type="email" name="auth-username" class="email required" value="{{ email }}" maxlength="72" />
                 </div>
             </div>
 
@@ -102,7 +103,7 @@ autofocus('#id_username');
             <div class="control-group">
                 <label for="id_password" class="control-label">{% trans 'Password' %}</label>
                 <div class="controls">
-                    <input id="id_password" name="password" class="required" type="password" />
+                    <input id="id_password" name="auth-password" class="required" type="password" />
                 </div>
             </div>
             {% endif %}
