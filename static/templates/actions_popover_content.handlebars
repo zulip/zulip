@@ -40,9 +40,8 @@
   {{/if}}
 
   <li>
-    <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-msgid="{{message.id}}">
-      <i class="icon-vector-link"></i> Link to this conversation
+    <a id="copy_link_to_clipboard" data-clipboard-text="{{conversation_time_uri}}" data-toggle="tooltip" title="Copy link to clipboard">
+    <i class="icon-vector-copy"></i> Copy link to message
     </a>
   </li>
-
 </ul>
