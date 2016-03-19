@@ -55,4 +55,8 @@ subprocess.check_call(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'),
                              'prod-static/source-map'],
                       stdout=fp, stderr=fp)
 
+# Remove unminified CSS
+subprocess.check_call(['rm', '-rf', 'prod-static/serve/styles'],
+                      stdout=fp, stderr=fp)
+
 fp.close()
