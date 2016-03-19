@@ -391,7 +391,11 @@ Commit Discipline
 -----------------
 
 We follow the Git project's own commit discipline practice of "Each
-commit is a minimal coherent idea".
+commit is a minimal coherent idea".  This discipline takes a bit of
+work, but it makes it much easier for code reviewers to spot bugs, and
+makesthe commit history a much more useful resource for developers
+trying to understand why the code works the way it does, which also
+helps a lot in preventing bugs.
 
 Coherency requirements for any commit:
 
@@ -436,12 +440,22 @@ Other considerations:
 
 -  Overly fine commits are easily squashed, but not vice versa, so err
    toward small commits, and the code reviewer can advise on squashing.
+-  If a commit you write doesn't pass tests, you should usually fix
+   that by amending the commit to fix the bug, not writing a new "fix
+   tests" commit on top of it.
 
-It can take some practice to get used to writing your commits this
-way.  For example, often you'll start adding a feature, and discover
-you need to a refactoring partway through writing the feature.  When
-that happens, we recommend stashing your partial feature, do the
-refactoring, commit it, and then finish implementing your feature.
+Zulip expects you to structure the commits in your pull requests to
+form a clean history before we will merge them; it's best to write
+your commits following these guidelines in the first place, but if you
+don't, you can always fix your history using `git rebase -i`.
+
+It can take some practice to get used to writing your commits with a
+clean history so that you don't spend much time doing interactive
+rebases.  For example, often you'll start adding a feature, and
+discover you need to a refactoring partway through writing the
+feature.  When that happens, we recommend stashing your partial
+feature, do the refactoring, commit it, and then finish implementing
+your feature.
 
 Commit Messages
 ---------------
@@ -454,17 +468,34 @@ Bad::
 
    bugfix
    gather_subscriptions was broken
+   fix bug #234.
 
 Good::
 
-   Prevent gather_subscriptions from throwing an exception when given bad input.
+   Fix gather_subscriptions throwing an exception when given bad input.
 
--  Please use a complete sentence, ending with a period.
+-  Use present-tense action verbs in your commit messages.
+
+Bad::
+
+   Fixing gather_subscriptions throwing an exception when given bad input.
+   Fixed gather_subscriptions throwing an exception when given bad input.
+
+Good::
+
+   Fix gather_subscriptions throwing an exception when given bad input.
+
+-  Please use a complete sentence in the summary, ending with a
+   period.
 
 -  The rest of the commit message should be written in full prose and
    explain why and how the change was made. If the commit makes
    performance improvements, you should generally include some rough
    benchmarks showing that it actually improves the performance.
+
+-  Any paragraph content in the commit message should be line-wrapped
+   to less than 76 characters per line, so that your commit message
+   will be reasonably readable in `git log` in a normal terminal.
 
 -  In your commit message, you should describe any manual testing you
    did in addition to running the automated tests, and any aspects of
