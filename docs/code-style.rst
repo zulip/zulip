@@ -443,6 +443,12 @@ Other considerations:
 -  If a commit you write doesn't pass tests, you should usually fix
    that by amending the commit to fix the bug, not writing a new "fix
    tests" commit on top of it.
+-  When you fix a GitHub issue, `mark that you've fixed the issue in
+   your commit message
+   <https://help.github.com/articles/closing-issues-via-commit-messages/>`__
+   so that the issue is automatically closed when your code is merged.
+   Zulip's preferred style for this is to have the final paragraph
+   of the commit message read e.g. "Fixes: #123."
 
 Zulip expects you to structure the commits in your pull requests to
 form a clean history before we will merge them; it's best to write
