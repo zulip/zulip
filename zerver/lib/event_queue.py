@@ -163,6 +163,7 @@ class ClientDescriptor(object):
     def disconnect_handler(self, client_closed=False):
         if self.current_handler_id:
             clear_descriptor_by_handler_id(self.current_handler_id, None)
+            clear_handler_by_id(self.current_handler_id)
             if client_closed:
                 logging.info("Client disconnected for queue %s (%s via %s)" %
                              (self.event_queue.id, self.user_profile_email,
