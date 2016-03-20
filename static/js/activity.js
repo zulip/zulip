@@ -257,7 +257,7 @@ exports.update_users = function (user_list) {
         $.each(user_info, function (index, user) {
             var user_index = all_users.indexOf(user.email);
             $('#user_presences').find('[data-email="' + user.email + '"]').remove();
-            $('#user_presences li').eq(user_index + 1).before(templates.render('user_presence_row', user));
+            $('#user_presences li').eq(user_index).before(templates.render('user_presence_row', user));
         });
     } else {
         $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
