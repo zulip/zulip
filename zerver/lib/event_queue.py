@@ -160,7 +160,7 @@ class ClientDescriptor(object):
         if self.client_type_name != 'API: heartbeat test':
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
-    def disconnect_handler(self, client_closed=False):
+    def disconnect_handler(self, client_closed=False, need_timeout=True):
         if self.current_handler_id:
             clear_descriptor_by_handler_id(self.current_handler_id, None)
             clear_handler_by_id(self.current_handler_id)
@@ -170,12 +170,15 @@ class ClientDescriptor(object):
                               self.current_client_name))
         self.current_handler_id = None
         self.current_client_name = None
-        if self._timeout_handle is not None:
+        if need_timeout and self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
             ioloop.remove_timeout(self._timeout_handle)
             self._timeout_handle = None
 
     def cleanup(self):
+        # Disconnect any existing handler, and don't bother creating a
+        # timeout object that we'll just have to garbage collect later.
+        self.disconnect_handler(need_timeout=False)
         do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
                            [self.realm_id])
 
