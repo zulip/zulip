@@ -244,6 +244,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         if response is RespondAsynchronously:
                             async_request_stop(request)
                             return None
+                        clear_handler_by_id(self.handler_id)
                     except Exception as e:
                         clear_handler_by_id(self.handler_id)
                         # If the view raised an exception, run it through exception
