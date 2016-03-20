@@ -45,7 +45,7 @@ activity.presence_info = {
 };
 
 (function test_presence_list_full_update() {
-    var users = activity._update_users();
+    var users = activity.update_users();
     assert.deepEqual(users, [
         { name: 'Fred Flintstone',
           email: 'fred@zulip.com',
@@ -86,7 +86,7 @@ activity.presence_info = {
     };
     activity.presence_info['alice@zulip.com'] = users['alice@zulip.com'];
 
-    users = activity._update_users(users);
+    users = activity.update_users(users);
     assert.deepEqual(users, [
         { name: 'Alice Smith',
           email: 'alice@zulip.com',
@@ -105,7 +105,7 @@ activity.presence_info = {
         'mark@zulip.com': {status: 'active'}
     };
     activity.presence_info['mark@zulip.com'] = users['mark@zulip.com'];
-    users = activity._update_users(users);
+    users = activity.update_users(users);
     assert.deepEqual(users, [
         { name: 'Marky Mark',
           email: 'mark@zulip.com',
