@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if [[ -z "$1" ]]; then
+    rootdir="."
+else
+    rootdir="$1"
+fi
+
+find "$rootdir" -type f -name '*.py'
+
+for fpath in $(find "$rootdir" -type f -executable); do
+    fname=$(basename "$fpath")
+    fext="${fname##*.}"
+    mime_type=$(file -b --mime-type "$fpath")
+    if [[ "$mime_type" = 'text/x-python' && "$fext" != 'py' ]]; then
+        echo "$fpath"
+    fi
+done

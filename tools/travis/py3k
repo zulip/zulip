@@ -45,10 +45,15 @@ libpasteurize.fixes.fix_newstyle
 
 echo; echo "Testing for additions of Python 2 patterns we've removed as part of moving towards Python 3 compatibility."; echo
 
+script_dir=$(dirname "$0")
+lister_path="$script_dir/../list_py_scripts"
+py_scripts=$("$lister_path")
+
 failed=0
 for fixer in $fixers; do
-    echo "Running Python 3 compatibility test $fixer"
-    futurize -f $fixer -j4 -n -w . >/dev/null 2>/dev/null
+    echo "Running $fixer"
+    echo "Time: $(date +'%T')"
+    echo "$py_scripts" | xargs futurize -f $fixer -j4 -n -w >/dev/null 2>/dev/null
     if ! git diff --exit-code; then
         # Clear the output from this one
         git reset --hard >/dev/null
@@ -61,8 +66,9 @@ done
 # the fixer but check for lines which don't include code that works
 # with iterators (currently for, join, and from_iterable).
 fixer="libmodernize.fixes.fix_dict_six"
-echo "Running python 3 compatability test $fixer"
-python-modernize -f $fixer -j4 -n -w . >/dev/null 2>/dev/null
+echo "Running $fixer"
+echo "Time: $(date +'%T')"
+echo "$py_scripts" | xargs python-modernize -f $fixer -j4 -n -w >/dev/null 2>/dev/null
 if git diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep -v from_iterable; then
     echo
     echo "Error: the above are changes suggested by python-modernize "
@@ -93,3 +99,4 @@ if [ -z "$failed" ]; then
 else
     echo "Python 3 compatibility error(s) detected!  See diffs above for what you need to change."
 fi
+echo "Time: $(date +'%T')"
