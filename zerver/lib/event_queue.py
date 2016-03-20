@@ -473,6 +473,8 @@ def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
             extra_log_data += " [was connected]"
         return (ret, extra_log_data)
 
+    # After this point, dont_block=False, the queue is empty, and we
+    # have a pre-existing queue, so we wait for new events.
     if was_connected:
         logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
                                                                     client_type_name))
