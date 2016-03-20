@@ -61,6 +61,18 @@ for fixer in $fixers; do
     fi
 done
 
+if [[ "$failed" -eq 1 ]]; then false; fi
+
+echo "Checking StringIO imports"
+if git grep -q '\(^\W*import StringIO\|^\W*from StringIO\)'; then
+    echo "ERROR: StringIO imports not compatible with python 2+3:"
+    git grep '\(^\W*import StringIO\|^\W*from StringIO\)'
+    echo "Please use 'from six.moves import cStringIO as StringIO'"
+    failed=1
+fi
+
+if [[ "$failed" -eq 1 ]]; then false; fi
+
 # The dict fixer tries to add list() even in for loops over an
 # iterator where it's just counterproductive.  To address this, we run
 # the fixer but check for lines which don't include code that works
@@ -83,14 +95,6 @@ if git --no-pager diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep
     echo
     echo "That was a lot of text!  Read this output from the top for more readable details."
     git reset --hard >/dev/null
-    failed=1
-fi
-
-echo "Checking StringIO imports"
-if git grep -q '\(^\W*import StringIO\|^\W*from StringIO\)'; then
-    echo "ERROR: StringIO imports not compatible with python 2+3:"
-    git grep '\(^\W*import StringIO\|^\W*from StringIO\)'
-    echo "Please use 'from six.moves import cStringIO as StringIO'"
     failed=1
 fi
 
