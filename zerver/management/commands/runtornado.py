@@ -150,7 +150,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             self.load_middleware()
         self.initLock.release()
         self._auto_finish = False
-        self.client_descriptor = None
         # Handler IDs are allocated here, and the handler ID map must
         # be cleared when the handler finishes its response
         allocate_handler_id(self)
