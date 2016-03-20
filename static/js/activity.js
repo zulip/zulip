@@ -256,7 +256,7 @@ function actually_update_users(user_list) {
         // Render right panel partially
         $.each(user_info, function (index, user) {
             var user_index = all_users.indexOf(user.email);
-            $('#user_presences').find('[data-email=' + user.email + ']').remove();
+            $('#user_presences').find('[data-email="' + user.email + '"]').remove();
             $('#user_presences li').eq(user_index + 1).before(templates.render('user_presence_row', user));
         });
     } else {
