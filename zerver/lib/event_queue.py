@@ -21,7 +21,7 @@ from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile
 from zerver.lib.cache_helpers import cache_with_key
 from zerver.lib.handlers import clear_handler_by_id, get_handler_by_id, \
-    finish_handler
+    finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 from zerver.lib.narrow import build_narrow_filter
@@ -370,9 +370,9 @@ def gc_event_queues():
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
-                  + '  Now %d active queues')
+                  + '  Now %d active queues, %s')
                  % (len(to_remove), len(affected_users), time.time() - start,
-                    len(clients)))
+                    len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
