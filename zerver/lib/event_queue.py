@@ -90,6 +90,9 @@ class ClientDescriptor(object):
                     narrow=self.narrow,
                     client_type=self.client_type_name)
 
+    def __repr__(self):
+        return "ClientDescriptor<%s>" % (self.event_queue.id,)
+
     @classmethod
     def from_dict(cls, d):
         if 'user_profile_email' not in d:

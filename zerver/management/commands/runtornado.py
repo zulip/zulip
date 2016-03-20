@@ -155,6 +155,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # be cleared when the handler finishes its response
         allocate_handler_id(self)
 
+    def __repr__(self):
+        return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, get_descriptor_by_handler_id(self.handler_id))
+
     def get(self, *args, **kwargs):
         environ  = WSGIContainer.environ(self.request)
         environ['PATH_INFO'] = urllib.parse.unquote(environ['PATH_INFO'])
