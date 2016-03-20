@@ -232,9 +232,9 @@
        </div>
     </div>
 
-    <div class="portico-page-header"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
-    <p class="portico-large-text">The official <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a>
-    integration provides an extension point for additional Zulip integrations. </p><p class="portico-large-text"> A non-comprehensive list of integrations available through
+    <div class="portico-page-header extra" id="hubot-integrations"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
+    <p class="portico-large-text extra">The official <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a>
+    integration provides an extension point for additional Zulip integrations. </p><p class="portico-large-text extra"> A non-comprehensive list of integrations available through
     <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a> follows below:</p>
 
     <div class="integration-lozenges">
@@ -953,6 +953,7 @@
       <img class="screenshot" src="/static/images/integrations/hubot/001.png" />
 
       <p><a href='https://github.com/zulip/hubot-zulip'>Source code for the hubot-zulip adapter is available on GitHub</a>.</p>
+      <p><a href="#hubot-integrations">Check out additional Zulip integrations available via Hubot</a></p>
     </div>
 
     <div id="jenkins" class="integration-instructions">
@@ -1906,7 +1907,7 @@ $(function() {
       if (hashes.indexOf(cleanHash) > -1) {
            currentblock = $(integrationHash);
            currentlozenge = $(".integration-lozenge.integration-" + cleanHash);
-           $(".integration-lozenges").hide();
+           $(".integration-lozenges, .portico-page-header.extra, .portico-large-text.extra").hide();
            newlozenge = currentlozenge.clone();
            newlozenge.find(".integration-logo").unwrap();
            newlozenge.addClass("integration-lozenge-static");
@@ -1922,15 +1923,17 @@ $(function() {
     }
 
     function updateHash () {
-      if (document.location.hash) {
+      var hash = document.location.hash;
+      if (hash && hash != '#hubot-integrations') {
         switchToIntegration(document.location.hash);
       }
       else if (currentblock && newlozenge) {
          $("#integration-list-link").css("display", "none");
-         $(".integration-lozenges").show();
+         $(".integration-lozenges, .portico-page-header.extra, .portico-large-text.extra").show();
          instructionbox.hide();
          newlozenge.remove();
          currentblock.appendTo("#integration-instructions-group");
+         $('html, body').animate({scrollTop: $(hash).offset().top}, 'slow');
       }
     }
 
