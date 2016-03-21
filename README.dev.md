@@ -116,7 +116,7 @@ instructions should work.
 
 Install the following non-Python dependencies:
  * libffi-dev — needed for some Python extensions
- * postgresql 9.1 or later — our database (also install development headers)
+ * postgresql 9.1 or later — our database (client, server, headers)
  * nodejs 0.10 (and npm)
  * memcached (and headers)
  * rabbitmq-server
