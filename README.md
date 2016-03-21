@@ -38,45 +38,53 @@ Contributing to Zulip
 Zulip welcomes all forms of contributions!  The page documents the
 Zulip development process.
 
-* **Pull requests**. Before a pull request can be merged, you need to to sign the [Dropbox
-Contributor License Agreement](https://opensource.dropbox.com/cla/).
-Also, please skim our [commit message style
-guidelines](http://zulip.readthedocs.org/en/latest/code-style.html#commit-messages).
+* **Pull requests**. Before a pull request can be merged, you need to
+to sign the [Dropbox Contributor License Agreement][cla].  Also,
+please skim our [commit message style guidelines][doc-commit-style].
 
 * **Testing**. The Zulip automated tests all run automatically when
 you submit a pull request, but you can also run them all in your
 development environment following the instructions in the [testing
-docs](https://github.com/zulip/zulip/blob/master/README.dev.md#running-the-test-suite).
+docs][doc-test].
 
 * **Developer Documentation**.  Zulip has a growing collection of
-developer documentation on [Read The Docs](https://zulip.readthedocs.org/).
-Recommended reading for new contributors includes the
-[directory structure](http://zulip.readthedocs.org/en/latest/directory-structure.html) and
-[new feature tutorial](http://zulip.readthedocs.org/en/latest/new-feature-tutorial.html).
+developer documentation on [Read The Docs][doc].  Recommended reading
+for new contributors includes the [directory structure][doc-dirstruct]
+and [new feature tutorial][doc-newfeat].
 
 * **Mailing list and bug tracker** Zulip has a [development discussion
-mailing list](https://groups.google.com/forum/#!forum/zulip-devel) and
-uses [GitHub issues](https://github.com/zulip/zulip/issues).  Feel
+mailing list][gg-devel] and uses [GitHub issues][gh-issues].  Feel
 free to send any questions or suggestions of areas where you'd love to
 see more documentation to the list!  Please report any security issues
 you discover to support@zulip.com.
 
-* **App codebases** This repository is for the Zulip server and web app; the
-[desktop](https://github.com/zulip/zulip-desktop),
-[Android](https://github.com/zulip/zulip-android), and
-[iOS](https://github.com/zulip/zulip-ios) apps are separate
+* **App codebases** This repository is for the Zulip server and web
+app; the [desktop][], [Android][], and [iOS][] apps are separate
 repositories.
+
+[cla]: https://opensource.dropbox.com/cla/
+[doc]: https://zulip.readthedocs.org/
+[doc-commit-style]: http://zulip.readthedocs.org/en/latest/code-style.html#commit-messages
+[doc-dirstruct]: http://zulip.readthedocs.org/en/latest/directory-structure.html
+[doc-newfeat]: http://zulip.readthedocs.org/en/latest/new-feature-tutorial.html
+[doc-test]: https://github.com/zulip/zulip/blob/master/README.dev.md#running-the-test-suite
+[gg-devel]: https://groups.google.com/forum/#!forum/zulip-devel
+[gh-issues]: https://github.com/zulip/zulip/issues
+[desktop]: https://github.com/zulip/zulip-desktop
+[android]: https://github.com/zulip/zulip-android
+[ios]: https://github.com/zulip/zulip-ios
 
 How to get involved with contributing to Zulip
 ==============================================
 
-First, subscribe to the Zulip [development discussion mailing list](https://groups.google.com/forum/#!forum/zulip-devel).
+First, subscribe to the Zulip [development discussion mailing
+list][gg-devel].
 
 The Zulip project uses a system of labels in our [issue
-tracker](https://github.com/zulip/zulip/issues) to make it easy to
-find a project if you don't have your own project idea in mind or want
-to get some experience with working on Zulip before embarking on a
-larger project you have in mind:
+tracker][gh-issues] to make it easy to find a project if you don't
+have your own project idea in mind or want to get some experience with
+working on Zulip before embarking on a larger project you have in
+mind:
 
 * [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
   Smaller projects that could be a great first contribution.
@@ -90,12 +98,12 @@ larger project you have in mind:
 * [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
   A broader list of projects that nobody is currently working on.
 * [Platform support](https://github.com/zulip/zulip/labels/Platform%20support).
-  These are open issues about making it possible to install Zulip on a wider
-  range of platforms.
-* [Bugs](https://github.com/zulip/zulip/labels/bug). Open bugs.
+  These are open issues about making it possible to install Zulip on a
+  wider range of platforms.
+* [Bugs](https://github.com/zulip/zulip/labels/bug): Open bugs.
 * [Feature requests](https://github.com/zulip/zulip/labels/enhancement).
-  Browsing this list can be a great way to find feature ideas to implement that
-  other Zulip users are excited about.
+  Browsing this list can be a great way to find feature ideas to
+  implement that other Zulip users are excited about.
 
 If you're excited about helping with an open issue, just post on the
 conversation thread that you're working on it.  You're encouraged to
