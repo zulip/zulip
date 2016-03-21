@@ -1,4 +1,12 @@
 #!/bin/bash
+while true; do
+
+read -t 10 -p "This will delete current zulip database. Proceed?(Y/n)" yn
+
+case $yn in
+
+
+[Yy]* )
 set -e
 set -x
 
@@ -35,4 +43,16 @@ EOF
 sh "$(dirname "$0")/flush-memcached"
 
 echo "Database created"
+break;;
+
+
+[Nn]* )
+echo -e "\nNew database not created";
+break;;
+
+
+* ) echo "Please answer [Y/y] or [N/n] :";;
+esac
+
+done
 
