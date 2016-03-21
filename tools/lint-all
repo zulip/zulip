@@ -7,12 +7,14 @@ import sys
 import optparse
 import subprocess
 import traceback
+import platform
 
 from os          import path
 from collections import defaultdict
 from six.moves import filter
 from six.moves import map
 
+grep_command = 'ggrep' if platform.system() == 'OpenBSD' else 'grep'
 parser = optparse.OptionParser()
 parser.add_option('--full',
     action='store_true',
@@ -80,7 +82,7 @@ for filepath in files:
 
     by_lang[exn].append(filepath)
 
-by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(git ls-tree --name-only -r HEAD scripts/ tools/ bin/ | grep -v [.])", shell=True).split('\n')) if _f]
+by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("%s --files-with-matches '#!.*\(ba\)\?sh' $(git ls-tree --name-only -r HEAD scripts/ tools/ bin/ | grep -v [.])" % grep_command, shell=True).split('\n')) if _f]
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
