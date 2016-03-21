@@ -1,12 +1,17 @@
 #!/bin/bash
 while true; do
 
-read -t 10 -p "This will delete current zulip database. Proceed?(Y/n)" yn
+read -t 10 -p "This will delete current zulip database. (Enter N/n to stop)" yn
 
 case $yn in
 
 
-[Yy]* )
+[Nn]* )
+echo -e "\nNew database not created";
+break;;
+
+* )
+
 set -e
 set -x
 
@@ -45,13 +50,6 @@ sh "$(dirname "$0")/flush-memcached"
 echo "Database created"
 break;;
 
-
-[Nn]* )
-echo -e "\nNew database not created";
-break;;
-
-
-* ) echo "Please answer [Y/y] or [N/n] :";;
 esac
 
 done
