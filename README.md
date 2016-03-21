@@ -52,13 +52,13 @@ developer documentation on [Read The Docs][doc].  Recommended reading
 for new contributors includes the [directory structure][doc-dirstruct]
 and [new feature tutorial][doc-newfeat].
 
-* **Mailing list and bug tracker** Zulip has a [development discussion
-mailing list][gg-devel] and uses [GitHub issues][gh-issues].  Feel
-free to send any questions or suggestions of areas where you'd love to
-see more documentation to the list!  Please report any security issues
-you discover to support@zulip.com.
+* **Mailing list and bug tracker**. Zulip has a [development
+discussion mailing list][gg-devel] and uses [GitHub issues
+][gh-issues].  Feel free to send any questions or suggestions of areas
+where you'd love to see more documentation to the list!  Please report
+any security issues you discover to support@zulip.com.
 
-* **App codebases** This repository is for the Zulip server and web
+* **App codebases**. This repository is for the Zulip server and web
 app; the [desktop][], [Android][], and [iOS][] apps are separate
 repositories.
 
