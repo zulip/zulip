@@ -93,15 +93,15 @@ mind:
   back to the community!  Writing an integration can be a great
   started project.  There's some brief documentation on the best way
   to write integrations at https://github.com/zulip/zulip/issues/70.
-* [Documentation](https://github.com/zulip/zulip/labels/documentation).
+* [Documentation](https://github.com/zulip/zulip/labels/documentation):
   The Zulip project loves contributions of new documentation.
 * [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
   A broader list of projects that nobody is currently working on.
-* [Platform support](https://github.com/zulip/zulip/labels/Platform%20support).
+* [Platform support](https://github.com/zulip/zulip/labels/Platform%20support):
   These are open issues about making it possible to install Zulip on a
   wider range of platforms.
 * [Bugs](https://github.com/zulip/zulip/labels/bug): Open bugs.
-* [Feature requests](https://github.com/zulip/zulip/labels/enhancement).
+* [Feature requests](https://github.com/zulip/zulip/labels/enhancement):
   Browsing this list can be a great way to find feature ideas to
   implement that other Zulip users are excited about.
 
