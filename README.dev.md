@@ -124,7 +124,7 @@ Install the following non-Python dependencies:
  * python-dev
  * redis-server — rate limiting
  * tsearch-extras — better text search
- * libfreetype6-dev - needed before you pip install Pillow to properly generate emoji PNGs
+ * libfreetype6-dev — needed before you pip install Pillow to properly generate emoji PNGs
 
 ### On Debian or Ubuntu systems:
 
