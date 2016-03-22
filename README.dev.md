@@ -294,6 +294,7 @@ Finally continue with the All Systems instructions below.
 ```
 pip install -r requirements.txt
 npm install
+./tools/install_phantomjs
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
