@@ -44,8 +44,8 @@ APT_DEPENDENCIES = {
     ]
 }
 
-VENV_PATH="/srv/zulip-venv"
-ZULIP_PATH="/srv/zulip"
+VENV_PATH = "/srv/zulip-venv"
+ZULIP_PATH = "/srv/zulip"
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
     print("Error: No Zulip git repository present at /srv/zulip!")
@@ -55,7 +55,7 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
 
 # TODO: Parse arguments properly
 if "--travis" in sys.argv or "--docker" in sys.argv:
-    ZULIP_PATH="."
+    ZULIP_PATH = "."
 
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
@@ -83,10 +83,8 @@ def main():
 
     if platform.architecture()[0] == '64bit':
         arch = 'amd64'
-        phantomjs_arch = 'x86_64'
     elif platform.architecture()[0] == '32bit':
         arch = "i386"
-        phantomjs_arch = 'i686'
     else:
         log.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
         sys.exit(1)
@@ -117,18 +115,8 @@ def main():
     with sh.sudo:
         sh.dpkg("--install", temp_deb_path, **LOUD)
 
-    with sh.sudo:
-        PHANTOMJS_PATH = "/srv/phantomjs"
-        PHANTOMJS_BASENAME = "phantomjs-1.9.8-linux-%s" % (phantomjs_arch,)
-        PHANTOMJS_TARBALL_BASENAME = PHANTOMJS_BASENAME + ".tar.bz2"
-        PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, PHANTOMJS_TARBALL_BASENAME)
-        PHANTOMJS_URL = "https://bitbucket.org/ariya/phantomjs/downloads/%s" % (PHANTOMJS_TARBALL_BASENAME,)
-        sh.mkdir("-p", PHANTOMJS_PATH, **LOUD)
-        if not os.path.exists(PHANTOMJS_TARBALL):
-            sh.curl('-J', '-L', PHANTOMJS_URL, o=PHANTOMJS_TARBALL, **LOUD)
-        sh.tar("xj", directory=PHANTOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
-        sh.ln("-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME, "bin", "phantomjs"),
-              "/usr/local/bin/phantomjs", **LOUD)
+    # Install phantomjs
+    os.system("./tools/install-phantomjs")
 
     with sh.sudo:
         sh.rm("-rf", VENV_PATH, **LOUD)
@@ -163,7 +151,8 @@ def main():
     with sh.sudo:
         sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH, **LOUD)
 
-    # npm install and management commands expect to be run from the root of the project.
+    # npm install and management commands expect to be run from the root of the
+    # project.
     os.chdir(ZULIP_PATH)
 
     sh.npm.install(**LOUD)
