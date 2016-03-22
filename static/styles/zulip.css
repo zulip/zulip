@@ -2649,6 +2649,10 @@ div.floating_recipient {
     margin-right: 10px;
 }
 
+.sub_button_row {
+    text-align: center;
+}
+
 button.primary {
     background-color: #89a0b3;
     padding: 2px;
@@ -2820,6 +2824,16 @@ button.topic_edit_cancel {
 
 .empty_feed_notice h4 {
     text-align: center;
+}
+
+#subscription-status {
+    width: 200px;
+    position: absolute;
+    left: 50%;
+    margin-left: -100px;
+    bottom: 30px;
+    text-align: center;
+    border-radius: 2px;
 }
 
 #empty_narrow_private_message p,

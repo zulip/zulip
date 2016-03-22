@@ -276,10 +276,6 @@ $(function () {
         compose.start('private', {trigger: 'empty feed message'});
         e.preventDefault();
     });
-    $('.empty_feed_join').click(function (e) {
-        subs.show_and_focus_on_narrow();
-        e.preventDefault();
-    });
 
     function handle_compose_click(e) {
         // Don't let clicks in the compose area count as

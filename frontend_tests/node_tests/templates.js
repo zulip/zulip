@@ -606,7 +606,7 @@ function render(template_name, args) {
     html += render('bookend', args);
 
     global.write_test_output("bookend.handlebars", html);
-    assert.equal($(html).text().trim(), 'subscribed to stream');
+    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            \n            Unsubscribe");
 }());
 
 (function unsubscribed_trailing_bookend() {
@@ -619,7 +619,7 @@ function render(template_name, args) {
     html += render('bookend', args);
 
     global.write_test_output("bookend.handlebars", html);
-    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n    \n        \n            Subscribe');
+    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            \n            Subscribe');
 }());
 
 (function tutorial() {

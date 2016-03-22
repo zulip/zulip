@@ -364,9 +364,7 @@ exports.MessageList.prototype = {
         }
         var trailing_bookend_content, subscribed = stream_data.is_subscribed(stream);
         if (subscribed) {
-            if (this.last_message_historical) {
-                trailing_bookend_content = this.subscribed_bookend_content(stream);
-            }
+            trailing_bookend_content = this.subscribed_bookend_content(stream);
         } else {
             if (!this.last_message_historical) {
                 trailing_bookend_content = this.unsubscribed_bookend_content(stream);

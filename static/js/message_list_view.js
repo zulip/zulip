@@ -512,7 +512,16 @@ MessageListView.prototype = {
         if (last_message_group !== undefined) {
             list.last_message_historical = _.last(last_message_group.message_containers).msg.historical;
         }
-        list.update_trailing_bookend();
+
+        var stream_name = narrow.stream();
+        if (stream_name !== undefined) {
+            // If user narrows to a stream, doesn't update
+            // trailing bookend if user is subscribed.
+            var sub = stream_data.get_sub(stream_name);
+            if (!sub.subscribed) {
+                list.update_trailing_bookend();
+            }
+        }
 
         if (list === current_msg_list) {
             // Update the fade.

@@ -37,9 +37,12 @@
             {{ _('start the conversation') }}</a>?</p>
       </div>
       <div id="nonsubbed_stream_narrow_message" class="empty_feed_notice">
-        <h4>{{ _("You aren't subscribed to this stream!") }}</h4>
-
-        <p>{{ _('Want to') }} <a href="#" class="empty_feed_join">{{ _('join it') }}</a>?</p>
+        <h4>{{ _("You aren't subscribed to this stream and nobody has talked about that yet!") }}</h4>
+        <div class="sub_button_row">
+          <button class="btn empty_feed_sub_unsub btn-default" type="button" name="subscription">
+            Subscribe
+          </button>
+        </div>
       </div>
       <div id="empty_star_narrow_message" class="empty_feed_notice">
         <h4>{{ _("You haven't starred anything yet!") }}</h4>
