@@ -4,7 +4,7 @@ from __future__ import print_function
 import os
 import subprocess
 
-def list_files(targets=[], modified_only=False):
+def list_files(targets=[], modified_only=False, exclude=[]):
     """
     List files tracked by git.
     Returns a list of files which are either in targets or in directories in targets.
@@ -12,6 +12,7 @@ def list_files(targets=[], modified_only=False):
 
     Other arguments:
     modified_only - Only include files which have been modified.
+    exclude - List of paths to be excluded.
     """
     cmdline = ['git', 'ls-files'] + targets
     if modified_only:
@@ -21,4 +22,18 @@ def list_files(targets=[], modified_only=False):
     # throw away empty lines and non-files (like symlinks)
     files = list(filter(os.path.isfile, files_gen))
 
-    return files
+    result = []
+
+    for fpath in files:
+        # this will take a long time if exclude is very large
+        in_exclude = False
+        for expath in exclude:
+            expath = expath.rstrip('/')
+            if fpath == expath or fpath.startswith(expath + '/'):
+                in_exclude = True
+        if in_exclude:
+            continue
+
+        result.append(fpath)
+
+    return result
