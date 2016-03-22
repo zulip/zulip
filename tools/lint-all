@@ -13,6 +13,8 @@ from collections import defaultdict
 from six.moves import filter
 from six.moves import map
 
+import lister
+
 parser = optparse.OptionParser()
 parser.add_option('--full',
     action='store_true',
@@ -27,60 +29,23 @@ os.chdir(path.join(path.dirname(__file__), '..'))
 
 # Exclude some directories and files from lint checking
 
-exclude_trees = """
+exclude = """
 static/third
 confirmation
 frontend_tests/casperjs
 zerver/migrations
 node_modules
-""".split()
-
-exclude_files = """
 docs/html_unescape.py
 zproject/test_settings.py
 zproject/settings.py
 tools/jslint/jslint.js
 api/setup.py
 api/integrations/perforce/git_p4.py
+puppet/apt/.forge-release
 """.split()
 
-if options.modified:
-    # If the user specifies, use `git ls-files -m` to only check modified, non-staged
-    # files in the current checkout.  This makes things fun faster.
-    files = list(map(str.strip, subprocess.check_output(['git', 'ls-files', '-m']).split('\n')))
-else:
-    files = []
-
-files += args
-
-if not files and not options.modified:
-    # If no files are specified on the command line, use the entire git checkout
-    files = list(map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n')))
-
-files = list(filter(bool, files)) # remove empty file caused by trailing \n
-
-if not files:
-    raise Exception('There are no files to check!')
-
-# Categorize by language all files we want to check
-by_lang   = defaultdict(list)
-
-for filepath in files:
-    if (not filepath or not path.isfile(filepath)
-        or (filepath in exclude_files)
-        or any(filepath.startswith(d+'/') for d in exclude_trees)):
-        continue
-
-    _, exn = path.splitext(filepath)
-    if not exn:
-        # No extension; look at the first line
-        with open(filepath) as f:
-            if re.match(r'^#!.*\bpython', f.readline()):
-                exn = '.py'
-
-    by_lang[exn].append(filepath)
-
-by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(git ls-tree --name-only -r HEAD scripts/ tools/ bin/ | grep -v [.])", shell=True).split('\n')) if _f]
+by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
+    ftypes=['.py', '.sh', '.js', '.pp'], group_by_ftype=True, exclude=exclude)
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
