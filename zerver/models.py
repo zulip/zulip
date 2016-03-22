@@ -1053,6 +1053,24 @@ def parse_usermessage_flags(val):
         mask <<= 1
     return flags
 
+
+class Attachment(models.Model):
+    message = models.ForeignKey(Message)
+    filename = models.CharField(max_length=100, db_index=True)
+    sanitized_filename = models.CharField(max_length=100, db_index=True)
+    #file size in KB. This field may not be required
+    file_size = models.IntegerField()
+    mime_type = models.TextField()
+
+
+    def __repr__(self):
+        return (u"<Attachemnt: %s -> %r>" % (self.filename, self.message)).encode("utf-8")
+
+    def __str__(self):
+        return self.__repr__()
+
+
+
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
