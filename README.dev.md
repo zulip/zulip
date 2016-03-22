@@ -2,32 +2,61 @@
 Installing the Zulip Development environment
 ============================================
 
-You will need a machine with at least 2GB of RAM available (see
+Currently, you will need a machine with at least 2GB of available RAM (see
 https://github.com/zulip/zulip/issues/32 for a plan for how to
 dramatically reduce this requirement).
 
-Start by cloning this repository: `git clone https://github.com/zulip/zulip.git`
+Start by cloning the Zulip repository (commands below).
+
+For non-Windows host platforms, enter the following command in the terminal:
+`git clone https://github.com/zulip/zulip.git`
+
+For Windows host platforms, enter the following command in the terminal (the
+environment runs on Linux, so "-c core.autocrlf=false" avoids adding
+Windows line endings, which cause weird errors):
+`git clone https://github.com/zulip/zulip.git -c core.autocrlf=false`
+
+Using Vagrant is the recommended approach for all supported platforms and will install the
+Zulip development environment inside a VM or container. Important decision making factor:
+There's currently no supported way to uninstall the development environment if you decide 
+not to use Vagrant. On Vagrant, you can use `vagrant destroy` to cleanup the development
+environment.
+
+If you'd like to install a Zulip development environment on a server that's already
+running Ubuntu 14.04 Trusty you could do that too. You can also setup things by hand
+on Debian, Ubuntu, Fedora 22 (experimental), CentOS 7 Core (experimental), and
+OpenBSD 5.8 (experimental). You can also use Docker. 
+
+There's instructions on how to setup the environment on each aforementioned platform in 
+sequential order below. Below all that there are guidelines for using the development
+environment, followed by guidelines for running the test suite and possible testing 
+issues.
 
 Using Vagrant
 -------------
 
-This is the recommended approach for all platforms, and will install
-the Zulip development environment inside a VM or container and works
-on any platform that supports Vagrant.
+Here is a list of known platforms that support Vagrant: 
+* all Linux platforms
+* OS X 
+* Windows
 
-The best performing way to run the Zulip development environment is
-using an LXC container on a Linux host, but we support other platforms
-such as Mac via Virtualbox (but everything will be 2-3x slower).
+Note: the best performing way to run the Zulip development environment is using a LXC 
+container in Vagrant on a Linux host.
+
+The following bullet points are how to start the environment setup on a Linux platform. 
+If you are setting up the environment on OS X or Windows, skip to the sections below
+with the instructions for those platforms. 
 
 * If your host is Ubuntu 15.04 or newer, you can install and configure
-  the LXC Vagrant provider directly using apt:
+  the LXC Vagrant provider directly using apt and the terminal:
   ```
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
   ```
 
 * If your host is Ubuntu 14.04, you will need to [download a newer
-  version of Vagrant][vagrant-dl], and then do the following:
+  version of Vagrant][vagrant-dl] and then enter the following in 
+  the terminal:
   ```
   sudo apt-get install lxc lxc-templates cgroup-lite redir
   sudo dpkg -i vagrant*.deb # in directory where you downloaded vagrant
@@ -38,63 +67,120 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   LXC installation instructions][vagrant-lxc] to get Vagrant with LXC
   for your platform.
 
-* If your host is OS X or older Linux, [download VirtualBox][vbox-dl],
+* If your host is older Linux, [download VirtualBox][vbox-dl],
   [download Vagrant][vagrant-dl], and install them both.
+  
+* For all Linux platforms: skip to the universal instructions below
+  OS X instructions and Windows instructions. 
 
-* If you're on OS X and have VMWare, it should be possible to patch
-  Vagrantfile to use the VMWare vagrant provider which should perform
-  much better than Virtualbox.  Patches to do this by default if
-  VMWare is available are welcome!
+The following bullet is for starting the setup of the environment on OS X:
 
-* On Windows: You can use Vagrant and Virtualbox/VMWare on Windows
-  with Cygwin, similar to the Mac setup.  Be sure to create your git
-  clone using `git clone https://github.com/zulip/zulip.git -c
-  core.autocrlf=false` to avoid Windows line endings being added to
-  files (this causes weird errors).
+* [download VirtualBox][vbox-dl], [download Vagrant][vagrant-dl], and
+  install them both.
+
+  Note: If you're on OS X and have VMWare, it should be possible to patch
+  Vagrantfile to use the VMWare vagrant provider, which should perform
+  much better than Virtualbox. Patches to do this by default are welcome!
+
+The following bullet is for starting the setup of the environment on Windows:
+
+* [Download VirtualBox][vbox-dl], [download Vagrant][vagrant-dl],
+  [download Cygwin][cygwin-dl], and install all three.
 
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
- 
-Once that's done, simply change to your zulip directory and run
-`vagrant up` in your terminal to install the development server.  This
-will take a long time on the first run because Vagrant needs to
-download the Ubuntu Trusty base image, but later you can run `vagrant
-destroy` and then `vagrant up` again to rebuild the environment and it
-will be much faster.
 
-Once that finishes, you can run the development server as follows:
+The setup process is now the same for all known supported host platforms
+(this is the universal setup). Follow the instructions below:
 
+* Open the terminal (Cygwin if you're on Windows) and change directory to 
+  wherever you cloned Zulip.
+  `cd ../zulip`
+
+* Enter the following command. The following command will take a long time to run
+  on its first run because Vagrant needs to download the Ubuntu Trusty base
+  box/image. However, you can destroy the VM with `vagrant destroy` and then run 
+  `vagrant up` again to rebuild the environment. This subsequent run will execute
+  much faster than the first run. Important: If you're on Windows and this command
+  exits with a non-zero return value, this may be solved by continuing with a
+  manual setup explained in the Troubleshooting for Windows section below.
+ `vangrant up` 
+
+* Once that finishes, run the following:
 ```
 vagrant ssh -- -L9991:localhost:9991
 # Now inside the container
 cd /srv/zulip
 source /srv/zulip-venv/bin/activate
+```
+
+* The last command to run the server follows. The `--interface=''` option will
+make the development server listen on all network interfaces.  This is correct
+for the Vagrant guest sitting behind a NAT, but you probably don't want to use 
+that option when using run-dev.py in other environments.
+```
 ./tools/run-dev.py --interface=''
 ```
 
-To get shell access to the virtual machine running the server to run
+Note: To get shell access to the virtual machine running the server to run
 lint, management commands, etc., use `vagrant ssh`.
 
-(A small note on tools/run-dev.py: the `--interface=''` option will
-make the development server listen on all network interfaces.  While
-this is correct for the Vagrant guest sitting behind a NAT, you
-probably don't want to use that option when using run-dev.py in other
-environments).
-
-At this point you should [read about using the development
-environment][using-dev].
+At this point, you should [read about using the development environment][using-dev].
 
 [using-dev]: #using-the-development-environment
 
+Troubleshooting Vagrant for Windows
+-----------------------------------
 
-Using provision.py without Vagrant
-----------------------------------
+A known problem is the command `vagrant up` exits with a non-zero return value.
+The script for automatically setting up the environment may have failed at the
+step of installing npm; if so, you need to manually finish the environment setup. 
+Other problems for using Vagrant in Windows are not yet known or not yet solved 
+and we welcome any fixes to those problems! 
 
-If you'd like to install a Zulip development environment on a server
-that's already running Ubuntu 14.04 Trusty, you can do that by just
-running:
+If npm failed to install properly, you will see "ErrorReturnCode_255" near the
+end of the terminal outputs. For screenshots, see the conversation at our
+[Google Group][google-group-vagrant-windows-conversation]
 
+[google-group-vagrant-windows-conversation]: https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!topic/zulip-devel/MvH-2NakLRM
+
+If the script failed at installing npm, follow the instructions below after
+running `vagrant up`.
+
+* Enter the following commands in the Cygwin terminal:
+```
+vagrant ssh -- -L9991:localhost:9991
+cd /srv/zulip
+npm cache clean
+sudo chown -R $USER:$GROUP ~/.npm
+sudo npm install -g npm@latest
+./tools/download-zxcvbn
+./tools/emoji_dump/build_emoji
+./scripts/setup/generate_secrets.py -d
+sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.3/tsearch_data/
+./scripts/setup/configure-rabbitmq
+./tools/postgres-init-dev-db
+./tools/do-destroy-rebuild-database
+./tools/postgres-init-test-db
+./tools/do-destroy-rebuild-test-database
+```
+
+If those commands executed successfully, Voila! Your development environment is now setup 
+on Windows.
+
+At this point, you should [read about using the development environment][using-dev].
+
+[using-dev]: #using-the-development-environment
+
+Using Ubuntu 14.04 Trusty on a server without Vagrant (provision.py)
+--------------------------------------------------------------------
+
+Note: There is no supported uninstallation process without Vagrant
+(with Vagrant, you can just do `vagrant destroy` to clean up the
+development environment).
+
+Run the following commands in the terminal:
 ```
 sudo apt-get update
 sudo apt-get install -y python-pbs
@@ -105,12 +191,13 @@ source /srv/zulip-venv/bin/activate
 ./tools/run-dev.py
 ```
 
-Note that there is no supported uninstallation process without Vagrant
+Installing Everything by Hand
+-----------------------------
+
+Note: There is no supported uninstallation process without Vagrant
 (with Vagrant, you can just do `vagrant destroy` to clean up the
 development environment).
 
-By hand
--------
 If you really want to install everything by hand, the below
 instructions should work.
 
@@ -126,7 +213,8 @@ Install the following non-Python dependencies:
  * tsearch-extras — better text search
  * libfreetype6-dev — needed before you pip install Pillow to properly generate emoji PNGs
 
-### On Debian or Ubuntu systems:
+If you are running a Debian or Ubuntu system, run the following commands
+in the terminal:
 
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
@@ -134,30 +222,39 @@ sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     postgresql-server-dev-all libmemcached-dev python-dev \
     hunspell-en-us nodejs nodejs-legacy npm git yui-compressor \
     puppet gettext
+``` 
 
-# If on 12.04 or wheezy:
+If you are running Ubuntu 12.04 or Debian Wheezy, run the following 
+commands in the terminal:
+```
 sudo apt-get install postgresql-9.1
 wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
 sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
+```
 
-# If on 14.04:
+If you are running Ubuntu 14.04, run the following commands
+in the terminal:
+```
 sudo apt-get install postgresql-9.3
 wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
 sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
+```
 
-# If on 15.04 or jessie:
+If you are running Ubuntu 15.04 or Debian Jessie, run the 
+following commands in the terminal:
+```
 sudo apt-get install postgresql-9.4
 wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
 sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 ```
-
 Now continue with the "All systems" instructions below.
 
-### On Fedora 22 (experimental):
+If you are running on Fedora 22 (experimental):
 
 These instructions are experimental and may have bugs; patches
 welcome!
 
+Run the following commands in the terminal:
 ```
 sudo dnf install libffi-devel memcached rabbitmq-server \
     openldap-devel python-devel redis postgresql-server \
@@ -167,11 +264,12 @@ sudo dnf install libffi-devel memcached rabbitmq-server \
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
-### On CentOS 7 Core (experimental):
+If you are running on CentOS 7 Core (experimental):
 
 These instructions are experimental and may have bugs; patches
 welcome!
 
+Run the following commands in the terminal:
 ```
 # Add user zulip to the system (not necessary if you configured zulip
 # as the administrator user during the install process of CentOS 7).
@@ -222,10 +320,12 @@ host    all             all             ::1/128                 md5
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
-### On OpenBSD 5.8 (experimental):
+If you are running on OpenBSD 5.8 (experimental):
 
 These instructions are experimental and may have bugs; patches
 welcome!
+
+Run the following commands:
 
 ```
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
@@ -317,8 +417,7 @@ Using Docker
 -------------
 
 You can also use Docker to develop, first you need to install Docker
-in your development machine following the
-[instructions][docker-install].
+in your development machine following the [instructions][docker-install].
 Some other interesting links for somebody new in Docker are:
 
 * [Get Started](https://docs.docker.com/linux/started/)
