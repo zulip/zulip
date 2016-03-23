@@ -41,4 +41,5 @@ class TimeTrackingConnection(connection):
 def reset_queries():
     from django.db import connections
     for conn in connections.all():
-        conn.connection.queries = []
+        if conn.connection is not None:
+            conn.connection.queries = []

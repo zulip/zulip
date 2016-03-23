@@ -150,10 +150,12 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             self.load_middleware()
         self.initLock.release()
         self._auto_finish = False
-        self.client_descriptor = None
         # Handler IDs are allocated here, and the handler ID map must
         # be cleared when the handler finishes its response
         allocate_handler_id(self)
+
+    def __repr__(self):
+        return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, get_descriptor_by_handler_id(self.handler_id))
 
     def get(self, *args, **kwargs):
         environ  = WSGIContainer.environ(self.request)
@@ -244,8 +246,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         if response is RespondAsynchronously:
                             async_request_stop(request)
                             return None
+                        clear_handler_by_id(self.handler_id)
                     except Exception as e:
-                        clear_handler_by_id(self.current_handler_id)
+                        clear_handler_by_id(self.handler_id)
                         # If the view raised an exception, run it through exception
                         # middleware, and if the exception middleware returns a
                         # response, use that. Otherwise, reraise the exception.

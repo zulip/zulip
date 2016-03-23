@@ -27,6 +27,7 @@ import ujson
 
 from six.moves import urllib
 from six.moves import range
+import six
 
 
 class PublicURLTest(TestCase):
@@ -80,9 +81,9 @@ class PublicURLTest(TestCase):
                            "/api/v1/fetch_api_key",
                            ],
                 }
-        for status_code, url_set in get_urls.iteritems():
+        for status_code, url_set in six.iteritems(get_urls):
             self.fetch("get", url_set, status_code)
-        for status_code, url_set in post_urls.iteritems():
+        for status_code, url_set in six.iteritems(post_urls):
             self.fetch("post", url_set, status_code)
 
     def test_get_gcid_when_not_configured(self):

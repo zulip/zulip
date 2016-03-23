@@ -26,6 +26,7 @@ import ujson
 from six.moves import urllib
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
+import six
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
@@ -296,7 +297,7 @@ def add_subscriptions_backend(request, user_profile,
     # or if a new stream was created with the "announce" option.
     notifications = []
     if principals and result["subscribed"]:
-        for email, subscriptions in result["subscribed"].iteritems():
+        for email, subscriptions in six.iteritems(result["subscribed"]):
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
                 continue

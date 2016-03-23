@@ -232,6 +232,7 @@ class WorkerTest(TestCase):
 
         with simulated_queue_client(lambda: fake_client):
             worker = queue_processors.UserActivityWorker()
+            worker.setup()
             worker.start()
             activity_records = UserActivity.objects.filter(
                     user_profile = user.id,
@@ -266,6 +267,7 @@ class WorkerTest(TestCase):
 
         with simulated_queue_client(lambda: fake_client):
             worker = UnreliableWorker()
+            worker.setup()
             worker.start()
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
@@ -1208,7 +1210,7 @@ class UserPresenceTests(AuthedTestCase):
             self.assertEqual(split_email_to_domain(email), 'zulip.com')
 
 class AlertWordTests(AuthedTestCase):
-    interesting_alert_word_list = ['alert', 'multi-word word', '☃'.decode("utf-8")]
+    interesting_alert_word_list = ['alert', 'multi-word word', u'☃']
 
     def test_internal_endpoint(self):
         email = "cordelia@zulip.com"

@@ -59,7 +59,7 @@ class QueueProcessingWorker(object):
     queue_name = None
 
     def __init__(self):
-        self.q = SimpleQueueClient()
+        self.q = None
         if self.queue_name is None:
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
@@ -84,6 +84,9 @@ class QueueProcessingWorker(object):
 
     def _log_problem(self):
         logging.exception("Problem handling data on queue %s" % (self.queue_name,))
+
+    def setup(self):
+        self.q = SimpleQueueClient()
 
     def start(self):
         self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
