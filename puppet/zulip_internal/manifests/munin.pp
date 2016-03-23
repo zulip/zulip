@@ -19,6 +19,7 @@ class zulip_internal::munin {
             "stats",
             "postgres1",
             "postgres2",
+            "postgres3",
             "redis0",
             ]
 
