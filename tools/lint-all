@@ -45,7 +45,7 @@ puppet/apt/.forge-release
 """.split()
 
 by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
-    ftypes=['.py', '.sh', '.js', '.pp'], group_by_ftype=True, exclude=exclude)
+    ftypes=['py', 'sh', 'js', 'pp'], group_by_ftype=True, exclude=exclude)
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
@@ -57,10 +57,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
 
 def check_pyflakes():
-    if not by_lang['.py']:
+    if not by_lang['py']:
         return False
     failed = False
-    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
+    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
         stdout = subprocess.PIPE,
         stderr = subprocess.PIPE)
 
@@ -157,15 +157,15 @@ bash_rules = [
 def check_custom_checks():
     failed = False
 
-    for fn in by_lang['.py']:
+    for fn in by_lang['py']:
         if custom_check_file(fn, python_rules, skip_rules=python_line_skip_rules):
             failed = True
 
-    for fn in by_lang['.js']:
+    for fn in by_lang['js']:
         if custom_check_file(fn, js_rules):
             failed = True
 
-    for fn in by_lang['.sh']:
+    for fn in by_lang['sh']:
         if custom_check_file(fn, bash_rules):
             failed = True
 
@@ -208,14 +208,14 @@ try:
     @lint
     def jslint():
         result = subprocess.call(['tools/node', 'tools/jslint/check-all.js']
-                                 + by_lang['.js'])
+                                 + by_lang['js'])
         return result
 
     @lint
     def puppet():
-        if not by_lang['.pp']:
+        if not by_lang['pp']:
             return 0
-        result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['.pp'])
+        result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['pp'])
         return result
 
     @lint
