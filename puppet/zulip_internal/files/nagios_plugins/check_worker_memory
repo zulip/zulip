@@ -1,7 +1,7 @@
 #!/bin/bash
 # Checks for any Zulip queue workers that are leaking memory and thus have a high vsize
 datafile=$(mktemp)
-ps -o vsize,size,pid,user,command --sort -vsize "$(pgrep -f '^python.* /home/zulip/deployments/current/manage.py process_queue')" > "$datafile"
+ps -o vsize,size,pid,user,command --sort -vsize $(pgrep -f '^python.* /home/zulip/deployments/current/manage.py process_queue') > "$datafile"
 cat "$datafile"
 top_worker=$(cat "$datafile" | head -n2 | tail -n1)
 top_worker_memory_usage=$(echo "$top_worker" | cut -f1 -d" ")
