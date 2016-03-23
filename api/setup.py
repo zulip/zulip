@@ -40,7 +40,7 @@ package_info = dict(
     data_files=[('share/zulip/examples', ["examples/zuliprc", "examples/send-message", "examples/subscribe",
                                            "examples/get-public-streams", "examples/unsubscribe",
                                            "examples/list-members", "examples/list-subscriptions",
-                                           "examples/print-messages"])] + \
+                                           "examples/print-messages", "examples/recent-messages"])] + \
         list(recur_expand('share/zulip', 'integrations/')),
     scripts=["bin/zulip-send"],
 )
