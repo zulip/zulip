@@ -80,7 +80,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
                 continue
 
         if group_by_ftype:
-            result['.' + filetype].append(fpath)
+            result[filetype].append(fpath)
         else:
             result.append(fpath)
 
