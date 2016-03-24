@@ -6,6 +6,7 @@ import sys
 import subprocess
 import re
 from collections import defaultdict
+import argparse
 
 def get_ftype(fpath, use_shebang):
     ext = os.path.splitext(fpath)[1]
@@ -85,3 +86,22 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
             result.append(fpath)
 
     return result
+
+if __name__=="__main__":
+    parser = argparse.ArgumentParser(description="List files tracked by git and optionally filter by type")
+    parser.add_argument('targets', nargs='*',
+                        help='''files and directories to include in the result.
+                        If this is not specified, the current directory is used''')
+    parser.add_argument('-m', '--modified', action='store_true', default=False, help='list only modified files')
+    parser.add_argument('-f', '--ftypes', nargs='+',
+                        help="list of file types to filter on. All files are included if this option is absent")
+    parser.add_argument('--ext-only', dest='extonly', action='store_true', default=False, help='only use extension to determine file type')
+    parser.add_argument('--exclude', nargs='+', help='list of files and directories to exclude from listing')
+    args = parser.parse_args()
+    args.targets = args.targets or []
+    args.ftypes = args.ftypes or []
+    args.exclude = args.exclude or []
+    listing = list_files(targets=args.targets, ftypes=args.ftypes, use_shebang=not args.extonly,
+                         modified_only=args.modified, exclude=args.exclude)
+    for l in listing:
+        print(l)
