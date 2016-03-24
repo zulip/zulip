@@ -41,3 +41,4 @@ tools/emoji_dump/bitmaps/
 tools/emoji_dump/*.ttx
 tools/phantomjs
 node_modules
+uploads/
