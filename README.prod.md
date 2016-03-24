@@ -73,7 +73,7 @@ These instructions should be followed as root.
   ```
   wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
   tar -xf zulip-server-latest.tar.gz
-  mv zulip-server-1.3.10 /root/zulip
+  mkdir -p /root/zulip && tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
   ```
 
 (3) Run
