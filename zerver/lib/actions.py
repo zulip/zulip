@@ -8,7 +8,7 @@ from django.contrib.sessions.models import Session
 from zerver.lib.cache import flush_user_profile
 from zerver.lib.context_managers import lockfile
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
-    Subscription, Recipient, Message, UserMessage, valid_stream_name, \
+    Subscription, Recipient, Message, Attachment, UserMessage, valid_stream_name, \
     DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
@@ -17,7 +17,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
-    ScheduledJob, realm_filters_for_domain, get_active_bot_dicts_in_realm
+    ScheduledJob, realm_filters_for_domain, get_active_bot_dicts_in_realm, \
+    get_old_unclaimed_attachments
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
@@ -57,6 +58,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user, \
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.session_user import get_session_user
+from zerver.lib.upload import claim_attachment, delete_message_image
 
 import DNS
 import ujson
@@ -608,6 +610,11 @@ def do_send_messages(messages):
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
         UserMessage.objects.bulk_create(ums)
+
+        # Claim attachments in message
+        for message in messages:
+            if Message.content_has_attachment(message['message'].content):
+                do_claim_attachments(message)
 
     for message in messages:
         cache_save_message(message['message'])
@@ -2998,3 +3005,26 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     streams.sort(key=lambda elt: elt["name"])
 
     return streams
+
+def do_claim_attachments(message):
+    atttachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+    attachment_url_list = atttachment_url_re.findall(message['message'].content)
+
+    results = []
+    for url in attachment_url_list:
+        path_id = re.sub('[/\-]user[\-_]uploads[/\.-]', '', url)
+        # Remove any extra '.' after file extension. These are probably added by the user
+        path_id = re.sub('[.]+$', '', path_id, re.M)
+
+        if path_id is not None:
+            is_claimed = claim_attachment(path_id, message['message'])
+            results.append((path_id, is_claimed))
+
+    return results
+
+def do_delete_old_unclaimed_attachments(weeks_ago):
+    old_unclaimed_attachments = get_old_unclaimed_attachments(weeks_ago)
+
+    for attachment in old_unclaimed_attachments:
+        delete_message_image(attachment.path_id)
+        attachment.delete()
