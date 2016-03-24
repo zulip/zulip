@@ -6,7 +6,11 @@ from unittest import skip
 
 from zerver.lib.test_helpers import AuthedTestCase
 from zerver.lib.test_runner import slow
-from zerver.lib.upload import sanitize_name
+from zerver.lib.upload import sanitize_name, delete_message_image, delete_message_image_local, \
+    delete_message_image_s3, upload_message_image_s3, upload_message_image_local
+from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
+    get_old_unclaimed_attachments
+from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
 from six.moves import urllib
@@ -16,6 +20,12 @@ from boto.s3.key import Key
 from six.moves import StringIO
 import os
 import shutil
+import re
+import datetime
+from datetime import timedelta
+from django.utils import timezone
+
+from moto import mock_s3
 
 TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
 
@@ -46,9 +56,13 @@ class FileUploadTest(AuthedTestCase):
         result = self.client.post("/json/upload_file")
         self.assert_json_error(result, "You must specify a file to upload")
 
+    # This test will go through the code path for uploading files onto LOCAL storage
+    # when zulip is in DEVELOPMENT mode.
     def test_file_upload_authed(self):
         """
-        A call to /json/upload_file should return a uri and actually create an object.
+        A call to /json/upload_file should return a uri and actually create an
+        entry in the database. This entry will be marked unclaimed till a message
+        refers it.
         """
         self.login("hamlet@zulip.com")
         fp = StringIO("zulip!")
@@ -62,9 +76,71 @@ class FileUploadTest(AuthedTestCase):
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
 
+        #In the future, local file requests will follow the same style as S3
+        #requests; they will be first authenthicated and redirected
         response = self.client.get(uri)
         data = "".join(response.streaming_content)
         self.assertEquals("zulip!", data)
+
+        #check if DB has attachment marked as unclaimed
+        entry = Attachment.objects.get(file_name='zulip.txt')
+        self.assertEquals(entry.is_claimed(), False)
+
+    def test_delete_old_unclaimed_attachments(self):
+        # Upload some files and make them older than a weeek
+        self.login("hamlet@zulip.com")
+        d1 = StringIO("zulip!")
+        d1.name = "dummy_1.txt"
+        result = self.client.post("/json/upload_file", {'file': d1})
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        d1_path_id = re.sub('/user_uploads/', '', uri)
+
+        d2 = StringIO("zulip!")
+        d2.name = "dummy_2.txt"
+        result = self.client.post("/json/upload_file", {'file': d2})
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        d2_path_id = re.sub('/user_uploads/', '', uri)
+
+        two_week_ago = timezone.now() - datetime.timedelta(weeks=2)
+        d1_attachment = Attachment.objects.get(path_id = d1_path_id)
+        d1_attachment.create_time = two_week_ago
+        d1_attachment.save()
+        d2_attachment = Attachment.objects.get(path_id = d2_path_id)
+        d2_attachment.create_time = two_week_ago
+        d2_attachment.save()
+
+        # Send message refering only dummy_1
+        self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
+        body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+
+        #dummy_2 should not exist in database or the uploads folder
+        do_delete_old_unclaimed_attachments(2)
+        self.assertTrue(not Attachment.objects.filter(path_id = d2_path_id).exists())
+        self.assertTrue(not delete_message_image(d2_path_id))
+
+    def test_multiple_claim_attachments(self):
+        """
+        This test tries to claim the same attachment twice. The messages field in
+        the Attachment model should have both the messages in its entry.
+        """
+        self.login("hamlet@zulip.com")
+        d1 = StringIO("zulip!")
+        d1.name = "dummy_1.txt"
+        result = self.client.post("/json/upload_file", {'file': d1})
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        d1_path_id = re.sub('/user_uploads/', '', uri)
+
+        self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
+        body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        body = "Second message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+
+        self.assertEquals(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
 
     def tearDown(self):
         destroy_uploads()
@@ -135,6 +211,8 @@ class SetAvatarTest(AuthedTestCase):
 
     def tearDown(self):
         destroy_uploads()
+
+
 
 class S3Test(AuthedTestCase):
     # full URIs in public bucket

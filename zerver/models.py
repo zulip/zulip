@@ -29,6 +29,8 @@ import pylibmc
 import re
 import ujson
 import logging
+import time
+import datetime
 
 bugdown = None # type: Any
 
@@ -1061,6 +1063,39 @@ def parse_usermessage_flags(val):
             flags.append(flag)
         mask <<= 1
     return flags
+
+class Attachment(models.Model):
+    MAX_FILENAME_LENGTH = 100
+    file_name = models.CharField(max_length=MAX_FILENAME_LENGTH, db_index=True)
+    # path_id is a storage location agnostic representation of the path of the file.
+    # If the path of a file is http://localhost:9991/user_uploads/a/b/abc/temp_file.py
+    # then its path_id will be a/b/abc/temp_file.py.
+    path_id = models.TextField(db_index=True)
+    owner = models.ForeignKey(UserProfile)
+    messages = models.ManyToManyField(Message)
+    create_time = models.DateTimeField(default=timezone.now, db_index=True)
+
+    def __repr__(self):
+        return (u"<Attachment: %s>" % (self.file_name))
+
+    def is_claimed(self):
+        return self.messages.count() > 0
+
+    def get_url(self):
+        return "/user_uploads/%s" % (self.path_id)
+
+def get_attachments_by_owner_id(uid):
+    return Attachment.objects.filter(owner=uid).select_related('owner')
+
+def get_owners_from_file_name(file_name):
+    # The returned vaule will list of owners since different users can upload
+    # same files with the same filename.
+    return Attachment.objects.filter(file_name=file_name).select_related('owner')
+
+def get_old_unclaimed_attachments(weeks_ago):
+    delta_weeks_ago = timezone.now() - datetime.timedelta(weeks=weeks_ago)
+    old_attachments = Attachment.objects.filter(messages=None, create_time__lt=delta_weeks_ago)
+    return old_attachments
 
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
