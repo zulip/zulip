@@ -6,7 +6,7 @@ import subprocess
 import json
 import sys
 
-from Pillow import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 class MissingGlyphError(Exception):
     pass
