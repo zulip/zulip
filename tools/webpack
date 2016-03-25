@@ -14,12 +14,12 @@ STATIC_PATH = 'static/'
 
 def run():
     # write the file to disk
-    subprocess.check_call(['tools/node', 'node_modules/.bin/webpack'] +
+    subprocess.check_call(['tools/node', 'node_modules/webpack/bin'] +
         ['--config', 'webpack.production.config.js'])
 
 def run_watch():
     # watch and rebuild on changes, serve file from memory via webpack-dev-server
-    subprocess.Popen(['tools/node', 'node_modules/.bin/webpack-dev-server'] +
+    subprocess.Popen(['tools/node', 'node_modules/webpack-dev-server/bin'] +
         ['--config', 'webpack.config.js', '--watch-poll'])
 
 if __name__ == '__main__':
