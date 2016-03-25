@@ -932,3 +932,24 @@ class PingdomHookTests(AuthedTestCase):
 
     def _send_post_request_with_params(self, json):
         return self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+
+class YoHookTests(AuthedTestCase):
+    def test_yo_message(self):
+        """
+        Yo App sends notification whenever user receives a new Yo from another user.
+        """
+        bot_email = "hamlet@zulip.com"
+        api_key = self.get_api_key(bot_email)
+        body = ""
+
+        email = "cordelia@zulip.com"
+        sender = "IAGO"
+        ip = "127.0.0.1"
+        url = "/api/v1/external/yo?email=%s&api_key=%s&username=%s&user_ip=%s" % (email, api_key, sender, ip)
+
+        self.client.get(url,
+                        body,
+                        content_type="application/x-www-form-urlencoded")
+
+        msg = Message.objects.filter().order_by('-id')[0]
+        self.assertEqual(msg.content, (u"Yo from IAGO"))
