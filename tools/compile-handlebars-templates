@@ -19,7 +19,7 @@ def get_templates():
     return glob.glob(os.path.join(STATIC_PATH, 'templates/*.handlebars'))
 
 def run():
-    subprocess.check_call(['tools/node', 'node_modules/.bin/handlebars']
+    subprocess.check_call(['tools/node', 'node_modules/handlebars/bin']
         + get_templates()
         + ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
            '--known', 'if,unless,each,with'])
