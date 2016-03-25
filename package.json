@@ -14,7 +14,7 @@
     "nwmatcher": "1.3.6",
     "htmlparser2": "3.8.3",
     "cssstyle": "0.2.29",
-    "webpack": "1.12.2",
+    "webpack": "1.12.2"
   },
   "scripts": {},
   "repository": {
