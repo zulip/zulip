@@ -40,7 +40,7 @@ APT_DEPENDENCIES = {
         "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
         "puppet",               # Used by lint-all
         "gettext",              # Used by makemessages i18n
-    ]
+    ],
 }
 
 VENV_PATH="/srv/zulip-venv"
