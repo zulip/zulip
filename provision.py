@@ -125,7 +125,10 @@ def main():
         sh.mkdir("-p", PHANTOMJS_PATH, **LOUD)
         if not os.path.exists(PHANTOMJS_TARBALL):
             sh.wget(PHANTOMJS_URL, output_document=PHANTOMJS_TARBALL, **LOUD)
-        sh.tar("xj", directory=PHANTOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
+        try:
+             sh.tar("xj", directory=PHANTOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
+        except Error:
+            sh.tar("xz", directory=PHATOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
         sh.ln("-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME, "bin", "phantomjs"),
               "/usr/local/bin/phantomjs", **LOUD)
 
