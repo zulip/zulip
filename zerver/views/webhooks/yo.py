@@ -11,7 +11,7 @@ import ujson
 @has_request_variables
 def api_yo_app_webhook(request, user_profile, stream=REQ(default='yo App'), api_key=REQ(default=None), username=REQ(default='Yo Bot'), topic=REQ(default='Yo! Notification'), user_ip=REQ(default='None')):
 
-    body = ('Yo from %s ') % (username)
+    body = ('Yo from %s') % (username)
 
     check_send_message(user_profile, get_client('ZulipYoWebhook'), 'stream', [stream], topic, body)
     return json_success()

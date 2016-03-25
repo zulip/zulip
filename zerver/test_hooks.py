@@ -864,3 +864,29 @@ class TravisHookTests(AuthedTestCase):
                                        u"Details: [changes](https://github.com/hl7-fhir/fhir-sv"
                                        u"n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
                                        u"tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)"))
+
+class YoHookTests(AuthedTestCase):
+    def test_yo_message(self):
+        """
+        Yo App sends notification whenever user receives a new Yo from another user.
+        """
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        body = ""
+
+        stream = "YoApp"
+        topic = "Yo!%20Notification"
+        sender = "IAGO"
+        ip = "127.0.0.1"
+        url = "/api/v1/external/yo?stream=%s&topic=%s&api_key=%s&username=%s&user_ip=%s" % (stream, topic, api_key, sender, ip)
+        self.subscribe_to_stream(email, stream)
+
+        self.client.get(url,
+                         body,
+                         stream_name=stream,
+                         content_type="application/x-www-form-urlencoded")
+
+        msg = Message.objects.filter().order_by('-id')[0]
+        u'Author: josh_mandel\nBuild status: Passed :thumbsup:\nDetails: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)'
+        self.assertEqual(msg.subject, u"Yo! Notification")
+        self.assertEqual(msg.content, (u"Yo from IAGO"))
