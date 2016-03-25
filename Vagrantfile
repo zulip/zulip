@@ -2,6 +2,24 @@
 
 VAGRANTFILE_API_VERSION = "2"
 
+module OS
+    def OS.windows?
+        (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+    end
+
+    def OS.mac?
+        (/darwin/ =~ RUBY_PLATFORM) != nil
+    end
+
+    def OS.unix?
+        !OS.windows?
+    end
+
+    def OS.linux?
+        OS.unix? and not OS.mac?
+    end
+end
+
 def command?(name)
   `which #{name}`
   $?.success?
@@ -41,7 +59,12 @@ set -x
 set -e
 sudo apt-get update
 sudo apt-get install -y python-pbs
-/usr/bin/python /srv/zulip/provision.py
+/usr/bin/python /srv/zulip/provision_all_systems_before.py
+if OS.windows:
+  /usr/bin/python /srv/zulip/provision_windows.py
+else:
+  /usr/bin/python /srv/zulip/provision_non_windows.py
+/usr/bin/python /srv/zulip/provision_all_systems_after.py
 SCRIPT
 
   config.vm.provision "shell",
