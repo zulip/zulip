@@ -59,12 +59,12 @@ set -x
 set -e
 sudo apt-get update
 sudo apt-get install -y python-pbs
-/usr/bin/python /srv/zulip/provision_all_systems_before.py
+/usr/bin/python /srv/zulip/provisions/provision_all_systems_before.py
 if OS.windows:
-  /usr/bin/python /srv/zulip/provision_windows.py
+  /usr/bin/python /srv/zulip/provisions/provisions_windows.py
 else:
-  /usr/bin/python /srv/zulip/provision_non_windows.py
-/usr/bin/python /srv/zulip/provision_all_systems_after.py
+  /usr/bin/python /srv/zulip/provisions/provision_non_windows.py
+/usr/bin/python /srv/zulip/provisions/provision_all_systems_after.py
 SCRIPT
 
   config.vm.provision "shell",
