@@ -14,7 +14,7 @@ STATIC_PATH = 'static/'
 
 def run():
     # write the file to disk
-    subprocess.check_call(['tools/node', 'node_modules/webpack/bin'] +
+    subprocess.check_call(['tools/node', 'node_modules/webpack/.bin'] +
         ['--config', 'webpack.production.config.js'])
 
 def run_watch():
