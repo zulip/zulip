@@ -206,6 +206,12 @@
             <span class="integration-label">Trac</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-travis">
+         <a class="integration-link integration-travis" href="#travis">
+            <img class="integration-logo" src="/static/images/integrations/logos/travis.png" alt="Travis CI logo" />
+            <span class="integration-label">Travis CI</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-trello">
          <a class="integration-link integration-trello" href="#trello">
             <img class="integration-logo" src="/static/images/integrations/logos/trello.png" alt="Trello logo" />
@@ -218,18 +224,19 @@
             <span class="integration-label">Twitter</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-yo-app">
+         <a class="integration-link integration-yo-app" href="#yo-app">
+            <img class="integration-logo" src="/static/images/integrations/logos/yo-app.png" alt="Yo App logo" />
+            <span class="integration-label">Yo App</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-zendesk">
          <a class="integration-link integration-zendesk" href="#zendesk">
             <img class="integration-logo" src="/static/images/integrations/logos/zendesk.png" alt="Zendesk logo" />
             <span class="integration-label">Zendesk</span>
          </a>
        </div>
-       <div class="integration-lozenge integration-travis">
-         <a class="integration-link integration-travis" href="#travis">
-            <img class="integration-logo" src="/static/images/integrations/logos/travis.png" alt="Travis CI logo" />
-            <span class="integration-label">Travis CI</span>
-         </a>
-       </div>
+       
     </div>
 
     <div class="portico-page-header extra" id="hubot-integrations"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
@@ -1790,17 +1797,46 @@ access_token_secret =</pre>
 
       <p>Finally, set up a webhook in your <code>.travis.yml</code> file:</p>
 
-<pre>
-notifications:
-  webhooks:
-    - https://zulip.example.com/api/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
-</pre>
+      <pre>
+      notifications:
+        webhooks:
+          - https://zulip.example.com/api/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
+      </pre>
 
       <p><b>Congratulations! You're done!</b><br /> When a code build occurs,
-      you're receive a notification on the specified stream and topic.</p>
+      you'll receive a notification on the specified stream and topic.</p>
 
       <img class="screenshot" src="/static/images/integrations/travis/001.png" />
     </div>
+
+    <div id="yo-app" class="integration-instructions">
+
+      <p>See your Yo App notifications in Zulip!</p>
+
+      <p>First, create the stream you'd like to use for notifications, and subscribe
+      all interested parties to this stream. We recommend the name <code>YoApp</code>.</p>
+
+      <p>Next, set up a bot for the integration. You'll need the bot's API key
+      to construct a URL for Yo App Callback.</p>
+   
+      <pre>
+      Create URL as follows:
+        https://zulip.example.com/api/v1/external/yo?stream=YoApp&amp;topic=Yo!%20Notifications&amp;api_key=abcdefgh
+      </pre>
+  
+      <p>Copy the url created and go to <a href="https://yoapi.justyo.co">yoapi.justyo.co</a></p>
+      <p> Sign In using your username and password and go to Edit Profile.</p>
+  
+      <img class="screenshot" src="/static/images/integrations/yo-app/001.png" />
+
+      <p>Paste the URL in Callback field and click on Update.</p>
+
+      <p><b>Congratulations! You're done!</b><br /> When some sends your username a Yo,
+      you'll receive a notification on the specified stream and topic "Yo! Notification".</p>
+
+      <img class="screenshot" src="/static/images/integrations/yo-app/002.png" />
+    </div>
+
 
     <div id="zendesk" class="integration-instructions">
       <p>First, create the stream you'd like to use for Zendesk notifications,
