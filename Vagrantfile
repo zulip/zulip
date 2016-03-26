@@ -63,7 +63,7 @@ sudo apt-get install -y python-pbs
 if OS.windows?
   /usr/bin/python /srv/zulip/provisions/provision_windows.py
 end
-else
+if not OS.windows?
   /usr/bin/python /srv/zulip/provisions/provision_non_windows.py
 end
 /usr/bin/python /srv/zulip/provisions/provision_all_systems_after.py
