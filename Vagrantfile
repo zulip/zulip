@@ -61,12 +61,12 @@ sudo apt-get update
 sudo apt-get install -y python-pbs
 /usr/bin/python /srv/zulip/provisions/provision_all_systems_before.py
 if OS.windows?
-  /usr/bin/python /srv/zulip/provisions/provision_windows
+  /usr/bin/python /srv/zulip/provisions/provision_windows.py
 end
 else
-  /usr/bin/python /srv/zulip/provisions/provision_non_windows
+  /usr/bin/python /srv/zulip/provisions/provision_non_windows.py
 end
-/usr/bin/python /srv/zulip/provisions/provision_all_systems_after
+/usr/bin/python /srv/zulip/provisions/provision_all_systems_after.py
 SCRIPT
 
   config.vm.provision "shell",
