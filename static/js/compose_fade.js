@@ -103,7 +103,7 @@ exports.would_receive_message = function (email) {
     // helpful if we want to emphasize the '.unfaded' class later (applied
     // to users who will definitely receive the message).
 
-    if (email === page_params.email) {
+    if (email.toLowerCase() === page_params.email.toLowerCase()) {
         // We never want to fade you yourself, so pretend it's true even if
         // it's not.
         return true;
@@ -121,8 +121,8 @@ exports.would_receive_message = function (email) {
     }
 
     // PM, so check if the given email is in the recipients list.
-    var recipients = focused_recipient.reply_to.split(',');
-    return recipients.indexOf(email) !== -1;
+    var recipients = focused_recipient.reply_to.toLowerCase().split(',');
+    return recipients.indexOf(email.toLowerCase()) !== -1;
 };
 
 function _fade_users() {
