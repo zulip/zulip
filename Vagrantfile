@@ -62,10 +62,10 @@ sudo apt-get install -y python-pbs
 /usr/bin/python /srv/zulip/provisions/provision_all_systems_before.py
 if OS.windows?
   /usr/bin/python /srv/zulip/provisions/provision_windows
-fi
+end
 else
   /usr/bin/python /srv/zulip/provisions/provision_non_windows
-fi
+end
 /usr/bin/python /srv/zulip/provisions/provision_all_systems_after
 SCRIPT
 
