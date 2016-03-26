@@ -73,7 +73,7 @@ exports.same_major_recipient = function (a, b) {
 
     switch (a.type) {
     case 'private':
-        return a.reply_to === b.reply_to;
+        return a.reply_to.toLowerCase() === b.reply_to.toLowerCase();
     case 'stream':
         return a.stream.toLowerCase() === b.stream.toLowerCase();
     }
@@ -92,7 +92,7 @@ exports.same_recipient = function util_same_recipient(a, b) {
 
     switch (a.type) {
     case 'private':
-        return a.reply_to === b.reply_to;
+        return a.reply_to.toLowerCase() === b.reply_to.toLowerCase();
     case 'stream':
         return exports.same_stream_and_subject(a, b);
     }
@@ -103,7 +103,7 @@ exports.same_recipient = function util_same_recipient(a, b) {
 
 exports.same_sender = function util_same_sender(a, b) {
     return ((a !== undefined) && (b !== undefined) &&
-            (a.sender_email === b.sender_email));
+            (a.sender_email.toLowerCase() === b.sender_email.toLowerCase()));
 };
 
 exports.normalize_recipients = function (recipients) {
