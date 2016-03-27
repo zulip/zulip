@@ -389,7 +389,7 @@ upgrade.
 * The Zulip upgrade process works by creating a new deployment under
   /home/zulip/deployments/ containing a complete copy of the Zulip
   server code, and then moving the symlinks at
-  `/home/zulip/deployments/current` and /root/zulip` as part of the
+  `/home/zulip/deployments/current` and `/root/zulip` as part of the
   upgrade process.  This means that if the new version isn't working,
   you can quickly downgrade to the old version by using
   `/home/zulip/deployments/<date>/scripts/restart-server` to return to
