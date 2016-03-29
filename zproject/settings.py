@@ -15,6 +15,7 @@ import sys
 import six.moves.configparser
 
 from zerver.lib.db import TimeTrackingConnection
+import six
 
 ########################################################################
 # INITIAL SETTINGS
@@ -82,6 +83,7 @@ else:
     # For the Dev VM environment, we use the same settings as the
     # sample local_settings.py file, with a few exceptions.
     from .local_settings_template import *
+    LOCAL_UPLOADS_DIR = 'uploads'
     EXTERNAL_HOST = 'localhost:9991'
     ALLOWED_HOSTS = ['localhost']
     AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
@@ -161,7 +163,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'DBX_APNS_CERT_FILE': None,
                     }
 
-for setting_name, setting_val in DEFAULT_SETTINGS.iteritems():
+for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
     if not setting_name in vars():
         vars()[setting_name] = setting_val
 

@@ -245,7 +245,7 @@ class Client(object):
     def do_api_query(self, orig_request, url, method="POST", longpolling = False):
         request = {}
 
-        for (key, val) in orig_request.iteritems():
+        for (key, val) in six.iteritems(orig_request):
             if not (isinstance(val, str) or isinstance(val, six.text_type)):
                 request[key] = simplejson.dumps(val)
             else:

@@ -30,26 +30,35 @@ exports.uncollapse = function (row) {
     // Uncollapse a message, restoring the condensed message [More] or
     // [Condense] link if necessary.
     var message = current_msg_list.get(rows.id(row));
-    var content = row.find(".message_content");
     message.collapsed = false;
-    content.removeClass("collapsed");
     message_flags.send_collapsed([message], false);
 
-    if (message.condensed === true) {
-        // This message was condensed by the user, so re-show the
-        // [More] link.
-        condense_row(row);
-    } else if (message.condensed === false) {
-        // This message was un-condensed by the user, so re-show the
-        // [Condense] link.
-        uncondense_row(row);
-    } else if (content.hasClass("could-be-condensed")) {
-        // By default, condense a long message.
-        condense_row(row);
-    } else {
-        // This was a short message, no more need for a [More] link.
-        row.find(".message_expander").hide();
-    }
+    var process_row = function process_row(row) {
+        var content = row.find(".message_content");
+        content.removeClass("collapsed");
+
+        if (message.condensed === true) {
+            // This message was condensed by the user, so re-show the
+            // [More] link.
+            condense_row(row);
+        } else if (message.condensed === false) {
+            // This message was un-condensed by the user, so re-show the
+            // [Condense] link.
+            uncondense_row(row);
+        } else if (content.hasClass("could-be-condensed")) {
+            // By default, condense a long message.
+            condense_row(row);
+        } else {
+            // This was a short message, no more need for a [More] link.
+            row.find(".message_expander").hide();
+        }
+    };
+
+    // We also need to collapse this message in the home view
+    var home_row = home_msg_list.get_row(rows.id(row));
+
+    process_row(row);
+    process_row(home_row);
 };
 
 exports.collapse = function (row) {
@@ -58,8 +67,17 @@ exports.collapse = function (row) {
     var message = current_msg_list.get(rows.id(row));
     message.collapsed = true;
     message_flags.send_collapsed([message], true);
-    row.find(".message_content").addClass("collapsed");
-    show_more_link(row);
+
+    var process_row = function process_row(row) {
+        row.find(".message_content").addClass("collapsed");
+        show_more_link(row);
+    };
+
+    // We also need to collapse this message in the home view
+    var home_row = home_msg_list.get_row(rows.id(row));
+
+    process_row(row);
+    process_row(home_row);
 };
 exports.clear_message_content_height_cache = function () {
     _message_content_height_cache = new Dict();

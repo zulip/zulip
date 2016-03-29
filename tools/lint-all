@@ -80,7 +80,7 @@ for filepath in files:
 
     by_lang[exn].append(filepath)
 
-by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(find scripts/ tools/ bin/ -type f | grep -v [.])", shell=True).split('\n')) if _f]
+by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(git ls-tree --name-only -r HEAD scripts/ tools/ bin/ | grep -v [.])", shell=True).split('\n')) if _f]
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
@@ -107,6 +107,8 @@ def check_pyflakes():
                      'redefinition of unused' in ln or
                      ("zerver/models.py" in ln and
                       " undefined name 'bugdown'" in ln) or
+                     ("scripts/lib/pythonrc.py" in ln and
+                      " import *' used; unable to detect undefined names" in ln) or
                      ("zerver/lib/tornado_ioloop_logging.py" in ln and
                       "redefinition of function 'instrument_tornado_ioloop'" in ln) or
                      ("zephyr_mirror_backend.py:" in ln and
@@ -117,8 +119,10 @@ def check_pyflakes():
 
 def custom_check_file(fn, rules, skip_rules=[]):
     failed = False
+    lineFlag = False
     for i, line in enumerate(open(fn)):
         skip = False
+        lineFlag = True
         for rule in skip_rules:
             if re.match(rule, line):
                 skip = True
@@ -136,6 +140,10 @@ def custom_check_file(fn, rules, skip_rules=[]):
             except Exception:
                 print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                 traceback.print_exc()
+        lastLine = line
+    if lineFlag and '\n' not in lastLine:
+        print("No new line at the end of %s" % (fn,))
+        failed = True
     return failed
 
 whitespace_rules = [

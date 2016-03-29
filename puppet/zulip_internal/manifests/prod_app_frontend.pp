@@ -94,13 +94,6 @@ class zulip_internal::prod_app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip_internal/sparkle/sso/win/sparkle-changelog.html",
   }
-  file { "/etc/cron.d/send-digest-emails":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip_internal/cron.d/send-digest-emails",
-  }
 
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem

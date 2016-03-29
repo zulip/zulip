@@ -73,7 +73,7 @@ These instructions should be followed as root.
   ```
   wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
   tar -xf zulip-server-latest.tar.gz
-  mv zulip-server-1.3.6 /root/zulip
+  mkdir -p /root/zulip && tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
   ```
 
 (3) Run
@@ -389,7 +389,7 @@ upgrade.
 * The Zulip upgrade process works by creating a new deployment under
   /home/zulip/deployments/ containing a complete copy of the Zulip
   server code, and then moving the symlinks at
-  `/home/zulip/deployments/current` and /root/zulip` as part of the
+  `/home/zulip/deployments/current` and `/root/zulip` as part of the
   upgrade process.  This means that if the new version isn't working,
   you can quickly downgrade to the old version by using
   `/home/zulip/deployments/<date>/scripts/restart-server` to return to
@@ -689,7 +689,7 @@ we can do a responsible security announcement).
 #### Users and Bots
 
 * There are three types of users in a Zulip realm: Administrators,
-  normal users, and botsq.  Administrators have the ability to
+  normal users, and bots.  Administrators have the ability to
   deactivate and reactivate other human and bot users, delete streams,
   add/remove administrator privileges, as well as change configuration
   for the overall realm (e.g. whether an invitation is required to

@@ -279,7 +279,7 @@ logger.info("Finished receiving Zulip messages!")
 receive_zephyrs()
 logger.info("Finished receiving Zephyr messages!")
 
-all_keys = set(zhkeys.keys() + hzkeys.keys())
+all_keys = set(list(zhkeys.keys()) + list(hzkeys.keys()))
 def process_keys(content_list):
     # Start by filtering out any keys that might have come from
     # concurrent check-mirroring processes

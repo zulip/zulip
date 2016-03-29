@@ -40,6 +40,7 @@ APT_DEPENDENCIES = {
         "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
         "puppet",               # Used by lint-all
         "gettext",              # Used by makemessages i18n
+        "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     ]
 }
 
@@ -124,7 +125,7 @@ def main():
         PHANTOMJS_URL = "https://bitbucket.org/ariya/phantomjs/downloads/%s" % (PHANTOMJS_TARBALL_BASENAME,)
         sh.mkdir("-p", PHANTOMJS_PATH, **LOUD)
         if not os.path.exists(PHANTOMJS_TARBALL):
-            sh.wget(PHANTOMJS_URL, output_document=PHANTOMJS_TARBALL, **LOUD)
+            sh.curl('-J', '-L', PHANTOMJS_URL, o=PHANTOMJS_TARBALL, **LOUD)
         sh.tar("xj", directory=PHANTOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
         sh.ln("-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME, "bin", "phantomjs"),
               "/usr/local/bin/phantomjs", **LOUD)

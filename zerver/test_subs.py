@@ -1082,7 +1082,7 @@ class SubscriptionAPITest(AuthedTestCase):
                                   {"subscriptions": ujson.dumps(subscriptions)})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        for key, val in json_dict.iteritems():
+        for key, val in six.iteritems(json_dict):
             self.assertItemsEqual(val, json[key])  # we don't care about the order of the items
         new_streams = self.get_streams(email)
         self.assertItemsEqual(new_streams, new_subs)

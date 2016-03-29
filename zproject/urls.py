@@ -65,11 +65,6 @@ urlpatterns = patterns('',
     # Portico-styled page used to provide email confirmation of terms acceptance.
     url(r'^accounts/accept_terms/$', 'zerver.views.accounts_accept_terms'),
 
-    # Terms of service and privacy policy
-    url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html')),
-    url(r'^terms-enterprise/$',  TemplateView.as_view(template_name='zerver/terms-enterprise.html')),
-    url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html')),
-
     # Login/registration
     url(r'^register/$', 'zerver.views.accounts_home', name='register'),
     url(r'^login/$',  'zerver.views.login_page', {'template_name': 'zerver/login.html'}),

@@ -20,13 +20,15 @@ from zerver.decorator import RespondAsynchronously, JsonableError
 from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile
 from zerver.lib.cache_helpers import cache_with_key
-from zerver.lib.handlers import get_handler_by_id, finish_handler
+from zerver.lib.handlers import clear_handler_by_id, get_handler_by_id, \
+    finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 import copy
+import six
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -87,6 +89,9 @@ class ClientDescriptor(object):
                     all_public_streams=self.all_public_streams,
                     narrow=self.narrow,
                     client_type=self.client_type_name)
+
+    def __repr__(self):
+        return "ClientDescriptor<%s>" % (self.event_queue.id,)
 
     @classmethod
     def from_dict(cls, d):
@@ -158,21 +163,25 @@ class ClientDescriptor(object):
         if self.client_type_name != 'API: heartbeat test':
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
-    def disconnect_handler(self, client_closed=False):
+    def disconnect_handler(self, client_closed=False, need_timeout=True):
         if self.current_handler_id:
-            delete_descriptor_by_handler_id(self.current_handler_id, None)
+            clear_descriptor_by_handler_id(self.current_handler_id, None)
+            clear_handler_by_id(self.current_handler_id)
             if client_closed:
                 logging.info("Client disconnected for queue %s (%s via %s)" %
                              (self.event_queue.id, self.user_profile_email,
                               self.current_client_name))
         self.current_handler_id = None
         self.current_client_name = None
-        if self._timeout_handle is not None:
+        if need_timeout and self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
             ioloop.remove_timeout(self._timeout_handle)
             self._timeout_handle = None
 
     def cleanup(self):
+        # Disconnect any existing handler, and don't bother creating a
+        # timeout object that we'll just have to garbage collect later.
+        self.disconnect_handler(need_timeout=False)
         do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
                            [self.realm_id])
 
@@ -184,7 +193,7 @@ def get_descriptor_by_handler_id(handler_id):
 def set_descriptor_by_handler_id(handler_id, client_descriptor):
     descriptors_by_handler_id[handler_id] = client_descriptor
 
-def delete_descriptor_by_handler_id(handler_id, client_descriptor):
+def clear_descriptor_by_handler_id(handler_id, client_descriptor):
     del descriptors_by_handler_id[handler_id]
 
 def compute_full_event_type(event):
@@ -352,7 +361,7 @@ def gc_event_queues():
     to_remove = set()
     affected_users = set()
     affected_realms = set()
-    for (id, client) in clients.iteritems():
+    for (id, client) in six.iteritems(clients):
         if client.idle(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
@@ -361,9 +370,9 @@ def gc_event_queues():
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
-                  + '  Now %d active queues')
+                  + '  Now %d active queues, %s')
                  % (len(to_remove), len(affected_users), time.time() - start,
-                    len(clients)))
+                    len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
@@ -371,7 +380,7 @@ def dump_event_queues():
     start = time.time()
 
     with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
-        ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.iteritems()],
+        ujson.dump([(qid, client.to_dict()) for (qid, client) in six.iteritems(clients)],
                    stored_queues)
 
     logging.info('Tornado dumped %d event queues in %.3fs'
@@ -395,7 +404,7 @@ def load_event_queues():
     except (IOError, EOFError):
         pass
 
-    for client in clients.itervalues():
+    for client in six.itervalues(clients):
         # Put code for migrations due to event queue data format changes here
 
         add_to_client_dicts(client)
@@ -405,7 +414,7 @@ def load_event_queues():
 
 def send_restart_events():
     event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
-    for client in clients.itervalues():
+    for client in six.itervalues(clients):
         if client.accepts_event(event):
             client.add_event(event.copy())
 
@@ -464,6 +473,8 @@ def fetch_events(user_profile_id, user_profile_realm_id, user_profile_email,
             extra_log_data += " [was connected]"
         return (ret, extra_log_data)
 
+    # After this point, dont_block=False, the queue is empty, and we
+    # have a pre-existing queue, so we wait for new events.
     if was_connected:
         logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
                                                                     client_type_name))
@@ -577,7 +588,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
     latest_active_timestamp = None
     idle = False
 
-    for client, status in user_presence.iteritems():
+    for client, status in six.iteritems(user_presence):
         if (latest_active_timestamp is None or status['timestamp'] > latest_active_timestamp) and \
                 status['status'] == 'active':
             latest_active_timestamp = status['timestamp']
@@ -641,7 +652,7 @@ def process_message_event(event_template, users):
 
             extra_user_data[user_profile_id] = notified
 
-    for client_data in send_to_clients.itervalues():
+    for client_data in six.itervalues(send_to_clients):
         client = client_data['client']
         flags = client_data['flags']
         is_sender = client_data.get('is_sender', False)

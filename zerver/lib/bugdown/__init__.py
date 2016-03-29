@@ -247,7 +247,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
             encoded_camo_key = settings.CAMO_KEY.encode("utf-8")
             digest = hmac.new(encoded_camo_key, encoded_url, hashlib.sha1).hexdigest()
             hex_encoded_url = codecs.encode(encoded_url, "hex")
-            img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, hex_encoded_url))
+            img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, hex_encoded_url.decode("utf-8")))
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
@@ -835,7 +835,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             allowed_before_punctuation = "|".join([r'\s', '^', r'[\(\".,\';\[\*`>]'])
             allowed_after_punctuation = "|".join([r'\s', '$', r'[\)\"\?:.,\';\]!\*`]'])
 
-            for user_id, words in realm_words.iteritems():
+            for user_id, words in six.iteritems(realm_words):
                 for word in words:
                     escaped = re.escape(word.lower())
                     match_re = re.compile(r'(?:%s)%s(?:%s)' %
@@ -1021,7 +1021,7 @@ def maybe_update_realm_filters(domain):
     if domain is None:
         all_filters = all_realm_filters()
         all_filters['default'] = []
-        for domain, filters in all_filters.iteritems():
+        for domain, filters in six.iteritems(all_filters):
             make_realm_filters(domain, filters)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
         make_realm_filters("mit.edu/zephyr_mirror", [])
