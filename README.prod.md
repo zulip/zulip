@@ -689,7 +689,7 @@ we can do a responsible security announcement).
 #### Users and Bots
 
 * There are three types of users in a Zulip realm: Administrators,
-  normal users, and botsq.  Administrators have the ability to
+  normal users, and bots.  Administrators have the ability to
   deactivate and reactivate other human and bot users, delete streams,
   add/remove administrator privileges, as well as change configuration
   for the overall realm (e.g. whether an invitation is required to
