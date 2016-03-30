@@ -155,8 +155,6 @@ def main():
     # project.
     os.chdir(ZULIP_PATH)
 
-    sh.npm.install(**LOUD)
-
     os.system("tools/download-zxcvbn")
     os.system("tools/emoji_dump/build_emoji")
     os.system("generate_secrets.py -d")
@@ -175,6 +173,9 @@ def main():
     sh.do_destroy_rebuild_database(**LOUD)
     sh.postgres_init_test_db(**LOUD)
     sh.do_destroy_rebuild_test_database(**LOUD)
+    # Run npm install last because it can be flaky, and that way one
+    # only needs to rerun `npm install` to fix the installation.
+    sh.npm.install(**LOUD)
     return 0
 
 if __name__ == "__main__":

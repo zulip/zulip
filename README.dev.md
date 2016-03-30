@@ -293,7 +293,6 @@ Finally continue with the All Systems instructions below.
 
 ```
 pip install -r requirements.txt
-npm install
 ./tools/install-phantomjs
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
@@ -304,6 +303,7 @@ if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_
 ./tools/do-destroy-rebuild-database
 ./tools/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
+npm install
 ```
 
 To start the development server:
