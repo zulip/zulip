@@ -21,7 +21,7 @@ with sh.sudo:
     PHANTOMJS_BASENAME = "phantomjs-1.9.8-linux-%s" % (phantomjs_arch,)
     PHANTOMJS_TARBALL_BASENAME = PHANTOMJS_BASENAME + ".tar.bz2"
     PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, PHANTOMJS_TARBALL_BASENAME)
-    PHANTOMJS_URL = "https://bitbucket.org/ariya/phantomjs/downloads/%s" % (PHANTOMJS_TARBALL_BASENAME,)
+    PHANTOMJS_URL = "https://github.com/zulip/zulip-dist-phantomjs/blob/master/%s?raw=true" % (PHANTOMJS_TARBALL_BASENAME,)
     sh.mkdir("-p", PHANTOMJS_PATH, **LOUD)
     if not os.path.exists(PHANTOMJS_TARBALL):
         sh.curl('-J', '-L', PHANTOMJS_URL, o=PHANTOMJS_TARBALL, **LOUD)
