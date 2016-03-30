@@ -59,7 +59,7 @@ if "--travis" in sys.argv or "--docker" in sys.argv:
 
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
-TSEARCH_URL_BASE = "https://dl.dropboxusercontent.com/u/283158365/zuliposs/"
+TSEARCH_URL_PATTERN = "https://github.com/zulip/zulip-dist-tsearch-extras/raw/master/{}_{}_{}.deb?raw=1"
 TSEARCH_PACKAGE_NAME = {
     "trusty": "postgresql-9.3-tsearch-extras"
 }
@@ -102,8 +102,7 @@ def main():
     temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
 
     sh.wget(
-        "{}/{}_{}_{}.deb".format(
-            TSEARCH_URL_BASE,
+        TSEARCH_URL_PATTERN.format(
             TSEARCH_PACKAGE_NAME["trusty"],
             TSEARCH_VERSION,
             arch,
