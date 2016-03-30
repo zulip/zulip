@@ -41,6 +41,7 @@ APT_DEPENDENCIES = {
         "puppet",               # Used by lint-all
         "gettext",              # Used by makemessages i18n
         "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
+        "netcat",               # Used for flushing memcached
     ]
 }
 

@@ -7,6 +7,8 @@ class zulip::base {
                      "python-simplejson",
                      # For development/debugging convenience
                      "ipython",
+                     # Used in scripts
+                     "netcat",
                      ]
   package { $base_packages: ensure => "installed" }
 
