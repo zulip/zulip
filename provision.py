@@ -175,7 +175,16 @@ def main():
     sh.do_destroy_rebuild_test_database(**LOUD)
     # Run npm install last because it can be flaky, and that way one
     # only needs to rerun `npm install` to fix the installation.
-    sh.npm.install(**LOUD)
+    try:
+        sh.npm.install(**LOUD)
+    except sh.ErrorReturnCode:
+        print('The installation nearly finished.')
+        print('The command "npm install" could not run properly.')
+        print('This can manually be run by running -> vagrant ssh ---L9991:localhost:9991')
+        print('Then -> cd /srv/zulip and then -> npm install inside the vagrant guest')
+        print('If this doesn\'t work Start over!! by doing vagrant destroy')
+        print('and then vagrant up.')
+        exit(1)
     return 0
 
 if __name__ == "__main__":
