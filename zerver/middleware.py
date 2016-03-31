@@ -131,8 +131,8 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
                                                      remote_cache_count_delta)
 
         if not suppress_statsd:
-            statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(remote_cache_time_delta))
-            statsd.incr("%s.memcached.querycount" % (statsd_path,), remote_cache_count_delta)
+            statsd.timing("%s.remote_cache.time" % (statsd_path,), timedelta_ms(remote_cache_time_delta))
+            statsd.incr("%s.remote_cache.querycount" % (statsd_path,), remote_cache_count_delta)
 
     startup_output = ""
     if 'startup_time_delta' in log_data and log_data["startup_time_delta"] > 0.005:
