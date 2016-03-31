@@ -118,21 +118,21 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     memcached_output = ""
     if 'remote_cache_time_start' in log_data:
         remote_cache_time_delta = get_remote_cache_time() - log_data['remote_cache_time_start']
-        memcached_count_delta = get_remote_cache_requests() - log_data['remote_cache_requests_start']
+        remote_cache_count_delta = get_remote_cache_requests() - log_data['remote_cache_requests_start']
         if 'remote_cache_requests_stopped' in log_data:
             # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
             remote_cache_time_delta += (log_data['remote_cache_time_stopped'] -
                                      log_data['remote_cache_time_restarted'])
-            memcached_count_delta += (log_data['remote_cache_requests_stopped'] -
+            remote_cache_count_delta += (log_data['remote_cache_requests_stopped'] -
                                       log_data['remote_cache_requests_restarted'])
 
         if (remote_cache_time_delta > 0.005):
             memcached_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
-                                                  memcached_count_delta)
+                                                  remote_cache_count_delta)
 
         if not suppress_statsd:
             statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(remote_cache_time_delta))
-            statsd.incr("%s.memcached.querycount" % (statsd_path,), memcached_count_delta)
+            statsd.incr("%s.memcached.querycount" % (statsd_path,), remote_cache_count_delta)
 
     startup_output = ""
     if 'startup_time_delta' in log_data and log_data["startup_time_delta"] > 0.005:
