@@ -24,7 +24,7 @@ memcached_total_requests = 0
 def get_remote_cache_time():
     return memcached_total_time
 
-def get_memcached_requests():
+def get_remote_cache_requests():
     return memcached_total_requests
 
 def memcached_stats_start():
