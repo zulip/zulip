@@ -9,7 +9,7 @@ from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Huddle, huddle_hash_cache_key
 from zerver.lib.cache import cache_with_key, cache_set, message_cache_key, \
     user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
-    get_memcached_time, get_memcached_requests, cache_set_many
+    get_remote_cache_time, get_memcached_requests, cache_set_many
 from django.utils.importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
@@ -73,7 +73,7 @@ cache_fillers = {
     }
 
 def fill_memcached_cache(cache):
-    memcached_time_start = get_memcached_time()
+    remote_cache_time_start = get_remote_cache_time()
     memcached_requests_start = get_memcached_requests()
     items_for_remote_cache = {}
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
@@ -87,4 +87,4 @@ def fill_memcached_cache(cache):
     cache_set_many(items_for_remote_cache, timeout=3600*24*7)
     logging.info("Succesfully populated %s cache!  Consumed %s memcached queries (%s time)" % \
                      (cache, get_memcached_requests() - memcached_requests_start,
-                      round(get_memcached_time() - memcached_time_start, 2)))
+                      round(get_remote_cache_time() - remote_cache_time_start, 2)))
