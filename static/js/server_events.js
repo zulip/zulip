@@ -248,6 +248,10 @@ function get_events_success(events) {
 function get_events(options) {
     options = _.extend({dont_block: false}, options);
 
+    if (reload.is_in_progress()) {
+        return;
+    }
+
     get_events_params.dont_block = options.dont_block || get_events_failures > 0;
     if (get_events_params.queue_id === undefined) {
         get_events_params.queue_id = page_params.event_queue_id;
