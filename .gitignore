@@ -44,3 +44,4 @@ tools/phantomjs
 node_modules
 uploads/
 test_uploads/
+*.mo
