@@ -379,6 +379,8 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     if (page_params.event_queue_expired === true) {
         return;
     }
+    // Set expired because in a reload we may be called twice.
+    page_params.event_queue_expired = true;
     channel.del({
         url:      '/json/events',
         data:     {queue_id: page_params.event_queue_id}
