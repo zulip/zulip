@@ -44,7 +44,7 @@ def get_or_create_key_prefix():
         # The Python tests overwrite KEY_PREFIX on each test.
         return 'test_suite:' + str(os.getpid()) + ':'
 
-    filename = os.path.join(settings.DEPLOY_ROOT, "memcached_prefix")
+    filename = os.path.join(settings.DEPLOY_ROOT, "remote_cache_prefix")
     try:
         fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o444)
         prefix = base64.b16encode(hashlib.sha256(str(random.getrandbits(256))).digest())[:32].lower() + ':'
@@ -64,7 +64,7 @@ def get_or_create_key_prefix():
             time.sleep(0.5)
 
     if not prefix:
-        print("Could not read memcache key prefix file")
+        print("Could not read remote cache key prefix file")
         sys.exit(1)
 
     return prefix
