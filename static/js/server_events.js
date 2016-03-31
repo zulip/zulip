@@ -67,11 +67,15 @@ function get_events_success(events) {
             new_pointer = event.pointer;
             break;
         case 'restart':
-            reload.initiate({save_pointer: true,
-                             save_narrow: true,
-                             save_compose: true,
-                             message: "The application has been updated; reloading!"
-                            });
+            var reload_options = {save_pointer: true,
+                                  save_narrow: true,
+                                  save_compose: true,
+                                  message: "The application has been updated; reloading!"
+                                 };
+            if (event.immediate) {
+                reload_options.immediate = true;
+            }
+            reload.initiate(reload_options);
             break;
         case 'update_message':
             messages_to_update.push(event);

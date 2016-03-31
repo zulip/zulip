@@ -419,8 +419,10 @@ def load_event_queues():
     logging.info('Tornado loaded %d event queues in %.3fs'
                  % (len(clients), time.time() - start))
 
-def send_restart_events():
+def send_restart_events(immediate=False):
     event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
+    if immediate:
+        event['immediate'] = True
     for client in six.itervalues(clients):
         if client.accepts_event(event):
             client.add_event(event.copy())
@@ -430,6 +432,7 @@ def setup_event_queue():
     atexit.register(dump_event_queues)
     # Make sure we dump event queues even if we exit via signal
     signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
+    tornado.autoreload.add_reload_hook(dump_event_queues)
 
     try:
         os.rename(settings.JSON_PERSISTENT_QUEUE_FILENAME, "/var/tmp/event_queues.json.last")
@@ -442,7 +445,7 @@ def setup_event_queue():
                                          EVENT_QUEUE_GC_FREQ_MSECS, ioloop)
     pc.start()
 
-    send_restart_events()
+    send_restart_events(immediate=settings.DEVELOPMENT)
 
 def fetch_events(query):
     queue_id = query["queue_id"]
