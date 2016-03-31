@@ -548,7 +548,7 @@ def get_old_messages_backend(request, user_profile,
     # 'user_messages' dictionary maps each message to the user's
     # UserMessage object for that message, which we will attach to the
     # rendered message dict before returning it.  We attempt to
-    # bulk-fetch rendered message dicts from memcached using the
+    # bulk-fetch rendered message dicts from remote cache using the
     # 'messages' list.
     search_fields = dict()
     message_ids = []
