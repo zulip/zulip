@@ -115,7 +115,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         time_delta = ((log_data['time_stopped'] - log_data['time_started']) +
                       (time.time() - log_data['time_restarted']))
         optional_orig_delta = " (lp: %s)" % (format_timedelta(orig_time_delta),)
-    memcached_output = ""
+    remote_cache_output = ""
     if 'remote_cache_time_start' in log_data:
         remote_cache_time_delta = get_remote_cache_time() - log_data['remote_cache_time_start']
         remote_cache_count_delta = get_remote_cache_requests() - log_data['remote_cache_requests_start']
@@ -127,8 +127,8 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
                                       log_data['remote_cache_requests_restarted'])
 
         if (remote_cache_time_delta > 0.005):
-            memcached_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
-                                                  remote_cache_count_delta)
+            remote_cache_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
+                                                     remote_cache_count_delta)
 
         if not suppress_statsd:
             statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(remote_cache_time_delta))
@@ -178,7 +178,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     logger_client = "(%s via %s)" % (email, client_name)
     logger_timing = '%5s%s%s%s%s%s %s' % \
                      (format_timedelta(time_delta), optional_orig_delta,
-                      memcached_output, bugdown_output,
+                      remote_cache_output, bugdown_output,
                       db_time_output, startup_output, path)
     logger_line = '%-15s %-7s %3d %s%s %s' % \
                     (remote_ip, method, status_code,
