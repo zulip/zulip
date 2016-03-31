@@ -17,26 +17,26 @@ import os
 import os.path
 import hashlib
 
-memcached_time_start = 0.0
+remote_cache_time_start = 0.0
 memcached_total_time = 0.0
 memcached_total_requests = 0
 
-def get_memcached_time():
+def get_remote_cache_time():
     return memcached_total_time
 
 def get_memcached_requests():
     return memcached_total_requests
 
 def memcached_stats_start():
-    global memcached_time_start
-    memcached_time_start = time.time()
+    global remote_cache_time_start
+    remote_cache_time_start = time.time()
 
 def memcached_stats_finish():
     global memcached_total_time
     global memcached_total_requests
-    global memcached_time_start
+    global remote_cache_time_start
     memcached_total_requests += 1
-    memcached_total_time += (time.time() - memcached_time_start)
+    memcached_total_time += (time.time() - remote_cache_time_start)
 
 def get_or_create_key_prefix():
     if settings.TEST_SUITE:

@@ -5,7 +5,7 @@ from zerver.lib.response import json_error
 from django.db import connection
 from zerver.lib.utils import statsd
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.cache import get_memcached_time, get_memcached_requests
+from zerver.lib.cache import get_remote_cache_time, get_memcached_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
 from zerver.models import flush_per_request_caches
 from zerver.exceptions import RateLimited
@@ -23,7 +23,7 @@ logger = logging.getLogger('zulip.requests')
 
 def record_request_stop_data(log_data):
     log_data['time_stopped'] = time.time()
-    log_data['memcached_time_stopped'] = get_memcached_time()
+    log_data['remote_cache_time_stopped'] = get_remote_cache_time()
     log_data['memcached_requests_stopped'] = get_memcached_requests()
     log_data['bugdown_time_stopped'] = get_bugdown_time()
     log_data['bugdown_requests_stopped'] = get_bugdown_requests()
@@ -37,7 +37,7 @@ def record_request_restart_data(log_data):
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].enable()
     log_data['time_restarted'] = time.time()
-    log_data['memcached_time_restarted'] = get_memcached_time()
+    log_data['remote_cache_time_restarted'] = get_remote_cache_time()
     log_data['memcached_requests_restarted'] = get_memcached_requests()
     log_data['bugdown_time_restarted'] = get_bugdown_time()
     log_data['bugdown_requests_restarted'] = get_bugdown_requests()
@@ -55,7 +55,7 @@ def record_request_start_data(log_data):
         log_data["prof"].enable()
 
     log_data['time_started'] = time.time()
-    log_data['memcached_time_start'] = get_memcached_time()
+    log_data['remote_cache_time_start'] = get_remote_cache_time()
     log_data['memcached_requests_start'] = get_memcached_requests()
     log_data['bugdown_time_start'] = get_bugdown_time()
     log_data['bugdown_requests_start'] = get_bugdown_requests()
@@ -116,22 +116,22 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
                       (time.time() - log_data['time_restarted']))
         optional_orig_delta = " (lp: %s)" % (format_timedelta(orig_time_delta),)
     memcached_output = ""
-    if 'memcached_time_start' in log_data:
-        memcached_time_delta = get_memcached_time() - log_data['memcached_time_start']
+    if 'remote_cache_time_start' in log_data:
+        remote_cache_time_delta = get_remote_cache_time() - log_data['remote_cache_time_start']
         memcached_count_delta = get_memcached_requests() - log_data['memcached_requests_start']
         if 'memcached_requests_stopped' in log_data:
             # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
-            memcached_time_delta += (log_data['memcached_time_stopped'] -
-                                     log_data['memcached_time_restarted'])
+            remote_cache_time_delta += (log_data['remote_cache_time_stopped'] -
+                                     log_data['remote_cache_time_restarted'])
             memcached_count_delta += (log_data['memcached_requests_stopped'] -
                                       log_data['memcached_requests_restarted'])
 
-        if (memcached_time_delta > 0.005):
-            memcached_output = " (mem: %s/%s)" % (format_timedelta(memcached_time_delta),
+        if (remote_cache_time_delta > 0.005):
+            memcached_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
                                                   memcached_count_delta)
 
         if not suppress_statsd:
-            statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(memcached_time_delta))
+            statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(remote_cache_time_delta))
             statsd.incr("%s.memcached.querycount" % (statsd_path,), memcached_count_delta)
 
     startup_output = ""
