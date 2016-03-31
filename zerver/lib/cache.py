@@ -27,11 +27,11 @@ def get_remote_cache_time():
 def get_remote_cache_requests():
     return memcached_total_requests
 
-def memcached_stats_start():
+def remote_cache_stats_start():
     global remote_cache_time_start
     remote_cache_time_start = time.time()
 
-def memcached_stats_finish():
+def remote_cache_stats_finish():
     global memcached_total_time
     global memcached_total_requests
     global remote_cache_time_start
@@ -123,24 +123,24 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
     return decorator
 
 def cache_set(key, val, cache_name=None, timeout=None):
-    memcached_stats_start()
+    remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
     return ret
 
 def cache_get(key, cache_name=None):
-    memcached_stats_start()
+    remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.get(KEY_PREFIX + key)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
     return ret
 
 def cache_get_many(keys, cache_name=None):
     keys = [KEY_PREFIX + key for key in keys]
-    memcached_stats_start()
+    remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
     return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
 
 def cache_set_many(items, cache_name=None, timeout=None):
@@ -148,21 +148,21 @@ def cache_set_many(items, cache_name=None, timeout=None):
     for key in items:
         new_items[KEY_PREFIX + key] = items[key]
     items = new_items
-    memcached_stats_start()
+    remote_cache_stats_start()
     ret = get_cache_backend(cache_name).set_many(items, timeout=timeout)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
     return ret
 
 def cache_delete(key, cache_name=None):
-    memcached_stats_start()
+    remote_cache_stats_start()
     get_cache_backend(cache_name).delete(KEY_PREFIX + key)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
 
 def cache_delete_many(items, cache_name=None):
-    memcached_stats_start()
+    remote_cache_stats_start()
     get_cache_backend(cache_name).delete_many(
         KEY_PREFIX + item for item in items)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
 
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
