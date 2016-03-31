@@ -2266,16 +2266,16 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     # Update the message as stored in the (deprecated) message
     # cache (for shunting the message over to Tornado in the old
     # get_messages API) and also the to_dict caches.
-    items_for_memcached = {}
+    items_for_remote_cache = {}
     event['message_ids'] = []
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
-        items_for_memcached[message_cache_key(changed_message.id)] = (changed_message,)
-        items_for_memcached[to_dict_cache_key(changed_message, True)] = \
+        items_for_remote_cache[message_cache_key(changed_message.id)] = (changed_message,)
+        items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
             (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=True)),)
-        items_for_memcached[to_dict_cache_key(changed_message, False)] = \
+        items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
             (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=False)),)
-    cache_set_many(items_for_memcached)
+    cache_set_many(items_for_remote_cache)
 
     def user_info(um):
         return {
