@@ -436,7 +436,7 @@ def do_deactivate_stream(stream, log=True):
     stream.name = new_name[:Stream.MAX_NAME_LENGTH]
     stream.save()
 
-    # Remove the old stream information from memcached.
+    # Remove the old stream information from remote cache.
     old_cache_key = get_stream_cache_key(old_name, stream.realm)
     cache_delete(old_cache_key)
 
@@ -609,7 +609,7 @@ def do_send_messages(messages):
     for message in messages:
         cache_save_message(message['message'])
         # Render Markdown etc. here and store (automatically) in
-        # memcached, so that the single-threaded Tornado server
+        # remote cache, so that the single-threaded Tornado server
         # doesn't have to.
         user_flags = user_message_flags.get(message['message'].id, {})
         sender = message['message'].sender
@@ -2244,7 +2244,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
 
             for m in messages_list:
                 # The cached ORM object is not changed by messages.update()
-                # and the memcached update requires the new value
+                # and the remote cache update requires the new value
                 m.subject = subject
 
             changed_messages += messages_list
