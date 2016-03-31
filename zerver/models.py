@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import *
 
 from django.db import models
 from django.conf import settings
@@ -29,14 +30,14 @@ import re
 import ujson
 import logging
 
-bugdown = None
+bugdown = None # type: Any
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
-per_request_display_recipient_cache = {}
+per_request_display_recipient_cache = {} # type: Dict[int, List[Dict[str, Any]]]
 def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id):
     if recipient_id not in per_request_display_recipient_cache:
         result = get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
@@ -142,9 +143,10 @@ class Realm(models.Model):
         except IndexError:
             return None
 
-    @deployment.setter
+    @deployment.setter # type: ignore # https://github.com/python/mypy/issues/220
     def set_deployments(self, value):
-        self._deployments = [value]
+        # type: (Any) -> None
+        self._deployments = [value] # type: Any
 
     def get_admin_users(self):
         # This method is kind of expensive, due to our complex permissions model.
@@ -253,7 +255,7 @@ def get_realm_filters_cache_key(domain):
     return 'all_realm_filters:%s' % (domain,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache = {}
+per_request_realm_filters_cache = {} # type: Dict[str, List[RealmFilter]]
 def realm_filters_for_domain(domain):
     domain = domain.lower()
     if domain not in per_request_realm_filters_cache:
@@ -269,7 +271,8 @@ def realm_filters_for_domain_remote_cache(domain):
     return filters
 
 def all_realm_filters():
-    filters = defaultdict(list)
+    # type: () -> Dict[str, List[Tuple[str, str]]]
+    filters = defaultdict(list) # type: Dict[str, List[Tuple[str, str]]]
     for realm_filter in RealmFilter.objects.all():
        filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string))
 
@@ -384,7 +387,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # [["social", "mit"], ["devel", "ios"]]
     muted_topics = models.TextField(default=ujson.dumps([]))
 
-    objects = UserManager()
+    objects = UserManager() # type: UserManager
 
     def can_admin_user(self, target_user):
         """Returns whether this user has permission to modify target_user"""
@@ -578,7 +581,7 @@ class Recipient(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
-get_client_cache = {}
+get_client_cache = {} # type: Dict[str, Client]
 def get_client(name):
     if name not in get_client_cache:
         result = get_client_remote_cache(name)
@@ -712,8 +715,8 @@ class Message(models.Model):
 
         self.mentions_wildcard = False
         self.is_me_message = False
-        self.mentions_user_ids = set()
-        self.user_ids_with_alert_words = set()
+        self.mentions_user_ids = set() # type: Set[int]
+        self.user_ids_with_alert_words = set() # type: Set[int]
 
         if not domain:
             domain = self.sender.realm.domain
@@ -1144,6 +1147,7 @@ def get_realm(domain):
 
 def clear_database():
     pylibmc.Client(['127.0.0.1']).flush_all()
+    model = None # type: Any
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
                   DefaultStream]:
@@ -1186,7 +1190,8 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_realm(realm_id):
-        user_statuses = defaultdict(dict)
+        # type: (Any) -> Any
+        user_statuses = defaultdict(dict) # type: Dict[Any, Dict[Any, Any]]
 
         query = UserPresence.objects.filter(
                 user_profile__realm_id=realm_id,

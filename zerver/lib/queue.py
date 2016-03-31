@@ -11,6 +11,7 @@ import atexit
 from collections import defaultdict
 
 from zerver.lib.utils import statsd
+from typing import *
 
 # This simple queuing library doesn't expose much of the power of
 # rabbitmq/pika's queuing system; its purpose is to just provide an
@@ -19,9 +20,9 @@ from zerver.lib.utils import statsd
 class SimpleQueueClient(object):
     def __init__(self):
         self.log = logging.getLogger('zulip.queue')
-        self.queues = set()
-        self.channel = None
-        self.consumers = defaultdict(set)
+        self.queues = set() # type: Set[str]
+        self.channel = None # type: Any
+        self.consumers = defaultdict(set) # type: Dict[str, Set[Any]]
         self._connect()
 
     def _connect(self):
@@ -156,7 +157,7 @@ class TornadoQueueClient(SimpleQueueClient):
     # https://pika.readthedocs.org/en/0.9.8/examples/asynchronous_consumer_example.html
     def __init__(self):
         super(TornadoQueueClient, self).__init__()
-        self._on_open_cbs = []
+        self._on_open_cbs = [] # type: List[Callable[[], None]]
 
     def _connect(self, on_open_cb = None):
         self.log.info("Beginning TornadoQueueClient connection")
@@ -230,7 +231,7 @@ class TornadoQueueClient(SimpleQueueClient):
             lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
                 consumer_tag=self._generate_ctag(queue_name)))
 
-queue_client = None
+queue_client = None # type: SimpleQueueClient
 def get_queue_client():
     global queue_client
     if queue_client is None:

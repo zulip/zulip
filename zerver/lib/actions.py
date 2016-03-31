@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
+from typing import *
 
 from django.conf import settings
 from django.core import validators
@@ -575,7 +576,7 @@ def do_send_messages(messages):
         message['message'].update_calculated_fields()
 
     # Save the message receipts in the database
-    user_message_flags = defaultdict(dict)
+    user_message_flags = defaultdict(dict) # type: Dict[int, Dict[int, List[str]]]
     with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
         ums = []
@@ -1042,7 +1043,7 @@ def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
         user_profile__is_active=True,
         active=True).values("user_profile_id", "recipient__type_id")
 
-    result = dict((stream["id"], []) for stream in stream_dicts)
+    result = dict((stream["id"], []) for stream in stream_dicts) # type: Dict[int, List[int]]
     for sub in subscriptions:
         result[sub["recipient__type_id"]].append(sub["user_profile_id"])
 
@@ -1114,7 +1115,7 @@ def get_subscribers_to_streams(streams):
     arrays of all the streams within 'streams' to which that user is
     subscribed.
     """
-    subscribes_to = {}
+    subscribes_to = {} # type: Dict[str, List[Stream]]
     for stream in streams:
         try:
             subscribers = get_subscribers(stream)
@@ -1160,7 +1161,7 @@ def bulk_add_subscriptions(streams, users):
     for stream in streams:
         stream_map[recipients_map[stream.id].id] = stream
 
-    subs_by_user = defaultdict(list)
+    subs_by_user = defaultdict(list) # type: Dict[int, List[Subscription]]
     all_subs_query = Subscription.objects.select_related("user_profile")
     for sub in all_subs_query.filter(user_profile__in=users,
                                      recipient__type=Recipient.STREAM):
@@ -1222,8 +1223,8 @@ def bulk_add_subscriptions(streams, users):
                                            user_profile__is_active=True,
                                            active=True).select_related('recipient', 'user_profile')
 
-    all_subs_by_stream = defaultdict(list)
-    emails_by_stream = defaultdict(list)
+    all_subs_by_stream = defaultdict(list) # type: Dict[int, List[UserProfile]]
+    emails_by_stream = defaultdict(list) # type: Dict[int, List[str]]
     for sub in all_subs:
         all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
         emails_by_stream[sub.recipient.type_id].append(sub.user_profile.email)
@@ -1233,7 +1234,7 @@ def bulk_add_subscriptions(streams, users):
             return []
         return emails_by_stream[stream.id]
 
-    sub_tuples_by_user = defaultdict(list)
+    sub_tuples_by_user = defaultdict(list) # type: Dict[int, List[Tuple[Subscription, Stream]]]
     new_streams = set()
     for (sub, stream) in subs_to_add + subs_to_activate:
         sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
@@ -1336,7 +1337,7 @@ def bulk_remove_subscriptions(users, streams):
     for stream in streams:
         stream_map[recipients_map[stream.id].id] = stream
 
-    subs_by_user = dict((user_profile.id, []) for user_profile in users)
+    subs_by_user = dict((user_profile.id, []) for user_profile in users) # type: Dict[int, List[Subscription]]
     for sub in Subscription.objects.select_related("user_profile").filter(user_profile__in=users,
                                                                           recipient__in=list(recipients_map.values()),
                                                                           active=True):
@@ -1369,7 +1370,7 @@ def bulk_remove_subscriptions(users, streams):
                               for stream in new_vacant_streams])
         send_event(event, active_user_ids(user_profile.realm))
 
-    streams_by_user = defaultdict(list)
+    streams_by_user = defaultdict(list) # type: Dict[int, List[Stream]]
     for (sub, stream) in subs_to_deactivate:
         streams_by_user[sub.user_profile_id].append(stream)
 
@@ -2786,7 +2787,7 @@ def do_invite_users(user_profile, invitee_emails, streams):
     skipped = []
 
     ret_error = None
-    ret_error_data = {}
+    ret_error_data = {} # type: Dict[str, List[Tuple[str, str]]]
 
     for email in invitee_emails:
         if email == '':

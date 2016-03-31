@@ -42,8 +42,10 @@ class MITNameTest(TestCase):
         self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
 class S3Test(AuthedTestCase):
-    test_uris = [] # full URIs in public bucket
-    test_keys = [] # keys in authed bucket
+    # full URIs in public bucket
+    test_uris = [] # type: List[str]
+    # keys in authed bucket
+    test_keys = [] # type: List[str]
 
     @slow(2.6, "has to contact external S3 service")
     @skip("Need S3 mock")
