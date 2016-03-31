@@ -194,14 +194,14 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
 
-    items_for_memcached = {}
+    items_for_remote_cache = {}
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
-        items_for_memcached[key] = (setter(item),)
+        items_for_remote_cache[key] = (setter(item),)
         cached_objects[key] = item
-    if len(items_for_memcached) > 0:
-        cache_set_many(items_for_memcached)
+    if len(items_for_remote_cache) > 0:
+        cache_set_many(items_for_remote_cache)
     return dict((object_id, cached_objects[cache_keys[object_id]]) for object_id in object_ids
                 if cache_keys[object_id] in cached_objects)
 
@@ -255,11 +255,11 @@ def get_stream_cache_key(stream_name, realm):
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 def update_user_profile_caches(user_profiles):
-    items_for_memcached = {}
+    items_for_remote_cache = {}
     for user_profile in user_profiles:
-        items_for_memcached[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
-        items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
-    cache_set_many(items_for_memcached)
+        items_for_remote_cache[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
+        items_for_remote_cache[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
+    cache_set_many(items_for_remote_cache)
 
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
@@ -306,9 +306,9 @@ def realm_alert_words_cache_key(realm):
 def flush_stream(sender, **kwargs):
     from zerver.models import UserProfile
     stream = kwargs['instance']
-    items_for_memcached = {}
-    items_for_memcached[get_stream_cache_key(stream.name, stream.realm)] = (stream,)
-    cache_set_many(items_for_memcached)
+    items_for_remote_cache = {}
+    items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm)] = (stream,)
+    cache_set_many(items_for_remote_cache)
 
     if kwargs['update_fields'] is None or 'name' in kwargs['update_fields'] and \
        UserProfile.objects.filter(
