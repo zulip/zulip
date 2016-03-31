@@ -1,0 +1,1404 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# 
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version: Zulip\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-12-05 19:14-0500\n"
+"PO-Revision-Date: 2015-12-06 00:18+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: confirmation/models.py:103
+msgid "sent"
+msgstr ""
+
+#: confirmation/models.py:104
+msgid "activation key"
+msgstr ""
+
+#: confirmation/models.py:109
+msgid "confirmation email"
+msgstr ""
+
+#: confirmation/models.py:110
+msgid "confirmation emails"
+msgstr ""
+
+#: confirmation/models.py:113
+#, python-format
+msgid "confirmation email for %s"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:10
+msgid "Welcome! We think you'll like it here"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:15
+#: templates/zerver/register.html:20
+msgid "You're almost there. We just need you to do one last thing"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:16
+msgid "Accept the Zulip terms of service"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:22
+#: templates/zerver/login.html:97 templates/zerver/register.html:27
+#: templates/zerver/reset.html:12
+msgid "Email"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:28
+msgid "Your name"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:55
+#: templates/zerver/register.html:93
+msgid "I agree to the"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:55
+#: templates/zerver/register.html:93
+msgid "Terms of Service"
+msgstr ""
+
+#: templates/zerver/accounts_home.html:19
+msgid "Let's get started"
+msgstr ""
+
+#: templates/zerver/accounts_home.html:24
+msgid "Enter your work email address"
+msgstr ""
+
+#: templates/zerver/accounts_home.html:26
+msgid "Sign up"
+msgstr ""
+
+#: templates/zerver/accounts_home.html:35
+msgid ""
+"Please use your\n"
+"            company email address to sign up. Otherwise, we won’t be able to\n"
+"            connect you with your coworkers"
+msgstr ""
+
+#: templates/zerver/accounts_home.html:40
+msgid "Sign up with Google"
+msgstr ""
+
+#: templates/zerver/accounts_send_confirm.html:8
+msgid "Thanks for signing up!"
+msgstr ""
+
+#: templates/zerver/accounts_send_confirm.html:9
+msgid "Check your email so we can get started"
+msgstr ""
+
+#: templates/zerver/accounts_send_confirm.html:11
+msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>"
+msgstr ""
+
+#: templates/zerver/accounts_send_confirm.html:12
+msgid "Just in case, take a look at your Spam folder"
+msgstr ""
+
+#: templates/zerver/apps.html:6
+msgid "Do we have apps? Appsolutely."
+msgstr ""
+
+#: templates/zerver/apps.html:7
+msgid "Ok, I take it back, I'm sorry, please don't go."
+msgstr ""
+
+#: templates/zerver/apps.html:9
+msgid "Installation instructions"
+msgstr ""
+
+#: templates/zerver/apps.html:26
+#, python-format
+msgid ""
+"Zulip has a free, <strong>100%% native app</strong> for Android,\n"
+"          and you can easily grab it from\n"
+"          the <a href=\"https://play.google.com/store/apps/details?id=com.zulip.android\">Google\n"
+"          Play Store</a>"
+msgstr ""
+
+#: templates/zerver/apps.html:40
+#, python-format
+msgid ""
+"Zulip has a free, <strong>100%% native app</strong> for iPhone and\n"
+"        iPad. Please grab it from\n"
+"        the <a href=\"http://itunes.com/apps/zulip\">App Store</a>"
+msgstr ""
+
+#: templates/zerver/apps.html:51
+msgid ""
+"You love your Mac. And you love Zulip. So what could be\n"
+"        better than a Zulip app for Mac? Enjoy notifications for\n"
+"        messages and PMs in your dock whether you're in Sublime,\n"
+"        emacs, or Photoshop."
+msgstr ""
+
+#: templates/zerver/apps.html:58 templates/zerver/apps.html.py:60
+msgid "Download Zulip for Mac"
+msgstr ""
+
+#: templates/zerver/apps.html:68
+msgid ""
+"Zulip provides a native Linux app that runs standalone\n"
+"        outside of your browser. How you install it depends on what\n"
+"        you're running:"
+msgstr ""
+
+#: templates/zerver/apps.html:72
+msgid "Debian and Ubuntu"
+msgstr ""
+
+#: templates/zerver/apps.html:73
+msgid ""
+"We have an APT repository for Zulip, so adding and installing the app is "
+"easy:"
+msgstr ""
+
+#: templates/zerver/apps.html:86
+msgid "Other"
+msgstr ""
+
+#: templates/zerver/apps.html:88
+msgid ""
+"We provide a <a href=\"https://zulip.com/dist/apps/sso/linux/zulip-"
+"desktop_latest.bin.tar.gz\">binary tarball</a> of the Zulip application, "
+"built for 64-bit systems."
+msgstr ""
+
+#: templates/zerver/apps.html:91
+msgid ""
+"We provide a <a href=\"https://zulip.com/dist/apps/linux/zulip-"
+"desktop_latest.bin.tar.gz\">binary tarball</a> of the Zulip application, "
+"built for 64-bit systems."
+msgstr ""
+
+#: templates/zerver/apps.html:97
+msgid ""
+"Windows. It's the best OS for your needs: gaming,\n"
+"        coding, expense reports. But you always felt that something\n"
+"        was missing... until now."
+msgstr ""
+
+#: templates/zerver/apps.html:101
+msgid ""
+"We proudly present <b>Zulip for Windows</b>: the second-best app for Windows on the market today (after\n"
+"        Solitaire, obviously.)"
+msgstr ""
+
+#: templates/zerver/apps.html:106 templates/zerver/apps.html.py:108
+msgid "Download Zulip for Windows"
+msgstr ""
+
+#: templates/zerver/apps.html:116
+msgid ""
+"First, connect to our hosted 9P filesystem\n"
+"        at <code>plan9.zulip.com</code> and then... no, we're\n"
+"        totally kidding. There definitely isn't a version of Zulip\n"
+"        for Plan 9."
+msgstr ""
+
+#: templates/zerver/bankruptcy.html:7
+msgid "Welcome back"
+msgstr ""
+
+#: templates/zerver/bankruptcy.html:14
+msgid "Yes, please!"
+msgstr ""
+
+#: templates/zerver/bankruptcy.html:16
+msgid "No, I'll catch up"
+msgstr ""
+
+#: templates/zerver/closed_realm.html:5
+msgid "Closed realm"
+msgstr ""
+
+#: templates/zerver/closed_realm.html:7 templates/zerver/deactivated.html:7
+msgid "Hi there! Thank you for your interest in Zulip"
+msgstr ""
+
+#: templates/zerver/closed_realm.html:9
+#, python-format
+msgid ""
+"The organization you are trying to join, %(closed_domain_name)s, only allows"
+" users with e-mail addresses within the organization. Please ask for a new "
+"invite to an appropriate e-mail address"
+msgstr ""
+
+#: templates/zerver/compose.html:11
+#: templates/zerver/keyboard_shortcuts.html:62
+msgid "New stream message"
+msgstr ""
+
+#: templates/zerver/compose.html:18
+#: templates/zerver/keyboard_shortcuts.html:66
+msgid "New private message"
+msgstr ""
+
+#: templates/zerver/compose.html:47
+msgid "This is an invite-only stream"
+msgstr ""
+
+#: templates/zerver/compose.html:51
+msgid "Stream"
+msgstr ""
+
+#: templates/zerver/compose.html:55
+msgid "Topic"
+msgstr ""
+
+#: templates/zerver/compose.html:64
+msgid "You and"
+msgstr ""
+
+#: templates/zerver/compose.html:66
+msgid "one or more people"
+msgstr ""
+
+#: templates/zerver/compose.html:73
+msgid "Compose your message here"
+msgstr ""
+
+#: templates/zerver/compose.html:77
+msgid "Attach files from Dropbox"
+msgstr ""
+
+#: templates/zerver/compose.html:79
+msgid "Attach files"
+msgstr ""
+
+#: templates/zerver/compose.html:82
+msgid "Restore draft"
+msgstr ""
+
+#: templates/zerver/compose.html:83
+msgid "Sending"
+msgstr ""
+
+#: templates/zerver/compose.html:85
+msgid "Press Enter to send"
+msgstr ""
+
+#: templates/zerver/deactivated.html:5
+msgid "Deactivated organization"
+msgstr ""
+
+#: templates/zerver/deactivated.html:9
+#, python-format
+msgid ""
+" The organization you are trying to join, %(deactivated_domain_name)s, has\n"
+"been deactivated. Please\n"
+"contact <a href=\"mailto:%(zulip_administrator)s\">%(zulip_administrator)s</a> to reactivate\n"
+"this group"
+msgstr ""
+
+#: templates/zerver/features.html:5
+msgid "Zulip Features"
+msgstr ""
+
+#: templates/zerver/features.html:8
+msgid "Threaded group conversations"
+msgstr ""
+
+#: templates/zerver/features.html:9
+msgid ""
+"Talk about multiple topics at once without getting lost or\n"
+"        overwhelmed."
+msgstr ""
+
+#: templates/zerver/features.html:14
+msgid "One-on-one and group private conversations"
+msgstr ""
+
+#: templates/zerver/features.html:15
+msgid "Have private conversations with one or as many people as you need."
+msgstr ""
+
+#: templates/zerver/features.html:19
+msgid "Persistence"
+msgstr ""
+
+#: templates/zerver/features.html:20
+msgid ""
+"We're always receiving messages for you, even when you're\n"
+"        logged out."
+msgstr ""
+
+#: templates/zerver/features.html:25
+msgid "History"
+msgstr ""
+
+#: templates/zerver/features.html:26
+msgid ""
+"Join a stream and see its history, so even new team\n"
+"        members are never out of the loop."
+msgstr ""
+
+#: templates/zerver/features.html:31
+msgid "Full-history search"
+msgstr ""
+
+#: templates/zerver/features.html:32
+msgid ""
+"Search is both snappy and smart, helping you look for text,\n"
+"        people, and threads of conversation, with advanced search\n"
+"        operators for fine-grained control."
+msgstr ""
+
+#: templates/zerver/features.html:38
+msgid "Team presence and buddy list"
+msgstr ""
+
+#: templates/zerver/features.html:39
+msgid "See who is online at a glance."
+msgstr ""
+
+#: templates/zerver/features.html:43
+msgid "Inline image, video, and tweet previews"
+msgstr ""
+
+#: templates/zerver/features.html:44
+msgid ""
+"Send a link and we'll automatically generate an inline\n"
+"        preview."
+msgstr ""
+
+#: templates/zerver/features.html:49
+msgid "Drag-and-drop file uploads"
+msgstr ""
+
+#: templates/zerver/features.html:50
+msgid ""
+"Drag a file into the compose box and we'll upload and\n"
+"        preview it for you. Sharing and discussing work with team\n"
+"        mates has never been easier."
+msgstr ""
+
+#: templates/zerver/features.html:56
+msgid "@-notifications"
+msgstr ""
+
+#: templates/zerver/features.html:57
+msgid ""
+"Want someone's attention in a conversation? @-notify them\n"
+"        and they'll be right over."
+msgstr ""
+
+#: templates/zerver/features.html:62
+msgid "Stream-wide announcements"
+msgstr ""
+
+#: templates/zerver/features.html:63
+msgid ""
+"Use <code>@all</code> or <code>@everyone</code> to get the\n"
+"        attention of everyone in a stream."
+msgstr ""
+
+#: templates/zerver/features.html:68
+msgid "Emails for important missed messages"
+msgstr ""
+
+#: templates/zerver/features.html:69
+msgid ""
+"If you're missing important conversations when you're away from\n"
+"        Zulip, we'll send you an email summary so you're always in the\n"
+"        loop."
+msgstr ""
+
+#: templates/zerver/features.html:75
+msgid "Desktop notifications"
+msgstr ""
+
+#: templates/zerver/features.html:76
+msgid "Configurable for private and stream messages."
+msgstr ""
+
+#: templates/zerver/features.html:80
+msgid "Audible notifications"
+msgstr ""
+
+#: templates/zerver/features.html:81
+msgid ""
+"So you don't miss important messages even when your eyes\n"
+"        are elsewhere."
+msgstr ""
+
+#: templates/zerver/features.html:86
+msgid "Hotkeys"
+msgstr ""
+
+#: templates/zerver/features.html:87
+msgid "Communicate as efficiently as you use your favorite text editor."
+msgstr ""
+
+#: templates/zerver/features.html:91
+msgid "Emoji"
+msgstr ""
+
+#: templates/zerver/features.html:92
+msgid ""
+"Sometimes it's the simple things in life, like being able\n"
+"        to give a <tt>:thumbsup:</tt> while chatting."
+msgstr ""
+
+#: templates/zerver/features.html:97
+msgid "Code"
+msgstr ""
+
+#: templates/zerver/features.html:98
+msgid ""
+"Discuss code, even multi-line code, with ease, including\n"
+"        syntax-highlighting."
+msgstr ""
+
+#: templates/zerver/features.html:103
+msgid "Lightweight markup"
+msgstr ""
+
+#: templates/zerver/features.html:104
+msgid ""
+"Get bulleted lists, clickable links, and nicely-formatted\n"
+"        e-mail pastes automatically."
+msgstr ""
+
+#: templates/zerver/features.html:109
+msgid "Message editing"
+msgstr ""
+
+#: templates/zerver/features.html:110
+msgid "Don't worry, you can always fix that typo."
+msgstr ""
+
+#: templates/zerver/features.html:114
+msgid "Invite-only streams"
+msgstr ""
+
+#: templates/zerver/features.html:115
+msgid ""
+"Enjoy the benefits of threaded conversations while\n"
+"        controlling your audience and privacy."
+msgstr ""
+
+#: templates/zerver/features.html:120 templates/zerver/left-sidebar.html:9
+msgid "Starred messages"
+msgstr ""
+
+#: templates/zerver/features.html:121
+msgid ""
+"Keep a todo list or keep track of interesting\n"
+"        conversations."
+msgstr ""
+
+#: templates/zerver/features.html:126 templates/zerver/navbar.html:82
+msgid "Integrations"
+msgstr ""
+
+#: templates/zerver/features.html:127
+msgid ""
+"Get alerts and updates from your favorite services with\n"
+"        off-the-shelf <a href=\"/integrations\">integrations</a> for\n"
+"        Trac, Nagios, Github, Jenkins, and more."
+msgstr ""
+
+#: templates/zerver/features.html:133
+msgid "API"
+msgstr ""
+
+#: templates/zerver/features.html:134
+msgid ""
+"Want to roll your own notifications? We've got a\n"
+"        dead-simple RESTful <a href=\"/api\">API and Python bindings</a>\n"
+"        that will make integrations&mdash;both sending and\n"
+"        receiving&mdash;a snap!"
+msgstr ""
+
+#: templates/zerver/features.html:141
+msgid "Mobile apps"
+msgstr ""
+
+#: templates/zerver/features.html:142
+msgid ""
+"Check Zulip on the go with native <a href=\"/apps\">iOS and\n"
+"        Android apps</a>"
+msgstr ""
+
+#: templates/zerver/features.html:147
+msgid "Desktop apps"
+msgstr ""
+
+#: templates/zerver/features.html:148
+msgid ""
+"Prefer Zulip in its own window and rich, OS-level notifications?\n"
+"          Enjoy <a href=\"/apps\">Zulip on your desktop</a>"
+msgstr ""
+
+#: templates/zerver/hello.html:11 templates/zerver/login.html:19
+msgid "Zulip has been released as open source software!"
+msgstr ""
+
+#: templates/zerver/hello.html:14
+msgid ""
+"Read the <a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-"
+"zulip-a-dropbox-hack-week-project\" target=\"_blank\">announcement</a> or go"
+" to <a href=\"https://www.zulip.org\" target=\"_blank\">the Zulip open "
+"source project website</a>."
+msgstr ""
+
+#: templates/zerver/hello.html:27
+msgid "Finally, workplace chat that actually improves your productivity.*"
+msgstr ""
+
+#: templates/zerver/hello.html:29
+msgid "* It's also great for sharing cat pictures"
+msgstr ""
+
+#: templates/zerver/hello.html:32
+msgid "Log in now!"
+msgstr ""
+
+#: templates/zerver/hello.html:34
+msgid "Register now!"
+msgstr ""
+
+#: templates/zerver/hello.html:45
+msgid "Conversations, not messages"
+msgstr ""
+
+#: templates/zerver/hello.html:48
+msgid ""
+"Every conversation in Zulip has a <em>topic</em>, so it&rsquo;s\n"
+"      easy to keep conversations straight. Are your coworkers discussing\n"
+"      a software bug and the content of your website at the same time?\n"
+"      No problem."
+msgstr ""
+
+#: templates/zerver/hello.html:53
+msgid ""
+"You wouldn’t tolerate email without subject lines or threading, so why do "
+"you for chat?"
+msgstr ""
+
+#: templates/zerver/hello.html:66
+msgid "Easily read just the important things"
+msgstr ""
+
+#: templates/zerver/hello.html:69
+msgid ""
+"Sometimes, important things get discussed when you&rsquo;re not\n"
+"      around. Unfortunately, so do a lot of unimportant things."
+msgstr ""
+
+#: templates/zerver/hello.html:72
+msgid ""
+"<em>Narrowing</em> by stream or topic lets you focus on that important\n"
+"      customer project without having to read about how Jim&rsquo;s guitar lessons\n"
+"      are going."
+msgstr ""
+
+#: templates/zerver/hello.html:87
+msgid "Search that's better than Gmail's"
+msgstr ""
+
+#: templates/zerver/hello.html:90
+msgid ""
+"An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s\n"
+"      powerful and fast search will delight you with how quickly you can find\n"
+"      exactly what you&rsquo;re looking for."
+msgstr ""
+
+#: templates/zerver/hello.html:105
+msgid "Integrations that don't intrude"
+msgstr ""
+
+#: templates/zerver/hello.html:108
+msgid ""
+"Zulip has <a href=\"/integrations\">many integrations</a> and\n"
+"      a powerful <a href=\"/api\">API</a> to match. But here&rsquo;s\n"
+"      where it gets interesting: thanks to how Zulip categorizes messages,\n"
+"      automated messages never overwhelm you. As with any topic in Zulip,\n"
+"      they&rsquo;re easy to focus on, skim, defer to later, or ignore&mdash;as appropriate."
+msgstr ""
+
+#: templates/zerver/hello.html:125
+msgid "As technical as you want to be"
+msgstr ""
+
+#: templates/zerver/hello.html:128
+msgid "Keyboard shortcuts? Check."
+msgstr ""
+
+#: templates/zerver/hello.html:129
+msgid "Syntax highlighting? Check."
+msgstr ""
+
+#: templates/zerver/hello.html:130
+msgid "Discuss code and technical topics with ease."
+msgstr ""
+
+#: templates/zerver/hello.html:143
+msgid "and all the obvious stuff, too."
+msgstr ""
+
+#: templates/zerver/hello.html:146
+msgid ""
+"Drag-and-drop file uploads, image pasting, group private messages,\n"
+"         audible notifications, missed-message emails, desktop apps, and\n"
+"        <a href=\"/features\">everything else you might want</a>. Including emoji, naturally."
+msgstr ""
+
+#: templates/zerver/hello.html:161
+msgid "On the platform of your choice."
+msgstr ""
+
+#: templates/zerver/hello.html:197
+msgid "Log in now"
+msgstr ""
+
+#: templates/zerver/hello.html:199
+msgid "Register now"
+msgstr ""
+
+#: templates/zerver/home.html:7
+msgid "Welcome to"
+msgstr ""
+
+#: templates/zerver/home.html:8
+msgid ""
+"See, the thing about it is... there aren't any messages\n"
+"        here for you right now. I'm sure someone will eventually send\n"
+"        you one."
+msgstr ""
+
+#: templates/zerver/home.html:12
+msgid "Or"
+msgstr ""
+
+#: templates/zerver/home.html:12
+msgid "take matters into your own hands"
+msgstr ""
+
+#: templates/zerver/home.html:13
+msgid "and"
+msgstr ""
+
+#: templates/zerver/home.html:14
+msgid "compose a new stream message"
+msgstr ""
+
+#: templates/zerver/home.html:17
+msgid "Nothing's been sent here yet!"
+msgstr ""
+
+#: templates/zerver/home.html:19 templates/zerver/home.html.py:25
+#: templates/zerver/home.html:31 templates/zerver/home.html.py:37
+msgid "Why not"
+msgstr ""
+
+#: templates/zerver/home.html:20 templates/zerver/home.html.py:26
+#: templates/zerver/home.html:32 templates/zerver/home.html.py:38
+msgid "start the conversation"
+msgstr ""
+
+#: templates/zerver/home.html:23
+msgid "You have no private messages yet!"
+msgstr ""
+
+#: templates/zerver/home.html:29
+msgid "You have no private messages with this person yet!"
+msgstr ""
+
+#: templates/zerver/home.html:35
+msgid "You have no private messages with these people yet!"
+msgstr ""
+
+#: templates/zerver/home.html:41
+msgid "You aren't subscribed to this stream!"
+msgstr ""
+
+#: templates/zerver/home.html:43
+msgid "Want to"
+msgstr ""
+
+#: templates/zerver/home.html:43
+msgid "join it"
+msgstr ""
+
+#: templates/zerver/home.html:46
+msgid "You haven't starred anything yet!"
+msgstr ""
+
+#: templates/zerver/home.html:49
+msgid "You haven't been mentioned yet"
+msgstr ""
+
+#: templates/zerver/home.html:52
+msgid "Nobody has talked about that yet!"
+msgstr ""
+
+#: templates/zerver/index.html:53
+msgid "Loading"
+msgstr ""
+
+#: templates/zerver/index.html:54
+msgid "If this message does not go away, please wait a couple seconds and"
+msgstr ""
+
+#: templates/zerver/index.html:54
+msgid "reload"
+msgstr ""
+
+#: templates/zerver/index.html:54
+msgid "the page"
+msgstr ""
+
+#: templates/zerver/initial_invite_page.html:21
+msgid "You're the first one here!"
+msgstr ""
+
+#: templates/zerver/initial_invite_page.html:23
+msgid "Let's invite some folks for you to chat with"
+msgstr ""
+
+#: templates/zerver/initial_invite_page.html:29
+msgid "We'll email invitations to them"
+msgstr ""
+
+#: templates/zerver/initial_invite_page.html:32
+msgid "Next"
+msgstr ""
+
+#: templates/zerver/invite_user.html:6
+msgid "Invite coworkers to"
+msgstr ""
+
+#: templates/zerver/invite_user.html:13
+msgid "Emails (one on each line or comma-separated)"
+msgstr ""
+
+#: templates/zerver/invite_user.html:22
+msgid "Streams they should join"
+msgstr ""
+
+#: templates/zerver/invite_user.html:27
+#: templates/zerver/stream_creation_prompt.html:38
+msgid "Cancel"
+msgstr ""
+
+#: templates/zerver/invite_user.html:28
+msgid "Invite"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:6 templates/zerver/navbar.html:61
+msgid "Keyboard shortcuts"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:13
+msgid "Navigation"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:18
+msgid "Initiate a search"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:22
+msgid "Search people"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:26
+msgid "Previous message"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:30
+msgid "Next message"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:34
+msgid "Scroll up"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:38
+msgid "Scroll down"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:42
+msgid "Last message"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:49
+msgid "Composing messages"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:54
+msgid "Reply to message"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:58
+msgid "Reply to author"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:70
+msgid "Send message"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:74
+msgid "Cancel compose"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:83
+msgid "Narrowing"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:88
+msgid "Narrow by stream"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:92
+msgid "Narrow by topic"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:96
+msgid "Narrow to all private messages"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:100
+msgid "Cycle between stream narrows"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:104
+msgid "Return to home view"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:111
+msgid "Menus"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:116
+msgid "Open message actions menu"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:120
+msgid "Edit a message you sent"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:124
+msgid "Show these keyboard shortcuts"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:130
+#: templates/zerver/markdown_help.html:99
+#: templates/zerver/search_operators.html:80
+msgid "Close"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:7
+msgid "Home"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:8
+msgid "Private messages"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:10
+msgid "@-mentions"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:13
+msgid "STREAMS"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:20
+msgid "All streams"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:31
+msgid "SHARE THE LOVE"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:35
+msgid "Thanks!"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:35
+msgid "A hand-crafted, artisanal invite is on the way"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:39
+msgid ""
+"Know someone who would love Zulip for their company or group? Invite 'em!"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:44
+msgid ""
+"We'll have more invites for you soon, but\n"
+"                              for now, enjoy this <a target=\"_blank\"\n"
+"                                                     href=\"http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s\">song\n"
+"                                that expresses how we feel when you're\n"
+"                                logged out</a>."
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:60
+msgid "invite"
+msgstr ""
+
+#: templates/zerver/left-sidebar.html:60
+msgid "remaining"
+msgstr ""
+
+#: templates/zerver/login.html:22
+msgid "Read the"
+msgstr ""
+
+#: templates/zerver/login.html:22
+msgid "announcement"
+msgstr ""
+
+#: templates/zerver/login.html:22
+msgid "or go to"
+msgstr ""
+
+#: templates/zerver/login.html:22
+msgid "the Zulip open source project website"
+msgstr ""
+
+#: templates/zerver/login.html:48
+msgid "Zulip Dev Login"
+msgstr ""
+
+#: templates/zerver/login.html:50
+msgid "Choose a user"
+msgstr ""
+
+#: templates/zerver/login.html:53
+msgid "You look familiar"
+msgstr ""
+
+#: templates/zerver/login.html:61
+msgid "Sign in with SSO"
+msgstr ""
+
+#: templates/zerver/login.html:71
+msgid "Zulip is not currently available for your domain"
+msgstr ""
+
+#: templates/zerver/login.html:82
+msgid "You've already registered with this email address. Please log in below"
+msgstr ""
+
+#: templates/zerver/login.html:105 templates/zerver/register.html:52
+#: templates/zerver/reset_confirm.html:19
+msgid "Password"
+msgstr ""
+
+#: templates/zerver/login.html:116
+msgid "Forgot password?"
+msgstr ""
+
+#: templates/zerver/login.html:129
+msgid "or Choose a user"
+msgstr ""
+
+#: templates/zerver/login.html:132
+msgid "Administrators"
+msgstr ""
+
+#: templates/zerver/login.html:136
+msgid "Normal users"
+msgstr ""
+
+#: templates/zerver/login.html:147
+msgid "Sign in with Google"
+msgstr ""
+
+#: templates/zerver/markdown_help.html:6 templates/zerver/navbar.html:66
+msgid "Message formatting"
+msgstr ""
+
+#: templates/zerver/markdown_help.html:12
+msgid "You type"
+msgstr ""
+
+#: templates/zerver/markdown_help.html:13
+msgid "You get"
+msgstr ""
+
+#: templates/zerver/markdown_help.html:74
+msgid "You can also make a code block by indenting each line with 4 spaces."
+msgstr ""
+
+#: templates/zerver/markdown_help.html:88
+msgid ""
+"You can also make <a target=\"_blank\"\n"
+"          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tables</a>\n"
+"          with this <a target=\"_blank\"\n"
+"          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
+"          table syntax</a>"
+msgstr ""
+
+#: templates/zerver/navbar.html:20
+msgid "Search"
+msgstr ""
+
+#: templates/zerver/navbar.html:51
+msgid "Manage Streams"
+msgstr ""
+
+#: templates/zerver/navbar.html:56
+msgid "Settings"
+msgstr ""
+
+#: templates/zerver/navbar.html:71 templates/zerver/search_operators.html:6
+msgid "Search help"
+msgstr ""
+
+#: templates/zerver/navbar.html:77
+msgid "Desktop & mobile apps"
+msgstr ""
+
+#: templates/zerver/navbar.html:87
+msgid "API documentation"
+msgstr ""
+
+#: templates/zerver/navbar.html:93
+msgid "Administration"
+msgstr ""
+
+#: templates/zerver/navbar.html:99 templates/zerver/right-sidebar.html:39
+msgid "Invite coworkers"
+msgstr ""
+
+#: templates/zerver/navbar.html:106
+msgid "Feedback"
+msgstr ""
+
+#: templates/zerver/navbar.html:114
+msgid "Link with Webathena"
+msgstr ""
+
+#: templates/zerver/navbar.html:120
+msgid "Log out"
+msgstr ""
+
+#: templates/zerver/navbar.html:126
+msgid "Debug"
+msgstr ""
+
+#: templates/zerver/portico.html:31 templates/zerver/portico.html.py:64
+msgid "Log in"
+msgstr ""
+
+#: templates/zerver/portico.html:35
+msgid "Log In"
+msgstr ""
+
+#: templates/zerver/portico.html:37 templates/zerver/portico.html.py:70
+msgid "Register"
+msgstr ""
+
+#: templates/zerver/portico.html:58
+msgid "About"
+msgstr ""
+
+#: templates/zerver/portico.html:61
+msgid "Legal"
+msgstr ""
+
+#: templates/zerver/register.html:21
+msgid "Tell us a bit about yourself"
+msgstr ""
+
+#: templates/zerver/register.html:34
+msgid "Full name"
+msgstr ""
+
+#: templates/zerver/register.html:58
+msgid ""
+"This is used for mobile applications and other tools that require a password"
+msgstr ""
+
+#: templates/zerver/register.html:68 templates/zerver/reset_confirm.html:32
+msgid "Password strength"
+msgstr ""
+
+#: templates/zerver/reset.html:6 templates/zerver/reset_confirm.html:12
+msgid "Reset your password"
+msgstr ""
+
+#: templates/zerver/reset_confirm.html:40
+msgid "Confirm password"
+msgstr ""
+
+#: templates/zerver/reset_confirm.html:64
+msgid "Sorry, the link you provided is invalid or has already been used"
+msgstr ""
+
+#: templates/zerver/reset_done.html:4
+msgid "We've reset your password!"
+msgstr ""
+
+#: templates/zerver/reset_done.html:5
+msgid "Please"
+msgstr ""
+
+#: templates/zerver/reset_done.html:5
+msgid "log in"
+msgstr ""
+
+#: templates/zerver/reset_emailed.html:4
+msgid "We just sent you a password reset!"
+msgstr ""
+
+#: templates/zerver/reset_emailed.html:5
+msgid "Check your email to finish the process"
+msgstr ""
+
+#: templates/zerver/reset_emailed.html:6
+msgid "Or don't, but then why did you fill out this form?"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:4 templates/zerver/right-sidebar.html:8
+msgid "Unable to connect to"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:4
+msgid "Updates may be delayed"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:5 templates/zerver/right-sidebar.html:9
+msgid "Retrying soon"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:5
+msgid "Try now"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:8
+msgid "Could not fetch messages"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:12
+msgid "Your Zephyr mirror is not working"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:13
+#, python-format
+msgid ""
+"We\n"
+"                  recommend that you <a class=\"webathena_login\">give\n"
+"                  %(product_name)s the ability to mirror the messages for you via\n"
+"                  WebAthena</a>.  If you'd prefer, you can instead\n"
+"                  <a href=\"/zephyr-mirror\" target=\"_blank\">run the Zephyr mirror script yourself</a>\n"
+"                  in a screen session"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:19
+msgid ""
+"To fix\n"
+"                  this, you'll need\n"
+"                  to use <a href=\"https://zephyr.zulip.com\">the web interface</a>"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:28
+msgid "Send feedback"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:34
+msgid "USERS"
+msgstr ""
+
+#: templates/zerver/right-sidebar.html:44
+msgid "GROUP PMs"
+msgstr ""
+
+#: templates/zerver/search_operators.html:12
+msgid "Operator"
+msgstr ""
+
+#: templates/zerver/search_operators.html:13
+msgid "Effect"
+msgstr ""
+
+#: templates/zerver/search_operators.html:18
+msgid "Narrow to messages on stream"
+msgstr ""
+
+#: templates/zerver/search_operators.html:22
+msgid "Narrow to messages with topic"
+msgstr ""
+
+#: templates/zerver/search_operators.html:26
+msgid "Narrow to private messages with"
+msgstr ""
+
+#: templates/zerver/search_operators.html:30
+msgid "Narrow to messages sent by"
+msgstr ""
+
+#: templates/zerver/search_operators.html:34
+msgid "Narrow to messages sent by you"
+msgstr ""
+
+#: templates/zerver/search_operators.html:38
+msgid "Center the view around message ID"
+msgstr ""
+
+#: templates/zerver/search_operators.html:42
+msgid "Narrow to just message ID"
+msgstr ""
+
+#: templates/zerver/search_operators.html:47
+msgid "Narrow to messages with alert words"
+msgstr ""
+
+#: templates/zerver/search_operators.html:50
+msgid "Narrow to messages that mention you"
+msgstr ""
+
+#: templates/zerver/search_operators.html:54
+msgid "Narrow to private messages"
+msgstr ""
+
+#: templates/zerver/search_operators.html:58
+msgid "Narrow to starred messages"
+msgstr ""
+
+#: templates/zerver/search_operators.html:62
+msgid "Search for"
+msgstr ""
+
+#: templates/zerver/search_operators.html:62
+msgid "keyword"
+msgstr ""
+
+#: templates/zerver/search_operators.html:62
+msgid "in the topic or message content"
+msgstr ""
+
+#: templates/zerver/search_operators.html:66
+msgid "Exclude messages with topic"
+msgstr ""
+
+#: templates/zerver/search_operators.html:69
+msgid ""
+"You can use any combination of these search operators in a single query"
+msgstr ""
+
+#: templates/zerver/search_operators.html:69
+msgid "For example"
+msgstr ""
+
+#: templates/zerver/search_operators.html:75
+msgid "would search for messages sent by"
+msgstr ""
+
+#: templates/zerver/search_operators.html:75
+msgid "to stream"
+msgstr ""
+
+#: templates/zerver/search_operators.html:77
+msgid "containing the keyword"
+msgstr ""
+
+#: templates/zerver/stream_creation_prompt.html:6
+msgid "Create stream"
+msgstr ""
+
+#: templates/zerver/stream_creation_prompt.html:11
+msgid "Stream accessibility"
+msgstr ""
+
+#: templates/zerver/stream_creation_prompt.html:15
+msgid "Anyone can join"
+msgstr ""
+
+#: templates/zerver/stream_creation_prompt.html:20
+msgid "People must be invited"
+msgstr ""
+
+#: templates/zerver/stream_creation_prompt.html:27
+msgid "Announce stream"
+msgstr ""
+
+#: templates/zerver/stream_creation_prompt.html:33
+msgid "People to add"
+msgstr ""
+
+#: templates/zerver/stream_creation_prompt.html:39
+msgid "Create"
+msgstr ""
+
+#: templates/zerver/subscriptions.html:5
+msgid "Streams"
+msgstr ""
+
+#: templates/zerver/tutorial_finale.html:5
+#, python-format
+msgid "Welcome to %(product_name)s"
+msgstr ""
+
+#: templates/zerver/tutorial_finale.html:8
+#, python-format
+msgid ""
+"Streams, topics, and narrowing make %(product_name)s conversations\n"
+"    efficient and productive."
+msgstr ""
+
+#: templates/zerver/tutorial_finale.html:11
+msgid "That's all there is to it, so let's get started!"
+msgstr ""
+
+#: templates/zerver/tutorial_finale.html:14
+msgid "Get started"
+msgstr ""
+
+#: templates/zerver/unsubscribe_link_error.html:6
+msgid "Unknown email unsubscribe request"
+msgstr ""
+
+#: templates/zerver/unsubscribe_link_error.html:8
+msgid ""
+"Hi there! It looks like you tried to unsubscribe from something, but we don't\n"
+"recognize the URL."
+msgstr ""
+
+#: templates/zerver/unsubscribe_link_error.html:11
+#, python-format
+msgid ""
+"Please double-check that you have the full URL and try again, or <a "
+"href=\"mailto:%(zulip_admin)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
+"%%20e-"
+"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+" us</a> and we'll get this squared away!"
+msgstr ""
+
+#: templates/zerver/unsubscribe_success.html:6
+msgid "Email settings updated"
+msgstr ""
+
+#: templates/zerver/unsubscribe_success.html:8
+#, python-format
+msgid ""
+"We've updated your email subscription settings, and you won't get "
+"%(subscription_type)s emails anymore."
+msgstr ""
+
+#: templates/zerver/unsubscribe_success.html:10
+#, python-format
+msgid ""
+"To undo this change or review your other subscription settings, please visit"
+" your <a href=\"https://%(external_host)s/#settings\">Zulip Settings "
+"page</a>"
+msgstr ""
