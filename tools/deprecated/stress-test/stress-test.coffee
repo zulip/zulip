@@ -43,7 +43,7 @@ class ZulipSession extends Session
 
         @update_active_status()
         @get '/json/bots'
-        @post '/json/get_old_messages', {
+        @get '/json/messages', {
             anchor: @pointer
             num_before: 200
             num_after: 200

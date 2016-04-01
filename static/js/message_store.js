@@ -489,8 +489,8 @@ exports.load_old_messages = function load_old_messages(opts) {
         data.use_first_unread_anchor = true;
     }
 
-    channel.post({
-        url:      '/json/get_old_messages',
+    channel.get({
+        url:      '/json/messages',
         data:     data,
         idempotent: true,
         success: function (data) {

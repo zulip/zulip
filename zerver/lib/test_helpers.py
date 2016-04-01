@@ -281,7 +281,7 @@ class AuthedTestCase(TestCase):
     def get_old_messages(self, anchor=1, num_before=100, num_after=100):
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after}
-        result = self.client.post("/json/get_old_messages", dict(post_params))
+        result = self.client.get("/json/messages", dict(post_params))
         data = ujson.loads(result.content)
         return data['messages']
 

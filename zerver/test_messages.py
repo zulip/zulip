@@ -755,7 +755,7 @@ class GetOldMessagesTest(AuthedTestCase):
     def post_with_params(self, modified_params):
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
         post_params.update(modified_params)
-        result = self.client.post("/json/get_old_messages", dict(post_params))
+        result = self.client.get("/json/messages", dict(post_params))
         self.assert_json_success(result)
         return ujson.loads(result.content)
 
@@ -787,7 +787,7 @@ class GetOldMessagesTest(AuthedTestCase):
 
     def test_successful_get_old_messages(self):
         """
-        A call to /json/get_old_messages with valid parameters returns a list of
+        A call to GET /json/messages with valid parameters returns a list of
         messages.
         """
         self.login("hamlet@zulip.com")
@@ -976,7 +976,7 @@ class GetOldMessagesTest(AuthedTestCase):
 
         for i in range(len(required_args)):
             post_params = dict(required_args[:i] + required_args[i + 1:])
-            result = self.client.post("/json/get_old_messages", post_params)
+            result = self.client.get("/json/messages", post_params)
             self.assert_json_error(result,
                                    "Missing '%s' argument" % (required_args[i][0],))
 
@@ -999,7 +999,7 @@ class GetOldMessagesTest(AuthedTestCase):
                                        [(other_param, 0) for other_param in \
                                             int_params[:idx] + int_params[idx + 1:]]
                                    )
-                result = self.client.post("/json/get_old_messages", post_params)
+                result = self.client.get("/json/messages", post_params)
                 self.assert_json_error(result,
                                        "Bad value for '%s': %s" % (param, type))
 
@@ -1015,7 +1015,7 @@ class GetOldMessagesTest(AuthedTestCase):
             '{foo: 3}', '[1,2]', '[["x","y","z"]]')
         for type in bad_types:
             post_params = dict(other_params + [("narrow", type)])
-            result = self.client.post("/json/get_old_messages", post_params)
+            result = self.client.get("/json/messages", post_params)
             self.assert_json_error(result,
                                    "Bad value for 'narrow': %s" % (type,))
 
@@ -1040,7 +1040,7 @@ class GetOldMessagesTest(AuthedTestCase):
         for operator in ['', 'foo', 'stream:verona', '__init__']:
             narrow = [dict(operator=operator, operand='')]
             params = dict(anchor=0, num_before=0, num_after=0, narrow=ujson.dumps(narrow))
-            result = self.client.post("/json/get_old_messages", params)
+            result = self.client.get("/json/messages", params)
             self.assert_json_error_contains(result,
                 "Invalid narrow operator: unknown operator")
 
@@ -1049,7 +1049,7 @@ class GetOldMessagesTest(AuthedTestCase):
         for operand in operands:
             post_params = dict(other_params + [
                 ("narrow", ujson.dumps([[operator, operand]]))])
-            result = self.client.post("/json/get_old_messages", post_params)
+            result = self.client.get("/json/messages", post_params)
             self.assert_json_error_contains(result, error_msg)
 
     def test_bad_narrow_stream_content(self):
