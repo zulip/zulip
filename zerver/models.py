@@ -550,6 +550,13 @@ post_delete.connect(flush_stream, sender=Stream)
 def valid_stream_name(name):
     return name != ""
 
+# The Recipient table is used to map Messages to the set of users who
+# received the message.  It is implemented as a set of triples (id,
+# type_id, type). We have 3 types of recipients: Huddles (for group
+# private messages), UserProfiles (for 1:1 private messages), and
+# Ttreams. The recipient table maps a globally unique recipient id
+# (used by the Message table) to the type-specific unique id (the
+# stream id, user_profile id, or huddle id).
 class Recipient(models.Model):
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
@@ -1023,6 +1030,19 @@ def get_context_for_message(message):
     ).order_by('-id')[:10]
 
 
+# Whenever a message is sent, for each user current subscribed to the
+# corresponding Recipient object, we add a row to the UserMessage
+# table, which has has columns (id, user profile id, message id,
+# flags) indicating which messages each user has received.  This table
+# allows us to quickly query any user's last 1000 messages to generate
+# the home view.
+#
+# Additionally, the flags field stores metadata like whether the user
+# has read the message, starred the message, collapsed or was
+# mentioned the message, etc.
+#
+# UserMessage is the largest table in a Zulip installation, even
+# though each row is only 4 integers.
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     message = models.ForeignKey(Message)
@@ -1104,6 +1124,12 @@ def get_prereg_user_by_email(email):
     # invite.
     return PreregistrationUser.objects.filter(email__iexact=email.strip()).latest("invited_at")
 
+# The Huddle class represents a group of individuals who have had a
+# Group Private Message conversation together.  The actual membership
+# of the Huddle is stored in the Subscription table just like with
+# Streams, and a hash of that list is stored in the huddle_hash field
+# below, to support efficiently mapping from a set of users to the
+# corresponding Huddle object.
 class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
