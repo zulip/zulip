@@ -339,7 +339,7 @@ exports.initialize = function () {
         $("#new_message_content").focus();
 
         return channel.post({
-            url: '/json/change_enter_sends',
+            url: '/json/users/me/enter-sends',
             idempotent: true,
             data: {'enter_sends': page_params.enter_sends}
         });
