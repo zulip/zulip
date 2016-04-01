@@ -15,13 +15,6 @@ rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(req
 def list_alert_words(request, user_profile):
     return json_success({'alert_words': user_alert_words(user_profile)})
 
-@authenticated_json_post_view
-@has_request_variables
-def json_set_alert_words(request, user_profile,
-                         alert_words=REQ(validator=check_list(check_string), default=[])):
-    do_set_alert_words(user_profile, alert_words)
-    return json_success()
-
 @has_request_variables
 def set_alert_words(request, user_profile,
                     alert_words=REQ(validator=check_list(check_string), default=[])):
