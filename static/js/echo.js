@@ -1,3 +1,6 @@
+// This contains zulip's frontend markdown implementation; see
+// docs/markdown.md for docs on our Markdown syntax.
+
 var echo = (function () {
 
 var exports = {};

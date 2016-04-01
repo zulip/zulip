@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+# Zulip's main markdown implementation.  See docs/markdown.md for
+# detailed documentation on our markdown syntax.
 
 import codecs
 import markdown
