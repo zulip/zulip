@@ -1219,7 +1219,7 @@ class AlertWordTests(AuthedTestCase):
         params = {
             'alert_words': ujson.dumps(['milk', 'cookies'])
         }
-        result = self.client.post('/json/set_alert_words', params)
+        result = self.client.post('/json/users/me/alert_words', params)
         self.assert_json_success(result)
         user = get_user_profile_by_email(email)
         words = user_alert_words(user)
@@ -1303,7 +1303,7 @@ class AlertWordTests(AuthedTestCase):
     def test_json_list_add(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
 
@@ -1315,7 +1315,7 @@ class AlertWordTests(AuthedTestCase):
     def test_json_list_remove(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
         result = self.client_delete('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one'])})
@@ -1329,10 +1329,10 @@ class AlertWordTests(AuthedTestCase):
     def test_json_list_set(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
+        result = self.client.post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
         self.assert_json_success(result)
 
         result = self.client.get('/json/users/me/alert_words')
@@ -1350,7 +1350,7 @@ class AlertWordTests(AuthedTestCase):
         self.login("hamlet@zulip.com")
         user_profile_hamlet = get_user_profile_by_email("hamlet@zulip.com")
 
-        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
         result = self.client.get('/json/users/me/alert_words')
