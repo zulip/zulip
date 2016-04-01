@@ -605,10 +605,6 @@ def get_old_messages_backend(request, user_profile,
            "msg": ""}
     return json_success(ret)
 
-@authenticated_json_post_view
-def json_update_flags(request, user_profile):
-    return update_message_flags(request, user_profile);
-
 @has_request_variables
 def update_message_flags(request, user_profile,
                       messages=REQ('messages', validator=check_list(check_int)),
