@@ -1359,7 +1359,7 @@ class EditMessageTest(AuthedTestCase):
 class StarTests(AuthedTestCase):
 
     def change_star(self, messages, add=True):
-        return self.client.post("/json/update_message_flags",
+        return self.client.post("/json/messages/flags",
                                 {"messages": ujson.dumps(messages),
                                  "op": "add" if add else "remove",
                                  "flag": "starred"})
@@ -1367,7 +1367,7 @@ class StarTests(AuthedTestCase):
     def test_change_star(self):
         """
         You can set a message as starred/un-starred through
-        /json/update_message_flags.
+        POST /json/messages/flags.
         """
         self.login("hamlet@zulip.com")
         message_ids = [self.send_message("hamlet@zulip.com", "hamlet@zulip.com",

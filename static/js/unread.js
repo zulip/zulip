@@ -203,7 +203,7 @@ exports.mark_all_as_read = function mark_all_as_read(cont) {
     exports.update_unread_counts();
 
     channel.post({
-        url:      '/json/update_message_flags',
+        url:      '/json/messages/flags',
         idempotent: true,
         data:     {messages: JSON.stringify([]),
                    all:      true,

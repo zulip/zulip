@@ -89,7 +89,7 @@ class UnreadCountTests(AuthedTestCase):
     def test_update_flags(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client.post("/json/update_message_flags",
+        result = self.client.post("/json/messages/flags",
                                   {"messages": ujson.dumps(self.unread_msg_ids),
                                    "op": "add",
                                    "flag": "read"})
@@ -103,7 +103,7 @@ class UnreadCountTests(AuthedTestCase):
                 found += 1
         self.assertEqual(found, 2)
 
-        result = self.client.post("/json/update_message_flags",
+        result = self.client.post("/json/messages/flags",
                                   {"messages": ujson.dumps([self.unread_msg_ids[1]]),
                                    "op": "remove", "flag": "read"})
         self.assert_json_success(result)
@@ -123,12 +123,12 @@ class UnreadCountTests(AuthedTestCase):
                        self.send_message("hamlet@zulip.com", "cordelia@zulip.com",
                                          Recipient.PERSONAL, "test2")]
 
-        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps(message_ids),
+        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
                                                                  "op": "add",
                                                                  "flag": "read"})
         self.assert_json_success(result)
 
-        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([]),
+        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                  "op": "remove",
                                                                  "flag": "read",
                                                                  "all": ujson.dumps(True)})
