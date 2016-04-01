@@ -581,6 +581,60 @@ which shows the currently running backends and their activity. This is
 similar to the pg_top output, with the added advantage of showing the
 complete query, which can be valuable in debugging.
 
+To stop a runaway query, you can run `SELECT pg_cancel_backend(pid
+int)` or `SELECT pg_terminate_backend(pid int)` as the 'postgres'
+user. The former cancels the backend's current query and the latter
+terminates the backend process. They are implemented by sending SIGINT
+and SIGTERM to the processes, respectively.  We recommend against
+sending a Postgres process SIGKILL. Doing so will cause the database
+to kill all current connections, roll back any pending transactions,
+and enter recovery mode.
+
+#### Stopping the Zulip postgres database
+
+To start or stop postgres manually, use the pg_ctlcluster command:
+
+```
+pg_ctlcluster 9.1 [--force] main {start|stop|restart|reload}
+```
+
+By default, using stop uses "smart" mode, which waits for all clients
+to disconnect before shutting down the database. This can take
+prohibitively long. If you use the --force option with stop,
+pg_ctlcluster will try to use the "fast" mode for shutting
+down. "Fast" mode is described by the manpage thusly:
+
+  With the --force option the "fast" mode is used which rolls back all
+  active transactions, disconnects clients immediately and thus shuts
+  down cleanly. If that does not work, shutdown is attempted again in
+  "immediate" mode, which can leave the cluster in an inconsistent state
+  and thus will lead to a recovery run at the next start. If this still
+  does not help, the postmaster process is killed. Exits with 0 on
+  success, with 2 if the server is not running, and with 1 on other
+  failure conditions. This mode should only be used when the machine is
+  about to be shut down.
+
+Many database parameters can be adjusted while the database is
+running. Just modify /etc/postgresql/9.1/main/postgresql.conf and
+issue a reload. The logs will note the change.
+
+#### Debugging issues starting postgres
+
+pg_ctlcluster often doesn't give you any information on why the
+database failed to start. It may tell you to check the logs, but you
+won't find any information there. pg_ctlcluster runs the following
+command underneath when it actually goes to start Postgres:
+
+```
+/usr/lib/postgresql/9.1/bin/pg_ctl start -D /var/lib/postgresql/9.1/main -s -o  '-c config_file="/etc/postgresql/9.1/main/postgresql.conf"'
+```
+
+Since pg_ctl doesn't redirect stdout or stderr, running the above can
+give you better diagnostic information. However, you might want to
+stop Postgres and restart it using pg_ctlcluster after you've debugged
+with this approach, since it does bypass some of the work that
+pg_ctlcluster does.
+
 ### Scalability of Zulip
 
 This section attempts to address the considerations involved with
