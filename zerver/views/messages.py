@@ -75,10 +75,6 @@ def get_sqlalchemy_connection():
     sa_connection.execution_options(autocommit=False)
     return sa_connection
 
-@authenticated_json_post_view
-def json_get_old_messages(request, user_profile):
-    return get_old_messages_backend(request, user_profile)
-
 class BadNarrowOperator(Exception):
     def __init__(self, desc):
         self.desc = desc

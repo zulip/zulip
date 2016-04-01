@@ -55,12 +55,12 @@ class PublicURLTest(TestCase):
                     401: ["/api/v1/streams/Denmark/members",
                           "/api/v1/users/me/subscriptions",
                           "/api/v1/messages",
+                          "/json/messages",
                           ],
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
                      401: ["/json/get_public_streams",
-                           "/json/get_old_messages",
                            "/json/messages",
                            "/json/invite_users",
                            "/json/settings/change",
