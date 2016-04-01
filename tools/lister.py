@@ -22,6 +22,10 @@ def get_ftype(fpath, use_shebang):
                 return 'sh'
             elif re.search(r'^#!.*\bperl', first_line):
                 return 'pl'
+            elif re.search(r'^#!.*\bnode', first_line):
+                return 'js'
+            elif re.search(r'^#!.*\bruby', first_line):
+                return 'rb'
             elif re.search(r'^#!', first_line):
                 print('Error: Unknown shebang in file "%s":\n%s' % (fpath, first_line), file=sys.stderr)
                 return ''
