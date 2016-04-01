@@ -551,6 +551,36 @@ Contributions on making it easier to monitor Zulip and maintain it in
 production, e.g.  https://github.com/zulip/zulip/issues/371, are very
 welcome!
 
+#### Important postgres alerts
+
+The `autovac_freeze` postgres alert from `check_postgres` is
+particularly important.  This alert indicates that the age (in terms
+of number of transactions) of the oldest transaction id (XID) is
+getting close to the `autovacuum_freeze_max_age` setting.  When the
+oldest XID hits that age, Postgres will force a VACUUM operation,
+which can often lead to sudden downtime until the operation finishes.
+If it did not do this and the age of the oldest XID reached 2 billion,
+transaction id wraparound would occur and there would be data loss.
+To clear the nagios alert, perform a `VACUUM` in each indicated
+database as a database superuser (`postgres`).
+
+See
+http://www.postgresql.org/docs/9.1/static/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND
+for more details on postgres vacuuming.
+
+#### Debugging postgres database issues
+
+When debugging postgres issues, in addition to the standard `pg_top`
+tool, often it can be useful to use this query:
+
+```
+SELECT procpid,waiting,query_start,current_query FROM pg_stat_activity ORDER BY procpid;
+```
+
+which shows the currently running backends and their activity. This is
+similar to the pg_top output, with the added advantage of showing the
+complete query, which can be valuable in debugging.
+
 ### Scalability of Zulip
 
 This section attempts to address the considerations involved with
