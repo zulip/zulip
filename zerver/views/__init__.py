@@ -928,10 +928,6 @@ def update_pointer_backend(request, user_profile,
 def generate_client_id():
     return generate_random_token(32)
 
-@authenticated_json_post_view
-def json_get_profile(request, user_profile):
-    return get_profile_backend(request, user_profile)
-
 # The order of creation of the various dictionaries are important.
 # We filter on {userprofile,stream,subscription_recipient}_ids.
 @require_realm_admin
