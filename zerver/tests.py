@@ -298,7 +298,7 @@ class ActivityTest(AuthedTestCase):
     def test_activity(self):
         self.login("hamlet@zulip.com")
         client, _ = Client.objects.get_or_create(name='website')
-        query = '/json/update_pointer'
+        query = '/json/users/me/pointer'
         last_visit = datetime.datetime.now()
         count=150
         for user_profile in UserProfile.objects.all():
@@ -1046,7 +1046,7 @@ class GetProfileTest(AuthedTestCase):
 
     def common_update_pointer(self, email, pointer):
         self.login(email)
-        result = self.client.post("/json/update_pointer", {"pointer": pointer})
+        result = self.client_put("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
     def common_get_profile(self, email):
@@ -1101,7 +1101,7 @@ class GetProfileTest(AuthedTestCase):
         json = self.common_get_profile("hamlet@zulip.com")
         self.assertEqual(json["pointer"], id2) # pointer does not move backwards
 
-        result = self.client.post("/json/update_pointer", {"pointer": 99999999})
+        result = self.client_put("/json/users/me/pointer", {"pointer": 99999999})
         self.assert_json_error(result, "Invalid message ID")
 
     def test_get_all_profiles_avatar_urls(self):

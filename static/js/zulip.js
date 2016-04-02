@@ -222,8 +222,8 @@ function respond_to_message(opts) {
 function update_pointer() {
     if (!pointer_update_in_flight) {
         pointer_update_in_flight = true;
-        return channel.post({
-            url:      '/json/update_pointer',
+        return channel.put({
+            url:      '/json/users/me/pointer',
             idempotent: true,
             data:     {pointer: furthest_read},
             success: function () {
