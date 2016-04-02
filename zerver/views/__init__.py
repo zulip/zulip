@@ -901,10 +901,6 @@ def is_buggy_ua(agent):
 def get_pointer_backend(request, user_profile):
     return json_success({'pointer': user_profile.pointer})
 
-@authenticated_json_post_view
-def json_update_pointer(request, user_profile):
-    return update_pointer_backend(request, user_profile)
-
 @has_request_variables
 def update_pointer_backend(request, user_profile,
                            pointer=REQ(converter=to_non_negative_int)):
