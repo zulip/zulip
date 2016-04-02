@@ -4,7 +4,9 @@ Installing the Zulip Development environment
 
 You will need a machine with at least 2GB of RAM available (see
 https://github.com/zulip/zulip/issues/32 for a plan for how to
-dramatically reduce this requirement).
+dramatically reduce this requirement). The recommended approach for
+all platforms is to use Vagrant, which  will install the environment
+inside a VM or container on any platform that supports Vagrant. 
 
 Start by cloning the Zulip repositiory: 
 
@@ -19,7 +21,7 @@ Windows:
 This is to remove Windows line endings, which cause weird errors.
 
 Using Vagrant
--------------
+=============
 
 This is the recommended approach for all platforms, and will install
 the Zulip development environment inside a VM or container and works
