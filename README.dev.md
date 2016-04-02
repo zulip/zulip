@@ -6,7 +6,17 @@ You will need a machine with at least 2GB of RAM available (see
 https://github.com/zulip/zulip/issues/32 for a plan for how to
 dramatically reduce this requirement).
 
-Start by cloning this repository: `git clone https://github.com/zulip/zulip.git`
+Start by cloning the Zulip repositiory: 
+
+non-Windows:
+------------
+`git clone https://github.com/zulip/zulip.git`
+
+Windows:
+--------
+`git clone https://github.com/zulip/zulip.git  -c core.autocrlf=false` 
+
+This is to remove Windows line endings, which cause weird errors.
 
 Using Vagrant
 -------------
