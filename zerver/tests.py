@@ -1078,14 +1078,14 @@ class GetProfileTest(AuthedTestCase):
 
     def test_api_get_empty_profile(self):
         """
-        Ensure get_profile returns a max message id and returns successfully
+        Ensure GET /users/me returns a max message id and returns successfully
         """
         json = self.common_get_profile("othello@zulip.com")
         self.assertEqual(json["pointer"], -1)
 
     def test_profile_with_pointer(self):
         """
-        Ensure get_profile returns a proper pointer id after the pointer is updated
+        Ensure GET /users/me returns a proper pointer id after the pointer is updated
         """
 
         id1 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)

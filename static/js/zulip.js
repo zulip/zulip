@@ -262,8 +262,8 @@ function unconditionally_send_pointer_update() {
 }
 
 function fast_forward_pointer() {
-    channel.post({
-        url: '/json/get_profile',
+    channel.get({
+        url: '/users/me',
         idempotent: true,
         data: {email: page_params.email},
         success: function (data) {
