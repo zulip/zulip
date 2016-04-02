@@ -148,8 +148,11 @@ need to do some additional setup documented in the `settings.py` template:
 
 * For Google authentication, you need to follow the configuration
   instructions around `GOOGLE_OAUTH2_CLIENT_ID` and `GOOGLE_CLIENT_ID`.
+
 * For Email authentication, you will need to follow the configuration
-  instructions around outgoing SMTP from Django.
+  instructions for outgoing SMTP from Django.  You can use `manage.py
+  send_test_email username@example.com` to test whether you've
+  successfully configured outgoing SMTP.
 
 You should be able to login now.  If you get an error, check
 `/var/log/zulip/errors.log` for a traceback, and consult the next

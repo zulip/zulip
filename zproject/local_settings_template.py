@@ -61,6 +61,9 @@ SSO_APPEND_DOMAIN = None
 # that account as "less secure":
 # https://support.google.com/mail/answer/14257.
 #
+# You can quickly test your sending email configuration using:
+#   ./manage.py send_test_email username@example.com
+#
 # A common problem is hosting providers that block outgoing SMTP traffic.
 #
 # With the exception of reading EMAIL_HOST_PASSWORD from
