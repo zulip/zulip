@@ -29,7 +29,7 @@ var presence_descriptions = {
     idle:   'is not active'
 };
 
-/* Keep in sync with views.py:json_update_active_status() */
+/* Keep in sync with views.py:update_active_status_backend() */
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
 

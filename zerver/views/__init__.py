@@ -1129,10 +1129,6 @@ def update_active_status_backend(request, user_profile, status=REQ,
     return json_success(ret)
 
 @authenticated_json_post_view
-def json_update_active_status(request, user_profile):
-    return update_active_status_backend(request, user_profile)
-
-@authenticated_json_post_view
 def json_get_active_statuses(request, user_profile):
     return json_success(get_status_list(user_profile))
 
