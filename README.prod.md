@@ -179,6 +179,9 @@ which are needed to mirror messages to streams from other users for
 the IRC and Jabber mirroring integrations (see
 `bots/irc-mirror.py` and `bots/jabber_mirror.py` for some detail on these).
 
+You can also use `manage.py send_email username@example.com` to test if
+the outgoing email is working fine.
+
 There are a large number of useful management commands under
 `zerver/manangement/commands/`; you can also see them listed using
 `./manage.py` with no arguments.

@@ -52,6 +52,8 @@ SSO_APPEND_DOMAIN = None
 # configure SMTP, you will need to complete the following steps:
 #
 # (1) Fill out the outgoing email sending configuration below.
+# You can quickly test whether your sending email configuration works by running:
+#   ./manage.py send_email username@example.com
 #
 # (2) Put the SMTP password for EMAIL_HOST_USER in
 # /etc/zulip/zulip-secrets.conf as email_password.
