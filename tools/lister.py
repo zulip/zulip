@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+from __future__ import absolute_import
 import os
 import sys
 import subprocess
 import re
 from collections import defaultdict
 import argparse
+from six.moves import filter
 
 def get_ftype(fpath, use_shebang):
     ext = os.path.splitext(fpath)[1]
