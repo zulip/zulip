@@ -29,13 +29,14 @@
 # For example:
 #  aa453216d1b3e49e7f6f98441fa56946ddcd6a20 68f7abf4e6f922807889f52bc043ecd31b79f814 refs/heads/master
 
+from __future__ import absolute_import
 import os
 import sys
 import subprocess
 import os.path
 
 sys.path.insert(0, os.path.dirname(__file__))
-import zulip_git_config as config
+from . import zulip_git_config as config
 VERSION = "0.9"
 
 if config.ZULIP_API_PATH is not None:
