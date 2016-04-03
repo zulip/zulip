@@ -15,6 +15,7 @@ import atexit
 import sys
 import signal
 import tornado
+import tornado.autoreload
 import random
 import traceback
 from zerver.decorator import RespondAsynchronously, JsonableError
