@@ -75,7 +75,7 @@ class ZulipSession extends Session
             message_latency.update(+new Date() - parseInt(m[1], 10))
 
     update_active_status: ->
-        @post "/json/update_active_status", {status: "active"}, update_status_time.cbTimer()
+        @post "/json/users/me/presence", {status: "active"}, update_status_time.cbTimer()
 
     send_stream_message: (stream, subject, content) ->
         @post '/json/messages', {

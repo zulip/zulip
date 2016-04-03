@@ -1141,7 +1141,7 @@ class UserPresenceTests(AuthedTestCase):
             self.assertEqual(list(json['presences'].keys()), ['hamlet@zulip.com'])
             return json['presences'][email][client]['timestamp']
 
-        result = self.client.post("/json/update_active_status", {'status': 'idle'})
+        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
         test_result(result)
 
         result = self.client.post("/json/get_active_statuses", {})
@@ -1149,7 +1149,7 @@ class UserPresenceTests(AuthedTestCase):
 
         email = "othello@zulip.com"
         self.login(email)
-        self.client.post("/json/update_active_status", {'status': 'idle'})
+        self.client.post("/json/users/me/presence", {'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1163,7 +1163,7 @@ class UserPresenceTests(AuthedTestCase):
         self.login("hamlet@zulip.com")
         client = 'website'
 
-        self.client.post("/json/update_active_status", {'status': 'idle'})
+        self.client.post("/json/users/me/presence", {'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {})
 
         self.assert_json_success(result)
@@ -1172,14 +1172,14 @@ class UserPresenceTests(AuthedTestCase):
 
         email = "othello@zulip.com"
         self.login("othello@zulip.com")
-        self.client.post("/json/update_active_status", {'status': 'idle'})
+        self.client.post("/json/users/me/presence", {'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
 
-        self.client.post("/json/update_active_status", {'status': 'active'})
+        self.client.post("/json/users/me/presence", {'status': 'active'})
         result = self.client.post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1189,19 +1189,19 @@ class UserPresenceTests(AuthedTestCase):
     def test_no_mit(self):
         # MIT never gets a list of users
         self.login("espuser@mit.edu")
-        result = self.client.post("/json/update_active_status", {'status': 'idle'})
+        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'], {})
 
     def test_same_realm(self):
         self.login("espuser@mit.edu")
-        self.client.post("/json/update_active_status", {'status': 'idle'})
+        self.client.post("/json/users/me/presence", {'status': 'idle'})
         result = self.client.post("/accounts/logout/")
 
         # Ensure we don't see hamlet@zulip.com information leakage
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/update_active_status", {'status': 'idle'})
+        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences']["hamlet@zulip.com"]["website"]['status'], 'idle')

@@ -55,7 +55,7 @@ def asynchronous(method):
 def update_user_activity(request, user_profile):
     # update_active_status also pushes to rabbitmq, and it seems
     # redundant to log that here as well.
-    if request.META["PATH_INFO"] == '/json/update_active_status':
+    if request.META["PATH_INFO"] == '/json/users/me/presence':
         return
 
     if hasattr(request, '_query'):

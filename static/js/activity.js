@@ -353,7 +353,7 @@ exports._status_from_timestamp = status_from_timestamp;
 
 function focus_ping() {
     channel.post({
-        url: '/json/update_active_status',
+        url: '/json/users/me/presence',
         data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
                new_user_input: exports.new_user_input},
         idempotent: true,
