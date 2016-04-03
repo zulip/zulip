@@ -78,7 +78,7 @@ notfile  = []
 empty    = []
 excluded = []
 
-doc = file('tools/print-all/tex/all_code.tex', 'w')
+doc = open('tools/print-all/tex/all_code.tex', 'w')
 doc.write(r'''
 \input{header}
 \begin{document}
