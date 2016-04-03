@@ -6,7 +6,9 @@ You will need a machine with at least 2GB of RAM available (see
 https://github.com/zulip/zulip/issues/32 for a plan for how to
 dramatically reduce this requirement). The recommended approach for
 all platforms is to use Vagrant, which  will install the environment
-inside a VM or container on any platform that supports Vagrant. 
+inside a VM or container on any platform that supports Vagrant. You
+could also install things by hand, which is supported by a variety
+of platforms, or use Docker. 
 
 Start by cloning the Zulip repositiory: 
 
@@ -115,8 +117,15 @@ environment][using-dev].
 [using-dev]: #using-the-development-environment
 
 
-Using provision.py without Vagrant
-----------------------------------
+Setup without Vagrant (using provision.py)
+==========================================
+
+There is no supported uninstallation process without Vagrant
+(with Vagrant, you can just do `vagrant destroy` to clean up the
+development environment).
+
+Ubuntu 14.04 Trusty server
+--------------------------
 
 If you'd like to install a Zulip development environment on a server
 that's already running Ubuntu 14.04 Trusty, you can do that by just
@@ -130,10 +139,6 @@ cd /srv/zulip
 source /srv/zulip-venv/bin/activate
 ./tools/run-dev.py
 ```
-
-Note that there is no supported uninstallation process without Vagrant
-(with Vagrant, you can just do `vagrant destroy` to clean up the
-development environment).
 
 By hand
 -------
@@ -152,7 +157,8 @@ Install the following non-Python dependencies:
  * tsearch-extras — better text search
  * libfreetype6-dev — needed before you pip install Pillow to properly generate emoji PNGs
 
-### On Debian or Ubuntu systems:
+By Hand (Debian or Ubuntu systems):
+----------------------------------
 
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
@@ -179,7 +185,8 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 
 Now continue with the "All systems" instructions below.
 
-### On Fedora 22 (experimental):
+By Hand (on Fedora 22 - experimental):
+-------------------------------------
 
 These instructions are experimental and may have bugs; patches
 welcome!
@@ -193,7 +200,7 @@ sudo dnf install libffi-devel memcached rabbitmq-server \
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
-### On CentOS 7 Core (experimental):
+By Hand (on CentOS 7 Core - experimental):
 
 These instructions are experimental and may have bugs; patches
 welcome!
@@ -248,7 +255,8 @@ host    all             all             ::1/128                 md5
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
-### On OpenBSD 5.8 (experimental):
+By hand (on OpenBSD 5.8 - experimental):
+---------------------------------------
 
 These instructions are experimental and may have bugs; patches
 welcome!
@@ -282,7 +290,8 @@ sudo touch /usr/local/share/postgresql/tsearch_data/en_us.affix
 
 Now continue with the All Systems instructions below.
 
-### Common to Fedora/CentOS instructions
+By Hand (Common to Fedora/CentOS instructions)
+----------------------------------------------
 
 ```
 # Build and install postgres tsearch-extras module
@@ -315,7 +324,8 @@ sudo systemctl enable redis rabbitmq-server memcached postgresql
 
 Finally continue with the All Systems instructions below.
 
-### All Systems:
+All Systems:
+-----------
 
 ```
 pip install --no-deps -r requirements.txt
@@ -345,7 +355,7 @@ To start the development server:
 … and visit [http://localhost:9991/](http://localhost:9991/).
 
 Using Docker
--------------
+============
 
 You can also use Docker to develop, first you need to install Docker
 in your development machine following the
