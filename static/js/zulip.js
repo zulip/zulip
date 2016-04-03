@@ -25,7 +25,6 @@ var last_viewport_movement_direction = 1;
 
 var furthest_read = -1;
 var server_furthest_read = -1;
-var unread_messages_read_in_narrow = false;
 var pointer_update_in_flight = false;
 
 function keep_pointer_in_view() {

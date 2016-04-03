@@ -210,7 +210,7 @@ exports.activate = function (raw_operators, opts) {
     var then_select_offset;
 
     if (!was_narrowed_already) {
-        unread_messages_read_in_narrow = false;
+        unread.messages_read_in_narrow = false;
     }
 
     if (!opts.select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
@@ -467,7 +467,7 @@ exports.deactivate = function () {
         // no longer be there
         // Additionally, we pass empty_ok as the user may have removed **all** streams
         // from her home view
-        if (unread_messages_read_in_narrow) {
+        if (unread.messages_read_in_narrow) {
             // We read some unread messages in a narrow. Instead of going back to
             // where we were before the narrow, go to our first unread message (or
             // the bottom of the feed, if there are no unread messages).
