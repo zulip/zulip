@@ -2,6 +2,9 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.template.defaultfilters import slugify
+from django.utils.encoding import force_text
+from django.utils.safestring import mark_safe
+import unicodedata
 
 from zerver.lib.avatar import user_avatar_hash
 
@@ -13,6 +16,7 @@ from zerver.models import get_user_profile_by_id
 
 import base64
 import os
+import re
 from PIL import Image, ImageOps
 from six.moves import cStringIO as StringIO
 import random
@@ -33,10 +37,22 @@ import random
 # slugify.
 
 def sanitize_name(name):
-    split_name = name.split('.')
-    base = ".".join(split_name[:-1])
-    extension = split_name[-1]
-    return slugify(base) + "." + slugify(extension)
+    """
+    This function is made by modifying the code of the
+    slugify function in django.utils.text.
+    The modifications made are
+    1)allow_unicode=True is hardcoded
+    2)case of the name is preserved
+    3)'.' and '_' are added to the list of allowed characters
+
+    This function basically makes a value safe so that it
+    can be stored in a LINUX filesystem, in S3 and in a URL.
+    No special characters are allowed except for '.', '_' and '-'
+    """
+    fileName = force_text(name)
+    fileName = unicodedata.normalize('NFKD', fileName).encode('ascii','ignore').decode('ascii')
+    fileName = re.sub(r'(?u)[^-\w._]', '', fileName).strip()
+    return mark_safe(re.sub('[-\s]+', '-', fileName))
 
 def random_name(bytes=60):
     return base64.urlsafe_b64encode(os.urandom(bytes))
