@@ -649,6 +649,7 @@ JS_SPECS = {
             'third/sockjs/sockjs-0.3.4.js',
             'third/handlebars/handlebars.runtime.js',
             'third/marked/lib/marked.js',
+            'third/clipboard/clipboard.js',
             'templates/compiled.js',
             'js/feature_flags.js',
             'js/loading.js',

@@ -472,6 +472,26 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    var clipboard = new Clipboard('#copy_link_to_clipboard', {
+    text: function (trigger) {
+        return location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '')+'/'+trigger.getAttribute('data-clipboard-text');
+    }
+    });
+
+    clipboard.on('success', function (e) {
+        $( "#copy_link_to_clipboard" ).tooltip('hide')
+                                      .attr('data-original-title', 'Copied!')
+                                      .tooltip('fixTitle')
+                                      .tooltip('show');
+    });
+    clipboard.on('error', function (e) {
+         $( "#copy_link_to_clipboard" ).tooltip('hide')
+                                      .attr('data-original-title', 'Press ctrl+c')
+                                      .tooltip('fixTitle')
+                                      .tooltip('show');
+    });
+
     $('body').on('click', '.popover_narrow_by_conversation_and_time', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         popovers.hide_actions_popover();
@@ -479,6 +499,7 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
+
     $('body').on('click', '.popover_toggle_collapse', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         var row = current_msg_list.get_row(msgid);
