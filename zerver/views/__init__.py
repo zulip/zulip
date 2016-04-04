@@ -16,7 +16,6 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
-from django.forms.models import model_to_dict
 from django.core.mail import send_mail
 from django.middleware.csrf import get_token
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
