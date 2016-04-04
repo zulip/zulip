@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+# Zulip's main markdown implementation.  See docs/markdown.md for
+# detailed documentation on our markdown syntax.
+from typing import *
 
 import codecs
 import markdown
@@ -559,7 +562,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        realm_emoji = {}
+        realm_emoji = {} # type: Dict[str, str]
         if db_data is not None:
             realm_emoji = db_data['emoji']
 
@@ -990,7 +993,7 @@ def make_md_engine(key, opts):
 
 def subject_links(domain, subject):
     from zerver.models import get_realm, RealmFilter, realm_filters_for_domain
-    matches = []
+    matches = [] # type: List[str]
 
     try:
         realm_filters = realm_filters_for_domain(domain)
@@ -1046,12 +1049,12 @@ def _sanitize_for_log(md):
 
 # Filters such as UserMentionPattern need a message, but python-markdown
 # provides no way to pass extra params through to a pattern. Thus, a global.
-current_message = None
+current_message = None # type: Any # Should be Message but bugdown doesn't import models.py.
 
 # We avoid doing DB queries in our markdown thread to avoid the overhead of
 # opening a new DB connection. These connections tend to live longer than the
 # threads themselves, as well.
-db_data = None
+db_data = None # type: Dict[str, Any]
 
 def do_convert(md, realm_domain=None, message=None):
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""

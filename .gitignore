@@ -24,7 +24,7 @@ zerver/fixtures/migration-status
 zerver/fixtures/test_data1.json
 .kdev4
 zulip.kdev4
-memcached_prefix
+remote_cache_prefix
 coverage/
 /queue_error
 .test-js-with-node.html
@@ -41,3 +41,4 @@ tools/emoji_dump/bitmaps/
 tools/emoji_dump/*.ttx
 tools/phantomjs
 node_modules
+uploads/

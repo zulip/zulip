@@ -293,7 +293,7 @@ Finally continue with the All Systems instructions below.
 
 ```
 pip install -r requirements.txt
-npm install
+./tools/install-phantomjs
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
@@ -303,6 +303,7 @@ if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_
 ./tools/do-destroy-rebuild-database
 ./tools/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
+npm install
 ```
 
 To start the development server:
@@ -499,3 +500,22 @@ Possible testing issues
   ][lxc-sf].
 
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner)
+
+Troubleshooting development environment setup
+=============================================
+
+If you are building the development environment on a network where a
+proxy is required to access the Internet, you will need to set the
+proxy in the environment as follows:
+
+- On Ubuntu, set the proxy environment variables using:
+ ```
+ export https_proxy=http://proxy_host:port
+ export http_proxy=http://proxy_host:port
+ ```
+
+- And set the npm proxy and https-proxy using:
+ ```
+ npm config set proxy http://proxy_host:port
+ npm config set https-proxy http://proxy_host:port
+ ```

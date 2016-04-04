@@ -30,7 +30,7 @@ if settings.ZULIP_COM:
 else:
     from mock import Mock
     get_deployment_by_domain = Mock()
-    Deployment = Mock()
+    Deployment = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 def get_deployment_or_userprofile(role):
     return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)
@@ -49,7 +49,7 @@ def asynchronous(method):
     def wrapper(request, *args, **kwargs):
         return method(request, handler=request._tornado_handler, *args, **kwargs)
     if getattr(method, 'csrf_exempt', False):
-        wrapper.csrf_exempt = True
+        wrapper.csrf_exempt = True # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
 
 def update_user_activity(request, user_profile):
@@ -385,7 +385,7 @@ class REQ(object):
         """
 
         self.post_var_name = whence
-        self.func_var_name = None
+        self.func_var_name = None # type: str
         self.converter = converter
         self.validator = validator
         self.default = default

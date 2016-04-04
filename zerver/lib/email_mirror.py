@@ -235,7 +235,7 @@ def find_emailgateway_recipient(message):
     # it is more accurate, so try to find the most-accurate
     # recipient list in descending priority order
     recipient_headers = ["X-Gm-Original-To", "Delivered-To", "To"]
-    recipients = []
+    recipients = [] # type: List[str]
     for recipient_header in recipient_headers:
         r = message.get_all(recipient_header, None)
         if r:

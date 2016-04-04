@@ -7,9 +7,11 @@ from __future__ import absolute_import
 import fcntl
 import os
 from contextlib import contextmanager
+from typing import Generator, Any
 
 @contextmanager
 def flock(lockfile, shared=False):
+    # type: (int, bool) -> Generator[None, None, None]
     """Lock a file object using flock(2) for the duration of a 'with' statement.
 
        If shared is True, use a LOCK_SH lock, otherwise LOCK_EX."""
@@ -22,6 +24,7 @@ def flock(lockfile, shared=False):
 
 @contextmanager
 def lockfile(filename, shared=False):
+    # type: (str, bool) -> Generator[None, None, None]
     """Lock a file using flock(2) for the duration of a 'with' statement.
 
        If shared is True, use a LOCK_SH lock, otherwise LOCK_EX.

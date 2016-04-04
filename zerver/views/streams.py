@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import *
 
 from django.conf import settings
 from django.db import transaction
@@ -27,6 +28,7 @@ from six.moves import urllib
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 import six
+
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
@@ -162,7 +164,7 @@ def update_subscriptions_backend(request, user_profile,
     if not add and not delete:
         return json_error('Nothing to do. Specify at least one of "add" or "delete".')
 
-    json_dict = {}
+    json_dict = {} # type: Dict[str, Any]
     for method, items in ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)):
         response = method(request, user_profile, streams_raw=items)
         if response.status_code != 200:
@@ -202,7 +204,7 @@ def remove_subscriptions_backend(request, user_profile,
     else:
         people_to_unsub = set([user_profile])
 
-    result = dict(removed=[], not_subscribed=[])
+    result = dict(removed=[], not_subscribed=[]) # type: Dict[str, List[str]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams)
 
     for (subscriber, stream) in removed:
@@ -284,7 +286,7 @@ def add_subscriptions_backend(request, user_profile,
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
 
-    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
+    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list)) # type: Dict[str, Any]
     for (subscriber, stream) in subscribed:
         result["subscribed"][subscriber.email].append(stream.name)
     for (subscriber, stream) in already_subscribed:

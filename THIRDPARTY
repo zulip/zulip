@@ -229,10 +229,6 @@ Files: tools/jslint/jslint.js
 Copyright: 2002 Douglas Crockford
 License: XXX-good-not-evil
 
-Files: tools/python-proxy
-Copyright: 2009 F.bio Domingues
-License: Expat
-
 Files: tools/review
 Copyright: 2010 Ksplice, Inc.
 License: Apache-2.0

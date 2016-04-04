@@ -52,6 +52,7 @@ from zerver.views import _default_all_public_streams, _default_narrow
 from zerver.tornadoviews import get_events_backend
 
 from collections import OrderedDict
+import time
 import ujson
 from six.moves import range
 
@@ -211,9 +212,18 @@ class EventsRegisterTest(AuthedTestCase):
         ])
 
     def do_test(self, action, event_types=None):
-        client = allocate_client_descriptor(self.user_profile.id, self.user_profile.email,
-                                            self.user_profile.realm.id, event_types,
-                                            "website", True, False, 600, [])
+        client = allocate_client_descriptor(
+            dict(user_profile_id = self.user_profile.id,
+                 user_profile_email = self.user_profile.email,
+                 realm_id = self.user_profile.realm.id,
+                 event_types = event_types,
+                 client_type_name = "website",
+                 apply_markdown = True,
+                 all_public_streams = False,
+                 queue_timeout = 600,
+                 last_connection_time = time.time(),
+                 narrow = [])
+            )
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "")

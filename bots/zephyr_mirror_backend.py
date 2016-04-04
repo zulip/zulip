@@ -21,6 +21,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from __future__ import absolute_import
+from typing import *
 
 import sys
 from six.moves import map
@@ -28,7 +29,7 @@ from six.moves import range
 try:
     import simplejson
 except ImportError:
-    import json as simplejson
+    import json as simplejson # type: ignore
 import re
 import time
 import subprocess
@@ -47,6 +48,8 @@ DEFAULT_SITE = "https://api.zulip.com"
 class States(object):
     Startup, ZulipToZephyr, ZephyrToZulip, ChildSending = list(range(4))
 CURRENT_STATE = States.Startup
+
+logger = None # type: logging.Logger
 
 def to_zulip_username(zephyr_username):
     if "@" in zephyr_username:
@@ -878,6 +881,7 @@ def parse_zephyr_subs(verbose=False):
     return zephyr_subscriptions
 
 def open_logger():
+    # type: () -> logging.Logger
     if options.log_path is not None:
         log_file = options.log_path
     elif options.forward_class_messages:
@@ -1025,7 +1029,7 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, die_gracefully)
 
-    (options, args) = parse_args()
+    (options, args) = parse_args() # type: Any, List[str]
 
     logger = open_logger()
     configure_logger(logger, "parent")
@@ -1113,7 +1117,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
         options.session_path = "/var/tmp/%s" % (options.user,)
 
     if options.forward_from_zulip:
-        child_pid = os.fork()
+        child_pid = os.fork() # type: int
         if child_pid == 0:
             CURRENT_STATE = States.ZulipToZephyr
             # Run the zulip => zephyr mirror in the child
