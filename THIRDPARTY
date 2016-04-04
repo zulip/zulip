@@ -68,7 +68,7 @@ Copyright: 2005 Francesc Guasch
 License: GPL-2.0
 Comment: Not linked.
 
-Files: puppet/zulip_internal/files/nagios_plugins/check_postgres.pl
+Files: puppet/zulip/files/nagios_plugins/zulip_postgres_appdb/check_postgres.pl
 Copyright: 2007-2015 Greg Sabino Mullane
 License: BSD-2-Clause
 
