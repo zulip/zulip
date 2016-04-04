@@ -507,42 +507,52 @@ would be very welcome!
 
 ### Monitoring Zulip
 
-The complete Nagios configuration (sans secret keys) we used to
+The complete Nagios configuration (sans secret keys) used to
 monitor zulip.com is available under `puppet/zulip_internal` in the
 Zulip Git repository (those files are not installed in the release
-tarballs); there are a number of useful Nagios plugins available
-there, including:
+tarballs).
 
-Frontend server monitoring:
+The Nagios plugins used by that configuration are installed
+automatically by the Zulip installation process in subdirectories
+under `/usr/lib/nagios/plugins/`.  The following is a summary of the
+various Nagios plugins included with Zulip and what they check:
+
+Application server and queue worker monitoring:
 
 * check_send_receive_time (sends a test message through the system
   between two bot users to check that end-to-end message sending works)
-* check_website_response.sh (standard HTTP check)
-
-Queue worker monitoring:
 
 * check_rabbitmq_consumers and check_rabbitmq_queues (checks for
   rabbitmq being down or the queue workers being behind)
+
 * check_queue_worker_errors (checks for errors reported by the queue workers)
+
 * check_worker_memory (monitors for memory leaks in queue workers)
+
 * check_email_deliverer_backlog and check_email_deliverer_process
   (monitors for whether outgoing emails are being sent)
 
 Database monitoring:
 
-* check_pg_replication_lag
+* check_postgres_replication_lag (checks streaming replication is up
+  to date).
+
 * check_postgres (checks the health of the postgres database)
+
 * check_postgres_backup (checks backups are up to date; see above)
+
 * check_fts_update_log (monitors for whether full-text search updates
   are being processed)
 
 Standard server monitoring:
 
-* check_debian_packages
+* check_website_response.sh (standard HTTP check)
 
-Contributions on making it easier to monitor Zulip and maintain it in
-production, e.g.  https://github.com/zulip/zulip/issues/371, are very
-welcome!
+* check_debian_packages (checks apt repository is up to date)
+
+If you're using these plugins, bug reports and pull requests to make
+it easier to monitor Zulip and maintain it in production are
+encouraged!
 
 ### Scalability of Zulip
 
