@@ -5,7 +5,6 @@ class zulip_internal::base {
                         "openssh-server",
                         "mosh",
                         # Monitoring
-                        "nagios-plugins-basic",
                         "munin-node",
                         "munin-plugins-extra" ,
                         # Security
