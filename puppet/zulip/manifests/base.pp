@@ -83,4 +83,14 @@ class zulip::base {
     group  => 'zulip',
     mode   => 640,
   }
+
+  file { "/usr/lib/nagios/plugins/zulip_base":
+    require => Package[nagios-plugins-basic],
+    recurse => true,
+    purge => true,
+    owner => "root",
+    group => "root",
+    mode => 755,
+    source => "puppet:///modules/zulip/nagios_plugins/zulip_base",
+  }
 }
