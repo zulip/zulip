@@ -63,7 +63,7 @@ Copyright: 2006 Otheus Shelling
 License: GPL-2.0
 Comment: Not linked.
 
-Files: puppet/zulip_internal/files/nagios_plugins/check_debian_packages
+Files: puppet/zulip/files/nagios_plugins/zulip_base/check_debian_packages
 Copyright: 2005 Francesc Guasch
 License: GPL-2.0
 Comment: Not linked.
