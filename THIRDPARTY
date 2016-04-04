@@ -72,7 +72,7 @@ Files: puppet/zulip/files/nagios_plugins/zulip_postgres_appdb/check_postgres.pl
 Copyright: 2007-2015 Greg Sabino Mullane
 License: BSD-2-Clause
 
-Files: puppet/zulip_internal/files/nagios_plugins/check_website_response.sh
+Files: puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_response.sh
 Copyright: 2011 Chris Freeman
 License: GPL-2.0
 
