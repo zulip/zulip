@@ -874,19 +874,14 @@ class YoHookTests(AuthedTestCase):
         api_key = self.get_api_key(email)
         body = ""
 
-        stream = "YoApp"
-        topic = "Yo!%20Notification"
+        email = "hamlet@zulip.com"
         sender = "IAGO"
         ip = "127.0.0.1"
-        url = "/api/v1/external/yo?stream=%s&topic=%s&api_key=%s&username=%s&user_ip=%s" % (stream, topic, api_key, sender, ip)
-        self.subscribe_to_stream(email, stream)
+        url = "/api/v1/external/yo?email=%s&api_key=%s&username=%s&user_ip=%s" % (email, api_key, sender, ip)
 
         self.client.get(url,
                          body,
-                         stream_name=stream,
                          content_type="application/x-www-form-urlencoded")
 
         msg = Message.objects.filter().order_by('-id')[0]
-        u'Author: josh_mandel\nBuild status: Passed :thumbsup:\nDetails: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)'
-        self.assertEqual(msg.subject, u"Yo! Notification")
         self.assertEqual(msg.content, (u"Yo from IAGO"))
