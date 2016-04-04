@@ -10,6 +10,8 @@ class zulip::base {
                      "ipython",
                      # Used in scripts
                      "netcat",
+                     # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
+                     "nagios-plugins-basic",
                      ]
   package { $base_packages: ensure => "installed" }
 
