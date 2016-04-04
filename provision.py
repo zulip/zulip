@@ -11,37 +11,8 @@ from zulip_tools import run
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
         "trusty",
+        "xenial",
     ],
-}
-
-APT_DEPENDENCIES = {
-    "trusty": [
-        "closure-compiler",
-        "libfreetype6-dev",
-        "libffi-dev",
-        "memcached",
-        "rabbitmq-server",
-        "libldap2-dev",
-        "redis-server",
-        "postgresql-server-dev-all",
-        "libmemcached-dev",
-        "postgresql-9.3",
-        "python-dev",
-        "hunspell-en-us",
-        "nodejs",
-        "nodejs-legacy",
-        "python-virtualenv",
-        "supervisor",
-        "git",
-        "npm",
-        "yui-compressor",
-        "wget",
-        "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
-        "puppet",               # Used by lint-all
-        "gettext",              # Used by makemessages i18n
-        "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
-        "netcat",               # Used for flushing memcached
-    ]
 }
 
 VENV_PATH = "/srv/zulip-venv"
@@ -72,8 +43,45 @@ if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor
 
 POSTGRES_VERSION_MAP = {
     "trusty": "9.3",
+    "xenial": "9.5",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
+
+UBUNTU_COMMON_APT_DEPENDENCIES = [
+    "closure-compiler",
+    "libfreetype6-dev",
+    "libffi-dev",
+    "memcached",
+    "rabbitmq-server",
+    "libldap2-dev",
+    "redis-server",
+    "postgresql-server-dev-all",
+    "libmemcached-dev",
+    "python-dev",
+    "hunspell-en-us",
+    "nodejs",
+    "nodejs-legacy",
+    "python-virtualenv",
+    "supervisor",
+    "git",
+    "npm",
+    "yui-compressor",
+    "wget",
+    "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
+    "puppet",               # Used by lint-all
+    "gettext",              # Used by makemessages i18n
+    "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
+    "netcat",               # Used for flushing memcached
+]
+
+APT_DEPENDENCIES = {
+    "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
+        "postgresql-9.3",
+    ],
+    "xenial": UBUNTU_COMMON_APT_DEPENDENCIES + [
+        "postgresql-9.5",
+    ],
+}
 
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
