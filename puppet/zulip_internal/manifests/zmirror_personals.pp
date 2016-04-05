@@ -42,6 +42,16 @@ class zulip_internal::zmirror_personals {
     source => "puppet:///modules/zulip_internal/cron.d/test_zephyr_personal_mirrors",
   }
 
+  file { "/usr/lib/nagios/plugins/zulip_zephyr_mirror":
+    require => Package[nagios-plugins-basic],
+    recurse => true,
+    purge => true,
+    owner => "root",
+    group => "root",
+    mode => 755,
+    source => "puppet:///modules/zulip_internal/nagios_plugins/zulip_zephyr_mirror",
+  }
+
   # TODO: Do the rest of our setup, which includes at least:
   # Building patched libzephyr4-krb5 from davidben's roost branch and installing that
   #  (to add ZLoadSession/ZDumpSession).

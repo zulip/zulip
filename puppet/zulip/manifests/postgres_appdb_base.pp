@@ -56,5 +56,14 @@ class zulip::postgres_appdb_base {
     mode => 644,
     source => "puppet:///modules/zulip/postgresql/zulip_english.stop",
   }
+  file { "/usr/lib/nagios/plugins/zulip_postgres_appdb":
+    require => Package[nagios-plugins-basic],
+    recurse => true,
+    purge => true,
+    owner => "root",
+    group => "root",
+    mode => 755,
+    source => "puppet:///modules/zulip/nagios_plugins/zulip_postgres_appdb",
+  }
 
 }

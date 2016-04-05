@@ -133,4 +133,13 @@ class zulip::app_frontend_base {
   file { "/etc/cron.d/email-mirror":
     ensure => absent,
   }
+  file { "/usr/lib/nagios/plugins/zulip_app_frontend":
+    require => Package[nagios-plugins-basic],
+    recurse => true,
+    purge => true,
+    owner => "root",
+    group => "root",
+    mode => 755,
+    source => "puppet:///modules/zulip/nagios_plugins/zulip_app_frontend",
+  }
 }
