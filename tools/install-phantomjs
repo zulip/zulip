@@ -5,6 +5,9 @@ import sys
 import platform
 import subprocess
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from zulip_tools import run
+
 if platform.architecture()[0] == '64bit':
     phantomjs_arch = 'x86_64'
 elif platform.architecture()[0] == '32bit':
@@ -16,11 +19,11 @@ PHANTOMJS_TARBALL_BASENAME = PHANTOMJS_BASENAME + ".tar.bz2"
 PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, PHANTOMJS_TARBALL_BASENAME)
 PHANTOMJS_URL = "https://github.com/zulip/zulip-dist-phantomjs/blob/master/%s?raw=true" % (PHANTOMJS_TARBALL_BASENAME,)
 
-subprocess.check_call(["sudo", "mkdir", "-p", PHANTOMJS_PATH])
+run(["sudo", "mkdir", "-p", PHANTOMJS_PATH])
 if not os.path.exists(PHANTOMJS_TARBALL):
-    subprocess.check_call(["sudo", "curl", '-J', '-L', PHANTOMJS_URL, "-o", PHANTOMJS_TARBALL])
-    subprocess.check_call(["sudo", "tar", "-xj", "--directory", PHANTOMJS_PATH,
-                           "--file", PHANTOMJS_TARBALL])
-    subprocess.check_call(["sudo", "ln", "-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME,
-                                                             "bin", "phantomjs"),
-                           "/usr/local/bin/phantomjs"])
+    run(["sudo", "curl", '-J', '-L', PHANTOMJS_URL, "-o", PHANTOMJS_TARBALL])
+    run(["sudo", "tar", "-xj", "--directory", PHANTOMJS_PATH,
+         "--file", PHANTOMJS_TARBALL])
+    run(["sudo", "ln", "-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME,
+                                           "bin", "phantomjs"),
+         "/usr/local/bin/phantomjs"])

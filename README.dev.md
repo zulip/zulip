@@ -97,7 +97,6 @@ running:
 
 ```
 sudo apt-get update
-sudo apt-get install -y python-pbs
 python /srv/zulip/provision.py
 
 cd /srv/zulip

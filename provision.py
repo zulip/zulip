@@ -5,10 +5,8 @@ import logging
 import platform
 import subprocess
 
-try:
-    import sh
-except ImportError:
-    import pbs as sh
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from zulip_tools import run
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
@@ -95,34 +93,22 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
-
 def main():
+    run(["sudo", "apt-get", "update"])
+    run(["sudo", "apt-get", "-y", "install"] + APT_DEPENDENCIES[codename])
 
-    with sh.sudo:
-        sh.apt_get.update(**LOUD)
-
-        sh.apt_get.install(*APT_DEPENDENCIES[codename], assume_yes=True, **LOUD)
-
-    temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
-
-    sh.wget(
-        TSEARCH_URL,
-        output_document=temp_deb_path,
-        **LOUD
-    )
-
-    with sh.sudo:
-        sh.dpkg("--install", temp_deb_path, **LOUD)
+    temp_deb_path = subprocess.check_output(["mktemp", "package_XXXXXX.deb", "--tmpdir"])
+    run(["wget", "-O", temp_deb_path, TSEARCH_URL])
+    run(["sudo", "dpkg", "--install", temp_deb_path])
 
     # Install phantomjs
-    os.system("./tools/install-phantomjs")
+    run(["./tools/install-phantomjs"])
 
-    with sh.sudo:
-        sh.rm("-rf", VENV_PATH, **LOUD)
-        sh.mkdir("-p", VENV_PATH, **LOUD)
-        sh.chown("{}:{}".format(os.getuid(), os.getgid()), VENV_PATH, **LOUD)
+    run(["sudo", "rm", "-rf", VENV_PATH])
+    run(["sudo", "mkdir", "-p", VENV_PATH])
+    run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), VENV_PATH])
 
-    sh.virtualenv(VENV_PATH, **LOUD)
+    run(["virtualenv", VENV_PATH])
 
     # Add the ./tools and ./scripts/setup directories inside the repository root to
     # the system path; we'll reference them later.
@@ -145,36 +131,36 @@ def main():
     activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
     execfile(activate_this, dict(__file__=activate_this))
 
-    sh.pip.install(requirement=os.path.join(ZULIP_PATH, "requirements.txt"), **LOUD)
+    run(["pip", "install", "--requirement",
+                           os.path.join(ZULIP_PATH, "requirements.txt")])
 
-    with sh.sudo:
-        sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH, **LOUD)
+    run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     # npm install and management commands expect to be run from the root of the
     # project.
     os.chdir(ZULIP_PATH)
 
-    os.system("tools/download-zxcvbn")
-    os.system("tools/emoji_dump/build_emoji")
-    os.system("generate_secrets.py -d")
+    run(["tools/download-zxcvbn"])
+    run(["tools/emoji_dump/build_emoji"])
+    run(["scripts/setup/generate_secrets.py", "-d"])
     if "--travis" in sys.argv:
-        os.system("sudo service rabbitmq-server restart")
-        os.system("sudo service redis-server restart")
-        os.system("sudo service memcached restart")
+        run(["sudo", "service", "rabbitmq-server", "restart"])
+        run(["sudo", "service", "redis-server", "restart"])
+        run(["sudo", "service", "memcached", "restart"])
     elif "--docker" in sys.argv:
-        os.system("sudo service rabbitmq-server restart")
-        os.system("sudo pg_dropcluster --stop %s main" % (POSTGRES_VERSION,))
-        os.system("sudo pg_createcluster -e utf8 --start %s main" % (POSTGRES_VERSION,))
-        os.system("sudo service redis-server restart")
-        os.system("sudo service memcached restart")
-    sh.configure_rabbitmq(**LOUD)
-    sh.postgres_init_dev_db(**LOUD)
-    sh.do_destroy_rebuild_database(**LOUD)
-    sh.postgres_init_test_db(**LOUD)
-    sh.do_destroy_rebuild_test_database(**LOUD)
+        run(["sudo", "service", "rabbitmq-server", "restart"])
+        run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
+        run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
+        run(["sudo", "service", "redis-server", "restart"])
+        run(["sudo", "service", "memcached", "restart"])
+    run(["scripts/setup/configure-rabbitmq"])
+    run(["tools/postgres-init-dev-db"])
+    run(["tools/do-destroy-rebuild-database"])
+    run(["tools/postgres-init-test-db"])
+    run(["tools/do-destroy-rebuild-test-database"])
     # Run npm install last because it can be flaky, and that way one
     # only needs to rerun `npm install` to fix the installation.
-    sh.npm.install(**LOUD)
+    run(["npm", "install"])
     return 0
 
 if __name__ == "__main__":

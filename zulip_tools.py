@@ -5,6 +5,7 @@ import errno
 import os
 import pwd
 import shutil
+import subprocess
 import sys
 import time
 
@@ -67,3 +68,18 @@ def get_deployment_lock(error_rerun_script):
 
 def release_deployment_lock():
     shutil.rmtree(LOCK_DIR)
+
+def run(args):
+    # Output what we're doing in the `set -x` style
+    print("+ %s" % (" ".join(args)))
+    process = subprocess.Popen(args, stdout=subprocess.PIPE)
+    while True:
+        output = process.stdout.readline()
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+    rc = process.poll()
+    if rc:
+        raise subprocess.CalledProcessError(rc, args)
+    return 0
