@@ -42,6 +42,7 @@ tools/jslint/jslint.js
 api/setup.py
 api/integrations/perforce/git_p4.py
 puppet/apt/.forge-release
+puppet/puppet-common/tests/
 """.split()
 
 by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
