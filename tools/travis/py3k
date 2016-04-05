@@ -45,6 +45,11 @@ libpasteurize.fixes.fix_newstyle
 
 echo; echo "Testing for additions of Python 2 patterns we've removed as part of moving towards Python 3 compatibility."; echo
 
+if [ -n "$(git status --porcelain)" ]; then
+    echo "The repository is not clean. py3k can only be run if the repository is clean."
+    exit 1
+fi
+
 script_dir=$(dirname "$0")
 lister_path="$script_dir/../lister.py"
 python_files="$($lister_path -f py)"
