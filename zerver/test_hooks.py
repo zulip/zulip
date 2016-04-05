@@ -880,8 +880,8 @@ class YoHookTests(AuthedTestCase):
         url = "/api/v1/external/yo?email=%s&api_key=%s&username=%s&user_ip=%s" % (email, api_key, sender, ip)
 
         self.client.get(url,
-                         body,
-                         content_type="application/x-www-form-urlencoded")
+                        body,
+                        content_type="application/x-www-form-urlencoded")
 
         msg = Message.objects.filter().order_by('-id')[0]
         self.assertEqual(msg.content, (u"Yo from IAGO"))
