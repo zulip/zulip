@@ -92,8 +92,9 @@ if git grep -q '\(^\W*import StringIO\|^\W*from StringIO\)'; then
 fi
 
 echo
-if [ -z "$failed" ]; then
+if [ "$failed" == "0" ]; then
     echo "No issues detected!"
 else
     echo "Python 3 compatibility error(s) detected!  See diffs above for what you need to change."
+    exit 1
 fi
