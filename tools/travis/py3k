@@ -67,7 +67,7 @@ done
 fixer="libmodernize.fixes.fix_dict_six"
 echo "Running python 3 compatability test $fixer"
 echo "$python_files" | xargs python-modernize -f $fixer -j4 -n -w >/dev/null 2>/dev/null
-if git diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep -v from_iterable; then
+if git --no-pager diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep -v from_iterable; then
     echo
     echo "Error: the above are changes suggested by python-modernize "
     echo "to handle the list=>iterator transition in Python 3."
@@ -77,7 +77,7 @@ if git diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep -v from_it
     echo "searching through the (unfortunately very spammy) full output below:"
     echo
     # Clear the output
-    git diff
+    git --no-pager diff
     echo
     echo "That was a lot of text!  Read this output from the top for more readable details."
     git reset --hard >/dev/null
