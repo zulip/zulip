@@ -76,13 +76,13 @@ if git --no-pager diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep
     echo "does not display the full context; you can find the diff with context by "
     echo "searching through the (unfortunately very spammy) full output below:"
     echo
-    # Clear the output
     git --no-pager diff
     echo
     echo "That was a lot of text!  Read this output from the top for more readable details."
-    git reset --hard >/dev/null
     failed=1
 fi
+# Clear the output
+git reset --hard >/dev/null
 
 if git grep -q '\(^\W*import StringIO\|^\W*from StringIO\)'; then
     echo "ERROR: StringIO imports not compatible with python 2+3:"
