@@ -10,8 +10,8 @@ import ujson
 @api_key_only_webhook_view
 @has_request_variables
 def api_yo_app_webhook(request, user_profile, email=REQ(default=None), api_key=REQ(default=None),
-                             username=REQ(default='Yo Bot'), topic=REQ(default='None'),
-                             user_ip=REQ(default='None')):
+                       username=REQ(default='Yo Bot'), topic=REQ(default='None'),
+                       user_ip=REQ(default='None')):
 
     body = ('Yo from %s') % (username,)
     check_send_message(user_profile, get_client('ZulipYoWebhook'), 'private', [email], topic, body)
