@@ -150,8 +150,8 @@ function cleanup_before_reload() {
         // Free all the DOM in the main_div
         $("#main_div").empty();
 
-        // Now that the DOM is empty our beforeunload callback has been
-        // removed.
+        // Now that the DOM is empty our beforeunload callback may
+        // have been removed, so explicitly remove event queue here.
         server_events.cleanup_event_queue();
 
         // Empty the large collections

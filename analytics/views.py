@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 from __future__ import division
+from typing import *
+
 from django.db import connection
 from django.template import RequestContext, loader
 from django.utils.html import mark_safe
@@ -76,7 +78,7 @@ def get_realm_day_counts():
     rows = dictfetchall(cursor)
     cursor.close()
 
-    counts = defaultdict(dict)
+    counts = defaultdict(dict) # type: Dict[str, Dict[int, int]]
     for row in rows:
         counts[row['domain']][row['age']] = row['cnt']
 
@@ -620,7 +622,8 @@ def raw_user_activity_table(records):
     return make_table(title, cols, rows)
 
 def get_user_activity_summary(records):
-    summary = {}
+    # type: (Any) -> Any
+    summary = {} # type: Dict[str, Dict[str, Any]]
     def update(action, record):
         if action not in summary:
             summary[action] = dict(
@@ -817,8 +820,9 @@ def realm_user_summary_table(all_records, admin_emails):
 
 @zulip_internal
 def get_realm_activity(request, realm):
-    data = []
-    all_user_records = {}
+    # type: (Any, Any) -> Any
+    data = [] # type: List[Tuple[str, str]]
+    all_user_records = {} # type: Dict[str, Any]
 
     try:
         admins = get_realm(realm).get_admin_users()
@@ -860,7 +864,7 @@ def get_realm_activity(request, realm):
 def get_user_activity(request, email):
     records = get_user_activity_records_for_email(email)
 
-    data = []
+    data = [] # type: List[Tuple[str, str]]
     user_summary = get_user_activity_summary(records)
     content = user_activity_summary_table(user_summary)
 

@@ -1087,7 +1087,7 @@ class GetOldMessagesTest(AuthedTestCase):
         m = Message.objects.all().order_by('-id')[0]
         m.rendered_content = m.rendered_content_version = None
         m.content = 'test content'
-        # Use to_dict_uncached directly to avoid having to deal with memcached
+        # Use to_dict_uncached directly to avoid having to deal with remote cache
         d = m.to_dict_uncached(True)
         self.assertEqual(d['content'], '<p>test content</p>')
 

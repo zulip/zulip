@@ -40,11 +40,13 @@ APT_DEPENDENCIES = {
         "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
         "puppet",               # Used by lint-all
         "gettext",              # Used by makemessages i18n
+        "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
+        "netcat",               # Used for flushing memcached
     ]
 }
 
-VENV_PATH="/srv/zulip-venv"
-ZULIP_PATH="/srv/zulip"
+VENV_PATH = "/srv/zulip-venv"
+ZULIP_PATH = "/srv/zulip"
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
     print("Error: No Zulip git repository present at /srv/zulip!")
@@ -54,11 +56,11 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
 
 # TODO: Parse arguments properly
 if "--travis" in sys.argv or "--docker" in sys.argv:
-    ZULIP_PATH="."
+    ZULIP_PATH = "."
 
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
-TSEARCH_URL_BASE = "https://dl.dropboxusercontent.com/u/283158365/zuliposs/"
+TSEARCH_URL_PATTERN = "https://github.com/zulip/zulip-dist-tsearch-extras/raw/master/{}_{}_{}.deb?raw=1"
 TSEARCH_PACKAGE_NAME = {
     "trusty": "postgresql-9.3-tsearch-extras"
 }
@@ -82,10 +84,8 @@ def main():
 
     if platform.architecture()[0] == '64bit':
         arch = 'amd64'
-        phantomjs_arch = 'x86_64'
     elif platform.architecture()[0] == '32bit':
         arch = "i386"
-        phantomjs_arch = 'i686'
     else:
         log.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
         sys.exit(1)
@@ -103,8 +103,7 @@ def main():
     temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
 
     sh.wget(
-        "{}/{}_{}_{}.deb".format(
-            TSEARCH_URL_BASE,
+        TSEARCH_URL_PATTERN.format(
             TSEARCH_PACKAGE_NAME["trusty"],
             TSEARCH_VERSION,
             arch,
@@ -116,18 +115,8 @@ def main():
     with sh.sudo:
         sh.dpkg("--install", temp_deb_path, **LOUD)
 
-    with sh.sudo:
-        PHANTOMJS_PATH = "/srv/phantomjs"
-        PHANTOMJS_BASENAME = "phantomjs-1.9.8-linux-%s" % (phantomjs_arch,)
-        PHANTOMJS_TARBALL_BASENAME = PHANTOMJS_BASENAME + ".tar.bz2"
-        PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, PHANTOMJS_TARBALL_BASENAME)
-        PHANTOMJS_URL = "https://bitbucket.org/ariya/phantomjs/downloads/%s" % (PHANTOMJS_TARBALL_BASENAME,)
-        sh.mkdir("-p", PHANTOMJS_PATH, **LOUD)
-        if not os.path.exists(PHANTOMJS_TARBALL):
-            sh.wget(PHANTOMJS_URL, output_document=PHANTOMJS_TARBALL, **LOUD)
-        sh.tar("xj", directory=PHANTOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
-        sh.ln("-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME, "bin", "phantomjs"),
-              "/usr/local/bin/phantomjs", **LOUD)
+    # Install phantomjs
+    os.system("./tools/install-phantomjs")
 
     with sh.sudo:
         sh.rm("-rf", VENV_PATH, **LOUD)
@@ -162,10 +151,9 @@ def main():
     with sh.sudo:
         sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH, **LOUD)
 
-    # npm install and management commands expect to be run from the root of the project.
+    # npm install and management commands expect to be run from the root of the
+    # project.
     os.chdir(ZULIP_PATH)
-
-    sh.npm.install(**LOUD)
 
     os.system("tools/download-zxcvbn")
     os.system("tools/emoji_dump/build_emoji")
@@ -185,6 +173,9 @@ def main():
     sh.do_destroy_rebuild_database(**LOUD)
     sh.postgres_init_test_db(**LOUD)
     sh.do_destroy_rebuild_test_database(**LOUD)
+    # Run npm install last because it can be flaky, and that way one
+    # only needs to rerun `npm install` to fix the installation.
+    sh.npm.install(**LOUD)
     return 0
 
 if __name__ == "__main__":

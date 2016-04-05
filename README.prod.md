@@ -73,7 +73,7 @@ These instructions should be followed as root.
   ```
   wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
   tar -xf zulip-server-latest.tar.gz
-  mv zulip-server-1.3.6 /root/zulip
+  mkdir -p /root/zulip && tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
   ```
 
 (3) Run
@@ -148,8 +148,11 @@ need to do some additional setup documented in the `settings.py` template:
 
 * For Google authentication, you need to follow the configuration
   instructions around `GOOGLE_OAUTH2_CLIENT_ID` and `GOOGLE_CLIENT_ID`.
+
 * For Email authentication, you will need to follow the configuration
-  instructions around outgoing SMTP from Django.
+  instructions for outgoing SMTP from Django.  You can use `manage.py
+  send_test_email username@example.com` to test whether you've
+  successfully configured outgoing SMTP.
 
 You should be able to login now.  If you get an error, check
 `/var/log/zulip/errors.log` for a traceback, and consult the next
@@ -389,7 +392,7 @@ upgrade.
 * The Zulip upgrade process works by creating a new deployment under
   /home/zulip/deployments/ containing a complete copy of the Zulip
   server code, and then moving the symlinks at
-  `/home/zulip/deployments/current` and /root/zulip` as part of the
+  `/home/zulip/deployments/current` and `/root/zulip` as part of the
   upgrade process.  This means that if the new version isn't working,
   you can quickly downgrade to the old version by using
   `/home/zulip/deployments/<date>/scripts/restart-server` to return to
@@ -455,7 +458,7 @@ computed using a hash of avatar_salt and user's email), etc.
 they do get large on a busy server, and it's definitely
 lower-priority.
 
-### Restoration
+#### Restoration
 
 To restore from backups, the process is basically the reverse of the above:
 
@@ -487,10 +490,11 @@ that they are up to date using the Nagios plugin at:
 Contributions to more fully automate this process or make this section
 of the guide much more explicit and detailed are very welcome!
 
-### Postgres streaming replication
 
-Zulip has database configuration for doing with Postgres streaming
-replication ; you can see the configuration in these files:
+#### Postgres streaming replication
+
+Zulip has database configuration for using Postgres streaming
+replication; you can see the configuration in these files:
 
 * puppet/zulip_internal/manifests/postgres_slave.pp
 * puppet/zulip_internal/manifests/postgres_master.pp
@@ -500,17 +504,6 @@ Contribution of a step-by-step guide for setting this up (and moving
 this configuration to be available in the main `puppet/zulip/` tree)
 would be very welcome!
 
-### Using a remote postgres host
-
-This is a bit annoying to setup, but you can configure Zulip to use a
-dedicated postgres server by setting the `REMOTE_POSTGRES_HOST`
-variable in /etc/zulip/settings.py, and configuring Postgres
-certificate authentication (see
-http://www.postgresql.org/docs/9.1/static/ssl-tcp.html and
-http://www.postgresql.org/docs/9.1/static/libpq-ssl.html for
-documentation on how to set this up and deploy the certificates) to
-make the DATABASES configuration in `zproject/settings.py` work (or
-override that configuration).
 
 ### Monitoring Zulip
 
@@ -556,9 +549,9 @@ welcome!
 This section attempts to address the considerations involved with
 running Zulip with a large team (>1000 users).
 
-* We recommend using a remote postgres database (see
-  REMOTE_POSTGRES_HOST docs above) for isolation, though it is not
-  required.  In the following, we discuss a relatively simple
+* We recommend using a [remote postgres
+  database](#postgres-database-details) for isolation, though it is
+  not required.  In the following, we discuss a relatively simple
   configuration with two types of servers: application servers
   (running Django, Tornado, RabbitMQ, Redis, Memcached, etc.) and
   database servers.
@@ -689,7 +682,7 @@ we can do a responsible security announcement).
 #### Users and Bots
 
 * There are three types of users in a Zulip realm: Administrators,
-  normal users, and botsq.  Administrators have the ability to
+  normal users, and bots.  Administrators have the ability to
   deactivate and reactivate other human and bot users, delete streams,
   add/remove administrator privileges, as well as change configuration
   for the overall realm (e.g. whether an invitation is required to
@@ -863,10 +856,25 @@ hostname/DNS side of the configuration.  Suggestions for how to
 improve this SSO setup documentation are very welcome!
 
 
-Remote Postgresql database
-==========================
+Postgres database details
+=========================
 
-If you want to use a remote Postgresql database, you should configure the information about the connection with the server. You need a user called "zulip" in your database server. You can configure these options in /etc/zulip/settings.py
+#### Remote Postgres database
+
+This is a bit annoying to setup, but you can configure Zulip to use a
+dedicated postgres server by setting the `REMOTE_POSTGRES_HOST`
+variable in /etc/zulip/settings.py, and configuring Postgres
+certificate authentication (see
+http://www.postgresql.org/docs/9.1/static/ssl-tcp.html and
+http://www.postgresql.org/docs/9.1/static/libpq-ssl.html for
+documentation on how to set this up and deploy the certificates) to
+make the DATABASES configuration in `zproject/settings.py` work (or
+override that configuration).
+
+If you want to use a remote Postgresql database, you should configure
+the information about the connection with the server. You need a user
+called "zulip" in your database server. You can configure these
+options in /etc/zulip/settings.py:
 
 * REMOTE_POSTGRES_HOST: Name or IP address of the remote host
 * REMOTE_POSTGRES_SSLMODE: SSL Mode used to connect to the server, different options you can use are:
@@ -883,10 +891,101 @@ Then you should specify the password of the user zulip for the database in /etc/
 postgres_password = xxxx
 ```
 
-Finally you can stop your database in the zulip server to save some memory, you can do it with:
+Finally, you can stop your database on the Zulip server via:
 
 ```
 sudo service postgresql stop
 sudo update-rc.d postgresql disable
 ```
 
+In future versions of this feature, we'd like to implement and
+document how to the remote postgres database server itself
+automatically by using the Zulip install script with a different set
+of puppet manifests than the all-in-one feature; if you're interested
+in working on this, post to the Zulip development mailing list and we
+can give you some tips.
+
+#### Debugging postgres database issues
+
+When debugging postgres issues, in addition to the standard `pg_top`
+tool, often it can be useful to use this query:
+
+```
+SELECT procpid,waiting,query_start,current_query FROM pg_stat_activity ORDER BY procpid;
+```
+
+which shows the currently running backends and their activity. This is
+similar to the pg_top output, with the added advantage of showing the
+complete query, which can be valuable in debugging.
+
+To stop a runaway query, you can run `SELECT pg_cancel_backend(pid
+int)` or `SELECT pg_terminate_backend(pid int)` as the 'postgres'
+user. The former cancels the backend's current query and the latter
+terminates the backend process. They are implemented by sending SIGINT
+and SIGTERM to the processes, respectively.  We recommend against
+sending a Postgres process SIGKILL. Doing so will cause the database
+to kill all current connections, roll back any pending transactions,
+and enter recovery mode.
+
+#### Stopping the Zulip postgres database
+
+To start or stop postgres manually, use the pg_ctlcluster command:
+
+```
+pg_ctlcluster 9.1 [--force] main {start|stop|restart|reload}
+```
+
+By default, using stop uses "smart" mode, which waits for all clients
+to disconnect before shutting down the database. This can take
+prohibitively long. If you use the --force option with stop,
+pg_ctlcluster will try to use the "fast" mode for shutting
+down. "Fast" mode is described by the manpage thusly:
+
+  With the --force option the "fast" mode is used which rolls back all
+  active transactions, disconnects clients immediately and thus shuts
+  down cleanly. If that does not work, shutdown is attempted again in
+  "immediate" mode, which can leave the cluster in an inconsistent state
+  and thus will lead to a recovery run at the next start. If this still
+  does not help, the postmaster process is killed. Exits with 0 on
+  success, with 2 if the server is not running, and with 1 on other
+  failure conditions. This mode should only be used when the machine is
+  about to be shut down.
+
+Many database parameters can be adjusted while the database is
+running. Just modify /etc/postgresql/9.1/main/postgresql.conf and
+issue a reload. The logs will note the change.
+
+#### Debugging issues starting postgres
+
+pg_ctlcluster often doesn't give you any information on why the
+database failed to start. It may tell you to check the logs, but you
+won't find any information there. pg_ctlcluster runs the following
+command underneath when it actually goes to start Postgres:
+
+```
+/usr/lib/postgresql/9.1/bin/pg_ctl start -D /var/lib/postgresql/9.1/main -s -o  '-c config_file="/etc/postgresql/9.1/main/postgresql.conf"'
+```
+
+Since pg_ctl doesn't redirect stdout or stderr, running the above can
+give you better diagnostic information. However, you might want to
+stop Postgres and restart it using pg_ctlcluster after you've debugged
+with this approach, since it does bypass some of the work that
+pg_ctlcluster does.
+
+
+#### Postgres Vacuuming alerts
+
+The `autovac_freeze` postgres alert from `check_postgres` is
+particularly important.  This alert indicates that the age (in terms
+of number of transactions) of the oldest transaction id (XID) is
+getting close to the `autovacuum_freeze_max_age` setting.  When the
+oldest XID hits that age, Postgres will force a VACUUM operation,
+which can often lead to sudden downtime until the operation finishes.
+If it did not do this and the age of the oldest XID reached 2 billion,
+transaction id wraparound would occur and there would be data loss.
+To clear the nagios alert, perform a `VACUUM` in each indicated
+database as a database superuser (`postgres`).
+
+See
+http://www.postgresql.org/docs/9.1/static/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND
+for more details on postgres vacuuming.

@@ -17,26 +17,26 @@ import os
 import os.path
 import hashlib
 
-memcached_time_start = 0.0
-memcached_total_time = 0.0
-memcached_total_requests = 0
+remote_cache_time_start = 0.0
+remote_cache_total_time = 0.0
+remote_cache_total_requests = 0
 
-def get_memcached_time():
-    return memcached_total_time
+def get_remote_cache_time():
+    return remote_cache_total_time
 
-def get_memcached_requests():
-    return memcached_total_requests
+def get_remote_cache_requests():
+    return remote_cache_total_requests
 
-def memcached_stats_start():
-    global memcached_time_start
-    memcached_time_start = time.time()
+def remote_cache_stats_start():
+    global remote_cache_time_start
+    remote_cache_time_start = time.time()
 
-def memcached_stats_finish():
-    global memcached_total_time
-    global memcached_total_requests
-    global memcached_time_start
-    memcached_total_requests += 1
-    memcached_total_time += (time.time() - memcached_time_start)
+def remote_cache_stats_finish():
+    global remote_cache_total_time
+    global remote_cache_total_requests
+    global remote_cache_time_start
+    remote_cache_total_requests += 1
+    remote_cache_total_time += (time.time() - remote_cache_time_start)
 
 def get_or_create_key_prefix():
     if settings.TEST_SUITE:
@@ -44,7 +44,7 @@ def get_or_create_key_prefix():
         # The Python tests overwrite KEY_PREFIX on each test.
         return 'test_suite:' + str(os.getpid()) + ':'
 
-    filename = os.path.join(settings.DEPLOY_ROOT, "memcached_prefix")
+    filename = os.path.join(settings.DEPLOY_ROOT, "remote_cache_prefix")
     try:
         fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o444)
         prefix = base64.b16encode(hashlib.sha256(str(random.getrandbits(256))).digest())[:32].lower() + ':'
@@ -64,7 +64,7 @@ def get_or_create_key_prefix():
             time.sleep(0.5)
 
     if not prefix:
-        print("Could not read memcache key prefix file")
+        print("Could not read remote cache key prefix file")
         sys.exit(1)
 
     return prefix
@@ -123,24 +123,24 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
     return decorator
 
 def cache_set(key, val, cache_name=None, timeout=None):
-    memcached_stats_start()
+    remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
     return ret
 
 def cache_get(key, cache_name=None):
-    memcached_stats_start()
+    remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.get(KEY_PREFIX + key)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
     return ret
 
 def cache_get_many(keys, cache_name=None):
     keys = [KEY_PREFIX + key for key in keys]
-    memcached_stats_start()
+    remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
     return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
 
 def cache_set_many(items, cache_name=None, timeout=None):
@@ -148,21 +148,21 @@ def cache_set_many(items, cache_name=None, timeout=None):
     for key in items:
         new_items[KEY_PREFIX + key] = items[key]
     items = new_items
-    memcached_stats_start()
+    remote_cache_stats_start()
     ret = get_cache_backend(cache_name).set_many(items, timeout=timeout)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
     return ret
 
 def cache_delete(key, cache_name=None):
-    memcached_stats_start()
+    remote_cache_stats_start()
     get_cache_backend(cache_name).delete(KEY_PREFIX + key)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
 
 def cache_delete_many(items, cache_name=None):
-    memcached_stats_start()
+    remote_cache_stats_start()
     get_cache_backend(cache_name).delete_many(
         KEY_PREFIX + item for item in items)
-    memcached_stats_finish()
+    remote_cache_stats_finish()
 
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
@@ -194,14 +194,14 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
 
-    items_for_memcached = {}
+    items_for_remote_cache = {}
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
-        items_for_memcached[key] = (setter(item),)
+        items_for_remote_cache[key] = (setter(item),)
         cached_objects[key] = item
-    if len(items_for_memcached) > 0:
-        cache_set_many(items_for_memcached)
+    if len(items_for_remote_cache) > 0:
+        cache_set_many(items_for_remote_cache)
     return dict((object_id, cached_objects[cache_keys[object_id]]) for object_id in object_ids
                 if cache_keys[object_id] in cached_objects)
 
@@ -255,11 +255,11 @@ def get_stream_cache_key(stream_name, realm):
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 def update_user_profile_caches(user_profiles):
-    items_for_memcached = {}
+    items_for_remote_cache = {}
     for user_profile in user_profiles:
-        items_for_memcached[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
-        items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
-    cache_set_many(items_for_memcached)
+        items_for_remote_cache[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
+        items_for_remote_cache[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
+    cache_set_many(items_for_remote_cache)
 
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
@@ -306,9 +306,9 @@ def realm_alert_words_cache_key(realm):
 def flush_stream(sender, **kwargs):
     from zerver.models import UserProfile
     stream = kwargs['instance']
-    items_for_memcached = {}
-    items_for_memcached[get_stream_cache_key(stream.name, stream.realm)] = (stream,)
-    cache_set_many(items_for_memcached)
+    items_for_remote_cache = {}
+    items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm)] = (stream,)
+    cache_set_many(items_for_remote_cache)
 
     if kwargs['update_fields'] is None or 'name' in kwargs['update_fields'] and \
        UserProfile.objects.filter(

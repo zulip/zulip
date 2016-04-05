@@ -52,7 +52,7 @@ class NonClosingPool(sqlalchemy.pool.NullPool):
         pass
 
     def recreate(self):
-        return self.__class__(creator=self._creator,
+        return self.__class__(creator=self._creator, # type: ignore # __class__
                               recycle=self._recycle,
                               use_threadlocal=self._use_threadlocal,
                               reset_on_return=self._reset_on_return,
@@ -548,11 +548,11 @@ def get_old_messages_backend(request, user_profile,
     # 'user_messages' dictionary maps each message to the user's
     # UserMessage object for that message, which we will attach to the
     # rendered message dict before returning it.  We attempt to
-    # bulk-fetch rendered message dicts from memcached using the
+    # bulk-fetch rendered message dicts from remote cache using the
     # 'messages' list.
-    search_fields = dict()
-    message_ids = []
-    user_message_flags = {}
+    search_fields = dict() # type: Dict[int, Dict[str, str]]
+    message_ids = [] # type: List[int]
+    user_message_flags = {} # type: Dict[int, List[str]]
     if include_history:
         message_ids = [row[0] for row in query_result]
 

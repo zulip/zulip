@@ -8,7 +8,8 @@
 // dependencies (except _).
 
 add_dependencies({
-    muting: 'js/muting.js'
+    muting: 'js/muting.js',
+    unread: 'js/unread.js'
 });
 
 var stream_data = require('js/stream_data.js');

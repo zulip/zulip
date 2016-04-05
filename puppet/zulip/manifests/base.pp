@@ -5,8 +5,11 @@ class zulip::base {
                      # Dependencies of our API
                      "python-requests",
                      "python-simplejson",
+                     "python-typing",
                      # For development/debugging convenience
                      "ipython",
+                     # Used in scripts
+                     "netcat",
                      ]
   package { $base_packages: ensure => "installed" }
 
