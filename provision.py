@@ -96,7 +96,7 @@ def main():
     with sh.sudo:
         sh.apt_get.update(**LOUD)
 
-        sh.apt_get.install(*APT_DEPENDENCIES["trusty"], assume_yes=True, **LOUD)
+        sh.apt_get.install(*APT_DEPENDENCIES[codename], assume_yes=True, **LOUD)
 
     temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
 
