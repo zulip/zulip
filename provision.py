@@ -67,15 +67,18 @@ if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
 
+POSTGRES_VERSION_MAP = {
+    "trusty": "9.3",
+}
+POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
+
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
 TSEARCH_URL_PATTERN = "https://github.com/zulip/zulip-dist-tsearch-extras/raw/master/{}_{}_{}.deb?raw=1"
-TSEARCH_PACKAGE_NAME = {
-    "trusty": "postgresql-9.3-tsearch-extras"
-}
+TSEARCH_PACKAGE_NAME = "postgresql-%s-tsearch-extras" % (POSTGRES_VERSION,)
 TSEARCH_VERSION = "0.1.3"
-# TODO: this path is platform-specific!
-TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/9.3/tsearch_data/"
+TSEARCH_URL = TSEARCH_URL_PATTERN.format(TSEARCH_PACKAGE_NAME, TSEARCH_VERSION, arch)
+TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
     "puppet",
@@ -98,11 +101,7 @@ def main():
     temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
 
     sh.wget(
-        TSEARCH_URL_PATTERN.format(
-            TSEARCH_PACKAGE_NAME["trusty"],
-            TSEARCH_VERSION,
-            arch,
-        ),
+        TSEARCH_URL,
         output_document=temp_deb_path,
         **LOUD
     )
@@ -159,8 +158,8 @@ def main():
         os.system("sudo service memcached restart")
     elif "--docker" in sys.argv:
         os.system("sudo service rabbitmq-server restart")
-        os.system("sudo pg_dropcluster --stop 9.3 main")
-        os.system("sudo pg_createcluster -e utf8 --start 9.3 main")
+        os.system("sudo pg_dropcluster --stop %s main" % (POSTGRES_VERSION,))
+        os.system("sudo pg_createcluster -e utf8 --start %s main" % (POSTGRES_VERSION,))
         os.system("sudo service redis-server restart")
         os.system("sudo service memcached restart")
     sh.configure_rabbitmq(**LOUD)
