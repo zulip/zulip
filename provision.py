@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import platform
+import subprocess
 
 try:
     import sh
@@ -62,7 +63,11 @@ else:
     logging.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
     sys.exit(1)
 
-vendor, version, codename = platform.dist()
+# Ideally we wouldn't need to install a dependency here, before we
+# know the codename.
+subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
+vendor = subprocess.check_output(["lsb_release", "-is"]).strip()
+codename = subprocess.check_output(["lsb_release", "-cs"]).strip()
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
