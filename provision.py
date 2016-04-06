@@ -103,9 +103,6 @@ def main():
     run(["wget", "-O", temp_deb_path, TSEARCH_URL])
     run(["sudo", "dpkg", "--install", temp_deb_path])
 
-    # Install phantomjs
-    run(["./tools/install-phantomjs"])
-
     run(["sudo", "rm", "-rf", VENV_PATH])
     run(["sudo", "mkdir", "-p", VENV_PATH])
     run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), VENV_PATH])
@@ -142,6 +139,7 @@ def main():
     # project.
     os.chdir(ZULIP_PATH)
 
+    run(["tools/install-phantomjs"])
     run(["tools/download-zxcvbn"])
     run(["tools/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
