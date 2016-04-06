@@ -72,13 +72,9 @@ def release_deployment_lock():
 def run(args):
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(args)))
-    process = subprocess.Popen(args, stdout=subprocess.PIPE)
-    while True:
-        output = process.stdout.readline()
-        if output == '' and process.poll() is not None:
-            break
-        if output:
-            print(output.strip())
+    process = subprocess.Popen(args)
+    while process.poll() is None:
+        pass
     rc = process.poll()
     if rc:
         raise subprocess.CalledProcessError(rc, args)

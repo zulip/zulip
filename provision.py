@@ -5,6 +5,8 @@ import logging
 import platform
 import subprocess
 
+os.environ["PYTHONUNBUFFERED"] = "y"
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from zulip_tools import run
 
