@@ -15,7 +15,7 @@ client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES
 def _rules_for_user(user):
     if user.rate_limits != "":
-        return [[int(l) for l in limit.split(':')] for limit in user.rate_limits.split(',')]
+        return [tuple(int(l) for l in limit.split(':')) for limit in user.rate_limits.split(',')]
     return rules
 
 def redis_key(user, domain):
