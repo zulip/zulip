@@ -54,6 +54,19 @@ if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
 
+if platform.architecture()[0] == '64bit':
+    arch = 'amd64'
+elif platform.architecture()[0] == '32bit':
+    arch = "i386"
+else:
+    logging.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
+    sys.exit(1)
+
+vendor, version, codename = platform.dist()
+if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
+    logging.critical("Unsupported platform: {} {}".format(vendor, codename))
+    sys.exit(1)
+
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
 TSEARCH_URL_PATTERN = "https://github.com/zulip/zulip-dist-tsearch-extras/raw/master/{}_{}_{}.deb?raw=1"
@@ -76,19 +89,6 @@ LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 
 def main():
-    if platform.architecture()[0] == '64bit':
-        arch = 'amd64'
-    elif platform.architecture()[0] == '32bit':
-        arch = "i386"
-    else:
-        logging.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
-        sys.exit(1)
-
-    vendor, version, codename = platform.dist()
-
-    if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
-        logging.critical("Unsupported platform: {} {}".format(vendor, codename))
-        sys.exit(1)
 
     with sh.sudo:
         sh.apt_get.update(**LOUD)
