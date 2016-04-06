@@ -88,6 +88,7 @@ def main():
 
     if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
         logging.critical("Unsupported platform: {} {}".format(vendor, codename))
+        sys.exit(1)
 
     with sh.sudo:
         sh.apt_get.update(**LOUD)
