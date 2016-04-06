@@ -39,8 +39,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 $provision_script = <<SCRIPT
 set -x
 set -e
-sudo apt-get update
-sudo apt-get install -y python-pbs
 /usr/bin/python /srv/zulip/provision.py
 SCRIPT
 
