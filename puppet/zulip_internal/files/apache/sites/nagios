@@ -1,20 +1,6 @@
 <VirtualHost *:80>
-    ServerName nagios.humbughq.com
-    Redirect permanent / https://nagios.zulip.net/
-</VirtualHost>
-<VirtualHost *:80>
     ServerName nagios.zulip.net
     Redirect permanent / https://nagios.zulip.net/
-</VirtualHost>
-<VirtualHost *:443>
-    ServerName nagios.humbughq.com
-    Redirect permanent / https://nagios.zulip.net/
-    SSLEngine on
-    SSLCertificateFile /etc/ssl/certs/nagios.humbughq.com.crt
-    SSLCertificateKeyFile /etc/ssl/private/nagios.key
-
-    SSLCertificateChainFile /etc/ssl/certs/sub.class1.server.ca.pem
-    SSLCACertificateFile /etc/ssl/certs/ca.pem
 </VirtualHost>
 
 <VirtualHost *:443>
