@@ -76,20 +76,18 @@ LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 
 def main():
-    log = logging.getLogger("zulip-provisioner")
-
     if platform.architecture()[0] == '64bit':
         arch = 'amd64'
     elif platform.architecture()[0] == '32bit':
         arch = "i386"
     else:
-        log.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
+        logging.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
         sys.exit(1)
 
     vendor, version, codename = platform.dist()
 
     if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
-        log.critical("Unsupported platform: {} {}".format(vendor, codename))
+        logging.critical("Unsupported platform: {} {}".format(vendor, codename))
 
     with sh.sudo:
         sh.apt_get.update(**LOUD)
