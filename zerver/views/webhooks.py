@@ -113,7 +113,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
                                                      payload['ref'], payload['commits'],
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
-                                                     payload['pusher']['name'],
+                                                     payload['head_commit']['committer']['email'],
                                                      forced=payload['forced'],
                                                      created=payload['created'])
     elif event == 'commit_comment':
@@ -230,6 +230,10 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
     for commit in truncated_commits:
         short_id = commit['id'][:7]
         (short_commit_msg, _, _) = commit['message'].partition("\n")
+        svn_rev = re.search('@\d+', commit['message'])
+        svn_rev = svn_rev and svn_rev.group() or ''
+        short_id += svn_rev
+
         content += "* [%s](%s): %s\n" % (short_id, commit['url'],
                                          short_commit_msg)
     if (num_commits > max_commits):
@@ -1016,6 +1020,8 @@ def api_travis_webhook(request, user_profile, stream=REQ(default='travis'), topi
 
     good_status = ['Passed', 'Fixed']
     bad_status  = ['Failed', 'Broken', 'Still Failing']
+    svn_rev = ''.join(re.findall('@\d+', message['message']))
+
     emoji = ''
     if message_type in good_status:
         emoji = ':thumbsup:'
@@ -1027,11 +1033,12 @@ def api_travis_webhook(request, user_profile, stream=REQ(default='travis'), topi
     build_url = message['build_url']
 
     template = (
+        u'Revision: %s\n'
         u'Author: %s\n'
         u'Build status: %s %s\n'
         u'Details: [changes](%s), [build log](%s)')
 
-    body = template % (author, message_type, emoji, changes, build_url)
+    body = template % (svn_rev, author, message_type, emoji, changes, build_url)
 
     check_send_message(user_profile, get_client('ZulipTravisWebhook'), 'stream', [stream], topic, body)
     return json_success()
