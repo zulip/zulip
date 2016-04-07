@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 # This script is only meant to be run from run-dev.py, which sets up the
 # environment correctly and passes the correct arguments for manage.py.  It is a

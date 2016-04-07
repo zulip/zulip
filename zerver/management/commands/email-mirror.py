@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 """
 Forward messages sent to the configured email gateway to Zulip.

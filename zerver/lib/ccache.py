@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
 # https://github.com/davidben/webathena, which has the following
 # license:

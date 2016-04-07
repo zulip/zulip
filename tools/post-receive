@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 #
 # Zulip's post-receive hook.  There is a symlink
 #   from /home/git/repositories/eng/zulip.git/hooks/post-receive
