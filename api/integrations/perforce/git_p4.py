@@ -33,7 +33,7 @@ import stat
 try:
     from subprocess import CalledProcessError
 except ImportError:
-    # from python2.7:subprocess.py
+    # from python:subprocess.py
     # Exception classes used by this module.
     class CalledProcessError(Exception):
         """This exception is raised when a process run by check_call() returns

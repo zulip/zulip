@@ -19,9 +19,9 @@ streams.
 
 For example:
 
-python2.7 manage.py set_default_streams --domain=foo.com --streams=foo,bar,baz
-python2.7 manage.py set_default_streams --domain=foo.com --streams="foo,bar,baz with space"
-python2.7 manage.py set_default_streams --domain=foo.com --streams=
+python manage.py set_default_streams --domain=foo.com --streams=foo,bar,baz
+python manage.py set_default_streams --domain=foo.com --streams="foo,bar,baz with space"
+python manage.py set_default_streams --domain=foo.com --streams=
 """
 
     option_list = BaseCommand.option_list + (

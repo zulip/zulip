@@ -75,7 +75,7 @@ def run_test(test):
             print("Actual test to be run is %s, but import failed." % (actual_test_name,))
             print("Importing test module directly to generate clearer traceback:")
             try:
-                command = ["python2.7", "-c", "import %s" % (actual_test_name,)]
+                command = ["python", "-c", "import %s" % (actual_test_name,)]
                 print("Import test command: `%s`" % (' '.join(command),))
                 subprocess.check_call(command)
             except subprocess.CalledProcessError:
