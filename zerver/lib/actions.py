@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
-from typing import *
+from typing import Tuple
 
 from django.conf import settings
 from django.core import validators

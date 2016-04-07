@@ -7,7 +7,7 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 
 import pprint
 import ujson
-from typing import Dict
+from typing import Dict, Any
 
 
 PAGER_DUTY_EVENT_NAMES = {

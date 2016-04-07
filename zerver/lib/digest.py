@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import *
+from typing import Tuple
 
 from collections import defaultdict
 import datetime

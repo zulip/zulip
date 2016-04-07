@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import *
+from typing import Any
 
 from django.conf import settings
 from django.utils.importlib import import_module
