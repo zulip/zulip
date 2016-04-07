@@ -29,7 +29,7 @@ This script can be used via two mechanisms:
      environment variable.
 
      In Postfix, you can express that via an /etc/aliases entry like this:
-         |/usr/bin/env python2.7 /home/zulip/deployments/current/manage.py email-mirror
+         |/usr/bin/env python /home/zulip/deployments/current/manage.py email-mirror
 """
 
 
