@@ -10,7 +10,7 @@ from zerver.lib.actions import do_change_password, \
     do_change_enter_sends, do_change_enable_sounds, \
     do_change_enable_offline_email_notifications, do_change_enable_digest_emails, \
     do_change_enable_offline_push_notifications, do_change_autoscroll_forever, \
-    do_change_default_desktop_notifications, \
+    do_change_default_desktop_notifications, do_change_stream_listing, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, do_change_left_side_userlist
 from zerver.lib.avatar import avatar_url
@@ -31,7 +31,9 @@ def json_change_ui_settings(request, user_profile,
                             autoscroll_forever=REQ(validator=check_bool,
                                                    default=None),
                             default_desktop_notifications=REQ(validator=check_bool,
-                                                              default=None)):
+                                                              default=None),
+                            sort_streams_on_activity=REQ(validator=check_bool,
+                                                         default=None),):
 
     result = {}
 
@@ -44,6 +46,11 @@ def json_change_ui_settings(request, user_profile,
             user_profile.default_desktop_notifications != default_desktop_notifications:
         do_change_default_desktop_notifications(user_profile, default_desktop_notifications)
         result['default_desktop_notifications'] = default_desktop_notifications
+
+    if sort_streams_on_activity is not None and \
+            user_profile.sort_streams_on_activity != sort_streams_on_activity:
+        do_change_stream_listing(user_profile, sort_streams_on_activity)
+        result['sort_streams_on_activity'] = sort_streams_on_activity
 
     return json_success(result)
 

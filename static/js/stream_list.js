@@ -29,10 +29,20 @@ exports.build_stream_list = function () {
 
     streams.sort(function (a, b) {
         if (sort_recent) {
-            if (recent_subjects.has(b) && ! recent_subjects.has(a)) {
-                return 1;
-            } else if (! recent_subjects.has(b) && recent_subjects.has(a)) {
-                return -1;
+            if (!page_params.sort_streams_on_activity) {
+                if (recent_subjects.has(b) && ! recent_subjects.has(a)) {
+                    return 1;
+                } else if (! recent_subjects.has(b) && recent_subjects.has(a)) {
+                    return -1;
+                }
+            } else {
+                if (recent_subjects.has(b) && ! recent_subjects.has(a)) {
+                    return 1;
+                } else if (! recent_subjects.has(b) && recent_subjects.has(a)) {
+                    return -1;
+                } else if (recent_subjects.has(b) && recent_subjects.has(a)) {
+                    return recent_subjects.get(b)[0].timestamp - recent_subjects.get(a)[0].timestamp;
+                }
             }
         }
         return util.strcmp(a, b);
