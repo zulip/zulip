@@ -34,12 +34,8 @@ Ubuntu 15.04 or newer
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
   ```
-<<<<<<< HEAD
   You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
-
-=======
   
->>>>>>> 20a9cb6... Remove line spacing.
 Ubuntu 14.04
 ------------
 *  [download a newer  version of Vagrant][vagrant-dl], and then do the following:
@@ -50,9 +46,7 @@ Ubuntu 14.04
   ```
   You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
-<<<<<<< HEAD
 Other Linux (kernel above 3.12):
->>>>>>> 20a9cb6... Remove line spacing.
 --------------------------------
 * [follow the Vagrant LXC installation instructions][vagrant-lxc] to get 
   Vagrant with LXC for your platform.
@@ -75,22 +69,15 @@ Windows
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
-<<<<<<< HEAD
 
 Universal Vagrant instructions
 -------------------------------
 >>>>>>> cf8a322... Bold headings for OS versions Vagrant instructions
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal to install the development server.  This
-will take a long time on the first run and also fail to fully execute
-on Windows (we're working on it). Vagrant needs to download the Ubuntu
+will take a long time on the first run - vagrant needs to download the Ubuntu
 Trusty base image, but later you can run `vagrant destroy` and then
 `vagrant up` again to rebuild the environment and it will be much faster. 
-
-On Windows,  run `npm install --no-bin-links`, and scroll to the
-"All Systems" instructions located way far below. Start from after
-`npm install`. The problem is symbolic linking is being attempted 
-on Windows and crashes `vagrant up`. 
 
 Once `vagrant up` finshes, you can run the development server as follows:
 
