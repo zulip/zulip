@@ -7,6 +7,7 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 
 import pprint
 import ujson
+from typing import Dict
 
 
 PAGER_DUTY_EVENT_NAMES = {
@@ -23,7 +24,7 @@ def build_pagerduty_formatdict(message):
     # Normalize the message dict, after this all keys will exist. I would
     # rather some strange looking messages than dropping pages.
 
-    format_dict = {}
+    format_dict = {} # type: Dict[str, Any]
     format_dict['action'] = PAGER_DUTY_EVENT_NAMES[message['type']]
 
     format_dict['incident_id'] = message['data']['incident']['id']
