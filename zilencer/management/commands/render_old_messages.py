@@ -10,7 +10,7 @@ import time
 class Command(BaseCommand):
     help = """Render all historical messages that haven't been rendered yet.
 
-Usage: python2.7 manage.py render_old_messages"""
+Usage: python manage.py render_old_messages"""
 
     def handle(self, *args, **options):
         total_rendered = 0

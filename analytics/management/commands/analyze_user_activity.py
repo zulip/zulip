@@ -44,7 +44,7 @@ It will correctly not count server-initiated reloads in the activity statistics.
 
 The duration flag can be used to control how many days to show usage duration for
 
-Usage: python2.7 manage.py analyze_user_activity [--realm=zulip.com] [--date=2013-09-10] [--duration=1]
+Usage: python manage.py analyze_user_activity [--realm=zulip.com] [--date=2013-09-10] [--duration=1]
 
 By default, if no date is selected 2013-09-10 is used. If no realm is provided, information
 is shown for all realms"""

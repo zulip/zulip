@@ -4,12 +4,12 @@ set -xe
 # Change to root directory of the checkout that we're running from
 cd "$(dirname "$0")/../.."
 
-python2.7 manage.py checkconfig
+python manage.py checkconfig
 
-python2.7 manage.py migrate --noinput
-python2.7 manage.py createcachetable third_party_api_results
+python manage.py migrate --noinput
+python manage.py createcachetable third_party_api_results
 
-if ! python2.7 manage.py initialize_voyager_db; then
+if ! python manage.py initialize_voyager_db; then
     set +x
     echo
     echo -e "\033[32mPopulating default database failed."

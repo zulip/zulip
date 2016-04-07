@@ -35,7 +35,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         if options["domain"] is None or options["stream"] is None or \
                 (options["users"] is None and options["all_users"] is None):
-            self.print_help("python2.7 manage.py", "remove_users_from_stream")
+            self.print_help("python manage.py", "remove_users_from_stream")
             exit(1)
 
         realm = get_realm(options["domain"])

@@ -23,7 +23,7 @@ class Command(BaseCommand):
 This command should be used only on a newly created, empty Zulip instance to
 import a database dump from one or more JSON files.
 
-Usage: python2.7 manage.py import_dump [--destroy-rebuild-database] [--chunk-size=%s] <json file name> [<json file name>...]""" % (DEFAULT_CHUNK_SIZE,)
+Usage: python manage.py import_dump [--destroy-rebuild-database] [--chunk-size=%s] <json file name> [<json file name>...]""" % (DEFAULT_CHUNK_SIZE,)
 
     option_list = BaseCommand.option_list + (
         make_option('--destroy-rebuild-database',
