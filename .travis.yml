@@ -11,6 +11,7 @@ env:
   - TEST_SUITE=backend
   - TEST_SUITE=production
   - TEST_SUITE=py3k
+  - TEST_SUITE=mypy
 language: python
 python:
   - "2.7"

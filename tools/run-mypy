@@ -1,0 +1,49 @@
+#!/usr/bin/env python2.7
+from __future__ import print_function
+from __future__ import absolute_import
+import os
+import re
+import sys
+import optparse
+import subprocess
+import traceback
+
+import lister
+
+
+targets = """
+zproject
+bots
+zilencer
+analytics
+corporate
+confirmation
+tools
+scripts/setup
+scripts/lib
+*.py
+api
+""".split()
+
+
+# exclude commands
+exclude_patterns = """
+test
+fenced_code
+settings
+""".split()
+
+by_lang = lister.list_files(targets=targets, modified_only=False, use_shebang=True,
+    ftypes=['py'], group_by_ftype=True, exclude_patterns=exclude_patterns)
+
+# mypy command to run silently
+result = subprocess.Popen(["mypy", "--silent", "--py2", "--check-untyped-defs"] + by_lang['py'],
+    stdout = subprocess.PIPE,
+    stderr = subprocess.PIPE)
+
+failed = False
+for pipe in (result.stdout, result.stderr):
+   for ln in pipe:
+       sys.stdout.write(ln)
+       failed = True
+sys.exit(1 if failed else 0)
