@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
-from typing import *
+from typing import Any, Dict, List, Tuple
 
 from django.db import connection
 from django.template import RequestContext, loader

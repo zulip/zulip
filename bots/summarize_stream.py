@@ -1,5 +1,5 @@
 from __future__ import print_function
-from typing import *
+from typing import Any, Dict, List
 # This is hacky code to analyze data on our support stream.  The main
 # reusable bits are get_recent_messages and get_words.
 

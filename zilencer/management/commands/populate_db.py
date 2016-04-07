@@ -30,7 +30,7 @@ import glob
 import os
 from optparse import make_option
 from six.moves import range
-from typing import *
+from typing import Any, Dict, Set, Tuple
 
 settings.TORNADO_SERVER = None
 

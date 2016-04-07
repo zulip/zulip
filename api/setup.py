@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-from typing import *
+from typing import Any, Generator, List, Tuple
 
 import os
 import sys
