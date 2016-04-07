@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import *
+from typing import Any
 
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zerver.models or we'd have an import

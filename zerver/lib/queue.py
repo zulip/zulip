@@ -11,7 +11,7 @@ import atexit
 from collections import defaultdict
 
 from zerver.lib.utils import statsd
-from typing import *
+from typing import Any, Callable
 
 # This simple queuing library doesn't expose much of the power of
 # rabbitmq/pika's queuing system; its purpose is to just provide an
