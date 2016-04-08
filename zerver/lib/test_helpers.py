@@ -1,8 +1,11 @@
 from __future__ import absolute_import
+from typing import Any, Callable, Generator, Iterable, Tuple
+
 from django.test import TestCase
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
+from zerver.lib.handlers import allocate_handler_id
 from zerver.lib import cache
 from zerver.lib import event_queue
 from zerver.worker import queue_processors
@@ -38,10 +41,11 @@ from six.moves import urllib
 from contextlib import contextmanager
 import six
 
-API_KEYS = {}
+API_KEYS = {} # type: Dict[str, str]
 
 @contextmanager
 def stub(obj, name, f):
+    # type: (Any, str, Callable[..., Any]) -> Generator[None, None, None]
     old_f = getattr(obj, name)
     setattr(obj, name, f)
     yield
@@ -49,13 +53,15 @@ def stub(obj, name, f):
 
 @contextmanager
 def simulated_queue_client(client):
+    # type: (Any) -> Generator[None, None, None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
-    queue_processors.SimpleQueueClient = client
+    queue_processors.SimpleQueueClient = client # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
-    queue_processors.SimpleQueueClient = real_SimpleQueueClient
+    queue_processors.SimpleQueueClient = real_SimpleQueueClient # type: ignore # https://github.com/JukkaL/mypy/issues/1152
 
 @contextmanager
 def tornado_redirected_to_list(lst):
+    # type: (List) -> Generator[None, None, None]
     real_event_queue_process_notification = event_queue.process_notification
     event_queue.process_notification = lst.append
     yield
@@ -63,6 +69,7 @@ def tornado_redirected_to_list(lst):
 
 @contextmanager
 def simulated_empty_cache():
+    # type: () -> Generator[List[Tuple[str, str, str]], None, None]
     cache_queries = []
     def my_cache_get(key, cache_name=None):
         cache_queries.append(('get', key, cache_name))
@@ -82,6 +89,7 @@ def simulated_empty_cache():
 
 @contextmanager
 def queries_captured():
+    # type: () -> Generator[List[Dict[str, str]], None, None]
     '''
     Allow a user to capture just the queries executed during
     the with statement.
@@ -105,17 +113,17 @@ def queries_captured():
     old_executemany = TimeTrackingCursor.executemany
 
     def cursor_execute(self, sql, params=()):
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)
-    TimeTrackingCursor.execute = cursor_execute
+        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.execute = cursor_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self, sql, params=()):
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)
-    TimeTrackingCursor.executemany = cursor_executemany
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.executemany = cursor_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
 
-    TimeTrackingCursor.execute = old_execute
-    TimeTrackingCursor.executemany = old_executemany
+    TimeTrackingCursor.execute = old_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
 
 def find_key_by_email(address):
@@ -158,7 +166,7 @@ class DummyObject(object):
 class DummyTornadoRequest(object):
     def __init__(self):
         self.connection = DummyObject()
-        self.connection.stream = DummyStream()
+        self.connection.stream = DummyStream() # type: ignore # monkey-patching here
 
 class DummyHandler(object):
     def __init__(self, assert_callback):
@@ -194,7 +202,7 @@ class POSTRequestMock(object):
         self.user = user_profile
         self._tornado_handler = DummyHandler(assert_callback)
         self.session = DummySession()
-        self._log_data = {}
+        self._log_data = {} # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
 
 class AuthedTestCase(TestCase):

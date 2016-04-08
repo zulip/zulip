@@ -16,11 +16,10 @@ import sys
 import django
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
-
-django.setup()
-
 sys.path.append('/home/zulip/deployments/current')
 sys.path.append('/home/zulip/deployments/current/zerver')
+
+django.setup()
 
 from zerver.models import UserActivity
 

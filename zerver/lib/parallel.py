@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
+from typing import Any, Generator, Iterable, Tuple
 
 import os
 import pty
@@ -7,7 +8,8 @@ import sys
 import errno
 
 def run_parallel(job, data, threads=6):
-    pids = {}
+    # type: (Any, Iterable[Any], int) -> Generator[Tuple[int, Any], None, None]
+    pids = {} # type: Dict[int, Any]
 
     def wait_for_one():
         while True:

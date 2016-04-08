@@ -1,8 +1,9 @@
 import logging
 from zerver.middleware import async_request_restart
+from typing import Any
 
 current_handler_id = 0
-handlers = {}
+handlers = {} # type: Dict[int, Any] # TODO: Should be AsyncDjangoHandler but we don't important runtornado.py.
 
 def get_handler_by_id(handler_id):
     return handlers[handler_id]

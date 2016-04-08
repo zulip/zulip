@@ -17,6 +17,7 @@ from zerver.lib.actions import compute_mit_user_fullname
 from zerver.lib.test_helpers import AuthedTestCase
 from zerver.models import get_user_profile_by_email
 from zerver.lib.test_runner import slow
+from zerver.lib.upload import sanitize_name
 
 import time
 import ujson
@@ -42,8 +43,10 @@ class MITNameTest(TestCase):
         self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
 class S3Test(AuthedTestCase):
-    test_uris = [] # full URIs in public bucket
-    test_keys = [] # keys in authed bucket
+    # full URIs in public bucket
+    test_uris = [] # type: List[str]
+    # keys in authed bucket
+    test_keys = [] # type: List[str]
 
     @slow(2.6, "has to contact external S3 service")
     @skip("Need S3 mock")
@@ -225,3 +228,15 @@ class GCMTokenTests(AuthedTestCase):
         result = self.client.post('/json/users/me/android_gcm_reg_id', {'token':token})
         self.assert_json_success(result)
 
+class SanitizeNameTests(TestCase):
+    def test_file_name(self):
+        self.assertEquals(sanitize_name(u'test.txt'), u'test.txt')
+        self.assertEquals(sanitize_name(u'.hidden'), u'.hidden')
+        self.assertEquals(sanitize_name(u'.hidden.txt'), u'.hidden.txt')
+        self.assertEquals(sanitize_name(u'tarball.tar.gz'), u'tarball.tar.gz')
+        self.assertEquals(sanitize_name(u'.hidden_tarball.tar.gz'), u'.hidden_tarball.tar.gz')
+        self.assertEquals(sanitize_name(u'Testing{}*&*#().ta&&%$##&&r.gz'), u'Testing.tar.gz')
+        self.assertEquals(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
+        self.assertEquals(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
+        self.assertEquals(sanitize_name(u'테스트.txt'), u'테스트.txt')
+        self.assertEquals(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')

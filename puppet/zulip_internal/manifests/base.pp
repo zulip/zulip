@@ -5,7 +5,6 @@ class zulip_internal::base {
                         "openssh-server",
                         "mosh",
                         # Monitoring
-                        "nagios-plugins-basic",
                         "munin-node",
                         "munin-plugins-extra" ,
                         # Security
@@ -134,16 +133,6 @@ class zulip_internal::base {
     force => true,
     recurse => true,
   }
-  file { "/usr/lib/nagios/plugins/":
-    require => Package[nagios-plugins-basic],
-    recurse => true,
-    purge => false,
-    owner => "root",
-    group => "root",
-    mode => 755,
-    source => "puppet:///modules/zulip_internal/nagios_plugins/",
-  }
-
   file { '/etc/iptables/rules.v4':
     ensure     => file,
     mode       => 600,

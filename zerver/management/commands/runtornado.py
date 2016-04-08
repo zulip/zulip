@@ -143,7 +143,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Set up middleware if needed. We couldn't do this earlier, because
         # settings weren't available.
-        self._request_middleware = None
+        self._request_middleware = None # type: ignore # Should be List[Callable[[WSGIRequest], Any]] https://github.com/JukkaL/mypy/issues/1174
         self.initLock.acquire()
         # Check that middleware is still uninitialised.
         if self._request_middleware is None:
@@ -178,7 +178,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             self.set_header(h[0], h[1])
 
         if not hasattr(self, "_new_cookies"):
-            self._new_cookies = []
+            self._new_cookies = [] # type: List[http.cookie.SimpleCookie]
         self._new_cookies.append(response.cookies)
 
         self.write(response.content)

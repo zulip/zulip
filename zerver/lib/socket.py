@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import Any
 
 from django.conf import settings
 from django.utils.importlib import import_module
@@ -40,7 +41,7 @@ def get_user_profile(session_id):
     except (UserProfile.DoesNotExist, KeyError):
         return None
 
-connections = dict()
+connections = dict() # type: Dict[int, SocketConnection]
 
 def get_connection(id):
     return connections.get(id)
@@ -79,7 +80,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         self.authenticated = False
         self.session.user_profile = None
-        self.close_info = None
+        self.close_info = None # type: CloseErrorInfo
         self.did_close = False
 
         try:
@@ -226,7 +227,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         self.did_close = True
 
 def fake_message_sender(event):
-    log_data = dict()
+    log_data = dict() # type: Dict[str, Any]
     record_request_start_data(log_data)
 
     req = event['request']

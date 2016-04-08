@@ -91,8 +91,8 @@ mind:
 * [Integrations](https://github.com/zulip/zulip/labels/integrations).
   Integrate Zulip with another piece of software and contribute it
   back to the community!  Writing an integration can be a great
-  started project.  There's some brief documentation on the best way
-  to write integrations at https://github.com/zulip/zulip/issues/70.
+  starter project.  There's detailed documentation on the best way
+  to write integrations in [docs/integration-guide.md](docs/integration-guide.md).
 * [Documentation](https://github.com/zulip/zulip/labels/documentation):
   The Zulip project loves contributions of new documentation.
 * [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
