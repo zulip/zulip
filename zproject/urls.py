@@ -234,7 +234,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
     url(r'^users/me/api_key/regenerate$', 'rest_dispatch',
         {'POST': 'regenerate_api_key'}),
     url(r'^users/me/enter-sends$', 'rest_dispatch',
-        {'POST': 'json_change_enter_sends'}),
+        {'POST': 'change_enter_sends'}),
 
 ) + patterns('zerver.views.streams',
     url(r'^streams$', 'rest_dispatch',
