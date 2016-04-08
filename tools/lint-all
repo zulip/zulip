@@ -46,7 +46,7 @@ puppet/puppet-common/tests/
 """.split()
 
 by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
-    ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars'], group_by_ftype=True, exclude=exclude)
+    ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html'], group_by_ftype=True, exclude=exclude)
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
@@ -148,6 +148,7 @@ bash_rules = [
     ]
 css_rules = whitespace_rules
 handlebars_rules = whitespace_rules
+html_rules = whitespace_rules
 
 def check_custom_checks():
     failed = False
@@ -170,6 +171,10 @@ def check_custom_checks():
 
     for fn in by_lang['handlebars']:
         if custom_check_file(fn, handlebars_rules):
+            failed = True
+
+    for fn in by_lang['html']:
+        if custom_check_file(fn, html_rules):
             failed = True
 
     return failed
