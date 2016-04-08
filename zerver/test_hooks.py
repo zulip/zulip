@@ -864,3 +864,24 @@ class TravisHookTests(AuthedTestCase):
                                        u"Details: [changes](https://github.com/hl7-fhir/fhir-sv"
                                        u"n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
                                        u"tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)"))
+
+class YoHookTests(AuthedTestCase):
+    def test_yo_message(self):
+        """
+        Yo App sends notification whenever user receives a new Yo from another user.
+        """
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        body = ""
+
+        email = "hamlet@zulip.com"
+        sender = "IAGO"
+        ip = "127.0.0.1"
+        url = "/api/v1/external/yo?email=%s&api_key=%s&username=%s&user_ip=%s" % (email, api_key, sender, ip)
+
+        self.client.get(url,
+                        body,
+                        content_type="application/x-www-form-urlencoded")
+
+        msg = Message.objects.filter().order_by('-id')[0]
+        self.assertEqual(msg.content, (u"Yo from IAGO"))
