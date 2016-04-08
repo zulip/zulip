@@ -142,9 +142,6 @@ python_rules = [
     {'pattern': '% [a-zA-Z0-9_.]*\)?$',
      'description': 'Used % comprehension without a tuple'},
     ] + whitespace_rules
-python_line_skip_rules = [
-    '\s*[*#]', # comments
-    ]
 bash_rules = [
     {'pattern': '#!.*sh [-xe]',
      'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches to set -x|set -e'},
@@ -154,7 +151,7 @@ def check_custom_checks():
     failed = False
 
     for fn in by_lang['py']:
-        if custom_check_file(fn, python_rules, skip_rules=python_line_skip_rules):
+        if custom_check_file(fn, python_rules):
             failed = True
 
     for fn in by_lang['js']:
