@@ -1009,7 +1009,7 @@ class Message(models.Model):
 
     @staticmethod
     def content_has_link(content):
-        return 'http://' in content or 'https://' in content or '/user_uploads' in content
+        return 'http://' in content or 'https://' in content or '/user_uploads' in content or 'file:///' in content
 
     def update_calculated_fields(self):
         # TODO: rendered_content could also be considered a calculated field

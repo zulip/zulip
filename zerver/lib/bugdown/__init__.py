@@ -654,7 +654,7 @@ def sanitize_url(url):
     if not scheme:
         return sanitize_url('http://' + url)
 
-    locless_schemes = ['mailto', 'news']
+    locless_schemes = ['mailto', 'news', 'file']
     if netloc == '' and scheme not in locless_schemes:
         # This fails regardless of anything else.
         # Return immediately to save additional proccessing
@@ -664,7 +664,7 @@ def sanitize_url(url):
     # appears to have a netloc.  Additionally there are plenty of other
     # schemes that do weird things like launch external programs.  To be
     # on the safe side, we whitelist the scheme.
-    if scheme not in ('http', 'https', 'ftp', 'mailto'):
+    if scheme not in ('http', 'https', 'ftp', 'mailto', 'file'):
         return None
 
     # Upstream code scans path, parameters, and query for colon characters
@@ -943,12 +943,13 @@ class Bugdown(markdown.Extension):
                     %s           # zero-to-6 sets of paired parens
                 )?)              # Path is optional
                 | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
+                %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
             )
             (?=                            # URL must be followed by (not included in group)
                 [!:;\?\),\.\'\"\>]*         # Optional punctuation characters
                 (?:\Z|\s)                  # followed by whitespace or end of string
             )
-            """ % (tlds, nested_paren_chunk)
+            """ % (tlds, nested_paren_chunk, r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r"")
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',

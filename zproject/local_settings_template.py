@@ -115,6 +115,10 @@ ERROR_REPORTING = True
 # a link to an image is referenced in a message.
 INLINE_IMAGE_PREVIEW = True
 
+# Controls whether or not Zulip will parse links starting with
+# "file:///" as a hyperlink.
+ENABLE_FILE_LINKS = False
+
 # By default, files uploaded by users and user avatars are stored
 # directly on the Zulip server.  If file storage in Amazon S3 is
 # desired, you can configure that as follows:
