@@ -46,7 +46,7 @@ puppet/puppet-common/tests/
 """.split()
 
 by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
-    ftypes=['py', 'sh', 'js', 'pp'], group_by_ftype=True, exclude=exclude)
+    ftypes=['py', 'sh', 'js', 'pp', 'css'], group_by_ftype=True, exclude=exclude)
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
@@ -146,6 +146,7 @@ bash_rules = [
     {'pattern': '#!.*sh [-xe]',
      'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches to set -x|set -e'},
     ]
+css_rules = whitespace_rules
 
 def check_custom_checks():
     failed = False
@@ -160,6 +161,10 @@ def check_custom_checks():
 
     for fn in by_lang['sh']:
         if custom_check_file(fn, bash_rules):
+            failed = True
+
+    for fn in by_lang['css']:
+        if custom_check_file(fn, css_rules):
             failed = True
 
     return failed
