@@ -1293,19 +1293,6 @@ class DefaultStream(models.Model):
     class Meta(object):
         unique_together = ("realm", "stream")
 
-# FIXME: The foreign key relationship here is backwards.
-#
-# We can't easily get a list of streams and their associated colors (if any) in
-# a single query.  See zerver.views.gather_subscriptions for an example.
-#
-# We should change things around so that is possible.  Probably this should
-# just be a column on Subscription.
-class StreamColor(models.Model):
-    DEFAULT_STREAM_COLOR = "#c2c2c2"
-
-    subscription = models.ForeignKey(Subscription)
-    color = models.CharField(max_length=10)
-
 class Referral(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     email = models.EmailField(blank=False, null=False)
