@@ -519,3 +519,24 @@ proxy in the environment as follows:
  npm config set proxy http://proxy_host:port
  npm config set https-proxy http://proxy_host:port
  ```
+
+If you are facing issues due to proxy while executing `vagrant up` use the vagrant-proxyconf plugin
+
+- Install the plugin:
+
+ ```
+ vagrant plugin install vagrant-proxyconf
+ ```
+- Add the following to $HOME/.vagrant.d/Vagrantfile or to Zulip Vagrantfile (project specific):
+ 
+ ```ruby
+ Vagrant.configure("2") do |config|
+   if Vagrant.has_plugin?("vagrant-proxyconf")
+     config.proxy.http     = "http://proxy_host:port/"
+     config.proxy.https    = "http://proxy_host:port/"
+     config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
+   end
+   # ... other stuff
+ end
+ ```
+
