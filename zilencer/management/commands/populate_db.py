@@ -33,7 +33,6 @@ from six.moves import range
 from typing import Any, Dict, Set, Tuple
 
 settings.TORNADO_SERVER = None
-
 def create_users(realms, name_list, bot=False):
     user_set = set()
     for full_name, email in name_list:
@@ -128,14 +127,15 @@ class Command(BaseCommand):
             # as are subscriptions to the ability to receive personals).
             names = [("Othello, the Moor of Venice", "othello@zulip.com"), ("Iago", "iago@zulip.com"),
                      ("Prospero from The Tempest", "prospero@zulip.com"),
-                     ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com")]
+                     ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com"),
+                     ("Sir John Falstaff", "falstaff@zulip.com")]
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(realms, names)
             iago = UserProfile.objects.get(email="iago@zulip.com")
             do_change_is_admin(iago, True)
             # Create public streams.
-            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome", Realm.DEFAULT_NOTIFICATION_STREAM_NAME]
             create_streams(realms, zulip_realm, stream_list)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list]
 
@@ -150,6 +150,8 @@ class Command(BaseCommand):
                     s = Subscription(recipient=r, user_profile=profile)
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
+            zulip_realm.notifications_stream = Stream.objects.get(name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME, realm=zulip_realm)
+            zulip_realm.save()
         else:
             zulip_realm = get_realm("zulip.com")
             recipient_streams = [klass.type_id for klass in
@@ -184,16 +186,6 @@ class Command(BaseCommand):
             get_client("website")
             get_client("API")
 
-            if options["test_suite"]:
-                # Create test users; the MIT ones are needed to test
-                # the Zephyr mirroring codepaths.
-                testsuite_mit_users = [
-                    ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
-                    ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
-                    ("Esp Classroom (MIT)", "espuser@mit.edu"),
-                    ]
-                create_users(realms, testsuite_mit_users)
-
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
             all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
@@ -205,12 +197,22 @@ class Command(BaseCommand):
             zulip_realm_bots.extend(all_realm_bots)
             create_users(realms, zulip_realm_bots, bot=True)
 
+            if options["test_suite"]:
+                # Create test users; the MIT ones are needed to test
+                # the Zephyr mirroring codepaths.
+                testsuite_mit_users = [
+                    ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
+                    ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
+                    ("Esp Classroom (MIT)", "espuser@mit.edu"),
+                    ]
+                create_users(realms, testsuite_mit_users)
+
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
-                zulip_stream_list = ["devel", "all", "zulip", "design", "support", "social", "test",
+                zulip_stream_list = ["devel", "all", "design", "support", "social", "test",
                                       "errors", "sales"]
                 create_streams(realms, zulip_realm, zulip_stream_list)
 
