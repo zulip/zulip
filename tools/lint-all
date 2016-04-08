@@ -132,10 +132,6 @@ js_rules = [
      'description': 'Missing space between else and {'},
     ] + whitespace_rules
 python_rules = [
-    {'pattern': "'[^']*'\s+\([^']*$",
-     'description': "Suspicious code with quoting around function name"},
-    {'pattern': '"[^"]*"\s+\([^"]*$',
-     'description': "Suspicious code with quoting around function name"},
     {'pattern': '".*"%\([a-z_].*\)?$',
      'description': 'Missing space around "%"'},
     {'pattern': "'.*'%\([a-z_].*\)?$",
