@@ -3,6 +3,8 @@ import os
 import sys
 import logging
 import platform
+import subprocess
+from distutils.version import StrictVersion
 
 try:
     import sh
@@ -173,6 +175,16 @@ def main():
     sh.do_destroy_rebuild_database(**LOUD)
     sh.postgres_init_test_db(**LOUD)
     sh.do_destroy_rebuild_test_database(**LOUD)
+
+    #Checking if the version of npm is sufficient
+    needed_version = '2.14.20'
+    version_output = subprocess.check_output(["npm", "--version"]).strip('\n')
+    compare_version = StrictVersion(needed_version) > StrictVersion(version_output)
+    if compare_version == True:
+        print("The version of npm on your system is not sufficient")
+        print("Installing the latest version of npm.....")
+        os.system("sudo npm -g install npm")
+
     # Run npm install last because it can be flaky, and that way one
     # only needs to rerun `npm install` to fix the installation.
     sh.npm.install(**LOUD)
