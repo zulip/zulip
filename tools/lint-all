@@ -113,6 +113,7 @@ def custom_check_file(fn, rules, skip_rules=[]):
     return failed
 
 whitespace_rules = [
+    # This linter should be first since bash_rules depends on it.
     {'pattern': '\s+$',
      'strip': '\n',
      'description': 'Fix trailing whitespace'},
