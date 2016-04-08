@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
-from typing import *
+from typing import Any, Generator, Iterable, Tuple
 
 import os
 import pty

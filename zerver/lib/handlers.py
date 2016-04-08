@@ -1,6 +1,6 @@
 import logging
 from zerver.middleware import async_request_restart
-from typing import *
+from typing import Any
 
 current_handler_id = 0
 handlers = {} # type: Dict[int, Any] # TODO: Should be AsyncDjangoHandler but we don't important runtornado.py.

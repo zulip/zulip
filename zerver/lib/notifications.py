@@ -1,5 +1,5 @@
 from __future__ import print_function
-from typing import *
+from typing import Any, Tuple
 
 from confirmation.models import Confirmation
 from django.conf import settings

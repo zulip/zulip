@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import *
+from typing import Any, Generator, Tuple
 
 import re
 from django.contrib.staticfiles.finders import FileSystemFinder
