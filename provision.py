@@ -117,16 +117,6 @@ def main():
 
     run(["virtualenv", VENV_PATH])
 
-    # Add the ./tools and ./scripts/setup directories inside the repository root to
-    # the system path; we'll reference them later.
-    orig_path = os.environ["PATH"]
-    os.environ["PATH"] = os.pathsep.join((
-            os.path.join(ZULIP_PATH, "tools"),
-            os.path.join(ZULIP_PATH, "scripts", "setup"),
-            orig_path
-    ))
-
-
     # Put Python virtualenv activation in our .bash_profile.
     with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
         bash_profile.writelines([
