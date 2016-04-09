@@ -147,7 +147,10 @@ bash_rules = [
     {'pattern': '#!.*sh [-xe]',
      'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches to set -x|set -e'},
     ] + whitespace_rules[0:1]
-css_rules = whitespace_rules
+css_rules = [
+    {'pattern': '^[^:]*:\S[^:]*;$',
+     'description': "Missing whitespace after : in CSS"},
+    ] + whitespace_rules
 handlebars_rules = whitespace_rules
 html_rules = whitespace_rules
 
