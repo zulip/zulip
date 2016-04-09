@@ -1106,6 +1106,103 @@
       <img class="screenshot" src="/static/images/integrations/jira/001.png" />
     </div>
 
+    <div id="mercurial" class="integration-instructions">
+
+      <p>Get Zulip notifications when you <code>hg push</code>!</p>
+
+      <p>First, create the stream you'd like to use for Mercurial notifications,
+      and subscribe all interested parties to this stream. We recommend the
+      name <code>commits</code>.</p>
+
+      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
+      page</a>, create a Mercurial bot.</p>
+
+      <p>Then:</p>
+      <ol>
+        <li>
+          <p>Download and install our <a href="/api">Python bindings</a> on the
+            server where the master Mercurial repository lives.</p>
+        </li>
+        <li>
+          <p>Edit the <code>hg/.hgrc</code> configuration file for this master
+          Mercurial repository and add the following sections, using the
+          credentials for your Mercurial bot and setting the appropriate path to
+          the integration hook if it installs in a different location on this
+          system:</p>
+
+          <pre>[hooks]
+changegroup = python:/usr/local/share/zulip/integrations/hg/zulip-changegroup.py:hook
+
+[zulip]
+email = "hg-bot@example.com"
+api_key = "0123456789abcdefg"
+stream = "commits"
+{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre>
+        </li>
+      </ol>
+
+      <p>That's all it takes for the basic setup! On the next <code>hg
+      push</code>, you'll get a Zulip update for the changeset.</p>
+
+      <h3>More configuration options</h3>
+
+      <p>The Mercurial integration also supports:</p>
+      <ul>
+        <li>linking to changelog and revision URLs for your repository's web
+        UI</li>
+        <li>branch whitelists and blacklists</li>
+      </ul>
+
+      <h4>Web repository links</h4>
+
+      <p>If you've set up your repository to
+      be <a href="http://mercurial.selenic.com/wiki/QuickStart#Network_support">browsable
+      via the web</a>, add a <code>web_url</code> configuration option to
+      the <code>zulip</code> section of your master <code>.hg/hgrc</code> to get
+      changelog and revision links in your Zulip notifications:</p>
+
+      <pre><font color="#B6B6B4">[zulip]
+email = "hg-bot@example.com"
+api_key = "0123456789abcdefg"
+stream = "commits"</font>
+web_url = "http://hg.example.com:8000/"
+{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre>
+
+
+      <h4>Branch whitelists and blacklists</h4>
+
+      <p>By default, this integration will send Zulip notifications for
+      changegroup events for all branches. If you'd prefer to only receive Zulip
+      notifications for specified branches, add a <code>branches</code>
+      configuration option to the <code>zulip</code> section of your
+      master <code>.hg/hgrc</code>, containing a comma-separated list of the
+      branches that should produce notifications:</p>
+
+      <pre><font color="#B6B6B4">[zulip]
+email = "hg-bot@example.com"
+api_key = "0123456789abcdefg"
+stream = "commits"</font>
+branches = "prod,master"</pre>
+
+      <p>You can also exclude branches that you don't want to cause
+      notifications. To do so, add an <code>ignore_branches</code> configuration
+      option to the <code>zulip</code> section of your
+      master <code>.hg/hgrc</code>, containing a comma-separated list of the
+      branches that should be ignored:</p>
+
+      <pre><font color="#B6B6B4">[zulip]
+email = "hg-bot@example.com"
+api_key = "0123456789abcdefg"
+stream = "commits"</font>
+ignore_branches = "noisy,even-more-noisy"</pre>
+
+      <p><b>Congratulations! You're done!</b><br /> When team members push new
+      changesets with <code>hg push</code>, you'll get a Zulip notification that
+      looks like this:</p>
+
+      <img class="screenshot" src="/static/images/integrations/hg/001.png" />
+    </div>
+
     <div id="nagios" class="integration-instructions">
 
 
@@ -1174,6 +1271,33 @@ key = NAGIOS_BOT_API_KEY
       directly.</p>
     </div>
 
+
+    <div id="newrelic" class="integration-instructions">
+
+
+      <p>New Relic can send messages to a Zulip stream for alerts and
+      deploys.</p>
+
+      <p>First, create the stream you'd like to use for New Relic
+      notifications, and subscribe all interested parties to this stream. We
+      recommend the name <code>newrelic</code>.</p>
+
+      <p>Next, in your New Relic Account Settings page, click
+      "Integrations", then "Alerting notifications". On the "Webhook"
+      tab, enter the following webhook URL:</p>
+
+      <p><code>{{ external_api_uri }}/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to.</p>
+
+      <img class="screenshot" src="/static/images/integrations/newrelic/001.png" />
+
+      <p><b>Congratulations! You're done!</b><br /> Your New Relic events will
+       appear in Zulip:</p>
+      <img class="screenshot" src="/static/images/integrations/newrelic/002.png" />
+    </div>
 
     <div id="pagerduty" class="integration-instructions">
 
@@ -1331,131 +1455,7 @@ key = NAGIOS_BOT_API_KEY
       </p>
 
       <p><small>Thanks to Matt from Kensho for submitting this integration!</small></p>
-    </div>
 
-
-    <div id="mercurial" class="integration-instructions">
-
-      <p>Get Zulip notifications when you <code>hg push</code>!</p>
-
-      <p>First, create the stream you'd like to use for Mercurial notifications,
-      and subscribe all interested parties to this stream. We recommend the
-      name <code>commits</code>.</p>
-
-      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
-      page</a>, create a Mercurial bot.</p>
-
-      <p>Then:</p>
-      <ol>
-        <li>
-          <p>Download and install our <a href="/api">Python bindings</a> on the
-            server where the master Mercurial repository lives.</p>
-        </li>
-        <li>
-          <p>Edit the <code>hg/.hgrc</code> configuration file for this master
-          Mercurial repository and add the following sections, using the
-          credentials for your Mercurial bot and setting the appropriate path to
-          the integration hook if it installs in a different location on this
-          system:</p>
-
-          <pre>[hooks]
-changegroup = python:/usr/local/share/zulip/integrations/hg/zulip-changegroup.py:hook
-
-[zulip]
-email = "hg-bot@example.com"
-api_key = "0123456789abcdefg"
-stream = "commits"
-{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre>
-        </li>
-      </ol>
-
-      <p>That's all it takes for the basic setup! On the next <code>hg
-      push</code>, you'll get a Zulip update for the changeset.</p>
-
-      <h3>More configuration options</h3>
-
-      <p>The Mercurial integration also supports:</p>
-      <ul>
-        <li>linking to changelog and revision URLs for your repository's web
-        UI</li>
-        <li>branch whitelists and blacklists</li>
-      </ul>
-
-      <h4>Web repository links</h4>
-
-      <p>If you've set up your repository to
-      be <a href="http://mercurial.selenic.com/wiki/QuickStart#Network_support">browsable
-      via the web</a>, add a <code>web_url</code> configuration option to
-      the <code>zulip</code> section of your master <code>.hg/hgrc</code> to get
-      changelog and revision links in your Zulip notifications:</p>
-
-      <pre><font color="#B6B6B4">[zulip]
-email = "hg-bot@example.com"
-api_key = "0123456789abcdefg"
-stream = "commits"</font>
-web_url = "http://hg.example.com:8000/"
-{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre>
-
-
-      <h4>Branch whitelists and blacklists</h4>
-
-      <p>By default, this integration will send Zulip notifications for
-      changegroup events for all branches. If you'd prefer to only receive Zulip
-      notifications for specified branches, add a <code>branches</code>
-      configuration option to the <code>zulip</code> section of your
-      master <code>.hg/hgrc</code>, containing a comma-separated list of the
-      branches that should produce notifications:</p>
-
-      <pre><font color="#B6B6B4">[zulip]
-email = "hg-bot@example.com"
-api_key = "0123456789abcdefg"
-stream = "commits"</font>
-branches = "prod,master"</pre>
-
-      <p>You can also exclude branches that you don't want to cause
-      notifications. To do so, add an <code>ignore_branches</code> configuration
-      option to the <code>zulip</code> section of your
-      master <code>.hg/hgrc</code>, containing a comma-separated list of the
-      branches that should be ignored:</p>
-
-      <pre><font color="#B6B6B4">[zulip]
-email = "hg-bot@example.com"
-api_key = "0123456789abcdefg"
-stream = "commits"</font>
-ignore_branches = "noisy,even-more-noisy"</pre>
-
-      <p><b>Congratulations! You're done!</b><br /> When team members push new
-      changesets with <code>hg push</code>, you'll get a Zulip notification that
-      looks like this:</p>
-
-      <img class="screenshot" src="/static/images/integrations/hg/001.png" />
-    </div>
-
-    <div id="newrelic" class="integration-instructions">
-
-
-      <p>New Relic can send messages to a Zulip stream for alerts and
-      deploys.</p>
-
-      <p>First, create the stream you'd like to use for New Relic
-      notifications, and subscribe all interested parties to this stream. We
-      recommend the name <code>newrelic</code>.</p>
-
-      <p>Next, in your New Relic Account Settings page, click
-      "Integrations", then "Alerting notifications". On the "Webhook"
-      tab, enter the following webhook URL:</p>
-
-      <p><code>{{ external_api_uri }}/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <img class="screenshot" src="/static/images/integrations/newrelic/001.png" />
-
-      <p><b>Congratulations! You're done!</b><br /> Your New Relic events will
-       appear in Zulip:</p>
-      <img class="screenshot" src="/static/images/integrations/newrelic/002.png" />
     </div>
 
     <div id="redmine" class="integration-instructions">
@@ -1719,6 +1719,30 @@ ignore_branches = "noisy,even-more-noisy"</pre>
       in <code>zulip_trac_config.py</code>.</p>
     </div>
 
+    <div id="travis" class="integration-instructions">
+
+      <p>See your Travis CI build notifications in Zulip!</p>
+
+      <p>First, create the stream you'd like to use for notifications, and subscribe
+      all interested parties to this stream. We recommend the name <code>travis</code>.</p>
+
+      <p>Next, set up a bot for the integration. You'll need the bot's API key
+      to construct a URL for Travis CI.</p>
+
+      <p>Finally, set up a webhook in your <code>.travis.yml</code> file:</p>
+
+<pre>
+notifications:
+  webhooks:
+    - https://zulip.example.com/api/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
+</pre>
+
+      <p><b>Congratulations! You're done!</b><br /> When a code build occurs,
+      you're receive a notification on the specified stream and topic.</p>
+
+      <img class="screenshot" src="/static/images/integrations/travis/001.png" />
+    </div>
+
     <div id="trello" class="integration-instructions">
 
 
@@ -1818,30 +1842,6 @@ access_token_secret =</pre>
       generated by the Twitter card rendering integration configured
       in <code>/etc/zulip/settings.py</code> on the Zulip server.</p>
 
-    </div>
-
-    <div id="travis" class="integration-instructions">
-
-      <p>See your Travis CI build notifications in Zulip!</p>
-
-      <p>First, create the stream you'd like to use for notifications, and subscribe
-      all interested parties to this stream. We recommend the name <code>travis</code>.</p>
-
-      <p>Next, set up a bot for the integration. You'll need the bot's API key
-      to construct a URL for Travis CI.</p>
-
-      <p>Finally, set up a webhook in your <code>.travis.yml</code> file:</p>
-
-<pre>
-notifications:
-  webhooks:
-    - https://zulip.example.com/api/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
-</pre>
-
-      <p><b>Congratulations! You're done!</b><br /> When a code build occurs,
-      you're receive a notification on the specified stream and topic.</p>
-
-      <img class="screenshot" src="/static/images/integrations/travis/001.png" />
     </div>
 
     <div id="yo-app" class="integration-instructions">
