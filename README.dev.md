@@ -291,7 +291,7 @@ Finally continue with the All Systems instructions below.
 ### All Systems:
 
 ```
-pip install -r requirements.txt
+pip install --no-deps -r requirements.txt
 ./tools/install-phantomjs
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji

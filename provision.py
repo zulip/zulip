@@ -128,7 +128,7 @@ def main():
     activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
     execfile(activate_this, dict(__file__=activate_this))
 
-    run(["pip", "install", "--requirement",
+    run(["pip", "install", "--no-deps", "--requirement",
          os.path.join(ZULIP_PATH, "requirements.txt")])
 
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
