@@ -112,6 +112,9 @@ mind:
   Browsing this list can be a great way to find feature ideas to
   implement that other Zulip users are excited about.
 
+* [2016 roadmap milestone](http://zulip.readthedocs.io/en/latest/roadmap.html): The
+  projects that are [priorities for the Zulip project](https://zulip.readthedocs.io/en/latest/roadmap.html).  These are great projects if you're looking to make an impact.
+
 If you're excited about helping with an open issue, just post on the
 conversation thread that you're working on it.  You're encouraged to
 ask questions on how to best implement or debug your changes -- the
