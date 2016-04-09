@@ -21,6 +21,7 @@ Contents:
    schema-migrations
    front-end-build-process
    mypy
+   roadmap
 
 Indices and tables
 ==================
