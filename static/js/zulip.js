@@ -13,7 +13,6 @@ var recent_subjects = new Dict({fold_case: true});
 var queued_mark_as_read = [];
 var queued_flag_timer;
 
-var have_scrolled_away_from_top = true;
 
 // Toggles re-centering the pointer in the window
 // when Home is next clicked by the user
