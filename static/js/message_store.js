@@ -523,7 +523,7 @@ exports.load_old_messages = function load_old_messages(opts) {
 
 exports.reset_load_more_status = function reset_load_more_status() {
     load_more_enabled = true;
-    have_scrolled_away_from_top = true;
+    ui.have_scrolled_away_from_top = true;
     ui.hide_loading_more_messages_indicator();
 };
 

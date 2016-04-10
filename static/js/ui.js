@@ -4,6 +4,8 @@ var exports = {};
 
 var actively_scrolling = false;
 
+exports.have_scrolled_away_from_top = true;
+
 exports.actively_scrolling = function () {
     return actively_scrolling;
 };
@@ -513,11 +515,11 @@ function scroll_finished() {
         }
         floating_recipient_bar.update();
         if (viewport.scrollTop() === 0 &&
-            have_scrolled_away_from_top) {
-            have_scrolled_away_from_top = false;
+            ui.have_scrolled_away_from_top) {
+            ui.have_scrolled_away_from_top = false;
             message_store.load_more_messages(current_msg_list);
-        } else if (!have_scrolled_away_from_top) {
-            have_scrolled_away_from_top = true;
+        } else if (!ui.have_scrolled_away_from_top) {
+            ui.have_scrolled_away_from_top = true;
         }
         // When the window scrolls, it may cause some messages to
         // enter the screen and become read.  Calling
