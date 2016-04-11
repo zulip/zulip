@@ -1,12 +1,16 @@
 # Integration Writing Guide
 
-Our integrations are one of the most important parts of Zulip, so it's
-important that they are all implemented to the highest standard of
-quality that we can write.
+Integrations are one of the most important parts of a group chat tool
+like Zulip, and we are committed to making integrating with Zulip and
+getting you integration merged upstream so everyone else can benefit
+from it as easy as possible while maintaining the high quality of the
+Zulip integrations library.
 
 Contributions to this guide are very welcome, so if you run into any
-issues following these instructions or come up with any tips while
-writing an integration, please open an issue or submit a pull request!
+issues following these instructions or come up with any tips or tools
+that help writing integration, please email
+zulip-devel@googlegroups.com, open an issue, or submit a pull request
+to share your ideas!
 
 ## Types of integrations
 
