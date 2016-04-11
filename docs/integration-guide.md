@@ -24,16 +24,16 @@ to add a new handler in `zerver/views/webhooks.py` (plus
 test/document/etc.).  An example commit implementing a new webhook.
 https://github.com/zulip/zulip/pull/324.
 
-2. Python script integrations (examples: Trac, Git), where we can get
+2. Python script integrations (examples: SVN, Git), where we can get
 the service to call our integration (by shelling out or otherwise),
 passing in the required data.  Our preferred model for these is to
-ship these integrations in our API tarballs (by writing the
+ship these integrations in our API release tarballs (by writing the
 integration in `api/integrations`).
 
-3. Plugin integrations (examples: Jenkins, Hubot) where the user needs
-to install a native-language plugin into their existing software,
-which can be more work, since we may not have Zulip API bindings for
-the relevant language.
+3. Plugin integrations (examples: Jenkins, Hubot, Trac) where the user
+needs to install a plugin into their existing software.  These are
+often more work, but for some products are the only way to integrate
+with the product at all.
 
 ## General advice for writing integrations
 
