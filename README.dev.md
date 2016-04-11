@@ -25,6 +25,7 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
   ```
+  You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
 * If your host is Ubuntu 14.04, you will need to [download a newer
   version of Vagrant][vagrant-dl], and then do the following:
@@ -33,6 +34,7 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   sudo dpkg -i vagrant*.deb # in directory where you downloaded vagrant
   vagrant plugin install vagrant-lxc
   ```
+  You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
 * For other Linux hosts with a kernel above 3.12, [follow the Vagrant
   LXC installation instructions][vagrant-lxc] to get Vagrant with LXC
@@ -55,7 +57,8 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
- 
+[avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
+
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal to install the development server.  This
 will take a long time on the first run because Vagrant needs to
