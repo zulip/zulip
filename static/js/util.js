@@ -2,6 +2,12 @@ var util = (function () {
 
 var exports = {};
 
+//Adding for handlebars to check for new lines and to insert a line break if there is
+Handlebars.registerHelper('nl2br', function (text, isXhtml) {
+  var breakTag = (isXhtml || typeof isXhtml === 'undefined') ? '<br />' : '<br>';
+  return (String(text + '')).replace(/(\r\n|\n\r|\r|\n)/g, '$1' + breakTag);
+});
+
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 exports.random_int = function random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;

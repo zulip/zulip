@@ -8,6 +8,7 @@ set_global('$', function () {
 $.fn = {};
 
 add_dependencies({
+    Handlebars: 'handlebars',
     util: 'js/util.js',
     people: 'js/people.js'
 });
