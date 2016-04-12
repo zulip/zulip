@@ -11,12 +11,10 @@ could also install things by hand, which is supported by a variety
 of platforms, or use Docker. 
 
 Start by cloning the Zulip repositiory: 
-
-non-Windows:
+non-Windows
 ------------
 `git clone https://github.com/zulip/zulip.git`
-
-Windows:
+Windows
 --------
 `git clone https://github.com/zulip/zulip.git  -c core.autocrlf=false` 
 
@@ -32,17 +30,19 @@ such as Mac/Windows via Virtualbox (but everything will be 2-3x slower).
 Ubuntu 15.04 or newer
 ---------------------
 * install and configure the LXC Vagrant provider directly using apt:
-
   ```
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
   ```
+<<<<<<< HEAD
   You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
+=======
+  
+>>>>>>> 20a9cb6... Remove line spacing.
 Ubuntu 14.04
 ------------
 *  [download a newer  version of Vagrant][vagrant-dl], and then do the following:
- 
   ```
   sudo apt-get install lxc lxc-templates cgroup-lite redir
   sudo dpkg -i vagrant*.deb # in directory where you downloaded vagrant
@@ -50,23 +50,23 @@ Ubuntu 14.04
   ```
   You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
-Other Linux (kernal above 3.12):
+<<<<<<< HEAD
+Other Linux (kernel above 3.12):
+>>>>>>> 20a9cb6... Remove line spacing.
 --------------------------------
 * [follow the Vagrant LXC installation instructions][vagrant-lxc] to get 
   Vagrant with LXC for your platform.
 
-
-OS X or older Linux (kernal at or below 3.12):
+OS X or older Linux (kernal at or below 3.12)
 ----------------------------------------------
 * [download VirtualBox][vbox-dl], [download Vagrant][vagrant-dl], and install
   them both.
-
 * Note: If you're on OS X and have VMWare, it should be possible to patch
   Vagrantfile to use the VMWare vagrant provider, which should perform
   much better than Virtualbox.  Patches to do this by default if
   VMWare is available are welcome!
 
-Windows:
+Windows
 --------
 * use Vagrant and Virtualbox/VMWare on Windows with Cygwin, similar to the Mac 
   setup. 
@@ -77,7 +77,7 @@ Windows:
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
 <<<<<<< HEAD
 
-Universal Vagrant instructions:
+Universal Vagrant instructions
 -------------------------------
 >>>>>>> cf8a322... Bold headings for OS versions Vagrant instructions
 Once that's done, simply change to your zulip directory and run
@@ -157,7 +157,7 @@ Install the following non-Python dependencies:
  * tsearch-extras — better text search
  * libfreetype6-dev — needed before you pip install Pillow to properly generate emoji PNGs
 
-By Hand (Debian or Ubuntu systems):
+By Hand (Debian or Ubuntu systems)
 ----------------------------------
 
 ```
@@ -185,7 +185,7 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 
 Now continue with the "All systems" instructions below.
 
-By Hand (on Fedora 22 - experimental):
+By Hand (on Fedora 22 - experimental)
 -------------------------------------
 
 These instructions are experimental and may have bugs; patches
@@ -200,7 +200,7 @@ sudo dnf install libffi-devel memcached rabbitmq-server \
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
-By Hand (on CentOS 7 Core - experimental):
+By Hand (on CentOS 7 Core - experimental)
 
 These instructions are experimental and may have bugs; patches
 welcome!
@@ -255,7 +255,7 @@ host    all             all             ::1/128                 md5
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
-By hand (on OpenBSD 5.8 - experimental):
+By hand (on OpenBSD 5.8 - experimental)
 ---------------------------------------
 
 These instructions are experimental and may have bugs; patches
@@ -324,7 +324,7 @@ sudo systemctl enable redis rabbitmq-server memcached postgresql
 
 Finally continue with the All Systems instructions below.
 
-All Systems:
+All Systems
 -----------
 
 ```
