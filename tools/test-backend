@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
     if len(args) == 0:
-        suites = ["zerver"]
+        suites = ["zerver.tests"]
     else:
         suites = args
 

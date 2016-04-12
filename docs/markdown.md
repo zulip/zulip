@@ -11,7 +11,7 @@ javascript, based on marked (`static/js/echo.js`), and is used to
 preview and locally echo messages the moment the sender hits enter,
 without waiting for round trip from the server.  The two
 implementations are tested for compatibility via
-`zerver/test_bugdown.py` and the fixtures under
+`zerver/tests/test_bugdown.py` and the fixtures under
 `zerver/fixtures/bugdown-data.json`.
 
 The javascript implementation knows which types of messages it can

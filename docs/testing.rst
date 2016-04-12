@@ -53,8 +53,8 @@ it. On Ubuntu:
 Backend Django tests
 --------------------
 
-These live in ``zerver/tests.py`` and ``zerver/test_*.py``. Run them
-with ``tools/test-backend``.
+These live in ``zerver/tests/tests.py`` and
+``zerver/tests/test_*.py``. Run them with ``tools/test-backend``.
 
 Web frontend black-box casperjs tests
 -------------------------------------

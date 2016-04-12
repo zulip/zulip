@@ -71,14 +71,14 @@ Here's how we recommend doing it:
   usually just have more complex parsing which can obscure what's
   common to all webhook integrations.
 
-* Then write a test for your fixture in `zerver/test_hooks.py`, and
+* Then write a test for your fixture in `zerver/tests/test_hooks.py`, and
   you can iterate on the tests and webhooks handler until they work,
   all without ever needing to post directly from the server you're
   integrating to your Zulip development machine.  To run just the
   tests from the test class you wrote, you can use e.g.
 
   ```
-  test-backend zerver.test_hooks.PagerDutyHookTests
+  test-backend zerver.tests.test_hooks.PagerDutyHookTests
   ```
 
   See
