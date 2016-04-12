@@ -680,6 +680,7 @@ JS_SPECS = {
             'js/resize.js',
             'js/floating_recipient_bar.js',
             'js/ui.js',
+            'js/pointer.js',
             'js/click_handlers.js',
             'js/scroll_bar.js',
             'js/gear_menu.js',
@@ -715,7 +716,7 @@ JS_SPECS = {
             'js/emoji.js',
             'js/referral.js',
             'js/custom_markdown.js',
-            'js/bot_data.js',
+            'js/bot_data.js'
             # JS bundled by webpack is also included here if PIPELINE setting is true
         ],
         'output_filename': 'min/app.js'

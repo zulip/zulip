@@ -508,10 +508,10 @@ function scroll_finished() {
     actively_scrolling = false;
 
     if ($('#home').hasClass('active')) {
-        if (!suppress_scroll_pointer_update) {
+        if (!pointer.suppress_scroll_pointer_update) {
             keep_pointer_in_view();
         } else {
-            suppress_scroll_pointer_update = false;
+            pointer.suppress_scroll_pointer_update = false;
         }
         floating_recipient_bar.update();
         if (viewport.scrollTop() === 0 &&
