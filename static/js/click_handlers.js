@@ -365,7 +365,7 @@ $(function () {
     });
 
     $('#yes-bankrupt').click(function (e) {
-        fast_forward_pointer();
+        pointer.fast_forward_pointer();
         $("#yes-bankrupt").hide();
         $("#no-bankrupt").hide();
         $(this).after($("<div>").addClass("alert alert-info settings_committed")
