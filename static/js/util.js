@@ -5,7 +5,7 @@ var exports = {};
 //Adding for handlebars to check for new lines and to insert a line break if there is
 Handlebars.registerHelper('nl2br', function (text, isXhtml) {
   var breakTag = (isXhtml || typeof isXhtml === 'undefined') ? '<br />' : '<br>';
-  return (String(text + '')).replace(/(\r\n|\n\r|\r|\n)/g, '$1' + breakTag);
+  return (String(text)).replace(/(\r\n|\n\r|\r|\n)/g, '$1' + breakTag);
 });
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
