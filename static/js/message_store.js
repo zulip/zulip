@@ -618,8 +618,8 @@ util.execute_early(function () {
 
     $(document).on('message_id_changed', function (event) {
         var old_id = event.old_id, new_id = event.new_id;
-        if (furthest_read === old_id) {
-            furthest_read = new_id;
+        if (pointer.furthest_read === old_id) {
+            pointer.furthest_read = new_id;
         }
         if (stored_messages[old_id]) {
             stored_messages[new_id] = stored_messages[old_id];

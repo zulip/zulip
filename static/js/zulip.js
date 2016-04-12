@@ -13,18 +13,9 @@ var recent_subjects = new Dict({fold_case: true});
 var queued_mark_as_read = [];
 var queued_flag_timer;
 
-
-// Toggles re-centering the pointer in the window
-// when Home is next clicked by the user
-var recenter_pointer_on_display = false;
-var suppress_scroll_pointer_update = false;
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
 var last_viewport_movement_direction = 1;
-
-var furthest_read = -1;
-var server_furthest_read = -1;
-var pointer_update_in_flight = false;
 
 function keep_pointer_in_view() {
     // See recenter_view() for related logic to keep the pointer onscreen.
@@ -148,9 +139,9 @@ function scroll_to_selected() {
 function maybe_scroll_to_selected() {
     // If we have been previously instructed to re-center to the
     // selected message, then do so
-    if (recenter_pointer_on_display) {
+    if (pointer.recenter_pointer_on_display) {
         scroll_to_selected();
-        recenter_pointer_on_display = false;
+        pointer.recenter_pointer_on_display = false;
     }
 }
 
@@ -219,67 +210,9 @@ function respond_to_message(opts) {
 
 }
 
-function update_pointer() {
-    if (!pointer_update_in_flight) {
-        pointer_update_in_flight = true;
-        return channel.put({
-            url:      '/json/users/me/pointer',
-            idempotent: true,
-            data:     {pointer: furthest_read},
-            success: function () {
-                server_furthest_read = furthest_read;
-                pointer_update_in_flight = false;
-            },
-            error: function () {
-                pointer_update_in_flight = false;
-            }
-        });
-    } else {
-        // Return an empty, resolved Deferred.
-        return $.when();
-    }
-}
 
-function send_pointer_update() {
-    // Only bother if you've read new messages.
-    if (furthest_read > server_furthest_read) {
-        update_pointer();
-    }
-}
 
-function unconditionally_send_pointer_update() {
-    if (pointer_update_in_flight) {
-        // Keep trying.
-        var deferred = $.Deferred();
 
-        setTimeout(function () {
-            deferred.resolve(unconditionally_send_pointer_update());
-        }, 100);
-        return deferred;
-    } else {
-        return update_pointer();
-    }
-}
-
-function fast_forward_pointer() {
-    channel.get({
-        url: '/users/me',
-        idempotent: true,
-        data: {email: page_params.email},
-        success: function (data) {
-            unread.mark_all_as_read(function () {
-                furthest_read = data.max_message_id;
-                unconditionally_send_pointer_update().then(function () {
-                    ui.change_tab_to('#home');
-                    reload.initiate({immediate: true,
-                                     save_pointer: false,
-                                     save_narrow: false,
-                                     save_compose: true});
-                });
-            });
-        }
-    });
-}
 
 function consider_bankruptcy() {
     // Until we've handled possibly declaring bankruptcy, don't show
@@ -319,12 +252,12 @@ function main() {
     activity.set_user_statuses(page_params.initial_presences,
                                page_params.initial_servertime);
 
-    server_furthest_read = page_params.initial_pointer;
+    pointer.server_furthest_read = page_params.initial_pointer;
     if (page_params.orig_initial_pointer !== undefined &&
-        page_params.orig_initial_pointer > server_furthest_read) {
-        server_furthest_read = page_params.orig_initial_pointer;
+        page_params.orig_initial_pointer > pointer.server_furthest_read) {
+        pointer.server_furthest_read = page_params.orig_initial_pointer;
     }
-    furthest_read = server_furthest_read;
+    pointer.furthest_read = pointer.server_furthest_read;
 
     // Before trying to load messages: is this user way behind?
     consider_bankruptcy();
@@ -332,7 +265,7 @@ function main() {
     // We only send pointer updates when the user has been idle for a
     // short while to avoid hammering the server
     $(document).idle({idle: 1000,
-                      onIdle: send_pointer_update,
+                      onIdle: pointer.send_pointer_update,
                       keepTracking: true});
 
     $(document).on('message_selected.zulip', function (event) {
@@ -343,9 +276,9 @@ function main() {
         // Additionally, don't advance the pointer server-side
         // if the selected message is local-only
         if (event.msg_list === home_msg_list && page_params.narrow_stream === undefined) {
-            if (event.id > furthest_read &&
+            if (event.id > pointer.furthest_read &&
                 home_msg_list.get(event.id).local_id === undefined) {
-                furthest_read = event.id;
+                pointer.furthest_read = event.id;
             }
         }
 

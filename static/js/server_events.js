@@ -226,10 +226,10 @@ function get_events_success(events) {
     }
 
     if (new_pointer !== undefined
-        && new_pointer > furthest_read)
+        && new_pointer > pointer.furthest_read)
     {
-        furthest_read = new_pointer;
-        server_furthest_read = new_pointer;
+        pointer.furthest_read = new_pointer;
+        pointer.server_furthest_read = new_pointer;
         home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});
     }
 
