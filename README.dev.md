@@ -23,24 +23,24 @@ This is to remove Windows line endings, which cause weird errors.
 Using Vagrant
 =============
 
-This is the recommended approach for all platforms, and will install
-the Zulip development environment inside a VM or container and works
-on any platform that supports Vagrant.
-
 The best performing way to run the Zulip development environment is
 using an LXC container on a Linux host, but we support other platforms
-such as Mac via Virtualbox (but everything will be 2-3x slower).
+such as Mac/Windows via Virtualbox (but everything will be 2-3x slower).
 
-* If your host is Ubuntu 15.04 or newer, you can install and configure
-  the LXC Vagrant provider directly using apt:
+Ubuntu 15.04 or newer
+---------------------
+* install and configure the LXC Vagrant provider directly using apt:
+
   ```
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
   ```
   You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
-* If your host is Ubuntu 14.04, you will need to [download a newer
-  version of Vagrant][vagrant-dl], and then do the following:
+Ubuntu 14.04
+------------
+*  [download a newer  version of Vagrant][vagrant-dl], and then do the following:
+ 
   ```
   sudo apt-get install lxc lxc-templates cgroup-lite redir
   sudo dpkg -i vagrant*.deb # in directory where you downloaded vagrant
@@ -48,37 +48,49 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   ```
   You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
-* For other Linux hosts with a kernel above 3.12, [follow the Vagrant
-  LXC installation instructions][vagrant-lxc] to get Vagrant with LXC
-  for your platform.
+Other Linux (kernal above 3.12):
+--------------------------------
+* [follow the Vagrant LXC installation instructions][vagrant-lxc] to get 
+  Vagrant with LXC for your platform.
 
-* If your host is OS X or older Linux, [download VirtualBox][vbox-dl],
-  [download Vagrant][vagrant-dl], and install them both.
 
-* If you're on OS X and have VMWare, it should be possible to patch
-  Vagrantfile to use the VMWare vagrant provider which should perform
+OS X or older Linux (kernal at or below 3.12):
+----------------------------------------------
+* [download VirtualBox][vbox-dl], [download Vagrant][vagrant-dl], and install
+  them both.
+
+* Note: If you're on OS X and have VMWare, it should be possible to patch
+  Vagrantfile to use the VMWare vagrant provider, which should perform
   much better than Virtualbox.  Patches to do this by default if
   VMWare is available are welcome!
 
-* On Windows: You can use Vagrant and Virtualbox/VMWare on Windows
-  with Cygwin, similar to the Mac setup.  Be sure to create your git
-  clone using `git clone https://github.com/zulip/zulip.git -c
-  core.autocrlf=false` to avoid Windows line endings being added to
-  files (this causes weird errors).
+Windows:
+--------
+* use Vagrant and Virtualbox/VMWare on Windows with Cygwin, similar to the Mac 
+  setup. 
 
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
+<<<<<<< HEAD
 
+Universal Vagrant instructions:
+-------------------------------
+>>>>>>> cf8a322... Bold headings for OS versions Vagrant instructions
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal to install the development server.  This
-will take a long time on the first run because Vagrant needs to
-download the Ubuntu Trusty base image, but later you can run `vagrant
-destroy` and then `vagrant up` again to rebuild the environment and it
-will be much faster.
+will take a long time on the first run and also fail to fully execute
+on Windows (we're working on it). Vagrant needs to download the Ubuntu
+Trusty base image, but later you can run `vagrant destroy` and then
+`vagrant up` again to rebuild the environment and it will be much faster. 
 
-Once that finishes, you can run the development server as follows:
+On Windows,  run `npm install --no-bin-links`, and scroll to the
+"All Systems" instructions located way far below. Start from after
+`npm install`. The problem is symbolic linking is being attempted 
+on Windows and crashes `vagrant up`. 
+
+Once `vagrant up` finshes, you can run the development server as follows:
 
 ```
 vagrant ssh -- -L9991:localhost:9991
