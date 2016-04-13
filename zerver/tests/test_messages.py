@@ -949,7 +949,7 @@ class GetOldMessagesTest(AuthedTestCase):
         returns at most 1 message.
         """
         self.login("cordelia@zulip.com")
-        anchor = self.send_message("cordelia@zulip.com", "Scotland", Recipient.STREAM)
+        anchor = self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM)
 
         narrow = [dict(operator='sender', operand='cordelia@zulip.com')]
         result = self.post_with_params(dict(narrow=ujson.dumps(narrow),
