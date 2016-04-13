@@ -431,11 +431,12 @@ def send_restart_events(immediate=False):
             client.add_event(event.copy())
 
 def setup_event_queue():
-    load_event_queues()
-    atexit.register(dump_event_queues)
-    # Make sure we dump event queues even if we exit via signal
-    signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
-    tornado.autoreload.add_reload_hook(dump_event_queues) # type: ignore # TODO: Fix missing tornado.autoreload stub
+    if not settings.TEST_SUITE:
+        load_event_queues()
+        atexit.register(dump_event_queues)
+        # Make sure we dump event queues even if we exit via signal
+        signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
+        tornado.autoreload.add_reload_hook(dump_event_queues) # type: ignore # TODO: Fix missing tornado.autoreload stub
 
     try:
         os.rename(settings.JSON_PERSISTENT_QUEUE_FILENAME, "/var/tmp/event_queues.json.last")
