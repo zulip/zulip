@@ -27,6 +27,7 @@ def bulk_create_users(realms, users_raw, bot=False):
             continue
         users.append((email, full_name, short_name, active))
         existing_users.add(email)
+    users = sorted(users)
 
     # Now create user_profiles
     profiles_to_create = []

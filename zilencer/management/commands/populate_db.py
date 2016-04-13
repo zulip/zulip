@@ -139,9 +139,12 @@ class Command(BaseCommand):
             create_streams(realms, zulip_realm, stream_list)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list]
 
-            # Create subscriptions to streams
+            # Create subscriptions to streams.  The following
+            # algorithm will give each of the users a different but
+            # deterministic subset of the streams (given a fixed list
+            # of users).
             subscriptions_to_add = []
-            profiles = UserProfile.objects.select_related().all()
+            profiles = UserProfile.objects.select_related().all().order_by("email")
             for i, profile in enumerate(profiles):
                 # Subscribe to some streams.
                 for type_id in recipient_streams[:int(len(recipient_streams) *
