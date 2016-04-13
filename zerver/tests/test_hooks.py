@@ -718,7 +718,7 @@ class ZenDeskHookTests(AuthedTestCase):
         self.assert_json_success(result)
 
         # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.sender.email, email)
 
         return msg
@@ -750,7 +750,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assert_json_success(result)
 
         # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.sender.email, email)
 
         return msg
@@ -857,7 +857,7 @@ class TravisHookTests(AuthedTestCase):
                          stream_name=stream,
                          content_type="application/x-www-form-urlencoded")
 
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         u'Author: josh_mandel\nBuild status: Passed :thumbsup:\nDetails: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)'
         self.assertEqual(msg.subject, u"builds")
         self.assertEqual(msg.content, (u"Author: josh_mandel\nBuild status: Passed :thumbsup:\n"
@@ -884,7 +884,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service someurl.com changed its HTTP status from UP to DOWN.\nDescription: Non-recoverable failure in name resolution."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"Test check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -896,7 +896,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service smtp.someurl.com changed its SMTP status from UP to DOWN.\nDescription: Connection refused."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"SMTP check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -908,7 +908,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service imap.someurl.com changed its IMAP status from UP to DOWN.\nDescription: Invalid hostname, address or socket."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"IMAP check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -920,12 +920,9 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service imap.someurl.com changed its IMAP status from DOWN to UP."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"IMAP check status.")
         self.assertEqual(msg.content, expected_message)
-
-    def _get_recently_added_message(self):
-        return Message.objects.filter().order_by('-id')[0]
 
     def _get_fixture_data(self, name):
         return ujson.dumps(ujson.loads(self.fixture_data('pingdom', name)))
@@ -951,7 +948,7 @@ class YoHookTests(AuthedTestCase):
                         body,
                         content_type="application/x-www-form-urlencoded")
 
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.content, (u"Yo from IAGO"))
 
 class TeamcityHookTests(AuthedTestCase):
@@ -973,8 +970,7 @@ class TeamcityHookTests(AuthedTestCase):
                          stream_name=stream,
                          content_type="application/json")
 
-        msg = Message.objects.filter().order_by('-id')[0]
-        return msg
+        return self.get_last_message()
 
     def test_teamcity_success(self):
         msg = self.basic_test("success")
@@ -1019,7 +1015,7 @@ class CodeshipHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch started."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"codeship/docs")
         self.assertEqual(msg.content, expected_message)
 
@@ -1031,7 +1027,7 @@ class CodeshipHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch failed."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"codeship/docs")
         self.assertEqual(msg.content, expected_message)
 
@@ -1043,7 +1039,7 @@ class CodeshipHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch succeeded."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"codeship/docs")
         self.assertEqual(msg.content, expected_message)
 
@@ -1055,12 +1051,9 @@ class CodeshipHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch has some_other_status status."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"codeship/docs")
         self.assertEqual(msg.content, expected_message)
-
-    def _get_recently_added_message(self):
-        return Message.objects.filter().order_by('-id')[0]
 
     def _get_fixture_data(self, name):
         return ujson.dumps(ujson.loads(self.fixture_data('codeship', name)))

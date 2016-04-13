@@ -365,3 +365,5 @@ class AuthedTestCase(TestCase):
 
         return msg
 
+    def get_last_message(self):
+        return Message.objects.latest('id')
