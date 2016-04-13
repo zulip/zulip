@@ -343,6 +343,24 @@ To start the development server:
 
 … and visit [http://localhost:9991/](http://localhost:9991/).
 
+#### Proxy setup for by-hand installation
+
+If you are building the development environment on a network where a
+proxy is required to access the Internet, you will need to set the
+proxy in the environment as follows:
+
+- On Ubuntu, set the proxy environment variables using:
+ ```
+ export https_proxy=http://proxy_host:port
+ export http_proxy=http://proxy_host:port
+ ```
+
+- And set the npm proxy and https-proxy using:
+ ```
+ npm config set proxy http://proxy_host:port
+ npm config set https-proxy http://proxy_host:port
+ ```
+
 Using Docker
 -------------
 
@@ -529,22 +547,3 @@ Possible testing issues
   ][lxc-sf].
 
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner)
-
-Troubleshooting development environment setup
-=============================================
-
-If you are building the development environment on a network where a
-proxy is required to access the Internet, you will need to set the
-proxy in the environment as follows:
-
-- On Ubuntu, set the proxy environment variables using:
- ```
- export https_proxy=http://proxy_host:port
- export http_proxy=http://proxy_host:port
- ```
-
-- And set the npm proxy and https-proxy using:
- ```
- npm config set proxy http://proxy_host:port
- npm config set https-proxy http://proxy_host:port
- ```
