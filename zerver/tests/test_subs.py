@@ -741,7 +741,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
         self.assert_json_success(result)
 
-        msg = Message.objects.latest('id')
+        msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
@@ -779,7 +779,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
         self.assert_json_success(result)
 
-        msg = Message.objects.latest('id')
+        msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
@@ -812,7 +812,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
         self.assert_json_success(result)
 
-        msg = Message.objects.latest('id')
+        msg = self.get_last_message()
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
         expected_msg = "%s just created a new stream `%s`. " \
@@ -878,7 +878,7 @@ class SubscriptionAPITest(AuthedTestCase):
             {"principals": ujson.dumps([invitee])}, streams[:1], current_streams,
             invitee, streams_to_sub, invite_only=invite_only)
         # verify that the user was sent a message informing them about the subscription
-        msg = Message.objects.latest('id')
+        msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
                 get_user_profile_by_email("notification-bot@zulip.com").id)

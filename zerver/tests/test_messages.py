@@ -614,7 +614,7 @@ class MessagePOSTTest(AuthedTestCase):
                                                            "api-key": api_key})
         self.assert_json_success(result)
 
-        sent_message = Message.objects.all().order_by('-id')[0]
+        sent_message = self.get_last_message()
         self.assertEqual(sent_message.content, "Test message no to")
 
     def test_message_to_nonexistent_stream(self):
@@ -730,7 +730,7 @@ class MessagePOSTTest(AuthedTestCase):
         result = self.client.post("/json/messages", post_data)
         self.assert_json_success(result)
 
-        sent_message = Message.objects.all().order_by('-id')[0]
+        sent_message = self.get_last_message()
         self.assertEquals(sent_message.content,
                           "A" * (MAX_MESSAGE_LENGTH - 3) + "...")
 
@@ -746,7 +746,7 @@ class MessagePOSTTest(AuthedTestCase):
         result = self.client.post("/json/messages", post_data)
         self.assert_json_success(result)
 
-        sent_message = Message.objects.all().order_by('-id')[0]
+        sent_message = self.get_last_message()
         self.assertEquals(sent_message.subject,
                           "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
 
@@ -1084,7 +1084,7 @@ class GetOldMessagesTest(AuthedTestCase):
 
     def test_message_without_rendered_content(self):
         """Older messages may not have rendered_content in the database"""
-        m = Message.objects.all().order_by('-id')[0]
+        m = self.get_last_message()
         m.rendered_content = m.rendered_content_version = None
         m.content = 'test content'
         # Use to_dict_uncached directly to avoid having to deal with remote cache
