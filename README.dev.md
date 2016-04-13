@@ -30,6 +30,7 @@ such as Mac/Windows via Virtualbox (but everything will be 2-3x slower).
 Ubuntu 15.04 or newer
 ---------------------
 * install and configure the LXC Vagrant provider directly using apt:
+
   ```
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
@@ -39,6 +40,7 @@ Ubuntu 15.04 or newer
 Ubuntu 14.04
 ------------
 *  [download a newer  version of Vagrant][vagrant-dl], and then do the following:
+
   ```
   sudo apt-get install lxc lxc-templates cgroup-lite redir
   sudo dpkg -i vagrant*.deb # in directory where you downloaded vagrant
@@ -51,7 +53,7 @@ Other Linux (kernel above 3.12):
 * [follow the Vagrant LXC installation instructions][vagrant-lxc] to get 
   Vagrant with LXC for your platform.
 
-OS X or older Linux (kernal at or below 3.12)
+OS X or older Linux (kernel at or below 3.12)
 ----------------------------------------------
 * [download VirtualBox][vbox-dl], [download Vagrant][vagrant-dl], and install
   them both.
@@ -63,7 +65,10 @@ OS X or older Linux (kernal at or below 3.12)
 Windows
 --------
 * use Vagrant and Virtualbox/VMWare on Windows with Cygwin, similar to the Mac 
-  setup. 
+  setup. When installing Cygwin, make sure to include all packages containing
+  rsync and ssh. You can easily select these packages by entering rsync in the 
+  search box, selecting rsync packages, entering ssh in the search box, and
+  selecting ssh packages. 
 
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
@@ -72,7 +77,6 @@ Windows
 
 Universal Vagrant instructions
 -------------------------------
->>>>>>> cf8a322... Bold headings for OS versions Vagrant instructions
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal to install the development server.  This
 will take a long time on the first run - vagrant needs to download the Ubuntu
