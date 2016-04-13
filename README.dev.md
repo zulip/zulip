@@ -90,6 +90,25 @@ environment][using-dev].
 
 [using-dev]: #using-the-development-environment
 
+## Specifying proxy
+
+If you are using a proxy server for accessing the Internet you need to specify the proxy settings before running `Vagrant up`. Create file `~/.zulip-vagrant-config` (in home directory). Add the following lines to it after changing the values accordingly.
+
+```
+HTTP_PROXY http://proxy_host:port
+HTTPS_PROXY http://proxy_host:port
+NO_PROXY localhost,127.0.0.1,.example.com
+
+```
+
+Install the plugin `vagrant-proxyconf` so that the virtual machine can use the above specified proxy.
+
+```
+vagrant plugin install vagrant-proxyconf.
+```
+
+Now run vagrant up in your terminal to install the development server. If you ran `vagrant up` before and failed, make sure that you run `vagrant destroy` before running the up command again.
+
 
 Using provision.py without Vagrant
 ----------------------------------
