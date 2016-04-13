@@ -416,7 +416,8 @@ Using the Development Environment
 =================================
 
 Once the development environment is running, you can visit
-<http://localhost:9991/> in your browser.  By default, the development
+<http://localhost:9991/> in the browser on the host machine.  By
+default, the development
 server homepage just shows a list of the users that exist on the
 server and you can login as any of them by just clicking on a user.
 This setup saves time for the common case where you want to test
