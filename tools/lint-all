@@ -47,7 +47,7 @@ puppet/apt/README.md
 """.split()
 
 by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
-    ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md'],
+    ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
     group_by_ftype=True, exclude=exclude)
 
 # Invoke the appropriate lint checker for each language,
@@ -157,6 +157,7 @@ handlebars_rules = whitespace_rules
 html_rules = whitespace_rules
 json_rules = [] # just fix newlines at ends of files
 markdown_rules = whitespace_rules
+txt_rules = whitespace_rules
 
 def check_custom_checks():
     failed = False
@@ -191,6 +192,10 @@ def check_custom_checks():
 
     for fn in by_lang['md']:
         if custom_check_file(fn, markdown_rules):
+            failed = True
+
+    for fn in by_lang['txt'] + by_lang['text']:
+        if custom_check_file(fn, txt_rules):
             failed = True
 
     return failed
