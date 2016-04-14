@@ -137,6 +137,10 @@ urlpatterns += patterns('zerver.views',
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'api_fetch_api_key'),
+    
+    # This json format view is used by the Android app and accepts
+    # a username (use iago@zulip.com) and returns an API key.
+    url(r'^api/v1/dev_android_direct_login$',  'dev_android_direct_login'),
 
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
     url(r'^api/v1/fetch_google_client_id$', 'api_fetch_google_client_id'),
