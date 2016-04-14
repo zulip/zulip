@@ -108,7 +108,7 @@ def custom_check_file(fn, rules, skip_rules=[]):
                 traceback.print_exc()
         lastLine = line
     if lineFlag and '\n' not in lastLine:
-        print("No new line at the end of %s" % (fn,))
+        print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
         failed = True
     return failed
 
