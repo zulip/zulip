@@ -46,7 +46,7 @@ puppet/puppet-common/tests/
 """.split()
 
 by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
-    ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html'], group_by_ftype=True, exclude=exclude)
+    ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json'], group_by_ftype=True, exclude=exclude)
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
@@ -153,6 +153,7 @@ css_rules = [
     ] + whitespace_rules
 handlebars_rules = whitespace_rules
 html_rules = whitespace_rules
+json_rules = [] # just fix newlines at ends of files
 
 def check_custom_checks():
     failed = False
@@ -179,6 +180,10 @@ def check_custom_checks():
 
     for fn in by_lang['html']:
         if custom_check_file(fn, html_rules):
+            failed = True
+
+    for fn in by_lang['json']:
+        if custom_check_file(fn, json_rules):
             failed = True
 
     return failed
