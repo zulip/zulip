@@ -269,7 +269,7 @@ def flush_user_profile(sender, **kwargs):
 
     # Invalidate our active_users_in_realm info dict if any user has changed
     # name or email
-    if kwargs['update_fields'] is None or \
+    if kwargs.get('update_fields') is None or \
         len(set(['full_name', 'short_name', 'email', 'is_active']) & set(kwargs['update_fields'])) > 0:
         cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm))
 
@@ -282,7 +282,7 @@ def flush_user_profile(sender, **kwargs):
 
     # Invalidate realm-wide alert words cache if any user in the realm has changed
     # alert words
-    if kwargs['update_fields'] is None or "alert_words" in kwargs['update_fields']:
+    if kwargs.get('update_fields') is None or "alert_words" in kwargs['update_fields']:
         cache_delete(realm_alert_words_cache_key(user_profile.realm))
 
 # Called by models.py to flush various caches whenever we save
@@ -310,7 +310,7 @@ def flush_stream(sender, **kwargs):
     items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm)] = (stream,)
     cache_set_many(items_for_remote_cache)
 
-    if kwargs['update_fields'] is None or 'name' in kwargs['update_fields'] and \
+    if kwargs.get('update_fields') is None or 'name' in kwargs['update_fields'] and \
        UserProfile.objects.filter(
            Q(default_sending_stream=stream) |
            Q(default_events_register_stream=stream)
