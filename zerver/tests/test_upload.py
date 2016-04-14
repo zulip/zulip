@@ -14,6 +14,8 @@ from six.moves import urllib
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from six.moves import StringIO
+import os
+import shutil
 
 class FileUploadTest(AuthedTestCase):
     def test_multiple_upload_failure(self):
@@ -37,6 +39,30 @@ class FileUploadTest(AuthedTestCase):
 
         result = self.client.post("/json/upload_file")
         self.assert_json_error(result, "You must specify a file to upload")
+
+    def test_file_upload_authed(self):
+        """
+        A call to /json/upload_file should return a uri and actually create an object.
+        """
+        self.login("hamlet@zulip.com")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        result = self.client.post("/json/upload_file", {'file': fp})
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("uri", json)
+        uri = json["uri"]
+        base = '/user_uploads/'
+        self.assertEquals(base, uri[:len(base)])
+
+        response = self.client.get(uri)
+        data = "".join(response.streaming_content)
+        self.assertEquals("zulip!", data)
+
+    def tearDown(self):
+        if os.path.exists(settings.LOCAL_UPLOADS_DIR):
+            shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
 class S3Test(AuthedTestCase):
     # full URIs in public bucket
