@@ -17,6 +17,11 @@ $(function () {
         <div class="register-form">
             <p class="lead">
               <div class="register-page-header">{% trans "Let's get started" %}…</div>
+                <p>Before joining, please read and make sure you can follow the
+                  <a href="http://wiki.hl7.org/index.php?title=Chat.fhir.org_community_expectations">chat.fhir.org community expectations</a>.
+                </p>
+              </p>
+
             </p>
             <form class="form-inline" id="send_confirm" name="email_form"
                   action="{{ current_url }}" method="post">
