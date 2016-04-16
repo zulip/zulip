@@ -509,7 +509,7 @@ function scroll_finished() {
 
     if ($('#home').hasClass('active')) {
         if (!pointer.suppress_scroll_pointer_update) {
-            keep_pointer_in_view();
+            pointer.keep_pointer_in_view();
         } else {
             pointer.suppress_scroll_pointer_update = false;
         }
