@@ -91,6 +91,48 @@ class SetAvatarTest(AuthedTestCase):
         result = self.client.post("/json/set_avatar")
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
+    correct_files = [
+        ('img.png', 'png_resized.png'),
+        ('img.gif', 'gif_resized.png'),
+        ('img.tif', 'tif_resized.png')
+    ]
+    corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
+
+    def test_valid_avatars(self):
+        """
+        A call to /json/set_avatar with a valid file should return a url and actually create an avatar.
+        """
+        for fname, rfname in self.correct_files:
+            # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
+            # with self.subTest(fname=fname):
+            self.login("hamlet@zulip.com")
+            fp = open(os.path.join(TEST_AVATAR_DIR, fname), 'rb')
+
+            result = self.client.post("/json/set_avatar", {'file': fp})
+            self.assert_json_success(result)
+            json = ujson.loads(result.content)
+            self.assertIn("avatar_url", json)
+            url = json["avatar_url"]
+            base = '/user_avatars/'
+            self.assertEquals(base, url[:len(base)])
+
+            rfp = open(os.path.join(TEST_AVATAR_DIR, rfname), 'rb')
+            response = self.client.get(url)
+            data = "".join(response.streaming_content)
+            self.assertEquals(rfp.read(), data)
+
+    def test_invalid_avatars(self):
+        """
+        A call to /json/set_avatar with an invalid file should fail.
+        """
+        for fname in self.corrupt_files:
+            # with self.subTest(fname=fname):
+            self.login("hamlet@zulip.com")
+            fp = open(os.path.join(TEST_AVATAR_DIR, fname), 'rb')
+
+            result = self.client.post("/json/set_avatar", {'file': fp})
+            self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
+
     def tearDown(self):
         destroy_uploads()
 
