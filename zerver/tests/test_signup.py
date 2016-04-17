@@ -61,8 +61,7 @@ class PublicURLTest(TestCase):
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
-                     401: ["/json/get_public_streams",
-                           "/json/messages",
+                     401: ["/json/messages",
                            "/json/invite_users",
                            "/json/settings/change",
                            "/json/subscriptions/remove",
