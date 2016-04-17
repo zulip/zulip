@@ -67,11 +67,15 @@ function get_events_success(events) {
             new_pointer = event.pointer;
             break;
         case 'restart':
-            reload.initiate({save_pointer: true,
-                             save_narrow: true,
-                             save_compose: true,
-                             message: "The application has been updated; reloading!"
-                            });
+            var reload_options = {save_pointer: true,
+                                  save_narrow: true,
+                                  save_compose: true,
+                                  message: "The application has been updated; reloading!"
+                                 };
+            if (event.immediate) {
+                reload_options.immediate = true;
+            }
+            reload.initiate(reload_options);
             break;
         case 'update_message':
             messages_to_update.push(event);
@@ -222,10 +226,10 @@ function get_events_success(events) {
     }
 
     if (new_pointer !== undefined
-        && new_pointer > furthest_read)
+        && new_pointer > pointer.furthest_read)
     {
-        furthest_read = new_pointer;
-        server_furthest_read = new_pointer;
+        pointer.furthest_read = new_pointer;
+        pointer.server_furthest_read = new_pointer;
         home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});
     }
 
@@ -247,6 +251,10 @@ function get_events_success(events) {
 
 function get_events(options) {
     options = _.extend({dont_block: false}, options);
+
+    if (reload.is_in_progress()) {
+        return;
+    }
 
     get_events_params.dont_block = options.dont_block || get_events_failures > 0;
     if (get_events_params.queue_id === undefined) {
@@ -375,6 +383,8 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     if (page_params.event_queue_expired === true) {
         return;
     }
+    // Set expired because in a reload we may be called twice.
+    page_params.event_queue_expired = true;
     channel.del({
         url:      '/json/events',
         data:     {queue_id: page_params.event_queue_id}

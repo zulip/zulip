@@ -53,6 +53,16 @@ class zulip_internal::zmirror {
     source => "puppet:///modules/zulip_internal/zephyr-clients.debathena",
   }
 
+  file { "/usr/lib/nagios/plugins/zulip_zephyr_mirror":
+    require => Package[nagios-plugins-basic],
+    recurse => true,
+    purge => true,
+    owner => "root",
+    group => "root",
+    mode => 755,
+    source => "puppet:///modules/zulip_internal/nagios_plugins/zulip_zephyr_mirror",
+  }
+
   # TODO: Do the rest of our setup, which includes at least:
   # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
   # Putting tabbott/extra's keytab on the system at /home/zulip/tabbott.extra.keytab

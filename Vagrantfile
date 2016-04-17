@@ -18,6 +18,34 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/srv/zulip"
 
+  proxy_config_file = ENV['HOME'] + "/.zulip-vagrant-config"
+  if File.file?(proxy_config_file)
+    http_proxy = https_proxy = no_proxy = ""
+
+    IO.foreach(proxy_config_file) do |line|
+      line.chomp!
+      key, value = line.split(nil, 2)
+      case key
+      when /^([#;]|$)/; # ignore comments
+      when "HTTP_PROXY"; http_proxy = value
+      when "HTTPS_PROXY"; https_proxy = value
+      when "NO_PROXY"; no_proxy = value
+      end
+    end
+
+    if Vagrant.has_plugin?("vagrant-proxyconf")
+      if http_proxy != ""
+        config.proxy.http = http_proxy
+      end
+      if https_proxy != ""
+        config.proxy.https = https_proxy
+      end
+      if https_proxy != ""
+        config.proxy.no_proxy = no_proxy
+      end
+    end
+  end
+
   # Specify LXC provider before VirtualBox provider so it's preferred.
   config.vm.provider "lxc" do |lxc|
     if command? "lxc-ls"
@@ -39,8 +67,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 $provision_script = <<SCRIPT
 set -x
 set -e
-sudo apt-get update
-sudo apt-get install -y python-pbs
 /usr/bin/python /srv/zulip/provision.py
 SCRIPT
 

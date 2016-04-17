@@ -13,6 +13,8 @@ from collections import defaultdict
 from six.moves import filter
 from six.moves import map
 
+import lister
+
 parser = optparse.OptionParser()
 parser.add_option('--full',
     action='store_true',
@@ -27,60 +29,26 @@ os.chdir(path.join(path.dirname(__file__), '..'))
 
 # Exclude some directories and files from lint checking
 
-exclude_trees = """
+exclude = """
 static/third
 confirmation
 frontend_tests/casperjs
 zerver/migrations
 node_modules
-""".split()
-
-exclude_files = """
 docs/html_unescape.py
 zproject/test_settings.py
 zproject/settings.py
 tools/jslint/jslint.js
 api/setup.py
 api/integrations/perforce/git_p4.py
+puppet/apt/.forge-release
+puppet/puppet-common/tests/
+puppet/apt/README.md
 """.split()
 
-if options.modified:
-    # If the user specifies, use `git ls-files -m` to only check modified, non-staged
-    # files in the current checkout.  This makes things fun faster.
-    files = list(map(str.strip, subprocess.check_output(['git', 'ls-files', '-m']).split('\n')))
-else:
-    files = []
-
-files += args
-
-if not files and not options.modified:
-    # If no files are specified on the command line, use the entire git checkout
-    files = list(map(str.strip, subprocess.check_output(['git', 'ls-files']).split('\n')))
-
-files = list(filter(bool, files)) # remove empty file caused by trailing \n
-
-if not files:
-    raise Exception('There are no files to check!')
-
-# Categorize by language all files we want to check
-by_lang   = defaultdict(list)
-
-for filepath in files:
-    if (not filepath or not path.isfile(filepath)
-        or (filepath in exclude_files)
-        or any(filepath.startswith(d+'/') for d in exclude_trees)):
-        continue
-
-    _, exn = path.splitext(filepath)
-    if not exn:
-        # No extension; look at the first line
-        with open(filepath) as f:
-            if re.match(r'^#!.*\bpython', f.readline()):
-                exn = '.py'
-
-    by_lang[exn].append(filepath)
-
-by_lang['.sh'] = [_f for _f in map(str.strip, subprocess.check_output("grep --files-with-matches '#!.*\(ba\)\?sh' $(git ls-tree --name-only -r HEAD scripts/ tools/ bin/ | grep -v [.])", shell=True).split('\n')) if _f]
+by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
+    ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
+    group_by_ftype=True, exclude=exclude)
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
@@ -92,10 +60,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
 
 def check_pyflakes():
-    if not by_lang['.py']:
+    if not by_lang['py']:
         return False
     failed = False
-    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
+    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
         stdout = subprocess.PIPE,
         stderr = subprocess.PIPE)
 
@@ -142,11 +110,12 @@ def custom_check_file(fn, rules, skip_rules=[]):
                 traceback.print_exc()
         lastLine = line
     if lineFlag and '\n' not in lastLine:
-        print("No new line at the end of %s" % (fn,))
+        print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
         failed = True
     return failed
 
 whitespace_rules = [
+    # This linter should be first since bash_rules depends on it.
     {'pattern': '\s+$',
      'strip': '\n',
      'description': 'Fix trailing whitespace'},
@@ -166,10 +135,6 @@ js_rules = [
      'description': 'Missing space between else and {'},
     ] + whitespace_rules
 python_rules = [
-    {'pattern': "'[^']*'\s+\([^']*$",
-     'description': "Suspicious code with quoting around function name"},
-    {'pattern': '"[^"]*"\s+\([^"]*$',
-     'description': "Suspicious code with quoting around function name"},
     {'pattern': '".*"%\([a-z_].*\)?$',
      'description': 'Missing space around "%"'},
     {'pattern': "'.*'%\([a-z_].*\)?$",
@@ -180,27 +145,57 @@ python_rules = [
     {'pattern': '% [a-zA-Z0-9_.]*\)?$',
      'description': 'Used % comprehension without a tuple'},
     ] + whitespace_rules
-python_line_skip_rules = [
-    '\s*[*#]', # comments
-    ]
 bash_rules = [
     {'pattern': '#!.*sh [-xe]',
      'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches to set -x|set -e'},
-    ]
+    ] + whitespace_rules[0:1]
+css_rules = [
+    {'pattern': '^[^:]*:\S[^:]*;$',
+     'description': "Missing whitespace after : in CSS"},
+    ] + whitespace_rules
+handlebars_rules = whitespace_rules
+html_rules = whitespace_rules
+json_rules = [] # just fix newlines at ends of files
+markdown_rules = whitespace_rules
+txt_rules = whitespace_rules
 
 def check_custom_checks():
     failed = False
 
-    for fn in by_lang['.py']:
-        if custom_check_file(fn, python_rules, skip_rules=python_line_skip_rules):
+    for fn in by_lang['py']:
+        if custom_check_file(fn, python_rules):
             failed = True
 
-    for fn in by_lang['.js']:
+    for fn in by_lang['js']:
         if custom_check_file(fn, js_rules):
             failed = True
 
-    for fn in by_lang['.sh']:
+    for fn in by_lang['sh']:
         if custom_check_file(fn, bash_rules):
+            failed = True
+
+    for fn in by_lang['css']:
+        if custom_check_file(fn, css_rules):
+            failed = True
+
+    for fn in by_lang['handlebars']:
+        if custom_check_file(fn, handlebars_rules):
+            failed = True
+
+    for fn in by_lang['html']:
+        if custom_check_file(fn, html_rules):
+            failed = True
+
+    for fn in by_lang['json']:
+        if custom_check_file(fn, json_rules):
+            failed = True
+
+    for fn in by_lang['md']:
+        if custom_check_file(fn, markdown_rules):
+            failed = True
+
+    for fn in by_lang['txt'] + by_lang['text']:
+        if custom_check_file(fn, txt_rules):
             failed = True
 
     return failed
@@ -242,14 +237,14 @@ try:
     @lint
     def jslint():
         result = subprocess.call(['tools/node', 'tools/jslint/check-all.js']
-                                 + by_lang['.js'])
+                                 + by_lang['js'])
         return result
 
     @lint
     def puppet():
-        if not by_lang['.pp']:
+        if not by_lang['pp']:
             return 0
-        result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['.pp'])
+        result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['pp'])
         return result
 
     @lint

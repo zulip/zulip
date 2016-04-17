@@ -1,6 +1,9 @@
 set_global('page_params', {
     domain: 'zulip.com'
 });
+add_dependencies({
+    unread: 'js/unread.js'
+});
 
 var muting = require('js/muting.js');
 

@@ -298,7 +298,7 @@ class ActivityTest(AuthedTestCase):
     def test_activity(self):
         self.login("hamlet@zulip.com")
         client, _ = Client.objects.get_or_create(name='website')
-        query = '/json/update_pointer'
+        query = '/json/users/me/pointer'
         last_visit = datetime.datetime.now()
         count=150
         for user_profile in UserProfile.objects.all():
@@ -1046,7 +1046,7 @@ class GetProfileTest(AuthedTestCase):
 
     def common_update_pointer(self, email, pointer):
         self.login(email)
-        result = self.client.post("/json/update_pointer", {"pointer": pointer})
+        result = self.client_put("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
     def common_get_profile(self, email):
@@ -1078,14 +1078,14 @@ class GetProfileTest(AuthedTestCase):
 
     def test_api_get_empty_profile(self):
         """
-        Ensure get_profile returns a max message id and returns successfully
+        Ensure GET /users/me returns a max message id and returns successfully
         """
         json = self.common_get_profile("othello@zulip.com")
         self.assertEqual(json["pointer"], -1)
 
     def test_profile_with_pointer(self):
         """
-        Ensure get_profile returns a proper pointer id after the pointer is updated
+        Ensure GET /users/me returns a proper pointer id after the pointer is updated
         """
 
         id1 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
@@ -1101,7 +1101,7 @@ class GetProfileTest(AuthedTestCase):
         json = self.common_get_profile("hamlet@zulip.com")
         self.assertEqual(json["pointer"], id2) # pointer does not move backwards
 
-        result = self.client.post("/json/update_pointer", {"pointer": 99999999})
+        result = self.client_put("/json/users/me/pointer", {"pointer": 99999999})
         self.assert_json_error(result, "Invalid message ID")
 
     def test_get_all_profiles_avatar_urls(self):
@@ -1141,7 +1141,7 @@ class UserPresenceTests(AuthedTestCase):
             self.assertEqual(list(json['presences'].keys()), ['hamlet@zulip.com'])
             return json['presences'][email][client]['timestamp']
 
-        result = self.client.post("/json/update_active_status", {'status': 'idle'})
+        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
         test_result(result)
 
         result = self.client.post("/json/get_active_statuses", {})
@@ -1149,7 +1149,7 @@ class UserPresenceTests(AuthedTestCase):
 
         email = "othello@zulip.com"
         self.login(email)
-        self.client.post("/json/update_active_status", {'status': 'idle'})
+        self.client.post("/json/users/me/presence", {'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1163,7 +1163,7 @@ class UserPresenceTests(AuthedTestCase):
         self.login("hamlet@zulip.com")
         client = 'website'
 
-        self.client.post("/json/update_active_status", {'status': 'idle'})
+        self.client.post("/json/users/me/presence", {'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {})
 
         self.assert_json_success(result)
@@ -1172,14 +1172,14 @@ class UserPresenceTests(AuthedTestCase):
 
         email = "othello@zulip.com"
         self.login("othello@zulip.com")
-        self.client.post("/json/update_active_status", {'status': 'idle'})
+        self.client.post("/json/users/me/presence", {'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
 
-        self.client.post("/json/update_active_status", {'status': 'active'})
+        self.client.post("/json/users/me/presence", {'status': 'active'})
         result = self.client.post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1189,19 +1189,19 @@ class UserPresenceTests(AuthedTestCase):
     def test_no_mit(self):
         # MIT never gets a list of users
         self.login("espuser@mit.edu")
-        result = self.client.post("/json/update_active_status", {'status': 'idle'})
+        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'], {})
 
     def test_same_realm(self):
         self.login("espuser@mit.edu")
-        self.client.post("/json/update_active_status", {'status': 'idle'})
+        self.client.post("/json/users/me/presence", {'status': 'idle'})
         result = self.client.post("/accounts/logout/")
 
         # Ensure we don't see hamlet@zulip.com information leakage
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/update_active_status", {'status': 'idle'})
+        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences']["hamlet@zulip.com"]["website"]['status'], 'idle')
@@ -1219,7 +1219,7 @@ class AlertWordTests(AuthedTestCase):
         params = {
             'alert_words': ujson.dumps(['milk', 'cookies'])
         }
-        result = self.client.post('/json/set_alert_words', params)
+        result = self.client.post('/json/users/me/alert_words', params)
         self.assert_json_success(result)
         user = get_user_profile_by_email(email)
         words = user_alert_words(user)
@@ -1303,7 +1303,7 @@ class AlertWordTests(AuthedTestCase):
     def test_json_list_add(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
 
@@ -1315,7 +1315,7 @@ class AlertWordTests(AuthedTestCase):
     def test_json_list_remove(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
         result = self.client_delete('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one'])})
@@ -1329,10 +1329,10 @@ class AlertWordTests(AuthedTestCase):
     def test_json_list_set(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
+        result = self.client.post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
         self.assert_json_success(result)
 
         result = self.client.get('/json/users/me/alert_words')
@@ -1350,7 +1350,7 @@ class AlertWordTests(AuthedTestCase):
         self.login("hamlet@zulip.com")
         user_profile_hamlet = get_user_profile_by_email("hamlet@zulip.com")
 
-        result = self.client_patch('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
         result = self.client.get('/json/users/me/alert_words')

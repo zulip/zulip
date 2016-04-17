@@ -29,7 +29,9 @@ set_global('home_msg_list', {
     selected_id: function () {return 1;}
 });
 set_global('page_params', {test_suite: false});
-
+set_global('reload', {
+    is_in_progress: function () {return false;}
+});
 
 var server_events = require('js/server_events.js');
 

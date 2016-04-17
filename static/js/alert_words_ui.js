@@ -11,7 +11,7 @@ function update_word_alerts() {
     });
 
     channel.post({
-        url: '/json/set_alert_words',
+        url: '/json/users/me/alert_words',
         idempotent: true,
         data: {alert_words: JSON.stringify(words)}});
 }

@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import Tuple
 
 from collections import defaultdict
 import datetime
@@ -40,8 +41,8 @@ def gather_hot_conversations(user_profile, stream_messages):
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
 
-    conversation_length = defaultdict(int)
-    conversation_diversity = defaultdict(set)
+    conversation_length = defaultdict(int) # type: Dict[Tuple[int, str], int]
+    conversation_diversity = defaultdict(set) # type: Dict[Tuple[int, str], Set[str]]
     for user_message in stream_messages:
         if not user_message.message.sent_by_human():
             # Don't include automated messages in the count.
@@ -99,7 +100,7 @@ def gather_new_users(user_profile, threshold):
     # Gather information on users in the realm who have recently
     # joined.
     if user_profile.realm.domain == "mit.edu":
-        new_users = []
+        new_users = [] # type: List[UserProfile]
     else:
         new_users = list(UserProfile.objects.filter(
                 realm=user_profile.realm, date_joined__gt=threshold,
@@ -110,7 +111,7 @@ def gather_new_users(user_profile, threshold):
 
 def gather_new_streams(user_profile, threshold):
     if user_profile.realm.domain == "mit.edu":
-        new_streams = []
+        new_streams = [] # type: List[Stream]
     else:
         new_streams = list(get_active_streams(user_profile.realm).filter(
                 invite_only=False, date_created__gt=threshold))

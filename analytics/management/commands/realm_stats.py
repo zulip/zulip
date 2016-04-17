@@ -29,7 +29,7 @@ class Command(BaseCommand):
                     UserActivity.objects.filter(user_profile__realm=realm,
                                                 user_profile__is_active=True,
                                                 last_visit__gt=activity_cutoff,
-                                                query="/json/update_pointer",
+                                                query="/json/users/me/pointer",
                                                 client__name="website")]
 
     def messages_sent_by(self, user, days_ago):

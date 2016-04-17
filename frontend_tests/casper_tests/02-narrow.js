@@ -20,7 +20,7 @@ common.then_send_many([
     { stream:  'Verona', subject: 'other subject',
       content: 'test message C' },
 
-    { stream:  'Venice', subject: 'frontend test',
+    { stream:  'Denmark', subject: 'frontend test',
       content: 'other message' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
@@ -83,7 +83,7 @@ function expect_stream_subject() {
 function expect_subject() {
     common.expected_messages('zfilt', [
         'Verona > frontend test',
-        'Venice > frontend test',
+        'Denmark > frontend test',
         'Verona > frontend test'
     ], [
         '<p>test message A</p>',

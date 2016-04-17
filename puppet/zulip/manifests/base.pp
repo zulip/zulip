@@ -5,8 +5,13 @@ class zulip::base {
                      # Dependencies of our API
                      "python-requests",
                      "python-simplejson",
+                     "python-typing",
                      # For development/debugging convenience
                      "ipython",
+                     # Used in scripts
+                     "netcat",
+                     # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
+                     "nagios-plugins-basic",
                      ]
   package { $base_packages: ensure => "installed" }
 
@@ -77,5 +82,15 @@ class zulip::base {
     owner  => 'zulip',
     group  => 'zulip',
     mode   => 640,
+  }
+
+  file { "/usr/lib/nagios/plugins/zulip_base":
+    require => Package[nagios-plugins-basic],
+    recurse => true,
+    purge => true,
+    owner => "root",
+    group => "root",
+    mode => 755,
+    source => "puppet:///modules/zulip/nagios_plugins/zulip_base",
   }
 }

@@ -45,10 +45,19 @@ libpasteurize.fixes.fix_newstyle
 
 echo; echo "Testing for additions of Python 2 patterns we've removed as part of moving towards Python 3 compatibility."; echo
 
+if [ -n "$(git status --porcelain)" ]; then
+    echo "The repository is not clean. py3k can only be run if the repository is clean."
+    exit 1
+fi
+
+script_dir=$(dirname "$0")
+lister_path="$script_dir/../lister.py"
+python_files="$($lister_path -f py)"
+
 failed=0
 for fixer in $fixers; do
     echo "Running Python 3 compatibility test $fixer"
-    futurize -f $fixer -j4 -n -w . >/dev/null 2>/dev/null
+    echo "$python_files" | xargs futurize -f $fixer -j4 -n -w >/dev/null 2>/dev/null
     if ! git diff --exit-code; then
         # Clear the output from this one
         git reset --hard >/dev/null
@@ -62,8 +71,8 @@ done
 # with iterators (currently for, join, and from_iterable).
 fixer="libmodernize.fixes.fix_dict_six"
 echo "Running python 3 compatability test $fixer"
-python-modernize -f $fixer -j4 -n -w . >/dev/null 2>/dev/null
-if git diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep -v from_iterable; then
+echo "$python_files" | xargs python-modernize -f $fixer -j4 -n -w >/dev/null 2>/dev/null
+if git --no-pager diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep -v from_iterable; then
     echo
     echo "Error: the above are changes suggested by python-modernize "
     echo "to handle the list=>iterator transition in Python 3."
@@ -72,13 +81,13 @@ if git diff | grep "^+ " | grep -v '[ ]*for' | grep -v [.]join | grep -v from_it
     echo "does not display the full context; you can find the diff with context by "
     echo "searching through the (unfortunately very spammy) full output below:"
     echo
-    # Clear the output
-    git diff
+    git --no-pager diff
     echo
     echo "That was a lot of text!  Read this output from the top for more readable details."
-    git reset --hard >/dev/null
     failed=1
 fi
+# Clear the output
+git reset --hard >/dev/null
 
 if git grep -q '\(^\W*import StringIO\|^\W*from StringIO\)'; then
     echo "ERROR: StringIO imports not compatible with python 2+3:"
@@ -88,8 +97,9 @@ if git grep -q '\(^\W*import StringIO\|^\W*from StringIO\)'; then
 fi
 
 echo
-if [ -z "$failed" ]; then
+if [ "$failed" == "0" ]; then
     echo "No issues detected!"
 else
     echo "Python 3 compatibility error(s) detected!  See diffs above for what you need to change."
+    exit 1
 fi

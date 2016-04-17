@@ -29,7 +29,7 @@ var presence_descriptions = {
     idle:   'is not active'
 };
 
-/* Keep in sync with views.py:json_update_active_status() */
+/* Keep in sync with views.py:update_active_status_backend() */
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
 
@@ -215,7 +215,7 @@ function filter_and_sort(users) {
 }
 exports._filter_and_sort = filter_and_sort;
 
-function actually_update_users(user_list) {
+exports.update_users = function (user_list) {
     if (page_params.domain === 'mit.edu') {
         return;  // MIT realm doesn't have a presence list
     }
@@ -256,8 +256,8 @@ function actually_update_users(user_list) {
         // Render right panel partially
         $.each(user_info, function (index, user) {
             var user_index = all_users.indexOf(user.email);
-            $('#user_presences').find('[data-email=' + user.email + ']').remove();
-            $('#user_presences li').eq(user_index + 1).before(templates.render('user_presence_row', user));
+            $('#user_presences').find('[data-email="' + user.email + '"]').remove();
+            $('#user_presences li').eq(user_index).before(templates.render('user_presence_row', user));
         });
     } else {
         $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
@@ -268,20 +268,10 @@ function actually_update_users(user_list) {
 
     // Return updated users: useful for testing user performance fix
     return user_info;
-}
-exports._update_users = actually_update_users;
-
-// The function actually_update_users() can be pretty expensive for realms with lots
-// of users.  Not only is there more work to do in terms of rendering the user list, but
-// we also get more updates.  Large realms have reported lags while typing in the compose
-// box, and there's strong evidence that this is caused by user list updates.  This isn't a
-// perfect solution, but it should remove some pain, and there's no real harm in waiting five
-// seconds to update user activity.
-var update_users = _.throttle(actually_update_users, 5000);
-
+};
 
 function actually_update_users_for_search() {
-    actually_update_users();
+    exports.update_users();
     resize.resize_page_components();
 }
 
@@ -363,7 +353,7 @@ exports._status_from_timestamp = status_from_timestamp;
 
 function focus_ping() {
     channel.post({
-        url: '/json/update_active_status',
+        url: '/json/users/me/presence',
         data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
                new_user_input: exports.new_user_input},
         idempotent: true,
@@ -385,7 +375,7 @@ function focus_ping() {
                     exports.presence_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
                 }
             });
-            update_users();
+            exports.update_users();
             exports.update_huddles();
         }
     });
@@ -431,7 +421,7 @@ exports.set_user_statuses = function (users, server_time) {
         updated_users[email] = status;
     });
 
-    update_users(updated_users);
+    exports.update_users(updated_users);
     exports.update_huddles();
 };
 

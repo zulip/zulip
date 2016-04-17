@@ -74,7 +74,7 @@ os.setpgrp()
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
-        ['./tools/webpack', 'watch'],
+        ['./tools/webpack', '--watch', '--port', str(webpack_port)],
         ['python', 'manage.py', 'rundjango'] +
           manage_args + ['localhost:%d' % (django_port,)],
         ['python', 'manage.py', 'runtornado'] +

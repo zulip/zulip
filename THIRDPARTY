@@ -63,16 +63,16 @@ Copyright: 2006 Otheus Shelling
 License: GPL-2.0
 Comment: Not linked.
 
-Files: puppet/zulip_internal/files/nagios_plugins/check_debian_packages
+Files: puppet/zulip/files/nagios_plugins/zulip_base/check_debian_packages
 Copyright: 2005 Francesc Guasch
 License: GPL-2.0
 Comment: Not linked.
 
-Files: puppet/zulip_internal/files/nagios_plugins/check_postgres.pl
+Files: puppet/zulip/files/nagios_plugins/zulip_postgres_appdb/check_postgres.pl
 Copyright: 2007-2015 Greg Sabino Mullane
 License: BSD-2-Clause
 
-Files: puppet/zulip_internal/files/nagios_plugins/check_website_response.sh
+Files: puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_response.sh
 Copyright: 2011 Chris Freeman
 License: GPL-2.0
 
@@ -228,10 +228,6 @@ License: public-domain
 Files: tools/jslint/jslint.js
 Copyright: 2002 Douglas Crockford
 License: XXX-good-not-evil
-
-Files: tools/python-proxy
-Copyright: 2009 F.bio Domingues
-License: Expat
 
 Files: tools/review
 Copyright: 2010 Ksplice, Inc.

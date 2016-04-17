@@ -30,7 +30,7 @@ if settings.ZULIP_COM:
 else:
     from mock import Mock
     get_deployment_by_domain = Mock()
-    Deployment = Mock()
+    Deployment = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 def get_deployment_or_userprofile(role):
     return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)
@@ -49,13 +49,13 @@ def asynchronous(method):
     def wrapper(request, *args, **kwargs):
         return method(request, handler=request._tornado_handler, *args, **kwargs)
     if getattr(method, 'csrf_exempt', False):
-        wrapper.csrf_exempt = True
+        wrapper.csrf_exempt = True # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
 
 def update_user_activity(request, user_profile):
     # update_active_status also pushes to rabbitmq, and it seems
     # redundant to log that here as well.
-    if request.META["PATH_INFO"] == '/json/update_active_status':
+    if request.META["PATH_INFO"] == '/json/users/me/presence':
         return
 
     if hasattr(request, '_query'):
@@ -385,7 +385,7 @@ class REQ(object):
         """
 
         self.post_var_name = whence
-        self.func_var_name = None
+        self.func_var_name = None # type: str
         self.converter = converter
         self.validator = validator
         self.default = default
@@ -573,13 +573,13 @@ def profiled(func):
     """
     This decorator should obviously be used only in a dev environment.
     It works best when surrounding a function that you expect to be
-    called once.  One strategy is to write a test case in zerver/tests.py
-    and wrap the test case with the profiled decorator.
+    called once.  One strategy is to write a backend test and wrap the
+    test case with the profiled decorator.
 
     You can run a single test case like this:
 
-        # edit zerver/tests.py and place @profiled above the test case below
-        ./tools/test-backend zerver.RateLimitTests.test_ratelimit_decrease
+        # edit zerver/tests/test_external.py and place @profiled above the test case below
+        ./tools/test-backend zerver.tests.test_external.RateLimitTests.test_ratelimit_decrease
 
     Then view the results like this:
 

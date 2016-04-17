@@ -43,7 +43,7 @@ class ZulipSession extends Session
 
         @update_active_status()
         @get '/json/bots'
-        @post '/json/get_old_messages', {
+        @get '/json/messages', {
             anchor: @pointer
             num_before: 200
             num_after: 200
@@ -75,7 +75,7 @@ class ZulipSession extends Session
             message_latency.update(+new Date() - parseInt(m[1], 10))
 
     update_active_status: ->
-        @post "/json/update_active_status", {status: "active"}, update_status_time.cbTimer()
+        @post "/json/users/me/presence", {status: "active"}, update_status_time.cbTimer()
 
     send_stream_message: (stream, subject, content) ->
         @post '/json/messages', {

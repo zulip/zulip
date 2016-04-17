@@ -117,28 +117,28 @@ autofocus('#id_username');
                 </div>
             </div>
         </form>
-	{% endif %}
-	{% if dev_auth_enabled %}
-	<form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
-	      action="{% url 'zerver.views.dev_direct_login' %}">
+        {% endif %}
+        {% if dev_auth_enabled %}
+        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
+              action="{% url 'zerver.views.dev_direct_login' %}">
             {% csrf_token %}
-	    <div class="control-group">
-	        {% if password_auth_enabled %}
-	        <label for="direct_email" class="direct-label">{% trans 'or Choose a user' %}:</label>
-		{% endif %}
-	        <div class="controls">
+            <div class="control-group">
+                {% if password_auth_enabled %}
+                <label for="direct_email" class="direct-label">{% trans 'or Choose a user' %}:</label>
+                {% endif %}
+                <div class="controls">
                     <p>({% trans 'Administrators' %})</p>
-		    {% for user_email in direct_admins %}
-		    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
-		    {% endfor %}
+                    {% for user_email in direct_admins %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
+                    {% endfor %}
                     <p>({% trans 'Normal users' %})</p>
-		    {% for user_email in direct_users %}
-		    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-		    {% endfor %}
-	        </div>
-	    </div>
-	</form>
-	{% endif %}
+                    {% for user_email in direct_users %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
+                    {% endfor %}
+                </div>
+            </div>
+        </form>
+        {% endif %}
 
     {% if google_auth_enabled %}
     <div class="login-google">

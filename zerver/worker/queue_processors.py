@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import Any
 
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
@@ -56,10 +57,10 @@ def get_active_worker_queues():
     return list(worker_classes.keys())
 
 class QueueProcessingWorker(object):
-    queue_name = None
+    queue_name = None # type: str
 
     def __init__(self):
-        self.q = None
+        self.q = None # type: SimpleQueueClient
         if self.queue_name is None:
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
@@ -178,7 +179,7 @@ class MissedMessageWorker(QueueProcessingWorker):
     def start(self):
         while True:
             missed_events = self.q.drain_queue("missedmessage_emails", json=True)
-            by_recipient = defaultdict(list)
+            by_recipient = defaultdict(list) # type: Dict[int, List[Dict[str, Any]]]
 
             for event in missed_events:
                 logging.info("Received event: %s" % (event,))

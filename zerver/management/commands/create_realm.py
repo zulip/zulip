@@ -41,7 +41,8 @@ Usage: python2.7 manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
     def validate_domain(self, domain):
         # Domains can't contain whitespace if they are to be used in memcached
-        # keys.
+        # keys. Seems safer to leave that as the default case regardless of
+        # which backing store we use.
         if re.search("\s", domain):
             raise ValueError("Domains can't contain whitespace")
 

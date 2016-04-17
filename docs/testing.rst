@@ -53,8 +53,8 @@ it. On Ubuntu:
 Backend Django tests
 --------------------
 
-These live in ``zerver/tests.py`` and ``zerver/test_*.py``. Run them
-with ``tools/test-backend``.
+These live in ``zerver/tests/tests.py`` and
+``zerver/tests/test_*.py``. Run them with ``tools/test-backend``.
 
 Web frontend black-box casperjs tests
 -------------------------------------
@@ -321,3 +321,24 @@ Setting up the manual testing database
 
 Will populate your local database with all the usual accounts plus some
 test messages involving Shakespeare characters.
+
+(This is run automatically as part of the development environment setup
+process.)
+
+Javascript manual testing
+-------------------------
+
+`debug.js` has some tools for profiling Javascript code, including:
+
+- `print_elapsed_time`: Wrap a function with it to print the time that
+  function takes to the javascript console.
+- `IterationProfiler`: Profile part of looping constructs (like a for
+  loop or $.each). You mark sections of the iteration body and the
+  IterationProfiler will sum the costs of those sections over all
+  iterations.
+
+Chrome has a very good debugger and inspector in its developer tools.
+Firebug for Firefox is also pretty good. They both have profilers, but
+Chrome's is a sampling profiler while Firebug's is an instrumenting
+profiler. Using them both can be helpful because they provide
+different information.

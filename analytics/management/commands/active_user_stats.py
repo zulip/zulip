@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         # Calculate 10min, 2hrs, 12hrs, 1day, 2 business days (TODO business days), 1 week bucket of stats
         hour_buckets = [0.16, 2, 12, 24, 48, 168]
-        user_info = defaultdict(dict)
+        user_info = defaultdict(dict) # type: Dict[str, Dict[float, List[str]]]
 
         for last_presence in users:
             if last_presence.status == UserPresence.IDLE:
@@ -43,7 +43,7 @@ class Command(BaseCommand):
                 statsd.gauge("users.active.%s.%shr" %  (statsd_key(realm, True), statsd_key(hr, True)), len(users))
 
         # Also do stats for how many users have been reading the app.
-        users_reading = UserActivity.objects.select_related().filter(query="/json/update_message_flags")
+        users_reading = UserActivity.objects.select_related().filter(query="/json/messages/flags")
         user_info = defaultdict(dict)
         for activity in users_reading:
             for bucket in hour_buckets:

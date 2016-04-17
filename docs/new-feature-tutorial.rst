@@ -62,8 +62,8 @@ process.
 
 **Testing:** There are two types of frontend tests: node-based unit tests and 
 blackbox end-to-end tests. The blackbox tests are run in a headless browser 
-using Casper.js and are located in ``zerver/tests/frontend/tests/``. The unit
-tests use Node's ``assert`` module are located in ``zerver/tests/frontend/node/``.
+using Casper.js and are located in ``frontend_tests/casper_tests/``. The unit
+tests use Node's ``assert`` module are located in ``frontend_tests/node_tests/``.
 For more information on writing and running tests see the :doc:`testing 
 documentation <testing>`.
 

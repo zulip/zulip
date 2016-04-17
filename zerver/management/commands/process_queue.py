@@ -38,6 +38,7 @@ class Command(BaseCommand):
 
             logger.info("Worker %d connecting to queue %s" % (worker_num, queue_name))
             worker = get_worker(queue_name)
+            worker.setup()
 
             def signal_handler(signal, frame):
                 logger.info("Worker %d disconnecting from queue %s" % (worker_num, queue_name))

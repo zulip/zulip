@@ -90,7 +90,7 @@ def parse_file(fn):
         if isinstance(obj, list):
             return [clean_this(item) for item in obj]
         if isinstance(obj, dict):
-            if len(obj.keys()) == 1 and 'this' in obj:
+            if len(obj) == 1 and 'this' in obj:
                 return clean_this(obj['this'])
             return {k: clean_this(v) for k, v in obj.items()}
         return obj

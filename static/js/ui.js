@@ -4,6 +4,8 @@ var exports = {};
 
 var actively_scrolling = false;
 
+exports.have_scrolled_away_from_top = true;
+
 exports.actively_scrolling = function () {
     return actively_scrolling;
 };
@@ -122,28 +124,45 @@ function message_hover(message_row) {
     current_message_hover = message_row;
 }
 
-exports.report_message = function (response, status_box, cls) {
+/* Arguments used in the report_* functions are,
+   response- response that we want to display
+   status_box- element being used to display the response
+   cls- class that we want to add/remove to/from the status_box
+   type- used to define more complex logic for special cases (currently being
+         used only for subscriptions-status) */
+
+exports.report_message = function (response, status_box, cls, type) {
     if (cls === undefined) {
         cls = 'alert';
     }
 
-    status_box.removeClass(status_classes).addClass(cls)
+    if (type === undefined) {
+        type = ' ';
+    }
+
+    if (type === 'subscriptions-status') {
+        status_box.removeClass(status_classes).addClass(cls).children('#response')
               .text(response).stop(true).fadeTo(0, 1);
+    } else {
+        status_box.removeClass(status_classes).addClass(cls)
+              .text(response).stop(true).fadeTo(0, 1);
+    }
+
     status_box.show();
 };
 
-exports.report_error = function (response, xhr, status_box) {
+exports.report_error = function (response, xhr, status_box, type) {
     if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
         response += ": " + $.parseJSON(xhr.responseText).msg;
     }
 
-    ui.report_message(response, status_box, 'alert-error');
+    ui.report_message(response, status_box, 'alert-error', type);
 };
 
-exports.report_success = function (response, status_box) {
-    ui.report_message(response, status_box, 'alert-success');
+exports.report_success = function (response, status_box, type) {
+    ui.report_message(response, status_box, 'alert-success', type);
 };
 
 function need_skinny_mode() {
@@ -489,18 +508,18 @@ function scroll_finished() {
     actively_scrolling = false;
 
     if ($('#home').hasClass('active')) {
-        if (!suppress_scroll_pointer_update) {
+        if (!pointer.suppress_scroll_pointer_update) {
             keep_pointer_in_view();
         } else {
-            suppress_scroll_pointer_update = false;
+            pointer.suppress_scroll_pointer_update = false;
         }
         floating_recipient_bar.update();
         if (viewport.scrollTop() === 0 &&
-            have_scrolled_away_from_top) {
-            have_scrolled_away_from_top = false;
+            ui.have_scrolled_away_from_top) {
+            ui.have_scrolled_away_from_top = false;
             message_store.load_more_messages(current_msg_list);
-        } else if (!have_scrolled_away_from_top) {
-            have_scrolled_away_from_top = true;
+        } else if (!ui.have_scrolled_away_from_top) {
+            ui.have_scrolled_away_from_top = true;
         }
         // When the window scrolls, it may cause some messages to
         // enter the screen and become read.  Calling

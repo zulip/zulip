@@ -18,7 +18,7 @@ class PointerTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
         msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
-        result = self.client.post("/json/update_pointer", {"pointer": msg_id})
+        result = self.client_put("/json/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, msg_id)
 
@@ -36,34 +36,34 @@ class PointerTest(AuthedTestCase):
 
     def test_missing_pointer(self):
         """
-        Posting json to /json/update_pointer which does not contain a pointer key/value pair
+        Posting json to /json/users/me/pointer which does not contain a pointer key/value pair
         returns a 400 and error message.
         """
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
-        result = self.client.post("/json/update_pointer", {"foo": 1})
+        result = self.client_put("/json/users/me/pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
     def test_invalid_pointer(self):
         """
-        Posting json to /json/update_pointer with an invalid pointer returns a 400 and error
+        Posting json to /json/users/me/pointer with an invalid pointer returns a 400 and error
         message.
         """
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
-        result = self.client.post("/json/update_pointer", {"pointer": "foo"})
+        result = self.client_put("/json/users/me/pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
     def test_pointer_out_of_range(self):
         """
-        Posting json to /json/update_pointer with an out of range (< 0) pointer returns a 400
+        Posting json to /json/users/me/pointer with an out of range (< 0) pointer returns a 400
         and error message.
         """
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
-        result = self.client.post("/json/update_pointer", {"pointer": -2})
+        result = self.client_put("/json/users/me/pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
@@ -89,7 +89,7 @@ class UnreadCountTests(AuthedTestCase):
     def test_update_flags(self):
         self.login("hamlet@zulip.com")
 
-        result = self.client.post("/json/update_message_flags",
+        result = self.client.post("/json/messages/flags",
                                   {"messages": ujson.dumps(self.unread_msg_ids),
                                    "op": "add",
                                    "flag": "read"})
@@ -103,7 +103,7 @@ class UnreadCountTests(AuthedTestCase):
                 found += 1
         self.assertEqual(found, 2)
 
-        result = self.client.post("/json/update_message_flags",
+        result = self.client.post("/json/messages/flags",
                                   {"messages": ujson.dumps([self.unread_msg_ids[1]]),
                                    "op": "remove", "flag": "read"})
         self.assert_json_success(result)
@@ -123,12 +123,12 @@ class UnreadCountTests(AuthedTestCase):
                        self.send_message("hamlet@zulip.com", "cordelia@zulip.com",
                                          Recipient.PERSONAL, "test2")]
 
-        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps(message_ids),
+        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
                                                                  "op": "add",
                                                                  "flag": "read"})
         self.assert_json_success(result)
 
-        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([]),
+        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                  "op": "remove",
                                                                  "flag": "read",
                                                                  "all": ujson.dumps(True)})

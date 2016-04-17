@@ -164,6 +164,12 @@
             <span class="integration-label">Phabricator</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-pingdom">
+         <a class="integration-link integration-pingdom" href="#pingdom">
+            <img class="integration-logo" src="/static/images/integrations/logos/pingdom.png" alt="Pingdom logo" />
+            <span class="integration-label">Pingdom</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-pivotal">
          <a class="integration-link integration-pivotal" href="#pivotal">
             <img class="integration-logo" src="/static/images/integrations/logos/pivotal.png" alt="Pivotal logo" />
@@ -206,6 +212,12 @@
             <span class="integration-label">Trac</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-travis">
+         <a class="integration-link integration-travis" href="#travis">
+            <img class="integration-logo" src="/static/images/integrations/logos/travis.png" alt="Travis CI logo" />
+            <span class="integration-label">Travis CI</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-trello">
          <a class="integration-link integration-trello" href="#trello">
             <img class="integration-logo" src="/static/images/integrations/logos/trello.png" alt="Trello logo" />
@@ -218,16 +230,16 @@
             <span class="integration-label">Twitter</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-yo-app">
+         <a class="integration-link integration-yo-app" href="#yo-app">
+            <img class="integration-logo" src="/static/images/integrations/logos/yo-app.png" alt="Yo App logo" />
+            <span class="integration-label">Yo App</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-zendesk">
          <a class="integration-link integration-zendesk" href="#zendesk">
             <img class="integration-logo" src="/static/images/integrations/logos/zendesk.png" alt="Zendesk logo" />
             <span class="integration-label">Zendesk</span>
-         </a>
-       </div>
-       <div class="integration-lozenge integration-travis">
-         <a class="integration-link integration-travis" href="#travis">
-            <img class="integration-logo" src="/static/images/integrations/logos/travis.png" alt="Travis CI logo" />
-            <span class="integration-label">Travis CI</span>
          </a>
        </div>
     </div>
@@ -1094,204 +1106,6 @@
       <img class="screenshot" src="/static/images/integrations/jira/001.png" />
     </div>
 
-    <div id="nagios" class="integration-instructions">
-
-
-      <p>First, create the stream you'd like to use for Nagios notifications,
-      and subscribe all interested parties to this stream. The integration will
-      use the default stream <code>nagios</code> if no stream is supplied in the
-      configuration; you still need to create the stream even if you are using
-      this default.</p>
-
-      <p>Next, download and install our <a href="/api">Python
-      bindings and example scripts</a> on your Nagios server.</p>
-
-      <p>Next, open <code>integrations/nagios/zuliprc.example</code>
-      in your favorite editor, and change the following lines to
-      specify the email address and API key for your Nagios bot,
-      saving it to <code>/etc/nagios3/zuliprc</code> on your Nagios
-      server:</p>
-
-<div class="codehilite"><pre>[api]
-email = NAGIOS_BOT_EMAIL_ADDRESS
-key = NAGIOS_BOT_API_KEY
-{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre></div>
-
-      <p>Copy <code>integrations/nagios/zulip_nagios.cfg</code>
-      to <code>/etc/nagios3/conf.d</code> on your Nagios server.</p>
-
-      <p>Finally, add <code>zulip</code> to the <code>members</code>
-      list for one or more of the contact groups in the <code>CONTACT
-      GROUPS</code> section
-      of <code>/etc/nagios3/conf.d/contacts.cfg</code>, doing
-      something like:
-      </p>
-
-<div class="codehilite"><pre>define contactgroup{
-        contactgroup_name       admins
-        alias                   Nagios Administrators
-        members                 monitoring<span class="na">, zulip</span>
-        }
-</pre></div>
-
-      Once you've done that, reload your Nagios configuration
-      using <code>/etc/init.d/nagios3 reload</code>.
-
-      <p><b>Congratulations! You're done!</b><br /> When your Nagios
-      system makes an alert, you'll see a message like the following,
-      to the stream <code>nagios</code> (to change this, edit the
-      arguments to <code>nagios-notify-zulip</code>
-      in <code>/etc/nagios3/conf.d/zulip_nagios.cfg</code>) with a
-      topic indicating the service with an issue:</p>
-      <img class="screenshot" src="/static/images/integrations/nagios/001.png" />
-
-      <p><b>Testing</b><br />If you
-        have <a href="http://nagios.sourceforge.net/docs/3_0/extcommands.html">external
-        commands enabled in Nagios</a>, you can generate a test notice
-        from your Nagios instance by visiting using the <code>Send
-        custom service notification</code> command in
-        the <code>Service Commands</code> section of any individual
-        service's page on your Nagios instance.</p>
-
-      <p><b>Troubleshooting</b><br />You can confirm whether you've
-      correctly configured Nagios to run the Zulip plugin by looking
-      for <code>SERVICE NOTIFICATION</code> lines mentioning zulip
-      in <code>/var/log/nagios3/nagios.log</code>.  You can confirm
-      whether you've configured the Zulip plugin code correctly by
-      running <code>/usr/local/share/zulip/integrations/nagios/nagios-notify-zulip</code>
-      directly.</p>
-    </div>
-
-
-    <div id="pagerduty" class="integration-instructions">
-
-      <p>First, create the stream you'd like to use for Pagerduty notifications,
-      and subscribe all interested parties to this stream. We recommend the
-      stream name <code>pagerduty</code>. Keep in mind you still need to create
-      the stream first even if you are using this recommendation.</p>
-
-      <p>Next, in Pagerduty, select Services under Configuration on the top
-      of the page.</p>
-      <img class="screenshot" src="/static/images/integrations/pagerduty/001.png" />
-
-      <p>Now navigate to the service you want to integrate with Zulip. From
-      there, click "Add a webhook". Fill in the form like this:</p>
-      <ul>
-          <li><b>Name</b>: Zulip</li>
-          <li><b>Endpoint URL</b>: <code>{{ external_api_uri }}{% verbatim %}/v1/external/pagerduty?api_key=abcdefgh&amp;stream=pagerduty{% endverbatim %}</code></li>
-      </ul>
-
-      <img class="screenshot" src="/static/images/integrations/pagerduty/002.png" />
-
-    </div>
-
-
-    <div id="perforce" class="integration-instructions">
-
-
-     <p>Zulip supports integration with Perforce as a
-     <a href="http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html">trigger</a>
-     that fires once a changelist is submitted and committed.  To do this:</p>
-
-      <ol>
-        <li>Download and install our <a href="/api">Python bindings</a> on the
-        server that hosts your Perforce depot. The Perforce trigger will be
-        installed to a location like
-        <code>/usr/local/share/zulip/integrations/perforce</code></li>
-
-        <li>Open <code>integrations/perforce/zulip_perforce_config.py</code> in
-        your favorite editor and change the <code>ZULIP_USER</code> and
-        <code>ZULIP_API_KEY</code> variables at the top of the file to the
-        credentials for the bot you'd like to use for this integration.</li>
-
-        <li>Edit your
-        <a href="http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html#d0e14583">trigger table</a>
-        with <code>p4 triggers</code> and add an entry something like the
-        following:
-
-        <pre>notify_zulip change-commit //depot/... "python /usr/local/share/zulip/integrations/perforce/zulip_change-commit.py %change% %changeroot%"</pre>
-        </li>
-
-        <li>By default, this hook will send to streams of the form
-        <code>depot_subdirectory-commits</code>. So, a changelist that modifies
-        files in <code>//depot/foo/bar/baz</code> will result in a message to
-        stream <code>foo-commits</code>. Messages about changelists that modify
-        files in the depot root or files in multiple direct subdirectories of
-        the depot root will be sent to <code>depot-commits</code>. If you'd
-        prefer different behavior, such as all commits across your depot going
-        to one stream, change it now in <code>zulip_perforce_config.py</code>.
-        Make sure that everyone interested in getting these post-commit Zulips
-        is subscribed to the relevant streams!</li>
-      </ol>
-
-      <p><b>Congratulations! You're done!</b><br /> When you commit to your
-      Perforce depot the team can see updates in real time in
-      Zulip:</p>
-
-      <img class="screenshot" src="/static/images/integrations/perforce/001.png" />
-    </div>
-
-
-
-    <div id="phabricator" class="integration-instructions">
-
-
-      <p>Zulip supports Phabricator integration and can notify you of the
-      latest items in your Phabricator feed.</p>
-
-      <p>You can follow the instructions at
-          <a href="https://github.com/zulip/phabricator-to-zulip">
-           https://github.com/zulip/phabricator-to-zulip
-          </a>
-        to get it set up.
-      </p>
-
-    </div>
-
-
-    <div id="pivotal" class="integration-instructions">
-
-
-      <p>Zulip supports Pivotal Tracker integration and can notify you of changes
-      to the stories in your Pivotal Tracker project.</p>
-
-      <p>First, create the stream you'd like to use for Pivotal Tracker
-      notifications, and subscribe all interested parties to this stream. We
-      recommend the name <code>pivotal</code>.</p>
-
-      <p>Next, in the Settings page for your project, choose the Integrations
-      tab. Scroll down to the <code>Activity Web Hook</code> section, and enter
-      the following url:</p>
-
-      <p><code>{{ external_api_uri }}/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Choose version 5 of the API. Zulip supports both version 3 and version 5, but
-      version 5 contains more information that lets Zulip format more useful messages.</p>
-
-      <img class="screenshot" src="/static/images/integrations/pivotal/001.png" />
-
-      <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Zulip:</p>
-      <img class="screenshot" src="/static/images/integrations/pivotal/002.png" />
-    </div>
-
-    <div id="puppet" class="integration-instructions">
-      <p>Zulip supports Puppet integration and can notify you when Puppet runs fail (or when they happen at all).</p>
-
-      <p>You can follow the instructions at
-          <a href="https://forge.puppetlabs.com/mbarr/puppet_zulip">
-           https://forge.puppetlabs.com/mbarr/puppet_zulip
-          </a>
-        to get it set up.
-      </p>
-
-      <p><small>Thanks to Matt from Kensho for submitting this integration!</small></p>
-    </div>
-
-
     <div id="mercurial" class="integration-instructions">
 
       <p>Get Zulip notifications when you <code>hg push</code>!</p>
@@ -1389,6 +1203,75 @@ ignore_branches = "noisy,even-more-noisy"</pre>
       <img class="screenshot" src="/static/images/integrations/hg/001.png" />
     </div>
 
+    <div id="nagios" class="integration-instructions">
+
+
+      <p>First, create the stream you'd like to use for Nagios notifications,
+      and subscribe all interested parties to this stream. The integration will
+      use the default stream <code>nagios</code> if no stream is supplied in the
+      configuration; you still need to create the stream even if you are using
+      this default.</p>
+
+      <p>Next, download and install our <a href="/api">Python
+      bindings and example scripts</a> on your Nagios server.</p>
+
+      <p>Next, open <code>integrations/nagios/zuliprc.example</code>
+      in your favorite editor, and change the following lines to
+      specify the email address and API key for your Nagios bot,
+      saving it to <code>/etc/nagios3/zuliprc</code> on your Nagios
+      server:</p>
+
+<div class="codehilite"><pre>[api]
+email = NAGIOS_BOT_EMAIL_ADDRESS
+key = NAGIOS_BOT_API_KEY
+{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre></div>
+
+      <p>Copy <code>integrations/nagios/zulip_nagios.cfg</code>
+      to <code>/etc/nagios3/conf.d</code> on your Nagios server.</p>
+
+      <p>Finally, add <code>zulip</code> to the <code>members</code>
+      list for one or more of the contact groups in the <code>CONTACT
+      GROUPS</code> section
+      of <code>/etc/nagios3/conf.d/contacts.cfg</code>, doing
+      something like:
+      </p>
+
+<div class="codehilite"><pre>define contactgroup{
+        contactgroup_name       admins
+        alias                   Nagios Administrators
+        members                 monitoring<span class="na">, zulip</span>
+        }
+</pre></div>
+
+      Once you've done that, reload your Nagios configuration
+      using <code>/etc/init.d/nagios3 reload</code>.
+
+      <p><b>Congratulations! You're done!</b><br /> When your Nagios
+      system makes an alert, you'll see a message like the following,
+      to the stream <code>nagios</code> (to change this, edit the
+      arguments to <code>nagios-notify-zulip</code>
+      in <code>/etc/nagios3/conf.d/zulip_nagios.cfg</code>) with a
+      topic indicating the service with an issue:</p>
+      <img class="screenshot" src="/static/images/integrations/nagios/001.png" />
+
+      <p><b>Testing</b><br />If you
+        have <a href="http://nagios.sourceforge.net/docs/3_0/extcommands.html">external
+        commands enabled in Nagios</a>, you can generate a test notice
+        from your Nagios instance by visiting using the <code>Send
+        custom service notification</code> command in
+        the <code>Service Commands</code> section of any individual
+        service's page on your Nagios instance.</p>
+
+      <p><b>Troubleshooting</b><br />You can confirm whether you've
+      correctly configured Nagios to run the Zulip plugin by looking
+      for <code>SERVICE NOTIFICATION</code> lines mentioning zulip
+      in <code>/var/log/nagios3/nagios.log</code>.  You can confirm
+      whether you've configured the Zulip plugin code correctly by
+      running <code>/usr/local/share/zulip/integrations/nagios/nagios-notify-zulip</code>
+      directly.</p>
+    </div>
+
+
     <div id="newrelic" class="integration-instructions">
 
 
@@ -1414,6 +1297,165 @@ ignore_branches = "noisy,even-more-noisy"</pre>
       <p><b>Congratulations! You're done!</b><br /> Your New Relic events will
        appear in Zulip:</p>
       <img class="screenshot" src="/static/images/integrations/newrelic/002.png" />
+    </div>
+
+    <div id="pagerduty" class="integration-instructions">
+
+      <p>First, create the stream you'd like to use for Pagerduty notifications,
+      and subscribe all interested parties to this stream. We recommend the
+      stream name <code>pagerduty</code>. Keep in mind you still need to create
+      the stream first even if you are using this recommendation.</p>
+
+      <p>Next, in Pagerduty, select Services under Configuration on the top
+      of the page.</p>
+      <img class="screenshot" src="/static/images/integrations/pagerduty/001.png" />
+
+      <p>Now navigate to the service you want to integrate with Zulip. From
+      there, click "Add a webhook". Fill in the form like this:</p>
+      <ul>
+          <li><b>Name</b>: Zulip</li>
+          <li><b>Endpoint URL</b>: <code>{{ external_api_uri }}{% verbatim %}/v1/external/pagerduty?api_key=abcdefgh&amp;stream=pagerduty{% endverbatim %}</code></li>
+      </ul>
+
+      <img class="screenshot" src="/static/images/integrations/pagerduty/002.png" />
+
+    </div>
+
+
+    <div id="perforce" class="integration-instructions">
+
+
+     <p>Zulip supports integration with Perforce as a
+     <a href="http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html">trigger</a>
+     that fires once a changelist is submitted and committed.  To do this:</p>
+
+      <ol>
+        <li>Download and install our <a href="/api">Python bindings</a> on the
+        server that hosts your Perforce depot. The Perforce trigger will be
+        installed to a location like
+        <code>/usr/local/share/zulip/integrations/perforce</code></li>
+
+        <li>Open <code>integrations/perforce/zulip_perforce_config.py</code> in
+        your favorite editor and change the <code>ZULIP_USER</code> and
+        <code>ZULIP_API_KEY</code> variables at the top of the file to the
+        credentials for the bot you'd like to use for this integration.</li>
+
+        <li>Edit your
+        <a href="http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html#d0e14583">trigger table</a>
+        with <code>p4 triggers</code> and add an entry something like the
+        following:
+
+        <pre>notify_zulip change-commit //depot/... "python /usr/local/share/zulip/integrations/perforce/zulip_change-commit.py %change% %changeroot%"</pre>
+        </li>
+
+        <li>By default, this hook will send to streams of the form
+        <code>depot_subdirectory-commits</code>. So, a changelist that modifies
+        files in <code>//depot/foo/bar/baz</code> will result in a message to
+        stream <code>foo-commits</code>. Messages about changelists that modify
+        files in the depot root or files in multiple direct subdirectories of
+        the depot root will be sent to <code>depot-commits</code>. If you'd
+        prefer different behavior, such as all commits across your depot going
+        to one stream, change it now in <code>zulip_perforce_config.py</code>.
+        Make sure that everyone interested in getting these post-commit Zulips
+        is subscribed to the relevant streams!</li>
+      </ol>
+
+      <p><b>Congratulations! You're done!</b><br /> When you commit to your
+      Perforce depot the team can see updates in real time in
+      Zulip:</p>
+
+      <img class="screenshot" src="/static/images/integrations/perforce/001.png" />
+    </div>
+
+
+
+    <div id="phabricator" class="integration-instructions">
+
+
+      <p>Zulip supports integration with Phabricator and can notify you of the
+      latest items in your Phabricator feed.</p>
+
+      <p>You can follow the instructions at
+          <a href="https://github.com/zulip/phabricator-to-zulip">
+           https://github.com/zulip/phabricator-to-zulip
+          </a>
+        to get it set up.
+      </p>
+
+    </div>
+
+    <div id="pingdom" class="integration-instructions">
+
+      <p>Zulip supports integration with Pingdom and can notify you of
+          uptime status changes from your Pingdom dashboard.</p>
+
+      <p>First, create the stream you'd like to use for Pingdom notifications,
+          and subscribe all interested parties to this stream. We
+          recommend the name <code>pingdom</code>.</p>
+
+      <p><code>{{ external_api_uri }}/v1/external/pingdom?api_key=abcdefgh&amp;stream=pingdom</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to.</p>
+
+      <p>Next, under following url: </p>
+      <p><code>https://my.pingdom.com/reports/integration/settings</code></p>
+      <p>create your integration by clicking on <code>Add Integration</code> button and filling form as following:</p>
+      <img class="screenshot" src="/static/images/integrations/pingdom/001.png" />
+
+      <p>Last, during creating or editing your check, scroll down to <code>Connect Integrations</code>
+         section and ensure your integration is checked</p>
+
+      <p><b>Congratulations! You're done!</b><br /> Example Zulip notification
+      looks like this:</p>
+
+      <img class="screenshot" src="/static/images/integrations/pingdom/002.png" />
+
+    </div>
+
+
+    <div id="pivotal" class="integration-instructions">
+
+
+      <p>Zulip supports integration with Pivotal Tracker and can notify you of changes
+      to the stories in your Pivotal Tracker project.</p>
+
+      <p>First, create the stream you'd like to use for Pivotal Tracker
+      notifications, and subscribe all interested parties to this stream. We
+      recommend the name <code>pivotal</code>.</p>
+
+      <p>Next, in the Settings page for your project, choose the Integrations
+      tab. Scroll down to the <code>Activity Web Hook</code> section, and enter
+      the following url:</p>
+
+      <p><code>{{ external_api_uri }}/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to.</p>
+
+      <p>Choose version 5 of the API. Zulip supports both version 3 and version 5, but
+      version 5 contains more information that lets Zulip format more useful messages.</p>
+
+      <img class="screenshot" src="/static/images/integrations/pivotal/001.png" />
+
+      <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Zulip:</p>
+      <img class="screenshot" src="/static/images/integrations/pivotal/002.png" />
+    </div>
+
+    <div id="puppet" class="integration-instructions">
+      <p>Zulip supports Puppet integration and can notify you when Puppet runs fail (or when they happen at all).</p>
+
+      <p>You can follow the instructions at
+          <a href="https://forge.puppetlabs.com/mbarr/puppet_zulip">
+           https://forge.puppetlabs.com/mbarr/puppet_zulip
+          </a>
+        to get it set up.
+      </p>
+
+      <p><small>Thanks to Matt from Kensho for submitting this integration!</small></p>
+
     </div>
 
     <div id="redmine" class="integration-instructions">
@@ -1677,6 +1719,30 @@ ignore_branches = "noisy,even-more-noisy"</pre>
       in <code>zulip_trac_config.py</code>.</p>
     </div>
 
+    <div id="travis" class="integration-instructions">
+
+      <p>See your Travis CI build notifications in Zulip!</p>
+
+      <p>First, create the stream you'd like to use for notifications, and subscribe
+      all interested parties to this stream. We recommend the name <code>travis</code>.</p>
+
+      <p>Next, set up a bot for the integration. You'll need the bot's API key
+      to construct a URL for Travis CI.</p>
+
+      <p>Finally, set up a webhook in your <code>.travis.yml</code> file:</p>
+
+<pre>
+notifications:
+  webhooks:
+    - https://zulip.example.com/api/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
+</pre>
+
+      <p><b>Congratulations! You're done!</b><br /> When a code build occurs,
+      you're receive a notification on the specified stream and topic.</p>
+
+      <img class="screenshot" src="/static/images/integrations/travis/001.png" />
+    </div>
+
     <div id="trello" class="integration-instructions">
 
 
@@ -1778,28 +1844,36 @@ access_token_secret =</pre>
 
     </div>
 
-    <div id="travis" class="integration-instructions">
+    <div id="yo-app" class="integration-instructions">
 
-      <p>See your Travis CI build notifications in Zulip!</p>
+      <p>See your Yo App notifications in Zulip!</p>
 
-      <p>First, create the stream you'd like to use for notifications, and subscribe
-      all interested parties to this stream. We recommend the name <code>travis</code>.</p>
+      <p>Set up a bot for the integration. You'll need the bot's API key
+      to construct a URL for Yo App Callback.</p>
 
-      <p>Next, set up a bot for the integration. You'll need the bot's API key
-      to construct a URL for Travis CI.</p>
+      <p>You will receive your notifications as a private message between you and the bot.</p>
 
-      <p>Finally, set up a webhook in your <code>.travis.yml</code> file:</p>
+      <pre>
+        Create URL using your bot's API key and the email address
+        associated with your Zulip account:
+        https://zulip.example.com/api/v1/external/yo?email=awesome@zulip.example.com&amp;api_key=abcdefgh
+      </pre>
 
-<pre>
-notifications:
-  webhooks:
-    - https://zulip.example.com/api/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
-</pre>
+      <p>Copy the url created and go to <a href="https://yoapi.justyo.co">yoapi.justyo.co</a></p>
+      <p>Sign in using your username and password and go to Edit Profile.</p>
 
-      <p><b>Congratulations! You're done!</b><br /> When a code build occurs,
-      you're receive a notification on the specified stream and topic.</p>
+      <img class="screenshot" src="/static/images/integrations/yo-app/001.png" />
 
-      <img class="screenshot" src="/static/images/integrations/travis/001.png" />
+      <p>Paste the URL in Callback field and click on Update.</p>
+
+      <p><b>Congratulations! You're done!</b><br />When someone sends your username a Yo,
+      you'll receive a notification as a private message from the bot
+      like this:</p>
+
+      <img class="screenshot" src="/static/images/integrations/yo-app/002.png" />
+
+      <p>Multiple users can use the same Yo bot; each user should use
+      their own Zulip account email in the webhook URL.</p>
     </div>
 
     <div id="zendesk" class="integration-instructions">

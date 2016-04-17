@@ -26,7 +26,7 @@ function batched_updater(flag, op, immediate) {
         // call finishes, they will be handled in the success callback.
 
         channel.post({
-            url:      '/json/update_message_flags',
+            url:      '/json/messages/flags',
             idempotent: true,
             data:     {messages: JSON.stringify(real_msg_ids),
                        op:       op,

@@ -79,13 +79,13 @@ In our Django code, never do direct
 use ``get_user_profile_by_{email,id}``. There are 3 reasons for this:
 
 #. It's guaranteed to correctly do a case-inexact lookup
-#. It fetches the user object from memcached, which is faster
+#. It fetches the user object from remote cache, which is faster
 #. It always fetches a UserProfile object which has been queried using
    .selected\_related(), and thus will perform well when one later
    accesses related models like the Realm.
 
 Similarly we have ``get_client`` and ``get_stream`` functions to fetch
-those commonly accessed objects via memcached.
+those commonly accessed objects via remote cache.
 
 Using Django model objects as keys in sets/dicts
 ------------------------------------------------
