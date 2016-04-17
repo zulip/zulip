@@ -462,7 +462,7 @@ INTERNAL_BOT_DOMAIN = "zulip.com"
 
 # Set the realm-specific bot names
 for bot in INTERNAL_BOTS:
-    if not bot['var_name'] in vars():
+    if vars().get(bot['var_name']) is None:
         bot_email = bot['email_template'] % (INTERNAL_BOT_DOMAIN,)
         vars()[bot['var_name'] ] = bot_email
 
@@ -680,6 +680,7 @@ JS_SPECS = {
             'js/resize.js',
             'js/floating_recipient_bar.js',
             'js/ui.js',
+            'js/pointer.js',
             'js/click_handlers.js',
             'js/scroll_bar.js',
             'js/gear_menu.js',
@@ -812,7 +813,7 @@ LOGGING = {
     'handlers': {
         'zulip_admins': {
             'level':     'ERROR',
-            'class':     'zerver.handlers.AdminZulipHandler',
+            'class':     'zerver.logging_handlers.AdminZulipHandler',
             # For testing the handler delete the next line
             'filters':   ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'

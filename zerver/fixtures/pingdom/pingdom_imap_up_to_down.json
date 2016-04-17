@@ -1,0 +1,29 @@
+{
+  "check_id": 2051859,
+  "check_name": "IMAP check",
+  "check_type": "IMAP",
+  "check_params": {
+    "basic_auth": false,
+    "encryption": true,
+    "hostname": "imap.someurl.com",
+    "ipv6": false,
+    "port": 993
+  },
+  "tags": [],
+  "previous_state": "UP",
+  "current_state": "DOWN",
+  "state_changed_timestamp": 1458069480,
+  "state_changed_utc_time": "2016-03-15T19:18:00",
+  "long_description": "Invalid hostname, address or socket",
+  "description": "Unknown target",
+  "first_probe": {
+    "ip": "188.138.118.184",
+    "ipv6": "",
+    "location": "Strasbourg 2, France"
+  },
+  "second_probe": {
+    "ip": "76.164.194.74",
+    "ipv6": "2605:6f80:0:c::449",
+    "location": "Las Vegas 2, NV"
+  }
+}

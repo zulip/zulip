@@ -1,8 +1,12 @@
 from __future__ import absolute_import
 
+from typing import Any, Tuple
+
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
 from six.moves import zip
+
+from zerver.models import UserProfile
 
 import redis
 import time
@@ -14,23 +18,28 @@ import logging
 client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES
 def _rules_for_user(user):
+    # type: (UserProfile) -> Any
     if user.rate_limits != "":
-        return [[int(l) for l in limit.split(':')] for limit in user.rate_limits.split(',')]
+        return [tuple(int(l) for l in limit.split(':')) for limit in user.rate_limits.split(',')] # type: List[Tuple[int, int]]
     return rules
 
 def redis_key(user, domain):
+    # type: (UserProfile, str) -> List[str]
     """Return the redis keys for this user"""
     return ["ratelimit:%s:%s:%s:%s" % (type(user), user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
 
 def max_api_calls(user):
+    # type: (UserProfile) -> int
     "Returns the API rate limit for the highest limit"
     return _rules_for_user(user)[-1][1]
 
 def max_api_window(user):
+    # type: (UserProfile) -> int
     "Returns the API time window for the highest limit"
     return _rules_for_user(user)[-1][0]
 
 def add_ratelimit_rule(range_seconds, num_requests):
+    # type: (int , int) -> None
     "Add a rate-limiting rule to the ratelimiter"
     global rules
 
@@ -38,10 +47,12 @@ def add_ratelimit_rule(range_seconds, num_requests):
     rules.sort(cmp=lambda x, y: x[0] < y[0])
 
 def remove_ratelimit_rule(range_seconds, num_requests):
+    # type: (int , int) -> None
     global rules
     rules = [x for x in rules if x[0] != range_seconds and x[1] != num_requests]
 
 def block_user(user, seconds, domain='all'):
+    # type: (UserProfile, int, str) -> None
     "Manually blocks a user id for the desired number of seconds"
     _, _, blocking_key = redis_key(user, domain)
     with client.pipeline() as pipe:
@@ -50,10 +61,12 @@ def block_user(user, seconds, domain='all'):
         pipe.execute()
 
 def unblock_user(user, domain='all'):
+    # type: (UserProfile, str) -> None
     _, _, blocking_key = redis_key(user, domain)
     client.delete(blocking_key)
 
 def clear_user_history(user, domain='all'):
+    # type: (UserProfile, str) -> None
     '''
     This is only used by test code now, where it's very helpful in
     allowing us to run tests quickly, by giving a user a clean slate.
@@ -62,6 +75,7 @@ def clear_user_history(user, domain='all'):
         client.delete(key)
 
 def _get_api_calls_left(user, domain, range_seconds, max_calls):
+    # type: (UserProfile, str, int, int) -> Tuple[int, float]
     list_key, set_key, _ = redis_key(user, domain)
     # Count the number of values in our sorted set
     # that are between now and the cutoff
@@ -89,6 +103,7 @@ def _get_api_calls_left(user, domain, range_seconds, max_calls):
     return calls_left, time_reset
 
 def api_calls_left(user, domain='all'):
+    # type: (UserProfile, str) -> Tuple[int, float]
     """Returns how many API calls in this range this client has, as well as when
        the rate-limit will be reset to 0"""
     max_window = _rules_for_user(user)[-1][0]
@@ -96,6 +111,7 @@ def api_calls_left(user, domain='all'):
     return _get_api_calls_left(user, domain, max_window, max_calls)
 
 def is_ratelimited(user, domain='all'):
+    # type: (UserProfile, str) -> Tuple[bool, float]
     "Returns a tuple of (rate_limited, time_till_free)"
     list_key, set_key, blocking_key = redis_key(user, domain)
 
@@ -146,6 +162,7 @@ def is_ratelimited(user, domain='all'):
     return False, 0.0
 
 def incr_ratelimit(user, domain='all'):
+    # type: (UserProfile, str) -> None
     """Increases the rate-limit for the specified user"""
     list_key, set_key, _ = redis_key(user, domain)
     now = time.time()

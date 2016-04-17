@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+from typing import Any, Generator, List, Tuple
+
 import os
 import sys
 
@@ -16,6 +18,7 @@ def version():
     return version
 
 def recur_expand(target_root, dir):
+    # type: (Any, Any) -> Generator[Tuple[str, List[str]], None, None]
     for root, _, files in os.walk(dir):
         paths = [os.path.join(root, f) for f in files]
         if len(paths):
@@ -40,7 +43,7 @@ package_info = dict(
     data_files=[('share/zulip/examples', ["examples/zuliprc", "examples/send-message", "examples/subscribe",
                                            "examples/get-public-streams", "examples/unsubscribe",
                                            "examples/list-members", "examples/list-subscriptions",
-                                           "examples/print-messages"])] + \
+                                           "examples/print-messages", "examples/recent-messages"])] + \
         list(recur_expand('share/zulip', 'integrations/')),
     scripts=["bin/zulip-send"],
 )
@@ -49,6 +52,7 @@ setuptools_info = dict(
     install_requires=['requests>=0.12.1',
                       'simplejson',
                       'six',
+                      'typing',
     ],
 )
 
@@ -66,7 +70,7 @@ except ImportError:
         sys.exit(1)
     try:
         import requests
-        assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
+        assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1')) # type: ignore # https://github.com/JukkaL/mypy/issues/1165
     except (ImportError, AssertionError):
         print("requests >=0.12.1 is not installed", file=sys.stderr)
         sys.exit(1)

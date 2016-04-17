@@ -1,10 +1,9 @@
 class zulip_internal::nagios {
   include zulip_internal::apache
+  include zulip::nagios
 
   $nagios_packages = [# Packages needed for Nagios
                       "nagios3",
-                      # Needed for check_website_response
-                      "netcat",
                       ]
   package { $nagios_packages: ensure => "installed" }
 

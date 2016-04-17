@@ -38,10 +38,7 @@ class PublicURLTest(TestCase):
 
     def fetch(self, method, urls, expected_status):
         for url in urls:
-            if method == "get":
-                response = self.client.get(url)
-            else:
-                response = self.client.post(url)
+            response = getattr(self.client, method)(url) # e.g. self.client.post(url) if method is "post"
             self.assertEqual(response.status_code, expected_status,
                              msg="Expected %d, received %d for %s to %s" % (
                     expected_status, response.status_code, method, url))
@@ -58,13 +55,12 @@ class PublicURLTest(TestCase):
                     401: ["/api/v1/streams/Denmark/members",
                           "/api/v1/users/me/subscriptions",
                           "/api/v1/messages",
+                          "/json/messages",
                           ],
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
                      401: ["/json/get_public_streams",
-                           "/json/get_old_messages",
-                           "/json/update_pointer",
                            "/json/messages",
                            "/json/invite_users",
                            "/json/settings/change",
@@ -81,10 +77,14 @@ class PublicURLTest(TestCase):
                            "/api/v1/fetch_api_key",
                            ],
                 }
+        put_urls = {401: ["/json/users/me/pointer"],
+                }
         for status_code, url_set in six.iteritems(get_urls):
             self.fetch("get", url_set, status_code)
         for status_code, url_set in six.iteritems(post_urls):
             self.fetch("post", url_set, status_code)
+        for status_code, url_set in six.iteritems(put_urls):
+            self.fetch("put", url_set, status_code)
 
     def test_get_gcid_when_not_configured(self):
         with self.settings(GOOGLE_CLIENT_ID=None):

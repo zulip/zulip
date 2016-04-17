@@ -106,7 +106,7 @@ a {
 .app-main .column-right .right-sidebar {
     position: fixed;
     margin-top: 50px;
-    z-index:100;
+    z-index: 100;
 }
 
 .app-main .column-left .left-sidebar {
@@ -1805,7 +1805,7 @@ input.recipient_box {
     padding-top: 0px;
     overflow: hidden;
     text-overflow: ellipsis;
-    float:left;
+    float: left;
     letter-spacing: normal;
     height: 40px;
 }
@@ -1942,7 +1942,7 @@ input.recipient_box {
     width: 100%;
     top: 40px;
     height: 20px;
-    z-index:99;
+    z-index: 99;
 }
 
 
@@ -2129,12 +2129,12 @@ input.recipient_box {
     text-align: center;
     padding: 4px;
     color: #ccc;
-    font-size:18px;
+    font-size: 18px;
     box-shadow: none;
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     text-shadow: none;
-    z-index:5;
+    z-index: 5;
 }
 
 #searchbox .search_button:hover {
@@ -2465,6 +2465,26 @@ div.floating_recipient {
 
 #add_new_subscription {
     text-align: center;
+}
+
+#subscriptions-status {
+    position: fixed;
+    z-index: 999;
+    display: block;
+    left: 300px;
+    right: 300px;
+    margin: 0px auto;
+    opacity: 0.9 !important;
+    top: 55px;
+    max-width: 800px;
+}
+
+#close-subscriptions-status {
+    position: absolute;
+    top: 8px;
+    cursor: pointer;
+    font-size: 17px;
+    right: 8px;
 }
 
 .subject-name {
@@ -2981,7 +3001,7 @@ li.expanded_private_message {
     vertical-align: middle;
     width: 33%;
     border-top: 1px solid #e2e2e2;
-    border-bottom:1px solid #fff;
+    border-bottom: 1px solid #fff;
     margin: 0px 5px 0px 5px;
 }
 
@@ -3612,6 +3632,10 @@ div.edit_bot {
     font-weight: 300;
 }
 
+#subscriptions h1 {
+    padding-top: 40px;
+}
+
 #administration .administration-icon,
 #settings .settings-icon,
 #subscriptions .streams-icon {
@@ -3896,6 +3920,11 @@ form.admin-realm .control-label {
         margin-right: 7px;
     }
 
+    #subscriptions-status {
+        left: 300px;
+        right: 50px;
+    }
+
 }
 
 @media (max-width: 775px) {
@@ -3966,7 +3995,7 @@ form.admin-realm .control-label {
     }
 
     .compose-content {
-        margin-right:7px;
+        margin-right: 7px;
         margin-left: 7px;
     }
 
@@ -3980,6 +4009,10 @@ form.admin-realm .control-label {
 
     .navbar-search {
         margin-right: 81px;
+    }
+
+    #subscriptions-status {
+        left: 35px;
     }
 
 }

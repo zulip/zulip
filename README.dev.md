@@ -25,6 +25,7 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
   ```
+  You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
 * If your host is Ubuntu 14.04, you will need to [download a newer
   version of Vagrant][vagrant-dl], and then do the following:
@@ -33,6 +34,7 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   sudo dpkg -i vagrant*.deb # in directory where you downloaded vagrant
   vagrant plugin install vagrant-lxc
   ```
+  You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
 * For other Linux hosts with a kernel above 3.12, [follow the Vagrant
   LXC installation instructions][vagrant-lxc] to get Vagrant with LXC
@@ -55,7 +57,8 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
- 
+[avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
+
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal to install the development server.  This
 will take a long time on the first run because Vagrant needs to
@@ -87,6 +90,29 @@ environment][using-dev].
 
 [using-dev]: #using-the-development-environment
 
+## Specifying a proxy
+
+If you need to use a proxy server to access the Internet, you will
+need to specify the proxy settings before running `Vagrant up`.
+First, install the Vagrant plugin `vagrant-proxyconf`:
+
+```
+vagrant plugin install vagrant-proxyconf.
+```
+
+Then create `~/.zulip-vagrant-config` and add the following lines to
+it (with the appropriate values in it for your proxy):
+
+```
+HTTP_PROXY http://proxy_host:port
+HTTPS_PROXY http://proxy_host:port
+NO_PROXY localhost,127.0.0.1,.example.com
+
+```
+
+Now run `vagrant up` in your terminal to install the development
+server. If you ran `vagrant up` before and failed, you'll need to run
+`vagrant destroy` first to clean up the failed installation.
 
 Using provision.py without Vagrant
 ----------------------------------
@@ -97,7 +123,6 @@ running:
 
 ```
 sudo apt-get update
-sudo apt-get install -y python-pbs
 python /srv/zulip/provision.py
 
 cd /srv/zulip
@@ -292,8 +317,8 @@ Finally continue with the All Systems instructions below.
 ### All Systems:
 
 ```
-pip install -r requirements.txt
-npm install
+pip install --no-deps -r requirements.txt
+./tools/install-phantomjs
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
@@ -303,7 +328,12 @@ if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_
 ./tools/do-destroy-rebuild-database
 ./tools/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
+npm install
 ```
+
+If `npm install` fails, the issue may be that you need a newer version
+of `npm`.  You can use `npm install -g npm` to update your version of
+`npm` and try again.
 
 To start the development server:
 
@@ -312,6 +342,24 @@ To start the development server:
 ```
 
 … and visit [http://localhost:9991/](http://localhost:9991/).
+
+#### Proxy setup for by-hand installation
+
+If you are building the development environment on a network where a
+proxy is required to access the Internet, you will need to set the
+proxy in the environment as follows:
+
+- On Ubuntu, set the proxy environment variables using:
+ ```
+ export https_proxy=http://proxy_host:port
+ export http_proxy=http://proxy_host:port
+ ```
+
+- And set the npm proxy and https-proxy using:
+ ```
+ npm config set proxy http://proxy_host:port
+ npm config set https-proxy http://proxy_host:port
+ ```
 
 Using Docker
 -------------
@@ -458,7 +506,7 @@ time debugging a test failure, e.g.:
 
 ```
 ./tools/lint-all # Runs all the linters in parallel
-./tools/test-backend zerver.test_bugdown.BugdownTest.test_inline_youtube
+./tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube
 ./tools/test-js-with-casper 10-navigation.js
 ./tools/test-js-with-node # Runs all node tests but is very fast
 ```

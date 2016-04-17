@@ -1,8 +1,11 @@
 from __future__ import print_function
+from typing import Any, Callable, Tuple
+from django.db.models.query import QuerySet
 import re
 import time
 
 def timed_ddl(db, stmt):
+    # type: (Any, str) -> None
     print()
     print(time.asctime())
     print(stmt)
@@ -12,11 +15,13 @@ def timed_ddl(db, stmt):
     print('Took %.2fs' % (delay,))
 
 def validate(sql_thingy):
+    # type: (str) -> None
     # Do basic validation that table/col name is safe.
     if not re.match('^[a-z][a-z\d_]+$', sql_thingy):
         raise Exception('Invalid SQL object: %s' % (sql_thingy,))
 
 def do_batch_update(db, table, cols, vals, batch_size=10000, sleep=0.1):
+    # type: (Any, str, List[str], List[str], int, float) -> None
     validate(table)
     for col in cols:
         validate(col)
@@ -43,6 +48,7 @@ def do_batch_update(db, table, cols, vals, batch_size=10000, sleep=0.1):
         time.sleep(sleep)
 
 def add_bool_columns(db, table, cols):
+    # type: (Any, str, List[str]) -> None
     validate(table)
     for col in cols:
         validate(col)
@@ -68,6 +74,7 @@ def add_bool_columns(db, table, cols):
     timed_ddl(db, stmt)
 
 def create_index_if_nonexistant(db, table, col, index):
+    # type: (Any, str, str, str) -> None
     validate(table)
     validate(col)
     validate(index)
@@ -80,6 +87,7 @@ def create_index_if_nonexistant(db, table, col, index):
         timed_ddl(db, stmt)
 
 def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
+    # type: (Any, Dict[str, Any], List[Tuple[Callable[[QuerySet], QuerySet], Callable[[QuerySet], None]]], int , float) -> None
     # tasks should be an array of (filterer, action) tuples
     # where filterer is a function that returns a filtered QuerySet
     # and action is a function that acts on a QuerySet

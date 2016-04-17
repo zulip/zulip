@@ -185,9 +185,8 @@ def regenerate_api_key(request, user_profile):
     )
     return json_success(json_result)
 
-@authenticated_json_post_view
 @has_request_variables
-def json_change_enter_sends(request, user_profile,
-                            enter_sends=REQ('enter_sends', validator=check_bool)):
+def change_enter_sends(request, user_profile,
+                       enter_sends=REQ('enter_sends', validator=check_bool)):
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()

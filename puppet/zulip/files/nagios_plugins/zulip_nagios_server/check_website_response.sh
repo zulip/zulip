@@ -5,7 +5,7 @@
 # Version 1.1
 # (c) GPLv2 2011
 #
-# Special thanks to dkwiebe and Konstantine Vinogradov for suggestions and feedback 
+# Special thanks to dkwiebe and Konstantine Vinogradov for suggestions and feedback
 #
 
 
@@ -24,7 +24,7 @@ WGETOUT=/tmp/wgetoutput
 ### Functions
 # Check dependencies and paths
 checkpaths(){
-	for PATH in $NETCAT $DATE $WGET $ECHO $AWK $CKSUM $TR; do 
+	for PATH in $NETCAT $DATE $WGET $ECHO $AWK $CKSUM $TR; do
 		if [ ! -f "$PATH" ]; then
 			STATUS=UNKNOWN
 			OUTMSG="ERROR: $PATH does does not exist"
@@ -80,7 +80,7 @@ usage(){
 checkopen(){
 	# Determine PORT from scheme
 	SCHEME=`$ECHO $URL |$AWK -F: '{print $1}'| $TR [:upper:] [:lower:]`
-	
+
 	# Strip scheme out of URL
 	case $URL in
 		*://*)
@@ -88,13 +88,13 @@ checkopen(){
 		*)
 			SHORTURL=$URL;;
 	esac
-	
+
 	# Strip path out of URL
 	case $SHORTURL in
 		*/*)
 			SHORTURL=`$ECHO $SHORTURL |$AWK -F/ '{print $1}'`;;
 	esac
-	
+
 	# if no scheme check for ports in SHORTURL or else default to 80
 	case $SHORTURL in
 		*:*@*:*)
@@ -121,14 +121,14 @@ checkopen(){
 				PORT=80
 			fi;;
 	esac
-	
+
 	# Check if URL resolves and port is open
 	if ! $NETCAT -z $SHORTURL $PORT > /dev/null 2>&1; then
 		OUTMSG="URL $SHORTURL can't resolve or port $PORT not open"
 		STATUS=CRITICAL
 		output
 	fi
-	
+
 	# Check if page can be loaded and contains data
 	if [ -n "$NOCERT" ]; then
 		$WGET --no-check-certificate -q -O $WGETOUTCKSUM $URL
@@ -155,7 +155,7 @@ pageload(){
                 ENDTIME=$($DATE +%s%N)
 	fi
 	TIMEDIFF=$((($ENDTIME-$STARTTIME)/1000000))
-	if [ "$TIMEDIFF" -lt "$WARN" ]; then 
+	if [ "$TIMEDIFF" -lt "$WARN" ]; then
 		STATUS=OK
 	elif [ "$TIMEDIFF" -ge "$WARN" ] && [ "$TIMEDIFF" -lt "$CRIT" ]; then
 		STATUS=WARNING
@@ -167,7 +167,7 @@ pageload(){
 
 # Output statement and exit
 output(){
-	$ECHO "RESPONSE: $STATUS - $OUTMSG""|Response="$TIMEDIFF"ms;"$WARN";"$CRIT";0" 
+	$ECHO "RESPONSE: $STATUS - $OUTMSG""|Response="$TIMEDIFF"ms;"$WARN";"$CRIT";0"
 	if [ "$STATUS" = "OK" ]; then
 		exit 0
 	elif [ "$STATUS" = "WARNING" ]; then

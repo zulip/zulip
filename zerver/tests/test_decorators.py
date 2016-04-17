@@ -26,10 +26,9 @@ class DecoratorTestCase(TestCase):
             return sum(numbers)
 
         class Request(object):
-            pass
+            REQUEST = {} # type: Dict[str, str]
 
         request = Request()
-        request.REQUEST = {}
 
         with self.assertRaises(RequestVariableMissingError):
             get_total(request)
@@ -55,10 +54,9 @@ class DecoratorTestCase(TestCase):
             return sum(numbers)
 
         class Request(object):
-            pass
+            REQUEST = {} # type: Dict[str, str]
 
         request = Request()
-        request.REQUEST = {}
 
         with self.assertRaises(RequestVariableMissingError):
             get_total(request)

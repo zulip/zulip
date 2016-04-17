@@ -138,7 +138,7 @@ class BugdownTest(TestCase):
 
     def load_bugdown_tests(self):
         test_fixtures = {}
-        data_file = open(os.path.join(os.path.dirname(__file__), 'fixtures/bugdown-data.json'), 'r')
+        data_file = open(os.path.join(os.path.dirname(__file__), '../fixtures/bugdown-data.json'), 'r')
         data = ujson.loads('\n'.join(data_file.readlines()))
         for test in data['regular_tests']:
             test_fixtures[test['name']] = test

@@ -1,4 +1,6 @@
 from __future__ import print_function
+from typing import Any, Tuple
+
 from confirmation.models import Confirmation
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -7,7 +9,7 @@ from zerver.decorator import statsd_increment, uses_mandrill
 from zerver.models import Recipient, ScheduledJob, UserMessage, \
     Stream, get_display_recipient, get_user_profile_by_email, \
     get_user_profile_by_id, receives_offline_notifications, \
-    get_context_for_message
+    get_context_for_message, Message
 
 import datetime
 import re
@@ -58,7 +60,7 @@ def build_message_list(user_profile, messages):
     The messages are collapsed into per-recipient and per-sender blocks, like
     our web interface
     """
-    messages_to_render = []
+    messages_to_render = [] # type: List[Dict[str, Any]]
 
     def sender_string(message):
         sender = ''
@@ -324,7 +326,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     if not messages:
         return
 
-    messages_by_recipient_subject = defaultdict(list)
+    messages_by_recipient_subject = defaultdict(list) # type: Dict[Tuple[int, str], List[Message]]
     for msg in messages:
         messages_by_recipient_subject[(msg.recipient_id, msg.subject)].append(msg)
 

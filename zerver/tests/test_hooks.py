@@ -864,3 +864,92 @@ class TravisHookTests(AuthedTestCase):
                                        u"Details: [changes](https://github.com/hl7-fhir/fhir-sv"
                                        u"n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
                                        u"tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)"))
+
+
+class PingdomHookTests(AuthedTestCase):
+    STREAM_NAME = 'pingdom'
+    TEST_USER_EMAIL = 'hamlet@zulip.com'
+    URL_TEMPLATE = "/api/v1/external/pingdom?stream={stream}&api_key={api_key}"
+
+    def setUp(self):
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        self._url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+
+    def test_pingdom_from_up_to_down_http_check_message(self):
+        """
+        Tests if pingdom http check from up to down is handled correctly
+        """
+        body = self._get_fixture_data('http_up_to_down')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"Service someurl.com changed its HTTP status from UP to DOWN.\nDescription: Non-recoverable failure in name resolution."
+        msg = self._get_recently_added_message()
+        self.assertEqual(msg.subject, u"Test check status.")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_pingdom_from_up_to_down_smtp_check_message(self):
+        """
+        Tests if pingdom smtp check from up to down is handled correctly
+        """
+        body = self._get_fixture_data('smtp_up_to_down')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"Service smtp.someurl.com changed its SMTP status from UP to DOWN.\nDescription: Connection refused."
+        msg = self._get_recently_added_message()
+        self.assertEqual(msg.subject, u"SMTP check status.")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_pingdom_from_up_to_down_imap_check_message(self):
+        """
+        Tests if pingdom imap check from up to down is handled correctly
+        """
+        body = self._get_fixture_data('imap_up_to_down')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"Service imap.someurl.com changed its IMAP status from UP to DOWN.\nDescription: Invalid hostname, address or socket."
+        msg = self._get_recently_added_message()
+        self.assertEqual(msg.subject, u"IMAP check status.")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_pingdom_from_down_to_up_imap_check_message(self):
+        """
+        Tests if pingdom imap check from down to up is handled correctly
+        """
+        body = self._get_fixture_data('imap_down_to_up')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"Service imap.someurl.com changed its IMAP status from DOWN to UP."
+        msg = self._get_recently_added_message()
+        self.assertEqual(msg.subject, u"IMAP check status.")
+        self.assertEqual(msg.content, expected_message)
+
+    def _get_recently_added_message(self):
+        return Message.objects.filter().order_by('-id')[0]
+
+    def _get_fixture_data(self, name):
+        return ujson.dumps(ujson.loads(self.fixture_data('pingdom', name)))
+
+    def _send_post_request_with_params(self, json):
+        return self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+
+class YoHookTests(AuthedTestCase):
+    def test_yo_message(self):
+        """
+        Yo App sends notification whenever user receives a new Yo from another user.
+        """
+        bot_email = "hamlet@zulip.com"
+        api_key = self.get_api_key(bot_email)
+        body = ""
+
+        email = "cordelia@zulip.com"
+        sender = "IAGO"
+        ip = "127.0.0.1"
+        url = "/api/v1/external/yo?email=%s&api_key=%s&username=%s&user_ip=%s" % (email, api_key, sender, ip)
+
+        self.client.get(url,
+                        body,
+                        content_type="application/x-www-form-urlencoded")
+
+        msg = Message.objects.filter().order_by('-id')[0]
+        self.assertEqual(msg.content, (u"Yo from IAGO"))

@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
@@ -704,7 +705,7 @@ def home(request):
     request._email = request.user.email
     request.client = get_client("website")
 
-    narrow = []
+    narrow = [] # type: List[List[str]]
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):
@@ -900,10 +901,6 @@ def is_buggy_ua(agent):
 def get_pointer_backend(request, user_profile):
     return json_success({'pointer': user_profile.pointer})
 
-@authenticated_json_post_view
-def json_update_pointer(request, user_profile):
-    return update_pointer_backend(request, user_profile)
-
 @has_request_variables
 def update_pointer_backend(request, user_profile,
                            pointer=REQ(converter=to_non_negative_int)):
@@ -926,10 +923,6 @@ def update_pointer_backend(request, user_profile,
 
 def generate_client_id():
     return generate_random_token(32)
-
-@authenticated_json_post_view
-def json_get_profile(request, user_profile):
-    return get_profile_backend(request, user_profile)
 
 # The order of creation of the various dictionaries are important.
 # We filter on {userprofile,stream,subscription_recipient}_ids.
@@ -996,7 +989,7 @@ def export(request, user_profile):
                            ("realmalias", RealmAlias),
                            ("realmfilter", RealmFilter)]:
         response["zerver_"+table] = [model_to_dict(x) for x in
-                                     model.objects.select_related().filter(realm_id=user_profile.realm.id)]
+                                     model.objects.select_related().filter(realm_id=user_profile.realm.id)] # type: ignore
 
     return json_success(response)
 
@@ -1078,7 +1071,8 @@ def get_uploaded_file(request, realm_id, filename,
 @require_post
 @has_request_variables
 def api_fetch_api_key(request, username=REQ, password=REQ):
-    return_data = {}
+    # type: (Any, Any, Any) -> Any
+    return_data = {} # type: Dict[str, bool]
     if username == "google-oauth2-token":
         user_profile = authenticate(google_oauth2_token=password, return_data=return_data)
     else:
@@ -1133,10 +1127,6 @@ def update_active_status_backend(request, user_profile, status=REQ,
             ret['zephyr_mirror_active'] = False
 
     return json_success(ret)
-
-@authenticated_json_post_view
-def json_update_active_status(request, user_profile):
-    return update_active_status_backend(request, user_profile)
 
 @authenticated_json_post_view
 def json_get_active_statuses(request, user_profile):

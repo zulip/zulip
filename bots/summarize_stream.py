@@ -1,4 +1,5 @@
 from __future__ import print_function
+from typing import Any, Dict, List
 # This is hacky code to analyze data on our support stream.  The main
 # reusable bits are get_recent_messages and get_words.
 
@@ -50,13 +51,13 @@ def generate_support_stats():
     narrow = 'stream:support'
     count = 2000
     msgs = get_recent_messages(client, narrow, count)
-    msgs_by_topic = collections.defaultdict(list)
+    msgs_by_topic = collections.defaultdict(list) # type: Dict[str, List[Dict[str, Any]]]
     for msg in msgs:
         topic = msg['subject']
         msgs_by_topic[topic].append(msg)
 
-    word_count = collections.defaultdict(int)
-    email_count = collections.defaultdict(int)
+    word_count = collections.defaultdict(int) # type: Dict[str, int]
+    email_count = collections.defaultdict(int) # type: Dict[str, int]
 
     if False:
         for topic in msgs_by_topic:

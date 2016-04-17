@@ -3,11 +3,25 @@
 All notable changes to this project will be documented in this file.
 
 [Unreleased]
+- Moved email digest support into the default Zulip configuration.
+- Added options for configuring Postgres, RabbitMQ, Redis, and memcached
+  in settings.py.
+- Added documentation on using Hubot to integrate with useful services
+  not yet integrated with Zulip directly (e.g. Google Hangouts).
+- Added new management command to test sending email from Zulip.
+- Added Pingdom and Yo integrations.
+- Refactored the Zulip puppet modules to be more modular.
+- Refactored the Tornado event system, fixing old memory leaks.
+- Implemented running queue processors multithreaded in development,
+  decreasing RAM requirements for a Zulip development environment from
+  ~1GB to ~300MB.
 - Fixed rerendering the complete buddy list whenever a user came back from
   idle, which was a significant performance issue in larger realms.
 - Fixed the disabling of desktop notifications from 1.3.7 for new users.
 - Fixed the (admin) create_user API enforcing restricted_to_domain, even
   if that setting was disabled for the realm.
+- Fixed bugs changing certain settings in administration pages.
+- Fixed collapsing messages in narrowed views.
 
 [1.3.10]
 - Added new integration for Travis CI.

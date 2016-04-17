@@ -6,6 +6,7 @@ var unread_mentioned = new Dict();
 var unread_subjects = new Dict({fold_case: true});
 var unread_privates = new Dict();
 exports.suppress_unread_counts = true;
+exports.messages_read_in_narrow = false;
 
 exports.message_unread = function (message) {
     if (message === undefined) {
@@ -202,7 +203,7 @@ exports.mark_all_as_read = function mark_all_as_read(cont) {
     exports.update_unread_counts();
 
     channel.post({
-        url:      '/json/update_message_flags',
+        url:      '/json/messages/flags',
         idempotent: true,
         data:     {messages: JSON.stringify([]),
                    all:      true,
@@ -222,7 +223,7 @@ exports.mark_messages_as_read = function mark_messages_as_read (messages, option
             return;
         }
         if (current_msg_list === narrowed_msg_list) {
-            unread_messages_read_in_narrow = true;
+            unread.messages_read_in_narrow = true;
         }
 
         if (options.from !== "server") {

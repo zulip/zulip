@@ -489,8 +489,8 @@ exports.load_old_messages = function load_old_messages(opts) {
         data.use_first_unread_anchor = true;
     }
 
-    channel.post({
-        url:      '/json/get_old_messages',
+    channel.get({
+        url:      '/json/messages',
         data:     data,
         idempotent: true,
         success: function (data) {
@@ -523,7 +523,7 @@ exports.load_old_messages = function load_old_messages(opts) {
 
 exports.reset_load_more_status = function reset_load_more_status() {
     load_more_enabled = true;
-    have_scrolled_away_from_top = true;
+    ui.have_scrolled_away_from_top = true;
     ui.hide_loading_more_messages_indicator();
 };
 
@@ -618,8 +618,8 @@ util.execute_early(function () {
 
     $(document).on('message_id_changed', function (event) {
         var old_id = event.old_id, new_id = event.new_id;
-        if (furthest_read === old_id) {
-            furthest_read = new_id;
+        if (pointer.furthest_read === old_id) {
+            pointer.furthest_read = new_id;
         }
         if (stored_messages[old_id]) {
             stored_messages[new_id] = stored_messages[old_id];

@@ -3,69 +3,95 @@ import os
 import sys
 import logging
 import platform
+import subprocess
 
-try:
-    import sh
-except ImportError:
-    import pbs as sh
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from zulip_tools import run
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
         "trusty",
+        "xenial",
     ],
 }
 
-APT_DEPENDENCIES = {
-    "trusty": [
-        "closure-compiler",
-        "libfreetype6-dev",
-        "libffi-dev",
-        "memcached",
-        "rabbitmq-server",
-        "libldap2-dev",
-        "redis-server",
-        "postgresql-server-dev-all",
-        "libmemcached-dev",
-        "postgresql-9.3",
-        "python-dev",
-        "hunspell-en-us",
-        "nodejs",
-        "nodejs-legacy",
-        "python-virtualenv",
-        "supervisor",
-        "git",
-        "npm",
-        "yui-compressor",
-        "wget",
-        "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
-        "puppet",               # Used by lint-all
-        "gettext",              # Used by makemessages i18n
-        "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
-    ]
-}
+VENV_PATH = "/srv/zulip-venv"
+ZULIP_PATH = os.path.dirname(os.path.abspath(__file__))
 
-VENV_PATH="/srv/zulip-venv"
-ZULIP_PATH="/srv/zulip"
-
-if not os.path.exists(os.path.join(os.path.dirname(__file__), ".git")):
-    print("Error: No Zulip git repository present at /srv/zulip!")
+if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
+    print("Error: No Zulip git repository present!")
     print("To setup the Zulip development environment, you should clone the code")
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
 
-# TODO: Parse arguments properly
-if "--travis" in sys.argv or "--docker" in sys.argv:
-    ZULIP_PATH="."
+if platform.architecture()[0] == '64bit':
+    arch = 'amd64'
+elif platform.architecture()[0] == '32bit':
+    arch = "i386"
+else:
+    logging.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
+    sys.exit(1)
+
+# Ideally we wouldn't need to install a dependency here, before we
+# know the codename.
+subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
+vendor = subprocess.check_output(["lsb_release", "-is"]).strip()
+codename = subprocess.check_output(["lsb_release", "-cs"]).strip()
+if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
+    logging.critical("Unsupported platform: {} {}".format(vendor, codename))
+    sys.exit(1)
+
+POSTGRES_VERSION_MAP = {
+    "trusty": "9.3",
+    "xenial": "9.5",
+}
+POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
+
+UBUNTU_COMMON_APT_DEPENDENCIES = [
+    "closure-compiler",
+    "libfreetype6-dev",
+    "libffi-dev",
+    "memcached",
+    "rabbitmq-server",
+    "libldap2-dev",
+    "redis-server",
+    "postgresql-server-dev-all",
+    "libmemcached-dev",
+    "python-dev",
+    "hunspell-en-us",
+    "nodejs",
+    "nodejs-legacy",
+    "python-virtualenv",
+    "supervisor",
+    "git",
+    "npm",
+    "yui-compressor",
+    "wget",
+    "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
+    "puppet",               # Used by lint-all
+    "gettext",              # Used by makemessages i18n
+    "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
+    "netcat",               # Used for flushing memcached
+]
+
+APT_DEPENDENCIES = {
+    "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
+        "postgresql-9.3",
+    ],
+    "xenial": UBUNTU_COMMON_APT_DEPENDENCIES + [
+        "postgresql-9.5",
+    ],
+}
 
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
-TSEARCH_URL_BASE = "https://dl.dropboxusercontent.com/u/283158365/zuliposs/"
-TSEARCH_PACKAGE_NAME = {
-    "trusty": "postgresql-9.3-tsearch-extras"
-}
+TSEARCH_URL_PATTERN = "https://github.com/zulip/zulip-dist-tsearch-extras/raw/master/{}_{}_{}.deb?raw=1"
+TSEARCH_PACKAGE_NAME = "postgresql-%s-tsearch-extras" % (POSTGRES_VERSION,)
 TSEARCH_VERSION = "0.1.3"
-# TODO: this path is platform-specific!
-TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/9.3/tsearch_data/"
+TSEARCH_URL = TSEARCH_URL_PATTERN.format(TSEARCH_PACKAGE_NAME, TSEARCH_VERSION, arch)
+TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
     "puppet",
@@ -77,75 +103,19 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
-
 def main():
-    log = logging.getLogger("zulip-provisioner")
+    run(["sudo", "apt-get", "update"])
+    run(["sudo", "apt-get", "-y", "install"] + APT_DEPENDENCIES[codename])
 
-    if platform.architecture()[0] == '64bit':
-        arch = 'amd64'
-        phantomjs_arch = 'x86_64'
-    elif platform.architecture()[0] == '32bit':
-        arch = "i386"
-        phantomjs_arch = 'i686'
-    else:
-        log.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
-        sys.exit(1)
+    temp_deb_path = subprocess.check_output(["mktemp", "package_XXXXXX.deb", "--tmpdir"])
+    run(["wget", "-O", temp_deb_path, TSEARCH_URL])
+    run(["sudo", "dpkg", "--install", temp_deb_path])
 
-    vendor, version, codename = platform.dist()
+    run(["sudo", "rm", "-rf", VENV_PATH])
+    run(["sudo", "mkdir", "-p", VENV_PATH])
+    run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), VENV_PATH])
 
-    if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
-        log.critical("Unsupported platform: {} {}".format(vendor, codename))
-
-    with sh.sudo:
-        sh.apt_get.update(**LOUD)
-
-        sh.apt_get.install(*APT_DEPENDENCIES["trusty"], assume_yes=True, **LOUD)
-
-    temp_deb_path = sh.mktemp("package_XXXXXX.deb", tmpdir=True)
-
-    sh.wget(
-        "{}/{}_{}_{}.deb".format(
-            TSEARCH_URL_BASE,
-            TSEARCH_PACKAGE_NAME["trusty"],
-            TSEARCH_VERSION,
-            arch,
-        ),
-        output_document=temp_deb_path,
-        **LOUD
-    )
-
-    with sh.sudo:
-        sh.dpkg("--install", temp_deb_path, **LOUD)
-
-    with sh.sudo:
-        PHANTOMJS_PATH = "/srv/phantomjs"
-        PHANTOMJS_BASENAME = "phantomjs-1.9.8-linux-%s" % (phantomjs_arch,)
-        PHANTOMJS_TARBALL_BASENAME = PHANTOMJS_BASENAME + ".tar.bz2"
-        PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, PHANTOMJS_TARBALL_BASENAME)
-        PHANTOMJS_URL = "https://bitbucket.org/ariya/phantomjs/downloads/%s" % (PHANTOMJS_TARBALL_BASENAME,)
-        sh.mkdir("-p", PHANTOMJS_PATH, **LOUD)
-        if not os.path.exists(PHANTOMJS_TARBALL):
-            sh.curl('-J', '-L', PHANTOMJS_URL, o=PHANTOMJS_TARBALL, **LOUD)
-        sh.tar("xj", directory=PHANTOMJS_PATH, file=PHANTOMJS_TARBALL, **LOUD)
-        sh.ln("-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME, "bin", "phantomjs"),
-              "/usr/local/bin/phantomjs", **LOUD)
-
-    with sh.sudo:
-        sh.rm("-rf", VENV_PATH, **LOUD)
-        sh.mkdir("-p", VENV_PATH, **LOUD)
-        sh.chown("{}:{}".format(os.getuid(), os.getgid()), VENV_PATH, **LOUD)
-
-    sh.virtualenv(VENV_PATH, **LOUD)
-
-    # Add the ./tools and ./scripts/setup directories inside the repository root to
-    # the system path; we'll reference them later.
-    orig_path = os.environ["PATH"]
-    os.environ["PATH"] = os.pathsep.join((
-            os.path.join(ZULIP_PATH, "tools"),
-            os.path.join(ZULIP_PATH, "scripts", "setup"),
-            orig_path
-    ))
-
+    run(["virtualenv", VENV_PATH])
 
     # Put Python virtualenv activation in our .bash_profile.
     with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
@@ -158,34 +128,39 @@ def main():
     activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
     execfile(activate_this, dict(__file__=activate_this))
 
-    sh.pip.install(requirement=os.path.join(ZULIP_PATH, "requirements.txt"), **LOUD)
+    run(["pip", "install", "--no-deps", "--requirement",
+         os.path.join(ZULIP_PATH, "requirements.txt")])
 
-    with sh.sudo:
-        sh.cp(REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH, **LOUD)
+    run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
-    # npm install and management commands expect to be run from the root of the project.
+    # npm install and management commands expect to be run from the root of the
+    # project.
     os.chdir(ZULIP_PATH)
 
-    sh.npm.install(**LOUD)
-
-    os.system("tools/download-zxcvbn")
-    os.system("tools/emoji_dump/build_emoji")
-    os.system("generate_secrets.py -d")
+    run(["tools/install-phantomjs"])
+    run(["tools/download-zxcvbn"])
+    run(["tools/emoji_dump/build_emoji"])
+    run(["scripts/setup/generate_secrets.py", "-d"])
     if "--travis" in sys.argv:
-        os.system("sudo service rabbitmq-server restart")
-        os.system("sudo service redis-server restart")
-        os.system("sudo service memcached restart")
+        run(["sudo", "service", "rabbitmq-server", "restart"])
+        run(["sudo", "service", "redis-server", "restart"])
+        run(["sudo", "service", "memcached", "restart"])
     elif "--docker" in sys.argv:
-        os.system("sudo service rabbitmq-server restart")
-        os.system("sudo pg_dropcluster --stop 9.3 main")
-        os.system("sudo pg_createcluster -e utf8 --start 9.3 main")
-        os.system("sudo service redis-server restart")
-        os.system("sudo service memcached restart")
-    sh.configure_rabbitmq(**LOUD)
-    sh.postgres_init_dev_db(**LOUD)
-    sh.do_destroy_rebuild_database(**LOUD)
-    sh.postgres_init_test_db(**LOUD)
-    sh.do_destroy_rebuild_test_database(**LOUD)
+        run(["sudo", "service", "rabbitmq-server", "restart"])
+        run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
+        run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
+        run(["sudo", "service", "redis-server", "restart"])
+        run(["sudo", "service", "memcached", "restart"])
+    run(["scripts/setup/configure-rabbitmq"])
+    run(["tools/postgres-init-dev-db"])
+    run(["tools/do-destroy-rebuild-database"])
+    run(["tools/postgres-init-test-db"])
+    run(["tools/do-destroy-rebuild-test-database"])
+    # Install the latest npm.
+    run(["sudo", "npm", "install", "-g", "npm"])
+    # Run npm install last because it can be flaky, and that way one
+    # only needs to rerun `npm install` to fix the installation.
+    run(["npm", "install"])
     return 0
 
 if __name__ == "__main__":

@@ -10,9 +10,9 @@
     {{ block.super }}
     {% minified_js 'initial_invite' %}
 
-	<script type="text/javascript">
-	var invite_suffix = "{{invite_suffix}}";
-	</script>
+        <script type="text/javascript">
+        var invite_suffix = "{{invite_suffix}}";
+        </script>
 
 {% endblock %}
 
@@ -26,7 +26,7 @@
     <form id="invite_form">
     {% csrf_token %}
     <div class="invite_row"><input name="email_1" class="invite_email" type={% if not invite_suffix %}"email"{% else %}"text"{% endif %} /> {% if invite_suffix %}@{{invite_suffix}}{% endif %}</div>
-	<p id="invite_blurb">({% trans "We'll email invitations to them" %})</p>
+        <p id="invite_blurb">({% trans "We'll email invitations to them" %})</p>
     <div class="alert" id="invite_error" style="display: none;">
     </div>
     <button id="submit_invitation" class="btn btn-primary" data-loading-text="Next">{% trans 'Next' %} »</button>

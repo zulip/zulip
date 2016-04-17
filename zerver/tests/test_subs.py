@@ -707,13 +707,14 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_successful_subscriptions_add(self):
         """
-        Calling POST /json/users/me/subscriptions should successfully add streams, and
-        should determine which are new subscriptions vs which were already
-        subscribed. We randomly generate stream names to add, because it
-        doesn't matter whether the stream already exists.
+        Calling POST /json/users/me/subscriptions should successfully add
+        streams, and should determine which are new subscriptions vs
+        which were already subscribed. We add 2 new streams to the
+        list of subscriptions and confirm the right number of events
+        are generated.
         """
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
-        add_streams = self.make_random_stream_names(self.streams)
+        add_streams = ["Verona2", "Denmark5"]
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
         events = []
         with tornado_redirected_to_list(events):

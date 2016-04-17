@@ -2,22 +2,6 @@
     ServerName trac.zulip.net
     Redirect permanent / https://trac.zulip.net/
 </VirtualHost>
-<VirtualHost *:80>
-    ServerName trac.humbughq.com
-    Redirect permanent / https://trac.zulip.net/
-</VirtualHost>
-<VirtualHost *:443>
-    ServerName trac.humbughq.com
-    Redirect permanent / https://trac.zulip.net/
-
-    SSLEngine on
-    SSLCertificateFile /etc/ssl/certs/trac.humbughq.com.crt
-    SSLCertificateKeyFile /etc/ssl/private/trac.key
-
-    SSLCertificateChainFile /etc/ssl/certs/sub.class1.server.ca.pem
-    SSLCACertificateFile /etc/ssl/certs/ca.pem
-
-</VirtualHost>
 
 <VirtualHost *:443>
     ServerName trac.zulip.net

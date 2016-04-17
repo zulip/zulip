@@ -29,7 +29,7 @@ var presence_descriptions = {
     idle:   'is not active'
 };
 
-/* Keep in sync with views.py:json_update_active_status() */
+/* Keep in sync with views.py:update_active_status_backend() */
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
 
@@ -353,7 +353,7 @@ exports._status_from_timestamp = status_from_timestamp;
 
 function focus_ping() {
     channel.post({
-        url: '/json/update_active_status',
+        url: '/json/users/me/presence',
         data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
                new_user_input: exports.new_user_input},
         idempotent: true,
