@@ -254,7 +254,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
-        result = self.client.post("/json/get_public_streams")
+        result = self.client.get("/json/streams?include_subscribed=false")
         public_streams = [s["name"] for s in ujson.loads(result.content)["streams"]]
         self.assertNotIn(active_name, public_streams)
         self.assertNotIn(deactivated_stream_name, public_streams)
@@ -1230,12 +1230,12 @@ class GetPublicStreamsTest(AuthedTestCase):
 
     def test_public_streams(self):
         """
-        Ensure that get_public_streams successfully returns a list of streams
+        Ensure that streams successfully returns a list of streams
         """
         email = 'hamlet@zulip.com'
         self.login(email)
 
-        result = self.client.post("/json/get_public_streams")
+        result = self.client.get("/json/streams?include_subscribed=false")
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1245,7 +1245,8 @@ class GetPublicStreamsTest(AuthedTestCase):
 
     def test_public_streams_api(self):
         """
-        Ensure that get_public_streams successfully returns a list of streams
+        Ensure that the query we use to get public streams successfully returns
+        a list of streams
         """
         email = 'hamlet@zulip.com'
         self.login(email)
