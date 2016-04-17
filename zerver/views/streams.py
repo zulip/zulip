@@ -377,10 +377,6 @@ def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
 
     return json_success({'subscribers': subscribers})
 
-@authenticated_json_post_view
-def json_get_subscribers(request, user_profile):
-    return get_subscribers_backend(request, user_profile)
-
 # By default, lists all streams that the user has access to --
 # i.e. public streams plus invite-only streams that the user is on
 @has_request_variables
