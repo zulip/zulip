@@ -56,6 +56,7 @@ class PublicURLTest(TestCase):
                           "/api/v1/users/me/subscriptions",
                           "/api/v1/messages",
                           "/json/messages",
+                          "/json/streams",
                           ],
                 }
         post_urls = {200: ["/accounts/login/"],
