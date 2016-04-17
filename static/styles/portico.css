@@ -49,6 +49,8 @@ body {
     font-family: 'Humbug', Helvetica, Arial, sans-serif;
     line-height: 150%;
     height: 100%;
+    font-weight: 300;
+    font-size: 17px;
 }
 
 li {
