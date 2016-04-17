@@ -17,6 +17,12 @@ from six.moves import StringIO
 import os
 import shutil
 
+TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
+
+def destroy_uploads():
+    if os.path.exists(settings.LOCAL_UPLOADS_DIR):
+        shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
+
 class FileUploadTest(AuthedTestCase):
     def test_multiple_upload_failure(self):
         """
@@ -61,8 +67,32 @@ class FileUploadTest(AuthedTestCase):
         self.assertEquals("zulip!", data)
 
     def tearDown(self):
-        if os.path.exists(settings.LOCAL_UPLOADS_DIR):
-            shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
+        destroy_uploads()
+
+class SetAvatarTest(AuthedTestCase):
+
+    def test_multiple_upload_failure(self):
+        """
+        Attempting to upload two files should fail.
+        """
+        self.login("hamlet@zulip.com")
+        fp1 = open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb')
+        fp2 = open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb')
+
+        result = self.client.post("/json/set_avatar", {'f1': fp1, 'f2': fp2})
+        self.assert_json_error(result, "You must upload exactly one avatar.")
+
+    def test_no_file_upload_failure(self):
+        """
+        Calling this endpoint with no files should fail.
+        """
+        self.login("hamlet@zulip.com")
+
+        result = self.client.post("/json/set_avatar")
+        self.assert_json_error(result, "You must upload exactly one avatar.")
+
+    def tearDown(self):
+        destroy_uploads()
 
 class S3Test(AuthedTestCase):
     # full URIs in public bucket
