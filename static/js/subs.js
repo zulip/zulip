@@ -1054,10 +1054,9 @@ $(function () {
 
         loading.make_indicator(indicator_elem);
 
-        channel.post({
-            url: "/json/get_subscribers",
+        channel.get({
+            url: "/json/streams" + encodeURIComponent(stream) + "/members",
             idempotent: true,
-            data: {stream: stream},
             success: function (data) {
                 loading.destroy_indicator(indicator_elem);
                 var subscribers = _.map(data.subscribers, function (elem) {

@@ -57,6 +57,7 @@ class PublicURLTest(TestCase):
                           "/api/v1/messages",
                           "/json/messages",
                           "/json/streams",
+                          "/json/streams/(?P<stream_name>.*)/members",
                           ],
                 }
         post_urls = {200: ["/accounts/login/"],
@@ -67,7 +68,6 @@ class PublicURLTest(TestCase):
                            "/json/subscriptions/remove",
                            "/json/subscriptions/exists",
                            "/json/subscriptions/property",
-                           "/json/get_subscribers",
                            "/json/fetch_api_key",
                            "/json/users/me/subscriptions",
                            "/api/v1/users/me/subscriptions",
