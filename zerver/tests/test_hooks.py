@@ -39,21 +39,21 @@ class JiraHookTests(AuthedTestCase):
                                      stream_name="jira_custom",
                                      content_type="application/json")
         self.assertEqual(msg.subject, "BUG-15: New bug with hook")
-        self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+        self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to @**no one**:
 
 > New bug with hook""")
 
     def test_created(self):
         msg = self.send_jira_message('created')
         self.assertEqual(msg.subject, "BUG-15: New bug with hook")
-        self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+        self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to @**no one**:
 
 > New bug with hook""")
 
     def test_created_assignee(self):
         msg = self.send_jira_message('created_assignee')
         self.assertEqual(msg.subject, "TEST-4: Test Created Assignee")
-        self.assertEqual(msg.content, """Leonardo Franchi [Administrator] **created** [TEST-4](https://zulipp.atlassian.net/browse/TEST-4) priority Major, assigned to **Leonardo Franchi [Administrator]**:
+        self.assertEqual(msg.content, """Leonardo Franchi [Administrator] **created** [TEST-4](https://zulipp.atlassian.net/browse/TEST-4) priority Major, assigned to @**Leonardo Franchi [Administrator]**:
 
 > Test Created Assignee""")
 
