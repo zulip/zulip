@@ -67,7 +67,7 @@ class ZulipListener extends AbstractIssueEventListener {
                                   author, issueUrlMd, comment)
           break
         case ISSUE_CREATED_ID:
-          content = String.format("%s **created** %s priority %s, assigned to **%s**: \n\n> %s",
+          content = String.format("%s **created** %s priority %s, assigned to @**%s**: \n\n> %s",
                                   author, issueUrlMd, event.issue.priorityObject.name,
                                   assignee, title)
           break
