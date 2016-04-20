@@ -15,10 +15,10 @@ ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
 
-
 def github_generic_subject(noun, topic_focus, blob):
     # issue and pull_request objects have the same fields we're interested in
     return "%s: %s %d: %s" % (topic_focus, noun, blob['number'], blob['title'])
+
 
 def github_generic_content(noun, payload, blob):
     action = payload['action']
@@ -123,6 +123,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
 
     return (target_stream, subject, content)
 
+
 @authenticated_api_view
 @has_request_variables
 def api_github_landing(request, user_profile, event=REQ,
@@ -207,6 +208,7 @@ def api_github_landing(request, user_profile, event=REQ,
                                 forged=False, subject_name=subject,
                                 message_content=content)
 
+
 def build_commit_list_content(commits, branch, compare_url, pusher):
     if compare_url is not None:
         push_text = "[pushed](%s)" % (compare_url,)
@@ -228,6 +230,7 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
                     % (num_commits - COMMITS_IN_LIST_LIMIT,))
 
     return content
+
 
 def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None):
     short_ref = re.sub(r'^refs/heads/', '', ref)
