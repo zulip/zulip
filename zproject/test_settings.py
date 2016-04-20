@@ -56,3 +56,5 @@ LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
 
 CAMO_URI = 'https://external-content.zulipcdn.net/'
 CAMO_KEY = 'dummy'
+
+LOCAL_UPLOADS_DIR = 'test_uploads'
