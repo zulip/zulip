@@ -13,6 +13,9 @@ COMMITS_IN_LIST_LIMIT = 10
 ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
+def is_test_repository(repository):
+    return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
+
 def github_generic_subject(noun, topic_focus, blob):
     # issue and pull_request objects have the same fields we're interested in
     return "%s: %s %d: %s" % (topic_focus, noun, blob['number'], blob['title'])
@@ -139,7 +142,7 @@ def api_github_landing(request, user_profile, event=REQ,
 
     # Special hook for capturing event data. If we see our special test repo, log the payload from github.
     try:
-        if repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID and settings.PRODUCTION:
+        if is_test_repository(repository) and settings.PRODUCTION:
             with open('/var/log/zulip/github-payloads', 'a') as f:
                 f.write(ujson.dumps({'event': event,
                                      'payload': payload,
