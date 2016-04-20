@@ -21,9 +21,7 @@ def github_generic_subject(noun, topic_focus, blob):
 
 
 def github_generic_content(noun, payload, blob):
-    action = payload['action']
-    if action == 'synchronize':
-        action = 'synchronized'
+    action = 'synchronized' if payload['action'] == 'synchronize' else payload['action']
 
     # issue and pull_request objects have the same fields we're interested in
     content = ("%s %s [%s %s](%s)"
@@ -56,16 +54,10 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
     `commit_stream` and `issue_stream` fall back to `default_stream` if they are empty
     This and allowing alternative endpoints is what distinguishes v1 from v2 of the github configuration
     """
-    if not commit_stream:
-        commit_stream = default_stream
-    if not issue_stream:
-        issue_stream = default_stream
-
-    target_stream = commit_stream
+    target_stream = commit_stream if commit_stream else default_stream
+    issue_stream = issue_stream if issue_stream else default_stream
     repository = payload['repository']
-
-    if not topic_focus:
-        topic_focus = repository['name']
+    topic_focus = topic_focus if topic_focus else repository['name']
 
     # Event Handlers
     if event == 'pull_request':
