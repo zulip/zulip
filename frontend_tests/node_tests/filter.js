@@ -339,7 +339,7 @@ function get_predicate(operators) {
         assert_same_operators(result, operators);
     }
 
-    string ='stream:Foo topic:Bar yo';
+    string = 'stream:Foo topic:Bar yo';
     operators = [
         {operator: 'stream', operand: 'Foo'},
         {operator: 'topic', operand: 'Bar'},
