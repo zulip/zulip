@@ -9,6 +9,9 @@ import logging
 import re
 import ujson
 
+COMMITS_IN_LIST_LIMIT = 10
+ZULIP_TEST_REPO_NAME = 'zulip-test'
+ZULIP_TEST_REPO_ID = 6893087
 
 def github_generic_subject(noun, topic_focus, blob):
     # issue and pull_request objects have the same fields we're interested in
@@ -136,7 +139,7 @@ def api_github_landing(request, user_profile, event=REQ,
 
     # Special hook for capturing event data. If we see our special test repo, log the payload from github.
     try:
-        if repository['name'] == 'zulip-test' and repository['id'] == 6893087 and settings.PRODUCTION:
+        if repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID and settings.PRODUCTION:
             with open('/var/log/zulip/github-payloads', 'a') as f:
                 f.write(ujson.dumps({'event': event,
                                      'payload': payload,
@@ -211,16 +214,15 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
                   push_text,
                   branch))
     num_commits = len(commits)
-    max_commits = 10
-    truncated_commits = commits[:max_commits]
+    truncated_commits = commits[:COMMITS_IN_LIST_LIMIT]
     for commit in truncated_commits:
         short_id = commit['id'][:7]
         (short_commit_msg, _, _) = commit['message'].partition("\n")
         content += "* [%s](%s): %s\n" % (short_id, commit['url'],
                                          short_commit_msg)
-    if (num_commits > max_commits):
+    if (num_commits > COMMITS_IN_LIST_LIMIT):
         content += ("\n[and %d more commits]"
-                    % (num_commits - max_commits,))
+                    % (num_commits - COMMITS_IN_LIST_LIMIT,))
 
     return content
 
