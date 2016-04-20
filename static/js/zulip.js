@@ -1,8 +1,8 @@
-var all_msg_list = new MessageList(
+var all_msg_list = new message_list.MessageList(
     undefined, undefined,
     {muting_enabled: false}
 );
-var home_msg_list = new MessageList('zhome',
+var home_msg_list = new message_list.MessageList('zhome',
     new Filter([{operator: "in", operand: "home"}]), {muting_enabled: true}
 );
 var narrowed_msg_list;
