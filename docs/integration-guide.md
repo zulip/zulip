@@ -149,7 +149,13 @@ steps:
 
 * Finally, generate a message sent by the integration and take a
   screenshot of the message to provide an example message in the
-  documentation.
+  documentation. If your new integration is a webhook integration,
+  you can generate such a message from your test fixtures
+  using `send_webhook_fixture_message`:
+
+  ```
+  ./manage.py send_webhook_fixture_message --fixture=zerver/fixtures/pingdom/pingdom_imap_down_to_up.json --url=/api/v1/external/pingdom?stream={stream}&api_key={api_key}
+  ```
 
 When writing documentation for your integration, be sure to use the
 `{{ external_api_uri }}` template variable, so that your integration
