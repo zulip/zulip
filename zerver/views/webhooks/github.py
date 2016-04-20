@@ -113,7 +113,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
 
         content += "\n\n~~~ quote\n%s\n~~~" % (comment['body'],)
 
-    return (target_stream, subject, content)
+    return target_stream, subject, content
 
 @authenticated_api_view
 @has_request_variables
@@ -215,7 +215,7 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
         (short_commit_msg, _, _) = commit['message'].partition("\n")
         content += "* [%s](%s): %s\n" % (short_id, commit['url'],
                                          short_commit_msg)
-    if (num_commits > COMMITS_IN_LIST_LIMIT):
+    if num_commits > COMMITS_IN_LIST_LIMIT:
         content += ("\n[and %d more commits]"
                     % (num_commits - COMMITS_IN_LIST_LIMIT,))
 
@@ -238,4 +238,4 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
     else:
         content = build_commit_list_content(commits, short_ref, url, pusher)
 
-    return (subject, content)
+    return subject, content
