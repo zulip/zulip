@@ -244,7 +244,7 @@ exports.activate = function (raw_operators, opts) {
         home_msg_list.pre_narrow_offset = page_params.initial_offset;
     }
 
-    var msg_list = new MessageList('zfilt', current_filter, {
+    var msg_list = new message_list.MessageList('zfilt', current_filter, {
         collapse_messages: ! current_filter.is_search(),
         muting_enabled: muting_enabled
     });
