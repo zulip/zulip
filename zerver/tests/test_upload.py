@@ -76,13 +76,13 @@ class FileUploadTest(AuthedTestCase):
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
 
-        #In the future, local file requests will follow the same style as S3
-        #requests; they will be first authenthicated and redirected
+        # In the future, local file requests will follow the same style as S3
+        # requests; they will be first authenthicated and redirected
         response = self.client.get(uri)
         data = "".join(response.streaming_content)
         self.assertEquals("zulip!", data)
 
-        #check if DB has attachment marked as unclaimed
+        # Check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
         self.assertEquals(entry.is_claimed(), False)
 
@@ -212,7 +212,32 @@ class SetAvatarTest(AuthedTestCase):
     def tearDown(self):
         destroy_uploads()
 
+class LocalStorageTest(AuthedTestCase):
 
+    def test_file_upload_local(self):
+        sender_email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(sender_email)
+        uri = upload_message_image_local('dummy.txt', 'text/plain', 'zulip!', user_profile)
+
+        base = '/user_uploads/'
+        self.assertEquals(base, uri[:len(base)])
+        path_id = re.sub('/user_uploads/', '', uri)
+        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
+        self.assertTrue(os.path.isfile(file_path))
+
+    def test_delete_message_image_local(self):
+        self.login("hamlet@zulip.com")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client.post("/json/upload_file", {'file': fp})
+
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        path_id = re.sub('/user_uploads/', '', uri)
+        self.assertTrue(delete_message_image_local(path_id))
+
+    def tearDown(self):
+        destroy_uploads()
 
 class S3Test(AuthedTestCase):
     # full URIs in public bucket
