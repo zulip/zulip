@@ -142,7 +142,7 @@ def api_github_landing(request, user_profile, event=REQ,
 
     # Special hook for capturing event data. If we see our special test repo, log the payload from github.
     try:
-        if repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID and settings.PRODUCTION:
+        if is_repository_test_one(repository) and settings.PRODUCTION:
             with open('/var/log/zulip/github-payloads', 'a') as f:
                 f.write(ujson.dumps({'event': event,
                                      'payload': payload,
@@ -247,3 +247,7 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
         content = build_commit_list_content(commits, short_ref, url, pusher)
 
     return (subject, content)
+
+
+def is_repository_test_one(repository):
+    return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
