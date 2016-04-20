@@ -1,5 +1,9 @@
 /*jslint nomen: true */
-function MessageList(table_name, filter, opts) {
+var message_list = (function () {
+
+var exports = {};
+
+exports.MessageList = function (table_name, filter, opts) {
     _.extend(this, {
         collapse_messages: true,
         muting_enabled: true
@@ -25,11 +29,9 @@ function MessageList(table_name, filter, opts) {
     this.num_appends = 0;
 
     return this;
-}
+};
 
-(function () {
-
-MessageList.prototype = {
+exports.MessageList.prototype = {
     add_messages: function MessageList_add_messages(messages, opts) {
         var self = this;
         var predicate = self.filter.predicate();
@@ -627,8 +629,11 @@ MessageList.prototype = {
 $(document).on('message_selected.zulip hashchange.zulip mousewheel', function (event) {
     viewport.stop_auto_scrolling();
 });
+
+return exports;
+
 }());
 /*jslint nomen: false */
 if (typeof module !== 'undefined') {
-    module.exports = MessageList;
+    module.exports = message_list;
 }
