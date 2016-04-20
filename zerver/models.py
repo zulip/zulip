@@ -588,6 +588,9 @@ class Recipient(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
+    def __repr__(self):
+        return u"<Client: %s>" % (self.name,)
+
 get_client_cache = {} # type: Dict[str, Client]
 def get_client(name):
     if name not in get_client_cache:
