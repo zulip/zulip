@@ -5,6 +5,25 @@ set -x
 # What user should we use for connecting to the database
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
 
+# We pipe this output through cat to ensure we always get return code 0
+# We have to do this because on production database zulip may not exist, so psql
+# will fail with return code 2. Because set -e is on, this will cause the script
+# to bail.
+records=`su "$POSTGRES_USER" -c "psql -Atc 'SELECT COUNT(*) FROM zulip.zerver_message;' zulip" | cat`
+
+if [[ $records -gt 200 ]]
+then
+    set +x
+    echo "WARNING: This will delete your Zulip database which currently contains $records messages."
+    read -p "Do you want to proceed? " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]
+    then
+        exit 1
+    fi
+    set -x
+fi
+
 # Shut down all services to ensure a quiescent state.
 if [ -e "/var/run/supervisor.sock" ]; then
     supervisorctl stop all
@@ -35,4 +54,3 @@ EOF
 sh "$(dirname "$0")/flush-memcached"
 
 echo "Database created"
-
