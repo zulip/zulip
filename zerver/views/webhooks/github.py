@@ -16,6 +16,10 @@ ZULIP_TEST_REPO_ID = 6893087
 def is_test_repository(repository):
     return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
 
+class UnknownEventType(Exception):
+    pass
+
+
 def github_generic_subject(noun, topic_focus, blob):
     # issue and pull_request objects have the same fields we're interested in
     return "%s: %s %d: %s" % (topic_focus, noun, blob['number'], blob['title'])
@@ -112,6 +116,9 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
             content += " on `%s`, line %d" % (comment['path'], comment['line'])
 
         content += "\n\n~~~ quote\n%s\n~~~" % (comment['body'],)
+
+    else:
+        raise UnknownEventType(u'Event %s is unknown and cannot be handled' % (event,))
 
     return target_stream, subject, content
 
