@@ -1,12 +1,16 @@
 # Integration Writing Guide
 
-Our integrations are one of the most important parts of Zulip, so it's
-important that they are all implemented to the highest standard of
-quality that we can write.
+Integrations are one of the most important parts of a group chat tool
+like Zulip, and we are committed to making integrating with Zulip and
+getting you integration merged upstream so everyone else can benefit
+from it as easy as possible while maintaining the high quality of the
+Zulip integrations library.
 
 Contributions to this guide are very welcome, so if you run into any
-issues following these instructions or come up with any tips while
-writing an integration, please open an issue or submit a pull request!
+issues following these instructions or come up with any tips or tools
+that help writing integration, please email
+zulip-devel@googlegroups.com, open an issue, or submit a pull request
+to share your ideas!
 
 ## Types of integrations
 
@@ -20,16 +24,16 @@ to add a new handler in `zerver/views/webhooks.py` (plus
 test/document/etc.).  An example commit implementing a new webhook.
 https://github.com/zulip/zulip/pull/324.
 
-2. Python script integrations (examples: Trac, Git), where we can get
+2. Python script integrations (examples: SVN, Git), where we can get
 the service to call our integration (by shelling out or otherwise),
 passing in the required data.  Our preferred model for these is to
-ship these integrations in our API tarballs (by writing the
+ship these integrations in our API release tarballs (by writing the
 integration in `api/integrations`).
 
-3. Plugin integrations (examples: Jenkins, Hubot) where the user needs
-to install a native-language plugin into their existing software,
-which can be more work, since we may not have Zulip API bindings for
-the relevant language.
+3. Plugin integrations (examples: Jenkins, Hubot, Trac) where the user
+needs to install a plugin into their existing software.  These are
+often more work, but for some products are the only way to integrate
+with the product at all.
 
 ## General advice for writing integrations
 

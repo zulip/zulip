@@ -24,7 +24,7 @@ var globals =
     // Modules, defined in their respective files.
     + ' compose compose_fade rows hotkeys narrow reload search subs pointer'
     + ' composebox_typeahead server_events typeahead_helper notifications hashchange'
-    + ' invite ui util activity timerender MessageList MessageListView blueslip unread stream_list'
+    + ' invite ui viewport util activity timerender MessageList MessageListView blueslip unread stream_list'
     + ' message_edit tab_bar emoji popovers navigate people settings alert_words_ui message_store'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
     + ' Filter summary admin stream_data muting WinChan muting_ui Socket channel gear_menu'
@@ -54,10 +54,9 @@ var globals =
 
     // zulip.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list'
-    + ' keep_pointer_in_view'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
     + ' scroll_to_selected get_private_message_recipient'
-    + ' viewport process_loaded_for_unread'
+    + ' process_loaded_for_unread'
     + ' maybe_scroll_to_selected'
     + ' recent_subjects unread_subjects'
     ;
