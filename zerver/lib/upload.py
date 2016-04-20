@@ -7,6 +7,7 @@ from django.utils.safestring import mark_safe
 import unicodedata
 
 from zerver.lib.avatar import user_avatar_hash
+from zerver.decorator import JsonableError
 
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
@@ -56,10 +57,16 @@ def sanitize_name(value):
 def random_name(bytes=60):
     return base64.urlsafe_b64encode(os.urandom(bytes))
 
+class BadImageError(JsonableError):
+    pass
+
 def resize_avatar(image_data):
     AVATAR_SIZE = 100
-    im = Image.open(StringIO(image_data))
-    im = ImageOps.fit(im, (AVATAR_SIZE, AVATAR_SIZE), Image.ANTIALIAS)
+    try:
+        im = Image.open(StringIO(image_data))
+        im = ImageOps.fit(im, (AVATAR_SIZE, AVATAR_SIZE), Image.ANTIALIAS)
+    except IOError:
+        raise BadImageError("Could not decode avatar image; did you upload an image file?")
     out = StringIO()
     im.save(out, format='png')
     return out.getvalue()

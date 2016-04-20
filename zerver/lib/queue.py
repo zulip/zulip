@@ -116,7 +116,7 @@ class SimpleQueueClient(object):
 
     def drain_queue(self, queue_name, json=False):
         "Returns all messages in the desired queue"
-        messages =[]
+        messages = []
         def opened():
             while True:
                 (meta, _, message) = self.channel.basic_get(queue_name)

@@ -125,7 +125,7 @@ def api_jira_webhook(request, user_profile):
     subject = "%s: %s" % (issueId, title)
 
     if event == 'jira:issue_created':
-        content = "%s **created** %s priority %s, assigned to **%s**:\n\n> %s" % \
+        content = "%s **created** %s priority %s, assigned to @**%s**:\n\n> %s" % \
                   (author, issue, priority, assignee, title)
     elif event == 'jira:issue_deleted':
         content = "%s **deleted** %s!" % \
