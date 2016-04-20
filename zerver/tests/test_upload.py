@@ -245,6 +245,32 @@ class S3Test(AuthedTestCase):
     # keys in authed bucket
     test_keys = [] # type: List[str]
 
+    @mock_s3
+    def test_file_upload_s3(self):
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        sender_email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(sender_email)
+        uri = upload_message_image_s3('dummy.txt', 'text/plain', 'zulip!', user_profile)
+
+        base = '/user_uploads/'
+        self.assertEquals(base, uri[:len(base)])
+        path_id = re.sub('/user_uploads/', '', uri)
+        self.assertEquals("zulip!", bucket.get_key(path_id).get_contents_as_string())
+
+    @mock_s3
+    def test_message_image_delete_s3(self):
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        sender_email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(sender_email)
+        uri = upload_message_image_s3('dummy.txt', 'text/plain', 'zulip!', user_profile)
+
+        path_id = re.sub('/user_uploads/', '', uri)
+        self.assertTrue(delete_message_image_s3(path_id))
+
     @slow(2.6, "has to contact external S3 service")
     @skip("Need S3 mock")
     def test_file_upload_authed(self):

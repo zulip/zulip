@@ -59,3 +59,7 @@ LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
 
 LOCAL_UPLOADS_DIR = 'test_uploads'
+
+S3_KEY = 'test-key'
+S3_SECRET_KEY = 'test-secret-key'
+S3_AUTH_UPLOADS_BUCKET = 'test-authed-bucket'
