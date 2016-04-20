@@ -64,6 +64,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
         pull_req = payload['pull_request']
         subject = github_generic_subject('pull request', topic_focus, pull_req)
         content = github_generic_content('pull request', payload, pull_req)
+
     elif event == 'issues':
         # in v1, we assume that this stream exists since it is
         # deprecated and the few realms that use it already have the
@@ -72,6 +73,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
         issue = payload['issue']
         subject = github_generic_subject('issue', topic_focus, issue)
         content = github_generic_content('issue', payload, issue)
+
     elif event == 'issue_comment':
         # Comments on both issues and pull requests come in as issue_comment events
         issue = payload['issue']
@@ -92,6 +94,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
                       issue['number'],
                       issue['html_url'],
                       comment['body']))
+
     elif event == 'push':
         subject, content = build_message_from_gitlog(user_profile, topic_focus,
                                                      payload['ref'], payload['commits'],
@@ -100,6 +103,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
                                                      payload['pusher']['name'],
                                                      forced=payload['forced'],
                                                      created=payload['created'])
+
     elif event == 'commit_comment':
         comment = payload['comment']
         subject = "%s: commit %s" % (topic_focus, comment['commit_id'])
