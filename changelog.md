@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added documentation on using Hubot to integrate with useful services
   not yet integrated with Zulip directly (e.g. Google Hangouts).
 - Added new management command to test sending email from Zulip.
-- Added Pingdom and Yo integrations.
+- Added Pingdom, Teamcity, and Yo integrations.
 - Refactored the Zulip puppet modules to be more modular.
 - Refactored the Tornado event system, fixing old memory leaks.
 - Implemented running queue processors multithreaded in development,

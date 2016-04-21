@@ -154,6 +154,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
     url(r'^api/v1/external/pagerduty$',     'webhooks.pagerduty.api_pagerduty_webhook'),
     url(r'^api/v1/external/travis$',        'webhooks.travis.api_travis_webhook'),
+    url(r'^api/v1/external/teamcity$',      'webhooks.teamcity.api_teamcity_webhook'),
     url(r'^api/v1/external/pingdom$',       'webhooks.pingdom.api_pingdom_webhook'),
     url(r'^api/v1/external/yo$',            'webhooks.yo.api_yo_app_webhook'),
 
