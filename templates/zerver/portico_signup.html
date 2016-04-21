@@ -1,10 +1,8 @@
 {% extends "zerver/portico.html" %}
 
-{% load minified_js %}
-
 {# Portico page with signup code #}
 
 {% block customhead %}
-    {{ block.super }}
-    {% minified_js 'signup' %}
+    {{ super() }}
+    {{ minified_js('signup')|safe }}
 {% endblock %}

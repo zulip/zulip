@@ -1,8 +1,5 @@
 {% extends "zerver/base.html" %}
 
-{% load compressed %}
-{% load minified_js %}
-
 {# User Activity. #}
 
 {% block title %}
@@ -11,9 +8,9 @@
 
 
 {% block customhead %}
-{{ block.super }}
-{% minified_js 'activity' %}
-{% compressed_css 'activity' %}
+{{ super() }}
+{{ minified_js('activity')|safe }}
+{{ compressed_css('activity')|safe }}
 {% endblock %}
 
 {% block content %}
@@ -31,7 +28,7 @@
 
 <ul class="nav nav-tabs">
 {% for name, activity in data %}
-    <li {% if forloop.first %} class="active" {% endif %}>
+    <li {% if loop.first %} class="active" {% endif %}>
         <a href="#{{ name|slugify }}" data-toggle="tab">{{ name }}</a>
     </li>
 {% endfor %}
@@ -41,8 +38,8 @@
 
 {% for name, activity in data %}
 
-    <div class="tab-pane {% if forloop.first %} active {% endif %}" id="{{ name|slugify }}">
-        {{ activity }}
+    <div class="tab-pane {% if loop.first %} active {% endif %}" id="{{ name|slugify }}">
+        {{ activity|safe }}
     </div>
 
 {% endfor %}

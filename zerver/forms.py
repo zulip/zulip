@@ -2,10 +2,10 @@ from __future__ import absolute_import
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.utils.safestring import mark_safe
 from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.conf import settings
+from jinja2 import Markup as mark_safe
 
 import logging
 
