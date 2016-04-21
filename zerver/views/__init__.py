@@ -694,7 +694,6 @@ def sent_time_in_epoch_seconds(user_message):
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-# @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def home(request):
     if not request.user.is_authenticated():
         if request.path == "/":
