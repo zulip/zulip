@@ -376,6 +376,10 @@ def do_deactivate_realm(realm):
         # notice when they try to log in.
         delete_user_sessions(user)
 
+def do_reactivate_realm(realm):
+    realm.deactivated = False
+    realm.save(update_fields=["deactivated"])
+
 def do_deactivate_user(user_profile, log=True, _cascade=True):
     if not user_profile.is_active:
         return
