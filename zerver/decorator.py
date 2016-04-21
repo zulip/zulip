@@ -172,9 +172,13 @@ def api_key_only_webhook_view(view_func):
                            *args, **kwargs):
 
         try:
-            user_profile = UserProfile.objects.get(api_key=api_key, is_active=True)
+            user_profile = UserProfile.objects.get(api_key=api_key)
         except UserProfile.DoesNotExist:
             raise JsonableError("Invalid API key")
+        if not user_profile.is_active:
+            raise JsonableError("Account not active")
+        if user_profile.realm.deactivated:
+            raise JsonableError("Realm for account has been deactivated")
 
         request.user = user_profile
         request._email = user_profile.email
