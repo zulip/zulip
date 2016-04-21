@@ -183,7 +183,7 @@ def api_key_only_webhook_view(view_func):
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
-# From Django 1.8
+# From Django 1.8, modified to leave off ?next=/
 def redirect_to_login(next, login_url=None,
                       redirect_field_name=REDIRECT_FIELD_NAME):
     """
@@ -195,7 +195,9 @@ def redirect_to_login(next, login_url=None,
     if redirect_field_name:
         querystring = QueryDict(login_url_parts[4], mutable=True)
         querystring[redirect_field_name] = next
-        login_url_parts[4] = querystring.urlencode(safe='/')
+        # Don't add ?next=/, to keep our URLs clean
+        if next != '/':
+            login_url_parts[4] = querystring.urlencode(safe='/')
 
     return HttpResponseRedirect(urllib.parse.urlunparse(login_url_parts))
 
