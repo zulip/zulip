@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.utils.cache import patch_cache_control
@@ -67,6 +67,7 @@ import jwt
 import hashlib
 import hmac
 
+from zproject.jinja2 import render_to_response
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
@@ -231,7 +232,7 @@ def accounts_register(request):
              # we have to set it here.
              'password_auth_enabled': password_auth_enabled(realm),
             },
-        context_instance=RequestContext(request))
+        request=request)
 
 @zulip_login_required
 def accounts_accept_terms(request):
@@ -256,7 +257,7 @@ def accounts_accept_terms(request):
         form = ToSForm()
     return render_to_response('zerver/accounts_accept_terms.html',
         { 'form': form, 'company_name': domain, 'email': email },
-        context_instance=RequestContext(request))
+        request=request)
 
 from zerver.lib.ccache import make_ccache
 
@@ -316,7 +317,7 @@ def api_endpoint_docs(request):
                 'content': calls,
                 'langs': langs,
                 },
-        context_instance=RequestContext(request))
+        request=request)
 
 @authenticated_json_post_view
 @has_request_variables
@@ -384,7 +385,7 @@ def maybe_send_to_registration(request, email, full_name=''):
             urllib.parse.quote_plus(full_name.encode('utf8')))))
     else:
         return render_to_response('zerver/accounts_home.html', {'form': form},
-                                  context_instance=RequestContext(request))
+                                  request=request)
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name=''):
     if user_profile is None or user_profile.is_mirror_dummy:
@@ -601,7 +602,7 @@ def initial_invite_page(request):
         params['invite_suffix'] = user.realm.domain
 
     return render_to_response('zerver/initial_invite_page.html', params,
-                              context_instance=RequestContext(request))
+                              request=request)
 
 @require_post
 def logout_then_login(request, **kwargs):
@@ -665,7 +666,7 @@ def accounts_home(request):
         form = create_homepage_form(request)
     return render_to_response('zerver/accounts_home.html',
                               {'form': form, 'current_url': request.get_full_path},
-                              context_instance=RequestContext(request))
+                              request=request)
 
 def approximate_unread_count(user_profile):
     not_in_home_view_recipients = [sub.recipient.id for sub in \
@@ -880,7 +881,7 @@ def home(request):
                                    'embedded': narrow_stream is not None,
                                    'product_name': product_name
                                    },
-                                  context_instance=RequestContext(request))
+                                  request=request)
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 
@@ -1280,4 +1281,4 @@ def email_unsubscribe(request, type, token):
         return process_unsubscribe(token, display_name, unsubscribe_function)
 
     return render_to_response('zerver/unsubscribe_link_error.html', {},
-                              context_instance=RequestContext(request))
+                              request=request)

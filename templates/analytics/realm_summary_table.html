@@ -47,7 +47,9 @@
 
             {# Hours per user #}
             <td class="number">
+                {% if row.hours_per_user %}
                 {{ row.hours_per_user }}
+                {% endif %}
             </td>
 
             {# Hours #}

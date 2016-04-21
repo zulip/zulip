@@ -1,7 +1,7 @@
 {% load app_filters %}
-{% comment %}
+{#
 Mail sent to a user who hasn't logged in for 24 hours.
-{% endcomment %}
+#}
 
 Hello {{ name }},
 

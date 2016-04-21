@@ -1,23 +1,22 @@
-{% load i18n %}
           <div class="left-sidebar" id="left-sidebar">
               <div class="bottom_sidebar">
                       <ul id="global_filters" class="filters">
                           {# Special-case this link so we don't actually go to page top. #}
                           <li data-name="home"
-                          class="global-filter active-filter"><span class="filter-icon"><i class="icon-vector-home"></i></span><a href="#">{% trans 'Home' %} <span class="count"><span class="value"></span></span></a></li>
-                          <li data-name="private" class="global-filter"><span class="filter-icon"><i class="icon-vector-user"></i></span><a href="#narrow/is/private">{% trans 'Private messages' %} <span class="count"><span class="value"></span></span></a></li>
-                          <li data-name="starred" class="global-filter"><span class="filter-icon"><i class="icon-vector-star"></i></span><a href="#narrow/is/starred">{% trans 'Starred messages' %}</a></li>
-                          <li data-name="mentioned" class="global-filter"><span class="filter-icon"><i class="icon-vector-tag"></i></span><a href="#narrow/is/mentioned">{% trans '@-mentions' %}<span class="count"><span class="value"></span></span></a></li>
+                          class="global-filter active-filter"><span class="filter-icon"><i class="icon-vector-home"></i></span><a href="#">{{ _('Home') }} <span class="count"><span class="value"></span></span></a></li>
+                          <li data-name="private" class="global-filter"><span class="filter-icon"><i class="icon-vector-user"></i></span><a href="#narrow/is/private">{{ _('Private messages') }} <span class="count"><span class="value"></span></span></a></li>
+                          <li data-name="starred" class="global-filter"><span class="filter-icon"><i class="icon-vector-star"></i></span><a href="#narrow/is/starred">{{ _('Starred messages') }}</a></li>
+                          <li data-name="mentioned" class="global-filter"><span class="filter-icon"><i class="icon-vector-tag"></i></span><a href="#narrow/is/mentioned">{{ _('@-mentions') }}<span class="count"><span class="value"></span></span></a></li>
                       </ul>
                       <div id="streams_list" class="zoom-out">
-                        <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title">{% trans 'STREAMS' %}</h4>
+                        <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title">{{ _('STREAMS') }}</h4>
                           <a href=""><i id="streams_inline_cog" class='icon-vector-cog' data-toggle="tooltip" title="Subscribe, add, or configure streams"></i></a>
                         </div>
                         <div id="topics_header">
                           <div class="all-streams-padding">
                             <ul class="filters">
                               <li data-name="all-streams">
-                                <i class="icon-vector-chevron-left"></i> <a href="" class="show-all-streams">{% trans 'All streams' %}</a>
+                                <i class="icon-vector-chevron-left"></i> <a href="" class="show-all-streams">{{ _('All streams') }}</a>
                               </li>
                             </ul>
                           </div>
@@ -28,24 +27,24 @@
                       </div>
                       <div id="share-the-love">
                         <div id="share-the-love-expand-collapse">
-                          <i class="toggle icon-vector-caret-right"></i><div id="sharethelove-header"><h4 class="share-the-love-title">{% trans 'SHARE THE LOVE' %}<span class="still-have-invites"> (<span class="invite-count">0</span>)</span></h4></div>
+                          <i class="toggle icon-vector-caret-right"></i><div id="sharethelove-header"><h4 class="share-the-love-title">{{ _('SHARE THE LOVE') }}<span class="still-have-invites"> (<span class="invite-count">0</span>)</span></h4></div>
                         </div>
                         <div id="share-the-love-contents">
                           <div id="tell-a-friend-success" class="alert alert-success">
-                            <strong>{% trans 'Thanks!' %}</strong> {% trans 'A hand-crafted, artisanal invite is on the way' %}.
+                            <strong>{{ _('Thanks!') }}</strong> {{ _('A hand-crafted, artisanal invite is on the way') }}.
                           </div>
                           <div class="still-have-invites" id="encouraging-invite-message">
                             <p>
-                              {% trans "Know someone who would love Zulip for their company or group? Invite 'em!" %}
+                              {{ _("Know someone who would love Zulip for their company or group? Invite 'em!") }}
                             </p>
                           </div>
                           <div class="no-more-invites">
                             <p>
-                              {% blocktrans %}We'll have more invites for you soon, but
+                              {% trans %}We'll have more invites for you soon, but
                               for now, enjoy this <a target="_blank"
                                                      href="http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s">song
                                 that expresses how we feel when you're
-                                logged out</a>.{% endblocktrans %}
+                                logged out</a>.{% endtrans %}
                             </p>
                           </div>
                           <div class="still-have-invites">
@@ -57,7 +56,7 @@
                           </div>
                           <div class="invite-count-area">
                             <span id="invite-hearts"></span>
-                            <small class="pull-right"><span class="invite-count">0</span> {% trans 'invite' %}<span class="invite-count-is-plural">s</span> {% trans 'remaining' %}</small>
+                            <small class="pull-right"><span class="invite-count">0</span> {{ _('invite') }}<span class="invite-count-is-plural">s</span> {{ _('remaining') }}</small>
                           </div>
                         </div>
                       </div>

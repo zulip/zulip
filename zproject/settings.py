@@ -245,9 +245,27 @@ if PRODUCTION:
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'BACKEND': 'zproject.jinja2.backends.Jinja2',
         'DIRS': [
              os.path.join(DEPLOY_ROOT, 'templates'),
+        ],
+        'APP_DIRS': False,
+        'OPTIONS': {
+            'environment': 'zproject.jinja2.environment',
+            'extensions': [
+                'jinja2.ext.i18n',
+                'jinja2.ext.autoescape',
+            ],
+            'context_processors': [
+                'zerver.context_processors.add_settings',
+                'zerver.context_processors.add_metrics',
+            ],
+        },
+    },
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+             os.path.join(DEPLOY_ROOT, 'django_templates'),
         ],
         'APP_DIRS': False,
         'OPTIONS': {

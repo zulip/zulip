@@ -3,7 +3,7 @@
 {% block content %}
 
 <form id="register" action="/accounts/register/" method="post">
-    {% csrf_token %}
+    {{ csrf_input }}
     <input type="hidden" value="{{ key }}" name="key"/>
     <input type="hidden" value="1" name="from_confirmation"/>
 </form>

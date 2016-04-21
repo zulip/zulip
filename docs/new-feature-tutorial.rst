@@ -55,7 +55,7 @@ new event that is sent to clients, be sure to add a handler for it to
 **CSS:** The primary CSS file is ``static/styles/zulip.css``. If your new 
 feature requires UI changes, you may need to add additional CSS to this file.
 
-**Templates:** The initial page structure is rendered via Django templates 
+**Templates:** The initial page structure is rendered via Jinja2 templates 
 located in ``templates/zerver``. For JavaScript, Zulip uses Handlebars templates located in
 ``static/templates``. Templates are precompiled as part of the build/deploy
 process.
