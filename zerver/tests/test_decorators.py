@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 
+from zerver.lib.actions import do_deactivate_realm
+from zerver.lib.test_helpers import (
+    AuthedTestCase,
+)
 from zerver.decorator import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, JsonableError
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
 )
+from zerver.models import \
+    get_realm, get_user_profile_by_email
 
 import ujson
 
@@ -166,3 +172,77 @@ class ValidatorTestCase(TestCase):
         person = 'misconfigured data'
         self.assertEqual(check_person(person), 'This is not a valid person')
 
+class DeactivatedRealmTest(AuthedTestCase):
+    def test_send_deactivated_realm(self):
+        """
+        rest_dispatch rejects requests in a deactivated realm, both /json and api
+
+        """
+        realm = get_realm("zulip.com")
+        do_deactivate_realm(get_realm("zulip.com"))
+
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "Test message",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
+        self.assert_json_error_contains(result, "Not logged in", status_code=401)
+
+        # Even if a logged-in session was leaked, it still wouldn't work
+        realm.deactivated = False
+        realm.save()
+        self.login("hamlet@zulip.com")
+        realm.deactivated = True
+        realm.save()
+
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "Test message",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
+        self.assert_json_error_contains(result, "has been deactivated", status_code=400)
+
+        result = self.client.post("/api/v1/messages", {"type": "private",
+                                                       "content": "Test message",
+                                                       "client": "test suite",
+                                                       "to": "othello@zulip.com"},
+                                  **self.api_auth("hamlet@zulip.com"))
+        self.assert_json_error_contains(result, "has been deactivated", status_code=401)
+
+    def test_fetch_api_key_deactivated_realm(self):
+        """
+        authenticated_json_view views fail in a deactivated realm
+
+        """
+        realm = get_realm("zulip.com")
+        email = "hamlet@zulip.com"
+        test_password = "abcd1234"
+        user_profile = get_user_profile_by_email(email)
+        user_profile.set_password(test_password)
+
+        self.login(email)
+        realm.deactivated = True
+        realm.save()
+        result = self.client.post("/json/fetch_api_key", {"password": test_password})
+        self.assert_json_error_contains(result, "has been deactivated", status_code=400)
+
+    def test_login_deactivated_realm(self):
+        """
+        logging in fails in a deactivated realm
+
+        """
+        do_deactivate_realm(get_realm("zulip.com"))
+        result = self.login("hamlet@zulip.com")
+        self.assertIn("has been deactivated", result.content.replace("\n", " "))
+
+    def test_webhook_deactivated_realm(self):
+        """
+        Using a webhook while in a deactivated realm fails
+
+        """
+        do_deactivate_realm(get_realm("zulip.com"))
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
+        data = self.fixture_data('jira', "created")
+        result = self.client.post(url, data,
+                                  content_type="application/json")
+        self.assert_json_error_contains(result, "has been deactivated", status_code=400)
