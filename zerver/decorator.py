@@ -232,12 +232,21 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
         return _wrapped_view
     return decorator
 
+def logged_in_and_active(user_profile):
+    if not user_profile.is_authenticated():
+        return False
+    if not user_profile.is_active:
+        return False
+    if user_profile.realm.deactivated:
+        return False
+    return True
+
 # Based on Django 1.8's @login_required
 def zulip_login_required(function=None,
                          redirect_field_name=REDIRECT_FIELD_NAME,
                          login_url=settings.HOME_NOT_LOGGED_IN):
     actual_decorator = user_passes_test(
-        lambda u: u.is_authenticated(),
+        logged_in_and_active,
         login_url=login_url,
         redirect_field_name=redirect_field_name
     )

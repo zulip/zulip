@@ -248,6 +248,41 @@ class DeactivatedRealmTest(AuthedTestCase):
                                   content_type="application/json")
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
+class LoginRequiredTest(AuthedTestCase):
+    def test_login_required(self):
+        """
+        Verifies the zulip_login_required decorator blocks deactivated users.
+        """
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+
+        # Verify fails if logged-out
+        result = self.client.get('/accounts/accept_terms/')
+        self.assertEqual(result.status_code, 302)
+
+        # Verify succeeds once logged-in
+        self.login(email)
+        result = self.client.get('/accounts/accept_terms/')
+        self.assertIn("I agree to the", result.content)
+
+        # Verify fails if user deactivated (with session still valid)
+        user_profile.is_active = False
+        user_profile.save()
+        result = self.client.get('/accounts/accept_terms/')
+        self.assertEqual(result.status_code, 302)
+
+        # Verify succeeds if user reactivated
+        do_reactivate_user(user_profile)
+        self.login(email)
+        result = self.client.get('/accounts/accept_terms/')
+        self.assertIn("I agree to the", result.content)
+
+        # Verify fails if realm deactivated
+        user_profile.realm.deactivated = True
+        user_profile.realm.save()
+        result = self.client.get('/accounts/accept_terms/')
+        self.assertEqual(result.status_code, 302)
+
 class InactiveUserTest(AuthedTestCase):
     def test_send_deactivated_user(self):
         """
