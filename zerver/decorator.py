@@ -350,6 +350,10 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
     user_profile = request.user
+    if not user_profile.is_active:
+        raise JsonableError("Account not active")
+    if user_profile.realm.deactivated:
+        raise JsonableError("Realm for account has been deactivated")
     process_client(request, user_profile, True)
     request._email = user_profile.email
     return view_func(request, user_profile, *args, **kwargs)
