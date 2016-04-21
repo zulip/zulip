@@ -7,6 +7,7 @@ import mock
 
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
+from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
     AuthedTestCase,
 )
@@ -139,3 +140,41 @@ class AuthBackendTest(TestCase):
         with self.settings(SSO_APPEND_DOMAIN='zulip.com'):
             self.verify_backend(ZulipRemoteUserBackend(),
                                 email_to_username=email_to_username)
+
+class FetchAPIKeyTest(AuthedTestCase):
+    def setUp(self):
+        self.email = "hamlet@zulip.com"
+        self.user_profile = get_user_profile_by_email(self.email)
+
+    def test_success(self):
+        result = self.client.post("/api/v1/fetch_api_key",
+                                  dict(username=self.email,
+                                       password=initial_password(self.email)))
+        self.assert_json_success(result)
+
+    def test_wrong_password(self):
+        result = self.client.post("/api/v1/fetch_api_key",
+                                  dict(username=self.email,
+                                       password="wrong"))
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+    def test_password_auth_disabled(self):
+        with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
+            result = self.client.post("/api/v1/fetch_api_key",
+                                      dict(username=self.email,
+                                           password=initial_password(self.email)))
+            self.assert_json_error_contains(result, "Password auth is disabled", 403)
+
+    def test_inactive_user(self):
+        do_deactivate_user(self.user_profile)
+        result = self.client.post("/api/v1/fetch_api_key",
+                                  dict(username=self.email,
+                                       password=initial_password(self.email)))
+        self.assert_json_error_contains(result, "Your account has been disabled", 403)
+
+    def test_deactivated_realm(self):
+        do_deactivate_realm(self.user_profile.realm)
+        result = self.client.post("/api/v1/fetch_api_key",
+                                  dict(username=self.email,
+                                       password=initial_password(self.email)))
+        self.assert_json_error_contains(result, "Your realm has been deactivated", 403)

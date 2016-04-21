@@ -40,12 +40,18 @@ def google_auth_enabled():
             return True
     return False
 
-def common_get_active_user_by_email(email):
+def common_get_active_user_by_email(email, return_data=None):
     try:
         user_profile = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
         return None
-    if not user_profile.is_active or user_profile.realm.deactivated:
+    if not user_profile.is_active:
+        if return_data is not None:
+            return_data['inactive_user'] = True
+        return None
+    if user_profile.realm.deactivated:
+        if return_data is not None:
+            return_data['inactive_realm'] = True
         return None
     return user_profile
 
@@ -74,7 +80,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     a username/password pair.
     """
 
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, username=None, password=None, return_data=None):
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:
             # Return immediately.  Otherwise we will look for a SQL row with
@@ -82,10 +88,12 @@ class EmailAuthBackend(ZulipAuthMixin):
             # exposure.
             return None
 
-        user_profile = common_get_active_user_by_email(username)
+        user_profile = common_get_active_user_by_email(username, return_data=return_data)
         if user_profile is None:
             return None
         if not password_auth_enabled(user_profile.realm):
+            if return_data is not None:
+                return_data['password_auth_disabled'] = True
             return None
         if user_profile.check_password(password):
             return user_profile
@@ -112,7 +120,11 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             except UserProfile.DoesNotExist:
                 return_data["valid_attestation"] = True
                 return None
-            if not user_profile.is_active or user_profile.realm.deactivated:
+            if not user_profile.is_active:
+                return_data["inactive_user"] = True
+                return None
+            if user_profile.realm.deactivated:
+                return_data["inactive_realm"] = True
                 return None
             return user_profile
         else:
