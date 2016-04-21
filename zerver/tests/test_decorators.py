@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 
-from zerver.lib.actions import do_deactivate_realm
+from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
+    do_reactivate_user
 from zerver.lib.test_helpers import (
     AuthedTestCase,
 )
@@ -246,3 +247,83 @@ class DeactivatedRealmTest(AuthedTestCase):
         result = self.client.post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
+
+class InactiveUserTest(AuthedTestCase):
+    def test_send_deactivated_user(self):
+        """
+        rest_dispatch rejects requests from deactivated users, both /json and api
+
+        """
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+        self.login(email)
+        do_deactivate_user(user_profile)
+
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "Test message",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
+        self.assert_json_error_contains(result, "Not logged in", status_code=401)
+
+        # Even if a logged-in session was leaked, it still wouldn't work
+        do_reactivate_user(user_profile)
+        self.login(email)
+        user_profile.is_active = False
+        user_profile.save()
+
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "Test message",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
+        self.assert_json_error_contains(result, "Account not active", status_code=400)
+
+        result = self.client.post("/api/v1/messages", {"type": "private",
+                                                       "content": "Test message",
+                                                       "client": "test suite",
+                                                       "to": "othello@zulip.com"},
+                                  **self.api_auth("hamlet@zulip.com"))
+        self.assert_json_error_contains(result, "Account not active", status_code=401)
+
+    def test_fetch_api_key_deactivated_user(self):
+        """
+        authenticated_json_view views fail with a deactivated user
+
+        """
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+        test_password = "abcd1234"
+        user_profile.set_password(test_password)
+
+        self.login(email)
+        user_profile.is_active = False
+        user_profile.save()
+        result = self.client.post("/json/fetch_api_key", {"password": test_password})
+        self.assert_json_error_contains(result, "Account not active", status_code=400)
+
+    def test_login_deactivated_user(self):
+        """
+        logging in fails with an inactive user
+
+        """
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+        do_deactivate_user(user_profile)
+
+        result = self.login("hamlet@zulip.com")
+        self.assertIn("Please enter a correct email and password", result.content.replace("\n", " "))
+
+    def test_webhook_deactivated_user(self):
+        """
+        Deactivated users can't use webhooks
+
+        """
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+        do_deactivate_user(user_profile)
+
+        api_key = self.get_api_key(email)
+        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
+        data = self.fixture_data('jira', "created")
+        result = self.client.post(url, data,
+                                  content_type="application/json")
+        self.assert_json_error_contains(result, "Account not active", status_code=400)
