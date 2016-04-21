@@ -563,6 +563,8 @@ def dev_direct_login(request, **kwargs):
         raise Exception('Direct login not supported.')
     email = request.POST['direct_email']
     user_profile = authenticate(username=email)
+    if user_profile is None:
+        raise Exception("User cannot login")
     login(request, user_profile)
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                           request.get_host()))
