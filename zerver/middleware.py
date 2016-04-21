@@ -256,7 +256,12 @@ class LogRequests(object):
 class JsonErrorHandler(object):
     def process_exception(self, request, exception):
         if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
-            return json_error(exception.to_json_error_msg())
+            try:
+                status_code = exception.status_code
+            except Exception:
+                logging.warning("Jsonable exception %s missing status code!" % (exception,))
+                status_code = 400
+            return json_error(exception.to_json_error_msg(), status=status_code)
         if request.error_format == "JSON":
             logging.error(traceback.format_exc())
             return json_error("Internal server error", status=500)

@@ -393,8 +393,9 @@ def internal_notify_view(view_func):
     return _wrapped_view_func
 
 class JsonableError(Exception):
-    def __init__(self, error):
+    def __init__(self, error, status_code=400):
         self.error = error
+        self.status_code = status_code
 
     def __str__(self):
         return self.to_json_error_msg()
@@ -403,16 +404,18 @@ class JsonableError(Exception):
         return self.error
 
 class RequestVariableMissingError(JsonableError):
-    def __init__(self, var_name):
+    def __init__(self, var_name, status_code=400):
         self.var_name = var_name
+        self.status_code = status_code
 
     def to_json_error_msg(self):
         return "Missing '%s' argument" % (self.var_name,)
 
 class RequestVariableConversionError(JsonableError):
-    def __init__(self, var_name, bad_value):
+    def __init__(self, var_name, bad_value, status_code=400):
         self.var_name = var_name
         self.bad_value = bad_value
+        self.status_code = status_code
 
     def to_json_error_msg(self):
         return "Bad value for '%s': %s" % (self.var_name, self.bad_value)
