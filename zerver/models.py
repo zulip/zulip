@@ -443,18 +443,6 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True)
 
-# Deprecated. Drop this table once prod uses PushDeviceToken and the data has
-# been copied there.
-class AppleDeviceToken(models.Model):
-    # The token is a unique device-specific token that is
-    # sent to us from each iOS device, after registering with
-    # the APNS service
-    token = models.CharField(max_length=255, unique=True)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    # The user who's device this is
-    user = models.ForeignKey(UserProfile, db_index=True)
-
 class PushDeviceToken(models.Model):
     APNS = 1
     GCM = 2
