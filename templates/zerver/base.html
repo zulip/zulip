@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     {% block title %}
-        {% if user_profile.realm.name %}
+        {% if user_profile and user_profile.realm.name %}
         <title>{{user_profile.realm.name}} - {{product_name}}</title>
         {% else %}
         <title>Zulip</title>
