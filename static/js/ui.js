@@ -176,7 +176,7 @@ function need_skinny_mode() {
 }
 
 function update_message_in_all_views(message_id, callback) {
-    _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (list) {
+    _.each([message_list.all, home_msg_list, narrowed_msg_list], function (list) {
         if (list === undefined) {
             return;
         }
@@ -192,10 +192,10 @@ function update_message_in_all_views(message_id, callback) {
 
 exports.find_message = function (message_id) {
     // Try to find the message object. It might be in the narrow list
-    // (if it was loaded when narrowed), or only in the all_msg_list
+    // (if it was loaded when narrowed), or only in the message_list.all
     // (if received from the server while in a different narrow)
     var message;
-    _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (msg_list) {
+    _.each([message_list.all, home_msg_list, narrowed_msg_list], function (msg_list) {
         if (msg_list !== undefined && message === undefined) {
             message = msg_list.get(message_id);
         }
