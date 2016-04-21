@@ -7,7 +7,7 @@ from zerver.lib.actions import do_deactivate_realm
 from zerver.models import get_realm
 
 class Command(BaseCommand):
-    help = """One-off script to deactivate our old realms."""
+    help = """Script to deactivate a realm."""
 
     def add_arguments(self, parser):
         parser.add_argument('domain', metavar='<domain>', type=str,
