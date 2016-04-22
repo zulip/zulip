@@ -697,8 +697,7 @@ MessageListView.prototype = {
         }
 
         this.clear_table();
-        this.render(this.list.all().slice(this._render_win_start,
-                                          this._render_win_end), 'bottom');
+        this.render(this.list.all_messages().slice(this._render_win_start, this._render_win_end), 'bottom');
 
         // If we could see the newly selected message, scroll the
         // window such that the newly selected message is at the
@@ -829,8 +828,7 @@ MessageListView.prototype = {
 
         this.update_render_window(this.list.selected_idx(), false);
 
-        this.render(this.list.all().slice(this._render_win_start,
-                                          this._render_win_end), 'bottom');
+        this.render(this.list.all_messages().slice(this._render_win_start, this._render_win_end), 'bottom');
     },
 
     clear_table: function MessageListView_clear_table() {

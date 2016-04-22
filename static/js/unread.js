@@ -93,7 +93,7 @@ exports.declare_bankruptcy = function () {
 exports.num_unread_current_messages = function () {
     var num_unread = 0;
 
-    _.each(current_msg_list.all(), function (msg) {
+    _.each(current_msg_list.all_messages(), function (msg) {
         if ((msg.id > current_msg_list.selected_id()) && exports.message_unread(msg)) {
             num_unread += 1;
         }
@@ -195,7 +195,7 @@ exports.enable = function enable() {
 };
 
 exports.mark_all_as_read = function mark_all_as_read(cont) {
-    _.each(message_list.all.all(), function (msg) {
+    _.each(message_list.all.all_messages(), function (msg) {
         msg.flags = msg.flags || [];
         msg.flags.push('read');
     });
@@ -269,7 +269,7 @@ exports.process_visible = function process_visible(update_cursor) {
 };
 
 exports.mark_current_list_as_read = function mark_current_list_as_read(options) {
-    exports.mark_messages_as_read(current_msg_list.all(), options);
+    exports.mark_messages_as_read(current_msg_list.all_messages(), options);
 };
 
 return exports;

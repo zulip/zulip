@@ -523,7 +523,7 @@ exports.MessageList.prototype = {
         this.rerender();
     },
 
-    all: function MessageList_all() {
+    all_messages: function MessageList_all_messages() {
         return this._items;
     },
 
