@@ -145,7 +145,9 @@ steps:
   setup the integration, including what URLs to use, etc.  If there
   are any screens in the product involved, take a few screenshots with
   the input fields filled out with sample values in order to make the
-  instructions really easy to follow.
+  instructions really easy to follow.  For the screenshots, use
+  something like `github-bot@example.com` for the email addresses and
+  an obviously fake API key like `abcdef123456790`.
 
 * Finally, generate a message sent by the integration and take a
   screenshot of the message to provide an example message in the
@@ -158,6 +160,11 @@ steps:
        --fixture=zerver/fixtures/pingdom/pingdom_imap_down_to_up.json \
        '--url=/api/v1/external/pingdom?stream=stream_name&api_key=api_key'
   ```
+
+  When generating the screenshot of a sample message, give your test
+  bot a nice name like "GitHub Bot", use the project's logo as the
+  bot's avatar, and take the screenshots showing the stream/topic bar
+  for the message, not just the message body.
 
 When writing documentation for your integration, be sure to use the
 `{{ external_api_uri }}` template variable, so that your integration
