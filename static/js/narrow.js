@@ -263,8 +263,7 @@ exports.activate = function (raw_operators, opts) {
         if (! narrowed_msg_list.empty()) {
             if (opts.select_first_unread) {
                 then_select_id = narrowed_msg_list.last().id;
-                var first_unread = _.find(narrowed_msg_list.all(),
-                                          unread.message_unread);
+                var first_unread = _.find(narrowed_msg_list.all_messages(), unread.message_unread);
                 if (first_unread) {
                     then_select_id = first_unread.id;
                 }
@@ -295,7 +294,7 @@ exports.activate = function (raw_operators, opts) {
     // the message we want anyway or if the filter can't be applied
     // locally.
     if (message_list.all.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        message_store.add_messages(message_list.all.all(), narrowed_msg_list, {delay_render: true});
+        message_store.add_messages(message_list.all.all_messages(), narrowed_msg_list, {delay_render: true});
     }
 
     var defer_selecting_closest = narrowed_msg_list.empty();
@@ -471,7 +470,7 @@ exports.deactivate = function () {
             // We read some unread messages in a narrow. Instead of going back to
             // where we were before the narrow, go to our first unread message (or
             // the bottom of the feed, if there are no unread messages).
-            var first_unread = _.find(current_msg_list.all(), unread.message_unread);
+            var first_unread = _.find(current_msg_list.all_messages(), unread.message_unread);
             if (first_unread) {
                 message_id_to_select = first_unread.id;
             } else {
