@@ -3,7 +3,6 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
 from django.shortcuts import render_to_response, redirect
@@ -41,7 +40,8 @@ from zerver.lib import bugdown
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.decorator import require_post, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, to_non_negative_int, \
-    JsonableError, get_user_profile_by_email, REQ, require_realm_admin
+    JsonableError, get_user_profile_by_email, REQ, require_realm_admin, \
+    zulip_login_required
 from zerver.lib.avatar import avatar_url
 from zerver.lib.upload import upload_message_image_through_web_client, \
     get_signed_upload_url, get_realm_for_filename
@@ -233,7 +233,7 @@ def accounts_register(request):
             },
         context_instance=RequestContext(request))
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@zulip_login_required
 def accounts_accept_terms(request):
     email = request.user.email
     domain = resolve_email_to_domain(email)
@@ -543,8 +543,8 @@ def login_page(request, **kwargs):
         MAX_DEV_BACKEND_USERS = 100
         users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
         users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
-        extra_context['direct_admins'] = [u.email for u in users if u.is_admin()]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_admin()]
+        extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
+        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
@@ -587,7 +587,7 @@ def json_bulk_invite_users(request, user_profile,
                               user_profile.realm.domain, internal_message)
         return json_success()
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@zulip_login_required
 def initial_invite_page(request):
     user = request.user
     # Only show the bulk-invite page for the first user in a realm
@@ -694,7 +694,7 @@ def sent_time_in_epoch_seconds(user_message):
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@zulip_login_required
 def home(request):
     # We need to modify the session object every two weeks or it will expire.
     # This line makes reloading the page a sufficient action to keep the
@@ -830,7 +830,7 @@ def home(request):
         alert_words           = register_ret['alert_words'],
         muted_topics          = register_ret['muted_topics'],
         realm_filters         = register_ret['realm_filters'],
-        is_admin              = user_profile.is_admin(),
+        is_admin              = user_profile.is_realm_admin,
         can_create_streams    = user_profile.can_create_streams(),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
@@ -859,7 +859,7 @@ def home(request):
     show_invites = True
 
     # Some realms only allow admins to invite users
-    if user_profile.realm.invite_by_admins_only and not user_profile.is_admin():
+    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         show_invites = False
 
     product_name = "Zulip"
@@ -874,7 +874,7 @@ def home(request):
                                        settings.DEBUG and ('show_debug' in request.GET),
                                    'pipeline': settings.PIPELINE,
                                    'show_invites': show_invites,
-                                   'is_admin': user_profile.is_admin(),
+                                   'is_admin': user_profile.is_realm_admin,
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
@@ -884,7 +884,7 @@ def home(request):
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@zulip_login_required
 def desktop_home(request):
     return HttpResponseRedirect(reverse('zerver.views.home'))
 
@@ -1041,7 +1041,7 @@ def json_upload_file(request, user_profile):
     uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
 
-@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+@zulip_login_required
 @has_request_variables
 def get_uploaded_file(request, realm_id, filename,
                       redir=REQ(validator=check_bool, default=True)):

@@ -19,7 +19,6 @@ from django.utils import timezone
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
-from guardian.shortcuts import get_users_with_perms
 import zlib
 
 from bitfield import BitField
@@ -149,9 +148,8 @@ class Realm(models.Model):
         self._deployments = [value] # type: Any
 
     def get_admin_users(self):
-        # This method is kind of expensive, due to our complex permissions model.
-        candidates = get_users_with_perms(self, only_with_perms=['administer'])
-        return candidates
+        return UserProfile.objects.filter(realm=self, is_realm_admin=True,
+                                          is_active=True).select_related()
 
     def get_active_users(self):
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
@@ -295,7 +293,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(blank=False, db_index=True, unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True, db_index=True)
+    is_realm_admin = models.BooleanField(default=False, db_index=True)
     is_bot = models.BooleanField(default=False, db_index=True)
+    is_api_super_user = models.BooleanField(default=False, db_index=True)
     date_joined = models.DateTimeField(default=timezone.now)
     is_mirror_dummy = models.BooleanField(default=False)
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
@@ -393,18 +393,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """Returns whether this user has permission to modify target_user"""
         if target_user.bot_owner == self:
             return True
-        elif self.has_perm('administer', target_user.realm):
+        elif self.is_realm_admin and self.realm == target_user.realm:
             return True
         else:
             return False
-
-    def is_admin(self):
-        return self.has_perm('administer', self.realm)
-
-    def is_api_super_user(self):
-        # TODO: Remove API_SUPER_USERS hack; fixing this will require
-        # setting the email bot as a super user in the provision process.
-        return self.has_perm('api_super_user', self.realm) or self.email in settings.API_SUPER_USERS
 
     def last_reminder_tzaware(self):
         if self.last_reminder is not None and timezone.is_naive(self.last_reminder):
@@ -450,18 +442,6 @@ class PreregistrationUser(models.Model):
     status = models.IntegerField(default=0)
 
     realm = models.ForeignKey(Realm, null=True)
-
-# Deprecated. Drop this table once prod uses PushDeviceToken and the data has
-# been copied there.
-class AppleDeviceToken(models.Model):
-    # The token is a unique device-specific token that is
-    # sent to us from each iOS device, after registering with
-    # the APNS service
-    token = models.CharField(max_length=255, unique=True)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    # The user who's device this is
-    user = models.ForeignKey(UserProfile, db_index=True)
 
 class PushDeviceToken(models.Model):
     APNS = 1
@@ -587,6 +567,9 @@ class Recipient(models.Model):
 
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
+
+    def __repr__(self):
+        return u"<Client: %s>" % (self.name,)
 
 get_client_cache = {} # type: Dict[str, Client]
 def get_client(name):

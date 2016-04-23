@@ -138,6 +138,8 @@ js_rules = [
      'description': 'Missing space between else and {'},
     ] + whitespace_rules
 python_rules = [
+    {'pattern': '^(?!#)@login_required',
+     'description': '@login_required is unsupported; use @zulip_login_required'},
     {'pattern': '".*"%\([a-z_].*\)?$',
      'description': 'Missing space around "%"'},
     {'pattern': "'.*'%\([a-z_].*\)?$",
@@ -158,6 +160,8 @@ bash_rules = [
 css_rules = [
     {'pattern': '^[^:]*:\S[^:]*;$',
      'description': "Missing whitespace after : in CSS"},
+    {'pattern': '{\w',
+     'description': "Missing whitespace after '{' in CSS (should be newline)."},
     ] + whitespace_rules
 handlebars_rules = whitespace_rules
 html_rules = whitespace_rules

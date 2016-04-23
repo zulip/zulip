@@ -105,8 +105,8 @@ function update_in_home_view(sub, value) {
 
         home_msg_list.clear({clear_selected_id: false});
 
-        // Recreate the home_msg_list with the newly filtered all_msg_list
-        message_store.add_messages(all_msg_list.all(), home_msg_list);
+        // Recreate the home_msg_list with the newly filtered message_list.all
+        message_store.add_messages(message_list.all.all(), home_msg_list);
 
         // Ensure we're still at the same scroll position
         if (ui.home_tab_obscured()) {
@@ -168,7 +168,7 @@ function update_stream_name(sub, new_name) {
     stream_list.rename_stream(sub);
 
     // Update the message feed.
-    _.each([home_msg_list, current_msg_list, all_msg_list], function (list) {
+    _.each([home_msg_list, current_msg_list, message_list.all], function (list) {
         list.change_display_recipient(old_name, new_name);
     });
 }
@@ -343,7 +343,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
 
     // Update unread counts as the new stream in sidebar might
     // need its unread counts re-calculated
-    process_loaded_for_unread(all_msg_list.all());
+    process_loaded_for_unread(message_list.all.all());
 
     $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
 };

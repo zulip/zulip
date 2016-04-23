@@ -13,6 +13,7 @@
 /update-prod-static.log
 frontend_tests/casper_tests/server.log
 frontend_tests/casper_lib/test_credentials.js
+memcached_prefix
 /prod-static
 /errors/*
 *.sw[po]

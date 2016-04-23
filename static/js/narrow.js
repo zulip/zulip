@@ -244,7 +244,7 @@ exports.activate = function (raw_operators, opts) {
         home_msg_list.pre_narrow_offset = page_params.initial_offset;
     }
 
-    var msg_list = new MessageList('zfilt', current_filter, {
+    var msg_list = new message_list.MessageList('zfilt', current_filter, {
         collapse_messages: ! current_filter.is_search(),
         muting_enabled: muting_enabled
     });
@@ -294,8 +294,8 @@ exports.activate = function (raw_operators, opts) {
     // Don't bother populating a message list when it won't contain
     // the message we want anyway or if the filter can't be applied
     // locally.
-    if (all_msg_list.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        message_store.add_messages(all_msg_list.all(), narrowed_msg_list, {delay_render: true});
+    if (message_list.all.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
+        message_store.add_messages(message_list.all.all(), narrowed_msg_list, {delay_render: true});
     }
 
     var defer_selecting_closest = narrowed_msg_list.empty();

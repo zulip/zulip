@@ -363,7 +363,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
     // You must add add messages to home_msg_list BEFORE
     // calling unread.process_loaded_messages.
     exports.add_messages(messages, home_msg_list, {messages_are_new: true});
-    exports.add_messages(messages, all_msg_list, {messages_are_new: true});
+    exports.add_messages(messages, message_list.all, {messages_are_new: true});
 
     if (narrow.active()) {
         if (narrow.filter().can_apply_locally()) {
@@ -421,11 +421,11 @@ function process_result(messages, opts) {
     messages = _.map(messages, add_message_metadata);
 
     // If we're loading more messages into the home view, save them to
-    // the all_msg_list as well, as the home_msg_list is reconstructed
-    // from all_msg_list.
+    // the message_list.all as well, as the home_msg_list is reconstructed
+    // from message_list.all.
     if (opts.msg_list === home_msg_list) {
         process_loaded_for_unread(messages);
-        exports.add_messages(messages, all_msg_list, {messages_are_new: false});
+        exports.add_messages(messages, message_list.all, {messages_are_new: false});
     }
 
     if (messages.length !== 0 && !opts.cont_will_add_messages) {
@@ -594,7 +594,7 @@ util.execute_early(function () {
         var backfill_batch_size = 1000;
         $(document).idle({'idle': 1000*10,
                           'onIdle': function () {
-                              var first_id = all_msg_list.first().id;
+                              var first_id = message_list.all.first().id;
                               exports.load_old_messages({
                                   anchor: first_id,
                                   num_before: backfill_batch_size,
@@ -632,7 +632,7 @@ util.execute_early(function () {
         // created, but due to the closure, the old list is not garbage collected. This also leads
         // to the old list receiving the change id events, and throwing errors as it does not
         // have the messages that you would expect in its internal data structures.
-        _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (msg_list) {
+        _.each([message_list.all, home_msg_list, narrowed_msg_list], function (msg_list) {
             if (msg_list !== undefined) {
                 msg_list.change_message_id(old_id, new_id);
 

@@ -242,6 +242,10 @@ Files: zerver/lib/ccache.py
 Copyright: 2013 David Benjamin and Alan Huang
 License: Expat
 
+Files: zerver/lib/decorator.py zerver/management/commands/runtornado.py scripts/setup/generate_secrets.py
+Copyright: Django Software Foundation and individual contributors
+License: BSD-3-Clause
+
 Files: frontend_tests/casperjs/*
 Copyright: 2011-2012 Nicolas Perriault
  Joyent, Inc. and other Node contributors

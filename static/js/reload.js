@@ -155,7 +155,7 @@ function cleanup_before_reload() {
         server_events.cleanup_event_queue();
 
         // Empty the large collections
-        clear_message_list(all_msg_list);
+        clear_message_list(message_list.all);
         clear_message_list(home_msg_list);
         clear_message_list(narrowed_msg_list);
         message_store.clear();

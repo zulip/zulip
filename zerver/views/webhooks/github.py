@@ -9,25 +9,33 @@ import logging
 import re
 import ujson
 
+COMMITS_IN_LIST_LIMIT = 10
+ZULIP_TEST_REPO_NAME = 'zulip-test'
+ZULIP_TEST_REPO_ID = 6893087
+
+def is_test_repository(repository):
+    return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
+
+class UnknownEventType(Exception):
+    pass
+
 
 def github_generic_subject(noun, topic_focus, blob):
     # issue and pull_request objects have the same fields we're interested in
-    return "%s: %s %d: %s" % (topic_focus, noun, blob['number'], blob['title'])
+    return '%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
 
 def github_generic_content(noun, payload, blob):
-    action = payload['action']
-    if action == 'synchronize':
-        action = 'synchronized'
+    action = 'synchronized' if payload['action'] == 'synchronize' else payload['action']
 
     # issue and pull_request objects have the same fields we're interested in
-    content = ("%s %s [%s %s](%s)"
+    content = ('%s %s [%s %s](%s)'
                % (payload['sender']['login'],
                   action,
                   noun,
                   blob['number'],
                   blob['html_url']))
     if payload['action'] in ('opened', 'reopened'):
-        content += "\n\n~~~ quote\n%s\n~~~" % (blob['body'],)
+        content += '\n\n~~~ quote\n%s\n~~~' % (blob['body'],)
     return content
 
 
@@ -50,16 +58,10 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
     `commit_stream` and `issue_stream` fall back to `default_stream` if they are empty
     This and allowing alternative endpoints is what distinguishes v1 from v2 of the github configuration
     """
-    if not commit_stream:
-        commit_stream = default_stream
-    if not issue_stream:
-        issue_stream = default_stream
-
-    target_stream = commit_stream
+    target_stream = commit_stream if commit_stream else default_stream
+    issue_stream = issue_stream if issue_stream else default_stream
     repository = payload['repository']
-
-    if not topic_focus:
-        topic_focus = repository['name']
+    topic_focus = topic_focus if topic_focus else repository['name']
 
     # Event Handlers
     if event == 'pull_request':
@@ -87,7 +89,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
 
         subject = github_generic_subject(noun, topic_focus, issue)
         comment = payload['comment']
-        content = ("%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~"
+        content = ('%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~'
                    % (comment['user']['login'],
                       comment['html_url'],
                       noun,
@@ -104,18 +106,21 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
                                                      created=payload['created'])
     elif event == 'commit_comment':
         comment = payload['comment']
-        subject = "%s: commit %s" % (topic_focus, comment['commit_id'])
+        subject = '%s: commit %s' % (topic_focus, comment['commit_id'])
 
-        content = ("%s [commented](%s)"
+        content = ('%s [commented](%s)'
                    % (comment['user']['login'],
                       comment['html_url']))
 
         if comment['line'] is not None:
-            content += " on `%s`, line %d" % (comment['path'], comment['line'])
+            content += ' on `%s`, line %d' % (comment['path'], comment['line'])
 
-        content += "\n\n~~~ quote\n%s\n~~~" % (comment['body'],)
+        content += '\n\n~~~ quote\n%s\n~~~' % (comment['body'],)
 
-    return (target_stream, subject, content)
+    else:
+        raise UnknownEventType(u'Event %s is unknown and cannot be handled' % (event,))
+
+    return target_stream, subject, content
 
 @authenticated_api_view
 @has_request_variables
@@ -136,7 +141,7 @@ def api_github_landing(request, user_profile, event=REQ,
 
     # Special hook for capturing event data. If we see our special test repo, log the payload from github.
     try:
-        if repository['name'] == 'zulip-test' and repository['id'] == 6893087 and settings.PRODUCTION:
+        if is_test_repository(repository) and settings.PRODUCTION:
             with open('/var/log/zulip/github-payloads', 'a') as f:
                 f.write(ujson.dumps({'event': event,
                                      'payload': payload,
@@ -150,14 +155,14 @@ def api_github_landing(request, user_profile, event=REQ,
                                      'exclude_commits': exclude_commits,
                                      'emphasize_branch_in_topic': emphasize_branch_in_topic,
                                      }))
-                f.write("\n")
+                f.write('\n')
     except Exception:
-        logging.exception("Error while capturing Github event")
+        logging.exception('Error while capturing Github event')
 
     if not stream:
         stream = 'commits'
 
-    short_ref = re.sub(r'^refs/heads/', '', payload.get('ref', ""))
+    short_ref = re.sub(r'^refs/heads/', '', payload.get('ref', ''))
     kwargs = dict()
 
     if emphasize_branch_in_topic and short_ref:
@@ -168,12 +173,12 @@ def api_github_landing(request, user_profile, event=REQ,
         allowed_events.add('pull_request')
 
     if not exclude_issues:
-        allowed_events.add("issues")
-        allowed_events.add("issue_comment")
+        allowed_events.add('issues')
+        allowed_events.add('issue_comment')
 
     if not exclude_commits:
-        allowed_events.add("push")
-        allowed_events.add("commit_comment")
+        allowed_events.add('push')
+        allowed_events.add('commit_comment')
 
     if event not in allowed_events:
         return json_success()
@@ -194,33 +199,32 @@ def api_github_landing(request, user_profile, event=REQ,
     else:
         target_stream, subject, content = api_github_v1(user_profile, event, payload, branches, stream, **kwargs)
 
-    request.client = get_client("ZulipGitHubWebhook")
+    request.client = get_client('ZulipGitHubWebhook')
     return send_message_backend(request, user_profile,
-                                message_type_name="stream",
+                                message_type_name='stream',
                                 message_to=[target_stream],
                                 forged=False, subject_name=subject,
                                 message_content=content)
 
 def build_commit_list_content(commits, branch, compare_url, pusher):
     if compare_url is not None:
-        push_text = "[pushed](%s)" % (compare_url,)
+        push_text = '[pushed](%s)' % (compare_url,)
     else:
-        push_text = "pushed"
-    content = ("%s %s to branch %s\n\n"
+        push_text = 'pushed'
+    content = ('%s %s to branch %s\n\n'
                % (pusher,
                   push_text,
                   branch))
     num_commits = len(commits)
-    max_commits = 10
-    truncated_commits = commits[:max_commits]
+    truncated_commits = commits[:COMMITS_IN_LIST_LIMIT]
     for commit in truncated_commits:
         short_id = commit['id'][:7]
-        (short_commit_msg, _, _) = commit['message'].partition("\n")
-        content += "* [%s](%s): %s\n" % (short_id, commit['url'],
+        (short_commit_msg, _, _) = commit['message'].partition('\n')
+        content += '* [%s](%s): %s\n' % (short_id, commit['url'],
                                          short_commit_msg)
-    if (num_commits > max_commits):
-        content += ("\n[and %d more commits]"
-                    % (num_commits - max_commits,))
+    if num_commits > COMMITS_IN_LIST_LIMIT:
+        content += ('\n[and %d more commits]'
+                    % (num_commits - COMMITS_IN_LIST_LIMIT,))
 
     return content
 
@@ -229,11 +233,11 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
     subject = name
 
     if re.match(r'^0+$', after):
-        content = "%s deleted branch %s" % (pusher,
+        content = '%s deleted branch %s' % (pusher,
                                             short_ref)
     # 'created' and 'forced' are github flags; the second check is for beanstalk
     elif (forced and not created) or (forced is None and len(commits) == 0):
-        content = ("%s [force pushed](%s) to branch %s.  Head is now %s"
+        content = ('%s [force pushed](%s) to branch %s.  Head is now %s'
                    % (pusher,
                       url,
                       short_ref,
@@ -241,4 +245,4 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
     else:
         content = build_commit_list_content(commits, short_ref, url, pusher)
 
-    return (subject, content)
+    return subject, content

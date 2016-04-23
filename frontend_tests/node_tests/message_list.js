@@ -18,8 +18,9 @@ set_global('$', function () {
 });
 
 set_global('feature_flags', {});
+set_global('Filter', function () {});
 
-var MessageList = require('js/message_list');
+var MessageList = require('js/message_list').MessageList;
 
 (function test_basics() {
     var table;
