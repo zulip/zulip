@@ -24,7 +24,7 @@ if [[ $# == 0 ]]; then
     USERNAME=zulip
     PASSWORD=$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
     DBNAME=zulip
-    SEARCH_PATH="$USERNAME",public
+    SEARCH_PATH="$USERNAME",public,pgroonga,pg_catalog
 elif [[ $# == 4 ]]; then
     USERNAME=$1
     PASSWORD=$2
@@ -74,6 +74,12 @@ EOF
 
 $ROOT_POSTGRES "$DBNAME_BASE" << EOF
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
+EOF
+
+$ROOT_POSTGRES "$DBNAME_BASE" << EOF
+CREATE EXTENSION pgroonga;
+GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
+GRANT USAGE ON SCHEMA pgroonga TO $VAGRANTUSERNAME;
 EOF
 
 psql -h localhost postgres "$USERNAME" <<EOF

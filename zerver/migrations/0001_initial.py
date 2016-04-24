@@ -18,9 +18,15 @@ class Migration(migrations.Migration):
     if "postgres" not in settings.DATABASES["default"]["ENGINE"]:
         zulip_postgres_migrations = [] # type: ignore # https://github.com/JukkaL/mypy/issues/1164
     else:
-        zulip_postgres_migrations = [
+        if settings.USING_PGROONGA:
+            full_text_search_migration = migrations.RunSQL("""
+CREATE INDEX zerver_message_search_pgroonga ON zerver_message
+  USING pgroonga(subject pgroonga.varchar_full_text_search_ops,
+                 rendered_content);
+""")
+        else:
             # Full-text search
-            migrations.RunSQL("""
+            full_text_search_migration = migrations.RunSQL("""
 CREATE TEXT SEARCH DICTIONARY english_us_hunspell
   (template = ispell, DictFile = en_us, AffFile = en_us, StopWords = zulip_english);
 CREATE TEXT SEARCH CONFIGURATION zulip.english_us_search (COPY=pg_catalog.english);
@@ -47,8 +53,8 @@ CREATE FUNCTION append_to_fts_update_log() RETURNS trigger LANGUAGE plpgsql AS
 CREATE TRIGGER zerver_message_update_search_tsvector_async
   BEFORE INSERT OR UPDATE OF subject, rendered_content ON zerver_message
   FOR EACH ROW EXECUTE PROCEDURE append_to_fts_update_log();
-"""),
-            ]
+""")
+        zulip_postgres_migrations = [full_text_search_migration]
 
     operations = [
         migrations.CreateModel(
