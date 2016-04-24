@@ -74,6 +74,8 @@ EOF
 
 $ROOT_POSTGRES "$DBNAME_BASE" << EOF
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
+CREATE EXTENSION pgroonga;
+GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
 EOF
 
 psql -h localhost postgres "$USERNAME" <<EOF

@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 from __future__ import print_function
 from django.db import connection
+from django.test import override_settings
 from sqlalchemy.sql import (
     and_, select, column, compiler
 )
@@ -163,13 +166,25 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='id', operand=555, negated=True)
         self._do_add_term_test(term, 'WHERE id != :param_1')
 
+    @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self):
         term = dict(operator='search', operand='"french fries"')
         self._do_add_term_test(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
+    @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator_and_negated(self):  # NEGATED
         term = dict(operator='search', operand='"french fries"', negated=True)
         self._do_add_term_test(term, 'WHERE NOT (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND NOT (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
+
+    @override_settings(USING_PGROONGA=True)
+    def test_add_term_using_search_operator_pgroonga(self):
+        term = dict(operator='search', operand='"french fries"')
+        self._do_add_term_test(term, 'WHERE search_pgroonga @@ :search_pgroonga_1')
+
+    @override_settings(USING_PGROONGA=True)
+    def test_add_term_using_search_operator_and_negated_pgroonga(self):  # NEGATED
+        term = dict(operator='search', operand='"french fries"', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT (search_pgroonga @@ :search_pgroonga_1)')
 
     def test_add_term_using_has_operator_and_attachment_operand(self):
         term = dict(operator='has', operand='attachment')
@@ -487,6 +502,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             self.assertEqual(message["sender_email"], "othello@zulip.com")
 
+    @override_settings(USING_PGROONGA=False)
     def test_get_old_messages_with_search(self):
         self.login("cordelia@zulip.com")
 
@@ -513,10 +529,10 @@ class GetOldMessagesTest(ZulipTestCase):
         # the search index up to date.
         with connection.cursor() as cursor:
             cursor.execute("""
-                UPDATE zerver_message SET
-                search_tsvector = to_tsvector('zulip.english_us_search',
-                subject || rendered_content)
-                """)
+            UPDATE zerver_message SET
+            search_tsvector = to_tsvector('zulip.english_us_search',
+            subject || rendered_content)
+            """)
 
         narrow = [
             dict(operator='sender', operand='cordelia@zulip.com'),
@@ -547,6 +563,64 @@ class GetOldMessagesTest(ZulipTestCase):
             meeting_message['match_content'],
             '<p>I am hungry!</p>')
 
+    @override_settings(USING_PGROONGA=True)
+    def test_get_old_messages_with_search_pgroonga(self):
+        self.login("cordelia@zulip.com")
+
+        messages_to_search = [
+            (u'日本語', u'こんにちは。今日はいい天気ですね。'),
+            (u'日本語', u'今朝はごはんを食べました。'),
+            (u'日本語', u'昨日、日本のお菓子を送りました。'),
+            ('english', u'I want to go to 日本!'),
+            ('english', 'Can you speak Japanese?'),
+        ]
+
+        for topic, content in messages_to_search:
+            self.send_message(
+                sender_name="cordelia@zulip.com",
+                raw_recipients="Verona",
+                message_type=Recipient.STREAM,
+                content=content,
+                subject=topic,
+            )
+
+        # We use brute force here and update our text search index
+        # for the entire zerver_message table (which is small in test
+        # mode).  In production there is an async process which keeps
+        # the search index up to date.
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE zerver_message SET
+                search_pgroonga = subject || ' ' || rendered_content
+                """)
+
+        narrow = [
+            dict(operator='search', operand=u'日本'),
+        ]
+        result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(result['messages']), 4)
+        messages = result['messages']
+
+        japanese_message = [m for m in messages if m['subject'] == u'日本語'][-1]
+        self.assertEqual(
+            japanese_message['match_subject'],
+            u'<span class="highlight">日本</span>語')
+        self.assertEqual(
+            japanese_message['match_content'],
+            u'<p>昨日、<span class="highlight">日本</span>の' +
+            u'お菓子を送りました。</p>')
+
+        english_message = [m for m in messages if m['subject'] == 'english'][0]
+        self.assertEqual(
+            english_message['match_subject'],
+            'english')
+        self.assertEqual(
+            english_message['match_content'],
+            u'<p>I want to go to <span class="highlight">日本</span>!</p>')
 
     def test_get_old_messages_with_only_searching_anchor(self):
         """
@@ -949,6 +1023,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                                   'narrow': '[["stream", "Scotland"], ["is", "starred"]]'},
                                                  sql)
 
+    @override_settings(USING_PGROONGA=False)
     def test_get_old_messages_with_search_queries(self):
         query_ids = self.get_query_ids()
 
@@ -965,6 +1040,28 @@ class GetOldMessagesTest(ZulipTestCase):
                                                  sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(subject), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (content ILIKE \'%jumping%\' OR subject ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql = sql_template.format(**query_ids)
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["search", "\\"jumping\\" quickly"]]'},
+                                                 sql)
+
+    @override_settings(USING_PGROONGA=True)
+    def test_get_old_messages_with_search_queries_pgroonga(self):
+        query_ids = self.get_query_ids()
+
+        sql_template = u"SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, pgroonga.match_positions_byte(rendered_content, pgroonga.query_extract_keywords('jumping')) AS content_matches, pgroonga.match_positions_byte(subject, pgroonga.query_extract_keywords('jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 2 AND (search_pgroonga @@ 'jumping') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql = sql_template.format(**query_ids)
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["search", "jumping"]]'},
+                                                 sql)
+
+        sql_template = "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT id AS message_id, subject, rendered_content, pgroonga.match_positions_byte(rendered_content, pgroonga.query_extract_keywords('jumping')) AS content_matches, pgroonga.match_positions_byte(subject, pgroonga.query_extract_keywords('jumping')) AS subject_matches \nFROM zerver_message \nWHERE recipient_id = 9 AND (search_pgroonga @@ 'jumping') AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql = sql_template.format(**query_ids)
+        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                                  'narrow': '[["stream", "Scotland"], ["search", "jumping"]]'},
+                                                 sql)
+
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, pgroonga.match_positions_byte(rendered_content, pgroonga.query_extract_keywords(\'"jumping" quickly\')) AS content_matches, pgroonga.match_positions_byte(subject, pgroonga.query_extract_keywords(\'"jumping" quickly\')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 2 AND (search_pgroonga @@ \'"jumping" quickly\') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                                   'narrow': '[["search", "\\"jumping\\" quickly"]]'},

@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from six import text_type
 from typing import Any, AnyStr, Iterable, Optional, Tuple
-from zerver.lib.str_utils import force_text
+from zerver.lib.str_utils import force_bytes, force_text
 
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, REQ, JsonableError, \
@@ -236,6 +236,23 @@ class NarrowBuilder(object):
             return query.where(maybe_negate(cond))
 
     def by_search(self, query, operand, maybe_negate):
+        if settings.USING_PGROONGA:
+            return self._by_search_pgroonga(query, operand, maybe_negate)
+        else:
+            return self._by_search_tsearch(query, operand, maybe_negate)
+
+    def _by_search_pgroonga(self, query, operand, maybe_negate):
+        match_positions_byte = func.pgroonga.match_positions_byte
+        query_extract_keywords = func.pgroonga.query_extract_keywords
+        keywords = query_extract_keywords(operand)
+        query = query.column(match_positions_byte(column("rendered_content"),
+                                                  keywords).label("content_matches"))
+        query = query.column(match_positions_byte(column("subject"),
+                                                  keywords).label("subject_matches"))
+        condition = column("search_pgroonga").op("@@")(operand)
+        return query.where(maybe_negate(condition))
+
+    def _by_search_tsearch(self, query, operand, maybe_negate):
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
         ts_locs_array = func.ts_match_locs_array
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
@@ -264,7 +281,7 @@ class NarrowBuilder(object):
 # Apparently, the offsets we get from tsearch_extras are counted in
 # unicode characters, not in bytes, so we do our processing with text,
 # not bytes.
-def highlight_string(text, locs):
+def highlight_string_text_offsets(text, locs):
     # type: (AnyStr, Iterable[Tuple[int, int]]) -> text_type
     string = force_text(text)
     highlight_start = u'<span class="highlight">'
@@ -280,6 +297,30 @@ def highlight_string(text, locs):
         pos = offset + length
     result += string[pos:]
     return result
+
+def highlight_string_bytes_offsets(text, locs):
+    # type: (AnyStr, Iterable[Tuple[int, int]]) -> text_type
+    string = force_bytes(text)
+    highlight_start = b'<span class="highlight">'
+    highlight_stop = b'</span>'
+    pos = 0
+    result = b''
+    for loc in locs:
+        (offset, length) = loc
+        result += string[pos:offset]
+        result += highlight_start
+        result += string[offset:offset + length]
+        result += highlight_stop
+        pos = offset + length
+    result += string[pos:]
+    return force_text(result)
+
+def highlight_string(text, locs):
+    # type: (AnyStr, Iterable[Tuple[int, int]]) -> text_type
+    if settings.USING_PGROONGA:
+        return highlight_string_bytes_offsets(text, locs)
+    else:
+        return highlight_string_text_offsets(text, locs)
 
 def get_search_fields(rendered_content, subject, content_matches, subject_matches):
     # type: (text_type, text_type, Iterable[Tuple[int, int]], Iterable[Tuple[int, int]]) -> Dict[str, text_type]
