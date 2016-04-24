@@ -1,5 +1,4 @@
 #!/bin/bash
 set -e
 set -x
-pip install "six==1.10.0"
-pip install "git+https://github.com/python/mypy.git@5d2dfce8cf6b9a0a7ce8fe8e3cb5866094459f8c"
+pip install --no-deps -r tools/py3_test_reqs.txt
