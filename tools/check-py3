@@ -54,6 +54,11 @@ script_dir=$(dirname "$0")
 lister_path="$script_dir/lister.py"
 python_files="$($lister_path -f py)"
 
+if [ -z "$python_files" ]; then
+    echo "There are no python files to check in the current directory."
+    exit 0
+fi
+
 failed=0
 for fixer in $fixers; do
     echo "Running Python 3 compatibility test $fixer"
