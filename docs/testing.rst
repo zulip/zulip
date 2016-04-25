@@ -342,3 +342,12 @@ Firebug for Firefox is also pretty good. They both have profilers, but
 Chrome's is a sampling profiler while Firebug's is an instrumenting
 profiler. Using them both can be helpful because they provide
 different information.
+
+Python 3 Compatibility
+======================
+
+`tools/check-py3` checks all code for Python 3 syntactic compatibility.
+It is also run as part of our Travis CI checks.
+
+To run `check-py3` on python files in a particular directory,
+change the working directory (`cd`) to that directory and run `check-py3` from there.
