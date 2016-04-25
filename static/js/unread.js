@@ -222,7 +222,7 @@ exports.mark_messages_as_read = function mark_messages_as_read (messages, option
             // Don't do anything if the message is already read.
             return;
         }
-        if (current_msg_list === narrowed_msg_list) {
+        if (current_msg_list === message_list.narrowed) {
             unread.messages_read_in_narrow = true;
         }
 
@@ -236,8 +236,8 @@ exports.mark_messages_as_read = function mark_messages_as_read (messages, option
         unread.process_read_message(message, options);
         home_msg_list.show_message_as_read(message, options);
         message_list.all.show_message_as_read(message, options);
-        if (narrowed_msg_list) {
-            narrowed_msg_list.show_message_as_read(message, options);
+        if (message_list.narrowed) {
+            message_list.narrowed.show_message_as_read(message, options);
         }
         notifications.close_notification(message);
         processed = true;

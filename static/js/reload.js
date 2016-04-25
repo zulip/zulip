@@ -51,11 +51,11 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         } else {
             url += "+offset=" + home_msg_list.pre_narrow_offset;
 
-            var narrow_pointer = narrowed_msg_list.selected_id();
+            var narrow_pointer = message_list.narrowed.selected_id();
             if (narrow_pointer !== -1) {
                 url += "+narrow_pointer=" + narrow_pointer;
             }
-            var narrow_row = narrowed_msg_list.selected_row();
+            var narrow_row = message_list.narrowed.selected_row();
             if (narrow_row.length > 0) {
                 url += "+narrow_offset=" + narrow_row.offset().top;
             }
@@ -157,7 +157,7 @@ function cleanup_before_reload() {
         // Empty the large collections
         clear_message_list(message_list.all);
         clear_message_list(home_msg_list);
-        clear_message_list(narrowed_msg_list);
+        clear_message_list(message_list.narrowed);
         message_store.clear();
 
     } catch (ex) {
