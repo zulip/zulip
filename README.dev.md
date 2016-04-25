@@ -437,7 +437,7 @@ server homepage just shows a list of the users that exist on the
 server and you can login as any of them by just clicking on a user.
 This setup saves time for the common case where you want to test
 something other than the login process; to test the login process
-you'll want to change AUTHENTICATION_BACKENDS in the not-PRODUCTION
+you'll want to change `AUTHENTICATION_BACKENDS` in the not-PRODUCTION
 case of `zproject/settings.py` from zproject.backends.DevAuthBackend
 to use the auth method(s) you'd like to test.
 

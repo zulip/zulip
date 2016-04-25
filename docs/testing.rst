@@ -15,7 +15,7 @@ Schema and initial data changes
 -------------------------------
 
 If you change the database schema or change the initial test data, you
-have have to regenerate the pristine test database by running
+have to regenerate the pristine test database by running
 ``tools/do-destroy-rebuild-test-database``.
 
 Wiping the test databases
