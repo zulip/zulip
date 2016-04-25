@@ -23,6 +23,7 @@ django-pipeline==1.2.2
 docopt==0.4.0
 enum34==1.0.4
 fonttools==3.0
+future==0.15.2
 gcm-client==0.1.4
 gitdb==0.6.4
 google-api-python-client==1.4.0
@@ -34,6 +35,7 @@ ipython==4.1.2
 jwt==0.3.2
 mandrill==1.0.57
 mock==1.0.1
+modernize==0.5
 oauth2client==1.4.11
 oauthlib==1.0.3
 pika==0.9.14
