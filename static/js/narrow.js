@@ -256,14 +256,14 @@ exports.activate = function (raw_operators, opts) {
     $("body").addClass("narrowed_view");
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
-    narrowed_msg_list = msg_list;
-    current_msg_list = narrowed_msg_list;
+    message_list.narrowed = msg_list;
+    current_msg_list = message_list.narrowed;
 
     function maybe_select_closest() {
-        if (! narrowed_msg_list.empty()) {
+        if (! message_list.narrowed.empty()) {
             if (opts.select_first_unread) {
-                then_select_id = narrowed_msg_list.last().id;
-                var first_unread = _.find(narrowed_msg_list.all_messages(), unread.message_unread);
+                then_select_id = message_list.narrowed.last().id;
+                var first_unread = _.find(message_list.narrowed.all_messages(), unread.message_unread);
                 if (first_unread) {
                     then_select_id = first_unread.id;
                 }
@@ -271,12 +271,12 @@ exports.activate = function (raw_operators, opts) {
 
             var preserve_pre_narrowing_screen_position =
                 !opts.select_first_unread &&
-                (narrowed_msg_list.get(then_select_id) !== undefined) &&
+                (message_list.narrowed.get(then_select_id) !== undefined) &&
                 (then_select_offset !== undefined);
 
             var then_scroll = !preserve_pre_narrowing_screen_position;
 
-            narrowed_msg_list.select_id(then_select_id, {then_scroll: then_scroll,
+            message_list.narrowed.select_id(then_select_id, {then_scroll: then_scroll,
                                                          use_closest: true,
                                                          force_rerender: true
                                                         });
@@ -294,15 +294,15 @@ exports.activate = function (raw_operators, opts) {
     // the message we want anyway or if the filter can't be applied
     // locally.
     if (message_list.all.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        message_store.add_messages(message_list.all.all_messages(), narrowed_msg_list, {delay_render: true});
+        message_store.add_messages(message_list.all.all_messages(), message_list.narrowed, {delay_render: true});
     }
 
-    var defer_selecting_closest = narrowed_msg_list.empty();
+    var defer_selecting_closest = message_list.narrowed.empty();
     message_store.load_old_messages({
         anchor: then_select_id.toFixed(),
         num_before: 50,
         num_after: 50,
-        msg_list: narrowed_msg_list,
+        msg_list: message_list.narrowed,
         use_first_unread_anchor: opts.first_unread_from_server,
         cont: function (messages) {
             ui.hide_loading_more_messages_indicator();
@@ -342,7 +342,7 @@ exports.activate = function (raw_operators, opts) {
         }
     }
 
-    $(document).trigger($.Event('narrow_activated.zulip', {msg_list: narrowed_msg_list,
+    $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
                                                             filter: current_filter,
                                                             trigger: opts.trigger}));
     msg_list.initial_core_time = new Date();

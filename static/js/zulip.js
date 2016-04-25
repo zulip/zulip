@@ -1,7 +1,6 @@
 var home_msg_list = new message_list.MessageList('zhome',
     new Filter([{operator: "in", operand: "home"}]), {muting_enabled: true}
 );
-var narrowed_msg_list;
 var current_msg_list = home_msg_list;
 
 var recent_subjects = new Dict({fold_case: true});
