@@ -141,23 +141,23 @@ urlpatterns += patterns('zerver.views',
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
     url(r'^api/v1/fetch_google_client_id$', 'api_fetch_google_client_id'),
 
-    # These are integration-specific web hook callbacks
+    # Sorted integration-specific webhook callbacks.
     url(r'^api/v1/external/beanstalk$',     'webhooks.beanstalk.api_beanstalk_webhook'),
+    url(r'^api/v1/external/bitbucket$',     'webhooks.bitbucket.api_bitbucket_webhook'),
+    url(r'^api/v1/external/codeship',       'webhooks.codeship.api_codeship_webhook'),
+    url(r'^api/v1/external/desk$',          'webhooks.deskdotcom.api_deskdotcom_webhook'),
+    url(r'^api/v1/external/freshdesk$',     'webhooks.freshdesk.api_freshdesk_webhook'),
     url(r'^api/v1/external/github$',        'webhooks.github.api_github_landing'),
     url(r'^api/v1/external/jira$',          'webhooks.jira.api_jira_webhook'),
-    url(r'^api/v1/external/pivotal$',       'webhooks.pivotal.api_pivotal_webhook'),
     url(r'^api/v1/external/newrelic$',      'webhooks.newrelic.api_newrelic_webhook'),
-    url(r'^api/v1/external/bitbucket$',     'webhooks.bitbucket.api_bitbucket_webhook'),
-    url(r'^api/v1/external/desk$',          'webhooks.deskdotcom.api_deskdotcom_webhook'),
-    url(r'^api/v1/external/stash$',         'webhooks.stash.api_stash_webhook'),
-    url(r'^api/v1/external/freshdesk$',     'webhooks.freshdesk.api_freshdesk_webhook'),
-    url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
     url(r'^api/v1/external/pagerduty$',     'webhooks.pagerduty.api_pagerduty_webhook'),
-    url(r'^api/v1/external/travis$',        'webhooks.travis.api_travis_webhook'),
-    url(r'^api/v1/external/teamcity$',      'webhooks.teamcity.api_teamcity_webhook'),
     url(r'^api/v1/external/pingdom$',       'webhooks.pingdom.api_pingdom_webhook'),
+    url(r'^api/v1/external/pivotal$',       'webhooks.pivotal.api_pivotal_webhook'),
+    url(r'^api/v1/external/stash$',         'webhooks.stash.api_stash_webhook'),
+    url(r'^api/v1/external/teamcity$',      'webhooks.teamcity.api_teamcity_webhook'),
+    url(r'^api/v1/external/travis$',        'webhooks.travis.api_travis_webhook'),
     url(r'^api/v1/external/yo$',            'webhooks.yo.api_yo_app_webhook'),
-    url(r'^api/v1/external/codeship',       'webhooks.codeship.api_codeship_webhook'),
+    url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
 
     url(r'^user_uploads/(?P<realm_id>(\d*|unk))/(?P<filename>.*)', 'get_uploaded_file'),
 )
