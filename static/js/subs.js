@@ -281,7 +281,7 @@ function add_email_hint(row) {
 function add_sub_to_table(sub) {
     sub = add_admin_options(sub);
     var html = templates.render('subscription', sub);
-    $('#create_stream_row').after(html);
+    $('#create_or_filter_stream_row').after(html);
     settings_for_sub(sub).collapse('show');
     add_email_hint(sub);
 }
@@ -425,6 +425,54 @@ function populate_subscriptions(subs, subscribed) {
     return sub_rows;
 }
 
+exports.filter_table = function (query) {
+    var sub_name_elements = $('#subscriptions_table .subscription_name');
+
+    if (query === '') {
+        _.each(sub_name_elements, function (sub_name_elem) {
+            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+        });
+        return;
+    }
+
+    var search_terms = query.toLowerCase().split(",");
+    search_terms = _.map(search_terms, function (s) {
+        return s.trim();
+    });
+
+    _.each(sub_name_elements, function (sub_name_elem) {
+        var sub_name = $(sub_name_elem).text();
+        var matches = _.any(search_terms, function (search_term) {
+            var lower_sub_name = sub_name.toLowerCase();
+            var idx = lower_sub_name.indexOf(search_term);
+            if (idx === 0) {
+                // matched at beginning of the string
+                return true;
+            }
+            // we know now that idx === -1 or idx > 0
+            if (idx !== -1 && lower_sub_name.charAt(idx - 1) === ' ') {
+                // matched with a space immediately preceding
+                return true;
+            }
+            return false;
+        });
+
+        if (matches) {
+            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+        } else {
+            $(sub_name_elem).parents('.subscription_row').addClass("notdisplayed");
+        }
+    });
+};
+
+function actually_filter_streams() {
+    var search_box = $("#create_or_filter_stream_row input[type='text']");
+    var query = search_box.expectOne().val().trim();
+    exports.filter_table(query);
+}
+
+var filter_streams = _.throttle(actually_filter_streams, 50);
+
 exports.setup_page = function () {
     loading.make_indicator($('#subs_page_loading_indicator'));
 
@@ -485,6 +533,7 @@ exports.setup_page = function () {
         });
 
         loading.destroy_indicator($('#subs_page_loading_indicator'));
+        $("#create_or_filter_stream_row input[type='text']").on("input", filter_streams);
         $(document).trigger($.Event('subs_page_loaded.zulip'));
     }
 
@@ -561,6 +610,7 @@ function ajaxSubscribe(stream) {
         data: {"subscriptions": JSON.stringify([{"name": stream}]) },
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
+            exports.filter_table("");
 
             var res = $.parseJSON(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
@@ -605,6 +655,7 @@ function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
         },
         success: function (data) {
             $("#create_stream_name").val("");
+            exports.filter_table("");
             $("#subscriptions-status").hide();
             $('#stream-creation').modal("hide");
             // The rest of the work is done via the subscribe event we will get
@@ -707,11 +758,21 @@ $(function () {
     $("#subscriptions_table").on("submit", "#add_new_subscription", function (e) {
         e.preventDefault();
 
-        if (!should_list_all_streams()) {
+        if (!should_list_all_streams() && $("#create_stream_name").val()) {
             ajaxSubscribe($("#create_stream_name").val());
             return;
         } else {
-            show_new_stream_modal();
+            if ($("#search_stream_name").val().length > 0 && $(".subscription_row:not(.notdisplayed)").length > 0) {
+                var sub_id = $(".subscription_row:not(.notdisplayed):first").data("subscriptionId");
+                var settings = $("#subscription_settings_" + sub_id);
+                if (settings.hasClass('in')) {
+                    settings.collapse('hide');
+                } else {
+                    settings.collapse('show');
+                }
+            } else {
+                show_new_stream_modal();
+            }
         }
     });
 

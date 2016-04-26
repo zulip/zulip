@@ -1,17 +1,15 @@
-{{#if can_create_streams}}
-  <div id="create_stream_row">
+  <div id="create_or_filter_stream_row">
       <div class="subscription_table_elem">
         <form id="add_new_subscription" class="form-inline" action="">
-            {{#if hide_all_streams}}
-                <input type="text" name="stream_name" id="create_stream_name"
-                       class="something" placeholder="{{t 'Stream name' }}" value="" />
+            <input type="text" name="stream_name" id="search_stream_name"
+              placeholder="Filter by stream name" value="" />
+            {{#if can_create_streams}}
+                <input type="submit" class="btn btn-primary"
+                  id="create_stream_button" value="{{t 'Create new stream' }}" />
             {{/if}}
-            <input type="submit" class="btn btn-primary"
-                   id="create_stream_button" value="{{t 'Create new stream' }}" />
         </form>
       </div>
   </div>
-{{/if}}
 
 {{#each subscriptions}}
 {{partial "subscription"}}
