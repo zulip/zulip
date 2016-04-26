@@ -3,10 +3,12 @@ set -xe
 
 # Assumes we've already been untarred
 
-# Specify options for apt
+# Specify options for apt.
 APT_OPTIONS="${APT_OPTIONS:-}"
-# Install additional packages using apt
+# Install additional packages using apt.
 ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
+# Deployment type is almost always voyager.
+DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 
 # First, install any updates from the apt repo that may be needed
 wget -O /root/zulip-ppa.asc https://zulip.com/dist/keys/zulip-ppa.asc
@@ -21,7 +23,7 @@ apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python $ADDITIONAL_PACKAGES
 
 mkdir -p /etc/zulip
-echo -e "[machine]\npuppet_classes = zulip::voyager\ndeploy_type = voyager" > /etc/zulip/zulip.conf
+echo -e "[machine]\npuppet_classes = zulip::voyager\ndeploy_type = $DEPLOYMENT_TYPE" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
 
 # These server restarting bits should be moveable into puppet-land, ideally
