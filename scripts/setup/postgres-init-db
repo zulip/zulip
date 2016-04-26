@@ -2,6 +2,9 @@
 set -e
 set -x
 
+# What user should we use for connecting to the database
+POSTGRES_USER="${POSTGRES_USER:-postgres}"
+
 # Shut down all services to ensure a quiescent state.
 if [ -e "/var/run/supervisor.sock" ]; then
     supervisorctl stop all
@@ -15,14 +18,14 @@ source "$(dirname "$0")/terminate-psql-sessions" postgres zulip zulip_base
 # Make sure the current working directory is readable by postgres
 cd /
 
-su postgres -c psql <<EOF
+su "$POSTGRES_USER" -c psql <<EOF
 CREATE USER zulip;
 ALTER ROLE zulip SET search_path TO zulip,public;
 DROP DATABASE IF EXISTS zulip;
 CREATE DATABASE zulip OWNER=zulip;
 EOF
 
-su postgres -c 'psql zulip' <<EOF
+su "$POSTGRES_USER" -c 'psql zulip' <<EOF
 CREATE SCHEMA zulip AUTHORIZATION zulip;
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 EOF
