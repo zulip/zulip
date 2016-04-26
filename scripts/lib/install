@@ -9,6 +9,10 @@ APT_OPTIONS="${APT_OPTIONS:-}"
 ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
 # Deployment type is almost always voyager.
 DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
+# Comma-separated list of puppet manifests to install.  default is
+# zulip::voyager for an all-in-one system or zulip::dockervoyager for
+# Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
+PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 
 # First, install any updates from the apt repo that may be needed
 wget -O /root/zulip-ppa.asc https://zulip.com/dist/keys/zulip-ppa.asc
@@ -23,7 +27,7 @@ apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python $ADDITIONAL_PACKAGES
 
 mkdir -p /etc/zulip
-echo -e "[machine]\npuppet_classes = zulip::voyager\ndeploy_type = $DEPLOYMENT_TYPE" > /etc/zulip/zulip.conf
+echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
 
 # These server restarting bits should be moveable into puppet-land, ideally
