@@ -173,7 +173,8 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'TERMS_OF_SERVICE': None,
                     'TOS_VERSION': None,
                     'SYSTEM_ONLY_REALMS': {"zulip.com"},
-                    'FIRST_TIME_TOS_TEMPLATE': None
+                    'FIRST_TIME_TOS_TEMPLATE': None,
+                    'USING_PGROONGA': False,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
@@ -379,21 +380,10 @@ elif REMOTE_POSTGRES_HOST != '':
     else:
         DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
-if 'postgres' in DATABASES['default']['ENGINE']:
-    # Set True if you want to support full text search against all languages
-    # USING_PGROONGA = True
-    USING_PGROONGA = False
-else:
-    USING_PGROONGA = False
-
 if USING_PGROONGA:
     pg_options = '-c search_path=%(SCHEMA)s,zulip,public,pgroonga,pg_catalog' % \
         DATABASES['default']
-    DATABASE_OPTIONS = DATABASES['default']['OPTIONS']
-    if 'options' in DATABASE_OPTIONS:
-        DATABASE_OPTIONS['options'] += ' ' + pg_options
-    else:
-        DATABASE_OPTIONS['options'] = pg_options
+    DATABASES['default']['OPTIONS']['options'] = pg_options
 
 ########################################################################
 # RABBITMQ CONFIGURATION
