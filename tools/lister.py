@@ -37,7 +37,7 @@ def get_ftype(fpath, use_shebang):
         return ''
 
 def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
-               exclude=[], group_by_ftype=False):
+               exclude=[], group_by_ftype=False, exclude_patterns=[]):
     """
     List files tracked by git.
     Returns a list of files which are either in targets or in directories in targets.
@@ -72,6 +72,9 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
             expath = expath.rstrip('/')
             if fpath == expath or fpath.startswith(expath + '/'):
                 in_exclude = True
+        for expattern in exclude_patterns:
+            if expattern in fpath:
+                in_exclude = True
         if in_exclude:
             continue
 
@@ -103,11 +106,13 @@ if __name__=="__main__":
                         help="list of file types to filter on. All files are included if this option is absent")
     parser.add_argument('--ext-only', dest='extonly', action='store_true', default=False, help='only use extension to determine file type')
     parser.add_argument('--exclude', nargs='+', help='list of files and directories to exclude from listing')
+    parser.add_argument('--exclude_patterns', nargs='+', help='excludes all the files which includes patterns in exclude list')
     args = parser.parse_args()
     args.targets = args.targets or []
     args.ftypes = args.ftypes or []
     args.exclude = args.exclude or []
+    args.exclude_patterns = args.exclude_patterns or []
     listing = list_files(targets=args.targets, ftypes=args.ftypes, use_shebang=not args.extonly,
-                         modified_only=args.modified, exclude=args.exclude)
+                         modified_only=args.modified, exclude=args.exclude, exclude_patterns=args.exclude_patterns)
     for l in listing:
         print(l)
