@@ -3,7 +3,9 @@ set -e
 set -x
 
 # Shut down all services to ensure a quiescent state.
-supervisorctl stop all
+if [ -e "/var/run/supervisor.sock" ]; then
+    supervisorctl stop all
+fi
 
 # Drop any open connections to any old database.  Hackishly call using
 # source because postgres user can't read /root/zulip/scripts/setup.

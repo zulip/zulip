@@ -66,7 +66,10 @@ ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/local_settings.py
 mkdir -p "$deploy_path"/prod-static/serve
 cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
 chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
-chown zulip:zulip /var/run/supervisor.sock
+if [ -e "/var/run/supervisor.sock" ]; then
+    # If supervisor isn't running, no need to chown its socket
+    chown zulip:zulip /var/run/supervisor.sock
+fi
 
 cd /home/zulip/deployments/current
 
