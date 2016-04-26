@@ -718,7 +718,7 @@ class ZenDeskHookTests(AuthedTestCase):
         self.assert_json_success(result)
 
         # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.sender.email, email)
 
         return msg
@@ -750,7 +750,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assert_json_success(result)
 
         # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.sender.email, email)
 
         return msg
@@ -857,7 +857,7 @@ class TravisHookTests(AuthedTestCase):
                          stream_name=stream,
                          content_type="application/x-www-form-urlencoded")
 
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         u'Author: josh_mandel\nBuild status: Passed :thumbsup:\nDetails: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)'
         self.assertEqual(msg.subject, u"builds")
         self.assertEqual(msg.content, (u"Author: josh_mandel\nBuild status: Passed :thumbsup:\n"
@@ -884,7 +884,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service someurl.com changed its HTTP status from UP to DOWN.\nDescription: Non-recoverable failure in name resolution."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"Test check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -896,7 +896,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service smtp.someurl.com changed its SMTP status from UP to DOWN.\nDescription: Connection refused."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"SMTP check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -908,7 +908,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service imap.someurl.com changed its IMAP status from UP to DOWN.\nDescription: Invalid hostname, address or socket."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"IMAP check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -920,12 +920,9 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service imap.someurl.com changed its IMAP status from DOWN to UP."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"IMAP check status.")
         self.assertEqual(msg.content, expected_message)
-
-    def _get_recently_added_message(self):
-        return Message.objects.filter().order_by('-id')[0]
 
     def _get_fixture_data(self, name):
         return ujson.dumps(ujson.loads(self.fixture_data('pingdom', name)))
@@ -951,5 +948,71 @@ class YoHookTests(AuthedTestCase):
                         body,
                         content_type="application/x-www-form-urlencoded")
 
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.content, (u"Yo from IAGO"))
+
+
+class CodeshipHookTests(AuthedTestCase):
+    STREAM_NAME = 'codeship'
+    TEST_USER_EMAIL = 'hamlet@zulip.com'
+    URL_TEMPLATE = "/api/v1/external/codeship?stream={stream}&api_key={api_key}"
+
+    def setUp(self):
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        self._url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+
+    def test_codeship_build_in_testing_status_message(self):
+        """
+        Tests if codeship testing status is mapped correctly
+        """
+        body = self._get_fixture_data('testing_build')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch started."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"codeship/docs")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_codeship_build_in_error_status_message(self):
+        """
+        Tests if codeship error status is mapped correctly
+        """
+        body = self._get_fixture_data('error_build')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch failed."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"codeship/docs")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_codeship_build_in_success_status_message(self):
+        """
+        Tests if codeship success status is mapped correctly
+        """
+        body = self._get_fixture_data('success_build')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch succeeded."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"codeship/docs")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_codeship_build_in_other_status_status_message(self):
+        """
+        Tests if codeship other status is mapped correctly
+        """
+        body = self._get_fixture_data('other_status_build')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch has some_other_status status."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"codeship/docs")
+        self.assertEqual(msg.content, expected_message)
+
+    def _get_fixture_data(self, name):
+        return ujson.dumps(ujson.loads(self.fixture_data('codeship', name)))
+
+    def _send_post_request_with_params(self, json):
+        return self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+
