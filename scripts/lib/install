@@ -3,6 +3,11 @@ set -xe
 
 # Assumes we've already been untarred
 
+# Specify options for apt
+APT_OPTIONS="${APT_OPTIONS:-}"
+# Install additional packages using apt
+ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
+
 # First, install any updates from the apt repo that may be needed
 wget -O /root/zulip-ppa.asc https://zulip.com/dist/keys/zulip-ppa.asc
 apt-key add /root/zulip-ppa.asc
@@ -13,7 +18,7 @@ EOF
 
 apt-get update
 apt-get -y dist-upgrade $APT_OPTIONS
-apt-get install -y puppet git python
+apt-get install -y puppet git python $ADDITIONAL_PACKAGES
 
 mkdir -p /etc/zulip
 echo -e "[machine]\npuppet_classes = zulip::voyager\ndeploy_type = voyager" > /etc/zulip/zulip.conf
