@@ -342,14 +342,14 @@ exports.update_messages = function update_messages(events) {
     if (topic_edited) {
         if (!changed_narrow) {
             home_msg_list.rerender();
-            if (current_msg_list === narrowed_msg_list) {
-                narrowed_msg_list.rerender();
+            if (current_msg_list === message_list.narrowed) {
+                message_list.narrowed.rerender();
             }
         }
     } else {
         home_msg_list.view.rerender_messages(msgs_to_rerender);
-        if (current_msg_list === narrowed_msg_list) {
-            narrowed_msg_list.view.rerender_messages(msgs_to_rerender);
+        if (current_msg_list === message_list.narrowed) {
+            message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
     }
     unread.update_unread_counts();
@@ -367,11 +367,11 @@ exports.insert_new_messages = function insert_new_messages(messages) {
 
     if (narrow.active()) {
         if (narrow.filter().can_apply_locally()) {
-            exports.add_messages(messages, narrowed_msg_list, {messages_are_new: true});
+            exports.add_messages(messages, message_list.narrowed, {messages_are_new: true});
             notifications.possibly_notify_new_messages_outside_viewport(messages);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
-            maybe_add_narrowed_messages(messages, narrowed_msg_list, true);
+            maybe_add_narrowed_messages(messages, message_list.narrowed, true);
         }
     } else {
         notifications.possibly_notify_new_messages_outside_viewport(messages);
@@ -411,8 +411,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
 function process_result(messages, opts) {
     $('#get_old_messages_error').hide();
 
-    if ((messages.length === 0) && (current_msg_list === narrowed_msg_list) &&
-        narrowed_msg_list.empty()) {
+    if ((messages.length === 0) && (current_msg_list === message_list.narrowed) && message_list.narrowed.empty()) {
         // Even after trying to load more messages, we have no
         // messages to display in this narrow.
         narrow.show_empty_narrow_message();
@@ -632,7 +631,7 @@ util.execute_early(function () {
         // created, but due to the closure, the old list is not garbage collected. This also leads
         // to the old list receiving the change id events, and throwing errors as it does not
         // have the messages that you would expect in its internal data structures.
-        _.each([message_list.all, home_msg_list, narrowed_msg_list], function (msg_list) {
+        _.each([message_list.all, home_msg_list, message_list.narrowed], function (msg_list) {
             if (msg_list !== undefined) {
                 msg_list.change_message_id(old_id, new_id);
 
