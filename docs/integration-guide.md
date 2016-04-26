@@ -71,9 +71,13 @@ Here's how we recommend doing it:
 
 * Then write a draft webhook handler under `zerver/views/webhooks/`;
   there are a lot of examples in that directory.  We recommend
-  templating off a short one (like `travis.py`), since the longer ones
-  usually just have more complex parsing which can obscure what's
-  common to all webhook integrations.
+  templating off a short one (like `stash.py` or `zendesk.py`), since
+  the longer ones usually just have more complex parsing which can
+  obscure what's common to all webhook integrations.  In addition to
+  writing the integration itself, you'll need to add an entry in
+  `zproject/urls.py` for your webhook; search for `webhook` in that
+  file to find the existing ones (and please add yours in the
+  alphabetically correct place).
 
 * Then write a test for your fixture in `zerver/tests/test_hooks.py`, and
   you can iterate on the tests and webhooks handler until they work,
