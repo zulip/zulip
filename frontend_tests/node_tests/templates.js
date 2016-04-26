@@ -728,6 +728,29 @@ function render(template_name, args) {
 
 }());
 
+(function admin_emoji_list() {
+    global.use_template('admin_emoji_list');
+    var args = {
+        emoji: {
+            "name": "MouseFace",
+            "url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png"
+        }
+    };
+
+    var html = '';
+    html += '<tbody id="admin_emoji_table">';
+    html += render('admin_emoji_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_emoji_list.handlebars', html);
+
+    var emoji_name = $(html).find('tr.emoji_row:first span.emoji_name');
+    var emoji_url = $(html).find('tr.emoji_row:first span.emoji_image img');
+
+    assert.equal(emoji_name.text(), 'MouseFace');
+    assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
+}());
+
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.

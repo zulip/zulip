@@ -20,6 +20,10 @@ function failed_listing_streams(xhr, error) {
     ui.report_error("Error listing streams", xhr, $("#administration-status"));
 }
 
+function failed_listing_emoji(xhr, error) {
+    ui.report_error("Error listing emoji", xhr, $("#administration-status"));
+}
+
 function populate_users (realm_people_data) {
     var users_table = $("#admin_users_table");
     var deactivated_users_table = $("#admin_deactivated_users_table");
@@ -70,6 +74,15 @@ function populate_streams (streams_data) {
     loading.destroy_indicator($('#admin_page_streams_loading_indicator'));
 }
 
+function populate_emoji(emoji_data) {
+    var emoji_table = $('#admin_emoji_table').expectOne();
+    emoji_table.find('tr.emoji_row').remove();
+    _.each(emoji_data, function (url, name) {
+        emoji_table.append(templates.render('admin_emoji_list', {emoji: {name: name, url: url}}));
+    });
+    loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
+}
+
 exports.setup_page = function () {
     var options = {
         realm_name:                 page_params.realm_name,
@@ -85,12 +98,16 @@ exports.setup_page = function () {
     $("#admin-realm-restricted-to-domain-status").expectOne().hide();
     $("#admin-realm-invite-required-status").expectOne().hide();
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
+    $("#admin-emoji-status").expectOne().hide();
+    $("#admin-emoji-name-status").expectOne().hide();
+    $("#admin-emoji-url-status").expectOne().hide();
 
     // create loading indicators
     loading.make_indicator($('#admin_page_users_loading_indicator'));
     loading.make_indicator($('#admin_page_bots_loading_indicator'));
     loading.make_indicator($('#admin_page_streams_loading_indicator'));
     loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));
+    loading.make_indicator($('#admin_page_emoji_loading_indicator'));
 
     // Populate users and bots tables
     channel.get({
@@ -109,6 +126,9 @@ exports.setup_page = function () {
         success: populate_streams,
         error: failed_listing_streams
     });
+
+    // Populate emoji table
+    populate_emoji(page_params.realm_emoji);
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
@@ -408,6 +428,67 @@ exports.setup_page = function () {
             }
         });
     });
+
+    $('.admin_emoji_table').on('click', '.delete', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = $(this);
+
+        channel.del({
+            url: '/json/realm/emoji/' + encodeURIComponent(btn.attr('data-emoji-name')),
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    btn.closest("td").html(
+                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                    );
+                } else {
+                     btn.text("Failed!");
+                }
+            },
+            success: function () {
+                var row = btn.parents('tr');
+                row.remove();
+            }
+        });
+    });
+
+    $(".administration").on("submit", "form.admin-emoji-form", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var emoji_status = $('#admin-emoji-status');
+        var emoji_name_status = $('#admin-emoji-name-status');
+        var emoji_url_status = $('#admin-emoji-url-status');
+        var emoji_table = $('.admin_emoji_table');
+        var emoji = {};
+        $(this).serializeArray().map(function (x){emoji[x.name] = x.value;});
+
+        channel.put({
+            url: "/json/realm/emoji",
+            data: $(this).serialize(),
+            success: function () {
+                $('#admin-emoji-status, #admin-emoji-name-status, #admin-emoji-url-status').hide();
+                emoji_table.append(templates.render("admin_emoji_list", {emoji: emoji}));
+                ui.report_success("Custom emoji added!", emoji_status);
+            },
+            error: function (xhr, error) {
+                $('#admin-emoji-status, #admin-emoji-name-status, #admin-emoji-url-status').hide();
+                var errors = $.parseJSON(xhr.responseText).msg;
+                if (errors.name !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.name});
+                    ui.report_error("Failed!", xhr, emoji_name_status);
+                }
+                if (errors.img_url !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.img_url});
+                    ui.report_error("Failed!", xhr, emoji_url_status);
+                }
+                if (errors.__all__ !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.__all__});
+                    ui.report_error("Failed!", xhr, emoji_status);
+                }
+            }
+        });
+    });
+
 };
 
 return exports;

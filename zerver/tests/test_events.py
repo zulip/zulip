@@ -11,7 +11,7 @@ from zerver.lib.actions import (
     apply_events,
     create_stream_if_needed,
     do_add_alert_words,
-    do_add_realm_emoji,
+    check_add_realm_emoji,
     do_add_realm_filter,
     do_change_avatar_source,
     do_change_default_all_public_streams,
@@ -479,7 +479,7 @@ class EventsRegisterTest(AuthedTestCase):
             ('op', equals('update')),
             ('realm_emoji', check_dict([])),
         ])
-        events = self.do_test(lambda: do_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
+        events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
                                                          "https://realm.com/my_emoji"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)

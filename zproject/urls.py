@@ -188,7 +188,12 @@ v1_api_and_json_patterns = patterns('zerver.views',
 
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'generate_204'),
-
+) + patterns('zerver.views.realm_emoji',
+    url(r'^realm/emoji$', 'rest_dispatch',
+        {'GET': 'list_emoji',
+         'PUT': 'upload_emoji'}),
+    url(r'^realm/emoji/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$', 'rest_dispatch',
+        {'DELETE': 'delete_emoji'}),
 ) + patterns('zerver.views.users',
     url(r'^users$', 'rest_dispatch',
         {'GET': 'get_members_backend',
