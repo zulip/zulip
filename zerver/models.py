@@ -215,7 +215,9 @@ def remote_user_to_email(remote_user):
 
 class RealmEmoji(models.Model):
     realm = models.ForeignKey(Realm)
-    name = models.TextField(validators=[MinLengthValidator(1), RegexValidator(regex=r'^[0-9a-zA-Z_\-\.]*$')])
+    # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
+    name = models.TextField(validators=[MinLengthValidator(1),
+                                        RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$')])
     img_url = models.URLField()
 
     class Meta(object):

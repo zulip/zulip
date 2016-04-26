@@ -77,7 +77,7 @@ function populate_streams (streams_data) {
 function populate_emoji(emoji_data) {
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
-    _.each(emoji_data.emoji, function (url, name) {
+    _.each(emoji_data, function (url, name) {
         emoji_table.append(templates.render('admin_emoji_list', {emoji: {name: name, url: url}}));
     });
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
@@ -128,13 +128,7 @@ exports.setup_page = function () {
     });
 
     // Populate emoji table
-    channel.get({
-        url: '/json/realm/emoji',
-        idempotent: true,
-        timeout: 10 * 1000,
-        success: populate_emoji,
-        error: failed_listing_emoji
-    });
+    populate_emoji(page_params.realm_emoji);
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {

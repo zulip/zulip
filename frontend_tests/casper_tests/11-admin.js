@@ -72,7 +72,7 @@ casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"]:not(.deactiv
 casper.waitForSelector('.admin-emoji-form', function () {
     casper.fill('form.admin-emoji-form', {
         'name': 'MouseFace',
-        'url': 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png'
+        'url': 'http://localhost:9991/static/images/integrations/logos/jenkins.png'
     });
     casper.click('form.admin-emoji-form input.btn');
 });
@@ -83,7 +83,7 @@ casper.waitUntilVisible('div#admin-emoji-status', function () {
 
 casper.waitForSelector('.emoji_row', function () {
     casper.test.assertSelectorHasText('.emoji_row .emoji_name', 'MouseFace');
-    casper.test.assertExists('.emoji_row img[src="http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png"]');
+    casper.test.assertExists('.emoji_row img[src="http://localhost:9991/static/images/integrations/logos/jenkins.png"]');
     casper.click('.emoji_row button.delete');
 });
 

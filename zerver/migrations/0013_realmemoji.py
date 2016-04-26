@@ -8,7 +8,7 @@ import django.core.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0009_add_missing_migrations'),
+        ('zerver', '0012_remove_appledevicetoken'),
     ]
 
     operations = [
@@ -20,6 +20,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='realmemoji',
             name='name',
-            field=models.TextField(validators=[django.core.validators.MinLengthValidator(1), django.core.validators.RegexValidator(regex=b'^[0-9a-zA-Z_\\-\\.]*$')]),
+            field=models.TextField(validators=[django.core.validators.MinLengthValidator(1), django.core.validators.RegexValidator(regex=b'^[0-9a-zA-Z.\\-_]+(?<![.\\-_])$')]),
         ),
     ]

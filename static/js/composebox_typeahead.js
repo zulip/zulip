@@ -73,7 +73,7 @@ function query_matches_person(query, person) {
 }
 
 function query_matches_emoji(query, emoji) {
-    return (emoji.emoji_name.indexOf(query.toLowerCase()) !== -1);
+    return (emoji.emoji_name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.

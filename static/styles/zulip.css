@@ -3374,7 +3374,6 @@ div.edit_bot {
 #administration .settings-section .admin-realm-form,
 #settings .settings-section .account-settings-form,
 #settings .settings-section .new-bot-form,
-#emoji-settings .new-emoji-form,
 #settings .settings-section .edit-bot-form-box {
     width: 400px;
     margin: auto;
@@ -4238,12 +4237,21 @@ li.show-more-private-messages a {
     margin: 20px auto;
 }
 
-.admin_emoji_table th.actions,
-.admin_emoji_table th.image {width: 80px;}
-
-.emoji_image {width: 50px; display: block;}
-.emoji_image img {max-width: 100%;}
+.emoji_image {
+    width: 50px; display: block;
+}
+.emoji_image img {
+    max-width: 100%;
+}
 
 #admin-emoji-name-status, #admin-emoji-url-status {
     margin: 20px 0 0 0;
+}
+
+.admin-table-wrapper {
+    margin: 0 38px;
+}
+
+#emoji-settings .new-emoji-form #emoji_url {
+    width: 60%;
 }
