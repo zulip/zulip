@@ -268,6 +268,7 @@ def cache_save_user_profile(user_profile):
     # type: (Any) -> None
     cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
 
+active_user_dict_fields = ['id', 'full_name', 'short_name', 'email', 'is_bot']
 def active_user_dicts_in_realm_cache_key(realm):
     # type: (Any) -> str
     return "active_user_dicts_in_realm:%s" % (realm.id,)
@@ -302,9 +303,9 @@ def flush_user_profile(sender, **kwargs):
     update_user_profile_caches([user_profile])
 
     # Invalidate our active_users_in_realm info dict if any user has changed
-    # name or email
+    # the fields in the dict or become (in)active
     if kwargs.get('update_fields') is None or \
-        len(set(['full_name', 'short_name', 'email', 'is_active']) & set(kwargs['update_fields'])) > 0:
+        len(set(active_user_dict_fields + ['is_active']) & set(kwargs['update_fields'])) > 0:
         cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm))
 
     # Invalidate our active_bots_in_realm info dict if any bot has changed
