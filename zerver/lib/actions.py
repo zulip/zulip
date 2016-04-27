@@ -2426,11 +2426,8 @@ def get_status_dict(requesting_user_profile):
 
 
 def get_realm_user_dicts(user_profile):
-    # Due to our permission model, it is advantageous to find the admin users in bulk.
-    admins = user_profile.realm.get_admin_users()
-    admin_emails = set([up.email for up in admins])
     return [{'email'     : userdict['email'],
-             'is_admin'  : userdict['email'] in admin_emails,
+             'is_admin'  : userdict['is_realm_admin'],
              'is_bot'    : userdict['is_bot'],
              'full_name' : userdict['full_name']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
