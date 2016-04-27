@@ -11,7 +11,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
-    active_bot_dicts_in_realm_cache_key, active_user_dict_fields
+    active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
+    active_bot_dict_fields
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
@@ -1105,12 +1106,8 @@ def get_active_user_dicts_in_realm(realm):
 
 @cache_with_key(active_bot_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_active_bot_dicts_in_realm(realm):
-     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
-                               .values('id', 'full_name', 'short_name',
-                                       'email', 'default_sending_stream__name',
-                                       'default_events_register_stream__name',
-                                       'default_all_public_streams', 'api_key',
-                                       'bot_owner__email', 'avatar_source')
+    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
+                              .values(*active_bot_dict_fields)
 
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest
