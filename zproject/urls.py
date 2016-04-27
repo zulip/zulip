@@ -261,19 +261,14 @@ v1_api_and_json_patterns = patterns('zerver.views',
         {'GET': 'get_events_backend',
          'DELETE': 'cleanup_event_queue'}),
 )
-if not settings.VOYAGER:
-    urlpatterns += patterns('',
-        url(r'^', include('zilencer.urls')),
-    )
 
-    urlpatterns += patterns('',
-        url(r'^', include('analytics.urls')),
-    )
-
-    urlpatterns += patterns('',
-        url(r'^', include('corporate.urls')),
-    )
-
+# Include URL configuration files for site-specified extra installed
+# Django apps
+for app_name in settings.EXTRA_INSTALLED_APPS:
+    app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
+    if os.path.exists(os.path.join(app_dir, 'urls.py')):
+        urlpatterns += patterns('', url(r'^', include('%s.urls' % (app_name,))),
+        )
 
 urlpatterns += patterns('zerver.tornadoviews',
     # Tornado views
