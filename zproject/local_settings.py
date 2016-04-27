@@ -123,3 +123,8 @@ ZULIP_ADMINISTRATOR = 'support@zulip.com'
 ADMINS = (
     ('Zulip Error Reports', 'errors@zulip.com'),
 )
+
+EXTRA_INSTALLED_APPS = [
+    'analytics',
+    'zilencer',
+]
