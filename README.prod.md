@@ -706,6 +706,10 @@ we can do a responsible security announcement).
   access messages sent to private streams that have bots subscribed,
   by using the bot's credentials.
 
+  In the future, Zulip's security model may change to allow realm
+  administrators to access private messages (e.g. to support auditing
+  functionality).
+
 * Every Zulip user has an API key, available on the settings page.
   This API key can be used to do essentially everything the user can
   do; for that reason, users should keep their API key safe.  Users
