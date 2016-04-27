@@ -171,6 +171,16 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='search', operand='"french fries"', negated=True)
         self._do_add_term_test(term, 'WHERE NOT (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND NOT (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
+    def test_add_term_using_search_operator_pgroonga(self):
+        with self.settings(USING_PGROONGA=True):
+            term = dict(operator='search', operand='"french fries"')
+            self._do_add_term_test(term, 'WHERE (subject @@ :subject_1) OR (rendered_content @@ :rendered_content_1)')
+
+    def test_add_term_using_search_operator_and_negated_pgroonga(self):  # NEGATED
+        with self.settings(USING_PGROONGA=True):
+            term = dict(operator='search', operand='"french fries"', negated=True)
+            self._do_add_term_test(term, 'WHERE NOT ((subject @@ :subject_1) OR (rendered_content @@ :rendered_content_1))')
+
     def test_add_term_using_has_operator_and_attachment_operand(self):
         term = dict(operator='has', operand='attachment')
         self._do_add_term_test(term, 'WHERE has_attachment')
