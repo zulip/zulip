@@ -319,6 +319,7 @@ Finally continue with the All Systems instructions below.
 ```
 pip install --no-deps -r requirements.txt
 ./tools/install-phantomjs
+./tools/install-mypy
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
