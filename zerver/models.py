@@ -1109,6 +1109,23 @@ def get_active_bot_dicts_in_realm(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
                               .values(*active_bot_dict_fields)
 
+def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
+    if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
+        result = get_active_bot_dicts_in_realm(user_profile.realm)
+    else:
+        result = UserProfile.objects.filter(realm=user_profile.realm, is_active=True, is_bot=True,
+                                        bot_owner=user_profile).values(*active_bot_dict_fields)
+    return [{'email': botdict['email'],
+             'full_name': botdict['full_name'],
+             'api_key': botdict['api_key'],
+             'default_sending_stream': botdict['default_sending_stream__name'],
+             'default_events_register_stream': botdict['default_events_register_stream__name'],
+             'default_all_public_streams': botdict['default_all_public_streams'],
+             'owner': botdict['bot_owner__email'],
+             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
+            }
+            for botdict in result]
+
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest
     # invite.
