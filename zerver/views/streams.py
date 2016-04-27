@@ -81,7 +81,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     return existing_streams, created_streams
 
 class PrincipalError(JsonableError):
-    def __init__(self, principal, status_code=400):
+    def __init__(self, principal, status_code=403):
         self.principal = principal
         self.status_code = status_code
 
