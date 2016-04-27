@@ -97,6 +97,7 @@ else:
     ERROR_BOT = "error-bot@zulip.com"
     NEW_USER_BOT = "new-user-bot@zulip.com"
     EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
+    EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 
 ########################################################################
 # DEFAULT VALUES FOR SETTINGS
