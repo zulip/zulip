@@ -262,13 +262,8 @@ v1_api_and_json_patterns = patterns('zerver.views',
          'DELETE': 'cleanup_event_queue'}),
 )
 if not settings.VOYAGER:
-    v1_api_and_json_patterns += patterns('',
-        # Still scoped to api/v1/, but under a different project
-        url(r'^deployments/', include('zilencer.urls.api')),
-    )
-
     urlpatterns += patterns('',
-        url(r'^', include('zilencer.urls.pages')),
+        url(r'^', include('zilencer.urls')),
     )
 
     urlpatterns += patterns('',
