@@ -20,6 +20,7 @@ Contents:
    queuing
    schema-migrations
    front-end-build-process
+   mypy
 
 Indices and tables
 ==================
