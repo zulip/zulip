@@ -852,10 +852,11 @@ class TravisHookTests(AuthedTestCase):
         url = "/api/v1/external/travis?stream=%s&topic=builds&api_key=%s" % (stream, api_key)
         self.subscribe_to_stream(email, stream)
 
-        self.client.post(url,
-                         body,
-                         stream_name=stream,
-                         content_type="application/x-www-form-urlencoded")
+        result = self.client.post(url,
+                                  body,
+                                  stream_name=stream,
+                                  content_type="application/x-www-form-urlencoded")
+        self.assert_json_success(result)
 
         msg = self.get_last_message()
         u'Author: josh_mandel\nBuild status: Passed :thumbsup:\nDetails: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)'
@@ -928,7 +929,8 @@ class PingdomHookTests(AuthedTestCase):
         return ujson.dumps(ujson.loads(self.fixture_data('pingdom', name)))
 
     def _send_post_request_with_params(self, json):
-        return self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+        result = self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+        self.assert_json_success(result)
 
 class YoHookTests(AuthedTestCase):
     def test_yo_message(self):
@@ -944,9 +946,9 @@ class YoHookTests(AuthedTestCase):
         ip = "127.0.0.1"
         url = "/api/v1/external/yo?email=%s&api_key=%s&username=%s&user_ip=%s" % (email, api_key, sender, ip)
 
-        self.client.get(url,
-                        body,
-                        content_type="application/x-www-form-urlencoded")
+        result = self.client.get(url, body,
+                                 content_type="application/x-www-form-urlencoded")
+        self.assert_json_success(result)
 
         msg = self.get_last_message()
         self.assertEqual(msg.content, (u"Yo from IAGO"))
@@ -965,10 +967,11 @@ class TeamcityHookTests(AuthedTestCase):
         url = "/api/v1/external/teamcity?stream=%s&api_key=%s" % (stream, api_key)
         self.subscribe_to_stream(email, stream)
 
-        self.client.post(url,
-                         body,
-                         stream_name=stream,
-                         content_type="application/json")
+        result = self.client.post(url,
+                                  body,
+                                  stream_name=stream,
+                                  content_type="application/json")
+        self.assert_json_success(result)
 
         return self.get_last_message()
 
@@ -1059,4 +1062,6 @@ class CodeshipHookTests(AuthedTestCase):
         return ujson.dumps(ujson.loads(self.fixture_data('codeship', name)))
 
     def _send_post_request_with_params(self, json):
-        return self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+        result = self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+        self.assert_json_success(result)
+        return result
