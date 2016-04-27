@@ -195,6 +195,7 @@ class GetEventsTest(AuthedTestCase):
 class EventsRegisterTest(AuthedTestCase):
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
     bot = get_user_profile_by_email("welcome-bot@zulip.com")
+    maxDiff = None
 
     def create_bot(self, email):
         return do_create_user(email, '123',
