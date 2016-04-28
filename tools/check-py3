@@ -59,16 +59,38 @@ if [ -z "$python_files" ]; then
     exit 0
 fi
 
-failed=0
+quick=1
+if [ "$1" == "--find-fixers" ]; then
+    quick=0
+fi
+
+fixer_options=""
 for fixer in $fixers; do
-    echo "Running Python 3 compatibility test $fixer"
-    echo "$python_files" | xargs futurize -f $fixer -j4 -n -w >/dev/null 2>/dev/null
-    if ! git diff --exit-code; then
-        # Clear the output from this one
-        git reset --hard >/dev/null
-        failed=1
-    fi
+    fixer_options+="-f $fixer "
 done
+
+failed=0
+# run quick check
+echo "Running quick Python 3 compatibility test"
+echo "$python_files" | xargs futurize $fixer_options -j4 -n -w >/dev/null 2>/dev/null
+if ! git diff --exit-code; then
+    # Clear the output from this one
+    git reset --hard >/dev/null
+    failed=1
+fi
+
+# run slow check
+if [ "$failed" = "1" -a "$quick" == "0" ]; then
+    echo "Running each fixer separately to find out which fixers need to be applied"
+    for fixer in $fixers; do
+        echo "Running Python 3 compatibility test $fixer"
+        echo "$python_files" | xargs futurize -f $fixer -j4 -n -w >/dev/null 2>/dev/null
+        if ! git diff --exit-code; then
+            # Clear the output from this one
+            git reset --hard >/dev/null
+        fi
+    done
+fi
 
 # The dict fixer tries to add list() even in for loops over an
 # iterator where it's just counterproductive.  To address this, we run
