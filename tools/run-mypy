@@ -63,8 +63,8 @@ if python_files:
     else:
         print("\nThe mypy static type checker for Python threw some errors,")
         print("which indicates a bug in your code or incorrect type annotations.")
-        print("Please see docs/mypy.md for details on how Zulip is using mypy")
-        print("to find bugs and how to debug the issue.")
+        print("Please see http://zulip.readthedocs.io/en/latest/mypy.html for details")
+        print("on mypy, how Zulip is using mypy, and how to debug common issues.")
     sys.exit(rc)
 else:
     print("There are no files to run mypy on.")
