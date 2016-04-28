@@ -13,9 +13,13 @@ DATABASES["default"] = {"NAME": "zulip_test",
 
 
 if "TORNADO_SERVER" in os.environ:
+    # This covers the Casper test suite case
     TORNADO_SERVER = os.environ["TORNADO_SERVER"]
 else:
+    # This covers the backend test suite case
     TORNADO_SERVER = None
+    CAMO_URI = 'https://external-content.zulipcdn.net/'
+    CAMO_KEY = 'dummy'
 
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
@@ -53,8 +57,5 @@ CACHES['database'] = {
 
 LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
-
-CAMO_URI = 'https://external-content.zulipcdn.net/'
-CAMO_KEY = 'dummy'
 
 LOCAL_UPLOADS_DIR = 'test_uploads'

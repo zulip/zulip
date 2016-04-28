@@ -10,3 +10,7 @@ upstream tornado {
 upstream localhost_sso {
     server localhost:8888;
 }
+
+upstream camo {
+    server localhost:9292;
+}

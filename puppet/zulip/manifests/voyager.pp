@@ -17,4 +17,5 @@ class zulip::voyager {
   include zulip::memcached
   include zulip::rabbit
   include zulip::redis
+  include zulip::localhost_camo
 }

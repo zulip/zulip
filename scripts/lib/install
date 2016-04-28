@@ -42,6 +42,12 @@ fi
 cp -a /root/zulip/zproject/local_settings_template.py /etc/zulip/settings.py
 ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
 
+# Restart camo since generate_secrets.py likely replaced its secret key
+if [ -z "$TRAVIS" ]; then
+    # We don't run this in Travis CI due to a weird hang bug
+    service camo restart
+fi
+
 if ! rabbitmqctl status >/dev/null; then
     set +x
     echo; echo "RabbitMQ seems to not have started properly after the installation process."

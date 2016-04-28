@@ -300,7 +300,10 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "full_name": "cn",
 }
 
-CAMO_URI = ''
+# The default CAMO_URI of '/external_content/' is served by the camo
+# setup in the default Voyager nginx configuration.  Setting CAMO_URI
+# to '' will disable the Camo integration.
+CAMO_URI = '/external_content/'
 
 # RabbitMQ configuration
 #
