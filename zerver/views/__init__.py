@@ -566,6 +566,24 @@ def dev_direct_login(request, **kwargs):
     login(request, user_profile)
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                           request.get_host()))
+                                          
+def api_dev_android_direct_login(request, **kwargs):
+    # This function allows logging in without a password on Android app and should only be called in development
+    # environments. It may be called if the DevAuthBackend is included in settings.AUTHENTICATION_BACKENDS
+    if (not dev_auth_enabled()) or settings.PRODUCTION:
+        # This check is probably not required, since authenticate would fail without an enabled DevAuthBackend.
+        return json_error("Dev enviornment not enabled.", data={"reason": "dev_disabled"}, status=403)
+    email = request.POST['direct_email']
+    user_profile = authenticate(username=email)
+    login(request, user_profile)
+    if user_profile is None:
+        if return_data.get("valid_attestation") == True:
+            # We can leak that the user is unregistered iff they present a valid authentication string for the user.
+            return json_error("This user is not registered; do so from a browser.", data={"reason": "unregistered"}, status=403)
+        return json_error("Your username or password is incorrect.", data={"reason": "incorrect_creds"}, status=403)
+    if not user_profile.is_active:
+        return json_error("Your account has been disabled.", data={"reason": "disabled"}, status=403)
+    return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 @authenticated_json_post_view
 @has_request_variables

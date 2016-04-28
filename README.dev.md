@@ -4,31 +4,43 @@ Installing the Zulip Development environment
 
 You will need a machine with at least 2GB of RAM available (see
 https://github.com/zulip/zulip/issues/32 for a plan for how to
-dramatically reduce this requirement).
+dramatically reduce this requirement). The recommended approach for
+all platforms is to use Vagrant, which  will install the environment
+inside a VM or container on any platform that supports Vagrant. You
+could also install things by hand, which is supported by a variety
+of platforms, or use Docker. 
 
-Start by cloning this repository: `git clone https://github.com/zulip/zulip.git`
+Start by cloning the Zulip repositiory: 
+non-Windows
+------------
+`git clone https://github.com/zulip/zulip.git`
+Windows
+--------
+`git clone https://github.com/zulip/zulip.git  -c core.autocrlf=false` 
+
+This is to remove Windows line endings, which cause weird errors.
 
 Using Vagrant
--------------
-
-This is the recommended approach for all platforms, and will install
-the Zulip development environment inside a VM or container and works
-on any platform that supports Vagrant.
+=============
 
 The best performing way to run the Zulip development environment is
 using an LXC container on a Linux host, but we support other platforms
-such as Mac via Virtualbox (but everything will be 2-3x slower).
+such as Mac/Windows via Virtualbox (but everything will be 2-3x slower).
 
-* If your host is Ubuntu 15.04 or newer, you can install and configure
-  the LXC Vagrant provider directly using apt:
+Ubuntu 15.04 or newer
+---------------------
+* install and configure the LXC Vagrant provider directly using apt:
+
   ```
   sudo apt-get install vagrant lxc lxc-templates cgroup-lite redir
   vagrant plugin install vagrant-lxc
   ```
   You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
+  
+Ubuntu 14.04
+------------
+*  [download a newer  version of Vagrant][vagrant-dl], and then do the following:
 
-* If your host is Ubuntu 14.04, you will need to [download a newer
-  version of Vagrant][vagrant-dl], and then do the following:
   ```
   sudo apt-get install lxc lxc-templates cgroup-lite redir
   sudo dpkg -i vagrant*.deb # in directory where you downloaded vagrant
@@ -36,37 +48,42 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   ```
   You may want to [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo].
 
-* For other Linux hosts with a kernel above 3.12, [follow the Vagrant
-  LXC installation instructions][vagrant-lxc] to get Vagrant with LXC
-  for your platform.
+Other Linux (kernel above 3.12):
+--------------------------------
+* [follow the Vagrant LXC installation instructions][vagrant-lxc] to get 
+  Vagrant with LXC for your platform.
 
-* If your host is OS X or older Linux, [download VirtualBox][vbox-dl],
-  [download Vagrant][vagrant-dl], and install them both.
-
-* If you're on OS X and have VMWare, it should be possible to patch
-  Vagrantfile to use the VMWare vagrant provider which should perform
+OS X or older Linux (kernel at or below 3.12)
+----------------------------------------------
+* [download VirtualBox][vbox-dl], [download Vagrant][vagrant-dl], and install
+  them both.
+* Note: If you're on OS X and have VMWare, it should be possible to patch
+  Vagrantfile to use the VMWare vagrant provider, which should perform
   much better than Virtualbox.  Patches to do this by default if
   VMWare is available are welcome!
 
-* On Windows: You can use Vagrant and Virtualbox/VMWare on Windows
-  with Cygwin, similar to the Mac setup.  Be sure to create your git
-  clone using `git clone https://github.com/zulip/zulip.git -c
-  core.autocrlf=false` to avoid Windows line endings being added to
-  files (this causes weird errors).
+Windows
+--------
+* use Vagrant and Virtualbox/VMWare on Windows with Cygwin, similar to the Mac 
+  setup. When installing Cygwin, make sure to include all packages containing
+  rsync and ssh. You can easily select these packages by entering rsync in the 
+  search box, selecting rsync packages, entering ssh in the search box, and
+  selecting ssh packages. 
 
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
 
+Universal Vagrant instructions
+-------------------------------
 Once that's done, simply change to your zulip directory and run
 `vagrant up` in your terminal to install the development server.  This
-will take a long time on the first run because Vagrant needs to
-download the Ubuntu Trusty base image, but later you can run `vagrant
-destroy` and then `vagrant up` again to rebuild the environment and it
-will be much faster.
+will take a long time on the first run - vagrant needs to download the Ubuntu
+Trusty base image, but later you can run `vagrant destroy` and then
+`vagrant up` again to rebuild the environment and it will be much faster. 
 
-Once that finishes, you can run the development server as follows:
+Once `vagrant up` finshes, you can run the development server as follows:
 
 ```
 vagrant ssh -- -L9991:localhost:9991
@@ -114,8 +131,15 @@ Now run `vagrant up` in your terminal to install the development
 server. If you ran `vagrant up` before and failed, you'll need to run
 `vagrant destroy` first to clean up the failed installation.
 
-Using provision.py without Vagrant
-----------------------------------
+Setup without Vagrant (using provision.py)
+==========================================
+
+There is no supported uninstallation process without Vagrant
+(with Vagrant, you can just do `vagrant destroy` to clean up the
+development environment).
+
+Ubuntu 14.04 Trusty server
+--------------------------
 
 If you'd like to install a Zulip development environment on a server
 that's already running Ubuntu 14.04 Trusty, you can do that by just
@@ -129,10 +153,6 @@ cd /srv/zulip
 source /srv/zulip-venv/bin/activate
 ./tools/run-dev.py
 ```
-
-Note that there is no supported uninstallation process without Vagrant
-(with Vagrant, you can just do `vagrant destroy` to clean up the
-development environment).
 
 By hand
 -------
@@ -151,7 +171,8 @@ Install the following non-Python dependencies:
  * tsearch-extras — better text search
  * libfreetype6-dev — needed before you pip install Pillow to properly generate emoji PNGs
 
-### On Debian or Ubuntu systems:
+By Hand (Debian or Ubuntu systems)
+----------------------------------
 
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
@@ -178,7 +199,8 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 
 Now continue with the "All systems" instructions below.
 
-### On Fedora 22 (experimental):
+By Hand (on Fedora 22 - experimental)
+-------------------------------------
 
 These instructions are experimental and may have bugs; patches
 welcome!
@@ -192,7 +214,7 @@ sudo dnf install libffi-devel memcached rabbitmq-server \
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
-### On CentOS 7 Core (experimental):
+By Hand (on CentOS 7 Core - experimental)
 
 These instructions are experimental and may have bugs; patches
 welcome!
@@ -247,7 +269,8 @@ host    all             all             ::1/128                 md5
 
 Now continue with the Common to Fedora/CentOS instructions below.
 
-### On OpenBSD 5.8 (experimental):
+By hand (on OpenBSD 5.8 - experimental)
+---------------------------------------
 
 These instructions are experimental and may have bugs; patches
 welcome!
@@ -281,7 +304,8 @@ sudo touch /usr/local/share/postgresql/tsearch_data/en_us.affix
 
 Now continue with the All Systems instructions below.
 
-### Common to Fedora/CentOS instructions
+By Hand (Common to Fedora/CentOS instructions)
+----------------------------------------------
 
 ```
 # Build and install postgres tsearch-extras module
@@ -314,7 +338,8 @@ sudo systemctl enable redis rabbitmq-server memcached postgresql
 
 Finally continue with the All Systems instructions below.
 
-### All Systems:
+All Systems
+-----------
 
 ```
 pip install --no-deps -r requirements.txt
@@ -362,7 +387,7 @@ proxy in the environment as follows:
  ```
 
 Using Docker
--------------
+============
 
 You can also use Docker to develop, first you need to install Docker
 in your development machine following the
@@ -432,7 +457,8 @@ Using the Development Environment
 =================================
 
 Once the development environment is running, you can visit
-<http://localhost:9991/> in your browser.  By default, the development
+<http://localhost:9991/> in the browser on the host machine.  By
+default, the development
 server homepage just shows a list of the users that exist on the
 server and you can login as any of them by just clicking on a user.
 This setup saves time for the common case where you want to test

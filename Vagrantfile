@@ -62,6 +62,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.provider "virtualbox" do |vb, override|
+    config.vm.synced_folder ".", "/srv/zulip", type: "rsync", rsync__args: ["--verbose", "--archive", "--delete", "-z"]
     override.vm.box = "ubuntu/trusty64"
     # 2GiB seemed reasonable here. The VM OOMs with only 1024MiB.
     vb.memory = 2048
