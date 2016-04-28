@@ -1065,3 +1065,220 @@ class CodeshipHookTests(AuthedTestCase):
         result = self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
         self.assert_json_success(result)
         return result
+
+class TaigaHookTests(AuthedTestCase):
+
+    def send_taiga_message(self, action):
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        stream = "taiga"
+        topic = "subject"
+        mesg = self.fixture_data("taiga", action, file_type="json")
+        url = "/api/v1/external/taiga?stream=%s&topic=%s&api_key=%s" % (stream, topic, api_key)
+        self.send_json_payload(email, url, mesg, stream_name=stream, content_type="application/json")
+        return self.get_last_message()
+
+    def test_taiga_userstory_deleted(self):
+        msg = self.send_taiga_message("userstory_deleted")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':x: Antek deleted user story **A newer hope**.\n')
+
+    def test_taiga_userstory_created(self):
+        msg = self.send_taiga_message("userstory_created")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':package: Antek created user story **A new hope**.\n')
+
+    def test_taiga_userstory_changed_unblocked(self):
+        msg = self.send_taiga_message("userstory_changed_unblocked")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':unlock: Antek unblocked user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_subject(self):
+        msg = self.send_taiga_message("userstory_changed_subject")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek renamed user story from A new hope to **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_status(self):
+        msg = self.send_taiga_message("userstory_changed_status")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of user story **A new hope** from New to Done.\n')
+
+    def test_taiga_userstory_changed_reassigned(self):
+        msg = self.send_taiga_message("userstory_changed_reassigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek reassigned user story **Great US** from Antek to Han Solo.\n')
+
+    def test_taiga_userstory_changed_points(self):
+        msg = self.send_taiga_message("userstory_changed_points")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':game_die: Antek changed estimation of user story **A new hope**.\n')
+
+    def test_taiga_userstory_changed_new_milestone(self):
+        msg = self.send_taiga_message("userstory_changed_new_milestone")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':calendar: Antek added user story **A newer hope** to sprint New sprint.\n')
+
+    def test_taiga_userstory_changed_milestone(self):
+        msg = self.send_taiga_message("userstory_changed_milestone")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':calendar: Antek changed sprint of user story **A newer hope** from Old sprint to New sprint.\n')
+
+    def test_taiga_userstory_changed_description(self):
+        msg = self.send_taiga_message("userstory_changed_description")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek updated description of user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_closed(self):
+        msg = self.send_taiga_message("userstory_changed_closed")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from New to Done.\n:checkered_flag: Antek closed user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_reopened(self):
+        msg = self.send_taiga_message("userstory_changed_reopened")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from Done to New.\n:package: Antek reopened user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_blocked(self):
+        msg = self.send_taiga_message("userstory_changed_blocked")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':lock: Antek blocked user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_assigned(self):
+        msg = self.send_taiga_message("userstory_changed_assigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek assigned user story **Great US** to Antek.\n')
+
+    def test_taiga_task_created(self):
+        msg = self.send_taiga_message("task_created")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':clipboard: Antek created task **New task assigned and in progress**.\n')
+
+    def test_taiga_task_changed_status(self):
+        msg = self.send_taiga_message("task_changed_status")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of task **New task assigned and in progress** from Ready for test to New.\n')
+
+    def test_taiga_task_changed_blocked(self):
+        msg = self.send_taiga_message("task_changed_blocked")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':lock: Antek blocked task **A new task**.\n')
+
+    def test_taiga_task_changed_unblocked(self):
+        msg = self.send_taiga_message("task_changed_unblocked")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':unlock: Antek unblocked task **A new task**.\n')
+
+    def test_taiga_task_changed_assigned(self):
+        msg = self.send_taiga_message("task_changed_assigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek assigned task **Aaaa** to Antek.\n')
+
+    def test_taiga_task_changed_reassigned(self):
+        msg = self.send_taiga_message("task_changed_reassigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek reassigned task **Aaaa** from Han Solo to Antek.\n')
+
+    def test_taiga_task_changed_subject(self):
+        msg = self.send_taiga_message("task_changed_subject")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek renamed task New task to **Even newer task**.\n')
+
+    def test_taiga_task_changed_description(self):
+        msg = self.send_taiga_message("task_changed_description")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek updated description of task **Even newer task.**.\n')
+
+    def test_taiga_task_changed_us(self):
+        msg = self.send_taiga_message("task_changed_us")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':clipboard: Antek moved task **A new task** from user story #3 Great US to #6 Greater US.\n')
+
+    def test_taiga_task_deleted(self):
+        msg = self.send_taiga_message("task_deleted")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':x: Antek deleted task **hhh**.\n')
+
+    def test_taiga_milestone_created(self):
+        msg = self.send_taiga_message("milestone_created")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':calendar: Antek created sprint **New sprint**.\n')
+
+    def test_taiga_milestone_deleted(self):
+        msg = self.send_taiga_message("milestone_deleted")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':x: Antek deleted sprint **Newer sprint**.\n')
+
+    def test_taiga_milestone_changed_time(self):
+        msg = self.send_taiga_message("milestone_changed_time")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':calendar: Antek changed estimated finish of sprint **New sprint** from 2016-04-27 to 2016-04-30.\n')
+
+    def test_taiga_milestone_changed_name(self):
+        msg = self.send_taiga_message("milestone_changed_name")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek renamed sprint from New sprint to **Newer sprint**.\n')
+
+    def test_taiga_issue_created(self):
+        msg = self.send_taiga_message("issue_created")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':bulb: Antek created issue **A new issue**.\n')
+
+    def test_taiga_issue_deleted(self):
+        msg = self.send_taiga_message("issue_deleted")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':x: Antek deleted issue **Aaaa**.\n')
+
+    def test_taiga_issue_changed_assigned(self):
+        msg = self.send_taiga_message("issue_changed_assigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek assigned issue **Aaaa** to Antek.\n')
+
+    def test_taiga_issue_changed_reassigned(self):
+        msg = self.send_taiga_message("issue_changed_reassigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek reassigned issue **Aaaa** from Antek to Han Solo.\n')
+
+    def test_taiga_issue_changed_subject(self):
+        msg = self.send_taiga_message("issue_changed_subject")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek renamed issue Aaaa to **More descriptive name**.\n')
+
+    def test_taiga_issue_changed_description(self):
+        msg = self.send_taiga_message("issue_changed_description")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek updated description of issue **More descriptive name**.\n')
+
+    def test_taiga_issue_changed_type(self):
+        msg = self.send_taiga_message("issue_changed_type")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':bulb: Antek changed type of issue **A new issue** from Bug to Enhancement.\n')
+
+    def test_taiga_issue_changed_status(self):
+        msg = self.send_taiga_message("issue_changed_status")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of issue **A new issue** from New to Rejected.\n')
+
+    def test_taiga_issue_changed_severity(self):
+        msg = self.send_taiga_message("issue_changed_severity")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':warning: Antek changed severity of issue **A new issue** from Important to Critical.\n')
+
+    def test_taiga_issue_changed_priority(self):
+        msg = self.send_taiga_message("issue_changed_priority")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':rocket: Antek changed priority of issue **A new issue** from Normal to High.\n')
+
+    def test_taiga_userstory_comment_added(self):
+        msg = self.send_taiga_message("userstory_changed_comment_added")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':thought_balloon: Han Solo commented on user story **Great US**.\n')
+
+    def test_taiga_task_changed_comment_added(self):
+        msg = self.send_taiga_message("task_changed_comment_added")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':thought_balloon: Antek commented on task **New task assigned and in progress**.\n')
+
+    def test_taiga_issue_changed_comment_added(self):
+        msg = self.send_taiga_message("issue_changed_comment_added")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':thought_balloon: Antek commented on issue **Aaaa**.\n')
