@@ -37,7 +37,6 @@ from six.moves import range
 session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.create_user import random_api_key
-from zerver.lib.initial_password import initial_password
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.lib.cache_helpers import cache_save_message
 from zerver.lib.queue import queue_json_publish
@@ -496,7 +495,7 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
-            return create_user(email, initial_password(email), realm,
+            return create_user(email, None, realm,
                                email_to_fullname(email), email_to_username(email),
                                active=False, is_mirror_dummy=True)
         except IntegrityError:
@@ -1434,7 +1433,7 @@ def do_change_subscription_property(user_profile, sub, stream_name,
 def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     user_profile.is_active = True
     user_profile.is_mirror_dummy = False
-    user_profile.set_password(initial_password(user_profile.email))
+    user_profile.set_unusable_password()
     user_profile.date_joined = join_date
     user_profile.save(update_fields=["is_active", "date_joined", "password",
                                      "is_mirror_dummy"])
