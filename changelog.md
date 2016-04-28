@@ -3,15 +3,22 @@
 All notable changes to this project will be documented in this file.
 
 [Unreleased]
-- Moved email digest support into the default Zulip configuration.
+
+[1.3.11]
+- Moved email digest support into the default Zulip production configuration.
 - Added options for configuring Postgres, RabbitMQ, Redis, and memcached
   in settings.py.
 - Added documentation on using Hubot to integrate with useful services
   not yet integrated with Zulip directly (e.g. Google Hangouts).
 - Added new management command to test sending email from Zulip.
 - Added Codeship, Pingdom, Taiga, Teamcity, and Yo integrations.
+- Added Nagios plugins to the main distribution.
+- Added ability for realm administrators to manage custom emoji.
+- Added guide to writing new integrations.
+- Enabled camo image proxy to fix mixed-content warnings for http images.
 - Refactored the Zulip puppet modules to be more modular.
 - Refactored the Tornado event system, fixing old memory leaks.
+- Removed many old-style /json API endpoints
 - Implemented running queue processors multithreaded in development,
   decreasing RAM requirements for a Zulip development environment from
   ~1GB to ~300MB.
@@ -22,6 +29,8 @@ All notable changes to this project will be documented in this file.
   if that setting was disabled for the realm.
 - Fixed bugs changing certain settings in administration pages.
 - Fixed collapsing messages in narrowed views.
+- Fixed 500 errors when uploading a non-image file as an avatar.
+- Fixed Jira integration incorrectly not @-mentioning assignee.
 
 [1.3.10]
 - Added new integration for Travis CI.
