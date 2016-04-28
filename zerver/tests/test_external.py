@@ -17,6 +17,8 @@ from zerver.lib.test_helpers import AuthedTestCase
 from zerver.models import get_user_profile_by_email
 from zerver.lib.test_runner import slow
 
+import DNS
+import mock
 import time
 import ujson
 from six.moves import urllib
@@ -25,17 +27,25 @@ from six.moves import range
 
 class MITNameTest(TestCase):
     def test_valid_hesiod(self):
-        self.assertEquals(compute_mit_user_fullname("starnine@mit.edu"), "Athena Consulting Exchange User")
-        self.assertEquals(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
+        with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
+            self.assertEquals(compute_mit_user_fullname("starnine@mit.edu"), "Athena Consulting Exchange User")
+        with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
+            self.assertEquals(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
+
     def test_invalid_hesiod(self):
-        self.assertEquals(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
-        self.assertEquals(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
+        with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
+            self.assertEquals(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
+        with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
+            self.assertEquals(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
 
     def test_mailinglist(self):
-        self.assertRaises(ValidationError, not_mit_mailing_list, "1234567890@mit.edu")
-        self.assertRaises(ValidationError, not_mit_mailing_list, "ec-discuss@mit.edu")
+        with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
+            self.assertRaises(ValidationError, not_mit_mailing_list, "1234567890@mit.edu")
+        with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
+            self.assertRaises(ValidationError, not_mit_mailing_list, "ec-discuss@mit.edu")
     def test_notmailinglist(self):
-        self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
+        with mock.patch('DNS.dnslookup', return_value=[['POP IMAP.EXCHANGE.MIT.EDU starnine']]):
+            self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
 class RateLimitTests(AuthedTestCase):
 
