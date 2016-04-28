@@ -55,6 +55,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # see https://github.com/fgrehm/vagrant-lxc/issues/333
         lxc.customize 'aa_allow_incomplete', 1
       end
+      if LXC_VERSION >= "2.0.0"
+        lxc.backingstore = 'dir'
+      end
     end
   end
 
