@@ -3,7 +3,8 @@ from __future__ import absolute_import
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
-from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm
+from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
+    PasswordResetForm
 from django.conf import settings
 
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
@@ -80,6 +81,19 @@ class LoggingSetPasswordForm(SetPasswordForm):
         do_change_password(self.user, self.cleaned_data['new_password1'],
                            log=True, commit=commit)
         return self.user
+
+class ZulipPasswordResetForm(PasswordResetForm):
+    def get_users(self, email):
+        """Given an email, return matching user(s) who should receive a reset.
+
+        This is modified from the original in that it allows non-bot
+        users who don't have a usable password to reset their
+        passwords.
+        """
+        if not password_auth_enabled:
+            return []
+        return UserProfile.objects.filter(email__iexact=email, is_active=True,
+                                          is_bot=False)
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
