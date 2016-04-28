@@ -1,4 +1,4 @@
-git+https://github.com/rwbarton/django.git@59f1fc4c7b65d23fceffd5c87e2b6ea350030c56
+git+https://github.com/zulip/truncated-django.git
 GitPython==0.3.2.1
 Markdown==2.1.1
 Pillow==2.8.2
