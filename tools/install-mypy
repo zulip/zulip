@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# This script installs a python3 virtualenv called 'zulip-py3-venv' in zulip's parent directory.
+# It then installs mypy and some other dependencies into that virtualenv.
+# This script has been written for Ubuntu. If you want to install it on some other distro
+# replace these commands with the corresponding commands for your distro.
+# (for e.g. on Fedora replace apt-get with yum or dnf)
+
+TOOLS_DIR=$(dirname "$0")
+PY3_VENV_PATH="$TOOLS_DIR/../../zulip-py3-venv"
+
+#sudo apt-get install -y python3 python-virtualenv
+
+# create venv if required
+if [ -d "$PY3_VENV_PATH" ]; then
+    echo "found virtualenv $PY3_VENV_PATH"
+else
+    echo "creating virtualenv $PY3_VENV_PATH"
+    virtualenv -p python3 "${ZULIP_PARENT}/zulip-py3-venv"
+fi
+
+# install mypy
+"$PY3_VENV_PATH/bin/pip" install --upgrade pip
+"$PY3_VENV_PATH/bin/pip" install -r "$TOOLS_DIR/py3_test_reqs.txt"

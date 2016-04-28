@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import os
+from os.path import dirname, abspath
+import sys
+import lister
+import argparse
+import subprocess
+import six
+
+exclude="""
+api/integrations/
+api/zulip/__init__.py
+bots/jabber_mirror_backend.py
+bots/zephyr_mirror_backend.py
+docs/conf.py
+puppet/zulip_internal/files/postgresql/pg_backup_and_purge.py
+tools/deprecated/
+tools/lister.py
+zproject/
+zerver/lib/actions.py
+zerver/lib/bugdown/__init__.py
+zerver/lib/bugdown/fenced_code.py
+zerver/lib/statistics.py
+zerver/migrations/
+zerver/models.py
+zerver/tests/
+zerver/views/__init__.py
+zerver/views/messages.py
+zilencer/models.py
+""".split()
+
+parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
+parser.add_argument('targets', nargs='*', default=[],
+                    help="""files and directories to include in the result.
+                    If this is not specified, the current directory is used""")
+parser.add_argument('-m', '--modified', action='store_true', default=False, help='list only modified files')
+parser.add_argument('-a', '--all', dest='all', action='store_true', default=False,
+                    help="""run mypy on all python files, ignoring the exclude list.
+                    This is useful if you have to find out which files fail mypy check.""")
+args = parser.parse_args()
+if args.all:
+    exclude = []
+
+python_files = lister.list_files(targets=args.targets, ftypes=['py'], use_shebang=False,
+                                 modified_only=args.modified, exclude=exclude)
+
+# Use zulip-py3-venv's mypy if it's available and we're on python 2
+BASE_DIR = dirname(dirname(abspath(__file__)))
+PY3_VENV_DIR = os.path.join(dirname(BASE_DIR), "zulip-py3-venv")
+MYPY_VENV_PATH = os.path.join(PY3_VENV_DIR, "bin", "mypy")
+if six.PY2 and os.path.exists(MYPY_VENV_PATH):
+    mypy_command = MYPY_VENV_PATH
+    print("Using mypy from", mypy_command)
+else:
+    mypy_command = "mypy"
+
+if python_files:
+    rc = subprocess.call([mypy_command, "--silent", "--py2", "--check-untyped-defs"] + python_files)
+    if not rc:
+        print("The mypy static type checker for python detected no errors!")
+    else:
+        print("\nThe mypy static type checker for Python threw some errors,")
+        print("which indicates a bug in your code or incorrect type annotations.")
+        print("Please see docs/mypy.md for details on how Zulip is using mypy")
+        print("to find bugs and how to debug the issue.")
+    sys.exit(rc)
+else:
+    print("There are no files to run mypy on.")

@@ -1,0 +1,2 @@
+six==1.10.0
+git+https://github.com/python/mypy.git@5d2dfce8cf6b9a0a7ce8fe8e3cb5866094459f8c
