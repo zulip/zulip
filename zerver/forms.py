@@ -7,6 +7,8 @@ from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.conf import settings
 
+import logging
+
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     completely_open, resolve_email_to_domain, get_realm, get_unique_open_realm
 from zerver.lib.actions import do_change_password, is_inactive
@@ -91,9 +93,13 @@ class ZulipPasswordResetForm(PasswordResetForm):
         passwords.
         """
         if not password_auth_enabled:
+            logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
             return []
-        return UserProfile.objects.filter(email__iexact=email, is_active=True,
-                                          is_bot=False)
+        result = UserProfile.objects.filter(email__iexact=email, is_active=True,
+                                            is_bot=False)
+        if len(result) == 0:
+            logging.info("Password reset attempted for %s; no active account." % (email,))
+        return result
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
