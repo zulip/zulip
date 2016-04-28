@@ -15,6 +15,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
+from zerver.lib.camo import get_camo_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -229,7 +230,8 @@ class RealmEmoji(models.Model):
 def get_realm_emoji_uncached(realm):
     d = {}
     for row in RealmEmoji.objects.filter(realm=realm):
-        d[row.name] = row.img_url
+        d[row.name] = dict(source_url=row.img_url,
+                           display_url=get_camo_url(row.img_url))
     return d
 
 def flush_realm_emoji(sender, **kwargs):

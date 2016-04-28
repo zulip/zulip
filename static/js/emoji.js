@@ -17,8 +17,8 @@ _.each(emoji_names, function (value) {
 exports.update_emojis = function update_emojis(realm_emojis) {
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
-    _.each(realm_emojis, function (url, name) {
-        exports.emojis.push({emoji_name:name, emoji_url: url});
+    _.each(realm_emojis, function (data, name) {
+        exports.emojis.push({emoji_name:name, emoji_url: data.display_url});
     });
     exports.emojis_by_name = {};
     _.each(exports.emojis, function (emoji) {

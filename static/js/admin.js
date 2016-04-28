@@ -77,8 +77,9 @@ function populate_streams (streams_data) {
 exports.populate_emoji = function (emoji_data) {
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
-    _.each(emoji_data, function (url, name) {
-        emoji_table.append(templates.render('admin_emoji_list', {emoji: {name: name, url: url}}));
+    _.each(emoji_data, function (data, name) {
+        emoji_table.append(templates.render('admin_emoji_list', {emoji: {name: name, source_url: data.source_url,
+                                                                         display_url: data.display_url}}));
     });
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };

@@ -733,7 +733,8 @@ function render(template_name, args) {
     var args = {
         emoji: {
             "name": "MouseFace",
-            "url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png"
+            "display_url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
+            "source_url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png"
         }
     };
 

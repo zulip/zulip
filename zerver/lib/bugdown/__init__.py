@@ -553,12 +553,12 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        realm_emoji = {} # type: Dict[str, str]
+        realm_emoji = {} # type: Dict[str, Dict[str, str]]
         if db_data is not None:
             realm_emoji = db_data['emoji']
 
         if current_message and name in realm_emoji:
-            return make_emoji(name, realm_emoji[name], orig_syntax)
+            return make_emoji(name, realm_emoji[name]['display_url'], orig_syntax)
         elif name in emoji_list:
             src = 'static/third/gemoji/images/emoji/%s.png' % (name)
             return make_emoji(name, src, orig_syntax)

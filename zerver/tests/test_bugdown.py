@@ -10,7 +10,7 @@ from zerver.lib.actions import (
     do_remove_realm_emoji,
     get_realm,
 )
-
+from zerver.lib.camo import get_camo_url
 from zerver.models import (
     get_user_profile_by_email,
     Message,
@@ -314,7 +314,7 @@ class BugdownTest(TestCase):
 
     def test_realm_emoji(self):
         def emoji_img(name, url):
-            return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, url, name)
+            return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, get_camo_url(url), name)
 
         zulip_realm = get_realm('zulip.com')
         url = "https://zulip.com/test_realm_emoji.png"
