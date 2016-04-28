@@ -27,7 +27,8 @@ from django.core import mail
 from django.conf import settings
 
 from zerver.lib.avatar  import gravatar_hash
-from zerver.lib.bugdown import codehilite, fenced_code
+from zerver.lib.bugdown import codehilite
+from zerver.lib.bugdown import fenced_code # type: ignore # excluding fenced_code from checks
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.timeout import timeout, TimeoutExpired

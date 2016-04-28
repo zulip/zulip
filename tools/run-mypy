@@ -21,14 +21,10 @@ tools/deprecated/
 tools/lister.py
 zproject/
 zerver/lib/actions.py
-zerver/lib/bugdown/__init__.py
 zerver/lib/bugdown/fenced_code.py
 zerver/lib/statistics.py
 zerver/migrations/
-zerver/models.py
 zerver/tests/
-zerver/views/__init__.py
-zerver/views/messages.py
 zilencer/models.py
 """.split()
 
