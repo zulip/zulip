@@ -353,13 +353,13 @@ conversion tools and some manual work.  In order to avoid regressions
 in that compatibility as we continue to develop new features in zulip,
 we have a special tool, `tools/check-py3`, which checks all code for
 Python 3 syntactic compatibility by running a subset of the automated
-migration tools and checking and checking if they trigger any changes.
+migration tools and checking if they trigger any changes.
 `tools/check-py3` is run automatically in Zulip's Travis CI tests to
 avoid any regressions, but is not included in `test-all` since it is
 quite slow.
 
 To run `tooks/check-py3`, you need to install the `modernize` and
-`futurize` python packages (which are in the development environment's
+`future` python packages (which are in the development environment's
 `requirements.txt` file).
 
 To run `check-py3` on just the python files in a particular directory,
