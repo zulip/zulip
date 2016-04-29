@@ -34,6 +34,11 @@ def update_fts_columns(cursor):
     cursor.execute("SELECT id, message_id FROM fts_update_log;")
     ids = []
     for (id, message_id) in cursor.fetchall():
+        if settings.USING_PGROONGA:
+            cursor.execute("UPDATE zerver_message SET "
+                           "search_pgroonga = "
+                           "subject || ' ' || rendered_content "
+                           "WHERE id = %s", (message_id,))
         cursor.execute("UPDATE zerver_message SET "
                        "search_tsvector = to_tsvector('zulip.english_us_search', "
                        "subject || rendered_content) "
@@ -59,8 +64,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 try:
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
     from django.conf import settings
-    if settings.USING_PGROONGA:
-        exit()
     remote_postgres_host = settings.REMOTE_POSTGRES_HOST
 except ImportError as e:
     # process_fts_updates also supports running locally on a remote

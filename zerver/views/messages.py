@@ -249,8 +249,7 @@ class NarrowBuilder(object):
                                                   keywords).label("content_matches"))
         query = query.column(match_positions_byte(column("subject"),
                                                   keywords).label("subject_matches"))
-        condition = or_(column("subject").op("@@")(operand),
-                        column("rendered_content").op("@@")(operand))
+        condition = column("search_pgroonga").op("@@")(operand)
         return query.where(maybe_negate(condition))
 
     def _by_search_tsearch(self, query, operand, maybe_negate):

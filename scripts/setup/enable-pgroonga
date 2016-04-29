@@ -15,9 +15,14 @@ CREATE EXTENSION pgroonga;
 GRANT USAGE ON SCHEMA pgroonga TO zulip;
 ALTER ROLE zulip SET search_path TO zulip,public,pgroonga,pg_catalog;
 
-CREATE INDEX zerver_message_search_pgroonga ON zulip.zerver_message
-  USING pgroonga(subject pgroonga.varchar_full_text_search_ops,
-                 rendered_content);
+SET search_path = zulip,public,pgroonga,pg_catalog;
+
+ALTER TABLE zerver_message ADD COLUMN search_pgroonga text;
+
+UPDATE zerver_message SET search_pgroonga = subject || ' ' || rendered_content;
+
+CREATE INDEX zerver_message_search_pgroonga ON zerver_message
+  USING pgroonga(search_pgroonga);
 EOF
 )
 

@@ -10,6 +10,13 @@ POSTGRES_USER="${POSTGRES_USER:-postgres}"
 cd /
 
 su "$POSTGRES_USER" -c 'psql zulip' <<EOF
+SET search_path = zulip,public,pgroonga,pg_catalog;
+
+DROP INDEX zerver_message_search_pgroonga;
+ALTER TABLE zerver_message DROP COLUMN search_pgroonga;
+
+SET search_path = zulip,public;
+
 ALTER ROLE zulip SET search_path TO zulip,public;
 
 DROP EXTENSION pgroonga CASCADE;
