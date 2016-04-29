@@ -49,7 +49,7 @@ You [install PGroonga](http://pgroonga.github.io/install/).
 
 You enable PGroonga by `scripts/setup/enable-pgroonga`:
 
-    su zulip -c /home/zulip/deployments/current/scripts/setup/enable-pgroonga
+    /home/zulip/deployments/current/scripts/setup/enable-pgroonga
 
 You set `True` to `USING_PGROONGA` in `/etc/zulip/settings.py`:
 
@@ -90,6 +90,6 @@ You restart Zulip:
 
 You enable PGroonga by `scripts/setup/disable-pgroonga`:
 
-    su zulip -c /home/zulip/deployments/current/scripts/setup/disable-pgroonga
+    /home/zulip/deployments/current/scripts/setup/disable-pgroonga
 
 Now, full-text search feature based on PGroonga is disabled.
