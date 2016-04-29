@@ -476,8 +476,8 @@ restart if it crashes, and `upgrade-zulip` will take care of running
 migrations and then cleanly restaring the server for you).
 
 [django-runserver]: https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port
-[new-feature-tutorial]: http://zulip.readthedocs.org/en/latest/new-feature-tutorial.html
-[testing-docs]: http://zulip.readthedocs.org/en/latest/testing.html
+[new-feature-tutorial]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
+[testing-docs]: http://zulip.readthedocs.io/en/latest/testing.html
 
 Running the test suite
 ======================
@@ -485,7 +485,7 @@ Running the test suite
 For more details, especially on how to write tests, check out the
 [detailed testing docs][tdocs].
 
-[tdocs]: http://zulip.readthedocs.org/en/latest/testing.html
+[tdocs]: http://zulip.readthedocs.io/en/latest/testing.html
 
 To run all the tests, do this:
 ```

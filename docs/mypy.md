@@ -18,7 +18,7 @@ def get_user_profile_by_email(email):
 You can learn more about it at:
 
 * [Python 2 type annotation syntax in PEP 484](https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code)
-* [Using mypy with Python 2 code](http://mypy.readthedocs.org/en/latest/python2.html)
+* [Using mypy with Python 2 code](http://mypy.readthedocs.io/en/latest/python2.html)
 
 The mypy type checker is run automatically as part of Zulip's Travis
 CI testing process.

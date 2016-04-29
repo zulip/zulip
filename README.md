@@ -70,10 +70,10 @@ repositories.
 contributing!
 
 [cla]: https://opensource.dropbox.com/cla/
-[doc]: https://zulip.readthedocs.org/
-[doc-commit-style]: http://zulip.readthedocs.org/en/latest/code-style.html#commit-messages
-[doc-dirstruct]: http://zulip.readthedocs.org/en/latest/directory-structure.html
-[doc-newfeat]: http://zulip.readthedocs.org/en/latest/new-feature-tutorial.html
+[doc]: https://zulip.readthedocs.io/
+[doc-commit-style]: http://zulip.readthedocs.io/en/latest/code-style.html#commit-messages
+[doc-dirstruct]: http://zulip.readthedocs.io/en/latest/directory-structure.html
+[doc-newfeat]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
 [doc-test]: https://github.com/zulip/zulip/blob/master/README.dev.md#running-the-test-suite
 [gg-devel]: https://groups.google.com/forum/#!forum/zulip-devel
 [gh-issues]: https://github.com/zulip/zulip/issues
