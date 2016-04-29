@@ -52,11 +52,13 @@ developer documentation on [Read The Docs][doc].  Recommended reading
 for new contributors includes the [directory structure][doc-dirstruct]
 and [new feature tutorial][doc-newfeat].
 
-* **Mailing list and bug tracker**. Zulip has a [development
+* **Mailing lists and bug tracker**. Zulip has a [development
 discussion mailing list][gg-devel] and uses [GitHub issues
-][gh-issues].  Feel free to send any questions or suggestions of areas
-where you'd love to see more documentation to the list!  Please report
-any security issues you discover to support@zulip.com.
+][gh-issues].  There are also lists for the [Android][email-android]
+and [iOS][email-ios] apps.  Feel free to send any questions or
+suggestions of areas where you'd love to see more documentation to the
+relevant list!  Please report any security issues you discover to
+zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
 app; the [desktop][], [Android][], and [iOS][] apps are separate
@@ -78,6 +80,8 @@ contributing!
 [desktop]: https://github.com/zulip/zulip-desktop
 [android]: https://github.com/zulip/zulip-android
 [ios]: https://github.com/zulip/zulip-ios
+[email-android]: https://groups.google.com/forum/#!forum/zulip-android
+[email-ios]: https://groups.google.com/forum/#!forum/zulip-ios
 [transifex]: https://www.transifex.com/zulip/zulip/
 
 How to get involved with contributing to Zulip
