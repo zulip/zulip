@@ -257,6 +257,7 @@ MIDDLEWARE_CLASSES = (
     'zerver.middleware.FlushDisplayRecipientCache',
     'django.middleware.common.CommonMiddleware',
     'zerver.middleware.SessionHostDomainMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
