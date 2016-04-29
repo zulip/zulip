@@ -62,6 +62,11 @@ any security issues you discover to support@zulip.com.
 app; the [desktop][], [Android][], and [iOS][] apps are separate
 repositories.
 
+* **Translations**.  Zulip is in the process of being translated into
+10+ languages, and we love contributions to our translations.  See our
+[translating documentation](transifex) if you're interested in
+contributing!
+
 [cla]: https://opensource.dropbox.com/cla/
 [doc]: https://zulip.readthedocs.org/
 [doc-commit-style]: http://zulip.readthedocs.org/en/latest/code-style.html#commit-messages
@@ -73,6 +78,7 @@ repositories.
 [desktop]: https://github.com/zulip/zulip-desktop
 [android]: https://github.com/zulip/zulip-android
 [ios]: https://github.com/zulip/zulip-ios
+[transifex]: https://www.transifex.com/zulip/zulip/
 
 How to get involved with contributing to Zulip
 ==============================================
