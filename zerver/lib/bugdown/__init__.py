@@ -290,12 +290,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # Failed to follow link to find an image preview so
                 # use placeholder image and guess filename
                 if image_info is None:
-                    image_info = dict()
-                    (_, filename) = os.path.split(parsed_url.path)
-                    image_info["title"] = filename
-                    image_info["desc"] = ""
-                    # Dropbox's "unable to preview" image
-                    image_info["image"] = "https://dt8kf6553cww8.cloudfront.net/static/images/preview_fail-vflc3IDxf.png"
+                    return None
 
                 image_info["is_image"] = is_image
                 return image_info

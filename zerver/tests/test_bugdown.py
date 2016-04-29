@@ -221,7 +221,7 @@ class BugdownTest(TestCase):
         msg = "https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
         with mock.patch('zerver.lib.bugdown.fetch_open_graph_image', return_value=None):
             converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>\n<div class="message_inline_image"><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="ROmr9K1XYtmpneM"><img src="https://dt8kf6553cww8.cloudfront.net/static/images/preview_fail-vflc3IDxf.png"></a></div>')
+        self.assertEqual(converted, '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>')
 
     def test_twitter_id_extraction(self):
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
