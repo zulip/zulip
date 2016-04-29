@@ -86,21 +86,28 @@ have your own project idea in mind or want to get some experience with
 working on Zulip before embarking on a larger project you have in
 mind:
 
-* [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
-  Smaller projects that could be a great first contribution.
 * [Integrations](https://github.com/zulip/zulip/labels/integrations).
   Integrate Zulip with another piece of software and contribute it
-  back to the community!  Writing an integration can be a great
-  starter project.  There's detailed documentation on the best way
-  to write integrations in [docs/integration-guide.md](docs/integration-guide.md).
+  back to the community!  Writing an integration can be a great first
+  contribution.  There's detailed documentation on how to write
+  integrations in [the Zulip integration writing
+  guide](https://zulip.readthedocs.io/en/latest/integration-guide.html).
+
+* [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
+  Smaller projects that might be a great first contribution.
+
 * [Documentation](https://github.com/zulip/zulip/labels/documentation):
   The Zulip project loves contributions of new documentation.
+
 * [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
   A broader list of projects that nobody is currently working on.
+
 * [Platform support](https://github.com/zulip/zulip/labels/Platform%20support):
   These are open issues about making it possible to install Zulip on a
   wider range of platforms.
+
 * [Bugs](https://github.com/zulip/zulip/labels/bug): Open bugs.
+
 * [Feature requests](https://github.com/zulip/zulip/labels/enhancement):
   Browsing this list can be a great way to find feature ideas to
   implement that other Zulip users are excited about.
@@ -136,7 +143,7 @@ looking at the new feature tutorial and coding style guidelines on
 ReadTheDocs.
 
 Feedback on how to make this development process more efficient, fun,
-and friendly to new contributors is very welcome!  Just shoot an email
+and friendly to new contributors is very welcome!  Just send an email
 to the Zulip Developers list with your thoughts.
 
 License
