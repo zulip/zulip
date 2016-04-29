@@ -36,23 +36,22 @@ application server instead.
 
 Zulip also supports [PGroonga](http://pgroonga.github.io/). PGroonga
 is a PostgreSQL extension that provides full-text search
-feature. PGroonga supports all languages including Japanese, Chinese
-and so on.
+feature. PostgreSQL's built-in full-text search feature supports only
+one language at a time. PGroonga supports all languages including
+Japanese, Chinese and so on at a time.
+
+### How to enable full-text search against all languages
 
 This section describes how to enable full-text search feature based on
 PGroonga.
 
-First, you [install PGroonga](http://pgroonga.github.io/install/).
+You [install PGroonga](http://pgroonga.github.io/install/).
 
-Then, you grant `USAGE` privilege on `pgroonga` schema to `zulip`
-user:
+You enable PGroonga by `scripts/setup/enable-pgroonga`:
 
-    GRANT USAGE ON SCHEMA pgroonga TO zulip;
+    su zulip -c /home/zulip/deployments/current/scripts/setup/enable-pgroonga
 
-See also:
-[GRANT USAGE ON SCHEMA pgroonga](http://pgroonga.github.io/reference/grant-usage-on-schema-pgroonga.html)
-
-Then, you set `True` to `USING_PGROONGA` in `local_settings.py`.
+You set `True` to `USING_PGROONGA` in `/etc/zulip/settings.py`:
 
 Before:
 
@@ -62,6 +61,35 @@ After:
 
     USING_PGROONGA = True
 
-TODO: Describe how to enable PGroonga on installed Zulip.
+You restart Zulip:
+
+    su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
 Now, you can use full-text search against all languages.
+
+### How to disable full-text search against all languages
+
+This section describes how to disable full-text search feature based
+on PGroonga.
+
+You set `False` to `USING_PGROONGA` in
+`local_settings.py`. `USING_PGROONGA` is `False` by default. So you
+just comment it out:
+
+Before:
+
+    USING_PGROONGA = True
+
+After:
+
+    # USING_PGROONGA = True
+
+You restart Zulip:
+
+    su zulip -c /home/zulip/deployments/current/scripts/restart-server
+
+You enable PGroonga by `scripts/setup/disable-pgroonga`:
+
+    su zulip -c /home/zulip/deployments/current/scripts/setup/disable-pgroonga
+
+Now, full-text search feature based on PGroonga is disabled.
