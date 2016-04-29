@@ -362,13 +362,17 @@ proxy in the environment as follows:
  npm config set https-proxy http://proxy_host:port
  ```
 
-Using Docker
--------------
+Using Docker (experimental)
+---------------------------
 
-You can also use Docker to develop, first you need to install Docker
-in your development machine following the
-[instructions][docker-install].
-Some other interesting links for somebody new in Docker are:
+The docker instructions for development are experimental, so they may
+have bugs.  If you try them and run into any issues, please report
+them!
+
+You can also use Docker to run a Zulip development environment.
+First, you need to install Docker in your development machine
+following the [instructions][docker-install].  Some other interesting
+links for somebody new in Docker are:
 
 * [Get Started](https://docs.docker.com/linux/started/)
 * [Understand the architecture](https://docs.docker.com/engine/introduction/understanding-docker/)
