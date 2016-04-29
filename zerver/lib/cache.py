@@ -8,6 +8,8 @@ from django.core.cache import get_cache
 from django.conf import settings
 from django.db.models import Q
 
+from typing import Any, Callable, Iterable, Optional
+
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import time
 import base64
@@ -22,16 +24,20 @@ remote_cache_total_time = 0.0
 remote_cache_total_requests = 0
 
 def get_remote_cache_time():
+    # type: () -> float
     return remote_cache_total_time
 
 def get_remote_cache_requests():
+    # type: () -> int
     return remote_cache_total_requests
 
 def remote_cache_stats_start():
+    # type: () -> None
     global remote_cache_time_start
     remote_cache_time_start = time.time()
 
 def remote_cache_stats_finish():
+    # type: () -> None
     global remote_cache_total_time
     global remote_cache_total_requests
     global remote_cache_time_start
@@ -39,6 +45,7 @@ def remote_cache_stats_finish():
     remote_cache_total_time += (time.time() - remote_cache_time_start)
 
 def get_or_create_key_prefix():
+    # type: () -> str
     if settings.TEST_SUITE:
         # This sets the prefix mostly for the benefit of the JS tests.
         # The Python tests overwrite KEY_PREFIX on each test.
@@ -69,18 +76,21 @@ def get_or_create_key_prefix():
 
     return prefix
 
-KEY_PREFIX = get_or_create_key_prefix()
+KEY_PREFIX = get_or_create_key_prefix() # type: str
 
 def bounce_key_prefix_for_testing(test_name):
+    # type: (str) -> None
     global KEY_PREFIX
     KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
 
 def get_cache_backend(cache_name):
+    # type: (str) -> get_cache
     if cache_name is None:
         return djcache
     return get_cache(cache_name)
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
+    # type: ignore # CANNOT_INFER_LAMBDA_TYPE issue with models.py
     """Decorator which applies Django caching to a function.
 
        Decorator argument is a function which computes a cache key
@@ -89,8 +99,10 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
        other uses of caching."""
 
     def decorator(func):
+        # type: (Callable[..., Any]) -> (Callable[..., Any])
         @wraps(func)
         def func_with_caching(*args, **kwargs):
+            # type: (*Any, **Any) -> Callable[..., Any]
             key = keyfunc(*args, **kwargs)
 
             val = cache_get(key, cache_name=cache_name)
@@ -123,6 +135,7 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
     return decorator
 
 def cache_set(key, val, cache_name=None, timeout=None):
+    # type: (str, Any, Optional[str], Optional[int]) -> Any
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
@@ -130,6 +143,7 @@ def cache_set(key, val, cache_name=None, timeout=None):
     return ret
 
 def cache_get(key, cache_name=None):
+    # type: (str, Optional[str]) -> Any
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.get(KEY_PREFIX + key)
@@ -137,6 +151,7 @@ def cache_get(key, cache_name=None):
     return ret
 
 def cache_get_many(keys, cache_name=None):
+    # type: (List[str], Optional[str]) -> Dict[str, Any]
     keys = [KEY_PREFIX + key for key in keys]
     remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
@@ -144,6 +159,7 @@ def cache_get_many(keys, cache_name=None):
     return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
 
 def cache_set_many(items, cache_name=None, timeout=None):
+    # type: (Dict[str, Any], Optional[str], Optional[int]) -> Any
     new_items = {}
     for key in items:
         new_items[KEY_PREFIX + key] = items[key]
@@ -154,11 +170,13 @@ def cache_set_many(items, cache_name=None, timeout=None):
     return ret
 
 def cache_delete(key, cache_name=None):
+    # type: (str, Optional[str]) -> None
     remote_cache_stats_start()
     get_cache_backend(cache_name).delete(KEY_PREFIX + key)
     remote_cache_stats_finish()
 
 def cache_delete_many(items, cache_name=None):
+    # type: (Iterable[str], Optional[str]) -> None
     remote_cache_stats_start()
     get_cache_backend(cache_name).delete_many(
         KEY_PREFIX + item for item in items)
@@ -183,7 +201,8 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                               setter=lambda obj: obj,
                               id_fetcher=lambda obj: obj.id,
                               cache_transformer=lambda obj: obj):
-    cache_keys = {}
+    # type: (Callable[[Any], str], Callable[[List[int]], List[Any]], List[int], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any]) -> Dict[int, Any]
+    cache_keys = {} # type: Dict[int, str]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
     cached_objects = cache_get_many([cache_keys[object_id]
@@ -194,7 +213,7 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
 
-    items_for_remote_cache = {}
+    items_for_remote_cache = {} # type: Dict[str, Any]
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
@@ -206,6 +225,7 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                 if cache_keys[object_id] in cached_objects)
 
 def cache(func):
+    #type: ignore # CANNOT_INFER_FUNC_TYPE
     """Decorator which applies Django caching to a function.
 
        Uses a key based on the function's name, filename, and
@@ -215,6 +235,7 @@ def cache(func):
 
     @wraps(func)
     def keyfunc(*args, **kwargs):
+        #type: (*Any, **Any) -> str
         # Django complains about spaces because memcached rejects them
         key = func_uniqifier + repr((args, kwargs))
         return key.replace('-', '--').replace(' ', '-s')
@@ -222,30 +243,38 @@ def cache(func):
     return cache_with_key(keyfunc)(func)
 
 def message_cache_key(message_id):
+    # type: (int) -> str
     return "message:%d" % (message_id,)
 
 def display_recipient_cache_key(recipient_id):
+    # type: (int) -> str
     return "display_recipient_dict:%d" % (recipient_id,)
 
 def user_profile_by_email_cache_key(email):
+    # type: (str) -> str
     # See the comment in zerver/lib/avatar.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
     return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
 def user_profile_by_id_cache_key(user_profile_id):
+    # type: (int) -> str
     return "user_profile_by_id:%s" % (user_profile_id,)
 
 def cache_save_user_profile(user_profile):
+    # type: (Any) -> None
     cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
 
 def active_user_dicts_in_realm_cache_key(realm):
+    # type: (Any) -> str
     return "active_user_dicts_in_realm:%s" % (realm.id,)
 
 def active_bot_dicts_in_realm_cache_key(realm):
+    # type: (Any) -> str
     return "active_bot_dicts_in_realm:%s" % (realm.id,)
 
 def get_stream_cache_key(stream_name, realm):
+    # type: (str, Any) -> str
     from zerver.models import Realm
     if isinstance(realm, Realm):
         realm_id = realm.id
@@ -255,6 +284,7 @@ def get_stream_cache_key(stream_name, realm):
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 def update_user_profile_caches(user_profiles):
+    # type: (Any) -> Any
     items_for_remote_cache = {}
     for user_profile in user_profiles:
         items_for_remote_cache[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
@@ -264,6 +294,7 @@ def update_user_profile_caches(user_profiles):
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
 def flush_user_profile(sender, **kwargs):
+    # type: (Any, **Any) -> None
     user_profile = kwargs['instance']
     update_user_profile_caches([user_profile])
 
@@ -289,6 +320,7 @@ def flush_user_profile(sender, **kwargs):
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
 def flush_realm(sender, **kwargs):
+    # type: (Any, **Any) -> None
     realm = kwargs['instance']
     users = realm.get_active_users()
     update_user_profile_caches(users)
@@ -299,11 +331,13 @@ def flush_realm(sender, **kwargs):
         cache_delete(realm_alert_words_cache_key(realm))
 
 def realm_alert_words_cache_key(realm):
+    # type: (Any) -> str
     return "realm_alert_words:%s" % (realm.domain,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
 def flush_stream(sender, **kwargs):
+    # type: (Any, **Any) -> None
     from zerver.models import UserProfile
     stream = kwargs['instance']
     items_for_remote_cache = {}
