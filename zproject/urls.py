@@ -100,7 +100,6 @@ if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
 
 urlpatterns += patterns('zerver.views',
     # These are json format views used by the web client.  They require a logged in browser.
-    url(r'^json/get_public_streams$',       'streams.json_get_public_streams'),
     url(r'^json/rename_stream$',            'streams.json_rename_stream'),
     url(r'^json/make_stream_public$',       'streams.json_make_stream_public'),
     url(r'^json/make_stream_private$',      'streams.json_make_stream_private'),
@@ -112,7 +111,6 @@ urlpatterns += patterns('zerver.views',
     url(r'^json/subscriptions/remove$',     'streams.json_remove_subscriptions'),
     url(r'^json/subscriptions/exists$',     'streams.json_stream_exists'),
     url(r'^json/subscriptions/property$',   'streams.json_subscription_property'),
-    url(r'^json/get_subscribers$',          'streams.json_get_subscribers'),
     url(r'^json/fetch_api_key$',            'json_fetch_api_key'),
     url(r'^json/get_active_statuses$',      'json_get_active_statuses'),
     url(r'^json/tutorial_send_message$',    'tutorial.json_tutorial_send_message'),

@@ -494,8 +494,9 @@ exports.setup_page = function () {
     }
 
     if (should_list_all_streams()) {
-        var req = channel.post({
-            url:      '/json/get_public_streams',
+        var req = channel.get({
+            url: '/json/streams',
+            data: {"include_subscribed": false},
             idempotent: true,
             timeout:  10*1000,
             success: populate_and_fill,
@@ -1053,10 +1054,9 @@ $(function () {
 
         loading.make_indicator(indicator_elem);
 
-        channel.post({
-            url: "/json/get_subscribers",
+        channel.get({
+            url: "/json/streams" + encodeURIComponent(stream) + "/members",
             idempotent: true,
-            data: {stream: stream},
             success: function (data) {
                 loading.destroy_indicator(indicator_elem);
                 var subscribers = _.map(data.subscribers, function (elem) {
