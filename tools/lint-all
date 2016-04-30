@@ -147,6 +147,10 @@ python_rules = [
     # This rule is constructed with + to avoid triggering on itself
     {'pattern': " =" + '[^ =>~"]',
      'description': 'Missing whitespace after "="'},
+    {'pattern': '":\w[^"]*$',
+     'description': 'Missing whitespace after ":"'},
+    {'pattern': "':\w[^']*$",
+     'description': 'Missing whitespace after ":"'},
     # This next check could have false positives, but it seems pretty
     # rare; if we find any, they can be added to the exclude list for
     # this rule.

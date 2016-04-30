@@ -179,7 +179,8 @@ def api_key_only_webhook_view(view_func):
         request.user = user_profile
         request._email = user_profile.email
         process_client(request, user_profile)
-        rate_limit_user(request, user_profile, domain='all')
+        if settings.RATE_LIMITING:
+            rate_limit_user(request, user_profile, domain='all')
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 

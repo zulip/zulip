@@ -59,7 +59,7 @@ These instructions should be followed as root.
   installation process.  You can get a free properly signed
   certificate from the new [Letsencrypt](https://letsencrypt.org/)
   service, by following their [nginx
-  instructions](https://letsencrypt.readthedocs.org/en/latest/using.html#nginx).
+  instructions](https://letsencrypt.readthedocs.io/en/latest/using.html#nginx).
 
   When you do get an actual certificate, you will need to install as
   /etc/ssl/certs/zulip.combined-chain.crt the full certificate

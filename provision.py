@@ -18,6 +18,7 @@ SUPPORTED_PLATFORMS = {
 }
 
 VENV_PATH = "/srv/zulip-venv"
+PY3_VENV_PATH = "/srv/zulip-py3-venv"
 ZULIP_PATH = os.path.dirname(os.path.abspath(__file__))
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
@@ -115,7 +116,12 @@ def main():
     run(["sudo", "mkdir", "-p", VENV_PATH])
     run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), VENV_PATH])
 
+    run(["sudo", "rm", "-rf", PY3_VENV_PATH])
+    run(["sudo", "mkdir", "-p", PY3_VENV_PATH])
+    run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), PY3_VENV_PATH])
+
     run(["virtualenv", VENV_PATH])
+    run(["virtualenv", "-p", "python3", PY3_VENV_PATH])
 
     # Put Python virtualenv activation in our .bash_profile.
     with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
@@ -124,10 +130,20 @@ def main():
             "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
         ])
 
-    # Switch current Python context to the virtualenv.
+    # Switch current Python context to the python3 virtualenv
+    activate_this = os.path.join(PY3_VENV_PATH, "bin", "activate_this.py")
+    execfile(activate_this, dict(__file__=activate_this))
+
+    run(["pip", "install", "--upgrade", "pip"])
+    # install requirement
+    run(["pip", "install", "--no-deps", "--requirement",
+         os.path.join(ZULIP_PATH, "tools", "py3_test_reqs.txt")])
+
+    # Switch current Python context to the python2 virtualenv.
     activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
     execfile(activate_this, dict(__file__=activate_this))
 
+    run(["pip", "install", "--upgrade", "pip"])
     run(["pip", "install", "--no-deps", "--requirement",
          os.path.join(ZULIP_PATH, "requirements.txt")])
 

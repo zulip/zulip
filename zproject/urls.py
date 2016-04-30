@@ -33,9 +33,10 @@ urlpatterns = patterns('',
 
     url(r'^accounts/password/reset/$', 'django.contrib.auth.views.password_reset',
         {'post_reset_redirect': '/accounts/password/reset/done/',
-            'template_name': 'zerver/reset.html',
-            'email_template_name': 'registration/password_reset_email.txt',
-            }),
+         'template_name': 'zerver/reset.html',
+         'email_template_name': 'registration/password_reset_email.txt',
+         'password_reset_form': zerver.forms.ZulipPasswordResetForm,
+        }),
     url(r'^accounts/password/reset/done/$', 'django.contrib.auth.views.password_reset_done',
         {'template_name': 'zerver/reset_emailed.html'}),
     url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
@@ -99,7 +100,6 @@ if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
 
 urlpatterns += patterns('zerver.views',
     # These are json format views used by the web client.  They require a logged in browser.
-    url(r'^json/get_public_streams$',       'streams.json_get_public_streams'),
     url(r'^json/rename_stream$',            'streams.json_rename_stream'),
     url(r'^json/make_stream_public$',       'streams.json_make_stream_public'),
     url(r'^json/make_stream_private$',      'streams.json_make_stream_private'),
@@ -141,21 +141,24 @@ urlpatterns += patterns('zerver.views',
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
     url(r'^api/v1/fetch_google_client_id$', 'api_fetch_google_client_id'),
 
-    # These are integration-specific web hook callbacks
+    # Sorted integration-specific webhook callbacks.
     url(r'^api/v1/external/beanstalk$',     'webhooks.beanstalk.api_beanstalk_webhook'),
+    url(r'^api/v1/external/bitbucket$',     'webhooks.bitbucket.api_bitbucket_webhook'),
+    url(r'^api/v1/external/codeship',       'webhooks.codeship.api_codeship_webhook'),
+    url(r'^api/v1/external/desk$',          'webhooks.deskdotcom.api_deskdotcom_webhook'),
+    url(r'^api/v1/external/freshdesk$',     'webhooks.freshdesk.api_freshdesk_webhook'),
     url(r'^api/v1/external/github$',        'webhooks.github.api_github_landing'),
     url(r'^api/v1/external/jira$',          'webhooks.jira.api_jira_webhook'),
-    url(r'^api/v1/external/pivotal$',       'webhooks.pivotal.api_pivotal_webhook'),
     url(r'^api/v1/external/newrelic$',      'webhooks.newrelic.api_newrelic_webhook'),
-    url(r'^api/v1/external/bitbucket$',     'webhooks.bitbucket.api_bitbucket_webhook'),
-    url(r'^api/v1/external/desk$',          'webhooks.deskdotcom.api_deskdotcom_webhook'),
-    url(r'^api/v1/external/stash$',         'webhooks.stash.api_stash_webhook'),
-    url(r'^api/v1/external/freshdesk$',     'webhooks.freshdesk.api_freshdesk_webhook'),
-    url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
     url(r'^api/v1/external/pagerduty$',     'webhooks.pagerduty.api_pagerduty_webhook'),
-    url(r'^api/v1/external/travis$',        'webhooks.travis.api_travis_webhook'),
     url(r'^api/v1/external/pingdom$',       'webhooks.pingdom.api_pingdom_webhook'),
+    url(r'^api/v1/external/pivotal$',       'webhooks.pivotal.api_pivotal_webhook'),
+    url(r'^api/v1/external/stash$',         'webhooks.stash.api_stash_webhook'),
+    url(r'^api/v1/external/taiga$',         'webhooks.taiga.api_taiga_webhook'),
+    url(r'^api/v1/external/teamcity$',      'webhooks.teamcity.api_teamcity_webhook'),
+    url(r'^api/v1/external/travis$',        'webhooks.travis.api_travis_webhook'),
     url(r'^api/v1/external/yo$',            'webhooks.yo.api_yo_app_webhook'),
+    url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
 
     url(r'^user_uploads/(?P<realm_id>(\d*|unk))/(?P<filename>.*)', 'get_uploaded_file'),
 )
@@ -186,7 +189,12 @@ v1_api_and_json_patterns = patterns('zerver.views',
 
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'generate_204'),
-
+) + patterns('zerver.views.realm_emoji',
+    url(r'^realm/emoji$', 'rest_dispatch',
+        {'GET': 'list_emoji',
+         'PUT': 'upload_emoji'}),
+    url(r'^realm/emoji/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$', 'rest_dispatch',
+        {'DELETE': 'delete_emoji'}),
 ) + patterns('zerver.views.users',
     url(r'^users$', 'rest_dispatch',
         {'GET': 'get_members_backend',
@@ -254,24 +262,14 @@ v1_api_and_json_patterns = patterns('zerver.views',
         {'GET': 'get_events_backend',
          'DELETE': 'cleanup_event_queue'}),
 )
-if not settings.VOYAGER:
-    v1_api_and_json_patterns += patterns('',
-        # Still scoped to api/v1/, but under a different project
-        url(r'^deployments/', include('zilencer.urls.api')),
-    )
 
-    urlpatterns += patterns('',
-        url(r'^', include('zilencer.urls.pages')),
-    )
-
-    urlpatterns += patterns('',
-        url(r'^', include('analytics.urls')),
-    )
-
-    urlpatterns += patterns('',
-        url(r'^', include('corporate.urls')),
-    )
-
+# Include URL configuration files for site-specified extra installed
+# Django apps
+for app_name in settings.EXTRA_INSTALLED_APPS:
+    app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
+    if os.path.exists(os.path.join(app_dir, 'urls.py')):
+        urlpatterns += patterns('', url(r'^', include('%s.urls' % (app_name,))),
+        )
 
 urlpatterns += patterns('zerver.tornadoviews',
     # Tornado views

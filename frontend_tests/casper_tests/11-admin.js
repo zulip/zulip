@@ -68,6 +68,29 @@ casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"]:not(.deactiv
     casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Deactivate');
 });
 
+// Test custom realm emoji
+casper.waitForSelector('.admin-emoji-form', function () {
+    casper.fill('form.admin-emoji-form', {
+        'name': 'MouseFace',
+        'url': 'http://localhost:9991/static/images/integrations/logos/jenkins.png'
+    });
+    casper.click('form.admin-emoji-form input.btn');
+});
+
+casper.waitUntilVisible('div#admin-emoji-status', function () {
+    casper.test.assertSelectorHasText('div#admin-emoji-status', 'Custom emoji added!');
+});
+
+casper.waitForSelector('.emoji_row', function () {
+    casper.test.assertSelectorHasText('.emoji_row .emoji_name', 'MouseFace');
+    casper.test.assertExists('.emoji_row img[src="http://localhost:9991/static/images/integrations/logos/jenkins.png"]');
+    casper.click('.emoji_row button.delete');
+});
+
+casper.waitWhileSelector('.emoji_row', function () {
+    casper.test.assertDoesntExist('.emoji_row');
+});
+
 // TODO: Test stream deletion
 
 common.then_log_out();

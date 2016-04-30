@@ -342,3 +342,26 @@ Firebug for Firefox is also pretty good. They both have profilers, but
 Chrome's is a sampling profiler while Firebug's is an instrumenting
 profiler. Using them both can be helpful because they provide
 different information.
+
+Python 3 Compatibility
+======================
+
+Zulip is working on supporting Python 3, and all new code in Zulip
+should be Python 2+3 compatible.  We have converted most of the
+codebase to be compatible with Python 3 using a suite of 2to3
+conversion tools and some manual work.  In order to avoid regressions
+in that compatibility as we continue to develop new features in zulip,
+we have a special tool, `tools/check-py3`, which checks all code for
+Python 3 syntactic compatibility by running a subset of the automated
+migration tools and checking if they trigger any changes.
+`tools/check-py3` is run automatically in Zulip's Travis CI tests to
+avoid any regressions, but is not included in `test-all` since it is
+quite slow.
+
+To run `tooks/check-py3`, you need to install the `modernize` and
+`future` python packages (which are in the development environment's
+`requirements.txt` file).
+
+To run `check-py3` on just the python files in a particular directory,
+you can change the current working directory (e.g. `cd zerver/`) and
+run `check-py3` from there.

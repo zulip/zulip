@@ -52,27 +52,37 @@ developer documentation on [Read The Docs][doc].  Recommended reading
 for new contributors includes the [directory structure][doc-dirstruct]
 and [new feature tutorial][doc-newfeat].
 
-* **Mailing list and bug tracker**. Zulip has a [development
+* **Mailing lists and bug tracker**. Zulip has a [development
 discussion mailing list][gg-devel] and uses [GitHub issues
-][gh-issues].  Feel free to send any questions or suggestions of areas
-where you'd love to see more documentation to the list!  Please report
-any security issues you discover to support@zulip.com.
+][gh-issues].  There are also lists for the [Android][email-android]
+and [iOS][email-ios] apps.  Feel free to send any questions or
+suggestions of areas where you'd love to see more documentation to the
+relevant list!  Please report any security issues you discover to
+zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
 app; the [desktop][], [Android][], and [iOS][] apps are separate
 repositories.
 
+* **Translations**.  Zulip is in the process of being translated into
+10+ languages, and we love contributions to our translations.  See our
+[translating documentation](transifex) if you're interested in
+contributing!
+
 [cla]: https://opensource.dropbox.com/cla/
-[doc]: https://zulip.readthedocs.org/
-[doc-commit-style]: http://zulip.readthedocs.org/en/latest/code-style.html#commit-messages
-[doc-dirstruct]: http://zulip.readthedocs.org/en/latest/directory-structure.html
-[doc-newfeat]: http://zulip.readthedocs.org/en/latest/new-feature-tutorial.html
+[doc]: https://zulip.readthedocs.io/
+[doc-commit-style]: http://zulip.readthedocs.io/en/latest/code-style.html#commit-messages
+[doc-dirstruct]: http://zulip.readthedocs.io/en/latest/directory-structure.html
+[doc-newfeat]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
 [doc-test]: https://github.com/zulip/zulip/blob/master/README.dev.md#running-the-test-suite
 [gg-devel]: https://groups.google.com/forum/#!forum/zulip-devel
 [gh-issues]: https://github.com/zulip/zulip/issues
 [desktop]: https://github.com/zulip/zulip-desktop
 [android]: https://github.com/zulip/zulip-android
 [ios]: https://github.com/zulip/zulip-ios
+[email-android]: https://groups.google.com/forum/#!forum/zulip-android
+[email-ios]: https://groups.google.com/forum/#!forum/zulip-ios
+[transifex]: https://www.transifex.com/zulip/zulip/
 
 How to get involved with contributing to Zulip
 ==============================================
@@ -86,24 +96,34 @@ have your own project idea in mind or want to get some experience with
 working on Zulip before embarking on a larger project you have in
 mind:
 
-* [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
-  Smaller projects that could be a great first contribution.
 * [Integrations](https://github.com/zulip/zulip/labels/integrations).
   Integrate Zulip with another piece of software and contribute it
-  back to the community!  Writing an integration can be a great
-  starter project.  There's detailed documentation on the best way
-  to write integrations in [docs/integration-guide.md](docs/integration-guide.md).
+  back to the community!  Writing an integration can be a great first
+  contribution.  There's detailed documentation on how to write
+  integrations in [the Zulip integration writing
+  guide](https://zulip.readthedocs.io/en/latest/integration-guide.html).
+
+* [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
+  Smaller projects that might be a great first contribution.
+
 * [Documentation](https://github.com/zulip/zulip/labels/documentation):
   The Zulip project loves contributions of new documentation.
+
 * [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
   A broader list of projects that nobody is currently working on.
+
 * [Platform support](https://github.com/zulip/zulip/labels/Platform%20support):
   These are open issues about making it possible to install Zulip on a
   wider range of platforms.
+
 * [Bugs](https://github.com/zulip/zulip/labels/bug): Open bugs.
+
 * [Feature requests](https://github.com/zulip/zulip/labels/enhancement):
   Browsing this list can be a great way to find feature ideas to
   implement that other Zulip users are excited about.
+
+* [2016 roadmap milestone](http://zulip.readthedocs.io/en/latest/roadmap.html): The
+  projects that are [priorities for the Zulip project](https://zulip.readthedocs.io/en/latest/roadmap.html).  These are great projects if you're looking to make an impact.
 
 If you're excited about helping with an open issue, just post on the
 conversation thread that you're working on it.  You're encouraged to
@@ -136,7 +156,7 @@ looking at the new feature tutorial and coding style guidelines on
 ReadTheDocs.
 
 Feedback on how to make this development process more efficient, fun,
-and friendly to new contributors is very welcome!  Just shoot an email
+and friendly to new contributors is very welcome!  Just send an email
 to the Zulip Developers list with your thoughts.
 
 License

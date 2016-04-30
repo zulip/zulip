@@ -254,7 +254,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
-        result = self.client.post("/json/get_public_streams")
+        result = self.client.get("/json/streams?include_subscribed=false")
         public_streams = [s["name"] for s in ujson.loads(result.content)["streams"]]
         self.assertNotIn(active_name, public_streams)
         self.assertNotIn(deactivated_stream_name, public_streams)
@@ -741,7 +741,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
         self.assert_json_success(result)
 
-        msg = Message.objects.latest('id')
+        msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
@@ -779,7 +779,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
         self.assert_json_success(result)
 
-        msg = Message.objects.latest('id')
+        msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
@@ -812,7 +812,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
         self.assert_json_success(result)
 
-        msg = Message.objects.latest('id')
+        msg = self.get_last_message()
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
         expected_msg = "%s just created a new stream `%s`. " \
@@ -878,7 +878,7 @@ class SubscriptionAPITest(AuthedTestCase):
             {"principals": ujson.dumps([invitee])}, streams[:1], current_streams,
             invitee, streams_to_sub, invite_only=invite_only)
         # verify that the user was sent a message informing them about the subscription
-        msg = Message.objects.latest('id')
+        msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
                 get_user_profile_by_email("notification-bot@zulip.com").id)
@@ -1230,12 +1230,12 @@ class GetPublicStreamsTest(AuthedTestCase):
 
     def test_public_streams(self):
         """
-        Ensure that get_public_streams successfully returns a list of streams
+        Ensure that streams successfully returns a list of streams
         """
         email = 'hamlet@zulip.com'
         self.login(email)
 
-        result = self.client.post("/json/get_public_streams")
+        result = self.client.get("/json/streams?include_subscribed=false")
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1245,7 +1245,8 @@ class GetPublicStreamsTest(AuthedTestCase):
 
     def test_public_streams_api(self):
         """
-        Ensure that get_public_streams successfully returns a list of streams
+        Ensure that the query we use to get public streams successfully returns
+        a list of streams
         """
         email = 'hamlet@zulip.com'
         self.login(email)

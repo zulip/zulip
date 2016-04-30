@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_helpers import AuthedTestCase
 from zerver.lib.test_runner import slow
-from zerver.models import Message
+from zerver.models import Message, Recipient
 
 import ujson
 from six.moves import urllib
@@ -718,7 +718,7 @@ class ZenDeskHookTests(AuthedTestCase):
         self.assert_json_success(result)
 
         # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.sender.email, email)
 
         return msg
@@ -750,7 +750,7 @@ class PagerDutyHookTests(AuthedTestCase):
         self.assert_json_success(result)
 
         # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.sender.email, email)
 
         return msg
@@ -852,12 +852,13 @@ class TravisHookTests(AuthedTestCase):
         url = "/api/v1/external/travis?stream=%s&topic=builds&api_key=%s" % (stream, api_key)
         self.subscribe_to_stream(email, stream)
 
-        self.client.post(url,
-                         body,
-                         stream_name=stream,
-                         content_type="application/x-www-form-urlencoded")
+        result = self.client.post(url,
+                                  body,
+                                  stream_name=stream,
+                                  content_type="application/x-www-form-urlencoded")
+        self.assert_json_success(result)
 
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         u'Author: josh_mandel\nBuild status: Passed :thumbsup:\nDetails: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)'
         self.assertEqual(msg.subject, u"builds")
         self.assertEqual(msg.content, (u"Author: josh_mandel\nBuild status: Passed :thumbsup:\n"
@@ -884,7 +885,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service someurl.com changed its HTTP status from UP to DOWN.\nDescription: Non-recoverable failure in name resolution."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"Test check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -896,7 +897,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service smtp.someurl.com changed its SMTP status from UP to DOWN.\nDescription: Connection refused."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"SMTP check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -908,7 +909,7 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service imap.someurl.com changed its IMAP status from UP to DOWN.\nDescription: Invalid hostname, address or socket."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"IMAP check status.")
         self.assertEqual(msg.content, expected_message)
 
@@ -920,18 +921,16 @@ class PingdomHookTests(AuthedTestCase):
         self._send_post_request_with_params(body)
 
         expected_message = u"Service imap.someurl.com changed its IMAP status from DOWN to UP."
-        msg = self._get_recently_added_message()
+        msg = self.get_last_message()
         self.assertEqual(msg.subject, u"IMAP check status.")
         self.assertEqual(msg.content, expected_message)
-
-    def _get_recently_added_message(self):
-        return Message.objects.filter().order_by('-id')[0]
 
     def _get_fixture_data(self, name):
         return ujson.dumps(ujson.loads(self.fixture_data('pingdom', name)))
 
     def _send_post_request_with_params(self, json):
-        return self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+        result = self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+        self.assert_json_success(result)
 
 class YoHookTests(AuthedTestCase):
     def test_yo_message(self):
@@ -947,9 +946,339 @@ class YoHookTests(AuthedTestCase):
         ip = "127.0.0.1"
         url = "/api/v1/external/yo?email=%s&api_key=%s&username=%s&user_ip=%s" % (email, api_key, sender, ip)
 
-        self.client.get(url,
-                        body,
-                        content_type="application/x-www-form-urlencoded")
+        result = self.client.get(url, body,
+                                 content_type="application/x-www-form-urlencoded")
+        self.assert_json_success(result)
 
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.content, (u"Yo from IAGO"))
+
+class TeamcityHookTests(AuthedTestCase):
+    def basic_test(self, type):
+        """
+        Build notifications are generated by Teamcity after build completes.
+        """
+
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        body = ujson.dumps(ujson.loads(self.fixture_data("teamcity", type)))
+
+        stream = "teamcity"
+        url = "/api/v1/external/teamcity?stream=%s&api_key=%s" % (stream, api_key)
+        self.subscribe_to_stream(email, stream)
+
+        result = self.client.post(url,
+                                  body,
+                                  stream_name=stream,
+                                  content_type="application/json")
+        self.assert_json_success(result)
+
+        return self.get_last_message()
+
+    def test_teamcity_success(self):
+        msg = self.basic_test("success")
+        self.assertEqual(msg.subject, u"Project :: Compile")
+        self.assertEqual(msg.content, u"Project :: Compile build 5535 - CL 123456 was successful! :thumbsup:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)")
+
+    def test_teamcity_broken(self):
+        msg = self.basic_test("broken")
+        self.assertEqual(msg.subject, u"Project :: Compile")
+        self.assertEqual(msg.content, u"Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbsdown:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)")
+
+    def test_teamcity_failure(self):
+        msg = self.basic_test("failure")
+        self.assertEqual(msg.subject, u"Project :: Compile")
+        self.assertEqual(msg.content, u"Project :: Compile build 5535 - CL 123456 is still broken with status Exit code 1! :thumbsdown:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)")
+
+    def test_teamcity_fixed(self):
+        msg = self.basic_test("fixed")
+        self.assertEqual(msg.subject, u"Project :: Compile")
+        self.assertEqual(msg.content, u"Project :: Compile build 5535 - CL 123456 has been fixed! :thumbsup:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)")
+
+    def test_teamcity_personal(self):
+        msg = self.basic_test("personal")
+        self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(msg.content, u"Your personal build of Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbsdown:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)")
+
+class CodeshipHookTests(AuthedTestCase):
+    STREAM_NAME = 'codeship'
+    TEST_USER_EMAIL = 'hamlet@zulip.com'
+    URL_TEMPLATE = "/api/v1/external/codeship?stream={stream}&api_key={api_key}"
+
+    def setUp(self):
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        self._url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+
+    def test_codeship_build_in_testing_status_message(self):
+        """
+        Tests if codeship testing status is mapped correctly
+        """
+        body = self._get_fixture_data('testing_build')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch started."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"codeship/docs")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_codeship_build_in_error_status_message(self):
+        """
+        Tests if codeship error status is mapped correctly
+        """
+        body = self._get_fixture_data('error_build')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch failed."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"codeship/docs")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_codeship_build_in_success_status_message(self):
+        """
+        Tests if codeship success status is mapped correctly
+        """
+        body = self._get_fixture_data('success_build')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch succeeded."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"codeship/docs")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_codeship_build_in_other_status_status_message(self):
+        """
+        Tests if codeship other status is mapped correctly
+        """
+        body = self._get_fixture_data('other_status_build')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch has some_other_status status."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"codeship/docs")
+        self.assertEqual(msg.content, expected_message)
+
+    def _get_fixture_data(self, name):
+        return ujson.dumps(ujson.loads(self.fixture_data('codeship', name)))
+
+    def _send_post_request_with_params(self, json):
+        result = self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+        self.assert_json_success(result)
+        return result
+
+class TaigaHookTests(AuthedTestCase):
+
+    def send_taiga_message(self, action):
+        email = "hamlet@zulip.com"
+        api_key = self.get_api_key(email)
+        stream = "taiga"
+        topic = "subject"
+        mesg = self.fixture_data("taiga", action, file_type="json")
+        url = "/api/v1/external/taiga?stream=%s&topic=%s&api_key=%s" % (stream, topic, api_key)
+        self.send_json_payload(email, url, mesg, stream_name=stream, content_type="application/json")
+        return self.get_last_message()
+
+    def test_taiga_userstory_deleted(self):
+        msg = self.send_taiga_message("userstory_deleted")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':x: Antek deleted user story **A newer hope**.\n')
+
+    def test_taiga_userstory_created(self):
+        msg = self.send_taiga_message("userstory_created")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':package: Antek created user story **A new hope**.\n')
+
+    def test_taiga_userstory_changed_unblocked(self):
+        msg = self.send_taiga_message("userstory_changed_unblocked")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':unlock: Antek unblocked user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_subject(self):
+        msg = self.send_taiga_message("userstory_changed_subject")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek renamed user story from A new hope to **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_status(self):
+        msg = self.send_taiga_message("userstory_changed_status")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of user story **A new hope** from New to Done.\n')
+
+    def test_taiga_userstory_changed_reassigned(self):
+        msg = self.send_taiga_message("userstory_changed_reassigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek reassigned user story **Great US** from Antek to Han Solo.\n')
+
+    def test_taiga_userstory_changed_points(self):
+        msg = self.send_taiga_message("userstory_changed_points")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':game_die: Antek changed estimation of user story **A new hope**.\n')
+
+    def test_taiga_userstory_changed_new_milestone(self):
+        msg = self.send_taiga_message("userstory_changed_new_milestone")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':calendar: Antek added user story **A newer hope** to sprint New sprint.\n')
+
+    def test_taiga_userstory_changed_milestone(self):
+        msg = self.send_taiga_message("userstory_changed_milestone")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':calendar: Antek changed sprint of user story **A newer hope** from Old sprint to New sprint.\n')
+
+    def test_taiga_userstory_changed_description(self):
+        msg = self.send_taiga_message("userstory_changed_description")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek updated description of user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_closed(self):
+        msg = self.send_taiga_message("userstory_changed_closed")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from New to Done.\n:checkered_flag: Antek closed user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_reopened(self):
+        msg = self.send_taiga_message("userstory_changed_reopened")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from Done to New.\n:package: Antek reopened user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_blocked(self):
+        msg = self.send_taiga_message("userstory_changed_blocked")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':lock: Antek blocked user story **A newer hope**.\n')
+
+    def test_taiga_userstory_changed_assigned(self):
+        msg = self.send_taiga_message("userstory_changed_assigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek assigned user story **Great US** to Antek.\n')
+
+    def test_taiga_task_created(self):
+        msg = self.send_taiga_message("task_created")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':clipboard: Antek created task **New task assigned and in progress**.\n')
+
+    def test_taiga_task_changed_status(self):
+        msg = self.send_taiga_message("task_changed_status")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of task **New task assigned and in progress** from Ready for test to New.\n')
+
+    def test_taiga_task_changed_blocked(self):
+        msg = self.send_taiga_message("task_changed_blocked")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':lock: Antek blocked task **A new task**.\n')
+
+    def test_taiga_task_changed_unblocked(self):
+        msg = self.send_taiga_message("task_changed_unblocked")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':unlock: Antek unblocked task **A new task**.\n')
+
+    def test_taiga_task_changed_assigned(self):
+        msg = self.send_taiga_message("task_changed_assigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek assigned task **Aaaa** to Antek.\n')
+
+    def test_taiga_task_changed_reassigned(self):
+        msg = self.send_taiga_message("task_changed_reassigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek reassigned task **Aaaa** from Han Solo to Antek.\n')
+
+    def test_taiga_task_changed_subject(self):
+        msg = self.send_taiga_message("task_changed_subject")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek renamed task New task to **Even newer task**.\n')
+
+    def test_taiga_task_changed_description(self):
+        msg = self.send_taiga_message("task_changed_description")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek updated description of task **Even newer task.**.\n')
+
+    def test_taiga_task_changed_us(self):
+        msg = self.send_taiga_message("task_changed_us")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':clipboard: Antek moved task **A new task** from user story #3 Great US to #6 Greater US.\n')
+
+    def test_taiga_task_deleted(self):
+        msg = self.send_taiga_message("task_deleted")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':x: Antek deleted task **hhh**.\n')
+
+    def test_taiga_milestone_created(self):
+        msg = self.send_taiga_message("milestone_created")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':calendar: Antek created sprint **New sprint**.\n')
+
+    def test_taiga_milestone_deleted(self):
+        msg = self.send_taiga_message("milestone_deleted")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':x: Antek deleted sprint **Newer sprint**.\n')
+
+    def test_taiga_milestone_changed_time(self):
+        msg = self.send_taiga_message("milestone_changed_time")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':calendar: Antek changed estimated finish of sprint **New sprint** from 2016-04-27 to 2016-04-30.\n')
+
+    def test_taiga_milestone_changed_name(self):
+        msg = self.send_taiga_message("milestone_changed_name")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek renamed sprint from New sprint to **Newer sprint**.\n')
+
+    def test_taiga_issue_created(self):
+        msg = self.send_taiga_message("issue_created")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':bulb: Antek created issue **A new issue**.\n')
+
+    def test_taiga_issue_deleted(self):
+        msg = self.send_taiga_message("issue_deleted")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':x: Antek deleted issue **Aaaa**.\n')
+
+    def test_taiga_issue_changed_assigned(self):
+        msg = self.send_taiga_message("issue_changed_assigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek assigned issue **Aaaa** to Antek.\n')
+
+    def test_taiga_issue_changed_reassigned(self):
+        msg = self.send_taiga_message("issue_changed_reassigned")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':busts_in_silhouette: Antek reassigned issue **Aaaa** from Antek to Han Solo.\n')
+
+    def test_taiga_issue_changed_subject(self):
+        msg = self.send_taiga_message("issue_changed_subject")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek renamed issue Aaaa to **More descriptive name**.\n')
+
+    def test_taiga_issue_changed_description(self):
+        msg = self.send_taiga_message("issue_changed_description")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':notebook: Antek updated description of issue **More descriptive name**.\n')
+
+    def test_taiga_issue_changed_type(self):
+        msg = self.send_taiga_message("issue_changed_type")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':bulb: Antek changed type of issue **A new issue** from Bug to Enhancement.\n')
+
+    def test_taiga_issue_changed_status(self):
+        msg = self.send_taiga_message("issue_changed_status")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':chart_with_upwards_trend: Antek changed status of issue **A new issue** from New to Rejected.\n')
+
+    def test_taiga_issue_changed_severity(self):
+        msg = self.send_taiga_message("issue_changed_severity")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':warning: Antek changed severity of issue **A new issue** from Important to Critical.\n')
+
+    def test_taiga_issue_changed_priority(self):
+        msg = self.send_taiga_message("issue_changed_priority")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':rocket: Antek changed priority of issue **A new issue** from Normal to High.\n')
+
+    def test_taiga_userstory_comment_added(self):
+        msg = self.send_taiga_message("userstory_changed_comment_added")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':thought_balloon: Han Solo commented on user story **Great US**.\n')
+
+    def test_taiga_task_changed_comment_added(self):
+        msg = self.send_taiga_message("task_changed_comment_added")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':thought_balloon: Antek commented on task **New task assigned and in progress**.\n')
+
+    def test_taiga_issue_changed_comment_added(self):
+        msg = self.send_taiga_message("issue_changed_comment_added")
+        self.assertEqual(msg.subject, u'subject')
+        self.assertEqual(msg.content, u':thought_balloon: Antek commented on issue **Aaaa**.\n')

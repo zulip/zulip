@@ -97,6 +97,7 @@ else:
     ERROR_BOT = "error-bot@zulip.com"
     NEW_USER_BOT = "new-user-bot@zulip.com"
     EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
+    EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 
 ########################################################################
 # DEFAULT VALUES FOR SETTINGS
@@ -160,6 +161,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'REMOTE_POSTGRES_SSLMODE': '',
                     'GOOGLE_CLIENT_ID': '',
                     'DBX_APNS_CERT_FILE': None,
+                    'EXTRA_INSTALLED_APPS': [],
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
@@ -268,6 +270,8 @@ ROOT_URLCONF = 'zproject.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'zproject.wsgi.application'
 
+# A site can include additional installed apps via the
+# EXTRA_INSTALLED_APPS setting
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -278,13 +282,7 @@ INSTALLED_APPS = [
     'guardian',
     'pipeline',
     'zerver',
-]
-
-if not VOYAGER:
-    INSTALLED_APPS += [
-        'analytics',
-        'zilencer',
-    ]
+] + EXTRA_INSTALLED_APPS
 
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.

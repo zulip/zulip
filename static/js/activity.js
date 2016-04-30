@@ -461,6 +461,8 @@ function maybe_select_person (e) {
             compose.start('private',
                     {trigger: 'sidebar enter key', "private_message_recipient": topPerson});
         }
+        // Clear the user filter
+        exports.escape_search();
     }
 }
 

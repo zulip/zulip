@@ -319,6 +319,7 @@ Finally continue with the All Systems instructions below.
 ```
 pip install --no-deps -r requirements.txt
 ./tools/install-phantomjs
+./tools/install-mypy
 ./tools/download-zxcvbn
 ./tools/emoji_dump/build_emoji
 ./scripts/setup/generate_secrets.py -d
@@ -361,13 +362,17 @@ proxy in the environment as follows:
  npm config set https-proxy http://proxy_host:port
  ```
 
-Using Docker
--------------
+Using Docker (experimental)
+---------------------------
 
-You can also use Docker to develop, first you need to install Docker
-in your development machine following the
-[instructions][docker-install].
-Some other interesting links for somebody new in Docker are:
+The docker instructions for development are experimental, so they may
+have bugs.  If you try them and run into any issues, please report
+them!
+
+You can also use Docker to run a Zulip development environment.
+First, you need to install Docker in your development machine
+following the [instructions][docker-install].  Some other interesting
+links for somebody new in Docker are:
 
 * [Get Started](https://docs.docker.com/linux/started/)
 * [Understand the architecture](https://docs.docker.com/engine/introduction/understanding-docker/)
@@ -475,8 +480,8 @@ restart if it crashes, and `upgrade-zulip` will take care of running
 migrations and then cleanly restaring the server for you).
 
 [django-runserver]: https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port
-[new-feature-tutorial]: http://zulip.readthedocs.org/en/latest/new-feature-tutorial.html
-[testing-docs]: http://zulip.readthedocs.org/en/latest/testing.html
+[new-feature-tutorial]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
+[testing-docs]: http://zulip.readthedocs.io/en/latest/testing.html
 
 Running the test suite
 ======================
@@ -484,7 +489,7 @@ Running the test suite
 For more details, especially on how to write tests, check out the
 [detailed testing docs][tdocs].
 
-[tdocs]: http://zulip.readthedocs.org/en/latest/testing.html
+[tdocs]: http://zulip.readthedocs.io/en/latest/testing.html
 
 To run all the tests, do this:
 ```

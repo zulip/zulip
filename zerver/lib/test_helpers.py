@@ -221,7 +221,7 @@ class AuthedTestCase(TestCase):
         if password is None:
             password = initial_password(email)
         return self.client.post('/accounts/login/',
-                                {'username':email, 'password':password})
+                                {'username': email, 'password': password})
 
     def register(self, username, password, domain="zulip.com"):
         self.client.post('/accounts/home/',
@@ -365,3 +365,5 @@ class AuthedTestCase(TestCase):
 
         return msg
 
+    def get_last_message(self):
+        return Message.objects.latest('id')

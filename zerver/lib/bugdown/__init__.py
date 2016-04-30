@@ -3,7 +3,6 @@ from __future__ import absolute_import
 # detailed documentation on our markdown syntax.
 from typing import Any
 
-import codecs
 import markdown
 import logging
 import traceback
@@ -20,10 +19,7 @@ import itertools
 from six.moves import urllib
 import xml.etree.cElementTree as etree
 
-import hashlib
-
 from collections import defaultdict
-import hmac
 
 import requests
 
@@ -31,8 +27,10 @@ from django.core import mail
 from django.conf import settings
 
 from zerver.lib.avatar  import gravatar_hash
-from zerver.lib.bugdown import codehilite, fenced_code
+from zerver.lib.bugdown import codehilite
+from zerver.lib.bugdown import fenced_code # type: ignore # excluding fenced_code from checks
 from zerver.lib.bugdown.fenced_code import FENCE_RE
+from zerver.lib.camo import get_camo_url
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
 import zerver.lib.alert_words as alert_words
@@ -246,11 +244,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
             if not url.startswith("http://"):
                 # Don't rewrite images on our own site (e.g. emoji).
                 continue
-            encoded_url = url.encode("utf-8")
-            encoded_camo_key = settings.CAMO_KEY.encode("utf-8")
-            digest = hmac.new(encoded_camo_key, encoded_url, hashlib.sha1).hexdigest()
-            hex_encoded_url = codecs.encode(encoded_url, "hex")
-            img.set("src", "%s%s/%s" % (settings.CAMO_URI, digest, hex_encoded_url.decode("utf-8")))
+            img.set("src", get_camo_url(url))
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
@@ -296,12 +290,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # Failed to follow link to find an image preview so
                 # use placeholder image and guess filename
                 if image_info is None:
-                    image_info = dict()
-                    (_, filename) = os.path.split(parsed_url.path)
-                    image_info["title"] = filename
-                    image_info["desc"] = ""
-                    # Dropbox's "unable to preview" image
-                    image_info["image"] = "https://dt8kf6553cww8.cloudfront.net/static/images/preview_fail-vflc3IDxf.png"
+                    return None
 
                 image_info["is_image"] = is_image
                 return image_info

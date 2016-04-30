@@ -154,7 +154,7 @@ calling _adapter_disconnect, ignoring" % (e,))
 
 class TornadoQueueClient(SimpleQueueClient):
     # Based on:
-    # https://pika.readthedocs.org/en/0.9.8/examples/asynchronous_consumer_example.html
+    # https://pika.readthedocs.io/en/0.9.8/examples/asynchronous_consumer_example.html
     def __init__(self):
         super(TornadoQueueClient, self).__init__()
         self._on_open_cbs = [] # type: List[Callable[[], None]]
