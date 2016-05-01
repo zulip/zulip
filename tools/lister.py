@@ -9,8 +9,10 @@ import re
 from collections import defaultdict
 import argparse
 from six.moves import filter
+from typing import Union, List, Dict
 
 def get_ftype(fpath, use_shebang):
+    # type: (str, bool) -> str
     ext = os.path.splitext(fpath)[1]
     if ext:
         return ext[1:]
@@ -38,6 +40,7 @@ def get_ftype(fpath, use_shebang):
 
 def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
                exclude=[], group_by_ftype=False):
+    # type: (List[str], List[str], bool, bool, List[str], bool) -> Union[Dict[str, List[str]], List[str]]
     """
     List files tracked by git.
     Returns a list of files which are either in targets or in directories in targets.
@@ -63,7 +66,8 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     # throw away empty lines and non-files (like symlinks)
     files = list(filter(os.path.isfile, files_gen))
 
-    result = defaultdict(list) if group_by_ftype else []
+    result_dict = defaultdict(list) # type: Dict[str, List[str]]
+    result_list = [] # type: List[str]
 
     for fpath in files:
         # this will take a long time if exclude is very large
@@ -87,11 +91,14 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
                 continue
 
         if group_by_ftype:
-            result[filetype].append(fpath)
+            result_dict[filetype].append(fpath)
         else:
-            result.append(fpath)
+            result_list.append(fpath)
 
-    return result
+    if group_by_ftype:
+        return result_dict
+    else:
+        return result_list
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="List files tracked by git and optionally filter by type")

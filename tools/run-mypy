@@ -18,7 +18,6 @@ bots/zephyr_mirror_backend.py
 docs/conf.py
 puppet/zulip_internal/files/postgresql/pg_backup_and_purge.py
 tools/deprecated/
-tools/lister.py
 zproject/
 zerver/lib/actions.py
 zerver/lib/bugdown/fenced_code.py
