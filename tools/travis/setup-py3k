@@ -3,3 +3,5 @@ set -e
 set -x
 pip install --no-deps future==0.15.2
 pip install --no-deps modernize==0.5
+pip install --no-deps six==1.10.0
+pip install --no-deps typing==3.5.0.1
