@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import Any
+from typing import Any, Optional
+from typing.re import Match
 
 import markdown
 import logging
@@ -548,6 +549,7 @@ def make_emoji(emoji_name, src, display_string):
 
 class Emoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
+        # type: (Match) -> Optional[markdown.util.etree.Element]
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
