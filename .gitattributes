@@ -18,3 +18,4 @@
 /frontend_tests export-ignore
 /node_modules export-ignore
 /humbug export-ignore
+/locale export-ignore

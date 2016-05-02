@@ -45,6 +45,10 @@ subprocess.check_call(['bash', '-ex', 'tools/download-zxcvbn'],
 subprocess.check_call(['python', './manage.py', 'collectstatic', '--noinput'],
                       stdout=fp, stderr=fp)
 
+# Compile translation strings to generate `.mo` files.
+subprocess.check_call(['python', './manage.py', 'compilemessages'],
+                      stdout=fp, stderr=fp)
+
 # Move the source maps out of the serve/ directory and into their
 # proper place.
 subprocess.check_call(['rm', '-rf', 'prod-static/source-map'],

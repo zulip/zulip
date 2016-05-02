@@ -341,6 +341,7 @@ if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_
 ./tools/do-destroy-rebuild-database
 ./tools/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
+./manage.py compilemessages
 npm install
 ```
 
