@@ -12,6 +12,10 @@ mv zulip-server-travis /root/zulip
 # Do an apt upgrade to start with an up-to-date machine
 export APT_OPTIONS="-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
 apt-get update
+# Hold upgrades to packages which are expensive to upgrade due to size
+# or computational cost (e.g. initramfs rebuilds) and aren't really
+# used by Zulip in production.
+apt-mark hold initramfs-tools initramfs-tools-bin oracle-java8-installer udev linux-image-3.19.0-28-generic linux-image-generic-lts-vivid base-files linux-firmware chromium-browser google-chrome-stable g++-4.8 gcc-4.8 cpp-4.8 openjdk-6-jre-headless openjdk-7-jre-headless
 apt-get upgrade -y $APT_OPTIONS
 # Install Zulip
 /root/zulip/scripts/setup/install
