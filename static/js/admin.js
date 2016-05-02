@@ -74,14 +74,14 @@ function populate_streams (streams_data) {
     loading.destroy_indicator($('#admin_page_streams_loading_indicator'));
 }
 
-function populate_emoji(emoji_data) {
+exports.populate_emoji = function (emoji_data) {
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
     _.each(emoji_data, function (url, name) {
         emoji_table.append(templates.render('admin_emoji_list', {emoji: {name: name, url: url}}));
     });
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
-}
+};
 
 exports.setup_page = function () {
     var options = {
@@ -128,7 +128,7 @@ exports.setup_page = function () {
     });
 
     // Populate emoji table
-    populate_emoji(page_params.realm_emoji);
+    exports.populate_emoji(page_params.realm_emoji);
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
@@ -467,7 +467,6 @@ exports.setup_page = function () {
             data: $(this).serialize(),
             success: function () {
                 $('#admin-emoji-status, #admin-emoji-name-status, #admin-emoji-url-status').hide();
-                emoji_table.append(templates.render("admin_emoji_list", {emoji: emoji}));
                 ui.report_success("Custom emoji added!", emoji_status);
             },
             error: function (xhr, error) {

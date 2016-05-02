@@ -173,6 +173,7 @@ function get_events_success(events) {
             break;
         case 'realm_emoji':
             emoji.update_emojis(event.realm_emoji);
+            admin.populate_emoji(event.realm_emoji);
             break;
         case 'alert_words':
             alert_words.words = event.alert_words;
