@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
+from django.utils.http import urlencode
 from django.utils.timezone import now
 from django.utils.cache import patch_cache_control
 from django.core.exceptions import ValidationError
@@ -770,6 +771,12 @@ def home(request):
     else:
         notifications_stream = ""
 
+    user_agent = request.META['HTTP_USER_AGENT']
+    suggestMobileForward = False
+    if "iPhone" in user_agent or "iPad" in user_agent:
+        suggestMobileForward = True
+    # TODO: Add check(s) for andriod devices
+
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
@@ -839,6 +846,8 @@ def home(request):
         avatar_url            = avatar_url(user_profile),
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
+
+        should_offer_mobile_redirect = suggestMobileForward,
     )
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
@@ -1281,3 +1290,15 @@ def email_unsubscribe(request, type, token):
 
     return render_to_response('zerver/unsubscribe_link_error.html', {},
                               context_instance=RequestContext(request))
+
+@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+def mobile_redirect(request):
+    user_profile = request.user
+    params = {
+        "api_key": user_profile.api_key,
+        "email": user_profile.email,
+        "domain": settings.EXTERNAL_HOST
+    }
+    msg = "%s:///?%s" % ("zulip", urlencode(params))
+    page = "<meta HTTP-EQUIV='REFRESH' content='0; url=%s'>" % (msg)
+    return HttpResponse(page)
