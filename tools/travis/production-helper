@@ -11,6 +11,7 @@ mv zulip-server-travis /root/zulip
 
 # Do an apt upgrade to start with an up-to-date machine
 export APT_OPTIONS="-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
+apt-get update
 apt-get upgrade -y $APT_OPTIONS
 # Install Zulip
 /root/zulip/scripts/setup/install
