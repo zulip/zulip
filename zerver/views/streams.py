@@ -197,7 +197,6 @@ def remove_subscriptions_backend(request, user_profile,
             # Even as an admin, you can't remove other people from an
             # invite-only stream you're not on.
             return json_error("Cannot administer invite-only streams this way")
-
     if principals:
         people_to_unsub = set(principal_to_user_profile(
                 user_profile, principal) for principal in principals)
@@ -405,6 +404,9 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
     stream = get_stream(stream_name, user_profile.realm)
     result = {"exists": bool(stream)}
     if stream is not None:
+        if stream.invite_only and stream.num_subscribers() == 0:
+            do_deactivate_stream(stream)
+            return json_response(data=result, status=404)
         recipient = get_recipient(Recipient.STREAM, stream.id)
         if autosubscribe:
             bulk_add_subscriptions([stream], [user_profile])
