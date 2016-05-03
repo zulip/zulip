@@ -104,6 +104,20 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
+def setup_virtualenv(venv_path, requirements_file, virtualenv_args=[]):
+    # Setup Python virtualenv
+    run(["sudo", "rm", "-rf", venv_path])
+    run(["sudo", "mkdir", "-p", venv_path])
+    run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), venv_path])
+    run(["virtualenv"] + virtualenv_args + [venv_path])
+
+    # Switch current Python context to the virtualenv.
+    activate_this = os.path.join(venv_path, "bin", "activate_this.py")
+    execfile(activate_this, dict(__file__=activate_this))
+
+    run(["pip", "install", "--upgrade", "pip"])
+    run(["pip", "install", "--no-deps", "--requirement", requirements_file])
+
 def main():
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install"] + APT_DEPENDENCIES[codename])
@@ -112,40 +126,16 @@ def main():
     run(["wget", "-O", temp_deb_path, TSEARCH_URL])
     run(["sudo", "dpkg", "--install", temp_deb_path])
 
-    run(["sudo", "rm", "-rf", VENV_PATH])
-    run(["sudo", "mkdir", "-p", VENV_PATH])
-    run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), VENV_PATH])
+    setup_virtualenv(PY3_VENV_PATH, os.path.join(ZULIP_PATH, "tools", "py3_test_reqs.txt"),
+                     virtualenv_args=['-p', 'python3'])
+    setup_virtualenv(VENV_PATH, os.path.join(ZULIP_PATH, "requirements.txt"))
 
-    run(["sudo", "rm", "-rf", PY3_VENV_PATH])
-    run(["sudo", "mkdir", "-p", PY3_VENV_PATH])
-    run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), PY3_VENV_PATH])
-
-    run(["virtualenv", VENV_PATH])
-    run(["virtualenv", "-p", "python3", PY3_VENV_PATH])
-
-    # Put Python virtualenv activation in our .bash_profile.
+    # Put Python2 virtualenv activation in our .bash_profile.
     with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
         bash_profile.writelines([
             "source .bashrc\n",
             "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
         ])
-
-    # Switch current Python context to the python3 virtualenv
-    activate_this = os.path.join(PY3_VENV_PATH, "bin", "activate_this.py")
-    execfile(activate_this, dict(__file__=activate_this))
-
-    run(["pip", "install", "--upgrade", "pip"])
-    # install requirement
-    run(["pip", "install", "--no-deps", "--requirement",
-         os.path.join(ZULIP_PATH, "tools", "py3_test_reqs.txt")])
-
-    # Switch current Python context to the python2 virtualenv.
-    activate_this = os.path.join(VENV_PATH, "bin", "activate_this.py")
-    execfile(activate_this, dict(__file__=activate_this))
-
-    run(["pip", "install", "--upgrade", "pip"])
-    run(["pip", "install", "--no-deps", "--requirement",
-         os.path.join(ZULIP_PATH, "requirements.txt")])
 
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
