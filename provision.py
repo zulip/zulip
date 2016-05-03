@@ -104,7 +104,22 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
-def setup_virtualenv(venv_path, requirements_file, virtualenv_args=[]):
+def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=[]):
+    # Check if a cached version already exists
+    output = subprocess.check_output(['sha1sum', requirements_file])
+    sha1sum = output.split()[0]
+    cached_venv_path = os.path.join("/srv/zulip-venv-cache/", sha1sum, os.path.basename(target_venv_path))
+    success_stamp = os.path.join(cached_venv_path, "success-stamp")
+    if not os.path.exists(success_stamp):
+        do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args)
+        run(["sudo", "touch", success_stamp])
+
+    print("Using cached Python venv from %s" % (cached_venv_path,))
+    run(["sudo", "ln", "-nsf", cached_venv_path, target_venv_path])
+    activate_this = os.path.join(target_venv_path, "bin", "activate_this.py")
+    execfile(activate_this, dict(__file__=activate_this))
+
+def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # Setup Python virtualenv
     run(["sudo", "rm", "-rf", venv_path])
     run(["sudo", "mkdir", "-p", venv_path])
