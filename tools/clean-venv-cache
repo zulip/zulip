@@ -1,0 +1,23 @@
+#!/usr/bin/env python2.7
+from __future__ import absolute_import
+from __future__ import print_function
+import glob
+import os
+import subprocess
+import sys
+
+VENV_CACHE_DIR = "/srv/zulip-venv-cache"
+if "--travis" in sys.argv:
+    VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
+
+used_caches = set()
+for d in glob.glob('/srv/zulip-*venv'):
+    used_caches.add(os.path.dirname(os.readlink(d)))
+
+for cache_dir_base in os.listdir(VENV_CACHE_DIR):
+    cache_dir = os.path.join(VENV_CACHE_DIR, cache_dir_base)
+    if cache_dir not in used_caches:
+        print("Cleaning unused venv %s" % (cache_dir,))
+        subprocess.check_call(["sudo", "rm", "-rf", cache_dir])
+    else:
+        print("Keeping used venv %s" % (cache_dir,))

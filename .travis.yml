@@ -2,6 +2,7 @@ before_install:
    - nvm install 0.10
 install:
   - tools/travis/setup-$TEST_SUITE
+  - tools/clean-venv-cache --travis
 cache:
   - apt: false
   - directories:
