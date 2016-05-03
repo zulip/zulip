@@ -13,17 +13,22 @@ if platform.architecture()[0] == '64bit':
 elif platform.architecture()[0] == '32bit':
     phantomjs_arch = 'i686'
 
+
 PHANTOMJS_PATH = "/srv/phantomjs"
+if "--travis" in sys.argv:
+    PHANTOMJS_PATH = os.path.join(os.environ['HOME'], "phantomjs")
 PHANTOMJS_BASENAME = "phantomjs-1.9.8-linux-%s" % (phantomjs_arch,)
 PHANTOMJS_TARBALL_BASENAME = PHANTOMJS_BASENAME + ".tar.bz2"
 PHANTOMJS_TARBALL = os.path.join(PHANTOMJS_PATH, PHANTOMJS_TARBALL_BASENAME)
 PHANTOMJS_URL = "https://github.com/zulip/zulip-dist-phantomjs/blob/master/%s?raw=true" % (PHANTOMJS_TARBALL_BASENAME,)
 
-run(["sudo", "mkdir", "-p", PHANTOMJS_PATH])
 if not os.path.exists(PHANTOMJS_TARBALL):
+    run(["sudo", "mkdir", "-p", PHANTOMJS_PATH])
     run(["sudo", "curl", '-J', '-L', PHANTOMJS_URL, "-o", PHANTOMJS_TARBALL])
     run(["sudo", "tar", "-xj", "--directory", PHANTOMJS_PATH,
          "--file", PHANTOMJS_TARBALL])
     run(["sudo", "ln", "-sf", os.path.join(PHANTOMJS_PATH, PHANTOMJS_BASENAME,
                                            "bin", "phantomjs"),
          "/usr/local/bin/phantomjs"])
+else:
+    print("Using cached PhantomJS")

@@ -5,7 +5,7 @@ install:
 cache:
   - apt: false
   - directories:
-    - /srv/phantomjs
+    - $HOME/phantomjs
 env:
   - TEST_SUITE=frontend
   - TEST_SUITE=backend
