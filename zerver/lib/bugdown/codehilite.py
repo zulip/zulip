@@ -131,9 +131,9 @@ class CodeHilite(object):
 
         import re
 
-        #split text into lines
+        # split text into lines
         lines = self.src.split("\n")
-        #pull first line to examine
+        # pull first line to examine
         fl = lines.pop(0)
 
         c = re.compile(r'''

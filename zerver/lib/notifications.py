@@ -508,14 +508,14 @@ def enqueue_welcome_emails(email, name):
                         'external_host': settings.EXTERNAL_HOST,
                         'unsubscribe_link': unsubscribe_link}
 
-    #Send day 1 email
+    # Send day 1 email
     send_local_email_template_with_delay([{'email': email, 'name': name}],
                                          "zerver/emails/followup/day1",
                                          template_payload,
                                          datetime.timedelta(hours=1),
                                          tags=["followup-emails"],
                                          sender=sender)
-    #Send day 2 email
+    # Send day 2 email
     tomorrow = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
     # 11 AM EDT
     tomorrow_morning = datetime.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 15, 0)

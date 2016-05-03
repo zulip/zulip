@@ -2727,7 +2727,7 @@ def handle_push_notification(user_profile_id, missed_message):
         android = num_push_devices_for_user(user_profile, kind=PushDeviceToken.GCM)
 
         if apple or android:
-            #TODO: set badge count in a better way
+            # TODO: set badge count in a better way
             # Determine what alert string to display based on the missed messages
             if message.recipient.type == Recipient.HUDDLE:
                 alert = "New private group message from %s" % (sender_str,)

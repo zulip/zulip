@@ -354,7 +354,7 @@ def run_test_script(repo, tmp_path):
           log.write(buf)
           log.flush()
       except IOError as e:
-        #ignore EAGAIN errors caused by non-blocking prod.stdout
+        # ignore EAGAIN errors caused by non-blocking prod.stdout
         if e.errno != EAGAIN:
           raise e
         else:
