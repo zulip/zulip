@@ -26,7 +26,7 @@ from zerver.lib.test_helpers import (
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Client, Message, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile,
+    Client, Message, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile, Attachment,
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
 
@@ -35,6 +35,8 @@ from zerver.lib.actions import (
     create_stream_if_needed,
     do_add_subscription, do_create_user,
 )
+
+from zerver.lib.upload import create_attachment
 
 import datetime
 import time
@@ -1407,7 +1409,7 @@ class StarTests(AuthedTestCase):
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
 
-class AttachmentTest(TestCase):
+class AttachmentTest(AuthedTestCase):
     def test_basics(self):
         self.assertFalse(Message.content_has_attachment('whatever'))
         self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
@@ -1431,6 +1433,32 @@ class AttachmentTest(TestCase):
         self.assertTrue(Message.content_has_link('yo /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo'))
         self.assertTrue(Message.content_has_link('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
         self.assertTrue(Message.content_has_link('https://humbug-user-uploads-test.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
+
+    def test_claim_attachment(self):
+        # Create dummy DB entry
+        sender_email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(sender_email)
+        dummy_files = [
+                        ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt'),
+                        ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py'),
+                        ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py')
+                    ]
+
+        for file_name, path_id in dummy_files:
+            create_attachment(file_name, path_id, user_profile)
+
+        # Send message referring the attachment
+        self.subscribe_to_stream(sender_email, "Denmark")
+
+        body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +  \
+        "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." + \
+        "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+
+        self.send_message(sender_email, "Denmark", Recipient.STREAM, body, "test")
+
+        for file_name, path_id in dummy_files:
+            attachment = Attachment.objects.get(path_id=path_id)
+            self.assertTrue(attachment.is_claimed())
 
 class CheckMessageTest(AuthedTestCase):
     def test_basic_check_message_call(self):

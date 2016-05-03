@@ -14,6 +14,7 @@ from boto.s3.connection import S3Connection
 from mimetypes import guess_type, guess_extension
 
 from zerver.models import get_user_profile_by_id
+from zerver.models import Attachment
 
 import base64
 import os
@@ -21,6 +22,7 @@ import re
 from PIL import Image, ImageOps
 from six.moves import cStringIO as StringIO
 import random
+import logging
 
 # Performance Note:
 #
@@ -133,6 +135,8 @@ def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_pr
             user_profile,
             file_data
     )
+
+    create_attachment(uploaded_file_name, s3_file_name, user_profile)
     return url
 
 def get_signed_upload_url(path):
@@ -146,6 +150,20 @@ def get_realm_for_filename(path):
         # This happens if the key does not exist.
         return None
     return get_user_profile_by_id(key.metadata["user_profile_id"]).realm.id
+
+def delete_message_image_s3(path_id):
+    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+    bucket = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET)
+
+    # check if file exists
+    key = bucket.get_key(path_id)
+    if key is not None:
+        bucket.delete_key(key)
+        return True
+
+    file_name = path_id.split("/")[-1]
+    logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
+    return False
 
 def upload_avatar_image_s3(user_file, user_profile, email):
     content_type = guess_type(user_file.name)[0]
@@ -195,8 +213,19 @@ def upload_message_image_local(uploaded_file_name, content_type, file_data, user
     ])
 
     write_local_file('files', path, file_data)
-
+    create_attachment(uploaded_file_name, path, user_profile)
     return '/user_uploads/' + path
+
+def delete_message_image_local(path_id):
+    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
+    if os.path.isfile(file_path):
+        # This removes the file but the empty folders still remain.
+        os.remove(file_path)
+        return True
+
+    file_name = path_id.split("/")[-1]
+    logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
+    return False
 
 def upload_avatar_image_local(user_file, user_profile, email):
     email_hash = user_avatar_hash(email)
@@ -212,9 +241,25 @@ def upload_avatar_image_local(user_file, user_profile, email):
 if settings.LOCAL_UPLOADS_DIR is not None:
     upload_message_image = upload_message_image_local
     upload_avatar_image  = upload_avatar_image_local
+    delete_message_image = delete_message_image_local
 else:
     upload_message_image = upload_message_image_s3
     upload_avatar_image  = upload_avatar_image_s3
+    delete_message_image = delete_message_image_s3
+
+def claim_attachment(path_id, message):
+    try:
+        attachment = Attachment.objects.get(path_id=path_id)
+        attachment.messages.add(message)
+        attachment.save()
+        return True
+    except Attachment.DoesNotExist:
+        raise JsonableError("The upload was not successful. Please reupload the file again in a new message.")
+    return False
+
+def create_attachment(file_name, path_id, user_profile):
+    Attachment.objects.create(file_name=file_name, path_id=path_id, owner=user_profile)
+    return True
 
 def upload_message_image_through_web_client(request, user_file, user_profile):
     uploaded_file_name, content_type = get_file_info(request, user_file)
