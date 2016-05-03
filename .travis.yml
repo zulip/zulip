@@ -6,6 +6,7 @@ cache:
   - apt: false
   - directories:
     - $HOME/phantomjs
+    - $HOME/zulip-venv-cache
 env:
   - TEST_SUITE=frontend
   - TEST_SUITE=backend
