@@ -5,6 +5,7 @@ from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.views.messages import get_sqlalchemy_connection
 
 import os
+import subprocess
 import time
 import traceback
 import unittest
@@ -65,9 +66,27 @@ def run_test(test):
 
     print('Running', test_name)
     if not hasattr(test, "_pre_setup"):
-        print("somehow the test doesn't have _pre_setup; it may be an import fail.")
-        print("Here's a debugger. Good luck!")
-        import pdb; pdb.set_trace()
+        # test_name is likely of the form unittest.loader.ModuleImportFailure.zerver.tests.test_upload
+        import_failure_prefix = 'unittest.loader.ModuleImportFailure.'
+        if test_name.startswith(import_failure_prefix):
+            actual_test_name = test_name[len(import_failure_prefix):]
+            print()
+            print("Actual test to be run is %s, but import failed." % (actual_test_name,))
+            print("Importing test module directly to generate clearer traceback:")
+            try:
+                command = ["python2.7", "-c", "import %s" % (actual_test_name,)]
+                print("Import test command: `%s`" % (' '.join(command),))
+                subprocess.check_call(command)
+            except subprocess.CalledProcessError:
+                print("If that traceback is confusing, try doing the import inside `./manage.py shell`")
+                print()
+                return True
+            print("Import unexpectedly succeeded!  Something is wrong")
+            return True
+        else:
+            print("Test doesn't have _pre_setup; something is wrong.")
+            print("Here's a debugger. Good luck!")
+            import pdb; pdb.set_trace()
     test._pre_setup()
 
     start_time = time.time()
