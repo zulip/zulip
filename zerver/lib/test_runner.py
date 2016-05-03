@@ -6,6 +6,7 @@ from zerver.views.messages import get_sqlalchemy_connection
 
 import os
 import subprocess
+import sys
 import time
 import traceback
 import unittest
@@ -123,7 +124,18 @@ class Runner(DiscoverRunner):
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         self.setup_test_environment()
-        suite = self.build_suite(test_labels, extra_tests)
+        try:
+            suite = self.build_suite(test_labels, extra_tests)
+        except AttributeError:
+            traceback.print_exc()
+            print()
+            print("  This is often caused by a test module/class/function that doesn't exist or ")
+            print("  import properly. You can usually debug in a `manage.py shell` via e.g. ")
+            print("    import zerver.tests.test_messages")
+            print("    from zerver.tests.test_messages import StreamMessagesTest")
+            print("    StreamMessagesTest.test_message_to_stream")
+            print()
+            sys.exit(1)
         # We have to do the next line to avoid flaky scenarios where we
         # run a single test and getting an SA connection causes data from
         # a Django connection to be rolled back mid-test.
