@@ -154,6 +154,8 @@ python_rules = [
     {'pattern': "^\s+[#]\w",
      'strip': '\n',
      'description': 'Missing whitespace after "#"'},
+    {'pattern': ", [)]",
+     'description': 'Unnecessary whitespace between "," and ")"'},
     # This next check could have false positives, but it seems pretty
     # rare; if we find any, they can be added to the exclude list for
     # this rule.
