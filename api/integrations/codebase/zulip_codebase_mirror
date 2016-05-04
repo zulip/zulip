@@ -135,7 +135,7 @@ def handle_event(event):
             content = "%s deleted branch %s from %s" % (actor_name, branch, project)
         else:
             if new_ref:
-                branch = "new branch %s" % (branch, )
+                branch = "new branch %s" % (branch,)
             content = "%s pushed %s commit(s) to %s in project %s:\n\n" % \
                         (actor_name, num_commits, branch, project)
             for commit in raw_props.get('commits'):

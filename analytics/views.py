@@ -304,7 +304,7 @@ def user_activity_intervals():
 
             total_duration += duration
             realm_duration += duration
-            output += "  %-*s%s\n" % (37, email, duration, )
+            output += "  %-*s%s\n" % (37, email, duration)
 
         realm_minutes[domain] = realm_duration.total_seconds() / 60
 

@@ -46,7 +46,7 @@ class Command(BaseCommand):
             try:
                 user_profile = UserProfile.objects.get(api_key=options['api_key'])
             except:
-                print("Unable to get user profile for api key %s" % (options['api_key'], ))
+                print("Unable to get user profile for api key %s" % (options['api_key'],))
                 exit(1)
 
         users = [user_profile]

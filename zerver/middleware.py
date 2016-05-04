@@ -168,7 +168,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         if not suppress_statsd:
             # Log ms, db ms, and num queries to statsd
             statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(query_time))
-            statsd.incr("%s.dbq" % (statsd_path, ), len(queries))
+            statsd.incr("%s.dbq" % (statsd_path,), len(queries))
             statsd.timing("%s.total" % (statsd_path,), timedelta_ms(time_delta))
 
     if 'extra' in log_data:

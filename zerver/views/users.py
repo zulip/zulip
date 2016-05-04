@@ -100,7 +100,7 @@ def stream_or_none(stream_name, realm):
     else:
         stream = get_stream(stream_name, realm)
         if not stream:
-            raise JsonableError('No such stream \'%s\'' %  (stream_name, ))
+            raise JsonableError('No such stream \'%s\'' % (stream_name,))
         return stream
 
 @has_request_variables
