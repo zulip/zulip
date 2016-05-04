@@ -40,7 +40,7 @@ class Command(BaseCommand):
             print("Realm %s" % (realm,))
             for hr, users in sorted(buckets.items()):
                 print("\tUsers for %s: %s" % (hr, len(users)))
-                statsd.gauge("users.active.%s.%shr" %  (statsd_key(realm, True), statsd_key(hr, True)), len(users))
+                statsd.gauge("users.active.%s.%shr" % (statsd_key(realm, True), statsd_key(hr, True)), len(users))
 
         # Also do stats for how many users have been reading the app.
         users_reading = UserActivity.objects.select_related().filter(query="/json/messages/flags")
@@ -55,4 +55,4 @@ class Command(BaseCommand):
             print("Realm %s" % (realm,))
             for hr, users in sorted(buckets.items()):
                 print("\tUsers reading for %s: %s" % (hr, len(users)))
-                statsd.gauge("users.reading.%s.%shr" %  (statsd_key(realm, True), statsd_key(hr, True)), len(users))
+                statsd.gauge("users.reading.%s.%shr" % (statsd_key(realm, True), statsd_key(hr, True)), len(users))

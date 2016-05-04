@@ -60,14 +60,14 @@ def _do_push_to_apns_service(user, message, apns_connection):
 
     # Check failures not related to devices.
     for code, errmsg in ret.errors:
-        logging.warning("APNS: Unknown error when delivering APNS: %s" %  (errmsg,))
+        logging.warning("APNS: Unknown error when delivering APNS: %s" % (errmsg,))
 
     if ret.needs_retry():
         logging.warning("APNS: delivery needs a retry, trying again")
         retry_msg = ret.retry()
         ret = apns_client.send(retry_msg)
         for code, errmsg in ret.errors:
-            logging.warning("APNS: Unknown error when delivering APNS: %s" %  (errmsg,))
+            logging.warning("APNS: Unknown error when delivering APNS: %s" % (errmsg,))
 
 
 # Send a push notification to the desired clients
