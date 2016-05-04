@@ -22,6 +22,9 @@ parser.add_option('--full',
 parser.add_option('--modified', '-m',
     action='store_true',
     help='Only check modified files')
+parser.add_option('--verbose', '-v',
+    action='store_true',
+    help='Print verbose timing output')
 (options, args) = parser.parse_args()
 
 os.chdir(path.join(path.dirname(__file__), '..'))
@@ -56,8 +59,10 @@ by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=Tr
 import logging
 logging.basicConfig(format="%(asctime)s %(message)s")
 logger = logging.getLogger()
-# Change this to logging.INFO to see performance data
-logger.setLevel(logging.WARNING)
+if options.verbose:
+    logger.setLevel(logging.INFO)
+else:
+    logger.setLevel(logging.WARNING)
 
 def check_pyflakes():
     if not by_lang['py']:
