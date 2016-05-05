@@ -24,6 +24,7 @@ zerver/lib/bugdown/fenced_code.py
 zerver/lib/statistics.py
 zerver/migrations/
 zerver/tests/
+zerver/views/webhooks/jira.py
 zilencer/models.py
 """.split()
 
@@ -52,7 +53,7 @@ else:
     mypy_command = "mypy"
 
 if python_files:
-    rc = subprocess.call([mypy_command, "--silent", "--py2", "--check-untyped-defs"] + python_files)
+    rc = subprocess.call([mypy_command, "--silent-imports", "--py2", "--check-untyped-defs"] + python_files)
     if not rc:
         print("The mypy static type checker for python detected no errors!")
     else:
