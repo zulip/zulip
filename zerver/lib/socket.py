@@ -72,6 +72,8 @@ class CloseErrorInfo(object):
         self.err_msg = err_msg
 
 class SocketConnection(sockjs.tornado.SockJSConnection):
+    client_id = None # type: str
+
     def on_open(self, info):
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
         record_request_start_data(log_data)
