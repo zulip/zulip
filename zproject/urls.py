@@ -270,6 +270,7 @@ urls += [
     url(r'^api/v1/external/teamcity$',      'zerver.views.webhooks.teamcity.api_teamcity_webhook'),
     url(r'^api/v1/external/transifex$',     'zerver.views.webhooks.transifex.api_transifex_webhook'),
     url(r'^api/v1/external/travis$',        'zerver.views.webhooks.travis.api_travis_webhook'),
+    url(r'^api/v1/external/trello',         'zerver.views.webhooks.trello.api_trello_webhook'),
     url(r'^api/v1/external/updown$',        'zerver.views.webhooks.updown.api_updown_webhook'),
     url(r'^api/v1/external/yo$',            'zerver.views.webhooks.yo.api_yo_app_webhook'),
     url(r'^api/v1/external/zendesk$',       'zerver.views.webhooks.zendesk.api_zendesk_webhook'),

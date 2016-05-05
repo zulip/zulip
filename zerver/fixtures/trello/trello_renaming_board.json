@@ -1,0 +1,67 @@
+{
+   "model":{
+      "id":"53582e2da0fac5676a714277",
+      "name":"New name",
+      "desc":"",
+      "descData":null,
+      "closed":false,
+      "idOrganization":null,
+      "pinned":false,
+      "url":"https://trello.com/b/iqXXzYEj/new-name",
+      "shortUrl":"https://trello.com/b/iqXXzYEj",
+      "prefs":{
+         "permissionLevel":"private",
+         "voting":"disabled",
+         "comments":"members",
+         "invitations":"members",
+         "selfJoin":false,
+         "cardCovers":true,
+         "calendarFeedEnabled":false,
+         "background":"blue",
+         "backgroundImage":null,
+         "backgroundImageScaled":null,
+         "backgroundTile":false,
+         "backgroundBrightness":"dark",
+         "backgroundColor":"#0079BF",
+         "canBePublic":true,
+         "canBeOrg":true,
+         "canBePrivate":true,
+         "canInvite":true
+      },
+      "labelNames":{
+         "green":"",
+         "yellow":"",
+         "orange":"",
+         "red":"",
+         "purple":"",
+         "blue":"",
+         "sky":"",
+         "lime":"",
+         "pink":"",
+         "black":""
+      }
+   },
+   "action":{
+      "id":"5735c14e8cf95868089df00a",
+      "idMemberCreator":"53582e2da0fac5676a714276",
+      "data":{
+         "board":{
+            "shortLink":"iqXXzYEj",
+            "id":"53582e2da0fac5676a714277",
+            "name":"New name"
+         },
+         "old":{
+            "name":"Welcome Board"
+         }
+      },
+      "type":"updateBoard",
+      "date":"2016-05-13T11:58:06.045Z",
+      "memberCreator":{
+         "id":"53582e2da0fac5676a714276",
+         "avatarHash":null,
+         "fullName":"TomaszKolek",
+         "initials":"T",
+         "username":"tomaszkolek"
+      }
+   }
+}
