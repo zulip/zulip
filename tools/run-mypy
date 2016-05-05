@@ -21,7 +21,6 @@ tools/deprecated/
 zproject/
 zerver/lib/actions.py
 zerver/lib/bugdown/fenced_code.py
-zerver/lib/rate_limiter.py
 zerver/lib/statistics.py
 zerver/middleware.py
 zerver/migrations/

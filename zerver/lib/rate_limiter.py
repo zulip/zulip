@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Tuple
+from typing import Any, Iterator, Tuple
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
@@ -18,9 +18,13 @@ import logging
 client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES
 def _rules_for_user(user):
-    # type: (UserProfile) -> Any
+    # type: (UserProfile) -> List[Tuple[int, int]]
     if user.rate_limits != "":
-        return [tuple(int(l) for l in limit.split(':')) for limit in user.rate_limits.split(',')] # type: List[Tuple[int, int]]
+        result = [] # type: List[Tuple[int, int]]
+        for limit in user.rate_limits.split(','):
+            (seconds, requests) = limit.split(':', 2)
+            result.append((int(seconds), int(requests)))
+        return result
     return rules
 
 def redis_key(user, domain):
