@@ -59,7 +59,6 @@ if not 'DEBUG' in globals():
     # Uncomment end of next line to test JS/CSS minification.
     DEBUG = DEVELOPMENT # and platform.node() != 'your-machine'
 
-TEMPLATE_DEBUG = DEBUG
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
 
@@ -230,23 +229,37 @@ USE_L10N = True
 USE_TZ = True
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
-TEMPLATE_DIRS = ( os.path.join(DEPLOY_ROOT, 'templates'), )
 LOCALE_PATHS = ( os.path.join(DEPLOY_ROOT, 'locale'), )
 
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
 
 # List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
+LOADERS = [
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-    )
+]
 if PRODUCTION:
     # Template caching is a significant performance win in production.
-    TEMPLATE_LOADERS = (
-        ('django.template.loaders.cached.Loader',
-         TEMPLATE_LOADERS),
-        )
+    LOADERS = ['django.template.loaders.cached.Loader'] + LOADERS
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+             os.path.join(DEPLOY_ROOT, 'templates'),
+        ],
+        'APP_DIRS': False,
+        'OPTIONS': {
+            'debug': DEBUG,
+            'loaders': LOADERS,
+            'context_processors': [
+                'zerver.context_processors.add_settings',
+                'zerver.context_processors.add_metrics',
+            ],
+        },
+    },
+]
 
 MIDDLEWARE_CLASSES = (
     # Our logging middleware should be the first middleware item.
@@ -880,11 +893,6 @@ LOGGING = {
         # },
     }
 }
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'zerver.context_processors.add_settings',
-    'zerver.context_processors.add_metrics',
-)
 
 ACCOUNT_ACTIVATION_DAYS=7
 
