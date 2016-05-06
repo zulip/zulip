@@ -6,7 +6,7 @@ from django.conf import settings
 from zerver.models import get_client, UserProfile, get_user_profile_by_email
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import api_key_only_webhook_view, has_request_variables, REQ
 
 import logging
 import re
@@ -80,12 +80,8 @@ def convert_jira_markup(content, realm):
     return content
 
 @api_key_only_webhook_view
-def api_jira_webhook(request, user_profile):
-    try:
-        payload = ujson.loads(request.body)
-    except ValueError:
-        return json_error("Malformed JSON input")
-
+@has_request_variables
+def api_jira_webhook(request, user_profile, payload=REQ(argument_type='body')):
     try:
         stream = request.GET['stream']
     except (AttributeError, KeyError):

@@ -103,9 +103,8 @@ def send_formated_pagerduty(user_profile, stream, message_type, format_dict, top
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_pagerduty_webhook(request, user_profile, stream=REQ(default='pagerduty'), topic=REQ(default=None)):
-    payload = ujson.loads(request.body)
-
+def api_pagerduty_webhook(request, user_profile, payload=REQ(argument_type='body'),
+                          stream=REQ(default='pagerduty'), topic=REQ(default=None)):
     for message in payload['messages']:
         message_type = message['type']
 

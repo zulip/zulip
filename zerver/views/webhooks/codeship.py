@@ -21,9 +21,9 @@ CODESHIP_STATUS_MAPPER = {
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_codeship_webhook(request, user_profile, stream=REQ(default='codeship')):
+def api_codeship_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='codeship')):
     try:
-        payload = ujson.loads(request.body)['build']
+        payload = payload['build']
         subject = get_subject_for_http_request(payload)
         body = get_body_for_http_request(payload)
     except KeyError as e:

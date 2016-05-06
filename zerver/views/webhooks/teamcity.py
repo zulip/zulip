@@ -33,12 +33,7 @@ def get_teamcity_property_value(property_list, name):
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_teamcity_webhook(request, user_profile, stream=REQ(default='teamcity')):
-    try:
-        payload = ujson.loads(request.body)
-    except ValueError:
-        return json_error("Malformed JSON input")
-
+def api_teamcity_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='teamcity')):
     message = payload['build']
 
     build_name = message['buildFullName']
