@@ -29,8 +29,7 @@ SUPPORTED_CHECK_TYPES = (
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_pingdom_webhook(request, user_profile, stream=REQ(default='pingdom')):
-    payload = ujson.loads(request.body)
+def api_pingdom_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='pingdom')):
     check_type = get_check_type(payload)
 
     if check_type in SUPPORTED_CHECK_TYPES:

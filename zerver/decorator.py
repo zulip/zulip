@@ -426,9 +426,9 @@ class REQ(object):
         pass
     NotSpecified = _NotSpecified()
 
-    def __init__(self, whence=None, converter=None, default=NotSpecified, validator=None):
-        """
-        whence: the name of the request variable that should be used
+    def __init__(self, whence=None, converter=None, default=NotSpecified,
+                 validator=None, argument_type=None):
+        """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
         same name as the parameter.
 
@@ -442,6 +442,9 @@ class REQ(object):
         validator: similar to converter, but takes an already parsed JSON
         data structure.  If specified, we will parse the JSON request
         variable value before passing to the function
+
+        argument_type: pass 'body' to extract the parsed JSON
+        corresponding to the request body
         """
 
         self.post_var_name = whence
@@ -449,6 +452,7 @@ class REQ(object):
         self.converter = converter
         self.validator = validator
         self.default = default
+        self.argument_type = argument_type
 
         if converter and validator:
             raise Exception('converter and validator are mutually exclusive')
@@ -501,6 +505,17 @@ def has_request_variables(view_func):
         for param in post_params:
             if param.func_var_name in kwargs:
                 continue
+
+            if param.argument_type == 'body':
+                try:
+                    val = ujson.loads(request.body)
+                except ValueError:
+                    raise JsonableError('Malformed JSON')
+                kwargs[param.func_var_name] = val
+                continue
+            elif param.argument_type is not None:
+                # This is a view bug, not a user error, and thus should throw a 500.
+                raise Exception("Invalid argument type")
 
             default_assigned = False
             try:

@@ -92,12 +92,8 @@ def format_freshdesk_ticket_creation_message(ticket):
 
 @authenticated_rest_api_view
 @has_request_variables
-def api_freshdesk_webhook(request, user_profile, stream=REQ(default='')):
-    try:
-        payload = ujson.loads(request.body)
-        ticket_data = payload["freshdesk_webhook"]
-    except ValueError:
-        return json_error("Malformed JSON input")
+def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='')):
+    ticket_data = payload["freshdesk_webhook"]
 
     required_keys = [
         "triggered_event", "ticket_id", "ticket_url", "ticket_type",

@@ -75,6 +75,32 @@ class DecoratorTestCase(TestCase):
         result = get_total(request)
         self.assertEqual(result, 21)
 
+    def test_REQ_argument_type(self):
+
+        @has_request_variables
+        def get_payload(request, payload=REQ(argument_type='body')):
+            return payload
+
+        class MockRequest(object):
+            body = {}
+
+        request = MockRequest()
+
+        request.body = 'notjson'
+        with self.assertRaises(JsonableError) as cm:
+            get_payload(request)
+        self.assertEqual(str(cm.exception), 'Malformed JSON')
+
+        request.body = '{"a": "b"}'
+        self.assertEqual(get_payload(request), {'a': 'b'})
+
+        # Test we properly handle an invalid argument_type.
+        with self.assertRaises(Exception) as cm:
+            @has_request_variables
+            def test(request, payload=REQ(argument_type="invalid")):
+                pass
+            test(request)
+
 class ValidatorTestCase(TestCase):
     def test_check_string(self):
         x = "hello"
