@@ -31,6 +31,7 @@ import glob
 import os
 from optparse import make_option
 from six.moves import range
+from six import text_type
 from typing import Any, Dict, Set, Tuple
 
 settings.TORNADO_SERVER = None
@@ -265,7 +266,7 @@ def restore_saved_messages():
     old_messages = []
     duplicate_suppression_hash = {} # type: Dict[str, bool]
 
-    stream_dict = {} # type: Dict[Tuple[str, str], Tuple[str, str]]
+    stream_dict = {} # type: Dict[Tuple[text_type, text_type], Tuple[text_type, text_type]]
     user_set = set()
     email_set = set([u.email for u in UserProfile.objects.all()])
     realm_set = set()
