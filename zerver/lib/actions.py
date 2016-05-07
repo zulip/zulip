@@ -3142,7 +3142,7 @@ def do_remove_realm_filter(realm, pattern):
     notify_realm_filters(realm)
 
 def get_emails_from_user_ids(user_ids):
-    # type: (Iterable[int]) -> Dict[int, text_type]
+    # type: (Sequence[int]) -> Dict[int, text_type]
     # We may eventually use memcached to speed this up, but the DB is fast.
     return UserProfile.emails_from_ids(user_ids)
 

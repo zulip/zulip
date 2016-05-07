@@ -202,7 +202,7 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                               setter=lambda obj: obj,
                               id_fetcher=lambda obj: obj.id,
                               cache_transformer=lambda obj: obj):
-    # type: (Callable[[Any], str], Callable[[List[int]], List[Any]], List[Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any]) -> Dict[int, Any]
+    # type: (Callable[[Any], str], Callable[[List[Any]], List[Any]], List[Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any]) -> Dict[Any, Any]
     cache_keys = {} # type: Dict[int, str]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
