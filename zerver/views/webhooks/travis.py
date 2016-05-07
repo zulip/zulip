@@ -4,15 +4,19 @@ from zerver.models import get_client
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-
+from zerver.lib.validator import check_dict, check_string
 import ujson
 
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_travis_webhook(request, user_profile, stream=REQ(default='travis'), topic=REQ(default=None)):
-    message = ujson.loads(request.POST['payload'])
-
+def api_travis_webhook(request, user_profile, stream=REQ(default='travis'),
+                       topic=REQ(default=None),
+                       message=REQ('payload', validator=check_dict([
+                           ['author_name', check_string],
+                           ['status_message', check_string],
+                           ['compare_url', check_string],
+                       ]))):
     author = message['author_name']
     message_type = message['status_message']
     changes = message['compare_url']
