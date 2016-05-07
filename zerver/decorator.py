@@ -426,7 +426,7 @@ class REQ(object):
         pass
     NotSpecified = _NotSpecified()
 
-    def __init__(self, whence=None, converter=None, default=NotSpecified, validator=None):
+    def __init__(self, whence=None, converter=None, default=NotSpecified, validator=None, argument_type=None):
         """
         whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
@@ -442,6 +442,8 @@ class REQ(object):
         validator: similar to converter, but takes an already parsed JSON
         data structure.  If specified, we will parse the JSON request
         variable value before passing to the function
+
+        argument_type: doc to do
         """
 
         self.post_var_name = whence
@@ -449,6 +451,7 @@ class REQ(object):
         self.converter = converter
         self.validator = validator
         self.default = default
+        self.argument_type = argument_type
 
         if converter and validator:
             raise Exception('converter and validator are mutually exclusive')
@@ -500,6 +503,14 @@ def has_request_variables(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         for param in post_params:
             if param.func_var_name in kwargs:
+                continue
+
+            if param.argument_type == 'body':
+                try:
+                    val = ujson.loads(request.body)
+                except ValueError:
+                    raise JsonableError('Malformed JSON')
+                kwargs[param.func_var_name] = val
                 continue
 
             default_assigned = False

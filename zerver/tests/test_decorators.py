@@ -75,6 +75,26 @@ class DecoratorTestCase(TestCase):
         result = get_total(request)
         self.assertEqual(result, 21)
 
+    def test_REQ_argument_type(self):
+
+        @has_request_variables
+        def get_payload(request, payload=REQ(argument_type='body')):
+            return payload
+
+        class Request(object):
+            body = {}
+
+        request = Request()
+
+        request.body = 'notjson'
+        with self.assertRaises(JsonableError) as cm:
+            get_payload(request)
+        self.assertEqual(str(cm.exception), 'Malformed JSON')
+
+        request.body = '{"a": "b"}'
+        self.assertEqual(get_payload(request), {'a': 'b'})
+
+
 class ValidatorTestCase(TestCase):
     def test_check_string(self):
         x = "hello"

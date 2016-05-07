@@ -30,13 +30,8 @@ from six.moves import range
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_taiga_webhook(request, user_profile, stream=REQ(default='taiga'), topic=REQ(default='General')):
-
-    try:
-        message = ujson.loads(request.body)
-    except ValueError:
-        return json_error("Malformed JSON input")
-
+def api_taiga_webhook(request, user_profile, message=REQ(argument_type='body'),
+                      stream=REQ(default='taiga'), topic=REQ(default='General')):
     parsed_events = parse_message(message)
 
     content = ""

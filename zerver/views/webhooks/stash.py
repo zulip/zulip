@@ -10,12 +10,7 @@ import ujson
 
 @authenticated_rest_api_view
 @has_request_variables
-def api_stash_webhook(request, user_profile, stream=REQ(default='')):
-    try:
-        payload = ujson.loads(request.body)
-    except ValueError:
-        return json_error("Malformed JSON input")
-
+def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='')):
     # We don't get who did the push, or we'd try to report that.
     try:
         repo_name = payload["repository"]["name"]
