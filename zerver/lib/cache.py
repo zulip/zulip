@@ -203,6 +203,7 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                               id_fetcher=lambda obj: obj.id,
                               cache_transformer=lambda obj: obj):
     # type: (Callable[[Any], str], Callable[[List[int]], List[Any]], List[Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any]) -> Dict[int, Any]
+    # TODO: OBJECT_IDS_CAN_BE_STR_OR_INT zerver/models.py:689
     cache_keys = {} # type: Dict[int, str]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
