@@ -65,6 +65,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "postgresql-server-dev-all",
     "libmemcached-dev",
     "python-dev",
+    "python3-dev",          # Needed to install typed-ast dependency of mypy
     "hunspell-en-us",
     "nodejs",
     "nodejs-legacy",
