@@ -9,13 +9,9 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_newrelic_webhook(request, user_profile, alert=REQ(validator=check_dict([]), default=None),
-                             deployment=REQ(validator=check_dict([]), default=None)):
-    try:
-        stream = request.GET['stream']
-    except (AttributeError, KeyError):
-        return json_error("Missing stream parameter.")
-
+def api_newrelic_webhook(request, user_profile, stream=REQ(),
+                         alert=REQ(validator=check_dict([]), default=None),
+                         deployment=REQ(validator=check_dict([]), default=None)):
     if alert:
         # Use the message as the subject because it stays the same for
         # "opened", "acknowledged", and "closed" messages that should be

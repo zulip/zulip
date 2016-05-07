@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from zerver.models import get_client
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 
 from defusedxml.ElementTree import fromstring as xml_fromstring
 
@@ -148,12 +148,8 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
     return subject, content
 
 @api_key_only_webhook_view
-def api_pivotal_webhook(request, user_profile):
-    try:
-        stream = request.GET['stream']
-    except (AttributeError, KeyError):
-        return json_error("Missing stream parameter.")
-
+@has_request_variables
+def api_pivotal_webhook(request, user_profile, stream=REQ()):
     subject = content = None
     try:
         subject, content = api_pivotal_webhook_v3(request, user_profile, stream)

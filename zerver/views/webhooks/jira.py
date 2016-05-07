@@ -81,12 +81,8 @@ def convert_jira_markup(content, realm):
 
 @api_key_only_webhook_view
 @has_request_variables
-def api_jira_webhook(request, user_profile, payload=REQ(argument_type='body')):
-    try:
-        stream = request.GET['stream']
-    except (AttributeError, KeyError):
-        stream = 'jira'
-
+def api_jira_webhook(request, user_profile, payload=REQ(argument_type='body'),
+                     stream=REQ(default='jira')):
     def get_in(payload, keys, default=''):
         try:
             for key in keys:

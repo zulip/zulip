@@ -92,7 +92,8 @@ def format_freshdesk_ticket_creation_message(ticket):
 
 @authenticated_rest_api_view
 @has_request_variables
-def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='')):
+def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body'),
+                          stream=REQ(default='freshdesk')):
     ticket_data = payload["freshdesk_webhook"]
 
     required_keys = [
@@ -106,11 +107,6 @@ def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body
             logging.warning("Freshdesk webhook error. Payload was:")
             logging.warning(request.body)
             return json_error("Missing key %s in JSON" % (key,))
-
-    try:
-        stream = request.GET['stream']
-    except (AttributeError, KeyError):
-        stream = 'freshdesk'
 
     ticket = TicketDict(ticket_data)
 

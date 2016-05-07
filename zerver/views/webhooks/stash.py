@@ -10,7 +10,8 @@ import ujson
 
 @authenticated_rest_api_view
 @has_request_variables
-def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='')):
+def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'),
+                      stream=REQ(default='commits')):
     # We don't get who did the push, or we'd try to report that.
     try:
         repo_name = payload["repository"]["name"]
@@ -23,11 +24,6 @@ def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'), 
         head_ref = commit_entries[-1]["toCommit"]["displayId"]
     except KeyError as e:
         return json_error("Missing key %s in JSON" % (e.message,))
-
-    try:
-        stream = request.GET['stream']
-    except (AttributeError, KeyError):
-        stream = 'commits'
 
     subject = "%s/%s: %s" % (project_name, repo_name, branch_name)
 
