@@ -38,7 +38,7 @@ mock==1.0.1
 modernize==0.5
 oauth2client==1.4.11
 oauthlib==1.0.3
-pika==0.9.14
+pika==0.10.0
 postmonkey==1.0b0
 psycopg2==2.6
 pyOpenSSL==0.15.1
