@@ -2,9 +2,7 @@
 Installing the Zulip Development environment
 ============================================
 
-You will need a machine with at least 2GB of RAM available (see
-https://github.com/zulip/zulip/issues/32 for a plan for how to
-dramatically reduce this requirement).
+You will need a machine with at least 1.25GB of RAM available.
 
 Start by cloning this repository: `git clone https://github.com/zulip/zulip.git`
 
