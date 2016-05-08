@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-AA
 from __future__ import absolute_import
 
 from zerver.models import (
-    get_user_profile_by_email, Recipient, UserMessage,
+    get_user_profile_by_email, Recipient, UserMessage
 )
 
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import AuthedTestCase, tornado_redirected_to_list
 import ujson
 
 class PointerTest(AuthedTestCase):
@@ -136,4 +136,103 @@ class UnreadCountTests(AuthedTestCase):
 
         for msg in self.get_old_messages():
             self.assertEqual(msg['flags'], [])
+
+    def test_mark_all_in_stream_read(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
+
+        message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello")
+        unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello")
+
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+                                                               "op": "add",
+                                                               "flag": "read",
+                                                               "stream_name": "test_stream"})
+
+        self.assert_json_success(result)
+        self.assertTrue(len(events) == 1)
+
+        event = events[0]['event']
+        expected = dict(operation='add',
+                        messages=[message_id],
+                        flag='read',
+                        type='update_message_flags',
+                        all=False)
+
+        differences = [key for key in expected if expected[key] != event[key]]
+        self.assertTrue(len(differences) == 0)
+
+        um = list(UserMessage.objects.filter(message=message_id))
+        for msg in um:
+            if msg.user_profile.email == "hamlet@zulip.com":
+                self.assertTrue(msg.flags.read)
+            else:
+                self.assertFalse(msg.flags.read)
+
+        unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
+        for msg in unrelated_messages:
+            if msg.user_profile.email == "hamlet@zulip.com":
+                self.assertFalse(msg.flags.read)
+
+
+    def test_mark_all_in_invalid_stream_read(self):
+        self.login("hamlet@zulip.com")
+        invalid_stream_name = ""
+        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+                                                           "op": "add",
+                                                           "flag": "read",
+                                                           "stream_name": invalid_stream_name})
+        self.assert_json_error(result, 'No such stream \'\'')
+
+    def test_mark_all_in_stream_topic_read(self):
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
+
+        message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello", "test_topic")
+        unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello", "Denmark2")
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+                                                               "op": "add",
+                                                               "flag": "read",
+                                                               "topic_name": "test_topic",
+                                                               "stream_name": "test_stream"})
+
+        self.assert_json_success(result)
+        self.assertTrue(len(events) == 1)
+
+        event = events[0]['event']
+        expected = dict(operation='add',
+                        messages=[message_id],
+                        flag='read',
+                        type='update_message_flags',
+                        all=False)
+
+        differences = [key for key in expected if expected[key] != event[key]]
+        self.assertTrue(len(differences) == 0)
+
+        um = list(UserMessage.objects.filter(message=message_id))
+        for msg in um:
+            if msg.user_profile.email == "hamlet@zulip.com":
+                self.assertTrue(msg.flags.read)
+
+        unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
+        for msg in unrelated_messages:
+            if msg.user_profile.email == "hamlet@zulip.com":
+                self.assertFalse(msg.flags.read)
+
+
+    def test_mark_all_in_invalid_topic_read(self):
+        self.login("hamlet@zulip.com")
+        invalid_topic_name = "abc"
+        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+                                                           "op": "add",
+                                                           "flag": "read",
+                                                           "topic_name": invalid_topic_name,
+                                                           "stream_name": "Denmark"})
+        self.assert_json_error(result, 'No such topic \'abc\'')
 

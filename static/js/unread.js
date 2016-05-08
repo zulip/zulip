@@ -272,6 +272,33 @@ exports.mark_current_list_as_read = function mark_current_list_as_read(options) 
     exports.mark_messages_as_read(current_msg_list.all_messages(), options);
 };
 
+exports.mark_stream_as_read = function mark_stream_as_read(stream, cont) {
+    channel.post({
+        url:      '/json/messages/flags',
+        idempotent: true,
+        data:     {messages: JSON.stringify([]),
+                   all:      false,
+                   op:       'add',
+                   flag:     'read',
+                   stream_name: stream
+                  },
+        success:  cont});
+};
+
+exports.mark_topic_as_read = function mark_topic_as_read(stream, topic, cont) {
+    channel.post({
+    url:      '/json/messages/flags',
+    idempotent: true,
+    data:     {messages: JSON.stringify([]),
+               all:      false,
+               op:       'add',
+               flag:     'read',
+               topic_name: topic,
+               stream_name: stream
+               },
+    success:  cont});
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {

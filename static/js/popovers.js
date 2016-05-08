@@ -383,6 +383,13 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $('body').on('click', '.sidebar-popover-mark-topic-read', function (e) {
+        var topic = $(e.currentTarget).attr('data-topic-name');
+        var stream = $(e.currentTarget).attr('data-stream-name');
+        popovers.hide_topic_sidebar_popover();
+        unread.mark_topic_as_read(stream,topic);
+        e.stopPropagation();
+    });
 
     $('#stream_filters').on('click', '.stream-sidebar-arrow', function (e) {
         var elt = e.target;
@@ -544,6 +551,13 @@ exports.register_click_handlers = function () {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();
         compose.start('stream', {"stream": stream, trigger: 'sidebar stream actions'});
+        e.stopPropagation();
+    });
+
+    $('body').on('click', '.mark_stream_as_read', function (e) {
+        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        popovers.hide_stream_sidebar_popover();
+        unread.mark_stream_as_read(stream);
         e.stopPropagation();
     });
 

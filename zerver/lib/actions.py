@@ -2050,12 +2050,20 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
 
-def do_update_message_flags(user_profile, operation, flag, messages, all):
+def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:
         log_statsd_event('bankruptcy')
         msgs = UserMessage.objects.filter(user_profile=user_profile)
+    elif stream_obj is not None:
+        recipient = get_recipient(Recipient.STREAM, stream_obj.id)
+        if topic_name:
+            msgs = UserMessage.objects.filter(message__recipient=recipient,
+                                              user_profile=user_profile,
+                                              message__subject__iexact=topic_name)
+        else:
+            msgs = UserMessage.objects.filter(message__recipient=recipient, user_profile=user_profile)
     else:
         msgs = UserMessage.objects.filter(user_profile=user_profile,
                                           message__id__in=messages)
@@ -2092,9 +2100,13 @@ def do_update_message_flags(user_profile, operation, flag, messages, all):
     # are kind of magical; they are actually just testing the one bit.
     if operation == 'add':
         msgs = msgs.filter(flags=~flagattr)
+        if stream_obj:
+            messages = list(msgs.values_list('message__id', flat=True))
         count = msgs.update(flags=F('flags').bitor(flagattr))
     elif operation == 'remove':
         msgs = msgs.filter(flags=flagattr)
+        if stream_obj:
+            messages = list(msgs.values_list('message__id', flat=True))
         count = msgs.update(flags=F('flags').bitand(~flagattr))
 
     event = {'type': 'update_message_flags',
