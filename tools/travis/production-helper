@@ -67,5 +67,30 @@ if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*u
     exit 1
 fi
 
+echo; echo "Now running RabbitMQ consumer Nagios tests"; echo
+for consumer in notify_tornado user_activity user_activity_interval user_presence invites signups message_sender feedback_messages error_reports digest_emails email_mirror missedmessage_mobile_notifications; do
+    /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file "$consumer"
+    if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_rabbitmq_consumers "$consumer"; then
+        set +x
+        echo
+        echo "FAILURE: Missing Nagios consumer for $consumer; displaying full consumer output:"
+        rabbitmqctl list_consumers
+        echo
+        exit 1
+    fi
+done
+
+echo; echo "Now running additional Nagios tests"; echo
+if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors || \
+   ! su zulip -c /usr/lib/nagios/plugins/zulip_postgres_appdb/check_fts_update_log || \
+   ! /usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure; then
+    set +x
+    echo
+    echo "FAILURE: Nagios checks don't pass:"
+    echo
+    echo "DEBUG: printing Zulip server's error log:"
+    cat /var/log/zulip/errors.log
+    exit 1
+fi
 echo "Production installation test successful!"
 exit 0
