@@ -12,8 +12,8 @@ from __future__ import print_function
 
 import sys
 
-sys.path.append('/home/zulip/deployments/current')
-from bots.cron_file_helper import nagios_from_file
+sys.path.append('/home/zulip/deployments/current/scripts/nagios')
+from cron_file_helper import nagios_from_file
 
 if len(sys.argv) < 2:
     print("Please pass the name of the consumer file to check")
