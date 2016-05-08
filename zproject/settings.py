@@ -241,7 +241,7 @@ LOADERS = [
 ]
 if PRODUCTION:
     # Template caching is a significant performance win in production.
-    LOADERS = ['django.template.loaders.cached.Loader'] + LOADERS
+    LOADERS = [('django.template.loaders.cached.Loader', LOADERS)]
 
 TEMPLATES = [
     {
