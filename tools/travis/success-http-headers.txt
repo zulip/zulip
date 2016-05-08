@@ -1,0 +1,31 @@
+The certificate's owner does not match hostname ‘localhost’
+  HTTP/1.1 302 FOUND
+  Server: nginx/1.4.6 (Ubuntu)
+  Content-Type: text/html; charset=utf-8
+  Transfer-Encoding: chunked
+  Connection: keep-alive
+  Location: https://localhost/login
+  Strict-Transport-Security: max-age=15768000
+Location: https://localhost/login [following]
+Reusing existing connection to localhost:443.
+  HTTP/1.1 301 MOVED PERMANENTLY
+  Server: nginx/1.4.6 (Ubuntu)
+  Content-Type: text/html; charset=utf-8
+  Transfer-Encoding: chunked
+  Connection: keep-alive
+  Location: https://localhost/login/
+  Strict-Transport-Security: max-age=15768000
+Location: https://localhost/login/ [following]
+Reusing existing connection to localhost:443.
+  HTTP/1.1 200 OK
+  Server: nginx/1.4.6 (Ubuntu)
+  Content-Type: text/html; charset=utf-8
+  Transfer-Encoding: chunked
+  Connection: keep-alive
+  Cache-Control: max-age=0
+  Strict-Transport-Security: max-age=15768000
+Length: unspecified [text/html]
+Saving to: ‘/tmp/index.html’
+
+
+

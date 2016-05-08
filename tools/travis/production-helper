@@ -31,3 +31,21 @@ DEFAULT_FROM_EMAIL = "Zulip <zulip@travis.example.com>"
 EOF
 
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
+
+# TODO: Ideally this would test actually logging in, but this is a start.
+echo; echo "Now testing that the newly installed server's homepage loads"; echo
+
+wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output
+grep -vi '\(Vary\|Content-Language\|expires\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
+if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
+    set +x
+    echo
+    echo "The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/travis/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+    echo "Displaying the contents of the server's error log:"
+    echo
+    cat /var/log/zulip/errors.log
+    exit 1
+else
+    echo "Production installation test successful!"
+    exit 0
+fi
