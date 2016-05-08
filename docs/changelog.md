@@ -3,6 +3,9 @@
 All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
+- Added new Attachment model to keep track of uploaded files.
+- Added caching of virtualenvs in development.
+- Fixed missing helper scripts for RabbitMQ Nagios plugins.
 
 ### 1.3.11 - 2016-05-02
 - Moved email digest support into the default Zulip production configuration.
