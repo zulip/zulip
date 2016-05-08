@@ -157,8 +157,11 @@ def get_django_tag(text, i):
     return s
 
 def get_html_tag(text, i):
+    quote_count = 0
     end = i + 1
-    while end < len(text) and text[end] != '>':
+    while end < len(text) and (text[end] != '>' or quote_count % 2 != 0):
+        if text[end] == '"':
+            quote_count += 1
         end += 1
     if text[end] != '>':
         raise Exception('Tag missing >')
