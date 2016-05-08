@@ -603,11 +603,26 @@ def get_old_messages_backend(request, user_profile,
 
 @has_request_variables
 def update_message_flags(request, user_profile,
-                      messages=REQ('messages', validator=check_list(check_int)),
-                      operation=REQ('op'), flag=REQ('flag'),
-                      all=REQ('all', validator=check_bool, default=False)):
+                         messages=REQ('messages', validator=check_list(check_int)),
+                         operation=REQ('op'), flag=REQ('flag'),
+                         all=REQ('all', validator=check_bool, default=False),
+                         stream_name=REQ('stream_name', default=None),
+                         topic_name=REQ('topic_name', default=None)):
+
     request._log_data["extra"] = "[%s %s]" % (operation, flag)
-    do_update_message_flags(user_profile, operation, flag, messages, all)
+    stream = None
+    if stream_name is not None:
+        stream = get_stream(stream_name, user_profile.realm)
+        if not stream:
+            raise JsonableError('No such stream \'%s\'' % (stream_name,))
+        if topic_name:
+            topic_exists = UserMessage.objects.filter(user_profile=user_profile,
+                                                      message__recipient__type_id=stream.id,
+                                                      message__recipient__type=Recipient.STREAM,
+                                                      message__subject__iexact=topic_name).exists()
+            if not topic_exists:
+                raise JsonableError('No such topic \'%s\'' % (topic_name,))
+    do_update_message_flags(user_profile, operation, flag, messages, all, stream, topic_name)
     return json_success({'result': 'success',
                          'messages': messages,
                          'msg': ''})

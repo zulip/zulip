@@ -21,7 +21,7 @@ class Command(BaseCommand):
                 print("e-mail %s doesn't exist in the system, skipping" % (email,))
                 continue
 
-            do_update_message_flags(user_profile, "add", "read", None, True)
+            do_update_message_flags(user_profile, "add", "read", None, True, None, None)
 
             messages = Message.objects.filter(
                 usermessage__user_profile=user_profile).order_by('-id')[:1]
