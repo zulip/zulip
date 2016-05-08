@@ -38,6 +38,10 @@ parser.add_option('--nagios',
                   dest='nagios',
                   action='store_true')
 
+parser.add_option('--insecure',
+                  dest='insecure',
+                  action='store_true')
+
 parser.add_option('--munin',
                   dest='munin',
                   action='store_true')
@@ -114,6 +118,7 @@ zulip_sender = zulip.Client(
     email=sender.email,
     api_key=sender.api_key,
     verbose=True,
+    insecure=options.insecure,
     client="ZulipMonitoring/0.1",
     site=site)
 
@@ -121,6 +126,7 @@ zulip_recipient = zulip.Client(
     email=recipient.email,
     api_key=recipient.api_key,
     verbose=True,
+    insecure=options.insecure,
     client="ZulipMonitoring/0.1",
     site=site)
 
