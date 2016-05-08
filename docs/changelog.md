@@ -1,10 +1,10 @@
-# Change Log
+# Version History
 
-All notable changes to this project will be documented in this file.
+All notable changes to the Zulip server are documented in this file.
 
-[Unreleased]
+### Unreleased
 
-[1.3.11]
+### 1.3.11 - 2016-05-02
 - Moved email digest support into the default Zulip production configuration.
 - Added options for configuring Postgres, RabbitMQ, Redis, and memcached
   in settings.py.
@@ -32,7 +32,7 @@ All notable changes to this project will be documented in this file.
 - Fixed 500 errors when uploading a non-image file as an avatar.
 - Fixed Jira integration incorrectly not @-mentioning assignee.
 
-[1.3.10]
+### 1.3.10 - 2016-01-21
 - Added new integration for Travis CI.
 - Added settings option to control maximum file upload size.
 - Added support for running Zulip development environment in Docker.
@@ -54,10 +54,10 @@ All notable changes to this project will be documented in this file.
 - Fixed realm restrictions for servers with a unique, open realm.
 - Substantially cleaned up console logging from run-dev.py.
 
-[1.3.9] - 2015-11-16
+### 1.3.9 - 2015-11-16
 - Fixed buggy #! lines in upgrade scripts.
 
-[1.3.8] - 2015-11-15
+### 1.3.8 - 2015-11-15
 - Added options to the Python api for working with untrusted server certificates.
 - Added a lot of documentation on the development environment and testing.
 - Added partial support for translating the Zulip UI.
@@ -72,7 +72,7 @@ All notable changes to this project will be documented in this file.
   (https://github.com/zulip/zulip/issues/230).
 - Major preliminary progress towards supporting Python 3.
 
-[1.3.7] - 2015-10-19
+### 1.3.7 - 2015-10-19
 - Turn off desktop and audible notifications for streams by default.
 - Added support for the LDAP authentication integration creating new users.
 - Added new endpoint to support Google auth on mobile.
