@@ -22,6 +22,7 @@ Contents:
    front-end-build-process
    mypy
    translating
+   changelog
    roadmap
 
 Indices and tables
