@@ -14,7 +14,7 @@ if __name__ == "__main__":
     from django.conf import settings
 
     logger = logging.getLogger("zulip.management")
-    subprocess.check_call([os.path.join(os.path.dirname(__file__), "bin", "log-management-command"),
+    subprocess.check_call([os.path.join(os.path.dirname(__file__), "scripts", "lib", "log-management-command"),
                            " ".join(sys.argv)])
 
     if "--no-traceback" not in sys.argv and len(sys.argv) > 1:
