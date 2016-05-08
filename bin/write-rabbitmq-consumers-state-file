@@ -12,5 +12,5 @@ ZULIP_DIR=/home/zulip/deployments/current
 STATE_DIR=/var/lib/nagios_state
 STATE_FILE=$STATE_DIR/check-rabbitmq-consumers-$queue
 
-"$ZULIP_DIR/bots/check-rabbitmq-consumers" "--queue=$queue" &> "${STATE_FILE}-tmp";
+"$ZULIP_DIR/scripts/nagios/check-rabbitmq-consumers" "--queue=$queue" &> "${STATE_FILE}-tmp";
 mv "${STATE_FILE}-tmp" "$STATE_FILE"
