@@ -40,12 +40,32 @@ grep -vi '\(Vary\|Content-Language\|expires\|modified\|saved\|[.][.][.]\|Date\|[
 if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
     set +x
     echo
-    echo "The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/travis/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/travis/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
     echo "Displaying the contents of the server's error log:"
     echo
     cat /var/log/zulip/errors.log
     exit 1
-else
-    echo "Production installation test successful!"
-    exit 0
 fi
+
+echo; echo "Now testing that the supervisord jobs are running properly"; echo
+sleep 10 # Guaranteed to have a working supervisord process get an extra digit
+if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*uptime //' | grep -q 0:00:0; then
+    set +x
+    echo
+    echo "FAILURE: Supervisor output shows daemons are crashing:"
+    echo
+    supervisorctl status
+    echo
+    echo "DEBUG: printing Zulip server's error log:"
+    cat /var/log/zulip/errors.log
+    echo
+    echo "DEBUG: printing Zulip server's workers log:"
+    cat /var/log/zulip/workers.log
+    echo
+    echo "DEBUG: printing Zulip server's tornado log:"
+    cat /var/log/zulip/tornado.log
+    exit 1
+fi
+
+echo "Production installation test successful!"
+exit 0
