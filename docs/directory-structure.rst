@@ -11,7 +11,7 @@ Scripts
 +--------------------+-----------------------------------------------------------------------------------+
 | ``scripts/``       | Scripts that production deployments might run manually (e.g. ``restart-server``)  |
 +--------------------+-----------------------------------------------------------------------------------+
-| ``bin/``           | Scripts that are needed on production deployments but humans should never run     |
+| ``scripts/lib/``   | Scripts that are needed on production deployments but humans should never run     |
 +--------------------+-----------------------------------------------------------------------------------+
 | ``scripts/setup/`` | Tools that production deployments will only run once, during installation         |
 +--------------------+-----------------------------------------------------------------------------------+
