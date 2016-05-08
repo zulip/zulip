@@ -303,7 +303,7 @@ INSTALLED_APPS = [
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.
 # We override the port number when running frontend tests.
-TORNADO_SERVER = 'http://localhost:9993'
+TORNADO_SERVER = 'http://127.0.0.1:9993'
 RUNNING_INSIDE_TORNADO = False
 
 ########################################################################
