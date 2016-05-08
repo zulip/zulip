@@ -56,7 +56,7 @@ new event that is sent to clients, be sure to add a handler for it to
 feature requires UI changes, you may need to add additional CSS to this file.
 
 **Templates:** The initial page structure is rendered via Django templates 
-located in ``template/server``. For JavaScript, Zulip uses Handlebars templates located in
+located in ``templates/zerver``. For JavaScript, Zulip uses Handlebars templates located in
 ``static/templates``. Templates are precompiled as part of the build/deploy
 process.
 
