@@ -1,9 +1,9 @@
 git+https://github.com/zulip/truncated-django.git
 Flask==0.10.1 # Dependency of moto s3 mock
 GitPython==0.3.2.1
-Jinja2==2.8 # Dependency of moto s3 mock
+Jinja2==2.7.2
 Markdown==2.1.1
-MarkupSafe==0.23  # Dependency of moto s3 mock
+MarkupSafe==0.18
 Pillow==2.8.2
 Pygments==2.0.2
 SQLAlchemy==0.7.8
