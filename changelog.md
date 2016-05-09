@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 [Unreleased]
 
+[1.3.12]
+- CVE-2016-4426: Bot API keys were accessible to other users in the same realm.
+- CVE-2016-4427: Deactivated users could access messages if SSO was enabled.
+- Fixed a RabbitMQ configuration bug that resulted in reordered messages.
+- Added expansive test suite for authentication backends and decorators.
+- Added an option to logout_all_users to delete only sessions for deactivated users.
+
 [1.3.11]
 - Moved email digest support into the default Zulip production configuration.
 - Added options for configuring Postgres, RabbitMQ, Redis, and memcached
