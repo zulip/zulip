@@ -51,7 +51,7 @@ def list_of_tlds():
     # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
     tlds = [tld.lower().strip() for tld in open(tlds_file, 'r')
-                if not tld in blacklist and not tld[0].startswith('#')]
+                if tld not in blacklist and not tld[0].startswith('#')]
     tlds.sort(key=len, reverse=True)
     return tlds
 
@@ -683,7 +683,7 @@ def url_to_a(url, text = None):
 
     a.set('href', href)
     a.text = text
-    fixup_link(a, not 'mailto:' in href[:7])
+    fixup_link(a, 'mailto:' not in href[:7])
     return a
 
 class AutoLink(markdown.inlinepatterns.Pattern):

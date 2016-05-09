@@ -118,7 +118,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         if msg['request']['csrf_token'] != self.csrf_token:
             raise SocketAuthError('CSRF token does not match that in cookie')
 
-        if not 'queue_id' in msg['request']:
+        if 'queue_id' not in msg['request']:
             raise SocketAuthError("Missing 'queue_id' argument")
 
         queue_id = msg['request']['queue_id']

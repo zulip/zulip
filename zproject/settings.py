@@ -55,7 +55,7 @@ AVATAR_SALT = get_secret("avatar_salt")
 # restarted for triggering browser clients to reload.
 SERVER_GENERATION = int(time.time())
 
-if not 'DEBUG' in globals():
+if 'DEBUG' not in globals():
     # Uncomment end of next line to test JS/CSS minification.
     DEBUG = DEVELOPMENT # and platform.node() != 'your-machine'
 
@@ -166,7 +166,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
-    if not setting_name in vars():
+    if setting_name not in vars():
         vars()[setting_name] = setting_val
 
 # These are the settings that we will check that the user has filled in for
@@ -945,7 +945,7 @@ AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 
 if POPULATE_PROFILE_VIA_LDAP and \
-       not 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS:
+   'zproject.backends.ZulipLDAPAuthBackend' not in AUTHENTICATION_BACKENDS:
     AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPUserPopulator',)
 else:
     POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP

@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 known_active = last_presence.timestamp
 
             for bucket in hour_buckets:
-                if not bucket in user_info[last_presence.user_profile.realm.domain]:
+                if bucket not in user_info[last_presence.user_profile.realm.domain]:
                     user_info[last_presence.user_profile.realm.domain][bucket] = []
                 if datetime.now(known_active.tzinfo) - known_active < timedelta(hours=bucket):
                     user_info[last_presence.user_profile.realm.domain][bucket].append(last_presence.user_profile.email)
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         user_info = defaultdict(dict)
         for activity in users_reading:
             for bucket in hour_buckets:
-                if not bucket in user_info[activity.user_profile.realm.domain]:
+                if bucket not in user_info[activity.user_profile.realm.domain]:
                     user_info[activity.user_profile.realm.domain][bucket] = []
                 if datetime.now(activity.last_visit.tzinfo) - activity.last_visit < timedelta(hours=bucket):
                     user_info[activity.user_profile.realm.domain][bucket].append(activity.user_profile.email)

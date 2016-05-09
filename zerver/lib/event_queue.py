@@ -575,7 +575,7 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         if not event['type'] == 'message' or not event['flags']:
             continue
 
-        if 'mentioned' in event['flags'] and not 'read' in event['flags']:
+        if 'mentioned' in event['flags'] and 'read' not in event['flags']:
             notify_info = dict(message_id=event['message']['id'])
 
             if not event.get('push_notified', False):
@@ -603,7 +603,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
     # presence information in this case (and it's hard to get without an additional
     # db query) so we simply don't try to guess if this cross-realm recipient
     # has been idle for too long
-    if realm_presences is None or not user_profile_id in realm_presences:
+    if realm_presences is None or user_profile_id not in realm_presences:
         return off_zulip
 
     # We want to find the newest "active" presence entity and compare that to the

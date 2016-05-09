@@ -23,7 +23,7 @@ def add_user_alert_words(user_profile, alert_words):
     # type: (UserProfile, List[str]) -> List[str]
     words = user_alert_words(user_profile)
 
-    new_words = [w for w in alert_words if not w in words]
+    new_words = [w for w in alert_words if w not in words]
     words.extend(new_words)
 
     set_user_alert_words(user_profile, words)
@@ -33,7 +33,7 @@ def add_user_alert_words(user_profile, alert_words):
 def remove_user_alert_words(user_profile, alert_words):
     # type: (UserProfile, List[str]) -> List[str]
     words = user_alert_words(user_profile)
-    words = [w for w in words if not w in alert_words]
+    words = [w for w in words if w not in alert_words]
 
     set_user_alert_words(user_profile, words)
 

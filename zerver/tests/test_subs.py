@@ -653,7 +653,7 @@ class SubscriptionAPITest(AuthedTestCase):
         all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.realm)]
         for stream in existing_stream_names:
             random_stream = stream + str(random.randint(0, 9))
-            if not random_stream in all_stream_names:
+            if random_stream not in all_stream_names:
                 random_streams.append(random_stream)
         return random_streams
 
@@ -1100,7 +1100,7 @@ class SubscriptionAPITest(AuthedTestCase):
         streams_to_remove = self.streams[1:]
         not_subbed = []
         for stream in Stream.objects.all():
-            if not stream.name in self.streams:
+            if stream.name not in self.streams:
                 not_subbed.append(stream.name)
         random.shuffle(not_subbed)
         self.assertNotEqual(len(not_subbed), 0)  # necessary for full test coverage

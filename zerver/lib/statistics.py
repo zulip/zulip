@@ -90,7 +90,7 @@ def users_active_nosend_during_day(day):
                                                         start__lte=end_day)
         if len(intervals) != 0:
             today_users.append(user_profile)
-    return [u for u in today_users if not u.id in today_senders]
+    return [u for u in today_users if u.id not in today_senders]
 
 def calculate_stats(data, all_users):
     # type: (List[float], List[UserProfile]) -> Dict[str, Any]

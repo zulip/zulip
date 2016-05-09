@@ -303,7 +303,7 @@ def api_endpoint_docs(request):
         call["endpoint"] = "%s/v1/%s" % (settings.EXTERNAL_API_URI, call["endpoint"])
         call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com", settings.EXTERNAL_API_URI)
         response = call['example_response']
-        if not '\n' in response:
+        if '\n' not in response:
             # For 1-line responses, pretty-print them
             extended_response = response.replace(", ", ",\n ")
         else:
@@ -897,7 +897,7 @@ def is_buggy_ua(agent):
     just serve the more conservative CSS to all our desktop apps.
     """
     return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
-        not "Mac" in agent
+        "Mac" not in agent
 
 def get_pointer_backend(request, user_profile):
     return json_success({'pointer': user_profile.pointer})
