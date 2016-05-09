@@ -305,6 +305,16 @@ def delete_all_user_sessions():
     for session in Session.objects.all():
         delete_session(session)
 
+def delete_all_deactivated_user_sessions():
+    for session in Session.objects.all():
+        user_profile_id = get_session_user(session)
+        if user_profile_id is None:
+            continue
+        user_profile = get_user_profile_by_id(user_profile_id)
+        if not user_profile.is_active or user_profile.realm.deactivated:
+            logging.info("Deactivating session for deactivated user %s" % (user_profile.email,))
+            delete_session(session)
+
 def active_humans_in_realm(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
