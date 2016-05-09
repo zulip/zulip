@@ -1,16 +1,15 @@
-{% load i18n %}
 <div class="modal hide" id="tutorial-finale" tabindex="-1" role="dialog"
      aria-labelledby="tutorial-finale-label" aria-hidden="true">
   <div class="modal-header">
-    <h3 id="tutorial-finale-label">{% blocktrans %}Welcome to {{ product_name }}{% endblocktrans %}</h3>
+    <h3 id="tutorial-finale-label">{% trans %}Welcome to {{ product_name }}{% endtrans %}</h3>
   </div>
   <div class="modal-body">
-    <p>{% blocktrans %}Streams, topics, and narrowing make {{ product_name }} conversations
-    efficient and productive.{% endblocktrans %}</p>
+    <p>{% trans %}Streams, topics, and narrowing make {{ product_name }} conversations
+    efficient and productive.{% endtrans %}</p>
 
-    <p>{% blocktrans %}That's all there is to it, so let's get started!{% endblocktrans %}</p>
+    <p>{% trans %}That's all there is to it, so let's get started!{% endtrans %}</p>
   </div>
   <div class="modal-footer">
-      <button class="btn btn-primary" type="submit" id="tutorial-get-started">{% blocktrans %}Get started{% endblocktrans %}</button>
+      <button class="btn btn-primary" type="submit" id="tutorial-get-started">{% trans %}Get started{% endtrans %}</button>
   </div>
 </div>

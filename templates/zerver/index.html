@@ -1,10 +1,6 @@
 {% extends "zerver/base.html" %}
-{% load i18n %}
 {# The app itself. #}
 {# Includes some other templates as tabs. #}
-
-{% load compressed %}
-{% load minified_js %}
 
 {% block page_params %}
 {# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
@@ -35,25 +31,25 @@ var page_params = {{ page_params }};
 
 {% if nofontface %}
 {# We can't use @font-face on qtwebkit, so use differently minified CSS #}
-{% compressed_css 'app-fontcompat' %}
+{{ compressed_css('app-fontcompat')|safe }}
 {% else %}
-{% compressed_css 'app' %}
+{{ compressed_css('app')|safe }}
 {% endif %}
-{% minified_js 'app' %}
+{{ minified_js('app')|safe }}
 
 {% if not pipeline %}
 <script type="text/javascript" src="/webpack/bundle.js"></script>
 {% endif %}
 
 {% if debug %}
-{% minified_js 'app_debug' %}
+{{ minified_js('app_debug')|safe }}
 {% endif %}
 
 {% endblock %}
 {% block content %}
 <div id="css-loading">
-    <h3>{% trans 'Loading' %}...</h3>
-    <p>{% trans 'If this message does not go away, please wait a couple seconds and' %} <a href="javascript:location.reload(true)">{% trans 'reload' %}</a> {% trans 'the page' %}.</p>
+    <h3>{{ _('Loading') }}...</h3>
+    <p>{{ _('If this message does not go away, please wait a couple seconds and') }} <a href="javascript:location.reload(true)">{{ _('reload') }}</a> {{ _('the page') }}.</p>
 </div>
 
 <div id="top-screen" class="screen"></div>

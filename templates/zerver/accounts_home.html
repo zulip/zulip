@@ -1,5 +1,4 @@
 {% extends "zerver/portico_signup.html" %}
-{% load i18n %}
 {# Home page for not logged-in users. #}
 
 {# This is where we pitch the app and solicit signups. #}
@@ -16,14 +15,14 @@ $(function () {
 
         <div class="register-form">
             <p class="lead">
-              <div class="register-page-header">{% trans "Let's get started" %}…</div>
+              <div class="register-page-header">{{ _("Let's get started") }}…</div>
             </p>
             <form class="form-inline" id="send_confirm" name="email_form"
-                  action="{{ current_url }}" method="post">
-                {% csrf_token %}
-                <input type="text" class="email required" placeholder="{% trans "Enter your work email address" %}"
+                  action="{{ current_url() }}" method="post">
+                {{ csrf_input }}
+                <input type="text" class="email required" placeholder="{{ _("Enter your work email address") }}"
                        id="email" name="email"/>
-                <input type="submit" class="btn btn-primary btn-large register-button" value="{% trans "Sign up" %}"/>
+                <input type="submit" class="btn btn-primary btn-large register-button" value="{{ _("Sign up") }}"/>
             </form>
             <div id="errors"></div>
             {% if form.email.errors %}
@@ -32,12 +31,12 @@ $(function () {
                 {% endfor %}
             {% endif %}
 
-            <div class="alert alert-pitch" id="company-email">{% blocktrans %}Please use your
+            <div class="alert alert-pitch" id="company-email">{% trans %}Please use your
             company email address to sign up. Otherwise, we won’t be able to
-            connect you with your coworkers{% endblocktrans %}.</div>
+            connect you with your coworkers{% endtrans %}.</div>
             {% if google_auth_enabled %}
                 <div class="register-google">
-                    <a href="{% url 'zerver.views.start_google_oauth2' %}" class="zocial google register-google-button">{% trans "Sign up with Google" %}</a>
+                    <a href="{{ url('zerver.views.start_google_oauth2') }}" class="zocial google register-google-button">{{ _("Sign up with Google") }}</a>
                 </div>
             {% endif %}
         </div>

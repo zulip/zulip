@@ -1,6 +1,6 @@
-{% comment %}
+{#
 Mail sent to us when a user accepts the ToS
-{% endcomment %}
+#}
 
 Hello,
 

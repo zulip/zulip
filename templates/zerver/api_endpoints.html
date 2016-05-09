@@ -2,11 +2,9 @@
 
 {# API information page #}
 
-{% load minified_js %}
-
 {% block customhead %}
-    {{ block.super }}
-    {% minified_js 'api' %}
+    {{ super() }}
+    {{ minified_js('api')|safe }}
 {% endblock %}
 
 

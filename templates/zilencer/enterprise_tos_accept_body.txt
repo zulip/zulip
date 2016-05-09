@@ -1,7 +1,7 @@
-{% comment %}
+{#
 Mail sent to us when a company accepts the ToS for Zulip Enterprise
 edition.
-{% endcomment %}
+#}
 
 Hello,
 

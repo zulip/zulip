@@ -1,14 +1,13 @@
 {% extends "zerver/portico_signup.html" %}
-{% load i18n %}
-{% comment %}
+{#
 Gather other user information, after having confirmed
 their email address.
 
 Form is validated both client-side using jquery-validate (see signup.js) and server-side.
-{% endcomment %}
+#}
 
 {% block customhead %}
-{{ block.super }}
+{{ super() }}
 <script type="text/javascript" src="/static/third/zxcvbn/zxcvbn.js"></script>
 {% endblock %}
 
@@ -17,27 +16,27 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
 <div class="pitch">
 
-    <p style="margin-top:30px;">{% trans "You're almost there. We just need you to do one last thing" %}.</p>
-    <h3>{% trans 'Tell us a bit about yourself' %}.</h3>
+    <p style="margin-top:30px;">{{ _("You're almost there. We just need you to do one last thing") }}.</p>
+    <h3>{{ _('Tell us a bit about yourself') }}.</h3>
 </div>
 
-<form method="post" class="form-horizontal" id="registration" action="{% url 'zerver.views.accounts_register' %}">
-{% csrf_token %}
+<form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.accounts_register') }}">
+{{ csrf_input }}
     <div class="control-group">
-        <label for="id_email" class="control-label">{% trans 'Email' %}</label>
+        <label for="id_email" class="control-label">{{ _('Email') }}</label>
         <div class="controls fakecontrol">
             <input type='hidden' name='key' value='{{ key }}' />
             <p>{{ email }}</p>
         </div>
     </div>
     <div class="control-group">
-        <label for="id_full_name" class="control-label">{% trans 'Full name' %}</label>
+        <label for="id_full_name" class="control-label">{{ _('Full name') }}</label>
         <div class="controls">
             {% if lock_name %}
                 <p class="fakecontrol">{{ full_name }}</p>
             {% else %}
                 <input id="id_full_name" class="required" type="text" name="full_name"
-                value="{% if full_name %}{{ full_name }}{% elif form.full_name.value %}{{ form.full_name.value }}{% endif %}"
+                value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
                        maxlength="100" />
                 {% if form.full_name.errors %}
                     {% for error in form.full_name.errors %}
@@ -49,13 +48,13 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
     </div>
     {% if password_auth_enabled %}
         <div class="control-group">
-            <label for="id_password" class="control-label">{% trans 'Password' %}</label>
+            <label for="id_password" class="control-label">{{ _('Password') }}</label>
             <div class="controls">
                 <input id="id_password" class="required" type="password" name="password"
-                       value="{% if form.password.value %}{{ form.password.value }}{% endif %}"
+                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
                        maxlength="100" />
                 {% if full_name %}
-                <span class="help-inline">{% trans 'This is used for mobile applications and other tools that require a password' %}.</span>
+                <span class="help-inline">{{ _('This is used for mobile applications and other tools that require a password') }}.</span>
                 {% endif %}
                 {% if form.password.errors %}
                     {% for error in form.password.errors %}
@@ -65,7 +64,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             </div>
         </div>
         <div class="control-group">
-            <label class="control-label">{% trans 'Password strength' %}</label>
+            <label class="control-label">{{ _('Password strength') }}</label>
             <div class="controls">
                 <div class="progress" id="pw_strength">
                     <div class="bar bar-danger" style="width: 10%;"></div>
@@ -79,17 +78,17 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         <div class="control-group">
             <div class="controls">
                 <label class="checkbox">
-                    {% comment %}
+                    {#
                     This is somewhat subtle.
                     Checkboxes have a name and value, and when the checkbox is ticked, the form posts
                     with name=value. If the checkbox is unticked, the field just isn't present at all.
 
                     This is distinct from 'checked', which determines whether the checkbox appears
                     at all. (So, it's not symmetric to the code above.)
-                    {% endcomment %}
+                    #}
                     <input id="id_terms" class="required" type="checkbox" name="terms"
-                           {% if form.terms.value %}checked="checked"{% endif %} />
-                    {% trans 'I agree to the' %} <a href="/terms" target="_blank">{% trans 'Terms of Service' %}</a>.
+                           {% if form.terms.value() %}checked="checked"{% endif %} />
+                    {{ _('I agree to the') }} <a href="/terms" target="_blank">{{ _('Terms of Service') }}</a>.
                 </label>
                 {% if form.terms.errors %}
                     {% for error in form.terms.errors %}

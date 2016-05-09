@@ -13,6 +13,7 @@ class zulip::app_frontend_base {
                     "python-django-guardian",
                     "python-django-pipeline",
                     "python-django-bitfield",
+                    "python-jinja2",
                     # Needed for mock objects in decorators
                     "python-mock",
                     # Tornado dependencies

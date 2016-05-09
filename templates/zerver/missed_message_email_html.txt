@@ -1,6 +1,6 @@
-{% comment %}
+{#
 Mail sent to user when she was not logged in and received a PM or @-mention
-{% endcomment %}
+#}
 
 Hello {{ name }},
 

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.template.defaultfilters import slugify
 from django.utils.encoding import force_text
-from django.utils.safestring import mark_safe
+from jinja2 import Markup as mark_safe
 import unicodedata
 
 from zerver.lib.avatar import user_avatar_hash

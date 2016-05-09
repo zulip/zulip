@@ -4,10 +4,9 @@ from typing import Any, Dict, List, Tuple
 
 from django.db import connection
 from django.template import RequestContext, loader
-from django.utils.html import mark_safe
-from django.shortcuts import render_to_response
 from django.core import urlresolvers
 from django.http import HttpResponseNotFound
+from jinja2 import Markup as mark_safe
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
 from zerver.models import get_realm, UserActivity, UserActivityInterval, Realm
@@ -24,6 +23,8 @@ from six.moves import map
 from six.moves import range
 from six.moves import zip
 eastern_tz = pytz.timezone('US/Eastern')
+
+from zproject.jinja2 import render_to_response
 
 def make_table(title, cols, rows, has_row_class=False):
 
@@ -569,7 +570,7 @@ def get_activity(request):
     return render_to_response(
         'analytics/activity.html',
         dict(data=data, title=title, is_home=True),
-        context_instance=RequestContext(request)
+        request=request
     )
 
 def get_user_activity_records_for_realm(realm, is_bot):
@@ -863,7 +864,7 @@ def get_realm_activity(request, realm):
     return render_to_response(
         'analytics/activity.html',
         dict(data=data, realm_link=realm_link, title=title),
-        context_instance=RequestContext(request)
+        request=request
     )
 
 @zulip_internal
@@ -883,5 +884,5 @@ def get_user_activity(request, email):
     return render_to_response(
         'analytics/activity.html',
         dict(data=data, title=title),
-        context_instance=RequestContext(request)
+        request=request
     )

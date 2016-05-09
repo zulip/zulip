@@ -17,3 +17,29 @@ maintainers when you ask to join a project, so please send a quick
 email to zulip-core@googlegroups.com when you request to join the
 project or add a language so that we can be sure to accept your
 request to contribute.
+
+## Translation Tags
+Zulip now supports both Jinja2 and Django template backends. There is
+a slight difference in the tags which are used to mark the translation
+strings in the two backends. To translate a block Jinja2 uses
+[trans](http://jinja.pocoo.org/docs/dev/templates/#i18n)
+tag while Django uses [blocktrans](https://docs.djangoproject.com/en/1.8/topics/i18n/translation/#std:templatetag-blocktrans)
+tag.
+
+#### Jinja2 example
+```
+{% trans %}foobar{% endtrans %}
+```
+
+#### Django example
+```
+{% blocktrans %}foobar{% endblocktrans %}
+```
+
+To translate a string in both backends we are in luck as both backends
+recognize `_()` function.
+
+#### Example code which works in both backends
+```
+_('foobar')
+```

@@ -635,14 +635,14 @@
       <p>Let's say you want a notification each time a case is updated. Put
       in a descriptive name like "Announce case update", and copy-paste
       this to the "Appended URL path":</p>
-      {% verbatim %}
+      {% raw %}
       <p><code>?stream=desk&amp;topic={{case.id}}:+{{case.subject}}</code></p>
-      {% endverbatim %}
+      {% endraw %}
       <p>The "appended URL path" will be the same for every notification —
       it makes sure the notification goes to the appropriate stream and topic
       within Zulip. Next, copy this template Zulip message into "Message to
       POST":</p>
-      {% verbatim %}
+      {% raw %}
       <pre><code
 >Case [{{case.id}}, {{case.subject}}]({{case.direct_url}}), was updated.
 
@@ -655,7 +655,7 @@
       <code>{{</code> and <code>}}</code>
       will be filled in by Desk.com for each event. The dialog should look
       like this:</p>
-      {% endverbatim %}
+      {% endraw %}
       <img src="/static/images/integrations/desk/004.png" />
 
       <p>Save it, and then click "On" next to the action to enable it. This
@@ -1370,7 +1370,7 @@ key = NAGIOS_BOT_API_KEY
       there, click "Add a webhook". Fill in the form like this:</p>
       <ul>
           <li><b>Name</b>: Zulip</li>
-          <li><b>Endpoint URL</b>: <code>{{ external_api_uri }}{% verbatim %}/v1/external/pagerduty?api_key=abcdefgh&amp;stream=pagerduty{% endverbatim %}</code></li>
+          <li><b>Endpoint URL</b>: <code>{{ external_api_uri }}/v1/external/pagerduty?api_key=abcdefgh&amp;stream=pagerduty</code></li>
       </ul>
 
       <img class="screenshot" src="/static/images/integrations/pagerduty/002.png" />
@@ -2077,7 +2077,7 @@ access_token_secret =</pre>
       <p>From there, click "URL target". Fill in the form like this:</p>
       <ul>
           <li><b>Title</b>: Zulip</li>
-          <li><b>URL</b>: <code>{{ external_api_uri }}{% verbatim %}/v1/external/zendesk?ticket_title={{ticket.title}}&amp;ticket_id={{ticket.id}}&amp;stream=zendesk{% endverbatim %}</code></li>
+          <li><b>URL</b>: <code>{{ external_api_uri }}{% raw %}/v1/external/zendesk?ticket_title={{ticket.title}}&amp;ticket_id={{ticket.id}}&amp;stream=zendesk{% endraw %}</code></li>
           <li><b>Method</b>: POST</li>
           <li><b>Attribute Name</b>: message</li>
           <li><b>Username</b>: <em>your bot's user name, e.g.</em> <code>zendesk-bot@yourdomain.com</code></li>
@@ -2105,7 +2105,7 @@ access_token_secret =</pre>
       <p>Next we need need to enter the message body into Message. You can use
       Zulip markdown and the Zendesk placeholders when creating your message.
       You can copy this example template:</p>
-      {% verbatim %}
+      {% raw %}
       <pre><code>Ticket [#{{ticket.id}}: {{ticket.title}}]({{ticket.link}}), was updated by {{current_user.name}}
 
 * Status: {{ticket.status}}
@@ -2117,7 +2117,7 @@ access_token_secret =</pre>
 ``` quote
 {{ticket.description}}
 ``` </code></pre>
-      {% endverbatim %}
+      {% endraw %}
 
       <img src="/static/images/integrations/zendesk/006.png" />
 
@@ -2136,7 +2136,7 @@ access_token_secret =</pre>
 {% endblock %}
 
 {% block customhead %}
-{{ block.super }}
+{{ super() }}
 <script type="text/javascript">
 $(function() {
     $("a.title").addClass("show-integral");
