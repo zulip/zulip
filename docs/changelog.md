@@ -3,6 +3,7 @@
 All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
+- Added integration with CircleCI.
 - Added UI for marking all messages in a stream or topic as read.
 - Added new Attachment model to keep track of uploaded files.
 - Added caching of virtualenvs in development.

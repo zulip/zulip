@@ -71,6 +71,11 @@
             <img class="integration-logo" src="/static/images/integrations/logos/capistrano.png" alt="Capistrano logo" />
             <span class="integration-label">Capistrano</span>
          </a>
+       </div><div class="integration-lozenge integration-circleci">
+         <a class="integration-link integration-circleci" href="#circleci">
+            <img class="integration-logo" src="/static/images/integrations/logos/circleci.png" alt="CircleCI logo" />
+            <span class="integration-label">CircleCI</span>
+         </a>
        </div>
        <div class="integration-lozenge integration-codebase">
          <a class="integration-link integration-codebase" href="#codebase">
@@ -293,12 +298,6 @@
          <a class="integration-link integration-chartbeat" href="https://github.com/hubot-scripts/hubot-chartbeat" target="_blank">
             <img class="integration-logo" src="/static/images/integrations/logos/chartbeat.png" alt="Chartbeat logo" />
             <span class="integration-label">Chartbeat</span>
-         </a>
-       </div>
-       <div class="integration-lozenge integration-circleci">
-         <a class="integration-link integration-circleci" href="https://github.com/hubot-scripts/hubot-circleci" target="_blank">
-            <img class="integration-logo" src="/static/images/integrations/logos/circleci.png" alt="CircleCI logo" />
-            <span class="integration-label">CircleCI</span>
          </a>
        </div>
        <div class="integration-lozenge integration-darksky">
@@ -531,6 +530,33 @@
       <img class="screenshot" src="/static/images/integrations/capistrano/001.png" />
 
       <p><small>Thanks to Wes of TurboVote for <a href="https://gist.github.com/cap10morgan/5100822">submitting this integration</a>!</small></p>
+    </div>
+
+    <div id="circleci" class="integration-instructions">
+
+      <p>Zulip supports integration with CircleCI and can notify you of
+          your build statuses.</p>
+
+      <p>First, create the stream you'd like to use for CircleCI notifications,
+          and subscribe all interested parties to this stream. We
+          recommend the name <code>circleci</code>.</p>
+
+      <p><code>{{ external_api_uri }}/v1/external/circleci?api_key=abcdefgh&amp;stream=circleci</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to.</p>
+
+      <p>
+        Next, modify your <code>circle.yml</code> as described
+        <a href="https://circleci.com/docs/configuration/#notify">here</a>.
+      </p>
+
+      <p><b>Congratulations! You're done!</b><br />  When a build is done,
+          you'll get a notification like this:</p>
+
+      <img class="screenshot" src="/static/images/integrations/circleci/001.png" />
+
     </div>
 
     <div id="codebase" class="integration-instructions">

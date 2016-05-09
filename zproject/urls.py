@@ -144,6 +144,7 @@ urlpatterns += patterns('zerver.views',
     # Sorted integration-specific webhook callbacks.
     url(r'^api/v1/external/beanstalk$',     'webhooks.beanstalk.api_beanstalk_webhook'),
     url(r'^api/v1/external/bitbucket$',     'webhooks.bitbucket.api_bitbucket_webhook'),
+    url(r'^api/v1/external/circleci',       'webhooks.circleci.api_circleci_webhook'),
     url(r'^api/v1/external/codeship',       'webhooks.codeship.api_codeship_webhook'),
     url(r'^api/v1/external/desk$',          'webhooks.deskdotcom.api_deskdotcom_webhook'),
     url(r'^api/v1/external/freshdesk$',     'webhooks.freshdesk.api_freshdesk_webhook'),
