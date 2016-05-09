@@ -229,7 +229,7 @@ USE_L10N = True
 USE_TZ = True
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
-LOCALE_PATHS = ( os.path.join(DEPLOY_ROOT, 'locale'), )
+LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, 'locale'),)
 
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
@@ -411,13 +411,13 @@ RATE_LIMITING_RULES = [
 # Turn it off for local testing because we don't have SSL.
 if PRODUCTION:
     SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE    = True
+    CSRF_COOKIE_SECURE = True
 
 try:
     # For get_updates hostname sharding.
     domain = config_file.get('django', 'cookie_domain')
     SESSION_COOKIE_DOMAIN = '.' + domain
-    CSRF_COOKIE_DOMAIN    = '.' + domain
+    CSRF_COOKIE_DOMAIN = '.' + domain
 except six.moves.configparser.Error:
     # Failing here is OK
     pass
@@ -473,21 +473,21 @@ TWITTER_ACCESS_TOKEN_KEY = get_secret("twitter_access_token_key")
 TWITTER_ACCESS_TOKEN_SECRET = get_secret("twitter_access_token_secret")
 
 # These are the bots that Zulip sends automated messages as.
-INTERNAL_BOTS = [ {'var_name': 'NOTIFICATION_BOT',
-                   'email_template': 'notification-bot@%s',
-                   'name': 'Notification Bot'},
-                  {'var_name': 'EMAIL_GATEWAY_BOT',
-                   'email_template': 'emailgateway@%s',
-                   'name': 'Email Gateway'},
-                  {'var_name': 'NAGIOS_SEND_BOT',
-                   'email_template': 'nagios-send-bot@%s',
-                   'name': 'Nagios Send Bot'},
-                  {'var_name': 'NAGIOS_RECEIVE_BOT',
-                   'email_template': 'nagios-receive-bot@%s',
-                   'name': 'Nagios Receive Bot'},
-                  {'var_name': 'WELCOME_BOT',
-                   'email_template': 'welcome-bot@%s',
-                   'name': 'Welcome Bot'} ]
+INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
+                  'email_template': 'notification-bot@%s',
+                  'name': 'Notification Bot'},
+                 {'var_name': 'EMAIL_GATEWAY_BOT',
+                  'email_template': 'emailgateway@%s',
+                  'name': 'Email Gateway'},
+                 {'var_name': 'NAGIOS_SEND_BOT',
+                  'email_template': 'nagios-send-bot@%s',
+                  'name': 'Nagios Send Bot'},
+                 {'var_name': 'NAGIOS_RECEIVE_BOT',
+                  'email_template': 'nagios-receive-bot@%s',
+                  'name': 'Nagios Receive Bot'},
+                 {'var_name': 'WELCOME_BOT',
+                  'email_template': 'welcome-bot@%s',
+                  'name': 'Welcome Bot'}]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
 
@@ -495,7 +495,7 @@ INTERNAL_BOT_DOMAIN = "zulip.com"
 for bot in INTERNAL_BOTS:
     if vars().get(bot['var_name']) is None:
         bot_email = bot['email_template'] % (INTERNAL_BOT_DOMAIN,)
-        vars()[bot['var_name'] ] = bot_email
+        vars()[bot['var_name']] = bot_email
 
 if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
@@ -503,9 +503,9 @@ if EMAIL_GATEWAY_PATTERN != "":
 DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
 if PRODUCTION:
-    FEEDBACK_TARGET="https://zulip.com/api"
+    FEEDBACK_TARGET = "https://zulip.com/api"
 else:
-    FEEDBACK_TARGET="http://localhost:9991/api"
+    FEEDBACK_TARGET = "http://localhost:9991/api"
 
 ########################################################################
 # STATSD CONFIGURATION
@@ -769,10 +769,10 @@ if PIPELINE:
 app_srcs = JS_SPECS['app']['source_filenames']
 
 PIPELINE_JS = {}  # Now handled in tools/minify-js
-PIPELINE_JS_COMPRESSOR  = None
+PIPELINE_JS_COMPRESSOR = None
 
 PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
-PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
+PIPELINE_YUI_BINARY = '/usr/bin/env yui-compressor'
 
 ########################################################################
 # LOGGING SETTINGS
@@ -912,9 +912,9 @@ LOGGING = {
     }
 }
 
-ACCOUNT_ACTIVATION_DAYS=7
+ACCOUNT_ACTIVATION_DAYS = 7
 
-LOGIN_REDIRECT_URL='/'
+LOGIN_REDIRECT_URL = '/'
 
 # Client-side polling timeout for get_events, in milliseconds.
 # We configure this here so that the client test suite can override it.
