@@ -2,7 +2,7 @@
 <html>
 
 {# Base template for the whole site. #}
-{% load compressed %}
+{% load pipeline %}
 {% load minified_js %}
 
 <head>
@@ -25,7 +25,7 @@
     {% endif %}
 
     {# We need to import jQuery before Bootstrap #}
-    {% compressed_css 'common' %}
+    {% stylesheet 'common' %}
     {% block page_params %}
     {# blueslip needs page_params.debug_mode.  Set it to false by default. #}
     <script type="text/javascript">

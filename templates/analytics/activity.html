@@ -1,6 +1,6 @@
 {% extends "zerver/base.html" %}
 
-{% load compressed %}
+{% load pipeline %}
 {% load minified_js %}
 
 {# User Activity. #}
@@ -13,7 +13,7 @@
 {% block customhead %}
 {{ block.super }}
 {% minified_js 'activity' %}
-{% compressed_css 'activity' %}
+{% stylesheet 'activity' %}
 {% endblock %}
 
 {% block content %}
