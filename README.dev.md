@@ -153,6 +153,8 @@ Install the following non-Python dependencies:
 
 ### On Debian or Ubuntu systems:
 
+* Using the official Ubuntu repositories and postgresql deb package:
+
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
@@ -174,6 +176,18 @@ sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
 sudo apt-get install postgresql-9.4
 wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
 sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
+```
+
+* Using the official Zulip PPA (for 14.04 Trusty):
+
+```
+sudo add-apt-repository ppa:tabbott/zulip
+sudo apt-get update
+sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
+    memcached rabbitmq-server libldap2-dev redis-server \
+    postgresql-server-dev-all libmemcached-dev python-dev \
+    hunspell-en-us nodejs nodejs-legacy npm git yui-compressor \
+    puppet gettext tsearch-extras
 ```
 
 Now continue with the "All systems" instructions below.
@@ -552,3 +566,10 @@ Possible testing issues
   ][lxc-sf].
 
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner)
+
+Third Party Packages
+====================
+
+The packages for building Zulip can be found at the launchpad:
+
+https://launchpad.net/~tabbott/+archive/ubuntu/zulip
