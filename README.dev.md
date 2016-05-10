@@ -153,7 +153,7 @@ Install the following non-Python dependencies:
 
 ### On Debian or Ubuntu systems:
 
-* Using the official Ubuntu repositories and postgresql deb package:
+* Using the official Ubuntu repositories and `tsearch-extras` deb package:
 
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
