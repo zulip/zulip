@@ -564,6 +564,8 @@ def dev_direct_login(request, **kwargs):
         raise Exception('Direct login not supported.')
     email = request.POST['direct_email']
     user_profile = authenticate(username=email)
+    if user_profile is None:
+        raise Exception("User cannot login")
     login(request, user_profile)
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                           request.get_host()))
@@ -1077,14 +1079,18 @@ def api_fetch_api_key(request, username=REQ, password=REQ):
     if username == "google-oauth2-token":
         user_profile = authenticate(google_oauth2_token=password, return_data=return_data)
     else:
-        user_profile = authenticate(username=username, password=password)
+        user_profile = authenticate(username=username, password=password, return_data=return_data)
+    if return_data.get("inactive_user") == True:
+        return json_error("Your account has been disabled.", data={"reason": "user disable"}, status=403)
+    if return_data.get("inactive_realm") == True:
+        return json_error("Your realm has been deactivated.", data={"reason": "realm deactivated"}, status=403)
+    if return_data.get("password_auth_disabled") == True:
+        return json_error("Password auth is disabled in your team.", data={"reason": "password auth disabled"}, status=403)
     if user_profile is None:
         if return_data.get("valid_attestation") == True:
             # We can leak that the user is unregistered iff they present a valid authentication string for the user.
             return json_error("This user is not registered; do so from a browser.", data={"reason": "unregistered"}, status=403)
         return json_error("Your username or password is incorrect.", data={"reason": "incorrect_creds"}, status=403)
-    if not user_profile.is_active:
-        return json_error("Your account has been disabled.", data={"reason": "disabled"}, status=403)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 @authenticated_json_post_view

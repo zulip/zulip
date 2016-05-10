@@ -34,6 +34,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 # The test suite uses EmailAuthBackend
 AUTHENTICATION_BACKENDS += ('zproject.backends.EmailAuthBackend',)
 
+# Makes testing LDAP backend require less mocking
+AUTH_LDAP_ALWAYS_UPDATE_USER = False
+
 TEST_SUITE = True
 RATE_LIMITING = False
 # Don't use rabbitmq from the test suite -- the user_profile_ids for

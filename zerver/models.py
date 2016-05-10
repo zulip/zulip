@@ -11,7 +11,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
-    active_bot_dicts_in_realm_cache_key
+    active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
+    active_bot_dict_fields
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
@@ -1135,17 +1136,30 @@ def get_user_profile_by_email(email):
 
 @cache_with_key(active_user_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_active_user_dicts_in_realm(realm):
-     return UserProfile.objects.filter(realm=realm, is_active=True) \
-                               .values('id', 'full_name', 'short_name', 'email', 'is_bot')
+    return UserProfile.objects.filter(realm=realm, is_active=True) \
+                              .values(*active_user_dict_fields)
 
 @cache_with_key(active_bot_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_active_bot_dicts_in_realm(realm):
-     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
-                               .values('id', 'full_name', 'short_name',
-                                       'email', 'default_sending_stream__name',
-                                       'default_events_register_stream__name',
-                                       'default_all_public_streams', 'api_key',
-                                       'bot_owner__email', 'avatar_source')
+    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
+                              .values(*active_bot_dict_fields)
+
+def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
+    if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
+        result = get_active_bot_dicts_in_realm(user_profile.realm)
+    else:
+        result = UserProfile.objects.filter(realm=user_profile.realm, is_active=True, is_bot=True,
+                                        bot_owner=user_profile).values(*active_bot_dict_fields)
+    return [{'email': botdict['email'],
+             'full_name': botdict['full_name'],
+             'api_key': botdict['api_key'],
+             'default_sending_stream': botdict['default_sending_stream__name'],
+             'default_events_register_stream': botdict['default_events_register_stream__name'],
+             'default_all_public_streams': botdict['default_all_public_streams'],
+             'owner': botdict['bot_owner__email'],
+             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
+            }
+            for botdict in result]
 
 def get_prereg_user_by_email(email):
     # A user can be invited many times, so only return the result of the latest

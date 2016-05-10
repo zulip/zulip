@@ -409,7 +409,8 @@ class StreamAdminTest(AuthedTestCase):
                                    "principals": ujson.dumps(["baduser@zulip.com"])})
         self.assert_json_error(
             result,
-            "User not authorized to execute queries on behalf of 'baduser@zulip.com'")
+            "User not authorized to execute queries on behalf of 'baduser@zulip.com'",
+            status_code=403)
 
 class DefaultStreamTest(AuthedTestCase):
     def get_default_stream_names(self, realm):
@@ -1051,7 +1052,7 @@ class SubscriptionAPITest(AuthedTestCase):
         result = self.common_subscribe_to_streams(self.test_email, self.streams,
                                                   {"principals": ujson.dumps([invalid_principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
-                               % (invalid_principal,))
+                               % (invalid_principal,), status_code=403)
 
     def test_subscription_add_principal_other_realm(self):
         """
@@ -1065,7 +1066,7 @@ class SubscriptionAPITest(AuthedTestCase):
         result = self.common_subscribe_to_streams(self.test_email, self.streams,
                                                   {"principals": ujson.dumps([principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
-                               % (principal,))
+                               % (principal,), status_code=403)
 
     def helper_check_subs_before_and_after_remove(self, subscriptions, json_dict,
                                                   email, new_subs):

@@ -172,9 +172,13 @@ def api_key_only_webhook_view(view_func):
                            *args, **kwargs):
 
         try:
-            user_profile = UserProfile.objects.get(api_key=api_key, is_active=True)
+            user_profile = UserProfile.objects.get(api_key=api_key)
         except UserProfile.DoesNotExist:
             raise JsonableError("Invalid API key")
+        if not user_profile.is_active:
+            raise JsonableError("Account not active")
+        if user_profile.realm.deactivated:
+            raise JsonableError("Realm for account has been deactivated")
 
         request.user = user_profile
         request._email = user_profile.email
@@ -228,12 +232,21 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
         return _wrapped_view
     return decorator
 
+def logged_in_and_active(user_profile):
+    if not user_profile.is_authenticated():
+        return False
+    if not user_profile.is_active:
+        return False
+    if user_profile.realm.deactivated:
+        return False
+    return True
+
 # Based on Django 1.8's @login_required
 def zulip_login_required(function=None,
                          redirect_field_name=REDIRECT_FIELD_NAME,
                          login_url=settings.HOME_NOT_LOGGED_IN):
     actual_decorator = user_passes_test(
-        lambda u: u.is_authenticated(),
+        logged_in_and_active,
         login_url=login_url,
         redirect_field_name=redirect_field_name
     )
@@ -346,6 +359,10 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
     user_profile = request.user
+    if not user_profile.is_active:
+        raise JsonableError("Account not active")
+    if user_profile.realm.deactivated:
+        raise JsonableError("Realm for account has been deactivated")
     process_client(request, user_profile, True)
     request._email = user_profile.email
     return view_func(request, user_profile, *args, **kwargs)
@@ -393,8 +410,9 @@ def internal_notify_view(view_func):
     return _wrapped_view_func
 
 class JsonableError(Exception):
-    def __init__(self, error):
+    def __init__(self, error, status_code=400):
         self.error = error
+        self.status_code = status_code
 
     def __str__(self):
         return self.to_json_error_msg()
@@ -403,16 +421,18 @@ class JsonableError(Exception):
         return self.error
 
 class RequestVariableMissingError(JsonableError):
-    def __init__(self, var_name):
+    def __init__(self, var_name, status_code=400):
         self.var_name = var_name
+        self.status_code = status_code
 
     def to_json_error_msg(self):
         return "Missing '%s' argument" % (self.var_name,)
 
 class RequestVariableConversionError(JsonableError):
-    def __init__(self, var_name, bad_value):
+    def __init__(self, var_name, bad_value, status_code=400):
         self.var_name = var_name
         self.bad_value = bad_value
+        self.status_code = status_code
 
     def to_json_error_msg(self):
         return "Bad value for '%s': %s" % (self.var_name, self.bad_value)

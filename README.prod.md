@@ -698,9 +698,17 @@ we can do a responsible security announcement).
   for the overall realm (e.g. whether an invitation is required to
   join the realm).  Being a Zulip administrator does not provide the
   ability to interact with other users' private messages or the
-  messages sent private streams to which the administrator is not
+  messages sent to private streams to which the administrator is not
   subscribed.  However, a Zulip administrator subscribed to a stream
-  can toggle whether that stream is public or private.
+  can toggle whether that stream is public or private.  Also, Zulip
+  realm administrators have administrative access to the API keys of
+  all bots in the realm, so a Zulip administrator may be able to
+  access messages sent to private streams that have bots subscribed,
+  by using the bot's credentials.
+
+  In the future, Zulip's security model may change to allow realm
+  administrators to access private messages (e.g. to support auditing
+  functionality).
 
 * Every Zulip user has an API key, available on the settings page.
   This API key can be used to do essentially everything the user can

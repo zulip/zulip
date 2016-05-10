@@ -195,6 +195,7 @@ class GetEventsTest(AuthedTestCase):
 class EventsRegisterTest(AuthedTestCase):
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
     bot = get_user_profile_by_email("welcome-bot@zulip.com")
+    maxDiff = None
 
     def create_bot(self, email):
         return do_create_user(email, '123',
@@ -685,6 +686,28 @@ class EventsRegisterTest(AuthedTestCase):
         events = self.do_test(action)
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+class FetchInitialStateDataTest(AuthedTestCase):
+    # Non-admin users don't have access to all bots
+    def test_realm_bots_non_admin(self):
+        email = 'cordelia@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        self.assertFalse(user_profile.is_realm_admin)
+        result = fetch_initial_state_data(user_profile, None, "")
+        self.assert_length(result['realm_bots'], 0)
+
+        # additionally the API key for a random bot is not present in the data
+        api_key = get_user_profile_by_email('notification-bot@zulip.com').api_key
+        self.assertNotIn(api_key, str(result))
+
+    # Admin users have access to all bots in the realm_bots field
+    def test_realm_bots_admin(self):
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        do_change_is_admin(user_profile, True)
+        self.assertTrue(user_profile.is_realm_admin)
+        result = fetch_initial_state_data(user_profile, None, "")
+        self.assertTrue(len(result['realm_bots']) > 5)
 
 from zerver.lib.event_queue import EventQueue
 class EventQueueTest(TestCase):

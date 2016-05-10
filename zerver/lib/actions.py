@@ -17,7 +17,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
-    ScheduledJob, realm_filters_for_domain, get_active_bot_dicts_in_realm, \
+    ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
     get_old_unclaimed_attachments
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
@@ -306,6 +306,16 @@ def delete_realm_user_sessions(realm):
 def delete_all_user_sessions():
     for session in Session.objects.all():
         delete_session(session)
+
+def delete_all_deactivated_user_sessions():
+    for session in Session.objects.all():
+        user_profile_id = get_session_user(session)
+        if user_profile_id is None:
+            continue
+        user_profile = get_user_profile_by_id(user_profile_id)
+        if not user_profile.is_active or user_profile.realm.deactivated:
+            logging.info("Deactivating session for deactivated user %s" % (user_profile.email,))
+            delete_session(session)
 
 def active_humans_in_realm(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
@@ -2445,26 +2455,11 @@ def get_status_dict(requesting_user_profile):
 
 
 def get_realm_user_dicts(user_profile):
-    # Due to our permission model, it is advantageous to find the admin users in bulk.
-    admins = user_profile.realm.get_admin_users()
-    admin_emails = set([up.email for up in admins])
     return [{'email'     : userdict['email'],
-             'is_admin'  : userdict['email'] in admin_emails,
+             'is_admin'  : userdict['is_realm_admin'],
              'is_bot'    : userdict['is_bot'],
              'full_name' : userdict['full_name']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
-
-def get_realm_bot_dicts(user_profile):
-    return [{'email': botdict['email'],
-             'full_name': botdict['full_name'],
-             'api_key': botdict['api_key'],
-             'default_sending_stream': botdict['default_sending_stream__name'],
-             'default_events_register_stream': botdict['default_events_register_stream__name'],
-             'default_all_public_streams': botdict['default_all_public_streams'],
-             'owner': botdict['bot_owner__email'],
-             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
-            }
-            for botdict in get_active_bot_dicts_in_realm(user_profile.realm)]
 
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
@@ -2519,7 +2514,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_users'] = get_realm_user_dicts(user_profile)
 
     if want('realm_bot'):
-        state['realm_bots'] = get_realm_bot_dicts(user_profile)
+        state['realm_bots'] = get_owned_bot_dicts(user_profile)
 
     if want('referral'):
         state['referrals'] = {'granted': user_profile.invites_granted,
@@ -2564,8 +2559,20 @@ def apply_events(state, events, user_profile):
             elif event['op'] == 'update':
                 for p in state['realm_users']:
                     if our_person(p):
+                        # In the unlikely event that the current user
+                        # just changed to/from being an admin, we need
+                        # to add/remove the data on all bots in the
+                        # realm.  This is ugly and probably better
+                        # solved by removing the all-realm-bots data
+                        # given to admin users from this flow.
+                        if ('is_admin' in person and 'realm_bots' in state and
+                            user_profile.email == person['email']):
+                            if p['is_admin'] and not person['is_admin']:
+                                state['realm_bots'] = []
+                            if not p['is_admin'] and person['is_admin']:
+                                state['realm_bots'] = get_owned_bot_dicts(user_profile)
+                        # Now update the person
                         p.update(person)
-
         elif event['type'] == 'realm_bot':
             if event['op'] == 'add':
                 state['realm_bots'].append(event['bot'])

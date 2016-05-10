@@ -40,6 +40,21 @@ def google_auth_enabled():
             return True
     return False
 
+def common_get_active_user_by_email(email, return_data=None):
+    try:
+        user_profile = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        return None
+    if not user_profile.is_active:
+        if return_data is not None:
+            return_data['inactive_user'] = True
+        return None
+    if user_profile.realm.deactivated:
+        if return_data is not None:
+            return_data['inactive_realm'] = True
+        return None
+    return user_profile
+
 class ZulipAuthMixin(object):
     def get_user(self, user_profile_id):
         """ Get a UserProfile object from the user_profile_id. """
@@ -54,10 +69,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
     """
     def authenticate(self, username=None, use_dummy_backend=False):
         if use_dummy_backend:
-            try:
-                return get_user_profile_by_email(username)
-            except UserProfile.DoesNotExist:
-                pass
+            return common_get_active_user_by_email(username)
         return None
 
 class EmailAuthBackend(ZulipAuthMixin):
@@ -68,7 +80,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     a username/password pair.
     """
 
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, username=None, password=None, return_data=None):
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:
             # Return immediately.  Otherwise we will look for a SQL row with
@@ -76,14 +88,15 @@ class EmailAuthBackend(ZulipAuthMixin):
             # exposure.
             return None
 
-        try:
-            user_profile = get_user_profile_by_email(username)
-            if not password_auth_enabled(user_profile.realm):
-                return None
-            if user_profile.check_password(password):
-                return user_profile
-        except UserProfile.DoesNotExist:
+        user_profile = common_get_active_user_by_email(username, return_data=return_data)
+        if user_profile is None:
             return None
+        if not password_auth_enabled(user_profile.realm):
+            if return_data is not None:
+                return_data['password_auth_disabled'] = True
+            return None
+        if user_profile.check_password(password):
+            return user_profile
 
 class GoogleMobileOauth2Backend(ZulipAuthMixin):
     """
@@ -103,10 +116,17 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             return None
         if token_payload["email_verified"] in (True, "true"):
             try:
-                return get_user_profile_by_email(token_payload["email"])
+                user_profile = get_user_profile_by_email(token_payload["email"])
             except UserProfile.DoesNotExist:
                 return_data["valid_attestation"] = True
                 return None
+            if not user_profile.is_active:
+                return_data["inactive_user"] = True
+                return None
+            if user_profile.realm.deactivated:
+                return_data["inactive_realm"] = True
+                return None
+            return user_profile
         else:
             return_data["valid_attestation"] = False
 
@@ -118,17 +138,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
             return None
 
         email = remote_user_to_email(remote_user)
-
-        try:
-            user_profile = get_user_profile_by_email(email)
-        except UserProfile.DoesNotExist:
-            return None
-
-        if user_profile.is_mirror_dummy:
-            # mirror dummies can not login, but they can convert to real users
-            return None
-
-        return user_profile
+        return common_get_active_user_by_email(email)
 
 class ZulipLDAPException(Exception):
     pass
@@ -167,10 +177,16 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
     def get_or_create_user(self, username, ldap_user):
         try:
-            return get_user_profile_by_email(username), False
+            user_profile = get_user_profile_by_email(username)
+            if not user_profile.is_active or user_profile.realm.deactivated:
+                raise ZulipLDAPException("Realm has been deactivated")
+            return user_profile, False
         except UserProfile.DoesNotExist:
             domain = resolve_email_to_domain(username)
             realm = get_realm(domain)
+            # No need to check for an inactive user since they don't exist yet
+            if realm.deactivated:
+                raise ZulipLDAPException("Realm has been deactivated")
 
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
             short_name = full_name = ldap_user.attrs[full_name_attr][0]
@@ -191,7 +207,4 @@ class DevAuthBackend(ZulipAuthMixin):
     # This is used for convenience when developing Zulip.
 
     def authenticate(self, username):
-        try:
-            return get_user_profile_by_email(username)
-        except UserProfile.DoesNotExist:
-            return None
+        return common_get_active_user_by_email(username)

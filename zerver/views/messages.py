@@ -75,9 +75,10 @@ def get_sqlalchemy_connection():
     sa_connection.execution_options(autocommit=False)
     return sa_connection
 
-class BadNarrowOperator(Exception):
-    def __init__(self, desc):
+class BadNarrowOperator(JsonableError):
+    def __init__(self, desc, status_code=400):
         self.desc = desc
+        self.status_code = status_code
 
     def to_json_error_msg(self):
         return 'Invalid narrow operator: ' + self.desc
