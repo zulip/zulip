@@ -268,7 +268,7 @@ def cache_save_user_profile(user_profile):
     # type: (Any) -> None
     cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
 
-active_user_dict_fields = ['id', 'full_name', 'short_name', 'email', 'is_realm_admin', 'is_bot']
+active_user_dict_fields = ['id', 'full_name', 'short_name', 'email', 'is_realm_admin', 'is_bot'] # type: List[str]
 def active_user_dicts_in_realm_cache_key(realm):
     # type: (Any) -> str
     return "active_user_dicts_in_realm:%s" % (realm.id,)
@@ -277,7 +277,7 @@ active_bot_dict_fields = ['id', 'full_name', 'short_name',
                           'email', 'default_sending_stream__name',
                           'default_events_register_stream__name',
                           'default_all_public_streams', 'api_key',
-                          'bot_owner__email', 'avatar_source']
+                          'bot_owner__email', 'avatar_source'] # type: List[str]
 def active_bot_dicts_in_realm_cache_key(realm):
     # type: (Any) -> str
     return "active_bot_dicts_in_realm:%s" % (realm.id,)
