@@ -84,7 +84,6 @@ class AuthBackendTest(TestCase):
 
     def test_google_backend(self):
         email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
         backend = GoogleMobileOauth2Backend()
         payload = dict(email_verified=True,
                        email=email)
@@ -109,25 +108,22 @@ class AuthBackendTest(TestCase):
 
     def test_ldap_backend(self):
         email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
         password = "test_password"
         backend = ZulipLDAPAuthBackend()
-        payload = dict(email_verified=True,
-                       email=email)
 
         # Test LDAP auth fails when LDAP server rejects password
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn', \
-                        side_effect=_LDAPUser.AuthenticationFailed("Failed")) as mock_auth_user_dn, \
-             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements') as mock_check_requirements, \
+                        side_effect=_LDAPUser.AuthenticationFailed("Failed")), \
+             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements'), \
              mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                        return_value=dict(full_name=['Hamlet'])) as mock_get_user_attrs:
+                        return_value=dict(full_name=['Hamlet'])):
             self.assertIsNone(backend.authenticate(email, password))
 
         # For this backend, we mock the internals of django_auth_ldap
-        with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn') as mock_auth_user_dn, \
-             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements') as mock_check_requirements, \
+        with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), \
+             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements'), \
              mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                        return_value=dict(full_name=['Hamlet'])) as mock_get_user_attrs:
+                        return_value=dict(full_name=['Hamlet'])):
             self.verify_backend(backend, good_args=dict(password=password))
 
     def test_devauth_backend(self):
