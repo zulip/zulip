@@ -57,7 +57,7 @@ function unconditionally_send_pointer_update() {
 
 exports.fast_forward_pointer = function () {
     channel.get({
-        url: '/users/me',
+        url: '/json/users/me',
         idempotent: true,
         data: {email: page_params.email},
         success: function (data) {
