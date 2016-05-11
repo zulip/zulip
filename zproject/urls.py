@@ -105,8 +105,8 @@ i18n_urls = [
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 ]
 
-# If on zulip.com or if a custom TOS is supplied, add that route
-if not settings.ZULIP_COM and settings.TERMS_OF_SERVICE:
+# If a Terms of Service is supplied, add that route
+if settings.TERMS_OF_SERVICE is not None:
     i18n_urls += [url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html'))]
 
 # Make a copy of i18n_urls so that they appear without prefix for english

@@ -4,12 +4,13 @@ from __future__ import absolute_import
 from typing import Any, Dict, Iterable
 import logging
 
-from django.test import TestCase
+from django.conf import settings
+from django.test import override_settings
 from django.template import Template, Context
 from django.template.loader import get_template
 
 from zerver.models import get_user_profile_by_email
-from zerver.lib.test_helpers import get_all_templates
+from zerver.lib.test_helpers import get_all_templates, AuthedTestCase
 
 class get_form_value(object):
     def __init__(self, value):
@@ -25,7 +26,7 @@ class DummyForm(dict):
     pass
 
 
-class TemplateTestCase(TestCase):
+class TemplateTestCase(AuthedTestCase):
     """
     Tests that backend template rendering doesn't crash.
 
@@ -35,6 +36,7 @@ class TemplateTestCase(TestCase):
     is done that the output looks right).  Please see `get_context`
     function documentation for more information.
     """
+    @override_settings(TERMS_OF_SERVICE=None)
     def test_templates(self):
         # type: () -> None
 
@@ -118,3 +120,10 @@ class TemplateTestCase(TestCase):
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
         self.assertEqual(content_sans_whitespace,
                          'header<h1>Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
+
+    def test_custom_tos_template(self):
+        # type: () -> None
+        response = self.client_get("/terms/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("Thanks for using our products and services (\"Services\"). " in response.content)
+        self.assertTrue("By using our Services, you are agreeing to these terms" in response.content)
