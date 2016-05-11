@@ -61,8 +61,10 @@ relevant list!  Please report any security issues you discover to
 zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
-app; the [desktop][], [Android][], and [iOS][] apps are separate
-repositories.
+app (including most integrations); the [desktop][], [Android][], and
+[iOS][] apps, the [Hubot adapter][hubot-adapter], and many integrations
+([Phabricator][phab], [Jenkins][], [Puppet][], [Redmine][], and
+[Trello][]) are separate repositories.
 
 * **Translations**.  Zulip is in the process of being translated into
 10+ languages, and we love contributions to our translations.  See our
@@ -82,6 +84,12 @@ contributing!
 [ios]: https://github.com/zulip/zulip-ios
 [email-android]: https://groups.google.com/forum/#!forum/zulip-android
 [email-ios]: https://groups.google.com/forum/#!forum/zulip-ios
+[hubot-adapter]: https://github.com/zulip/hubot-zulip
+[jenkins]: https://github.com/zulip/zulip-jenkins-plugin
+[phab]: https://github.com/zulip/phabricator-to-zulip
+[puppet]: https://github.com/matthewbarr/puppet-zulip
+[redmine]: https://github.com/zulip/zulip-redmine-plugin
+[trello]: https://github.com/zulip/trello-to-zulip
 [transifex]: https://www.transifex.com/zulip/zulip/
 
 How to get involved with contributing to Zulip
