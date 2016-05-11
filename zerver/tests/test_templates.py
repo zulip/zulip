@@ -5,12 +5,11 @@ from typing import Any, Dict, Iterable
 import logging
 
 from django.test import TestCase
-from django.template import Template
+from django.template import Template, Context
 from django.template.loader import get_template
 
 from zerver.models import get_user_profile_by_email
 from zerver.lib.test_helpers import get_all_templates
-
 
 class get_form_value(object):
     def __init__(self, value):
@@ -40,14 +39,15 @@ class TemplateTestCase(TestCase):
         # type: () -> None
 
         # Just add the templates whose context has a conflict with other
-        # templates' context in `exclude`.
-        exclude = ['analytics/activity.html']
-        templates = [t for t in get_all_templates() if t not in exclude]
+        # templates' context in `defer`.
+        defer = ['analytics/activity.html']
+        skip = defer + ['tests/test_markdown.html', 'zerver/terms.html']
+        templates = [t for t in get_all_templates() if t not in skip]
         self.render_templates(templates, self.get_context())
 
-        # Test the excluded templates with updated context.
+        # Test the deferred templates with updated context.
         update = {'data': [('one', 'two')]}
-        self.render_templates(exclude, self.get_context(**update))
+        self.render_templates(defer, self.get_context(**update))
 
     def render_templates(self, templates, context):
         # type: (Iterable[Template], Dict[str, Any]) -> None
@@ -106,3 +106,14 @@ class TemplateTestCase(TestCase):
 
         context.update(kwargs)
         return context
+
+    def test_markdown_in_template(self):
+        template = get_template("tests/test_markdown.html")
+        context = {
+            'markdown_test_file': "zerver/tests/markdown/test_markdown.md"
+        }
+        content = template.render(context)
+
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        self.assertEqual(content_sans_whitespace,
+                         'header<h1>Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
