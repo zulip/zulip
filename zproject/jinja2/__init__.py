@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from jinja2 import Environment
 
 from .compressors import minified_js
-from zerver.templatetags.app_filters import display_list
+from zerver.templatetags.app_filters import display_list, render_markdown_path
 
 
 def render_to_response(*args, **kwargs):
@@ -30,5 +30,6 @@ def environment(**options):
     env.filters['slugify'] = slugify
     env.filters['pluralize'] = pluralize
     env.filters['display_list'] = display_list
+    env.filters['render_markdown_path'] = render_markdown_path
 
     return env

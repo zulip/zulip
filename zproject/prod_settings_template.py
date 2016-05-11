@@ -183,6 +183,10 @@ ENABLE_GRAVATAR = True
 #REMOTE_POSTGRES_HOST = 'dbserver.example.com'
 #REMOTE_POSTGRES_SSLMODE = 'require'
 
+# If you want to set custom TOS, set the path to your markdown file, and uncomment
+# the following line.
+# TERMS_OF_SERVICE = '/etc/zulip/terms.md'
+
 ### TWITTER INTEGRATION
 
 # Zulip supports showing inline Tweet previews when a tweet is linked
