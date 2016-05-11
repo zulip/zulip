@@ -566,3 +566,10 @@ Possible testing issues
   ][lxc-sf].
 
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner)
+
+Third Party Packages
+====================
+
+The packages for building Zulip can be found at the launchpad:
+
+https://launchpad.net/~tabbott/+archive/ubuntu/zulip
