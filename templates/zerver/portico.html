@@ -53,7 +53,7 @@
   <div class="footer-main">
     <ul class="footer-navigation">
       <li><a href="/hello">{{ _('About') }}</a></li>
-      {% if zulip_com %}
+      {% if zulip_com or terms_of_service %}
       <li><span class="little-bullet">·</span></li>
       <li><a href="/terms">{{ _('Legal') }}</a></li>
       {% endif %}

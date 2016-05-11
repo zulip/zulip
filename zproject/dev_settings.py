@@ -21,5 +21,6 @@ EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 # Disable Camo in development
 CAMO_URI = ''
 OPEN_REALM_CREATION = True
+TERMS_OF_SERVICE = 'zproject/terms.md.template'
 
 SAVE_FRONTEND_STACKTRACES = True

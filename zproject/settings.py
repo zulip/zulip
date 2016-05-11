@@ -162,6 +162,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'EXTRA_INSTALLED_APPS': [],
                     'DEFAULT_NEW_REALM_STREAMS': ["social", "general", "zulip"],
                     'REALM_CREATION_LINK_VALIDITY_DAYS': 7,
+                    'TERMS_OF_SERVICE': None,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
