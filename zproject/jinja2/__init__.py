@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from jinja2 import Environment
 
 from .compressors import compressed_css, minified_js
+from zerver.templatetags.app_filters import display_list
 
 
 def render_to_response(*args, **kwargs):
@@ -29,5 +30,6 @@ def environment(**options):
 
     env.filters['slugify'] = slugify
     env.filters['pluralize'] = pluralize
+    env.filters['display_list'] = display_list
 
     return env

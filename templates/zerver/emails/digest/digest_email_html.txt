@@ -1,4 +1,3 @@
-{% load app_filters %}
 {#
 Mail sent to a user who hasn't logged in for 24 hours.
 #}
@@ -56,7 +55,7 @@ Here are some of the hot conversations that have happened while you've been gone
             {% endfor %}
             </div>
         </div>
-        {% if convo.count > 0 %}<p>+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list:4 }}.</p>{% endif %}
+        {% if convo.count > 0 %}<p>+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>{% endif %}
     {% endfor %}
     </div>
 {% endfor %}
@@ -76,15 +75,15 @@ Here are some of the hot conversations that have happened while you've been gone
 {% endif %}
 
 {% if new_streams.html %}
-<p>{% if new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:</p>
+<p>{% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:</p>
 
-<p>{{ new_streams.html|display_list:4|safe }}.</p>
+<p>{{ new_streams.html|display_list(4)|safe }}.</p>
 
-<p>Click on {% if new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="https://{{ external_host }}/#subscriptions">Streams page</a> to subscribe.</p>
+<p>Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="https://{{ external_host }}/#subscriptions">Streams page</a> to subscribe.</p>
 {% endif %}
 
 {% if new_users %}
-<p>{% if new_streams.html or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list:4 }} to Zulip!</p>
+<p>{% if new_streams.html or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!</p>
 {% endif %}
 
 <br />

@@ -22,6 +22,8 @@ from zerver.lib.email_mirror import (
     create_missed_message_address,
 )
 
+from zerver.lib.digest import handle_digest_email
+
 from zerver.lib.notifications import (
     handle_missedmessage_emails,
 )
@@ -32,6 +34,7 @@ import datetime
 import time
 import re
 import ujson
+import mock
 
 
 class TestStreamEmailMessagesSuccess(AuthedTestCase):
@@ -183,3 +186,25 @@ class TestMissedHuddleMessageEmailMessages(AuthedTestCase):
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages Body")
         self.assertEqual(message.sender, get_user_profile_by_email("cordelia@zulip.com"))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
+
+class TestDigestEmailMessages(AuthedTestCase):
+    @mock.patch('zerver.lib.digest.enough_traffic')
+    @mock.patch('zerver.lib.digest.send_future_email')
+    def test_receive_digest_email_messages(self, mock_send_future_email, mock_enough_traffic):
+
+        # build dummy messages for missed messages email reply
+        # have Hamlet send Othello a PM. Othello will reply via email
+        # Hamlet will receive the message.
+        self.login("hamlet@zulip.com")
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "test_receive_missed_message_email_messages",
+                                                     "client": "test suite",
+                                                     "to": "othello@zulip.com"})
+        self.assert_json_success(result)
+
+        user_profile = get_user_profile_by_email("othello@zulip.com")
+        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
+        handle_digest_email(user_profile.id, cutoff)
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        self.assertEqual(mock_send_future_email.call_args[0][0][0]['email'],
+                         u'othello@zulip.com')
