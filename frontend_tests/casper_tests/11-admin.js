@@ -10,6 +10,45 @@ casper.then(function () {
     casper.test.assertExists('#administration.tab-pane.active', 'Administration page is active');
 });
 
+// Test only admins may create streams Setting
+casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
+    casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
+    casper.click('form.admin-realm-form input.btn');
+
+    // Test setting was activated
+    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Only Admins may now create new streams!');
+        casper.test.assertEval(function () {
+            return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
+        }, 'Only admins may create streams Setting activated');
+    });
+});
+
+casper.then(function () {
+    // Leave the page and return
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#subscriptions"]');
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#administration"]');
+
+    casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
+        // Test Setting was saved
+        casper.test.assertEval(function () {
+            return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
+        }, 'Only admins may create streams Setting saved');
+
+        // Deactivate setting
+        casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
+        casper.click('form.admin-realm-form input.btn');
+        casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
+            casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Any user may now create new streams!');
+            casper.test.assertEval(function () {
+                return !(document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked);
+            }, 'Only admins may create streams Setting deactivated');
+        });
+    });
+});
+
 // Test user deactivation and reactivation
 casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"]', function () {
     casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
