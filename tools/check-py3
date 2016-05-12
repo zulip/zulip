@@ -47,6 +47,8 @@ echo; echo "Testing for additions of Python 2 patterns we've removed as part of 
 
 if [ -n "$(git status --porcelain)" ]; then
     echo "The repository is not clean. check-py3 can only be run if the repository is clean."
+    echo "Displaying output from 'git status --porcelain' to help debug"
+    git status --porcelain
     exit 1
 fi
 
