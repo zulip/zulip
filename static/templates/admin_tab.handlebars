@@ -31,6 +31,7 @@
                 <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
                 <div class="alert" id="admin-realm-invite-required-status"></div>
                 <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
+                <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
                 <label for="realm_name" class="control-label">Your organization's name</label>
                 <div class="controls">
                   <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
@@ -53,6 +54,12 @@
                 <label for="realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" title="If checked, only administrators may invite new users." class="control-label{{#unless realm_invite_required}} control-label-disabled{{/unless}}">Only admins may invite</label>
                 <div class="controls">
                   <input type="checkbox" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only" {{#unless realm_invite_required}}disabled="disabled"{{/unless}} {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
+                </div>
+              </div>
+              <div class="control-group">
+                <label for="realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" title="If checked, only administrators may create new streams." class="control-label">Only admins may create streams</label>
+                <div class="controls">
+                  <input type="checkbox" id="id_realm_create_stream_by_admins_only" name="realm_create_stream_by_admins_only" {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
                 </div>
               </div>
               <div class="controls organization-submission">

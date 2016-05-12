@@ -29,6 +29,7 @@ from zerver.lib.actions import (
     do_remove_subscription,
     do_rename_stream,
     do_set_muted_topics,
+    do_set_realm_create_stream_by_admins_only,
     do_set_realm_name,
     do_set_realm_restricted_to_domain,
     do_set_realm_invite_required,
@@ -430,6 +431,20 @@ class EventsRegisterTest(AuthedTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for invite_by_admins_only in (False, True, False):
             events = self.do_test(lambda: do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_create_stream_by_admins_only(self):
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('create_stream_by_admins_only')),
+            ('value', check_bool),
+        ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for create_stream_by_admins_only in (False, True, False):
+            events = self.do_test(lambda: do_set_realm_create_stream_by_admins_only(self.user_profile.realm,
+                                                                                create_stream_by_admins_only))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

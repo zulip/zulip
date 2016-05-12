@@ -121,6 +121,7 @@ class Realm(models.Model):
     restricted_to_domain = models.BooleanField(default=True)
     invite_required = models.BooleanField(default=False)
     invite_by_admins_only = models.BooleanField(default=False)
+    create_stream_by_admins_only = models.BooleanField(default=False)
     mandatory_topics = models.BooleanField(default=False)
     show_digest_email = models.BooleanField(default=True)
     name_changes_disabled = models.BooleanField(default=False)
@@ -427,10 +428,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return {row['id']: row['email'] for row in rows}
 
     def can_create_streams(self):
-        # Long term this might be an actual DB attribute.  Short term and long term, we want
-        # this to be conceptually a property of the user, although it may actually be administered
-        # in a more complicated way, like certain realms may allow only admins to create streams.
-        return True
+        if self.is_realm_admin or not self.realm.create_stream_by_admins_only:
+            return True
+        else:
+            return False
 
 def receives_offline_notifications(user_profile):
     return ((user_profile.enable_offline_email_notifications or

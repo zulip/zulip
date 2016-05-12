@@ -90,7 +90,8 @@ exports.setup_page = function () {
         domain:                     page_params.domain,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required:      page_params.realm_invite_required,
-        realm_invite_by_admins_only: page_params.realm_invite_by_admins_only
+        realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
+        realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
@@ -99,6 +100,7 @@ exports.setup_page = function () {
     $("#admin-realm-restricted-to-domain-status").expectOne().hide();
     $("#admin-realm-invite-required-status").expectOne().hide();
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
+    $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
     $("#admin-emoji-name-status").expectOne().hide();
     $("#admin-emoji-url-status").expectOne().hide();
@@ -244,10 +246,12 @@ exports.setup_page = function () {
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
+        var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
+        create_stream_by_admins_only_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
@@ -256,13 +260,15 @@ exports.setup_page = function () {
         var new_restricted = $("#id_realm_restricted_to_domain").prop("checked");
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
+        var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
 
         var url = "/json/realm";
         var data = {
             name: JSON.stringify(new_name),
             restricted_to_domain: JSON.stringify(new_restricted),
             invite_required: JSON.stringify(new_invite),
-            invite_by_admins_only: JSON.stringify(new_invite_by_admins_only)
+            invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
+            create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only)
         };
 
         channel.patch({
@@ -294,6 +300,14 @@ exports.setup_page = function () {
                     }
                     else {
                         ui.report_success("Any user may now invite new users!", invite_by_admins_only_status);
+                    }
+                }
+                if (data.create_stream_by_admins_only !== undefined) {
+                    if (data.create_stream_by_admins_only) {
+                        ui.report_success("Only Admins may now create new streams!", create_stream_by_admins_only_status);
+                    }
+                    else {
+                        ui.report_success("Any user may now create new streams!", create_stream_by_admins_only_status);
                     }
                 }
             },

@@ -21,9 +21,9 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    create_stream_if_needed, do_add_default_stream, do_add_subscription,
-    do_change_is_admin, do_create_realm, do_remove_default_stream, gather_subscriptions,
-    get_default_streams_for_realm, get_realm, get_stream,
+    create_stream_if_needed, do_add_default_stream, do_add_subscription, do_change_is_admin,
+    do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
+    gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams,
 )
 
@@ -378,6 +378,27 @@ class StreamAdminTest(AuthedTestCase):
             other_user_subbed=True)
         self.assert_json_error(
             result, "Cannot administer invite-only streams this way")
+
+    def test_create_stream_by_admins_only_setting(self):
+        """
+        When realm.create_stream_by_admins_only setting is active,
+        non admin users shouldn't be able to create new streams.
+        """
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        do_change_is_admin(user_profile, False)
+
+        do_set_realm_create_stream_by_admins_only(user_profile.realm, True)
+        stream_name = ['adminsonlysetting']
+        result = self.common_subscribe_to_streams(
+            email,
+            stream_name
+        )
+        self.assert_json_error(result, 'User cannot create streams.')
+
+        # Change setting back to default
+        do_set_realm_create_stream_by_admins_only(user_profile.realm, False)
 
     def test_remove_already_not_subbed(self):
         """
@@ -1517,4 +1538,3 @@ class GetSubscribersTest(AuthedTestCase):
         result = self.make_subscriber_request(stream_name, email=other_email)
         self.assert_json_error(result,
                                "Unable to retrieve subscribers for invite-only stream")
-
