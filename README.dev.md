@@ -178,7 +178,7 @@ wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsear
 sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 ```
 
-* Using the official Zulip PPA (for 14.04 Trusty):
+* Using the [official Zulip PPA](https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages) (for 14.04 Trusty):
 
 ```
 sudo add-apt-repository ppa:tabbott/zulip
