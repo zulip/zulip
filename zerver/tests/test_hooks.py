@@ -1282,3 +1282,57 @@ class TaigaHookTests(AuthedTestCase):
         msg = self.send_taiga_message("issue_changed_comment_added")
         self.assertEqual(msg.subject, u'subject')
         self.assertEqual(msg.content, u':thought_balloon: Antek commented on issue **Aaaa**.\n')
+
+class CircleCiHookTests(AuthedTestCase):
+    STREAM_NAME = 'circleci'
+    TEST_USER_EMAIL = 'hamlet@zulip.com'
+    URL_TEMPLATE = "/api/v1/external/circleci?stream={stream}&api_key={api_key}"
+
+    def setUp(self):
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        self._url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+
+    def test_circleci_build_in_success_status(self):
+        body = self._get_fixture_data('build_passed')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://circleci.com/gh/username/project/build_number) triggered by username on master branch succeeded."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"RepoName")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_circleci_build_in_failed_status(self):
+        body = self._get_fixture_data('build_failed')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://circleci.com/gh/username/project/build_number) triggered by username on master branch failed."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"RepoName")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_circleci_build_in_failed_status_when_previous_build_failed_too(self):
+        body = self._get_fixture_data('build_failed_when_previous_build_failed')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://circleci.com/gh/username/project/build_number) triggered by username on master branch is still failing."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"RepoName")
+        self.assertEqual(msg.content, expected_message)
+
+    def test_circleci_build_in_success_status_when_previous_build_failed_too(self):
+        body = self._get_fixture_data('build_passed_when_previous_build_failed')
+        self._send_post_request_with_params(body)
+
+        expected_message = u"[Build](https://circleci.com/gh/username/project/build_number) triggered by username on master branch fixed."
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u"RepoName")
+        self.assertEqual(msg.content, expected_message)
+
+    def _get_fixture_data(self, name):
+        return ujson.dumps(ujson.loads(self.fixture_data('circleci', name)))
+
+    def _send_post_request_with_params(self, json):
+        result = self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
+        self.assert_json_success(result)
+        return result
