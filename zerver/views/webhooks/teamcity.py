@@ -31,9 +31,9 @@ def get_teamcity_property_value(property_list, name):
             return property['value']
     return None
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view('Teamcity')
 @has_request_variables
-def api_teamcity_webhook(request, user_profile, payload=REQ(argument_type='body'),
+def api_teamcity_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                          stream=REQ(default='teamcity')):
     message = payload['build']
 
@@ -85,8 +85,8 @@ def api_teamcity_webhook(request, user_profile, payload=REQ(argument_type='body'
             return json_success()
 
         body = "Your personal build of " + body
-        check_send_message(user_profile, get_client('ZulipTeamcityWebhook'), 'private', [teamcity_user.email], topic, body)
+        check_send_message(user_profile, client, 'private', [teamcity_user.email], topic, body)
         return json_success()
 
-    check_send_message(user_profile, get_client('ZulipTeamcityWebhook'), 'stream', [stream], topic, body)
+    check_send_message(user_profile, client, 'stream', [stream], topic, body)
     return json_success()

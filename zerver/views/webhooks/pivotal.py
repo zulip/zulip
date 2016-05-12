@@ -147,9 +147,9 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
 
     return subject, content
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view("Pivotal")
 @has_request_variables
-def api_pivotal_webhook(request, user_profile, stream=REQ()):
+def api_pivotal_webhook(request, user_profile, client, stream=REQ()):
     subject = content = None
     try:
         subject, content = api_pivotal_webhook_v3(request, user_profile, stream)
@@ -165,6 +165,6 @@ def api_pivotal_webhook(request, user_profile, stream=REQ()):
     if subject is None or content is None:
         return json_error("Unable to handle Pivotal payload")
 
-    check_send_message(user_profile, get_client("ZulipPivotalWebhook"), "stream",
+    check_send_message(user_profile, client, "stream",
                        [stream], subject, content)
     return json_success()
