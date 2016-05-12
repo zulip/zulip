@@ -7,12 +7,12 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 
 import ujson
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view('Yo')
 @has_request_variables
-def api_yo_app_webhook(request, user_profile, email=REQ(default=None),
+def api_yo_app_webhook(request, user_profile, client, email=REQ(default=None),
                        username=REQ(default='Yo Bot'), topic=REQ(default='None'),
                        user_ip=REQ(default='None')):
 
     body = ('Yo from %s') % (username,)
-    check_send_message(user_profile, get_client('ZulipYoWebhook'), 'private', [email], topic, body)
+    check_send_message(user_profile, client, 'private', [email], topic, body)
     return json_success()

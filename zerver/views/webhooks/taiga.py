@@ -28,9 +28,9 @@ import ujson
 from six.moves import range
 
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view('Taiga')
 @has_request_variables
-def api_taiga_webhook(request, user_profile, message=REQ(argument_type='body'),
+def api_taiga_webhook(request, user_profile, client, message=REQ(argument_type='body'),
                       stream=REQ(default='taiga'), topic=REQ(default='General')):
     parsed_events = parse_message(message)
 
@@ -38,7 +38,7 @@ def api_taiga_webhook(request, user_profile, message=REQ(argument_type='body'),
     for event in parsed_events:
         content += generate_content(event) + '\n'
 
-    check_send_message(user_profile, get_client('ZulipTaigaWebhook'), 'stream', [stream], topic, content)
+    check_send_message(user_profile, client, 'stream', [stream], topic, content)
 
     return json_success()
 

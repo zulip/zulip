@@ -7,9 +7,9 @@ from zerver.lib.validator import check_dict
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view("NewRelic")
 @has_request_variables
-def api_newrelic_webhook(request, user_profile, stream=REQ(),
+def api_newrelic_webhook(request, user_profile, client, stream=REQ(),
                          alert=REQ(validator=check_dict([]), default=None),
                          deployment=REQ(validator=check_dict([]), default=None)):
     if alert:
@@ -27,6 +27,6 @@ def api_newrelic_webhook(request, user_profile, stream=REQ(),
     else:
         return json_error("Unknown webhook request")
 
-    check_send_message(user_profile, get_client("ZulipNewRelicWebhook"), "stream",
+    check_send_message(user_profile, client, "stream",
                        [stream], subject, content)
     return json_success()

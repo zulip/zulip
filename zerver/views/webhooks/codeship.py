@@ -19,9 +19,9 @@ CODESHIP_STATUS_MAPPER = {
 }
 
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view('Codeship')
 @has_request_variables
-def api_codeship_webhook(request, user_profile, payload=REQ(argument_type='body'),
+def api_codeship_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                          stream=REQ(default='codeship')):
     try:
         payload = payload['build']
@@ -30,7 +30,7 @@ def api_codeship_webhook(request, user_profile, payload=REQ(argument_type='body'
     except KeyError as e:
         return json_error("Missing key {} in JSON".format(e.message))
 
-    check_send_message(user_profile, get_client('ZulipCodeshipWebhook'), 'stream', [stream], subject, body)
+    check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
 

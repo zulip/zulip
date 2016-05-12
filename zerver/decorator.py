@@ -125,8 +125,9 @@ def get_client_name(request, is_json_view):
         else:
              return "Unspecified"
 
-def process_client(request, user_profile, is_json_view=False):
-    client_name = get_client_name(request, is_json_view)
+def process_client(request, user_profile, is_json_view=False, client_name=None):
+    if client_name is None:
+        client_name = get_client_name(request, is_json_view)
 
     # Transitional hack for early 2014.  Eventually the ios clients
     # will all report ZulipiOS, and we can remove the next couple lines.
@@ -164,28 +165,31 @@ def validate_api_key(role, api_key):
     return profile
 
 # Use this for webhook views that don't get an email passed in.
-def api_key_only_webhook_view(view_func):
-    @csrf_exempt
-    @has_request_variables
-    @wraps(view_func)
-    def _wrapped_view_func(request, api_key=REQ,
-                           *args, **kwargs):
+def api_key_only_webhook_view(client_name):
+    def _wrapped_view_func(view_func):
+        @csrf_exempt
+        @has_request_variables
+        @wraps(view_func)
+        def _wrapped_func_arguments(request, api_key=REQ,
+                                    *args, **kwargs):
 
-        try:
-            user_profile = UserProfile.objects.get(api_key=api_key)
-        except UserProfile.DoesNotExist:
-            raise JsonableError("Invalid API key")
-        if not user_profile.is_active:
-            raise JsonableError("Account not active")
-        if user_profile.realm.deactivated:
-            raise JsonableError("Realm for account has been deactivated")
+            try:
+                user_profile = UserProfile.objects.get(api_key=api_key)
+            except UserProfile.DoesNotExist:
+                raise JsonableError("Invalid API key")
+            if not user_profile.is_active:
+                raise JsonableError("Account not active")
+            if user_profile.realm.deactivated:
+                raise JsonableError("Realm for account has been deactivated")
 
-        request.user = user_profile
-        request._email = user_profile.email
-        process_client(request, user_profile)
-        if settings.RATE_LIMITING:
-            rate_limit_user(request, user_profile, domain='all')
-        return view_func(request, user_profile, *args, **kwargs)
+            request.user = user_profile
+            request._email = user_profile.email
+            webhook_client_name = "Zulip{}Webhook".format(client_name)
+            process_client(request, user_profile, client_name=webhook_client_name)
+            if settings.RATE_LIMITING:
+                rate_limit_user(request, user_profile, domain='all')
+            return view_func(request, user_profile, request.client, *args, **kwargs)
+        return _wrapped_func_arguments
     return _wrapped_view_func
 
 # From Django 1.8, modified to leave off ?next=/

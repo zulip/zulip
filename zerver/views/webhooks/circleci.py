@@ -13,14 +13,14 @@ CIRCLECI_MESSAGE_TEMPLATE = '[Build]({build_url}) triggered by {username} on {br
 
 FAILED_STATUS = 'failed'
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view('CircleCI')
 @has_request_variables
-def api_circleci_webhook(request, user_profile, payload=REQ(argument_type='body'), stream=REQ(default='circleci')):
+def api_circleci_webhook(request, user_profile, client, payload=REQ(argument_type='body'), stream=REQ(default='circleci')):
     payload = payload['payload']
     subject = get_subject(payload)
     body = get_body(payload)
 
-    check_send_message(user_profile, get_client('ZulipCircleCIWebhook'), 'stream', [stream], subject, body)
+    check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
 def get_subject(payload):
