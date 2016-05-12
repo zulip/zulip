@@ -14,22 +14,22 @@
   <td>
     {{#if is_active}}
       <button class="btn deactivate btn-danger">
-        Deactivate
+        {{t "Deactivate" }}
       </button>
     {{else}}
       <button class="btn reactivate btn-warning">
-        Reactivate
+        {{t "Reactivate" }}
       </button>
     {{/if}}
     <span class="user-admin-settings">
       {{#if is_active_human}}
         {{#if is_admin}}
           <button class="btn remove-admin btn-danger">
-            Remove admin
+            {{t "Remove admin" }}
           </button>
         {{else}}
           <button class="btn make-admin btn-warning">
-            Make admin
+            {{t "Make admin" }}
           </button>
         {{/if}}
       {{/if}}

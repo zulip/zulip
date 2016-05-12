@@ -5,25 +5,25 @@
     <div class="bot_info">
         <div class="name">{{name}}</div>
         <div class="email">
-            <span class="field">Username</span>
+            <span class="field">{{t "Username" }}</span>
             <span class="value">{{email}}</span>
         </div>
         <div class="api_key">
-            <span class="field">API Key</span>
+            <span class="field">{{t "API Key" }}</span>
             <span class="api-key-value-and-button">
                <span class="value">{{api_key}}
                </span>
-               <button type="submit" class="btn btn-secondary regenerate_bot_api_key" title="Generate new API key" data-email="{{email}}">
+               <button type="submit" class="btn btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-email="{{email}}">
                    <i class="icon-vector-refresh"></i>
                </button>
             </span>
             <div class="api_key_error text-error"></div>
         </div>
         <div class="edit-bot-buttons">
-           <button type="submit" class="btn btn-primary open_edit_bot_form" title="Edit bot" data-email="{{email}}">
+           <button type="submit" class="btn btn-primary open_edit_bot_form" title="{{t 'Edit bot' }}" data-email="{{email}}">
             <i class="icon-vector-pencil"></i>
            </button>
-           <button type="submit" class="btn btn-danger delete_bot" title="Delete bot" data-email="{{email}}">
+           <button type="submit" class="btn btn-danger delete_bot" title="{{t 'Delete bot' }}" data-email="{{email}}">
             <i class="icon-vector-trash"></i>
            </button>
         </div>
@@ -35,33 +35,33 @@
             <div class="edit_bot_email">{{email}}</div>
             <div class="edit-bot-form-box">
               <div class="control-group">
-               <label for="edit_bot_name{{id_suffix}}" class="control-label">Full name</label>
+               <label for="edit_bot_name{{id_suffix}}" class="control-label">{{t "Full name" }}</label>
                <div class="controls">
                   <input type="text" name="bot_name" id="edit_bot_name{{id_suffix}}" class="edit_bot_name required" maxlength=50 />
                   <div><label for="edit_bot_name{{id_suffix}}" generated="true" class="text-error"></label></div>
                </div>
               </div>
               <div class="control-group new-bot-ui">
-                <label for="edit_bot_default_sending_stream{{id_suffix}}" class="control-label">Send to stream</label>
+                <label for="edit_bot_default_sending_stream{{id_suffix}}" class="control-label">{{t "Send to stream" }}</label>
                 <select name="bot_default_sending_stream" class="edit_bot_default_sending_stream" id="edit_bot_default_sending_stream{{id_suffix}}"></select>
               </div>
               <div class="control-group new-bot-ui">
-                <label for="edit_bot_default_events_register_stream{{id_suffix}}" class="control-label">Listen on</label>
+                <label for="edit_bot_default_events_register_stream{{id_suffix}}" class="control-label">{{t "Listen on" }}</label>
                 <select name="bot_default_events_register_stream" class="edit_bot_default_events_register_stream" id="edit_bot_default_events_register_stream{{id_suffix}}"></select>
               </div>
               <div class="control-group">
                <label for="bot_avatar_file_input{{id_suffix}}" class="control-label">Avatar</label>
-               <input type="file" id="bot_avatar_file_input{{id_suffix}}" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="Upload avatar" />
+               <input type="file" id="bot_avatar_file_input{{id_suffix}}" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
                 <div class="controls">
                   <div class="edit_bot_avatar_file"></div>
-                  <button type="button" class="btn btn-default edit_bot_avatar_upload_button">Choose avatar</button>
-                  <button type="button" class="btn btn-default edit_bot_avatar_clear_button">Clear avatar</button>
+                  <button type="button" class="btn btn-default edit_bot_avatar_upload_button">{{t "Choose avatar" }}</button>
+                  <button type="button" class="btn btn-default edit_bot_avatar_clear_button">{{t "Clear avatar" }}</button>
                 </div>
                <div><label for="edit_bot_avatar_file{{id_suffix}}" generated="true" class="edit_bot_avatar_error text-error"></label></div>
               </div>
               <div class="control-group">
                <div class="controls">
-                  <input type="submit" class="btn btn-primary edit_bot_button" value="Save" />
+                  <input type="submit" class="btn btn-primary edit_bot_button" value="{{t 'Save' }}" />
                   <button type="submit" class="btn btn-default reset_edit_bot">Cancel</button>
                </div>
                <div class="edit_bot_spinner"></div>

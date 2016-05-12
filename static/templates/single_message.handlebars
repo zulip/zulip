@@ -15,12 +15,12 @@
           {{/include_sender}}
           <span class="message_time{{#if msg.local_id}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
           {{#if_and last_edit_timestr include_sender}}
-          <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">EDITED</div>
+          <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
           {{/if_and}}
           <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}}">
             <div class="star">
               <span class="message_star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty empty-star{{/if}}"
-                    title="{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message"></span>
+                    title="{{#tr this}}{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message{{/tr}}"></span>
             </div>
             <div class="info actions_hover">
               <i class="icon-vector-chevron-down"></i>
@@ -33,14 +33,14 @@
         <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
         {{#if last_edit_timestr}}
           {{#unless include_sender}}
-          <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">EDITED</div>
+          <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
           {{/unless}}
         {{/if}}
         <div class="message_edit">
           <div class="message_edit_form" id="{{msg/id}}"></div>
         </div>
-        <div class="message_expander message_length_controller" title="See the rest of this message">[More...]</div>
-        <div class="message_condenser message_length_controller" title="Make this message take up less space on the screen">[Condense this message]</div>
+        <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
+        <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
       </div>
     </div>
   </div>
