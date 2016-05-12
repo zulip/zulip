@@ -54,6 +54,10 @@ with the product at all.
   to make it easy for teams to configure the integration to support
   their workflow.
 
+* Consistently capitalize the name of the integration in the
+  documentation and the Client name the way the vendor does.  It's OK
+  to use all-lower-case in the implementation.
+
 * Sometimes it can be helpful to contact the vendor if it appears they
   don't have an API or webhook we can use -- sometimes the right API
   is just not properly documented.
