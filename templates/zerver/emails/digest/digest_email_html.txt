@@ -26,7 +26,7 @@ Hello {{ name }},
         </div>
     {% endfor %}
 
-{% if remaining_unread_pm_count > 0 %}<p>+ {{ remaining_unread_pm_count }} more new private message{{ remaining_unread_pm_count|pluralize }}</p>{% endif %}
+{% if remaining_unread_pms_count > 0 %}<p>+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>{% endif %}
 <p><a href="https://{{ external_host }}/#narrow/is/private">Catch up on the rest of your PMs.</a></p>
 </div>
 {% endif %}

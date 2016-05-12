@@ -17,7 +17,7 @@ You have some missed private messages. Here are some of them:
 {% for message_block in sender_block.content %}{{ message_block.plain }}
 {% endfor %}
 {% endfor %}{% endfor %}
-{% if remaining_unread_pm_count > 0 %}+ {{ remaining_unread_pm_count }} more new private message{{ remaining_unread_pm_count|pluralize }}{% endif %}
+{% if remaining_unread_pms_count > 0 %}+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}{% endif %}
 Catch up on the rest of your PMs: https://{{ external_host }}/#narrow/is/private{% endif %}
 
 {% if hot_conversations %}
