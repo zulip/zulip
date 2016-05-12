@@ -3,13 +3,13 @@
 <form id="message_edit_form" class="form-horizontal">
 {{#if is_stream}}
     <div class="control-group">
-        <label class="control-label edit-control-label" for="message_edit_topic">Topic</label>
+        <label class="control-label edit-control-label" for="message_edit_topic">{{t "Topic" }}</label>
         <div class="controls edit-controls">
           <input type="text" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
           <select class='message_edit_topic_propagate' style='display:none;'>
-            <option selected="selected" value="change_one"> Change only this message topic</option>
-            <option value="change_later"> Change later messages to this topic</option>
-            <option value="change_all"> Change previous and following messages to this topic</option>
+            <option selected="selected" value="change_one"> {{t "Change only this message topic" }}</option>
+            <option value="change_later"> {{t "Change later messages to this topic" }}</option>
+            <option value="change_all"> {{t "Change previous and following messages to this topic" }}</option>
           </select>
         </div>
     </div>
@@ -21,8 +21,8 @@
     </div>
     <div class="control-group">
         <div class="controls edit-controls">
-            <button type="button" class="message_edit_save btn btn-primary btn-small">Save</button>
-            <button type="button" class="message_edit_cancel btn btn-default btn-small">Cancel</button>
+            <button type="button" class="message_edit_save btn btn-primary btn-small">{{t "Save" }}</button>
+            <button type="button" class="message_edit_cancel btn btn-default btn-small">{{t "Cancel" }}</button>
         </div>
     </div>
     <div class="alert alert-error edit_error hide"></div>

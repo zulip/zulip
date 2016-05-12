@@ -13,10 +13,10 @@
       <button class="btn sub_unsub_button btn-default{{#subscribed}} btn-success subscribed-button{{/subscribed}}"
               type="button" name="subscription">
         {{#subscribed}}
-        Subscribed
+        {{t "Subscribed" }}
         {{/subscribed}}
         {{^subscribed}}
-        Subscribe
+        {{t "Subscribe" }}
         {{/subscribed}}
       </button>
     </div>
@@ -32,7 +32,7 @@
             <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox sub-mute-setting">
               <input id="mutestream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless in_home_view}}checked{{/unless}} />
               <label class="subscription-control-label">Mute stream</label>
-              <p class="mute-note {{#if in_home_view}}hide-mute-note{{/if}}">Muted streams don't show up in your home view or generate notifications unless you are mentioned.</p>
+              <p class="mute-note {{#if in_home_view}}hide-mute-note{{/if}}">{{t "Muted streams don't show up in your home view or generate notifications unless you are mentioned." }}</p>
             </div>
           </li>
           <li>
@@ -40,13 +40,13 @@
             <div id="sub_desktop_notifications_setting"
                  class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
               <input id="desktop-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
-              <label class="subscription-control-label">Receive desktop <br />notifications</label>
+              <label class="subscription-control-label">{{t "Receive desktop <br />notifications" }}</label>
             </div>
 
             <div id="sub_audible_notifications_setting"
                  class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
               <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
-              <label class="subscription-control-label">Receive audible<br />notifications</label>
+              <label class="subscription-control-label">{{t "Receive audible<br />notifications" }}</label>
             </div>
 
           </li>
@@ -54,7 +54,7 @@
             <span class="sub_setting_control">
               <input stream_name="{{name}}" class="colorpicker" id="streamcolor" type="text" value="{{color}}" tabindex="-1" />
             </span>
-            <label for="streamcolor" class="subscription-control-label">Stream color</label>
+            <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
           </li>
         </ul>
         </div>
@@ -70,18 +70,18 @@
 
       {{#if is_admin}}
         <div class="admin-settings">
-          <span class="sub_settings_title">Administrator settings</span>
+          <span class="sub_settings_title">{{t "Administrator settings" }}</span>
           <div class="rename-stream">
             <form class="form-inline">
               <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
-              <input type="submit" name="rename" value="Rename stream" class="btn btn-danger stream-rename-button" tabindex="-1" />
+              <input type="submit" name="rename" value="{{t 'Rename stream' }}" class="btn btn-danger stream-rename-button" tabindex="-1" />
             </form>
           </div>
           <div class="change-stream-description">
             <form class="form-inline">
               <input type="hidden" name="stream_name" value="{{name}}" />
               <input type="text" name="description" value="{{description}}" class="input-block description" tabindex="-1" />
-              <input type="submit" name="change-stream-description" value="Change stream description" class="btn btn-danger change-stream-description-button" tabindex="-1" />
+              <input type="submit" name="change-stream-description" value="{{t 'Change stream description' }}" class="btn btn-danger change-stream-description-button" tabindex="-1" />
             </form>
           </div>
           <div class="change-stream-privacy">
@@ -92,11 +92,11 @@
 
       {{#render_subscribers}}
       <div class="subscriber_list_settings">
-        <span class="sub_settings_title">Stream membership</span>
+        <span class="sub_settings_title">{{t "Stream membership" }}</span>
         <div class="subscriber_list_add">
           <form class="form-inline">
-            <input type="text" name="principal" placeholder="Email address" value="" class="input-block" tabindex="-1" />
-            <input type="submit" name="add_subscriber" value="Add" class="btn btn-primary add-subscriber-button" tabindex="-1 "/>
+            <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" tabindex="-1" />
+            <input type="submit" name="add_subscriber" value="{{t 'Add' }}" class="btn btn-primary add-subscriber-button" tabindex="-1 "/>
           </form>
         </div>
       </div>
