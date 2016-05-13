@@ -20,7 +20,7 @@ at https://www.zulip.org.
 Installing the Zulip Development environment
 ============================================
 
-The Zulip development environment is the recommened option for folks
+The Zulip development environment is the recommended option for folks
 interested in trying out Zulip.  This is documented in
 [README.dev.md](README.dev.md).
 
@@ -29,7 +29,7 @@ Running Zulip in production
 
 Zulip in production only supports Ubuntu 14.04 right now, but work is
 ongoing on adding support for additional platforms. The installation
-process is documented in https://zulip.org/server.html and in more
+process is documented at https://zulip.org/server.html and in more
 detail in [README.prod.md](README.prod.md).
 
 Contributing to Zulip
