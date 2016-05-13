@@ -145,6 +145,14 @@ whitespace_rules = [
      'exclude': set(['zerver/lib/bugdown/codehilite.py']),
      'description': 'Fix tab-based whitespace'},
     ]
+markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
+   # Two spaces trailing a line with other content is okay--it's a markdown line break.
+   # This rule finds one space trailing a non-space, three or more trailing spaces, and
+   # spaces on an empty line.
+   {'pattern': '((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
+    'strip': '\n',
+    'description': 'Fix trailing whitespace'},
+   ]
 js_rules = [
     {'pattern': '[^_]function\(',
      'description': 'The keyword "function" should be followed by a space'},
@@ -282,7 +290,7 @@ html_rules = whitespace_rules + [
      'description': "`placeholder` value should be translatable."},
     ]
 json_rules = [] # just fix newlines at ends of files
-markdown_rules = whitespace_rules
+markdown_rules = markdown_whitespace_rules
 txt_rules = whitespace_rules
 
 def check_custom_checks_py():
