@@ -15,7 +15,11 @@
     "htmlparser2": "3.8.3",
     "cssstyle": "0.2.29",
     "webpack": "1.12.2",
-    "webpack-dev-server": "1.12.1"
+    "webpack-dev-server": "1.12.1",
+    "i18next": "3.0.0",
+    "i18next-parser": "0.7.0",
+    "i18next-xhr-backend": "0.5.4",
+    "i18next-browser-languagedetector": "0.3.0"
   },
   "scripts": {},
   "repository": {

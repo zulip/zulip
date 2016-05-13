@@ -1,6 +1,18 @@
 add_dependencies({
     Handlebars: 'handlebars',
-    templates: 'js/templates'
+    templates: 'js/templates',
+    i18n: 'i18next'
+});
+
+var i18n = global.i18n;
+i18n.init({
+    nsSeparator: false,
+    keySeparator: false,
+    interpolation: {
+        prefix: "__",
+        suffix: "__"
+    },
+    lng: 'en'
 });
 
 global.$ = require('jQuery');
