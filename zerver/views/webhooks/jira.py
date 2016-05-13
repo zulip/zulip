@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.db.models import Q
 from django.conf import settings
 
-from zerver.models import get_client, UserProfile, get_user_profile_by_email
+from zerver.models import UserProfile, get_user_profile_by_email
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import api_key_only_webhook_view, has_request_variables, REQ

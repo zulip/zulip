@@ -1,7 +1,7 @@
 # Webhooks for teamcity integration
 from __future__ import absolute_import
 from django.db.models import Q
-from zerver.models import get_client, UserProfile
+from zerver.models import UserProfile
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
