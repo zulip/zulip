@@ -79,9 +79,10 @@ def convert_jira_markup(content, realm):
 
     return content
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view("JIRA")
 @has_request_variables
-def api_jira_webhook(request, user_profile, payload=REQ(argument_type='body'),
+def api_jira_webhook(request, user_profile, client,
+                     payload=REQ(argument_type='body'),
                      stream=REQ(default='jira')):
     def get_in(payload, keys, default=''):
         try:
@@ -168,6 +169,6 @@ def api_jira_webhook(request, user_profile, payload=REQ(argument_type='body'),
                 logging.warning("Got JIRA event type we don't understand: %s" % (event,))
         return json_error("Unknown JIRA event type")
 
-    check_send_message(user_profile, get_client("ZulipJIRAWebhook"), "stream",
+    check_send_message(user_profile, client, "stream",
                        [stream], subject, content)
     return json_success()

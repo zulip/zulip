@@ -65,18 +65,18 @@ def build_pagerduty_formatdict(message):
     return format_dict
 
 
-def send_raw_pagerduty_json(user_profile, stream, message, topic):
+def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
     subject = topic or 'pagerduty'
     body = (
         u'Unknown pagerduty message\n'
         u'``` py\n'
         u'%s\n'
         u'```') % (pprint.pformat(message),)
-    check_send_message(user_profile, get_client('ZulipPagerDutyWebhook'), 'stream',
+    check_send_message(user_profile, client, 'stream',
                        [stream], subject, body)
 
 
-def send_formated_pagerduty(user_profile, stream, message_type, format_dict, topic):
+def send_formated_pagerduty(user_profile, client, stream, message_type, format_dict, topic):
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = (u':imp: Incident '
         u'[{incident_num}]({incident_url}) {action} by '
@@ -97,25 +97,25 @@ def send_formated_pagerduty(user_profile, stream, message_type, format_dict, top
     subject = topic or u'incident {incident_num}'.format(**format_dict)
     body = template.format(**format_dict)
 
-    check_send_message(user_profile, get_client('ZulipPagerDutyWebhook'), 'stream',
+    check_send_message(user_profile, client, 'stream',
                        [stream], subject, body)
 
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view('PagerDuty')
 @has_request_variables
-def api_pagerduty_webhook(request, user_profile, payload=REQ(argument_type='body'),
+def api_pagerduty_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                           stream=REQ(default='pagerduty'), topic=REQ(default=None)):
     for message in payload['messages']:
         message_type = message['type']
 
         if message_type not in PAGER_DUTY_EVENT_NAMES:
-            send_raw_pagerduty_json(user_profile, stream, message, topic)
+            send_raw_pagerduty_json(user_profile, client, stream, message, topic)
 
         try:
             format_dict = build_pagerduty_formatdict(message)
         except:
-            send_raw_pagerduty_json(user_profile, stream, message, topic)
+            send_raw_pagerduty_json(user_profile, client, stream, message, topic)
         else:
-            send_formated_pagerduty(user_profile, stream, message_type, format_dict, topic)
+            send_formated_pagerduty(user_profile, client, stream, message_type, format_dict, topic)
 
     return json_success()

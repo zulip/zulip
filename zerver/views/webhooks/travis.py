@@ -8,9 +8,10 @@ from zerver.lib.validator import check_dict, check_string
 import ujson
 
 
-@api_key_only_webhook_view
+@api_key_only_webhook_view('Travis')
 @has_request_variables
-def api_travis_webhook(request, user_profile, stream=REQ(default='travis'),
+def api_travis_webhook(request, user_profile, client,
+                       stream=REQ(default='travis'),
                        topic=REQ(default=None),
                        message=REQ('payload', validator=check_dict([
                            ['author_name', check_string],
@@ -40,5 +41,5 @@ def api_travis_webhook(request, user_profile, stream=REQ(default='travis'),
 
     body = template % (author, message_type, emoji, changes, build_url)
 
-    check_send_message(user_profile, get_client('ZulipTravisWebhook'), 'stream', [stream], topic, body)
+    check_send_message(user_profile, client, 'stream', [stream], topic, body)
     return json_success()
