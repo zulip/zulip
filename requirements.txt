@@ -58,6 +58,7 @@ pyflakes==0.9.1
 pylibmc==1.4.3
 python-ldap==2.4.19
 pytz==2015.4
+recommonmark==0.4.0 # Needed to build docs
 redis==2.10.3
 requests==2.7.0
 requests_oauthlib==0.6.1
@@ -67,6 +68,7 @@ six==1.9.0
 smmap==0.9.0
 sockjs-tornado==1.0.1
 sourcemap==0.1.8
+sphinx-rtd-theme==0.1.9 # Needed to build docs
 tornado==2.4.1
 transifex-client==0.11 # Needed to sync translations from transifex
 typing==3.5.0.1
