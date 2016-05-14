@@ -27,6 +27,7 @@ Contents:
    :maxdepth: 3
 
    readme-symlink
+   architecture-overview
    integration-guide
    new-feature-tutorial
    code-contribution-checklist
