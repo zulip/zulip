@@ -50,7 +50,8 @@ docs][doc-test].
 * **Developer Documentation**.  Zulip has a growing collection of
 developer documentation on [Read The Docs][doc].  Recommended reading
 for new contributors includes the [directory structure][doc-dirstruct]
-and [new feature tutorial][doc-newfeat].
+and [new feature tutorial][doc-newfeat]. You can also improve
+[Zulip.org][z-org].
 
 * **Mailing lists and bug tracker**. Zulip has a [development
 discussion mailing list][gg-devel] and uses [GitHub issues
@@ -62,9 +63,13 @@ zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
 app (including most integrations); the [desktop][], [Android][], and
-[iOS][] apps, the [Hubot adapter][hubot-adapter], and many integrations
-([Phabricator][phab], [Jenkins][], [Puppet][], [Redmine][], and
-[Trello][]) are separate repositories.
+[iOS][] apps, are separate repositories, as is [our experimental React
+Native iOS app][ios-exp].
+
+* **Glue code**. We maintain a [Hubot adapter][hubot-adapter] and several
+integrations ([Phabricator][phab], [Jenkins][], [Puppet][], [Redmine][],
+and [Trello][]), plus [node.js API bindings][node], and a [full-text search
+PostgreSQL extension][tsearch], as separate repos.
 
 * **Translations**.  Zulip is in the process of being translated into
 10+ languages, and we love contributions to our translations.  See our
@@ -82,15 +87,19 @@ contributing!
 [desktop]: https://github.com/zulip/zulip-desktop
 [android]: https://github.com/zulip/zulip-android
 [ios]: https://github.com/zulip/zulip-ios
+[ios-exp]: https://github.com/zulip/zulip-mobile
 [email-android]: https://groups.google.com/forum/#!forum/zulip-android
 [email-ios]: https://groups.google.com/forum/#!forum/zulip-ios
 [hubot-adapter]: https://github.com/zulip/hubot-zulip
 [jenkins]: https://github.com/zulip/zulip-jenkins-plugin
+[node]: https://github.com/zulip/zulip-node
 [phab]: https://github.com/zulip/phabricator-to-zulip
 [puppet]: https://github.com/matthewbarr/puppet-zulip
 [redmine]: https://github.com/zulip/zulip-redmine-plugin
 [trello]: https://github.com/zulip/trello-to-zulip
+[tsearch]: https://github.com/zulip/tsearch_extras
 [transifex]: https://www.transifex.com/zulip/zulip/
+[z-org]: https://github.com/zulip/zulip.github.io
 
 How to get involved with contributing to Zulip
 ==============================================
