@@ -58,10 +58,12 @@ pyflakes==0.9.1
 pylibmc==1.4.3
 python-ldap==2.4.19
 pytz==2015.4
+recommonmark==0.4.0 # Needed to build docs
 redis==2.10.3
 requests==2.7.0
 requests_oauthlib==0.6.1
 rsa==3.1.4
+sphinx-rtd-theme==0.1.9 # Needed to build docs
 simplejson==3.7.3
 six==1.9.0
 smmap==0.9.0
