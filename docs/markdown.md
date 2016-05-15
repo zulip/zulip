@@ -1,28 +1,29 @@
-# Zulip's markdown implementation
+# Zulip's Markdown implementation
 
 Zulip has a special flavor of Markdown, currently called 'bugdown'
-after Zulip's original name of "humbug".
+after Zulip's original name of "humbug". End users are using Bugdown
+within the client, not original Markdown.
 
 Zulip has two implementations of Bugdown.  The first is based on
 Python-Markdown (`zerver/lib/bugdown/`) and is used to authoritatively
 render messages on the backend (and implements expensive features like
 querying the Twitter API to render tweets nicely).  The other is in
-javascript, based on marked (`static/js/echo.js`), and is used to
+JavaScript, based on marked (`static/js/echo.js`), and is used to
 preview and locally echo messages the moment the sender hits enter,
 without waiting for round trip from the server.  The two
 implementations are tested for compatibility via
 `zerver/tests/test_bugdown.py` and the fixtures under
 `zerver/fixtures/bugdown-data.json`.
 
-The javascript implementation knows which types of messages it can
+The JavaScript implementation knows which types of messages it can
 render correctly, and thus while there is code to rerender messages
 based on the authoritative backend rendering (which would clause a
 change in the rendering visible only to the sender shortly after a
-message is sent), this should never happen and whenever it does it is
+message is sent), this should never happen, and whenever it does it is
 considered a bug.  Instead, if the frontend doesn't know how to
 correctly render a message, we simply won't echo the message for the
 sender until it's rendered by the backend.  So for example, a message
-containing a link to Twitter will not be rendered by the javascript
+containing a link to Twitter will not be rendered by the JavaScript
 implementation because it doesn't support doing the 3rd party API
 queries required to render tweets nicely.
 

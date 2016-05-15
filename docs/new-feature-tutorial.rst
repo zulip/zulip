@@ -14,8 +14,8 @@ General Process
 Adding a field to the database
 ------------------------------
 
-**Update the model:** The server accesses the underlying database in `zerver/
-models.py`. Add a new field in the appropriate class.
+**Update the model:** The server accesses the underlying database in ``zerver/
+models.py``. Add a new field in the appropriate class.
 
 **Create and run the migration:** To create and apply a migration, run: ::
 
