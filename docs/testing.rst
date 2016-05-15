@@ -71,59 +71,6 @@ You can run this with ``./tools/test-js-with-casper`` or as
 ``./tools/test-js-with-casper 05-settings.js`` to run a single test
 file from ``frontend_tests/casper_tests/``.
 
-Writing Casper tests
-~~~~~~~~~~~~~~~~~~~~
-
-Probably the easiest way to learn how to write Casper tests is to
-study some of the existing test files.  There are a few tips that can
-be useful for writing Casper tests in addition to the debugging notes
-below:
-
-- Run just the file containing your new tests as described above to
-  have a fast debugging cycle.
-- With frontend tests in general, it's very important to write your
-  code to wait for the right events.  Before essentially every action
-  you take on the page, you'll want to use ``waitForSelector``,
-  ``waitUntilVisible``, or a similar function to make sure the page or
-  elemant is ready before you interact with it. For instance, if you
-  want to click a button that you can select via ``#btn-submit``, and
-  then check that it causes ``success-elt`` to appear, you'll want to
-  write something like:
-
-  ::
-
-    casper.waitForSelector("#btn-submit", function () {
-       casper.click('#btn-submit')
-       casper.test.assertExists("#success-elt");
-     });
-
-  This will ensure that the element is present before the interaction
-  is attempted.  The various wait functions supported in Casper are
-  documented in the Casper here:
-  http://docs.casperjs.org/en/latest/modules/casper.html#waitforselector
-  and the various assert statements available are documented here:
-  http://docs.casperjs.org/en/latest/modules/tester.html#the-tester-prototype
-- Casper uses CSS3 selectors; you can often save time by testing and
-  debugigng your selectors on the relevant page of the Zulip
-  development app in the Chrome javascript console by using
-  e.g. ``$$("#settings-dropdown")``.
-- The test suite uses a smaller set of default user accounts and other
-  data initialized in the database than the development environment;
-  to see what differs check out the section related to
-  ``options["test_suite"]`` in
-  ``zilencer/management/commands/populate_db.py``.
-- Casper effectively runs your test file in two phases -- first it
-  runs the code in the test file, which for most test files will just
-  collect a series of steps (each being a ``casper.then`` or
-  ``casper.wait...`` call).  Then, usually at the end of the test
-  file, you'll have a ``casper.run`` call which actually runs that
-  series of steps.  This means that if you write code in your
-  test file outside a ``casper.then`` or ``casper.wait...`` method, it
-  will actually run before all the Casper test steps that are declared
-  in the file, which can lead to confusing failures where the new code
-  you write in between two ``casper.then`` blocks actually runs before
-  either of them.  See this for more details about how Casper works:
-  http://docs.casperjs.org/en/latest/faq.html#how-does-then-and-the-step-stack-work
 
 Debugging Casper.JS
 ~~~~~~~~~~~~~~~~~~~
@@ -218,8 +165,93 @@ frontend_tests/node directory.
 
 .. _handling-dependencies:
 
+Coverage reports
+~~~~~~~~~~~~~~~~
+
+You can automatically generate coverage reports for the JavaScript unit
+tests. To do so, install istanbul:
+
+  ::
+
+     sudo npm install -g istanbul
+
+And run test-js-with-node with the 'cover' parameter:
+
+  ::
+
+     tools/test-js-with-node cover
+
+Then open ``coverage/lcov-report/js/index.html`` in your browser.
+Modules we don't test *at all* aren't listed in the report, so this
+tends to overstate how good our overall coverage is, but it's accurate
+for individual files. You can also click a filename to see the specific
+statements and branches not tested. 100% branch coverage isn't
+necessarily possible, but getting to at least 80% branch coverage is a
+good goal.
+
+
+
+Writing tests
+=============
+
+
+Writing Casper tests
+--------------------
+
+Probably the easiest way to learn how to write Casper tests is to
+study some of the existing test files.  There are a few tips that can
+be useful for writing Casper tests in addition to the debugging notes
+below:
+
+- Run just the file containing your new tests as described above to
+  have a fast debugging cycle.
+- With frontend tests in general, it's very important to write your
+  code to wait for the right events.  Before essentially every action
+  you take on the page, you'll want to use ``waitForSelector``,
+  ``waitUntilVisible``, or a similar function to make sure the page or
+  elemant is ready before you interact with it. For instance, if you
+  want to click a button that you can select via ``#btn-submit``, and
+  then check that it causes ``success-elt`` to appear, you'll want to
+  write something like:
+
+  ::
+
+    casper.waitForSelector("#btn-submit", function () {
+       casper.click('#btn-submit')
+       casper.test.assertExists("#success-elt");
+     });
+
+  This will ensure that the element is present before the interaction
+  is attempted.  The various wait functions supported in Casper are
+  documented in the Casper here:
+  http://docs.casperjs.org/en/latest/modules/casper.html#waitforselector
+  and the various assert statements available are documented here:
+  http://docs.casperjs.org/en/latest/modules/tester.html#the-tester-prototype
+- Casper uses CSS3 selectors; you can often save time by testing and
+  debugigng your selectors on the relevant page of the Zulip
+  development app in the Chrome javascript console by using
+  e.g. ``$$("#settings-dropdown")``.
+- The test suite uses a smaller set of default user accounts and other
+  data initialized in the database than the development environment;
+  to see what differs check out the section related to
+  ``options["test_suite"]`` in
+  ``zilencer/management/commands/populate_db.py``.
+- Casper effectively runs your test file in two phases -- first it
+  runs the code in the test file, which for most test files will just
+  collect a series of steps (each being a ``casper.then`` or
+  ``casper.wait...`` call).  Then, usually at the end of the test
+  file, you'll have a ``casper.run`` call which actually runs that
+  series of steps.  This means that if you write code in your
+  test file outside a ``casper.then`` or ``casper.wait...`` method, it
+  will actually run before all the Casper test steps that are declared
+  in the file, which can lead to confusing failures where the new code
+  you write in between two ``casper.then`` blocks actually runs before
+  either of them.  See this for more details about how Casper works:
+  http://docs.casperjs.org/en/latest/faq.html#how-does-then-and-the-step-stack-work
+
+
 Handling dependencies in unit tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------
 
 The following scheme helps avoid tests leaking globals between each
 other.
@@ -287,29 +319,6 @@ here is this:
          return 'office';
      };
 
-Coverage reports
-~~~~~~~~~~~~~~~~
-
-You can automatically generate coverage reports for the JavaScript unit
-tests. To do so, install istanbul:
-
-  ::
-
-     sudo npm install -g istanbul
-
-And run test-js-with-node with the 'cover' parameter:
-
-  ::
-
-     tools/test-js-with-node cover
-
-Then open ``coverage/lcov-report/js/index.html`` in your browser.
-Modules we don't test *at all* aren't listed in the report, so this
-tends to overstate how good our overall coverage is, but it's accurate
-for individual files. You can also click a filename to see the specific
-statements and branches not tested. 100% branch coverage isn't
-necessarily possible, but getting to at least 80% branch coverage is a
-good goal.
 
 Manual testing (local app + web browser)
 ========================================
@@ -329,7 +338,7 @@ them.  This is run automatically as part of the development
 environment setup process, but is occasionally useful when you want to
 return to a clean state for testing.
 
-Javascript manual testing
+JavaScript manual testing
 -------------------------
 
 `debug.js` has some tools for profiling Javascript code, including:
