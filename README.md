@@ -1,5 +1,11 @@
-Zulip
-=====
+**[Zulip overview](#zulip-overview)** |
+**[Installing for dev](#installing-the-zulip-development-environment)** |
+**[Installing for production](#running-zulip-in-production)** |
+**[Ways to contribute](#ways-to-contribute)** |
+**[How to get involved](#how-to-get-involved-with-contributing-to-zulip)** |
+**[License](#license)**
+
+# Zulip overview
 
 Zulip is a powerful, open source group chat application. Written in
 Python and using the Django framework, Zulip supports both private
@@ -17,23 +23,20 @@ at https://www.zulip.org.
 [1]: https://travis-ci.org/zulip/zulip.svg?branch=master
 [2]: https://travis-ci.org/zulip/zulip
 
-Installing the Zulip Development environment
-============================================
+## Installing the Zulip Development environment
 
 The Zulip development environment is the recommended option for folks
 interested in trying out Zulip.  This is documented in
 [README.dev.md](README.dev.md).
 
-Running Zulip in production
-===========================
+## Running Zulip in production
 
 Zulip in production only supports Ubuntu 14.04 right now, but work is
 ongoing on adding support for additional platforms. The installation
 process is documented at https://zulip.org/server.html and in more
 detail in [README.prod.md](README.prod.md).
 
-Contributing to Zulip
-=====================
+## Ways to contribute
 
 Zulip welcomes all forms of contributions!  The page documents the
 Zulip development process.
@@ -101,8 +104,7 @@ contributing!
 [transifex]: https://www.transifex.com/zulip/zulip/
 [z-org]: https://github.com/zulip/zulip.github.io
 
-How to get involved with contributing to Zulip
-==============================================
+## How to get involved with contributing to Zulip
 
 First, subscribe to the Zulip [development discussion mailing
 list][gg-devel].
@@ -176,8 +178,7 @@ Feedback on how to make this development process more efficient, fun,
 and friendly to new contributors is very welcome!  Just send an email
 to the Zulip Developers list with your thoughts.
 
-License
-=======
+## License
 
 Copyright 2011-2015 Dropbox, Inc.
 
