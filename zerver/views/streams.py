@@ -1,9 +1,10 @@
 from __future__ import absolute_import
-from typing import Any
+from typing import Any, List, Tuple
 
 from django.conf import settings
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, \
@@ -32,6 +33,8 @@ import six
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
+    # type: (List[Any], UserProfile, bool, bool) -> Tuple[List[Any], List[Any]]
+    # TODO: RETURN_TYPE_CAN_BE_STR_OR_INT streams.py:66
     """Converts plaintext stream names to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -89,10 +92,12 @@ class PrincipalError(JsonableError):
         self.status_code = status_code
 
     def to_json_error_msg(self):
+        # type: () -> str
         return ("User not authorized to execute queries on behalf of '%s'"
                 % (self.principal,))
 
 def principal_to_user_profile(agent, principal):
+    # type: (UserProfile, str) -> UserProfile
     principal_doesnt_exist = False
     try:
         principal_user_profile = get_user_profile_by_email(principal)
@@ -111,6 +116,7 @@ def principal_to_user_profile(agent, principal):
 
 @require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_name):
+    # type: (HttpRequest, UserProfile, str) -> HttpResponse
     target = get_stream(stream_name, user_profile.realm)
     if not target:
         return json_error('No such stream name')
@@ -124,40 +130,47 @@ def deactivate_stream_backend(request, user_profile, stream_name):
 @require_realm_admin
 @has_request_variables
 def add_default_stream(request, user_profile, stream_name=REQ):
+    # type: (HttpRequest, UserProfile, Any) -> HttpResponse
     return json_success(do_add_default_stream(user_profile.realm, stream_name))
 
 @require_realm_admin
 @has_request_variables
 def remove_default_stream(request, user_profile, stream_name=REQ):
+    # type: (HttpRequest, UserProfile, Any) -> HttpResponse
     return json_success(do_remove_default_stream(user_profile.realm, stream_name))
 
 @authenticated_json_post_view
 @require_realm_admin
 @has_request_variables
 def json_rename_stream(request, user_profile, old_name=REQ, new_name=REQ):
+    # type: (HttpRequest, UserProfile, Any, Any) -> HttpResponse
     return json_success(do_rename_stream(user_profile.realm, old_name, new_name))
 
 @authenticated_json_post_view
 @require_realm_admin
 @has_request_variables
 def json_make_stream_public(request, user_profile, stream_name=REQ):
+    # type: (HttpRequest, UserProfile, Any) -> HttpResponse
     return json_success(do_make_stream_public(user_profile, user_profile.realm, stream_name))
 
 @authenticated_json_post_view
 @require_realm_admin
 @has_request_variables
 def json_make_stream_private(request, user_profile, stream_name=REQ):
+    # type: (HttpRequest, UserProfile, Any) -> HttpResponse
     return json_success(do_make_stream_private(user_profile.realm, stream_name))
 
 @require_realm_admin
 @has_request_variables
 def update_stream_backend(request, user_profile, stream_name,
                           description=REQ(validator=check_string, default=None)):
+    # type: (HttpRequest, UserProfile, str, REQ) -> HttpResponse
     if description is not None:
        do_change_stream_description(user_profile.realm, stream_name, description)
     return json_success({})
 
 def list_subscriptions_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
 @transaction.atomic
@@ -165,6 +178,7 @@ def list_subscriptions_backend(request, user_profile):
 def update_subscriptions_backend(request, user_profile,
                                  delete=REQ(validator=check_list(check_string), default=[]),
                                  add=REQ(validator=check_list(check_dict([['name', check_string]])), default=[])):
+    # type: (HttpRequest, UserProfile, REQ, REQ) -> HttpResponse
     if not add and not delete:
         return json_error('Nothing to do. Specify at least one of "add" or "delete".')
 
@@ -179,6 +193,7 @@ def update_subscriptions_backend(request, user_profile,
 
 @authenticated_json_post_view
 def json_remove_subscriptions(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     return remove_subscriptions_backend(request, user_profile)
 
 @has_request_variables
@@ -186,6 +201,7 @@ def remove_subscriptions_backend(request, user_profile,
                                  streams_raw = REQ("subscriptions", validator=check_list(check_string)),
                                  principals = REQ(validator=check_list(check_string), default=None)):
 
+    # type: (HttpRequest, UserProfile, Any, Any) -> HttpResponse
     removing_someone_else = principals and \
         set(principals) != set((user_profile.email,))
     if removing_someone_else and not user_profile.is_realm_admin:
@@ -219,6 +235,7 @@ def remove_subscriptions_backend(request, user_profile,
     return json_success(result)
 
 def filter_stream_authorization(user_profile, streams):
+    # type: (UserProfile, List[Stream]) -> Tuple[List[Stream], List[Stream]]
     streams_subscribed = set()
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
     subs = Subscription.objects.filter(user_profile=user_profile,
@@ -243,10 +260,12 @@ def filter_stream_authorization(user_profile, streams):
     return streams, unauthorized_streams
 
 def stream_link(stream_name):
+    # type: (str) -> str
     "Escapes a stream name to make a #narrow/stream/stream_name link"
     return "#narrow/stream/%s" % (urllib.parse.quote(stream_name.encode('utf-8')),)
 
 def stream_button(stream_name):
+    # type: (str) -> str
     stream_name = stream_name.replace('\\', '\\\\')
     stream_name = stream_name.replace(')', '\\)')
     return '!_stream_subscribe_button(%s)' % (stream_name,)
@@ -259,6 +278,7 @@ def add_subscriptions_backend(request, user_profile,
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
+    # type: (HttpRequest, UserProfile, Any, Any, Any, Any, Any) -> HttpResponse
     stream_names = []
     for stream in streams_raw:
         stream_name = stream["name"].strip()
@@ -370,6 +390,7 @@ def add_subscriptions_backend(request, user_profile,
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
+    # type: (HttpRequest, UserProfile, Any) -> HttpResponse
     stream = get_stream(stream_name, user_profile.realm)
     if stream is None:
         raise JsonableError("Stream does not exist: %s" % (stream_name,))
@@ -380,6 +401,7 @@ def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
 
 @authenticated_json_post_view
 def json_get_subscribers(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     return get_subscribers_backend(request, user_profile)
 
 # By default, lists all streams that the user has access to --
@@ -390,6 +412,7 @@ def get_streams_backend(request, user_profile,
                         include_subscribed=REQ(validator=check_bool, default=True),
                         include_all_active=REQ(validator=check_bool, default=False)):
 
+    # type: (HttpRequest, UserProfile, REQ, REQ, REQ) -> HttpResponse
     streams = do_get_streams(user_profile, include_public, include_subscribed,
                              include_all_active)
     return json_success({"streams": streams})
@@ -398,9 +421,11 @@ def get_streams_backend(request, user_profile,
 @has_request_variables
 def json_stream_exists(request, user_profile, stream=REQ,
                        autosubscribe=REQ(default=False)):
+    # type: (HttpRequest, UserProfile, Any, Any) -> HttpResponse
     return stream_exists_backend(request, user_profile, stream, autosubscribe)
 
 def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
+    # type: (HttpRequest, UserProfile, str, bool) -> HttpResponse
     if not valid_stream_name(stream_name):
         return json_error("Invalid characters in stream name")
     stream = get_stream(stream_name, user_profile.realm)
@@ -416,6 +441,7 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
     return json_response(data=result, status=404)
 
 def get_subscription_or_die(stream_name, user_profile):
+    # type: (str, UserProfile) -> Subscription
     stream = get_stream(stream_name, user_profile.realm)
     if not stream:
         raise JsonableError("Invalid stream %s" % (stream.name,))
@@ -436,6 +462,7 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
                         ["property", check_string],
                         ["value", check_variable_type(
                             [check_string, check_bool])]])))):
+    # type: (HttpRequest, UserProfile, Any) -> HttpResponse
     """
     This is the entry point to changing subscription properties. This
     is a bulk endpoint: requestors always provide a subscription_data
