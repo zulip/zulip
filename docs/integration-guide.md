@@ -21,7 +21,7 @@ products, ordered here by which types we prefer to write:
 third-party service supports posting content to a particular URI on
 our site with data about the event.  For these, you usually just need
 to add a new handler in `zerver/views/webhooks.py` (plus
-test/document/etc.).  An example commit implementing a new webhook.
+test/document/etc.).  An example commit implementing a new webhook is:
 https://github.com/zulip/zulip/pull/324.
 
 2. Python script integrations (examples: SVN, Git), where we can get
