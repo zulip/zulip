@@ -359,7 +359,7 @@ class AuthedTestCase(TestCase):
         self.assert_json_success(result)
 
         # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
+        msg = self.get_last_message()
         self.assertEqual(msg.sender.email, email)
         self.assertEqual(get_display_recipient(msg.recipient), stream_name)
 
