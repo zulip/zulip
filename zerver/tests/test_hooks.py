@@ -1282,3 +1282,24 @@ class TaigaHookTests(AuthedTestCase):
         msg = self.send_taiga_message("issue_changed_comment_added")
         self.assertEqual(msg.subject, u'subject')
         self.assertEqual(msg.content, u':thought_balloon: Antek commented on issue **Aaaa**.\n')
+
+class GoHookTests(AuthedTestCase):
+
+    def setUp(self):
+        self.email = 'hamlet@zulip.com'
+        self.api_key = self.get_api_key(self.email)
+        self.url = '/api/v1/external/gocd?api_key=%s' % self.api_key
+        self.stream_name = 'gocd'
+        self.subscribe_to_stream(self.email, self.stream_name)
+
+    def test_send_build_status_pass(self):
+        body = ujson.dumps(ujson.loads(self.fixture_data('gocd', 'build_passed')))
+        result = self.client.post(self.url,
+                                body,
+                                stream_name=self.stream_name,
+                                content_type="application/json")
+        
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, u'defaultStage has Passed')
+        self.assertEqual(msg.content, u'See details: http://localhost:8153/go/pipelines/MyPipeLine/5/defaultStage/1')
+

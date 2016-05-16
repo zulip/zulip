@@ -1,0 +1,12 @@
+{
+
+    "pipeline_name" : "MyPipeLine",
+    "pipeline_counter" : "5",
+    "stage_name" : "defaultStage",
+    "stage_counter" : "1",
+    "create_time": "2016-05-19T07:41:21.162Z",
+    "last_transition_time":"2015-02-19T07:41:45.576Z",
+    "status" : "Passed",
+    "server_url" : "http://localhost:8153/go/pipelines",
+    "triggered_by" : "anonymous",
+}
