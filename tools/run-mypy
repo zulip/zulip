@@ -25,7 +25,6 @@ zerver/lib/statistics.py
 zerver/middleware.py
 zerver/migrations/
 zerver/tests/
-zerver/views/webhooks/jira.py
 zilencer/models.py
 """.split()
 

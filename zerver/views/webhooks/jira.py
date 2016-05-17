@@ -43,16 +43,16 @@ def convert_jira_markup(content, realm):
 
     # Wrapping a block of code in {quote}stuff{quote} also block-quotes it
     quote_re = re.compile(r'{quote}(.*?){quote}', re.DOTALL)
-    content = re.sub(quote_re, r'~~~ quote\n\1\n~~~', content)
+    content = re.sub(quote_re, r'~~~ quote\n\1\n~~~', content) # type: ignore # https://github.com/python/typeshed/issues/160
 
     # {noformat}stuff{noformat} blocks are just code blocks with no
     # syntax highlighting
     noformat_re = re.compile(r'{noformat}(.*?){noformat}', re.DOTALL)
-    content = re.sub(noformat_re, r'~~~\n\1\n~~~', content)
+    content = re.sub(noformat_re, r'~~~\n\1\n~~~', content) # type: ignore # https://github.com/python/typeshed/issues/160
 
     # Code blocks are delineated by {code[: lang]} {code}
     code_re = re.compile(r'{code[^\n]*}(.*?){code}', re.DOTALL)
-    content = re.sub(code_re, r'~~~\n\1\n~~~', content)
+    content = re.sub(code_re, r'~~~\n\1\n~~~', content) # type: ignore # https://github.com/python/typeshed/issues/160
 
     # Links are of form: [https://www.google.com] or [Link Title|https://www.google.com]
     # In order to support both forms, we don't match a | in bare links
@@ -60,7 +60,7 @@ def convert_jira_markup(content, realm):
 
     # Full links which have a | are converted into a better markdown link
     full_link_re = re.compile(r'\[(?:(?P<title>[^|~]+)\|)(?P<url>.*)\]')
-    content = re.sub(full_link_re, r'[\g<title>](\g<url>)', content)
+    content = re.sub(full_link_re, r'[\g<title>](\g<url>)', content) # type: ignore # https://github.com/python/typeshed/issues/160
 
     # Try to convert a JIRA user mention of format [~username] into a
     # Zulip user mention. We don't know the email, just the JIRA username,
