@@ -19,7 +19,6 @@ tools/deprecated/
 zproject/
 zerver/migrations/
 zerver/tests/
-zilencer/models.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
