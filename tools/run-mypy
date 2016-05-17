@@ -19,7 +19,6 @@ docs/conf.py
 puppet/zulip_internal/files/postgresql/pg_backup_and_purge.py
 tools/deprecated/
 zproject/
-zerver/lib/actions.py
 zerver/lib/bugdown/fenced_code.py
 zerver/lib/statistics.py
 zerver/middleware.py

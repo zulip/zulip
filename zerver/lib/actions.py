@@ -786,7 +786,7 @@ def extract_recipients(s):
         data = s
 
     if isinstance(data, six.string_types):
-        data = data.split(',')
+        data = data.split(',') # type: ignore # https://github.com/python/typeshed/pull/138
 
     if not isinstance(data, list):
         raise ValueError("Invalid data type for recipients")
