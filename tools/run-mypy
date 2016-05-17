@@ -15,7 +15,6 @@ api/integrations/
 bots/jabber_mirror_backend.py
 bots/zephyr_mirror_backend.py
 docs/conf.py
-puppet/zulip_internal/files/postgresql/pg_backup_and_purge.py
 tools/deprecated/
 zproject/
 zerver/lib/bugdown/fenced_code.py

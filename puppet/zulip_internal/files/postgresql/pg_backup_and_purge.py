@@ -7,11 +7,13 @@ import logging
 import dateutil.parser
 import pytz
 from datetime import datetime, timedelta
+from typing import List
 
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 def run(args, dry_run=False):
+    # type: (List[str], bool) -> str
     if dry_run:
         print("Would have run: " + " ".join(args))
         return ""
@@ -36,12 +38,12 @@ with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
     f.write(now.isoformat())
     f.write("\n")
 
-backups = {}
+backups = {} # type: Dict[datetime, str]
 lines = run(['env-wal-e', 'backup-list']).split("\n")
 for line in lines[1:]:
     if line:
-        backup_name, date, _, _ = line.split()
-        backups[dateutil.parser.parse(date)] = backup_name
+        backup_name, date_str, _, _ = line.split()
+        backups[dateutil.parser.parse(date_str)] = backup_name
 
 one_month_ago = now - timedelta(days=30)
 for date in sorted(backups.keys(), reverse=True):
