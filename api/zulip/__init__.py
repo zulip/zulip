@@ -38,6 +38,7 @@ from six.moves.configparser import SafeConfigParser
 from six.moves import urllib
 import logging
 import six
+from typing import Any, Dict
 
 
 __version__ = "0.2.5"
@@ -46,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
-assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
+assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1')) # type: ignore # https://github.com/python/mypy/issues/1165 and https://github.com/python/typeshed/pull/206
 # In newer versions, the 'json' attribute is a function, not a property
 requests_json_is_function = callable(requests.Response.json)
 
@@ -255,7 +256,7 @@ class Client(object):
             'had_error_retry': False,
             'request': request,
             'failures': 0,
-        }
+        } # type: Dict[str, Any]
 
         def error_retry(error_string):
             if not self.retry_on_errors or query_state["failures"] >= 10:

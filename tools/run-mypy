@@ -12,7 +12,6 @@ import six
 
 exclude="""
 api/integrations/
-api/zulip/__init__.py
 bots/jabber_mirror_backend.py
 bots/zephyr_mirror_backend.py
 docs/conf.py
