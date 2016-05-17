@@ -66,6 +66,7 @@ Dependencies:
 import re
 import markdown
 from zerver.lib.bugdown.codehilite import CodeHilite, CodeHiliteExtension
+from typing import Dict, List, Sequence
 
 # Global vars
 FENCE_RE = re.compile(r"""
@@ -114,12 +115,12 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         markdown.preprocessors.Preprocessor.__init__(self, md)
 
         self.checked_for_codehilite = False
-        self.codehilite_conf = {}
+        self.codehilite_conf = {} # type: Dict[str, Dict[int, str]]
 
     def run(self, lines):
         """ Match and store Fenced Code Blocks in the HtmlStash. """
 
-        output = []
+        output = [] # type: List[str]
 
         class Record(object):
             pass
@@ -133,16 +134,6 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         def pop():
             handlers.pop()
 
-        class OuterHandler(object):
-            def __init__(self, output):
-                self.output = output
-
-            def handle_line(self, line):
-                check_for_new_fence(self.output, line)
-
-            def done(self):
-                pop()
-
         def check_for_new_fence(output, line):
             m = FENCE_RE.match(line)
             if m:
@@ -152,6 +143,16 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 push(handler)
             else:
                 output.append(line)
+
+        class OuterHandler(object):
+            def __init__(self, output):
+                self.output = output
+
+            def handle_line(self, line):
+                check_for_new_fence(self.output, line)
+
+            def done(self):
+                pop()
 
         def generic_handler(output, fence, lang):
             if lang in ('quote', 'quoted'):
@@ -163,7 +164,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             def __init__(self, output, fence):
                 self.output = output
                 self.fence = fence
-                self.lines = []
+                self.lines = [] # type: Sequence[str]
 
             def handle_line(self, line):
                 if line.rstrip() == self.fence:
@@ -185,7 +186,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 self.output = output
                 self.fence = fence
                 self.lang = lang
-                self.lines = []
+                self.lines = [] # type: Sequence[str]
 
             def handle_line(self, line):
                 if line.rstrip() == self.fence:
