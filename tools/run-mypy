@@ -17,7 +17,6 @@ bots/zephyr_mirror_backend.py
 docs/conf.py
 tools/deprecated/
 zproject/
-zerver/lib/statistics.py
 zerver/middleware.py
 zerver/migrations/
 zerver/tests/
