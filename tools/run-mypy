@@ -16,7 +16,6 @@ bots/jabber_mirror_backend.py
 bots/zephyr_mirror_backend.py
 docs/conf.py
 tools/deprecated/
-zproject/local_settings_template.py
 zproject/local_settings.py
 zproject/settings.py
 zproject/test_settings.py

@@ -43,7 +43,7 @@ AUTHENTICATION_BACKENDS = (
 # set this to your domain (e.g. if REMOTE_USER is "username" and the
 # corresponding email address is "username@example.com", set
 # SSO_APPEND_DOMAIN = "example.com")
-SSO_APPEND_DOMAIN = None
+SSO_APPEND_DOMAIN = None # type: str
 
 # Configure the outgoing SMTP server below. For testing, you can skip
 # sending emails entirely by commenting out EMAIL_HOST, but you will
@@ -292,7 +292,7 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
 
 # If the value of a user's "uid" (or similar) property is not their email
 # address, specify the domain to append here.
-LDAP_APPEND_DOMAIN = None
+LDAP_APPEND_DOMAIN = None # type: str
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
 AUTH_LDAP_USER_ATTR_MAP = {
