@@ -166,7 +166,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return username
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
-    def authenticate(self, username, password):
+    def authenticate(self, username, password, return_data=None):
         try:
             username = self.django_to_ldap_username(username)
             return ZulipLDAPAuthBackendBase.authenticate(self, username, password)
