@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from zerver.models import (
     get_client, get_realm, get_stream, get_user_profile_by_email,
-    Message, Recipient,
+    Message, Recipient, UserProfile
 )
 
 from zerver.lib.actions import (
@@ -201,7 +201,7 @@ class EventsRegisterTest(AuthedTestCase):
     def create_bot(self, email):
         return do_create_user(email, '123',
                               get_realm('zulip.com'), 'Test Bot', 'test',
-                              bot=True, bot_owner=self.user_profile)
+                              bot_type=UserProfile.DEFAULT_BOT, bot_owner=self.user_profile)
 
     def realm_bot_schema(self, field_name, check):
         return check_dict([

@@ -21,7 +21,7 @@ def random_api_key():
 # Only use this for bulk_create -- for normal usage one should use
 # create_user (below) which will also make the Subscription and
 # Recipient objects
-def create_user_profile(realm, email, password, active, bot, full_name,
+def create_user_profile(realm, email, password, active, bot_type, full_name,
                         short_name, bot_owner, is_mirror_dummy):
     now = timezone.now()
     email = UserManager.normalize_email(email)
@@ -31,12 +31,12 @@ def create_user_profile(realm, email, password, active, bot, full_name,
     user_profile = UserProfile(email=email, is_staff=False, is_active=active,
                                full_name=full_name, short_name=short_name,
                                last_login=now, date_joined=now, realm=realm,
-                               pointer=-1, is_bot=bot, bot_owner=bot_owner,
-                               is_mirror_dummy=is_mirror_dummy,
+                               pointer=-1, is_bot=bool(bot_type), bot_type=bot_type,
+                               bot_owner=bot_owner, is_mirror_dummy=is_mirror_dummy,
                                enable_stream_desktop_notifications=enable_stream_desktop_notifications,
                                onboarding_steps=ujson.dumps([]))
 
-    if bot or not active:
+    if bot_type or not active:
         password = None
 
     user_profile.set_password(password)
@@ -45,12 +45,12 @@ def create_user_profile(realm, email, password, active, bot, full_name,
     return user_profile
 
 def create_user(email, password, realm, full_name, short_name,
-                active=True, bot=False, bot_owner=None,
+                active=True, bot_type=None, bot_owner=None,
                 avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 is_mirror_dummy=False, default_sending_stream=None,
                 default_events_register_stream=None,
                 default_all_public_streams=None, user_profile_id=None):
-    user_profile = create_user_profile(realm, email, password, active, bot,
+    user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy)
 

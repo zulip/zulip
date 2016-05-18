@@ -1486,7 +1486,7 @@ class CheckMessageTest(AuthedTestCase):
                 full_name='',
                 short_name='',
                 active=True,
-                bot=True,
+                bot_type=UserProfile.DEFAULT_BOT,
                 bot_owner=parent
         )
         bot.last_reminder = None

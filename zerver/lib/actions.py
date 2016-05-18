@@ -252,7 +252,7 @@ def notify_created_bot(user_profile):
     send_event(event, bot_owner_userids(user_profile))
 
 def do_create_user(email, password, realm, full_name, short_name,
-                   active=True, bot=False, bot_owner=None,
+                   active=True, bot_type=None, bot_owner=None,
                    avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
@@ -263,21 +263,21 @@ def do_create_user(email, password, realm, full_name, short_name,
              'short_name': short_name,
              'user': email,
              'domain': realm.domain,
-             'bot': bot}
-    if bot:
+             'bot': bool(bot_type)}
+    if bot_type:
         event['bot_owner'] = bot_owner.email
     log_event(event)
 
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
-                               active=active, bot=bot, bot_owner=bot_owner,
+                               active=active, bot_type=bot_type, bot_owner=bot_owner,
                                avatar_source=avatar_source,
                                default_sending_stream=default_sending_stream,
                                default_events_register_stream=default_events_register_stream,
                                default_all_public_streams=default_all_public_streams)
 
     notify_created_user(user_profile)
-    if bot:
+    if bot_type:
         notify_created_bot(user_profile)
     else:
         process_new_human_user(user_profile, prereg_user=prereg_user,
@@ -1628,6 +1628,10 @@ def do_change_is_admin(user_profile, value, permission='administer'):
                      person=dict(email=user_profile.email,
                                  is_admin=value))
         send_event(event, active_user_ids(user_profile.realm))
+
+def do_change_bot_type(user_profile, value):
+    user_profile.bot_type = value
+    user_profile.save()
 
 def do_make_stream_public(user_profile, realm, stream_name):
     stream_name = stream_name.strip()
