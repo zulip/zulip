@@ -11,7 +11,7 @@ def truncate(string, length):
         string = string[:length-3] + '...'
     return string
 
-@authenticated_rest_api_view
+@authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
 def api_zendesk_webhook(request, user_profile, ticket_title=REQ(), ticket_id=REQ(),
                         message=REQ(), stream=REQ(default="zendesk")):

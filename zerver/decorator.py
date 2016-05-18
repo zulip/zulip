@@ -138,7 +138,7 @@ def process_client(request, user_profile, is_json_view=False, client_name=None):
     request.client = get_client(client_name)
     update_user_activity(request, user_profile)
 
-def validate_api_key(role, api_key):
+def validate_api_key(role, api_key, is_webhook=False):
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
@@ -158,6 +158,8 @@ def validate_api_key(role, api_key):
         raise JsonableError(reason % (role,))
     if not profile.is_active:
         raise JsonableError(_("Account not active"))
+    if profile.is_incoming_webhook and not is_webhook:
+        raise JsonableError(_("Account is not valid to post webhook messages"))
     try:
         if profile.realm.deactivated:
             raise JsonableError(_("Realm for account has been deactivated"))
@@ -277,62 +279,66 @@ def zulip_internal(view_func):
 # user_profile to the view function's arguments list, since we have to
 # look it up anyway.  It is deprecated in favor on the REST API
 # versions.
-def authenticated_api_view(view_func):
-    @csrf_exempt
-    @require_post
-    @has_request_variables
-    @wraps(view_func)
-    def _wrapped_view_func(request, email=REQ(), api_key=REQ(default=None),
-                           api_key_legacy=REQ('api-key', default=None),
-                           *args, **kwargs):
-        if not api_key and not api_key_legacy:
-            raise RequestVariableMissingError("api_key")
-        elif not api_key:
-            api_key = api_key_legacy
-        user_profile = validate_api_key(email, api_key)
-        request.user = user_profile
-        request._email = user_profile.email
-        process_client(request, user_profile)
-        # Apply rate limiting
-        limited_func = rate_limit()(view_func)
-        return limited_func(request, user_profile, *args, **kwargs)
+def authenticated_api_view(is_webhook=False):
+    def _wrapped_view_func(view_func):
+        @csrf_exempt
+        @require_post
+        @has_request_variables
+        @wraps(view_func)
+        def _wrapped_func_arguments(request, email=REQ(), api_key=REQ(default=None),
+                                    api_key_legacy=REQ('api-key', default=None),
+                                    *args, **kwargs):
+            if not api_key and not api_key_legacy:
+                raise RequestVariableMissingError("api_key")
+            elif not api_key:
+                api_key = api_key_legacy
+            user_profile = validate_api_key(email, api_key, is_webhook)
+            request.user = user_profile
+            request._email = user_profile.email
+            process_client(request, user_profile)
+            # Apply rate limiting
+            limited_func = rate_limit()(view_func)
+            return limited_func(request, user_profile, *args, **kwargs)
+        return _wrapped_func_arguments
     return _wrapped_view_func
 
 # A more REST-y authentication decorator, using, in particular, HTTP Basic
 # authentication.
-def authenticated_rest_api_view(view_func):
-    @csrf_exempt
-    @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # First try block attempts to get the credentials we need to do authentication
-        try:
-            # Grab the base64-encoded authentication string, decode it, and split it into
-            # the email and API key
-            auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
-            # case insensitive per RFC 1945
-            if auth_type.lower() != "basic":
-                return json_error(_("Only Basic authentication is supported."))
-            role, api_key = base64.b64decode(encoded_value).split(":")
-        except ValueError:
-            return json_error(_("Invalid authorization header for basic auth"))
-        except KeyError:
-            return json_unauthorized(_("Missing authorization header for basic auth"))
+def authenticated_rest_api_view(is_webhook=False):
+    def _wrapped_view_func(view_func):
+        @csrf_exempt
+        @wraps(view_func)
+        def _wrapped_func_arguments(request, *args, **kwargs):
+            # First try block attempts to get the credentials we need to do authentication
+            try:
+                # Grab the base64-encoded authentication string, decode it, and split it into
+                # the email and API key
+                auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
+                # case insensitive per RFC 1945
+                if auth_type.lower() != "basic":
+                    return json_error(_("Only Basic authentication is supported."))
+                role, api_key = base64.b64decode(encoded_value).split(":")
+            except ValueError:
+                json_error(_("Invalid authorization header for basic auth"))
+            except KeyError:
+                return json_unauthorized("Missing authorization header for basic auth")
 
-        # Now we try to do authentication or die
-        try:
-            # Could be a UserProfile or a Deployment
-            profile = validate_api_key(role, api_key)
-        except JsonableError as e:
-            return json_unauthorized(e.error)
-        request.user = profile
-        process_client(request, profile)
-        if isinstance(profile, UserProfile):
-            request._email = profile.email
-        else:
-            request._email = "deployment:" + role
-            profile.rate_limits = ""
-        # Apply rate limiting
-        return rate_limit()(view_func)(request, profile, *args, **kwargs)
+            # Now we try to do authentication or die
+            try:
+                # Could be a UserProfile or a Deployment
+                profile = validate_api_key(role, api_key, is_webhook)
+            except JsonableError as e:
+                return json_unauthorized(e.error)
+            request.user = profile
+            process_client(request, profile)
+            if isinstance(profile, UserProfile):
+                request._email = profile.email
+            else:
+                request._email = "deployment:" + role
+                profile.rate_limits = ""
+            # Apply rate limiting
+            return rate_limit()(view_func)(request, profile, *args, **kwargs)
+        return _wrapped_func_arguments
     return _wrapped_view_func
 
 def process_as_post(view_func):
@@ -546,4 +552,3 @@ def uses_mandrill(func):
         kwargs['mail_client'] = get_mandrill_client()
         return func(*args, **kwargs)
     return wrapped_func
-

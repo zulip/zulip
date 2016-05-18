@@ -1,15 +1,22 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 from django.utils.translation import ugettext as _
+from django.http import HttpResponse
+
+from zerver.tests.test_hooks import WebhookTestCase
 
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
-    do_reactivate_user
+    do_reactivate_user, do_reactivate_realm
 from zerver.lib.test_helpers import (
     AuthedTestCase,
 )
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, JsonableError
+from zerver.decorator import \
+    api_key_only_webhook_view,\
+    authenticated_json_post_view, authenticated_json_view,\
+    validate_api_key
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
 )
@@ -108,6 +115,26 @@ class DecoratorTestCase(TestCase):
             def test(request, payload=REQ(argument_type="invalid")):
                 pass
             test(request)
+
+    def test_api_key_only_webhook_view(self):
+        @api_key_only_webhook_view('ClientName')
+        def get_user_profile_api_key(request, user_profile, client):
+            return user_profile.api_key
+
+        class Request(object):
+            REQUEST = {} # type: Dict[str, str]
+            COOKIES = {}
+            META = {'PATH_INFO': ''}
+
+        webhook_bot_email = 'webhook-bot@zulip.com'
+        request = Request()
+
+        request.REQUEST['api_key'] = 'not_existing_api_key'
+        with self.assertRaises(JsonableError):
+            get_user_profile_api_key(request)
+
+        request.REQUEST['api_key'] = get_user_profile_by_email(webhook_bot_email).api_key
+        self.assertEqual(get_user_profile_api_key(request), get_user_profile_by_email(webhook_bot_email).api_key)
 
 class ValidatorTestCase(TestCase):
     def test_check_string(self):
@@ -389,3 +416,82 @@ class InactiveUserTest(AuthedTestCase):
         result = self.client.post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "Account not active", status_code=400)
+
+
+class TestValidateApiKey(AuthedTestCase):
+    def setUp(self):
+        self.webhook_bot = get_user_profile_by_email('webhook-bot@zulip.com')
+        self.default_bot = get_user_profile_by_email('hamlet@zulip.com')
+
+    def test_validate_api_key_if_profile_does_not_exist(self):
+        with self.assertRaises(JsonableError):
+            validate_api_key('email@doesnotexist.com', 'api_key')
+
+    def test_validate_api_key_if_api_key_does_not_match_profile_api_key(self):
+        with self.assertRaises(JsonableError):
+            validate_api_key(self.webhook_bot.email, 'not_32_length')
+
+        with self.assertRaises(JsonableError):
+            validate_api_key(self.webhook_bot.email, self.default_bot.api_key)
+
+    def test_validate_api_key_if_profile_is_not_active(self):
+        self._change_is_active_field(self.default_bot, False)
+        with self.assertRaises(JsonableError):
+            validate_api_key(self.default_bot.email, self.default_bot.api_key)
+        self._change_is_active_field(self.default_bot, True)
+
+    def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_unset(self):
+        with self.assertRaises(JsonableError):
+            validate_api_key(self.webhook_bot.email, self.webhook_bot.api_key)
+
+    def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_set(self):
+        profile = validate_api_key(self.webhook_bot.email, self.webhook_bot.api_key, is_webhook=True)
+        self.assertEqual(profile.pk, self.webhook_bot.pk)
+
+    def _change_is_active_field(self, profile, value):
+        profile.is_active = value
+        profile.save()
+
+
+class TestAuthenticatedJsonPostViewDecorator(AuthedTestCase):
+    def test_authenticated_json_post_view_if_everything_is_correct(self):
+        user_email = 'hamlet@zulip.com'
+        self._login(user_email)
+        response = self._do_test(user_email)
+        self.assertEqual(response.status_code, 200)
+
+    def test_authenticated_json_post_view_if_user_is_incoming_webhook(self):
+        user_email = 'webhook-bot@zulip.com'
+        self._login(user_email, password="test")  # we set a password because user is a bot
+        self.assert_json_error_contains(self._do_test(user_email), "Webhook bots can only access webhooks")
+
+    def test_authenticated_json_post_view_if_user_is_not_active(self):
+        user_email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(user_email)
+        self._login(user_email, password="test")
+        # we deactivate user manually because do_deactivate_user removes user session
+        user_profile.is_active = False
+        user_profile.save()
+        self.assert_json_error_contains(self._do_test(user_email), "Account not active")
+        do_reactivate_user(user_profile)
+
+    def test_authenticated_json_post_view_if_user_realm_is_deactivated(self):
+        user_email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(user_email)
+        self._login(user_email)
+        # we deactivate user's realm manually because do_deactivate_user removes user session
+        user_profile.realm.deactivated = True
+        user_profile.realm.save()
+        self.assert_json_error_contains(self._do_test(user_email), "Realm for account has been deactivated")
+        do_reactivate_realm(user_profile.realm)
+
+    def _do_test(self, user_email):
+        data = {"status": '"started"'}
+        return self.client.post(r'/json/tutorial_status', data)
+
+    def _login(self, user_email, password=None):
+        if password:
+            user_profile = get_user_profile_by_email(user_email)
+            user_profile.set_password(password)
+            user_profile.save()
+        self.login(user_email, password)
