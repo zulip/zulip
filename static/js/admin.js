@@ -99,6 +99,7 @@ exports.setup_page = function () {
     $("#admin-realm-restricted-to-domain-status").expectOne().hide();
     $("#admin-realm-invite-required-status").expectOne().hide();
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
+    $("#admin-realm-add-stream-by-admins-only-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
     $("#admin-emoji-name-status").expectOne().hide();
     $("#admin-emoji-url-status").expectOne().hide();
@@ -244,10 +245,12 @@ exports.setup_page = function () {
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
+        var add_stream_by_admins_only_status = $("#admin-realm-add-stream-by-admins-only-status").expectOne();
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
+        add_stream_by_admins_only_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
@@ -256,13 +259,15 @@ exports.setup_page = function () {
         var new_restricted = $("#id_realm_restricted_to_domain").prop("checked");
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
+	var new_stream_by_admins_only = $("#id_realm_add_stream_by_admins_only").prop("checked");
 
         var url = "/json/realm";
         var data = {
             name: JSON.stringify(new_name),
             restricted_to_domain: JSON.stringify(new_restricted),
             invite_required: JSON.stringify(new_invite),
-            invite_by_admins_only: JSON.stringify(new_invite_by_admins_only)
+            invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
+	    add_stream_by_admins_only: JSON.stringify(new_stream_by_admins_only)
         };
 
         channel.patch({
@@ -296,6 +301,14 @@ exports.setup_page = function () {
                         ui.report_success("Any user may now invite new users!", invite_by_admins_only_status);
                     }
                 }
+		if (data.add_stream_by_admins_only !== undefined) {
+                    if (data.add_stream_by_admins_only) {
+                        ui.report_success("New streams must be created by an admin!", add_stream_by_admins_only_status);
+                    }
+                    else {
+                        ui.report_success("Any user may now create new streams!", add_stream_by_admins_only_status);
+                    }
+                }		
             },
             error: function (xhr, error) {
                 ui.report_error("Failed!", xhr, name_status);

@@ -90,7 +90,9 @@ function get_events_success(events) {
                 page_params.realm_invite_by_admins_only = event.value;
             } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
                 page_params.realm_restricted_to_domain = event.value;
-            }
+            } else if (event.op === 'update' && event.property === 'add_stream_by_admins_only') {
+                page_params.realm_add_stream_by_admins_only = event.value;
+	    }
             break;
         case 'realm_user':
             if (event.op === 'add') {
