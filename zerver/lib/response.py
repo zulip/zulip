@@ -6,12 +6,17 @@ import ujson
 class HttpResponseUnauthorized(HttpResponse):
     status_code = 401
 
-    def __init__(self, realm):
+    def __init__(self, realm, www_authenticate=None):
         HttpResponse.__init__(self)
-        self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
+        if www_authenticate is None:
+            self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
+        elif www_authenticate == "session":
+            self["WWW-Authenticate"] = 'Session realm="%s"' % (realm,)
+        else:
+            raise Exception("Invalid www_authenticate value!")
 
-def json_unauthorized(message):
-    resp = HttpResponseUnauthorized("zulip")
+def json_unauthorized(message, www_authenticate=None):
+    resp = HttpResponseUnauthorized("zulip", www_authenticate=www_authenticate)
     resp.content = ujson.dumps({"result": "error",
                                 "msg": message}) + "\n"
     return resp
