@@ -10,14 +10,19 @@ from six import text_type
 class HttpResponseUnauthorized(HttpResponse):
     status_code = 401
 
-    def __init__(self, realm):
-        # type (text_type) -> None
+    def __init__(self, realm, www_authenticate=None):
+        # type (text_type, Optional[text_type]) -> None
         HttpResponse.__init__(self)
-        self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
+        if www_authenticate is None:
+            self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
+        elif www_authenticate == "session":
+            self["WWW-Authenticate"] = 'Session realm="%s"' % (realm,)
+        else:
+            raise Exception("Invalid www_authenticate value!")
 
-def json_unauthorized(message):
-    # type: (text_type) -> text_type
-    resp = HttpResponseUnauthorized("zulip")
+def json_unauthorized(message, www_authenticate=None):
+    # type: (text_type, Optional[text_type]) -> HttpResponse
+    resp = HttpResponseUnauthorized("zulip", www_authenticate=www_authenticate)
     resp.content = ujson.dumps({"result": "error",
                                 "msg": message}) + "\n"
     return resp
