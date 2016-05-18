@@ -1336,3 +1336,123 @@ class CircleCiHookTests(AuthedTestCase):
         result = self.client.post(self._url, json, stream_name=self.STREAM_NAME, content_type="application/json")
         self.assert_json_success(result)
         return result
+
+class GithubWebhookTest(AuthedTestCase):
+    STREAM_NAME = 'github_webhook'
+    TEST_USER_EMAIL = 'hamlet@zulip.com'
+    URL_TEMPLATE = "/api/v1/external/githubwebhook?stream={stream}&api_key={api_key}"
+
+    def setUp(self):
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        self._url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+        self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+
+    def test_commit_comment_msg(self):
+        body = self._get_fixture_data('commit_comment')
+        self._send_post_request_with_params(body, 'commit_comment')
+
+        expected_subject = u"public-repo: commit 9049f1265b7d61be4a8904a9a27120d2064dab3b"
+        expected_message = u"baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b#commitcomment-11056394)\n\n~~~ quote\nThis is a really good change! :+1:\n~~~"
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_create_msg(self):
+        body = self._get_fixture_data('create')
+        self._send_post_request_with_params(body, 'create')
+
+        expected_subject = u"public-repo: tag was created"
+        expected_message = u"baxterthehacker created tag 0.0.1."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_delete_msg(self):
+        body = self._get_fixture_data('delete')
+        self._send_post_request_with_params(body, 'delete')
+
+        expected_subject = u"public-repo: tag was deleted"
+        expected_message = u"baxterthehacker deleted tag simple-tag."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_deployment_msg(self):
+        body = self._get_fixture_data('deployment')
+        self._send_post_request_with_params(body, 'deployment')
+
+        expected_subject = u"public-repo: deployment was created"
+        expected_message = u"baxterthehacker created [deploy](https://api.github.com/repos/baxterthehacker/public-repo/deployments/710692) task."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_fork_msg(self):
+        body = self._get_fixture_data('fork')
+        self._send_post_request_with_params(body, 'fork')
+
+        expected_subject = u"Repository forked"
+        expected_message = u"baxterandthehackers forked [public-repo](https://api.github.com/repos/baxterandthehackers/public-repo)."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_issue_comment_msg(self):
+        body = self._get_fixture_data('issue_comment')
+        self._send_post_request_with_params(body, 'issue_comment')
+
+        expected_subject = u"Comment created"
+        expected_message = u"baxterthehacker created comment in [Spelling error in the README file](https://api.github.com/repos/baxterthehacker/public-repo/issues/2)."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_issue_msg(self):
+        body = self._get_fixture_data('issue')
+        self._send_post_request_with_params(body, 'issue')
+
+        expected_subject = u"Issue opened"
+        expected_message = u"baxterthehacker opened [Spelling error in the README file](https://api.github.com/repos/baxterthehacker/public-repo/issues/2)."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_membership_msg(self):
+        body = self._get_fixture_data('membership')
+        self._send_post_request_with_params(body, 'membership')
+
+        expected_subject = u"New member added"
+        expected_message = u"baxterthehacker added kdaigle to [Contractors](https://api.github.com/teams/123456) team."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_member_msg(self):
+        body = self._get_fixture_data('member')
+        self._send_post_request_with_params(body, 'member')
+
+        expected_subject = u"Collaborator added"
+        expected_message = u"baxterthehacker added octocat as a collaborator to [public-repo](https://github.com/baxterthehacker/public-repo)."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_pull_request_opened_msg(self):
+        body = self._get_fixture_data('opened_pull_request')
+        self._send_post_request_with_params(body, 'pull_request')
+
+        expected_subject = u"Pull Request opened"
+        expected_message = u"baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_pull_request_closed_msg(self):
+        body = self._get_fixture_data('closed_pull_request')
+        self._send_post_request_with_params(body, 'pull_request')
+
+        expected_subject = u"Pull Request closed"
+        expected_message = u"baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
+        self._test_last_message(expected_subject, expected_message)
+
+    def test_pull_request_merged_msg(self):
+        body = self._get_fixture_data('merged_pull_request')
+        self._send_post_request_with_params(body, 'pull_request')
+
+        expected_subject = u"Pull Request closed"
+        expected_message = u"baxterthehacker merged [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
+        self._test_last_message(expected_subject, expected_message)
+
+    def _test_last_message(self, expected_subject, expected_message):
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, expected_subject)
+        self.assertEqual(msg.content, expected_message)
+
+    def _get_fixture_data(self, name):
+        return ujson.dumps(ujson.loads(self.fixture_data('github_webhook', name)))
+
+    def _send_post_request_with_params(self, json, event_type):
+        result = self.client.post(self._url, json, stream_name=self.STREAM_NAME,
+                                  content_type="application/json", HTTP_X_GITHUB_EVENT=event_type)
+        self.assert_json_success(result)
+        return result
