@@ -15,7 +15,7 @@ from six import text_type
 from typing import Any, Dict
 
 
-@authenticated_rest_api_view
+@authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
 def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'),
                       stream=REQ(default='commits')):

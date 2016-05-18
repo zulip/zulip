@@ -77,7 +77,7 @@ def rest_dispatch(request, globals_list, **kwargs):
         elif request.META.get('HTTP_AUTHORIZATION', None):
             # Wrap function with decorator to authenticate the user before
             # proceeding
-            target_function = authenticated_rest_api_view(target_function)
+            target_function = authenticated_rest_api_view()(target_function)
         else:
             if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
                 # If this looks like a request from a top-level page in a

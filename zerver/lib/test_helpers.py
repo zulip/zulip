@@ -1,9 +1,11 @@
 from __future__ import absolute_import
+from contextlib import contextmanager
 from typing import cast, Any, Callable, Generator, Iterable, Tuple, Sized, Union, Optional
 
 from django.test import TestCase
 from django.template import loader
 from django.http import HttpResponse
+from django.utils.translation import ugettext as _
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
@@ -32,6 +34,9 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+
+from zerver.lib.request import JsonableError
+
 
 import base64
 import os

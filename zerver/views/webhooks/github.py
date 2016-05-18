@@ -122,7 +122,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
 
     return target_stream, subject, content
 
-@authenticated_api_view
+@authenticated_api_view(is_webhook=True)
 @has_request_variables
 def api_github_landing(request, user_profile, event=REQ(),
                        payload=REQ(validator=check_dict([])),
