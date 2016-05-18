@@ -1177,8 +1177,9 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
 @has_request_variables
 def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    if password_auth_enabled(user_profile.realm) and not user_profile.check_password(password):
-        return json_error(_("Your username or password is incorrect."))
+    if password_auth_enabled(user_profile.realm):
+        if not authenticate(username=user_profile.email, password=password):
+            return json_error(_("Your username or password is incorrect."))
     return json_success({"api_key": user_profile.api_key})
 
 @csrf_exempt
