@@ -83,8 +83,11 @@ def rest_dispatch(request, globals_list, **kwargs):
                 # If this looks like a request from a top-level page in a
                 # browser, send the user to the login page
                 return HttpResponseRedirect('%s/?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
-            else:
+            elif request.path.startswith("/api"):
                 return json_unauthorized(_("Not logged in: API authentication or user session required"))
+            else:
+                return json_unauthorized(_("Not logged in: API authentication or user session required"),
+                                         www_authenticate='session')
 
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because
