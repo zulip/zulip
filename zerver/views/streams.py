@@ -258,7 +258,9 @@ def add_subscriptions_backend(request, user_profile,
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
 
     if not user_profile.can_create_streams():
-        return json_error('User cannot create streams.')
+        for stream in streams_raw:
+            if get_stream(stream["name"], user_profile.realm) is None:
+                return json_error('User cannot create streams.')
 
     stream_names = []
     for stream in streams_raw:

@@ -28,7 +28,8 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     internal_send_message, update_user_presence, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, \
-    do_set_realm_invite_required, do_set_realm_invite_by_admins_only, get_default_subs, \
+    do_set_realm_invite_required, do_set_realm_invite_by_admins_only, \
+    do_set_realm_create_stream_by_admins_only, get_default_subs, \
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_set_muted_topics, clear_followup_emails_queue, do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -798,6 +799,7 @@ def home(request):
         realm_name            = register_ret['realm_name'],
         realm_invite_required = register_ret['realm_invite_required'],
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
+        realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         enter_sends           = user_profile.enter_sends,
         left_side_userlist    = register_ret['left_side_userlist'],
@@ -1012,7 +1014,8 @@ def get_profile_backend(request, user_profile):
 def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
                  restricted_to_domain=REQ(validator=check_bool, default=None),
                  invite_required=REQ(validator=check_bool, default=None),
-                 invite_by_admins_only=REQ(validator=check_bool, default=None)):
+                 invite_by_admins_only=REQ(validator=check_bool, default=None),
+                 create_stream_by_admins_only=REQ(validator=check_bool, default=None)):
     realm = user_profile.realm
     data = {}
     if name is not None and realm.name != name:
@@ -1027,6 +1030,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if invite_by_admins_only is not None and realm.invite_by_admins_only != invite_by_admins_only:
         do_set_realm_invite_by_admins_only(realm, invite_by_admins_only)
         data['invite_by_admins_only'] = invite_by_admins_only
+    if create_stream_by_admins_only is not None and realm.create_stream_by_admins_only != create_stream_by_admins_only:
+        do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_only)
+        data['create_stream_by_admins_only'] = create_stream_by_admins_only
     return json_success(data)
 
 @authenticated_json_post_view
