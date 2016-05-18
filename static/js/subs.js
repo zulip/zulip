@@ -415,6 +415,14 @@ exports.mark_starred_or_unstarred = function (stream_name) {
     }
 };
 
+exports.sub_starred_or_unstarred = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+    if (stream_name === undefined) {
+        return;
+    }
+    return sub.starred;
+};
+
 exports.receives_desktop_notifications = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
     if (sub === undefined) {
