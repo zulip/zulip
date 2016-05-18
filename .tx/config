@@ -1,7 +1,7 @@
 [main]
 host = https://www.transifex.com
 
-[zulip.django.po]
+[zulip.djangopo]
 source_file = locale/en/LC_MESSAGES/django.po
 source_lang = en
 type = PO
