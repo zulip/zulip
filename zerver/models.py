@@ -299,6 +299,8 @@ post_save.connect(flush_realm_filter, sender=RealmFilter)
 post_delete.connect(flush_realm_filter, sender=RealmFilter)
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
+    DEFAULT_BOT = 1
+
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
     email = models.EmailField(blank=False, db_index=True, unique=True)
@@ -306,6 +308,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True, db_index=True)
     is_realm_admin = models.BooleanField(default=False, db_index=True)
     is_bot = models.BooleanField(default=False, db_index=True)
+    bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
     is_api_super_user = models.BooleanField(default=False, db_index=True)
     date_joined = models.DateTimeField(default=timezone.now)
     is_mirror_dummy = models.BooleanField(default=False)

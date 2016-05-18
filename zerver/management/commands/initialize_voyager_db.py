@@ -13,7 +13,7 @@ from optparse import make_option
 
 settings.TORNADO_SERVER = None
 
-def create_users(name_list, bot=False):
+def create_users(name_list, bot_type=None):
     realms = {}
     for realm in Realm.objects.all():
         realms[realm.domain] = realm
@@ -22,7 +22,7 @@ def create_users(name_list, bot=False):
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
-    bulk_create_users(realms, user_set, bot)
+    bulk_create_users(realms, user_set, bot_type)
 
 class Command(BaseCommand):
     help = "Populate an initial database for Zulip Voyager"
@@ -39,14 +39,14 @@ class Command(BaseCommand):
         Realm.objects.create(domain="zulip.com")
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
-        create_users(names, bot=True)
+        create_users(names, bot_type=UserProfile.DEFAULT_BOT)
 
         get_client("website")
         get_client("API")
 
         internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                          for bot in settings.INTERNAL_BOTS]
-        create_users(internal_bots, bot=True)
+        create_users(internal_bots, bot_type=UserProfile.DEFAULT_BOT)
         # Set the owners for these bots to the bots themselves
         bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_bots])
         for bot in bots:

@@ -11,7 +11,8 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
     split_email_to_domain, email_to_username
 from zerver.lib.actions import do_send_message, set_default_streams, \
-    do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin
+    do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin,\
+    do_change_bot_type
 from zerver.lib.parallel import run_parallel
 from django.db.models import Count
 from django.conf import settings
@@ -34,12 +35,12 @@ from typing import Any, Dict, Set, Tuple
 
 settings.TORNADO_SERVER = None
 
-def create_users(realms, name_list, bot=False):
+def create_users(realms, name_list, bot_type=None):
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
-    bulk_create_users(realms, user_set, bot)
+    bulk_create_users(realms, user_set, bot_type)
 
 def create_streams(realms, realm, stream_list):
     stream_set = set()
@@ -206,7 +207,7 @@ class Command(BaseCommand):
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ]
             zulip_realm_bots.extend(all_realm_bots)
-            create_users(realms, zulip_realm_bots, bot=True)
+            create_users(realms, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
@@ -245,7 +246,7 @@ class Command(BaseCommand):
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                     ("Zulip Feedback Bot", "feedback@zulip.com"),
                     ]
-                create_users(realms, internal_zulip_users_nosubs, bot=True)
+                create_users(realms, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
 
             # Mark all messages as read
             UserMessage.objects.all().update(flags=UserMessage.flags.read)
