@@ -13,7 +13,7 @@ from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_
 from .github import build_commit_list_content
 
 
-@authenticated_rest_api_view
+@authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
 def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dict([])),
                           stream=REQ(default='commits')):

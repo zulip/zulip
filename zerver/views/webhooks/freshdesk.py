@@ -112,8 +112,7 @@ def format_freshdesk_ticket_creation_message(ticket):
 
     return content
 
-
-@authenticated_rest_api_view
+@authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
 def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body'),
                           stream=REQ(default='freshdesk')):
