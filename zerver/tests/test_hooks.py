@@ -15,7 +15,7 @@ class WebhookTestCase(AuthedTestCase):
     In case that you need modify body or create it without using fixture you can also override get_body method
     """
     STREAM_NAME = None
-    TEST_USER_EMAIL = 'hamlet@zulip.com'
+    TEST_USER_EMAIL = 'webhook-bot@zulip.com'
     URL_TEMPLATE = None
     FIXTURE_DIR_NAME = None
 
@@ -78,7 +78,8 @@ class JiraHookTests(WebhookTestCase):
     def test_custom_stream(self):
         api_key = self.get_api_key(self.TEST_USER_EMAIL)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
-        msg = self.send_json_payload(self.TEST_USER_EMAIL, url,
+        msg = self.send_json_payload(self.TEST_USER_EMAIL,
+                                     url,
                                      self.get_body('created'),
                                      stream_name="jira_custom",
                                      content_type="application/json")

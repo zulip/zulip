@@ -213,6 +213,11 @@ class Command(BaseCommand):
             zulip_realm_bots.extend(all_realm_bots)
             create_users(realms, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
+            zulip_webhook_bots = [
+                ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
+            ]
+            create_users(realms, zulip_webhook_bots, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
                 email_gateway_bot = UserProfile.objects.get(email__iexact=settings.EMAIL_GATEWAY_BOT)
