@@ -942,6 +942,7 @@ class Message(models.Model):
     def to_log_dict(self):
         return dict(
             id                = self.id,
+            sender_id         = self.sender.id,
             sender_email      = self.sender.email,
             sender_domain     = self.sender.realm.domain,
             sender_full_name  = self.sender.full_name,
