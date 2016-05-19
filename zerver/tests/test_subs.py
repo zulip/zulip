@@ -841,13 +841,18 @@ class SubscriptionAPITest(AuthedTestCase):
                                "Stream name (%s) too long." % (long_stream_name,))
 
     def test_user_settings_for_adding_streams(self):
-        with stub(UserProfile, 'can_create_streams', lambda self: True):
-            result = self.common_subscribe_to_streams(self.test_email, ['stream1'])
-            self.assert_json_success(result)
-
         with stub(UserProfile, 'can_create_streams', lambda self: False):
             result = self.common_subscribe_to_streams(self.test_email, ['stream1'])
             self.assert_json_error(result, 'User cannot create streams.')
+
+        with stub(UserProfile, 'can_create_streams', lambda self: True):
+            result = self.common_subscribe_to_streams(self.test_email, ['stream2'])
+            self.assert_json_success(result)
+
+        # User should still be able to subscribe to an existing stream
+        with stub(UserProfile, 'can_create_streams', lambda self: False):
+            result = self.common_subscribe_to_streams(self.test_email, ['stream2'])
+            self.assert_json_success(result)
 
     def test_subscriptions_add_invalid_stream(self):
         """

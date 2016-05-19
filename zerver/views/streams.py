@@ -66,7 +66,12 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
             rejects.append(stream_name)
         else:
             existing_streams.append(stream)
-    if autocreate:
+    if rejects:
+        if not user_profile.can_create_streams():
+            raise JsonableError('User cannot create streams.')
+        elif not autocreate:
+            raise JsonableError("Stream(s) (%s) do not exist" % ", ".join(rejects))
+
         for stream_name in rejects:
             stream, created = create_stream_if_needed(user_profile.realm,
                                                       stream_name,
@@ -75,8 +80,6 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
                 created_streams.append(stream)
             else:
                 existing_streams.append(stream)
-    elif rejects:
-        raise JsonableError("Stream(s) (%s) do not exist" % ", ".join(rejects))
 
     return existing_streams, created_streams
 
@@ -256,10 +259,6 @@ def add_subscriptions_backend(request, user_profile,
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
-
-    if not user_profile.can_create_streams():
-        return json_error('User cannot create streams.')
-
     stream_names = []
     for stream in streams_raw:
         stream_name = stream["name"].strip()
@@ -269,6 +268,7 @@ def add_subscriptions_backend(request, user_profile,
             return json_error("Invalid stream name (%s)." % (stream_name,))
         stream_names.append(stream_name)
 
+    # Enforcement of can_create_streams policy is inside list_to_streams.
     existing_streams, created_streams = \
         list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
     authorized_streams, unauthorized_streams = \
