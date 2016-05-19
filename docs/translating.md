@@ -63,3 +63,34 @@ You can instead use:
 [Handlebars]: http://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
 [blocktrans]: https://docs.djangoproject.com/en/1.8/topics/i18n/translation/#std:templatetag-blocktrans
+
+## Testing Translations
+
+First of all make sure that you have compiled the translation strings
+using `python manage.py compilemessages`.
+
+Django figures out the effective language by going through the
+following steps:
+
+1. It looks for the language code in the url.
+2. It loooks for the LANGUGE_SESSION_KEY key in the current user's
+session.
+3. It looks for the cookie named 'django_language'. You can set a
+different name through LANGUAGE_COOKIE_NAME setting.
+4. It looks for the `Accept-Language` HTTP header in the HTTP request.
+Normally your browser will take care of this.
+
+The easiest way to test translations is through the i18n urls e.g. if
+you have German translations available you can access the German
+version of a page by going to `/de/path_to_page`.
+
+To test translations using other methods you will need an HTTP client
+library like `requests`, `cURL` or `urllib`. Here is a sample code to
+test `Accept-Language` header using requests:
+
+```
+import requests
+headers = {"Accept-Language": "de"}
+response = requests.get("http://localhost:9991/login/", headers=headers)
+print(response.content)
+```

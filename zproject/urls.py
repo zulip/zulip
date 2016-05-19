@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.conf.urls import patterns, url, include
+from django.conf.urls.i18n import i18n_patterns
 from django.views.generic import TemplateView, RedirectView
+from django.utils.module_loading import import_string
 import os.path
 import zerver.forms
 
@@ -13,7 +15,7 @@ import zerver.forms
 #
 #   - Likewise for the local dev server in tools/run-dev.py.
 
-urlpatterns = patterns('',
+i18n_urls = [
     url(r'^$', 'zerver.views.home'),
     # We have a desktop-specific landing page in case we change our / to not log in in the future. We don't
     # want to require a new desktop app build for everyone in that case
@@ -86,7 +88,10 @@ urlpatterns = patterns('',
                                          name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello')),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
-)
+]
+
+urlpatterns = []
+urlpatterns += patterns('', *i18n_urls)
 
 # These are used for voyager development. On a real voyager instance,
 # these files would be served by nginx.
@@ -271,6 +276,7 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
     if os.path.exists(os.path.join(app_dir, 'urls.py')):
         urlpatterns += patterns('', url(r'^', include('%s.urls' % (app_name,))),
         )
+        i18n_urls += import_string("{}.urls.i18n_urlpatterns".format(app_name))
 
 urlpatterns += patterns('zerver.tornadoviews',
     # Tornado views
@@ -294,3 +300,8 @@ if settings.DEVELOPMENT:
     urlpatterns += patterns('',
         url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
             {'document_root': static_root}))
+
+# The sequence is important; if i18n urls don't come first then
+# reverse url mapping points to i18n urls which causes the frontend
+# tests to fail
+urlpatterns = i18n_patterns(*i18n_urls) + urlpatterns
