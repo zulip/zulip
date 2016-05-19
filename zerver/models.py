@@ -335,6 +335,12 @@ post_delete.connect(flush_realm_filter, sender=RealmFilter)
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     DEFAULT_BOT = 1
+    """
+    Incoming webhook bots are limited to only sending messages via webhooks.
+    Thus, it is less of a security risk to expose their API keys to third-party services,
+    since they can't be used to read messages.
+    """
+    INCOMING_WEBHOOK_BOT = 2
 
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
@@ -463,6 +469,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         # type: () -> str
         return self.__repr__()
+
+    @property
+    def is_incoming_webhook(self):
+        return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
 
     @staticmethod
     def emails_from_ids(user_ids):
