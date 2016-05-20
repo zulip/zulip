@@ -19,6 +19,9 @@
         <li role="presentation">
           <a href="#streams" aria-controls="streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> {{t "Streams Deletion" }}</a>
         </li>
+        <li role="presentation">
+          <a href="#default-streams" aria-controls="default-streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> {{t "Default Streams" }}</a>
+        </li>
       </ul>
       <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" id="organization">
@@ -161,6 +164,31 @@
             </tbody>
           </table>
           <div id="admin_page_streams_loading_indicator"></div>
+          </div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="default-streams">
+          <div id="admin-default-streams-list" class="settings-section">
+          <div class="settings-section-title"><i class="icon-vector-exchange settings-section-icon"></i>
+          {{t "Default Streams"}}</div>
+          <div class="admin-table-wrapper">
+            <p>{{#tr this}}Configure the default streams new users are subscribed to when joining the {{domain}} organization.{{/tr}}</p>
+            <table class="table table-condensed table-striped">
+              <tbody id="admin_default_streams_table" class="admin_default_stream_table">
+                <th>{{t "Name" }}</th>
+                <th class="actions">{{t "Actions" }}</th>
+              </tbody>
+            </table>
+          </div>
+          <div id="admin_page_default_streams_loading_indicator"></div>
+            <form class="form-horizontal default-stream-form">
+              <div class="add-new-default-stream-box">
+                <div class="new-default-stream-section-title">{{t "Add New Default Stream" }}</div>
+                <div class="control-group" id="default_stream_inputs">
+                  <label for="default_stream_name" class="control-label">{{t "Stream Name" }}</label>
+                  <input class="create_default_stream" type="text" placeholder="{{t "Stream Name" }}" name="stream_name" autocomplete="off"></input>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>
