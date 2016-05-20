@@ -230,7 +230,7 @@ su zulip
 sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 # Install dependencies
-sudo yum install libffi-devel memcached rabbitmq-server openldap-devel
+sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
     python-devel redis postgresql-server postgresql-devel postgresql \
     libmemcached-devel wget python-pip openssl-devel freetype-devel \
     libjpeg-turbo-devel zlib-devel nodejs yuicompressor \
