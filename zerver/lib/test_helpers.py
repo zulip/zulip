@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from typing import Any, Callable, Generator, Iterable, Tuple
 
 from django.test import TestCase
+from django.template import loader
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
@@ -367,3 +368,26 @@ class AuthedTestCase(TestCase):
 
     def get_last_message(self):
         return Message.objects.latest('id')
+
+def get_all_templates():
+    templates = []
+
+    relpath = os.path.relpath
+    isfile = os.path.isfile
+    path_exists = os.path.exists
+
+    is_valid_template = lambda p, n: not n.startswith('.') and isfile(p)
+
+    def process(template_dir, dirname, fnames):
+        for name in fnames:
+            path = os.path.join(dirname, name)
+            if is_valid_template(path, name):
+                templates.append(relpath(path, template_dir))
+
+    for engine in loader.engines.all():
+        template_dirs = [d for d in engine.template_dirs if path_exists(d)]
+        for template_dir in template_dirs:
+            template_dir = os.path.normpath(template_dir)
+            os.path.walk(template_dir, process, template_dir)
+
+    return templates
