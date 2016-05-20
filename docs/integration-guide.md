@@ -107,6 +107,239 @@ Here's how we recommend doing it:
 
 * Finally, write documentation for the integration (see below)!
 
+### Files that need to be updated
+
+* `templates/zerver/integrations.html`: Edit to add end-user documentation and
+  integration icon. See [Documenting your
+  integration](#documenting-your-integration) for details.
+* `zerver/test_hooks.py`: Edit to include tests for your webbook. See [Testing
+  and writing tests](testing.html) for details.
+* `zproject/urls.py`: Edit to add externally available url of the webhook and
+  associate with the function added to `zerver/views/webhooks/mywebhook.py`
+
+### Files that need to be created
+
+Select a name for your webhook and use it consistently. The examples below are
+for a webhook named 'mywebhook'.
+
+* `static/images/integrations/logos/mywebhook.png`: An image to represent
+  your integration in the user interface. Generally this Should be the logo of the
+  platform/server/product you are integrating. See [Documenting your
+  integration](#documenting-your-integration) for details.
+* `static/images/integrations/mywebbook/001.png`: A screen capture of your
+  integration for use in the user interface. You can add as many images as needed
+  to effectively document your webhook integration. See [Documenting your
+  integration](#documenting-your-integration) for details.
+* `zerver/fixtures/mywebhook/mywebhook_build.json`: Sample json payload data
+  used by tests. Can add multiple files. See [Testing and writing
+  tests](testing.html) for details.
+* `zerver/views/webhooks/mywebhook.py`: Includes the main webhook integration
+  function including any needed helper functions.
+
+### Walkthrough of `Hello World` webhook
+
+Below explains each part of a simple webhook integration, called **Hello
+World**. This webhook sends a "hello" message to the `test` stream and includes
+a link to the Wikipedia article of the day, which it formats from json data it
+receives in the http request.
+
+Use this walkthrough to learn how to write your first webhook
+integration.
+
+#### Step 1: Main webhook code
+
+The majority of the code for your webhook integration will be in a single
+python file in `zerver/views/webhooks/`. The Hello World integration is in
+`zerver/views/webhooks/helloworld.py`.
+
+```
+from __future__ import absolute_import
+from zerver.lib.actions import check_send_message
+from zerver.lib.response import json_success
+from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+
+@api_key_only_webhook_view('HelloWorld')
+@has_request_variables
+def api_helloworld_webhook(request, user_profile, client,
+        payload=REQ(argument_type='body'), stream=REQ(default='test'),
+        topic=REQ(default='Hello World')):
+
+  # construct the body of the message
+  body = ('Hello! I am happy to be here! :smile: ')
+
+  # add a wikipedia link if there is one in the payload
+  if ('type' in payload and payload['type'] == 'wikipedia'):
+      body += '\nThe Wikipedia featured article for today is **[%s](%s)**' % (payload['featured_title'], payload['featured_url'])
+
+  # send the message
+  check_send_message(user_profile, client, 'stream', [stream], topic, body)
+
+  # return json result
+  return json_success()
+
+```
+
+The above code imports the required functions, defines the main webhook
+function, decorating it `api_hey_only_webhook_view` and
+`has_request_variables`.
+
+You must pass the name of your webhook to the `api_key_only_webhook_view`
+decorator. Here we have used `HelloWorld`.
+
+You may name your webhook function whatever you like, though it's a good idea
+to be consistent with other webhook integrations. We recommend following the
+format `api_webhookname_webhook`.
+
+At minimum, the webhook function must accept `request`, `user_profile`, and
+`client`. You may also want to define additional parameters using the `REQ`
+object.
+
+In the example above, we have defined `payload` which is populated from the
+body of the http request, `stream` with a default of `test` (available by
+default in Zulip dev environment), and `topic` with a default of `Hello World`.
+
+In the body of the function we define the body of the message as `Hello! I am
+happy to be here! :smile: `. The `:smile:` indicates an emoji. Then we append a
+link to the Wikipedia article of the day as provided by the json payload.
+
+Then we send a public (stream) message with `check_send_message`.  Finally, we
+return `json_success()`.
+
+#### Step 2: Create an api endpoint for the webhook
+
+In order for a webhook to be externally available, it must be mapped to a url.
+This is done in `zproject/urls.py`. Look for the lines:
+
+```
+# Incoming webhook URLs
+urls += [
+    # Sorted integration-specific webhook callbacks.
+```
+
+And you'll find the entry for Hello World:
+
+```
+url(r'^api/v1/external/helloworld$',  'zerver.views.webhooks.helloworld.api_helloworld_webhook'),
+```
+
+This tells the Zulip api to call the `api_helloworld_webhook` function in
+`zerver/views/webhooks/helloworld.py` when it receives a request at
+`/api/v1/external/helloworld`.
+
+At this point, if you're following along and/or writing your own Hello World
+webhook, you have written enough code to test your integration.  You can do so
+by using curl on the command line:
+
+```
+curl -X POST -H "Content-Type: application/json" -d '{ "type":"wikipedia", "day":"Wed, 6/1", "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key>
+```
+
+After which you should see:
+```
+{"msg":"","result":"success"}
+```
+
+And a message in Zulip. TODO: add screen shot.
+
+#### Step 3: Create tests and fixtures
+
+Every webhook integraton should have a corresponding test class in
+`zerver/tests/test_hooks.py`.
+
+You should name the class <WebhookName>HookTests and this class should accept
+`WebhookTestCase`. For our HelloWorld webhook, we name the test class
+`HelloWorldHookTests`:
+
+```
+class HelloWorldHookTests(WebhookTestCase):
+    STREAM_NAME = 'test'
+    URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
+    FIXTURE_DIR_NAME = 'hello'
+
+    def test_hello_message(self):
+        expected_subject = u"Hello World";
+        expected_message = u"Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
+        self.send_and_test_stream_message('hello', expected_subject, expected_message,content_type="application/x-www-form-urlencoded")
+
+    def get_body(self, fixture_name):
+        return self.fixture_data("helloworld", fixture_name, file_type="json")
+
+```
+
+And to simulate the post data of a real request, we add the fixture `zerver/fixtures/helloworld/hello_world.json` with this data:
+
+```
+{
+  "type":"wikipedia",
+  "day":"Wed, 6/1",
+  "featured_title":"Marilyn Monroe",
+  "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe",
+}
+```
+
+Now you can run these tests from within the Zulip dev environment with this
+command:
+
+```
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+./tools/test-backend zerver.tests.test_hooks.HelloWorldHookTests
+```
+
+(Note: You must run the tests from `/srv/zulip` directory.)
+
+You will see some script output and if all the tests have passed, you will see:
+
+```
+Running zerver.tests.test_hooks.HelloWorldHookTests.test_hello_message
+DONE!
+```
+
+#### Step 4: Create documentation
+
+Next, we add end-user documentation for our webhook integration to
+`templates/zerver/integrations.html`.
+
+First, add a `div` that displays the logo of your integration and a link to its
+documentation:
+
+```
+ <div class="integration-lozenge integration-helloworld">
+   <a class="integration-link integration-helloworld" href="#helloworld">
+      <img class="integration-logo" src="/static/images/integrations/logos/helloworld.png" alt="Hello World logo" />
+      <span class="integration-label">Hello World</span>
+   </a>
+ </div>
+```
+
+And second, a div with the usage instructions:
+
+```
+<div id="helloworld" class="integration-instructions">
+
+    <p>Learn how Zulip integrations work with this simple Hello World example!</p>
+
+    <p>The Hello World webhook will use the <code>test<code> stream, which is
+    created by default in the Zulip dev environment. If you are running
+    Zulip in production, you should make sure this stream exists.</p>
+
+    <p>Next, on your <a href="/#settings" target="_blank">Zulip
+    settings page</a>, create a Hello World bot.  Construct the URL for
+    the Hello World bot using the API key and stream name:
+      <code>{{ external_api_uri }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
+    </p>
+
+    <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
+
+    <img class="screenshot" src="/static/images/integrations/helloworld/001.png" />
+</div>
+```
+
+Both blocks should fall alphabetically so we add these two divs between the
+blocks for Github and Hubot, respectively.
+
+See [Documenting your integration](#documenting-your-integration) for further
+details.
+
 ## Writing Python script and plugin integrations integrations
 
 For plugin integrations, usually you will need to consult the
