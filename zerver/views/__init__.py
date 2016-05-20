@@ -862,6 +862,7 @@ def home(request):
         alert_words           = register_ret['alert_words'],
         muted_topics          = register_ret['muted_topics'],
         realm_filters         = register_ret['realm_filters'],
+        realm_default_streams = register_ret['realm_default_streams'],
         is_admin              = user_profile.is_realm_admin,
         can_create_streams    = user_profile.can_create_streams(),
         name_changes_disabled = name_changes_disabled(user_profile.realm),

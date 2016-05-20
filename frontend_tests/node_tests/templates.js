@@ -86,6 +86,19 @@ function render(template_name, args) {
     global.write_test_output("admin_tab.handlebars", html);
 }());
 
+(function admin_default_streams_list() {
+    var html = '<table>';
+    var streams = ['devel', 'trac', 'zulip'];
+    _.each(streams, function (stream) {
+        var args = {stream: {name: stream, invite_only: false}};
+        html += render('admin_default_streams_list', args);
+    });
+    html += "</table>";
+    var span = $(html).find(".default_stream_name:first");
+    assert.equal(span.text(), "devel");
+    global.write_test_output("admin_default_streams_list.handlebars", html);
+}());
+
 (function admin_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];

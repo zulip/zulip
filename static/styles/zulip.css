@@ -3246,7 +3246,8 @@ div.edit_bot {
 
 .edit_bot_form .control-label,
 #create_bot_form .control-label,
-.admin-emoji-form .control-label {
+.admin-emoji-form .control-label,
+.default-stream-form .control-label {
     width: 10em;
     text-align: right;
     margin-right: 20px;
@@ -3501,7 +3502,8 @@ div.edit_bot {
 
 #settings .bot-information-box,
 #settings .add-new-bot-box,
-#emoji-settings .add-new-emoji-box {
+#emoji-settings .add-new-emoji-box,
+#admin-default-streams-list .add-new-default-stream-box{
     background: #e3e3e3;
     padding: 10px;
     margin-left: 38px;
@@ -3513,8 +3515,15 @@ div.edit_bot {
 }
 
 #settings .add-new-bot-box,
-#emoji-settings .add-new-emoji-box {
+#emoji-settings .add-new-emoji-box,
+#admin-default-streams-list .add-new-default-stream-box {
     background: #cbe3cb;
+}
+
+.new-default-stream-section-title {
+    font-size: 18px;
+    font-weight: 300;
+    padding-bottom: 10px;
 }
 
 #settings #get_api_key_box,
