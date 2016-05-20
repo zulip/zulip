@@ -119,7 +119,12 @@ function get_events_success(events) {
             if (event.op === 'update') {
                 // Legacy: Stream properties are still managed by subs.js on the client side.
                 subs.update_subscription_properties(event.name, event.property, event.value);
+                admin.update_default_streams_table();
             }
+            break;
+        case 'default_streams':
+            page_params.realm_default_streams = event.default_streams;
+            admin.update_default_streams_table();
             break;
         case 'subscription':
             if (event.op === 'add') {

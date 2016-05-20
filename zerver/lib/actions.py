@@ -2025,11 +2025,21 @@ def set_default_streams(realm, stream_names):
                'domain': realm.domain,
                'streams': stream_names})
 
+
+def notify_default_streams(realm):
+    # type: (Realm) -> None
+    event = dict(
+        type="default_streams",
+        default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm))
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_add_default_stream(realm, stream_name):
     # type: (Realm, text_type) -> None
     stream, _ = create_stream_if_needed(realm, stream_name)
     if not DefaultStream.objects.filter(realm=realm, stream=stream).exists():
         DefaultStream.objects.create(realm=realm, stream=stream)
+        notify_default_streams(realm)
 
 def do_remove_default_stream(realm, stream_name):
     # type: (Realm, text_type) -> None
@@ -2037,6 +2047,7 @@ def do_remove_default_stream(realm, stream_name):
     if stream is None:
         raise JsonableError(_("Stream does not exist"))
     DefaultStream.objects.filter(realm=realm, stream=stream).delete()
+    notify_default_streams(realm)
 
 def get_default_streams_for_realm(realm):
     # type: (Realm) -> List[Stream]
@@ -2048,6 +2059,11 @@ def get_default_subs(user_profile):
     # Right now default streams are realm-wide.  This wrapper gives us flexibility
     # to some day further customize how we set up default streams for new users.
     return get_default_streams_for_realm(user_profile.realm)
+
+# returns default streams in json serializeable format
+def streams_to_dicts_sorted(streams):
+    # type: (List[Stream]) -> List[Dict[str, Any]]
+    return sorted([stream.to_dict() for stream in streams], key=lambda elt: elt["name"])
 
 def do_update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
@@ -2687,6 +2703,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
+    if want('default_streams'):
+        state['realm_default_streams'] = streams_to_dicts_sorted(get_default_streams_for_realm(user_profile.realm))
 
     if want('update_display_settings'):
         state['twenty_four_hour_time'] = user_profile.twenty_four_hour_time
@@ -2760,6 +2778,8 @@ def apply_events(state, events, user_profile):
             elif event['op'] == "vacate":
                 stream_ids = [s["stream_id"] for s in event['streams']]
                 state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
+        elif event['type'] == 'default_streams':
+            state['realm_default_streams'] = event['default_streams']
         elif event['type'] == 'realm':
             field = 'realm_' + event['property']
             state[field] = event['value']
@@ -3167,8 +3187,8 @@ def get_occupied_streams(realm):
     return Stream.objects.filter(id__in=stream_ids, realm=realm, deactivated=False)
 
 def do_get_streams(user_profile, include_public=True, include_subscribed=True,
-                   include_all_active=False):
-    # type: (UserProfile, bool, bool, bool) -> List[Dict[str, Any]]
+                   include_all_active=False, include_default=False):
+    # type: (UserProfile, bool, bool, bool, bool) -> List[Dict[str, Any]]
     if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))
 
@@ -3199,6 +3219,13 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
 
     streams = [(row.to_dict()) for row in query]
     streams.sort(key=lambda elt: elt["name"])
+    if include_default:
+        is_default = {}
+        default_streams = get_default_streams_for_realm(user_profile.realm)
+        for default_stream in default_streams:
+            is_default[default_stream.id] = True
+        for stream in streams:
+            stream['is_default'] = is_default.get(stream["stream_id"], False)
 
     return streams
 

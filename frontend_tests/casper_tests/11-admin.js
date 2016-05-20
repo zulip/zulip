@@ -137,6 +137,52 @@ casper.waitWhileSelector('.emoji_row', function () {
     casper.test.assertDoesntExist('.emoji_row');
 });
 
+function get_suggestions(str) {
+    casper.then(function () {
+        casper.evaluate(function (str) {
+            $('.create_default_stream')
+            .focus()
+            .val(str)
+            .trigger($.Event('keyup', { which: 0 }));
+        }, str);
+    });
+}
+
+function select_from_suggestions(item) {
+    casper.then(function () {
+        casper.evaluate(function (item) {
+            var tah = $('.create_default_stream').data().typeahead;
+            tah.mouseenter({
+                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0]
+            });
+            tah.select();
+        }, {item: item});
+    });
+}
+
+// Test default stream creation and addition
+casper.then(function () {
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#subscriptions"]');
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#administration"]');
+    var stream_name = "Scotland";
+    // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona etc).
+    // I used 'O' to make sure that it works even if there are multiple suggestions.
+    // Capital 'O' is used instead of small 'o' to make sure that the suggestions are not case sensitive.
+    get_suggestions("O");
+    select_from_suggestions(stream_name);
+    casper.waitForSelector('.default_stream_row[id='+stream_name+']', function () {
+        casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
+    });
+    casper.waitForSelector('.default_stream_row[id='+stream_name+']', function () {
+        casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
+        casper.click('.default_stream_row[id='+stream_name+'] button.remove-default-stream');
+    });
+    casper.waitWhileSelector('.default_stream_row[id='+stream_name+']', function () {
+        casper.test.assertDoesntExist('.default_stream_row[id='+stream_name+']');
+    });
+});
 // TODO: Test stream deletion
 
 common.then_log_out();

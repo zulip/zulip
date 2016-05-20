@@ -1,6 +1,7 @@
 var admin = (function () {
 
 var exports = {};
+var all_streams = [];
 
 exports.show_or_hide_menu_item = function () {
     var item = $('.admin-menu-item').expectOne();
@@ -67,11 +68,61 @@ function populate_users (realm_people_data) {
 
 function populate_streams (streams_data) {
     var streams_table = $("#admin_streams_table").expectOne();
+    all_streams = streams_data;
     streams_table.find("tr.stream_row").remove();
     _.each(streams_data.streams, function (stream) {
         streams_table.append(templates.render("admin_streams_list", {stream: stream}));
     });
     loading.destroy_indicator($('#admin_page_streams_loading_indicator'));
+}
+
+function populate_default_streams(streams_data) {
+    var default_streams_table = $("#admin_default_streams_table").expectOne();
+    _.each(streams_data, function (stream) {
+        default_streams_table.append(templates.render("admin_default_streams_list", {stream: stream}));
+    });
+    loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
+}
+
+function get_non_default_streams_names(streams_data) {
+    var non_default_streams_names = [];
+    var default_streams_names = [];
+
+    _.each(page_params.realm_default_streams, function (default_stream) {
+        default_streams_names.push(default_stream.name);
+    });
+
+    _.each(streams_data.streams, function (stream) {
+        if (default_streams_names.indexOf(stream.name) < 0) {
+           non_default_streams_names.push(stream.name);
+        }
+    });
+    return non_default_streams_names;
+}
+
+exports.update_default_streams_table = function () {
+    $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
+    populate_default_streams(page_params.realm_default_streams);
+};
+
+function make_stream_default(stream_name) {
+    var data = {
+        stream_name: stream_name
+    };
+    var default_streams_table = $("#admin_default_streams_table").expectOne();
+
+    channel.put({
+        url: '/json/default_streams',
+        data: data,
+        error: function (xhr, error_type) {
+            if (xhr.status.toString().charAt(0) === "4") {
+                $(".active_stream_row button").closest("td").html(
+                    $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg));
+            } else {
+                $(".active_stream_row button").text("Failed!");
+            }
+        }
+    });
 }
 
 exports.populate_emoji = function (emoji_data) {
@@ -123,7 +174,7 @@ exports.setup_page = function () {
 
     // Populate streams table
     channel.get({
-        url:      '/json/streams?include_public=true&include_subscribed=true',
+        url:      '/json/streams?include_public=true&include_subscribed=true&include_default=true',
         timeout:  10*1000,
         idempotent: true,
         success: populate_streams,
@@ -132,6 +183,7 @@ exports.setup_page = function () {
 
     // Populate emoji table
     exports.populate_emoji(page_params.realm_emoji);
+    exports.update_default_streams_table();
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
@@ -162,6 +214,51 @@ exports.setup_page = function () {
 
         $("#deactivation_stream_modal .stream_name").text(stream_name);
         $("#deactivation_stream_modal").modal("show");
+    });
+
+    $(".admin_default_stream_table").on("click", ".remove-default-stream", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $(".active_default_stream_row").removeClass("active_default_stream_row");
+        var row = $(e.target).closest(".default_stream_row");
+        row.addClass("active_default_stream_row");
+        var stream_name = row.find('.default_stream_name').text();
+
+        channel.del({
+            url: '/json/default_streams'+ '?' + $.param({"stream_name": stream_name}),
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    $(".active_default_stream_row button").closest("td").html(
+                    $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg));
+                } else {
+                    $(".active_default_stream_row button").text("Failed!");
+                }
+            },
+            success: function () {
+                var row = $(".active_default_stream_row");
+                row.remove();
+            }
+        });
+    });
+
+    $('.create_default_stream').keypress(function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+
+    $('.create_default_stream').typeahead({
+        items: 5,
+        fixed: true,
+        source: function (query) {
+            return get_non_default_streams_names(all_streams);
+        },
+        highlight: true,
+        updater: function (stream_name) {
+            make_stream_default(stream_name);
+        }
     });
 
     $(".admin_bot_table").on("click", ".deactivate", function (e) {

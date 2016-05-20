@@ -31,6 +31,7 @@ from zerver.lib.actions import (
     do_remove_realm_filter,
     do_remove_subscription,
     do_rename_stream,
+    do_add_default_stream,
     do_set_muted_topics,
     do_set_realm_create_stream_by_admins_only,
     do_set_realm_name,
@@ -377,6 +378,21 @@ class EventsRegisterTest(AuthedTestCase):
         error = alert_words_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+    def test_default_streams_events(self):
+        default_streams_checker = check_dict([
+            ('type', equals('default_streams')),
+            ('default_streams', check_list(check_dict([
+                ('description', check_string),
+                ('invite_only', check_bool),
+                ('name', check_string),
+                ('stream_id', check_int),
+            ]))),
+        ])
+
+        events = self.do_test(lambda: do_add_default_stream(self.user_profile.realm, "Scotland"))
+        error = default_streams_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
     def test_muted_topics_events(self):
         # type: () -> None
         muted_topics_checker = check_dict([
@@ -386,7 +402,6 @@ class EventsRegisterTest(AuthedTestCase):
         events = self.do_test(lambda: do_set_muted_topics(self.user_profile, [[u"Denmark", u"topic"]]))
         error = muted_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
-
 
     def test_change_full_name(self):
         # type: () -> None
