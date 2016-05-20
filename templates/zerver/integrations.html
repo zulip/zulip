@@ -131,6 +131,12 @@
             <span class="integration-label">Freshdesk</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-helloworld">
+         <a class="integration-link integration-helloworld" href="#helloworld">
+            <img class="integration-logo" src="/static/images/integrations/logos/helloworld.png" alt="Hello World logo" />
+            <span class="integration-label">Hello World</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-git">
          <a class="integration-link integration-git" href="#git">
             <img class="integration-logo" src="/static/images/integrations/logos/git.png" alt="Git logo" />
@@ -1151,6 +1157,38 @@
 
       <p><img class="screenshot" src="/static/images/integrations/github/005.png" /></p>
 
+    </div>
+
+    <div id="helloworld" class="integration-instructions">
+
+        <p>Learn how Zulip integrations work with this simple Hello World example!</p>
+
+        <p>The Hello World webhook will use the <code>test</code> stream, which is
+        created by default in the Zulip dev environment. If you are running
+        Zulip in production, you should make sure this stream exists.</p>
+
+        <p>Next, on your <a href="/#settings" target="_blank">Zulip
+        settings page</a>, create a Hello World bot.  Construct the URL for
+        the Hello World bot using the API key and stream name:
+          <code>{{ external_api_uri }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
+        </p>
+
+        <p>To trigger a notication using this webhook, use `send_webhook_fixture_message` from the Zulip command line:</p>
+        <div class="codehilite">
+          <pre>(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+./manage.py send_webhook_fixture_message \
+> --fixture=zerver/fixtures/helloworld/helloworld_hello.json \
+> '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'</pre>
+        </div>
+
+        <p>Or, use curl:</p>
+        <div class="codehilite">
+          <pre>curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=&lt;api_key&gt;</pre>
+        </div>
+
+        <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
+
+        <img class="screenshot" src="/static/images/integrations/helloworld/001.png" />
     </div>
 
     <div id="hubot" class="integration-instructions">
