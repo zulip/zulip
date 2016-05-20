@@ -1,16 +1,16 @@
-<h1><i class="icon-vector-wrench settings-icon"></i>Settings</h1>
+<h1><i class="icon-vector-wrench settings-icon"></i>{{t "Settings" }}</h1>
 
 <div id="settings-change-box">
 
   <div class="alert" id="settings-status"></div>
 
   <div id="account-settings" class="settings-section">
-    <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>Your Account</div>
+    <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>{{t "Your Account" }}</div>
     <div class="account-settings-form">
       <form action="/json/settings/change" method="post"
             class="form-horizontal your-account-settings">
         <div class="control-group" id="name_change_container">
-          <label for="full_name" class="control-label">Full name</label>
+          <label for="full_name" class="control-label">{{t "Full name" }}</label>
           <div class="controls">
             <input type="text" name="full_name" id="full_name"
                    value="{{ page_params.fullname }}" />
@@ -19,24 +19,24 @@
 
         {{#if page_params.password_auth_enabled}}
         <div class="control-group" id="pw_change_link">
-          <label for="change_password_button" class="control-label">Password</label>
+          <label for="change_password_button" class="control-label">{{t "Password" }}</label>
           <div class="controls">
-            <button class="btn btn-default change_password_button" data-dismiss="modal" aria-hidden="true">Change Password</button>
+            <button class="btn btn-default change_password_button" data-dismiss="modal" aria-hidden="true">{{t "Change Password" }}</button>
           </div>
         </div>
 
         <div id="pw_change_controls">
           <div class="control-group">
-            <label for="old_password" class="control-label">Old password</label>
+            <label for="old_password" class="control-label">{{t "Old password" }}</label>
             <div class="controls">
               <input type="password" autocomplete="off"
                      name="old_password" id="old_password" value="" />
-              (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)
+              (<a href="/accounts/password/reset/" target="_blank">{{t "Forgotten it?" }}</a>)
             </div>
           </div>
 
           <div class="control-group">
-            <label for="new_password" class="control-label">New password</label>
+            <label for="new_password" class="control-label">{{t "New password" }}</label>
             <div class="controls">
               <input type="password" autocomplete="off"
                      name="new_password" id="new_password" value="" />
@@ -44,7 +44,7 @@
           </div>
 
           <div class="control-group">
-            <label class="control-label">Password strength</label>
+            <label class="control-label">{{t "Password strength" }}</label>
             <div class="controls">
               <div class="progress" id="pw_strength">
                 <div class="bar bar-danger" style="width: 10%;"></div>
@@ -53,7 +53,7 @@
           </div>
 
           <div class="control-group">
-            <label for="confirm_password" class="control-label">Confirm password</label>
+            <label for="confirm_password" class="control-label">{{t "Confirm password" }}</label>
             <div class="controls">
               <input type="password" autocomplete="off"
                      name="confirm_password" id="confirm_password" value="" />
@@ -66,7 +66,7 @@
         <div class="control-group">
           <div class="controls">
             <input type="submit" name="change_settings"
-                   value="Save changes" class="btn btn-big btn-primary" />
+                   value="{{t 'Save changes' }}" class="btn btn-big btn-primary" />
           </div>
         </div>
 
@@ -76,9 +76,9 @@
           </p>
           <div id="user_avatar_file_input_error" class="text-error"></div>
           <div id="user_avatar_file"></div>
-          <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="Upload avatar" />
+          <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
           <div id="upload_avatar_spinner"></div>
-          <button class="btn btn-default" id="user_avatar_upload_button">Customize avatar</button>
+          <button class="btn btn-default" id="user_avatar_upload_button">{{t 'Customize avatar' }}</button>
         </div>
 
       </form>
@@ -89,7 +89,7 @@
   <div>
     <div id="display-settings" class="settings-section">
       <div class="settings-section-title"><i class="icon-vector-time settings-section-icon"></i>
-      Display Settings</div>
+      {{t 'Display Settings' }}</div>
       <div class="alert" id="display-settings-status"></div>
       <div class="display-settings-form">
 
@@ -100,7 +100,7 @@
                 checked="yes"
               {{/if}} />
           </div>
-        <label for="left_side_userlist" class="control-label">Display user list on left side in narrow windows.</label>
+        <label for="left_side_userlist" class="control-label">{{t "Display user list on left side in narrow windows." }}</label>
         </div>
 
         <div class="control-group">
@@ -111,7 +111,7 @@
               {{/if}} />
           </div>
           <label for="twenty_four_hour_time" class="control-label">
-            Display time in 24-hour format (17:00 instead of 5:00 PM)
+            {{t "Display time in 24-hour format (17:00 instead of 5:00 PM)" }}
           </label>
         </div>
       </div>
@@ -120,13 +120,13 @@
 
   <div>
     <div id="notification-settings" class="settings-section">
-      <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>Notifications</div>
-      <div class="notification-reminder">You'll receive notifications when a message arrives and {{ page_params.product_name }} isn't in focus or the message is offscreen.</div>
+      <div class="settings-section-title"><i class="icon-vector-warning-sign settings-section-icon"></i>{{t "Notifications" }}</div>
+      <div class="notification-reminder">{{#tr this }}You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.{{/tr}}</div>
       <div class="alert" id="notify-settings-status"></div>
       <div class="notification-settings-form">
-        <h4>Stream messages</h4>
+        <h4>{{t "Stream messages" }}</h4>
 
-        <p>Unless I say otherwise for a particular stream, I want:</p>
+        <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
         <div class="control-group">
           <div class="controls">
@@ -137,7 +137,7 @@
                    {{/if}} />
           </div>
           <label for="enable_stream_desktop_notifications" class="control-label">
-            Desktop notifications
+            {{t "Desktop notifications" }}
           </label>
           <div class="propagate_stream_notifications_change"></div>
         </div>
@@ -150,19 +150,18 @@
                    {{/if}} />
           </div>
           <label for="enable_stream_sounds" class="control-label">
-            Audible notifications
+            {{t "Audible notifications" }}
           </label>
           <div class="propagate_stream_notifications_change"></div>
         </div>
 
         <p class="notification-settings-note">
-          Change notification settings for individual streams on your <a
-          href="/#subscriptions">Streams page</a>.
+          {{#tr this}}Change notification settings for individual streams on your <a href="/#subscriptions">Streams page</a>.{{/tr}}
         </p>
 
-        <h4>Private messages and @-mentions</h4>
+        <h4>{{t "Private messages and @-mentions" }}</h4>
 
-        <p>I want:</p>
+        <p>{{t "I want:" }}</p>
 
         <div class="control-group">
           <div class="controls">
@@ -172,7 +171,7 @@
                    {{/if}} />
           </div>
           <label for="enable_desktop_notifications" class="control-label">
-            Desktop notifications
+            {{t "Desktop notifications" }}
           </label>
         </div>
 
@@ -184,7 +183,7 @@
                    {{/if}} />
           </div>
           <label for="enable_sounds" class="control-label">
-            Audible notifications
+            {{t "Audible notifications" }}
           </label>
         </div>
 
@@ -196,7 +195,7 @@
                    {{/if}} />
           </div>
           <label for="enable_offline_email_notifications" class="control-label">
-            Email notifications when offline
+            {{t "Email notifications when offline" }}
           </label>
         </div>
 
@@ -208,14 +207,14 @@
                    {{/if}} />
           </div>
           <label for="enable_offline_push_notifications" class="control-label">
-            Mobile push notifications when offline
+            {{t "Mobile push notifications when offline" }}
           </label>
         </div>
 
         <div id="other_notifications">
-        <h4>Other notifications</h4>
+        <h4>{{t "Other notifications" }}</h4>
 
-        <p>I want:</p>
+        <p>{{t "I want:" }}</p>
 
         <div class="control-group" id="digest_container">
           <div class="controls">
@@ -225,7 +224,7 @@
                    {{/if}} />
           </div>
           <label for="enable_digest_emails" class="control-label">
-            Digest emails when I'm away
+            {{t "Digest emails when I'm away" }}
           </label>
         </div>
         {{!-- If you add another control group here, make sure to change
@@ -237,7 +236,7 @@
         <div class="control-group">
           <div class="controls notification-submission">
             <input type="submit" id="change_notification_settings"
-                   name="change_notification_settings" value="Save changes"
+                   name="change_notification_settings" value="{{t 'Save changes' }}"
                    class="btn btn-big btn-primary" />
           </div>
         </div>
@@ -250,11 +249,13 @@
 
 <div id="bot-settings" class="settings-section">
 
-  <div class="settings-section-title"><i class="icon-vector-github settings-section-icon"></i>Your Bots</div>
+  <div class="settings-section-title"><i class="icon-vector-github settings-section-icon"></i>{{t "Your Bots" }}</div>
 
   <div class="bot-settings-form">
+    {{#tr this}}
     <p class="bot-settings-note">Looking for our <a href="/integrations" target="_blank">Integrations</a>
       or <a href="/api" target="_blank">API</a> documentation?</p>
+    {{/tr}}
 
     <ol id="bots_list">
     </ol>
@@ -264,31 +265,31 @@
         <div class="settings-section-title new-bot-section-title">Add a New Bot</div>
         <div class="new-bot-form">
           <div class="control-group">
-            <label for="create_bot_name" class="control-label">Full name</label>
+            <label for="create_bot_name" class="control-label">{{t "Full name" }}</label>
             <input type="text" name="bot_name" id="create_bot_name" class="required"
                    maxlength=100 placeholder="Full Bot Name" value="" />
             <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
           </div>
           <div class="control-group">
-            <label for="bot_short_name" class="control-label">Username</label>
+            <label for="bot_short_name" class="control-label">{{t "Username" }}</label>
             <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
-                   placeholder="bot_user_name" value="" />-bot@{{ page_params.domain }}
+                   placeholder="bot_user_name" value="" />-{{t "bot" }}@{{ page_params.domain }}
             <div><label for="create_bot_short_name" generated="true" class="text-error"></label></div>
           </div>
           <div class="control-group new-bot-ui">
-            <label for="create_bot_default_sending_stream" class="control-label">Send to stream</label>
+            <label for="create_bot_default_sending_stream" class="control-label">{{t "Send to stream" }}</label>
             <select name="bot_default_sending_stream" id="create_bot_default_sending_stream"></select>
           </div>
           <div class="control-group new-bot-ui">
-            <label for="create_bot_default_events_register_stream" class="control-label">Listen on</label>
+            <label for="create_bot_default_events_register_stream" class="control-label">{{t "Listen on" }}</label>
             <select name="bot_default_events_register_stream" id="create_bot_default_events_register_stream"></select>
           </div>
           <div class="control-group">
             <div class="controls">
               <div id="bot_avatar_file"></div>
-              <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="Upload avatar" />
-              <button class="btn btn-default" id="bot_avatar_clear_button">Clear avatar</button>
-              <button class="btn btn-default" id="bot_avatar_upload_button">Customize avatar</button> (Optional)
+              <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
+              <button class="btn btn-default" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+              <button class="btn btn-default" id="bot_avatar_upload_button">{{t "Customize avatar" }}</button> ({{t "Optional" }})
             </div>
           </div>
           <p>
@@ -296,7 +297,7 @@
           </p>
           <div class="control-group">
             <div class="controls">
-              <input type="submit" class="btn btn-primary" id="create_bot_button" value="Create Bot" />
+              <input type="submit" class="btn btn-primary" id="create_bot_button" value="{{t 'Create Bot' }}" />
             </div>
           </div>
         </div>
@@ -306,35 +307,39 @@
     <hr class="settings_separator" />
 
     <div class="form-horizontal" id="api_key_button_box">
+      {{#tr this}}
       <p class="api-key-note">For most bots using the API, you'll want to give each bot
         its own name and API key using the above section.  But if you
         want to write a bot that can access your own private
         messages, you should use your personal API key.
       </p>
+      {{/tr}}
       <div class="control-group">
-        <button class="btn btn-default" id="api_key_button">Show/change your API key</button>
+        <button class="btn btn-default" id="api_key_button">{{t "Show/change your API key" }}</button>
       </div>
     </div>
     <div id="get_api_key_box">
+      {{#tr this}}
       <p>Please re-enter your password to confirm your identity.
         (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
+      {{/tr}}
       <form action="/json/fetch_api_key" method="post" class="form-horizontal">
         <div class="control-group">
-          <label for="password" class="control-label">Current password</label>
+          <label for="password" class="control-label">{{t "Current password" }}</label>
           <input type="password" autocomplete="off"
                  name="password" id="get_api_key_password" value="" />
         </div>
         <div class="control-group">
-          <input type="submit" name="view_api_key" value="Get API key"
+          <input type="submit" name="view_api_key" value="{{t 'Get API key' }}"
                  class="btn btn-primary" />
         </div>
       </form>
     </div>
     <div id="show_api_key_box">
-      <p>Your API key:</p>
+      <p>{{t "Your API key:" }}</p>
       <p><b><span id="api_key_value"></span></b></p>
       <button type="submit" class="btn btn-primary regenerate_api_key">
-        Generate new API Key
+        {{t "Generate new API Key" }}
       </button>
       <div id="user_api_key_error text-error">
       </div>
@@ -344,18 +349,18 @@
 </div>
 
 <div id="word-alert-settings" class="settings-section">
-  <div class="settings-section-title"><i class="icon-vector-book settings-section-icon"></i>Custom Word Alerts</div>
+  <div class="settings-section-title"><i class="icon-vector-book settings-section-icon"></i>{{t "Custom Word Alerts" }}</div>
   <ul id="word-alerts">
   </ul>
 </div>
 
 <div class="ui-settings">
   <div id="ui-settings" class="settings-section">
-    <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>{{ page_params.product_name }} Labs</div>
+    <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>{{#tr this}}__page_params.product_name__ Labs{{/tr}}</div>
     <div class="alert" id="ui-settings-status"></div>
     <div class="ui-settings-form">
       <p>
-        Warning: the below features are experimental features and may not work as well as you would like.
+        {{t "Warning: the below features are experimental features and may not work as well as you would like." }}
       </p>
       <div class="control-group">
         <div class="controls">
@@ -365,7 +370,7 @@
               {{/if}} />
         </div>
         <label for="autoscroll_forever" class="control-label">
-          Always auto-scroll to new messages
+          {{t "Always auto-scroll to new messages" }}
         </label>
 
         <div class="controls">
@@ -375,13 +380,13 @@
               {{/if}} />
         </div>
         <label for="default_desktop_notifications" class="control-label">
-          Enable desktop notifications for new streams
+          {{t "Enable desktop notifications for new streams" }}
         </label>
 
       </div>
       <div class="control-group">
         <div class="controls ui-submission">
-          <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
+          <input type="submit" name="change_settings" value="{{t 'Save changes' }}" class="btn btn-big btn-primary" />
         </div>
       </div>
     </div>

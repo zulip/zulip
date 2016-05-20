@@ -1,11 +1,11 @@
 {{! Contents of the "tutorial message" onboarding popup }}
 
 <div class="tutorial-popover popover-{{placement}}" id="tutorial-message">
-    <p>Welcome to {{ page_params.product_name }}!</p>
+    {{#tr this}}<p>Welcome to __page_params.product_name__!</p>{{/tr}}
 
-    <p>Messages in {{ page_params.product_name }} go to a <b>stream</b> and have a <b>topic</b>.</p>
+    {{#tr this}}<p>Messages in __page_params.product_name__ go to a <b>stream</b> and have a <b>topic</b>.</p>{{/tr}}
 
     <div class="tutorial-done-button">
-      <button class="btn btn-primary" type="submit" id="tutorial-message-next">Next</button>
+      <button class="btn btn-primary" type="submit" id="tutorial-message-next">{{t "Next" }}</button>
     </div>
 </div>
