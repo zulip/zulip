@@ -4,10 +4,11 @@ Installing the Zulip Development environment
 
 * [Development environment setup for first-time
   contributors](#development-environment-setup-for-first-time-contributors)
+* [Brief installation instructions for Vagrant development
+  environment](#brief-installation-instructions-for-vagrant-development-environment)
 * [Installing on Ubuntu 14.04 Trusty without
-  Vagrant](#installing-on-ubuntu-1404-trusty-without-vagrant)
-* [Installation overview for any platform that supports
-  Vagrant](#installation-overview-for-any-platform-that-supports-vagrant)
+  Vagrant](#installing-on-ubuntu-1404-trusty-without-vagrant) (possibly more
+  convenient but more work to maintain/uninstall)
 * [Installing manually on UNIX-based
   platforms](#installing-manually-on-unix-based-platforms)
 * [Using Docker (experimental)](#using-docker-experimental)
@@ -16,10 +17,10 @@ Installing the Zulip Development environment
 * [Possible testing issues](#possible-testing-issues)
 
 Those who have installed Zulip before or are experienced at administering Linux
-may wish to skip ahead to [Installation overview for any platform that supports
-Vagrant](#installation-overview-for-any-platform-that-supports-vagrant), [Using
-Docker](#using-docker-experimental), or [Installing manually on
-UNIX-based platforms](#installing-manually-on-unix-based-platforms).
+may wish to skip ahead to [Brief installation instructions for Vagrant
+development environment](#brief-installation-instructions-for-vagrant-development-environment),
+[Using Docker (experimental)](#using-docker-experimental), or [Installing
+manually on UNIX-based platforms](#installing-manually-on-unix-based-platforms).
 
 ## Development environment setup for first-time contributors
 
@@ -46,7 +47,9 @@ If you encounter errors installing the Zulip dev environment and they are not ad
 
 Installing the Zulip dev environment requires downloading dependencies of
 several hundred megabytes. You will need an active internet connection
-throughout the entire installation processes.
+throughout the entire installation processes. (See [Specifying a
+proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
+
 
 - **All**: 1.5GB available RAM, Active broadband internet connection.
 - **OS X**: OS X (El Capitan recommended, untested on previous versions), Git,
@@ -57,8 +60,8 @@ throughout the entire installation processes.
   [Cygwin][cygwin-dl], [VirtualBox][vbox-dl], [Vagrant][vagrant-dl].
 
 Don't see your system listed above? Check out:
-* [Installation overview for any platform that supports
-  Vagrant](#installation-overview-for-any-platform-that-supports-vagrant)
+* [Brief installation instructions for Vagrant development
+  environment](#brief-installation-instructions-for-vagrant-development-environment)
 * [Installing manually on UNIX-based
   platforms](#installing-manually-on-unix-based-platforms)
 
@@ -271,13 +274,15 @@ does the following:
 - downloads the base Ubuntu 14.04 virtual machine image (for OS X and Windows)
   or container (for Ubuntu)
 - configures this virtual machine/container for use with Zulip,
-- creates a shared directory `/srv/zulip` within the virtual machine/container
-  that maps to where you have cloned the zulip code, and
+- creates a shared directory mapping your clone of the Zulip code inside the
+  virtual machine/container at `/srv/zulip`
 - runs the `provision.py` script inside the virtual machine/container, which
-  downloads all required dependencies and sets up the python environment for
-  the Zulip dev environment.
+  downloads all required dependencies, sets up the python environment for
+  the Zulip dev environment, and initializes a default test database.
 
-You will need an active internet connection during the entire processes.
+You will need an active internet connection during the entire processes. (See
+[Specifying a proxy](#specifying-a-proxy) if you need a proxy to access the
+internet.)
 
 Once `vagrant up` has completed, connect to the dev environment with `vagrant
 ssh`:
@@ -324,7 +329,7 @@ Congrats, you're now inside the Zulip dev environment!
 You can confirm this by looking at the command prompt, which starts with
 `(zulip-venv)`.
 
-Next, start the web server:
+Next, start the Zulip server:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~ $
@@ -360,7 +365,7 @@ webpack: bundle is now VALID.
 2016-05-06 21:43:35,007 INFO     Tornado  23.9% busy over the past 16.0 seconds
 ```
 
-Now the Zulip web server should be running and accessible. Verify this by
+Now the Zulip server should be running and accessible. Verify this by
 navigating to [http://localhost:9991/](http://localhost:9991/) in your browser
 on your main machine.
 
@@ -368,7 +373,7 @@ You should see something like this:
 
 ![Image of Zulip dev environment](/docs/images/zulip-dev.png)
 
-The web server will continue to run and send output to the terminal window.
+The Zulip server will continue to run and send output to the terminal window.
 When you navigate to Zulip in your browser, check your terminal and you
 should see something like:
 
@@ -393,9 +398,10 @@ etc.).
 When you save changes they will be synced automatically to the Zulip dev environment
 on the virtual machine/container.
 
-The dev server will automatically restart itself when you make changes to
-everything except queue workers. So, to see your changes all you usually have
-to do is reload your browser.
+The Zulip server will automatically restart itself when you make changes to
+everything except [queue
+workers](https://zulip.readthedocs.io/en/latest/queuing.html). So, to see your
+changes all you usually have to do is reload your browser.
 
 Don't forget to read through the [code style
 guidelines](https://zulip.readthedocs.io/en/latest/code-style.html#general) for
@@ -468,7 +474,7 @@ Check out the Vagrant documentation to learn more about
 #### Resuming the dev environment
 
 When you're ready to work on Zulip again, run `vagrant up`. You will also need
-to connect to the virtual machine with `vagrant ssh` and re-start the web
+to connect to the virtual machine with `vagrant ssh` and re-start the Zulip
 server:
 
 ```
@@ -478,7 +484,7 @@ $ vagrant ssh
 /srv/zulip/tools/run-dev.py --interface=''
 ```
 
-If you receive errors while starting the dev web server, you may need to
+If you receive errors while starting the Zulip server, you may need to
 re-provision the vagrant machine. Do this with `vagrant reload
 --provision`.
 
@@ -650,7 +656,7 @@ npm WARN optional Skipping failed optional dependency /chokidar/fsevents:
 npm WARN notsup Not compatible with your operating system or architecture: fsevents@1.0.12
 ```
 
-These are just warnings so it is okay to proceed and start the dev server.
+These are just warnings so it is okay to proceed and start the Zulip server.
 
 #### NoMethodError when installing vagrant-lxc plugin (Ubuntu 16.04)
 
@@ -707,7 +713,7 @@ Vagrant and the output is anything but 1000.
 This seems to be caused by Vagrant behavior; for more information, see [the
 vagrant-lxc FAQ entry about shared folder permissions ][lxc-sf].
 
-Installation overview for any platform that supports Vagrant
+Brief installation instructions for Vagrant development environment
 -------------
 
 Start by cloning this repository: `git clone https://github.com/zulip/zulip.git`
