@@ -262,6 +262,7 @@ urls += [
     url(r'^api/v1/external/desk$',          'zerver.views.webhooks.deskdotcom.api_deskdotcom_webhook'),
     url(r'^api/v1/external/freshdesk$',     'zerver.views.webhooks.freshdesk.api_freshdesk_webhook'),
     url(r'^api/v1/external/github$',        'zerver.views.webhooks.github.api_github_landing'),
+    url(r'^api/v1/external/helloworld$',    'zerver.views.webhooks.helloworld.api_helloworld_webhook'),
     url(r'^api/v1/external/ifttt$',         'zerver.views.webhooks.ifttt.api_iftt_app_webhook'),
     url(r'^api/v1/external/jira$',          'zerver.views.webhooks.jira.api_jira_webhook'),
     url(r'^api/v1/external/newrelic$',      'zerver.views.webhooks.newrelic.api_newrelic_webhook'),
