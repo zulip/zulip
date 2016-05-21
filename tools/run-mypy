@@ -18,6 +18,8 @@ docs/conf.py
 tools/deprecated/
 zproject/settings.py
 zproject/test_settings.py
+zproject/urls.py
+zerver/management/commands/makemessages.py
 zerver/migrations/
 zerver/tests/
 """.split()
