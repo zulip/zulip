@@ -88,7 +88,7 @@ You restart Zulip:
 
     su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
-You enable PGroonga by `scripts/setup/disable-pgroonga`:
+You disable PGroonga by `scripts/setup/disable-pgroonga`:
 
     /home/zulip/deployments/current/scripts/setup/disable-pgroonga
 
