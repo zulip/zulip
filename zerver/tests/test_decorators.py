@@ -421,7 +421,7 @@ class InactiveUserTest(AuthedTestCase):
 class TestValidateApiKey(AuthedTestCase):
     def setUp(self):
         self.webhook_bot = get_user_profile_by_email('webhook-bot@zulip.com')
-        self.default_bot = get_user_profile_by_email('hamlet@zulip.com')
+        self.default_bot = get_user_profile_by_email('default-bot@zulip.com')
 
     def test_validate_api_key_if_profile_does_not_exist(self):
         with self.assertRaises(JsonableError):
