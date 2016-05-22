@@ -3043,8 +3043,8 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     return streams
 
 def do_claim_attachments(message):
-    atttachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
-    attachment_url_list = atttachment_url_re.findall(message['message'].content)
+    attachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+    attachment_url_list = attachment_url_re.findall(message['message'].content)
 
     results = []
     for url in attachment_url_list:
