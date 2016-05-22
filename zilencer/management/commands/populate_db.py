@@ -209,6 +209,7 @@ class Command(BaseCommand):
             zulip_realm_bots = [
                 ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
+                ("Zulip Default Bot", "default-bot@zulip.com"),
                 ]
             zulip_realm_bots.extend(all_realm_bots)
             create_users(realms, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
