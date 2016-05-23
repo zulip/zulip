@@ -244,6 +244,12 @@
             <span class="integration-label">Trac</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-transifex">
+         <a class="integration-link integration-transifex" href="#transifex">
+            <img class="integration-logo" src="/static/images/integrations/logos/transifex.png" alt="Transifex logo" />
+            <span class="integration-label">Transifex</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-travis">
          <a class="integration-link integration-travis" href="#travis">
             <img class="integration-logo" src="/static/images/integrations/logos/travis.png" alt="Travis CI logo" />
@@ -1929,6 +1935,34 @@ TOPIC = Taiga</pre>
       result in a Zulip notification using
       the <code>TRAC_NOTIFY_FIELDS</code> setting
       in <code>zulip_trac_config.py</code>.</p>
+    </div>
+
+    <div id="transifex" class="integration-instructions">
+
+      <p>First, create the stream you'd like to use for Transifex
+      notifications, and subscribe all interested parties to this stream. We
+      recommend the name <code>transifex</code>.</p>
+
+      <p>Next, set up a bot for the integration. You'll need the bot's API key
+      to construct a URL for Transifex.</p>
+
+      <p><code>{{ external_api_uri }}/v1/external/transifex?api_key=abcdefgh&amp;stream=transifex</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to.</p>
+
+      <p>Next, in Transifex, go to your project settings page:
+      Project Details → Manage → Edit Project and scroll down to
+      WEB HOOK URL. Paste the URL you constructed into the box and
+      save your changes.</p>
+
+      <p><b>Congratulations! You're done!</b><br />
+          Example message:
+      </p>
+
+      <img class="screenshot" src="/static/images/integrations/transifex/001.png" />
+
     </div>
 
     <div id="travis" class="integration-instructions">
