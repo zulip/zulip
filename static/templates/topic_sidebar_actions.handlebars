@@ -2,7 +2,7 @@
   <li>
     <a class="narrow_to_topic" data-stream-name="{{ stream_name}}" data-topic-name="{{ topic_name }}">
       <i class="icon-vector-bullhorn"></i>
-      Narrow to topic <b>{{ topic_name }}</b>
+      {{#tr this}}Narrow to topic <b>__topic_name__</b>{{/tr}}
     </a>
   </li>
 
@@ -11,7 +11,7 @@
   <li>
     <a href="#" class="sidebar-popover-mute-topic" data-stream-name="{{ stream_name }}" data-topic-name="{{ topic_name }}">
       <i class="icon-vector-eye-close"></i>
-      Mute the topic <b>{{ topic_name }}</b>
+      {{#tr this}}Mute the topic <b>__topic_name__</b>{{/tr}}
     </a>
   </li>
   {{/if}}
@@ -20,14 +20,14 @@
   <li>
     <a href="#" class="sidebar-popover-unmute-topic" data-stream-name="{{ stream_name }}" data-topic-name="{{ topic_name }}">
       <i class="icon-vector-eye-open"></i>
-      Unmute the topic <b>{{ topic_name }}</b>
+      {{#tr this}}Unmute the topic <b>__topic_name__</b>{{/tr}}
     </a>
   </li>
   {{/if}}
   <li>
     <a class="sidebar-popover-mark-topic-read" data-stream-name="{{ stream_name }}" data-topic-name="{{ topic_name }}">
       <i class="icon-vector-book"></i>
-      Mark all messages in <b>{{topic_name}}</b> as read
+      {{#tr this}}Mark all messages in <b>__topic_name__</b> as read{{/tr}}
     </a>
   </li>
 

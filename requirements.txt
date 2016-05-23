@@ -37,6 +37,7 @@ httpretty==0.8.10 # Dependency of moto s3 mock
 idna==2.0
 ipaddress==1.0.7
 ipython==4.1.2
+ipython-genutils==0.1.0 # Needed for ipython
 itsdangerous==0.24  # Dependency of moto s3 mock
 jwt==0.3.2
 mandrill==1.0.57
@@ -45,9 +46,13 @@ modernize==0.5
 moto==0.4.23  # Dependency of moto s3 mock
 oauth2client==1.4.11
 oauthlib==1.0.3
+pathlib2==2.1.0 # Needed for ipython
+pexpect==4.0.1 # Needed for ipython
+pickleshare==0.7.2 # Needed for ipython
 pika==0.10.0
 postmonkey==1.0b0
 psycopg2==2.6
+ptyprocess==0.5.1 # Needed for ipython
 pyOpenSSL==0.15.1
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
@@ -63,6 +68,7 @@ redis==2.10.3
 requests==2.7.0
 requests_oauthlib==0.6.1
 rsa==3.1.4
+simplegeneric==0.8.1 # Needed for ipython
 simplejson==3.7.3
 six==1.9.0
 smmap==0.9.0
@@ -70,6 +76,7 @@ sockjs-tornado==1.0.1
 sourcemap==0.1.8
 sphinx-rtd-theme==0.1.9 # Needed to build docs
 tornado==2.4.1
+traitlets==4.2.1 # Needed for ipython
 transifex-client==0.11 # Needed to sync translations from transifex
 typing==3.5.0.1
 python-twitter==1.1

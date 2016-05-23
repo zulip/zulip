@@ -3,21 +3,21 @@
   {{#if can_edit_message}}
   <li>
     <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">
-      <i class="icon-vector-pencil"></i> Edit
+      <i class="icon-vector-pencil"></i> {{t "Edit" }}
     </a>
   </li>
   {{/if}}
 
   <li>
     <a href="#" class="respond_button">
-      <i class="icon-vector-share-alt"></i> Reply
+      <i class="icon-vector-share-alt"></i> {{t "Reply" }}
     </a>
   </li>
 
   <li>
     <a href="#" class="popover_toggle_collapse" data-msgid="{{message.id}}">
       <i class="{{#if message.collapsed}}icon-vector-plus{{else}}icon-vector-minus{{/if}}"></i>
-        {{#if message.collapsed}}Un-collapse{{else}}Collapse{{/if}}
+        {{#if message.collapsed}}{{t "Un-collapse" }}{{else}}{{t "Collapse" }}{{/if}}
     </a>
   </li>
 
@@ -25,7 +25,7 @@
   <li>
     <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
       <i class="icon-vector-eye-close"></i>
-      Mute the topic <b>{{message.subject}}</b>
+      {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}}
     </a>
   </li>
   {{/if}}
@@ -34,14 +34,14 @@
   <li>
     <a href="#" class="popover_unmute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
       <i class="icon-vector-eye-open"></i>
-      Unmute the topic <b>{{message.subject}}</b>
+      {{#tr message}}Unmute the topic <b>__subject__</b>{{/tr}}
     </a>
   </li>
   {{/if}}
 
   <li>
     <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-msgid="{{message.id}}">
-      <i class="icon-vector-link"></i> Link to this conversation
+      <i class="icon-vector-link"></i> {{t "Link to this conversation" }}
     </a>
   </li>
 

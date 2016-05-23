@@ -73,6 +73,34 @@ Handlebars.registerHelper('if_or', function () {
     return options.inverse(this);
 });
 
+Handlebars.registerHelper('t', function (i18n_key) {
+    // Marks a string for translation.
+    // Example usage:
+    //     {{t "some English text"}}
+    var result = i18n.t(i18n_key);
+    return new Handlebars.SafeString(result);
+});
+
+Handlebars.registerHelper('tr', function (context, options) {
+    // Marks a block for translation.
+    // Example usage 1:
+    //     {{#tr context}}
+    //         <p>some English text</p>
+    //     {{/tr}}
+    //
+    // Example usage 2:
+    //     {{#tr context}}
+    //         <p>This __variable__ will get value from context</p>
+    //     {{/tr}}
+    //
+    // Notes:
+    //     1. `context` is very important. It can be `this` or an
+    //        object or key of the current context.
+    //     2. Use `__` instead of `{{` and `}}` to declare expressions
+    var result = i18n.t(options.fn(context), context);
+    return new Handlebars.SafeString(result);
+});
+
 return exports;
 }());
 if (typeof module !== 'undefined') {

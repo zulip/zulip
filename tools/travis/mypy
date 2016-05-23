@@ -1,8 +1,10 @@
 #!/bin/bash
 
-set -e
-set -x
-if ./tools/run-mypy; then
+echo '+ ./tools/run-mypy'
+./tools/run-mypy
+retcode="$?"
+
+if [ "$retcode" == "0" ]; then
     echo "The mypy static type checker for python detected no errors!"
 else
     echo
@@ -10,4 +12,5 @@ else
     echo "which indicates a bug in your code or incorrect type annotations."
     echo "Please see http://zulip.readthedocs.io/en/latest/mypy.html for details"
     echo "on mypy, how Zulip is using mypy, and how to debug common issues."
+    exit "$retcode"
 fi

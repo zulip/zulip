@@ -4,10 +4,10 @@
 var globals =
     // Third-party libraries
       ' $ _ jQuery Spinner Handlebars XDate zxcvbn Intl Notification'
-    + ' LazyLoad Dropbox SockJS marked'
+    + ' LazyLoad Dropbox SockJS marked i18n'
 
     // Node-based unit tests
-    + ' module'
+    + ' module require'
 
     // Cocoa<-> Javascript bridge
     + ' bridge'
