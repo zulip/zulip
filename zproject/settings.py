@@ -251,6 +251,7 @@ TEMPLATES = [
         ],
         'APP_DIRS': False,
         'OPTIONS': {
+            'debug': DEBUG,
             'environment': 'zproject.jinja2.environment',
             'extensions': [
                 'jinja2.ext.i18n',
