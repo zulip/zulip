@@ -15,6 +15,7 @@
 import sys
 import os
 import shlex
+from typing import Dict, List, Optional
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -29,15 +30,10 @@ import shlex
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []
+extensions = [] # type: List[str]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-
-# The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -64,7 +60,7 @@ release = '0.1'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = None # type: Optional[str]
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -227,7 +223,7 @@ latex_elements = {
 
 # Latex figure (float) alignment
 #'figure_align': 'htbp',
-}
+} # type: Dict[str, str]
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
@@ -300,4 +296,6 @@ source_parsers = {
         '.md': CommonMarkParser,
         }
 
+# The suffix(es) of source filenames.
+# You can specify multiple suffix as a list of string:
 source_suffix = ['.rst', '.md']
