@@ -90,8 +90,7 @@ i18n_urls = [
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 ]
 
-urlpatterns = []
-urlpatterns += patterns('', *i18n_urls)
+urlpatterns = patterns('', *i18n_urls)
 
 # These are used for voyager development. On a real voyager instance,
 # these files would be served by nginx.
