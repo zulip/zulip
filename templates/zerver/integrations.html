@@ -139,6 +139,12 @@
             <span class="integration-label">Hubot</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-ifttt">
+         <a class="integration-link integration-ifttt" href="#ifttt">
+            <img class="integration-logo" src="/static/images/integrations/logos/ifttt.png" alt="IFTTT logo" />
+            <span class="integration-label">IFTTT</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-jenkins">
          <a class="integration-link integration-jenkins" href="#jenkins">
             <img class="integration-logo" src="/static/images/integrations/logos/jenkins.png" alt="Jenkins logo" />
@@ -1179,6 +1185,47 @@
           <li>Still stuck? Email <a href="mailto:zulip-devel@googlegroups.com?subject=Jenkins">zulip-devel@googlegroups.com</a>.</li>
         </ul>
       </p>
+    </div>
+
+   <div id="ifttt" class="integration-instructions">
+      <p>Get notifications from every event supported by IFTTT.</p>
+      <p>First, create the stream you'd like to use for IFTTT notifications,
+          and subscribe all interested parties to this stream.</p>
+
+      <p><code>{{ external_api_uri }}/v1/external/ifttt?api_key=abcdefgh&amp;stream=ifttt</code></p>
+
+      <p>Next, create an IFTTT recipe, picking the service you'd like
+          to receive notifications from as <code>this</code>,
+          and <code>Maker</code> as <code>that</code>.</p>
+      <img class="screenshot" src="/static/images/integrations/ifttt/001.png" />
+      <p>Choose the <code>Make a web request</code> action, and
+      configure it as follows:</p>
+
+      <ul>
+        <li><code>URL</code> is the url we created above</li>
+        <li><code>method</code> is POST</li>
+        <li><code>Content Type</code> is <code>application/json</code></li>
+      </ul>
+      <p>Finally, configure the request body.  You need to construct a JSON
+          object with two parameters: <code>body</code>
+          and <code>subject</code>.<br />
+          Example:
+          <code>{"body": "message content", "subject": "message subject"}</code>
+          <br/>
+          </p>
+          <p>You will most likely want to specify some IFTTT
+            "Ingredients" (click the beaker to see the available
+            options) to customize the subject and body of your
+            messages; the below screenshot uses ingredients available
+            if <code>this</code> is IFTTT's incoming email service.
+          </p>
+      <p>Example configuration:
+        <img class="screenshot" src="/static/images/integrations/ifttt/002.png" />
+      </p>
+
+       <p>You're done! Example message:</p>
+
+      <img class="screenshot" src="/static/images/integrations/ifttt/003.png" />
     </div>
 
    <div id="jira" class="integration-instructions">

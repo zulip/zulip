@@ -1469,3 +1469,13 @@ class UpdownHookTests(WebhookTestCase):
         second_to_last_message = self.get_second_to_last_message()
         self.do_test_subject(second_to_last_message, second_message_expected_subject)
         self.do_test_message(second_to_last_message, second_message_expected_message)
+
+class IFTTTHookTests(WebhookTestCase):
+    STREAM_NAME = 'ifttt'
+    URL_TEMPLATE = "/api/v1/external/ifttt?stream={stream}&api_key={api_key}"
+    FIXTURE_DIR_NAME = 'ifttt'
+
+    def test_ifttt_when_subject_and_body_are_correct(self):
+        expected_subject = u"Email sent from email@email.com"
+        expected_message = u"Email subject: Subject"
+        self.send_and_test_stream_message('correct_subject_and_body', expected_subject, expected_message)
