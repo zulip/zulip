@@ -125,7 +125,7 @@ class Command(makemessages.Command):
         return translation_strings
 
     def get_translation_strings(self):
-        translation_strings = {}
+        translation_strings = {} # type: Dict[str, str]
         dirname = self.get_template_dir()
 
         for filename in os.listdir(dirname):
@@ -149,17 +149,14 @@ class Command(makemessages.Command):
         process_all = self.frontend_all
 
         paths = glob.glob('%s/*' % self.default_locale_path,)
-        locale_dirs = list(filter(os.path.isdir, paths))
-        all_locales = list(map(os.path.basename, locale_dirs))
+        all_locales = [os.path.basename(path) for path in paths if os.path.isdir(path)]
 
         # Account for excluded locales
         if process_all:
-            locales = all_locales
+            return all_locales
         else:
             locales = locale or all_locales
-            locales = set(locales) - set(exclude)
-
-        return locales
+            return set(locales) - set(exclude)
 
     def get_base_path(self):
         return self.frontend_output
