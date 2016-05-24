@@ -10,3 +10,4 @@ set -e
 
 cd "$(dirname "$0")/.."
 find . -name "*.pyc" -exec rm -f {} \;
+find . -name "__pycache__" -prune -exec rm -rf {} \;
