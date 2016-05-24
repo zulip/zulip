@@ -1631,7 +1631,7 @@ def do_change_is_admin(user_profile, value, permission='administer'):
 
 def do_change_bot_type(user_profile, value):
     user_profile.bot_type = value
-    user_profile.save()
+    user_profile.save(update_fields=["bot_type"])
 
 def do_make_stream_public(user_profile, realm, stream_name):
     stream_name = stream_name.strip()
