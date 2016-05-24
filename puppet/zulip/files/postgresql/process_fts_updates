@@ -6,6 +6,8 @@
 # message ID to the `fts_update_log` table.  In the background, this
 # program processes `fts_update_log`, updating the postgres full-text
 # search column search_tsvector in the main zerver_message.
+from __future__ import print_function
+
 import psycopg2
 import psycopg2.extensions
 import select
@@ -77,9 +79,12 @@ cursor.execute("LISTEN fts_update_log;")
 update_fts_columns(cursor)
 
 # TODO: If we go back into recovery, we should stop processing updates
-while True:
-    if select.select([conn], [], [], 30) != ([], [], []):
-        conn.poll()
-        while conn.notifies:
-            conn.notifies.pop()
-            update_fts_columns(cursor)
+try:
+    while True:
+        if select.select([conn], [], [], 30) != ([], [], []):
+            conn.poll()
+            while conn.notifies:
+                conn.notifies.pop()
+                update_fts_columns(cursor)
+except KeyboardInterrupt:
+    print(sys.argv[0], "exited after receiving KeyboardInterrupt")
