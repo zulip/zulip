@@ -2,7 +2,11 @@
 Front End Build Process
 =======================
 
-This page documents additional information that may be useful when developing new features for Zulip that require front-end changes. For a more general overview, see the new feature tutorial. The code style documentation also has relevant information about how Zulip's code is structured.
+This page documents additional information that may be useful when
+developing new features for Zulip that require front-end changes. For
+a more general overview, see the :doc:`new-feature-tutorial`. The
+:doc:`code-style` documentation also has relevant information about
+how Zulip's code is structured.
 
 Primary build process
 =====================
