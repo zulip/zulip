@@ -1,6 +1,6 @@
-====================
-New Feature Tutorial
-====================
+======================================
+How to write a new application feature
+======================================
 
 The changes needed to add a new feature will vary, of course, but this document
 provides a general outline of what you may need to do, as well as an example of

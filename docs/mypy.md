@@ -1,4 +1,4 @@
-# mypy Python static type checker
+# Testing with the mypy Python static type checker
 
 [mypy](http://mypy-lang.org/) is a compile-time static type checker
 for Python, allowing optional, gradual typing of Python code.  Zulip

@@ -1,4 +1,4 @@
-# Integration Writing Guide
+# How to write a new integration
 
 Integrations are one of the most important parts of a group chat tool
 like Zulip, and we are committed to making integrating with Zulip and
