@@ -47,5 +47,9 @@ def run_forever():
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == 'forever':
-        run_forever()
-    run()
+        try:
+            run_forever()
+        except KeyboardInterrupt:
+            print(sys.argv[0], "exited after receiving KeyboardInterrupt")
+    else:
+        run()
