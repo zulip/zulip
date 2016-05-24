@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function
-
 from __future__ import absolute_import
+
 import os
+from os.path import abspath
 import sys
 import subprocess
 import re
@@ -72,9 +73,10 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     for fpath in files:
         # this will take a long time if exclude is very large
         in_exclude = False
+        absfpath = abspath(fpath)
         for expath in exclude:
-            expath = expath.rstrip('/')
-            if fpath == expath or fpath.startswith(expath + '/'):
+            expath = abspath(expath.rstrip('/'))
+            if absfpath == expath or absfpath.startswith(expath + '/'):
                 in_exclude = True
         if in_exclude:
             continue
