@@ -122,7 +122,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=[]):
     print("Using cached Python venv from %s" % (cached_venv_path,))
     run(["sudo", "ln", "-nsf", cached_venv_path, target_venv_path])
     activate_this = os.path.join(target_venv_path, "bin", "activate_this.py")
-    execfile(activate_this, dict(__file__=activate_this))
+    exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
 
 def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # Setup Python virtualenv
@@ -133,7 +133,7 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
 
     # Switch current Python context to the virtualenv.
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
-    execfile(activate_this, dict(__file__=activate_this))
+    exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
 
     run(["pip", "install", "--upgrade", "pip"])
     run(["pip", "install", "--no-deps", "--requirement", requirements_file])

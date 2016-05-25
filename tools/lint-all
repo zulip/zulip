@@ -60,7 +60,6 @@ else:
     logger.setLevel(logging.WARNING)
 
 def check_pyflakes():
-    return False
     if not by_lang['py']:
         return False
     failed = False
