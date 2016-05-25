@@ -512,7 +512,7 @@ exports.restore_home_state = function () {
     if (!ui.home_tab_obscured()) {
         exports.deactivate();
     }
-    maybe_scroll_to_selected();
+    navigate.maybe_scroll_to_selected();
 };
 
 function pick_empty_narrow_banner() {

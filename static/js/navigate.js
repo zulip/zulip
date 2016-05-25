@@ -102,5 +102,18 @@ exports.cycle_stream = function (direction) {
     narrow.by('stream', nextStream.data('name'));
 };
 
+
+exports.maybe_scroll_to_selected = function () {
+    // If we have been previously instructed to re-center to the
+    // selected message, then do so
+    if (pointer.recenter_pointer_on_display) {
+        scroll_to_selected();
+        pointer.recenter_pointer_on_display = false;
+    }
+};
+
+
+
+
 return exports;
 }());

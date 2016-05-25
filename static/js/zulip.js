@@ -56,14 +56,6 @@ function scroll_to_selected() {
     }
 }
 
-function maybe_scroll_to_selected() {
-    // If we have been previously instructed to re-center to the
-    // selected message, then do so
-    if (pointer.recenter_pointer_on_display) {
-        scroll_to_selected();
-        pointer.recenter_pointer_on_display = false;
-    }
-}
 
 function get_private_message_recipient(message, attr, fallback_attr) {
     var recipient, i;
