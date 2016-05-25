@@ -163,6 +163,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/external/teamcity$',      'webhooks.teamcity.api_teamcity_webhook'),
     url(r'^api/v1/external/transifex$',     'webhooks.transifex.api_transifex_webhook'),
     url(r'^api/v1/external/travis$',        'webhooks.travis.api_travis_webhook'),
+    url(r'^api/v1/external/updown$',        'webhooks.updown.api_updown_webhook'),
     url(r'^api/v1/external/yo$',            'webhooks.yo.api_yo_app_webhook'),
     url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
 
