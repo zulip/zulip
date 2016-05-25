@@ -582,7 +582,7 @@ exports.register_click_handlers = function () {
     $('#out-of-view-notification').on('click', '.compose_notification_scroll_to_message', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         current_msg_list.select_id(msgid);
-        scroll_to_selected();
+        navigate.scroll_to_selected();
         e.stopPropagation();
         e.preventDefault();
     });

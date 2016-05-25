@@ -55,7 +55,7 @@ var globals =
     // zulip.js
     + ' home_msg_list current_msg_list'
     + ' respond_to_message recenter_view'
-    + ' scroll_to_selected get_private_message_recipient'
+    + ' get_private_message_recipient'
     + ' process_loaded_for_unread'
     + ' recent_subjects unread_subjects'
     ;

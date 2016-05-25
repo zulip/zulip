@@ -577,7 +577,7 @@ MessageListView.prototype = {
         // autoscroll_forever: if we're on the last message, keep us on the last message
         if (last_message_was_selected && page_params.autoscroll_forever) {
             this.list.select_id(this.list.last().id, {from_rendering: true});
-            scroll_to_selected();
+            navigate.scroll_to_selected();
             this.list.reselect_selected_id();
             return;
         }
@@ -597,7 +597,7 @@ MessageListView.prototype = {
         // autoscroll_forever: if we've sent a message, move pointer at least that far.
         if (page_params.autoscroll_forever && id_of_last_message_sent_by_us > -1 && (rows.last_visible().offset().top - this.list.selected_row().offset().top) < (viewport.height())) {
             this.list.select_id(id_of_last_message_sent_by_us, {from_rendering: true});
-            scroll_to_selected();
+            navigate.scroll_to_selected();
             return;
         }
 

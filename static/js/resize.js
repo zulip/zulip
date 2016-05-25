@@ -254,7 +254,7 @@ exports.handler = function (e) {
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
     if (current_msg_list.selected_id() !== -1) {
-        scroll_to_selected();
+        navigate.scroll_to_selected();
     }
 };
 
