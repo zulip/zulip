@@ -9,32 +9,6 @@ var queued_mark_as_read = [];
 var queued_flag_timer;
 
 
-
-function get_private_message_recipient(message, attr, fallback_attr) {
-    var recipient, i;
-    var other_recipients = _.filter(message.display_recipient,
-                                  function (element) {
-                                      return element.email !== page_params.email;
-                                  });
-    if (other_recipients.length === 0) {
-        // private message with oneself
-        return message.display_recipient[0][attr];
-    }
-
-    recipient = other_recipients[0][attr];
-    if (recipient === undefined && fallback_attr !== undefined) {
-        recipient = other_recipients[0][fallback_attr];
-    }
-    for (i = 1; i < other_recipients.length; i++) {
-        var attr_value = other_recipients[i][attr];
-        if (attr_value === undefined && fallback_attr !== undefined) {
-            attr_value = other_recipients[i][fallback_attr];
-        }
-        recipient += ', ' + attr_value;
-    }
-    return recipient;
-}
-
 function respond_to_message(opts) {
     var message, msg_type;
     // Before initiating a reply to a message, if there's an

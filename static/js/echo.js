@@ -240,7 +240,7 @@ exports.process_from_server = function process_from_server(messages) {
             // so we might have to update the recipient bar and
             // internal data structures
             if (client_message.type === 'private') {
-                var reply_to = get_private_message_recipient(message, 'full_name', 'email');
+                var reply_to = message_store.get_private_message_recipient(message, 'full_name', 'email');
                 if (client_message.display_reply_to !== reply_to) {
                     client_message.display_reply_to = reply_to;
                     _.each(message.display_recipient, function (person) {
