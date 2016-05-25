@@ -16,6 +16,31 @@ exports.get = function get(message_id) {
     return stored_messages[message_id];
 };
 
+exports.get_private_message_recipient = function (message, attr, fallback_attr) {
+    var recipient, i;
+    var other_recipients = _.filter(message.display_recipient,
+                                  function (element) {
+                                      return element.email !== page_params.email;
+                                  });
+    if (other_recipients.length === 0) {
+        // private message with oneself
+        return message.display_recipient[0][attr];
+    }
+
+    recipient = other_recipients[0][attr];
+    if (recipient === undefined && fallback_attr !== undefined) {
+        recipient = other_recipients[0][fallback_attr];
+    }
+    for (i = 1; i < other_recipients.length; i++) {
+        var attr_value = other_recipients[i][attr];
+        if (attr_value === undefined && fallback_attr !== undefined) {
+            attr_value = other_recipients[i][fallback_attr];
+        }
+        recipient += ', ' + attr_value;
+    }
+    return recipient;
+};
+
 exports.process_message_for_recent_subjects = function process_message_for_recent_subjects(message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
@@ -137,8 +162,8 @@ function add_message_metadata(message) {
     case 'private':
         message.is_private = true;
         message.reply_to = util.normalize_recipients(
-                get_private_message_recipient(message, 'email'));
-        message.display_reply_to = get_private_message_recipient(message, 'full_name', 'email');
+                exports.get_private_message_recipient(message, 'email'));
+        message.display_reply_to = exports.get_private_message_recipient(message, 'full_name', 'email');
 
         exports.process_message_for_recent_private_messages(message);
         involved_people = message.display_recipient;
