@@ -18,6 +18,7 @@ import sys
 import os
 import os.path
 import hashlib
+import six
 
 remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
@@ -283,7 +284,7 @@ def active_bot_dicts_in_realm_cache_key(realm):
     return "active_bot_dicts_in_realm:%s" % (realm.id,)
 
 def get_stream_cache_key(stream_name, realm):
-    # type: (str, Any) -> str
+    # type: (six.text_type, Any) -> str
     from zerver.models import Realm
     if isinstance(realm, Realm):
         realm_id = realm.id
