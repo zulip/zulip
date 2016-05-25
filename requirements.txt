@@ -8,11 +8,9 @@ Pillow==2.8.2
 Pygments==2.0.2
 SQLAlchemy==0.7.8
 Werkzeug==0.11.8  # Dependency of moto s3 mock
-South==1.0.2
 Twisted==15.2.1
 alabaster==0.7.8 # Dependency of Sphinx
 apns-client==0.1.8
-argparse==1.2.1
 babel==2.3.4  # Dependency of Sphinx
 boto==2.38.0
 certifi==2015.4.28
@@ -91,6 +89,5 @@ python-twitter==1.1
 ujson==1.33
 uritemplate==0.6
 urllib3==1.15.1 # Dependency of transifex-client
-wsgiref==0.1.2
 xmltodict==0.10.1 # Dependency of moto s3 mock
 zope.interface==4.1.2
