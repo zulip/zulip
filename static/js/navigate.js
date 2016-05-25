@@ -105,7 +105,7 @@ exports.cycle_stream = function (direction) {
 exports.scroll_to_selected = function () {
     var selected_row = current_msg_list.selected_row();
     if (selected_row && (selected_row.length !== 0)) {
-        recenter_view(selected_row);
+        viewport.recenter_view(selected_row);
     }
 };
 

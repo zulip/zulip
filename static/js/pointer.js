@@ -76,7 +76,7 @@ exports.fast_forward_pointer = function () {
 };
 
 exports.keep_pointer_in_view = function () {
-    // See recenter_view() for related logic to keep the pointer onscreen.
+    // See viewport.recenter_view() for related logic to keep the pointer onscreen.
     // This function mostly comes into place for mouse scrollers, and it
     // keeps the pointer in view.  For people who purely scroll with the
     // mouse, the pointer is kind of meaningless to them, but keyboard
