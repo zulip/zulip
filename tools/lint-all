@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 from __future__ import print_function
 from __future__ import absolute_import
 import os
@@ -60,12 +60,14 @@ else:
     logger.setLevel(logging.WARNING)
 
 def check_pyflakes():
+    return False
     if not by_lang['py']:
         return False
     failed = False
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
         stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE)
+        stderr = subprocess.PIPE,
+        universal_newlines = True)
 
     # pyflakes writes some output (like syntax errors) to stderr. :/
     for pipe in (pyflakes.stdout, pyflakes.stderr):
