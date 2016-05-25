@@ -34,6 +34,7 @@ import six
 from six.moves import filter
 from six.moves import map
 from six.moves import range
+from six import unichr
 
 session_engine = import_module(settings.SESSION_ENGINE)
 

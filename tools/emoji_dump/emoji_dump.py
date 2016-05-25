@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import json
 import sys
+from six import unichr
 
 from PIL import Image, ImageDraw, ImageFont
 
