@@ -49,14 +49,6 @@ function recenter_view(message, opts) {
     }
 }
 
-function scroll_to_selected() {
-    var selected_row = current_msg_list.selected_row();
-    if (selected_row && (selected_row.length !== 0)) {
-        recenter_view(selected_row);
-    }
-}
-
-
 function get_private_message_recipient(message, attr, fallback_attr) {
     var recipient, i;
     var other_recipients = _.filter(message.display_recipient,

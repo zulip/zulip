@@ -39,7 +39,7 @@ exports.initialize = function () {
             viewport.scrollTop(scroll_positions[target_tab]);
         } else {
             if (target_tab === '#home') {
-                scroll_to_selected();
+                navigate.scroll_to_selected();
             } else {
                 viewport.scrollTop(0);
             }
