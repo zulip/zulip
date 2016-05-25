@@ -8,11 +8,6 @@ import optparse
 import subprocess
 import traceback
 
-from os          import path
-from collections import defaultdict
-from six.moves import filter
-from six.moves import map
-
 import lister
 
 parser = optparse.OptionParser()
@@ -27,7 +22,7 @@ parser.add_option('--verbose', '-v',
     help='Print verbose timing output')
 (options, args) = parser.parse_args()
 
-os.chdir(path.join(path.dirname(__file__), '..'))
+os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
 
 # Exclude some directories and files from lint checking
