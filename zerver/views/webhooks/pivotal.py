@@ -1,5 +1,8 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+
+from django.utils.translation import ugettext as _
+
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
@@ -153,16 +156,16 @@ def api_pivotal_webhook(request, user_profile, client, stream=REQ()):
     try:
         subject, content = api_pivotal_webhook_v3(request, user_profile, stream)
     except AttributeError:
-        return json_error("Failed to extract data from Pivotal XML response")
+        return json_error(_("Failed to extract data from Pivotal XML response"))
     except:
         # Attempt to parse v5 JSON payload
         try:
             subject, content = api_pivotal_webhook_v5(request, user_profile, stream)
         except AttributeError:
-            return json_error("Failed to extract data from Pivotal V5 JSON response")
+            return json_error(_("Failed to extract data from Pivotal V5 JSON response"))
 
     if subject is None or content is None:
-        return json_error("Unable to handle Pivotal payload")
+        return json_error(_("Unable to handle Pivotal payload"))
 
     check_send_message(user_profile, client, "stream",
                        [stream], subject, content)

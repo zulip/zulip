@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from typing import Any, Optional
 
+from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -56,9 +57,9 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     rejects = []
     for stream_name in stream_set:
         if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            raise JsonableError("Stream name (%s) too long." % (stream_name,))
+            raise JsonableError(_("Stream name (%s) too long.") % (stream_name,))
         if not valid_stream_name(stream_name):
-            raise JsonableError("Invalid stream name (%s)." % (stream_name,))
+            raise JsonableError(_("Invalid stream name (%s).") % (stream_name,))
 
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
@@ -70,9 +71,9 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
             existing_streams.append(stream)
     if rejects:
         if not user_profile.can_create_streams():
-            raise JsonableError('User cannot create streams.')
+            raise JsonableError(_('User cannot create streams.'))
         elif not autocreate:
-            raise JsonableError("Stream(s) (%s) do not exist" % ", ".join(rejects))
+            raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(rejects))
 
         for stream_name in rejects:
             stream, created = create_stream_if_needed(user_profile.realm,
@@ -115,10 +116,10 @@ def principal_to_user_profile(agent, principal):
 def deactivate_stream_backend(request, user_profile, stream_name):
     target = get_stream(stream_name, user_profile.realm)
     if not target:
-        return json_error('No such stream name')
+        return json_error(_('No such stream name'))
 
     if target.invite_only and not subscribed_to_stream(user_profile, target):
-        return json_error('Cannot administer invite-only streams this way')
+        return json_error(_('Cannot administer invite-only streams this way'))
 
     do_deactivate_stream(target)
     return json_success({})
@@ -174,7 +175,7 @@ def update_subscriptions_backend(request, user_profile,
                                  delete=REQ(validator=check_list(check_string), default=[]),
                                  add=REQ(validator=check_list(check_dict([['name', check_string]])), default=[])):
     if not add and not delete:
-        return json_error('Nothing to do. Specify at least one of "add" or "delete".')
+        return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
     json_dict = {} # type: Dict[str, Any]
     for method, items in ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)):
@@ -199,16 +200,16 @@ def remove_subscriptions_backend(request, user_profile,
     if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
         # admin.
-        return json_error("This action requires administrative rights")
+        return json_error(_("This action requires administrative rights"))
 
-    streams, _ = list_to_streams(streams_raw, user_profile)
+    streams, __ = list_to_streams(streams_raw, user_profile)
 
     for stream in streams:
         if removing_someone_else and stream.invite_only and \
                 not subscribed_to_stream(user_profile, stream):
             # Even as an admin, you can't remove other people from an
             # invite-only stream you're not on.
-            return json_error("Cannot administer invite-only streams this way")
+            return json_error(_("Cannot administer invite-only streams this way"))
 
     if principals:
         people_to_unsub = set(principal_to_user_profile(
@@ -271,9 +272,9 @@ def add_subscriptions_backend(request, user_profile,
     for stream in streams_raw:
         stream_name = stream["name"].strip()
         if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            return json_error("Stream name (%s) too long." % (stream_name,))
+            return json_error(_("Stream name (%s) too long.") % (stream_name,))
         if not valid_stream_name(stream_name):
-            return json_error("Invalid stream name (%s)." % (stream_name,))
+            return json_error(_("Invalid stream name (%s).") % (stream_name,))
         stream_names.append(stream_name)
 
     # Enforcement of can_create_streams policy is inside list_to_streams.
@@ -282,13 +283,13 @@ def add_subscriptions_backend(request, user_profile,
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        return json_error("Unable to access stream (%s)." % unauthorized_streams[0].name)
+        return json_error(_("Unable to access stream (%s).") % unauthorized_streams[0].name)
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
     if principals is not None:
         if user_profile.realm.domain == 'mit.edu' and not all(stream.invite_only for stream in streams):
-            return json_error("You can only invite other mit.edu users to invite-only streams.")
+            return json_error(_("You can only invite other mit.edu users to invite-only streams."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
         subscribers = set([user_profile])
@@ -380,7 +381,7 @@ def add_subscriptions_backend(request, user_profile,
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
     stream = get_stream(stream_name, user_profile.realm)
     if stream is None:
-        raise JsonableError("Stream does not exist: %s" % (stream_name,))
+        raise JsonableError(_("Stream does not exist: %s") % (stream_name,))
 
     subscribers = get_subscriber_emails(stream, user_profile)
 
@@ -410,7 +411,7 @@ def json_stream_exists(request, user_profile, stream=REQ(),
 
 def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
     if not valid_stream_name(stream_name):
-        return json_error("Invalid characters in stream name")
+        return json_error(_("Invalid characters in stream name"))
     stream = get_stream(stream_name, user_profile.realm)
     result = {"exists": bool(stream)}
     if stream is not None:
@@ -426,13 +427,13 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
 def get_subscription_or_die(stream_name, user_profile):
     stream = get_stream(stream_name, user_profile.realm)
     if not stream:
-        raise JsonableError("Invalid stream %s" % (stream.name,))
+        raise JsonableError(_("Invalid stream %s") % (stream.name,))
     recipient = get_recipient(Recipient.STREAM, stream.id)
     subscription = Subscription.objects.filter(user_profile=user_profile,
                                                recipient=recipient, active=True)
 
     if not subscription.exists():
-        raise JsonableError("Not subscribed to stream %s" % (stream_name,))
+        raise JsonableError(_("Not subscribed to stream %s") % (stream_name,))
 
     return subscription
 
@@ -455,7 +456,7 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
      {"stream": "devel", "property": "color", "value": "#c2c2c2"}]
     """
     if request.method != "POST":
-        return json_error("Invalid verb")
+        return json_error(_("Invalid verb"))
 
     property_converters = {"color": check_string, "in_home_view": check_bool,
                            "desktop_notifications": check_bool,
@@ -468,7 +469,7 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
         value = change["value"]
 
         if property not in property_converters:
-            return json_error("Unknown subscription property: %s" % (property,))
+            return json_error(_("Unknown subscription property: %s") % (property,))
 
         sub = get_subscription_or_die(stream_name, user_profile)[0]
 

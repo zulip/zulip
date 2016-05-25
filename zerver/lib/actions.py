@@ -5,6 +5,7 @@ from typing import (
     Optional, Sequence, Tuple, TypeVar, Union
 )
 
+from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
@@ -775,16 +776,16 @@ def recipient_for_emails(emails, not_forged_mirror_message,
         try:
             user_profile = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
-            raise ValidationError("Invalid email '%s'" % (email,))
+            raise ValidationError(_("Invalid email '%s'") % (email,))
         if (not user_profile.is_active and not user_profile.is_mirror_dummy) or \
                 user_profile.realm.deactivated:
-            raise ValidationError("'%s' is no longer using Zulip." % (email,))
+            raise ValidationError(_("'%s' is no longer using Zulip.") % (email,))
         recipient_profile_ids.add(user_profile.id)
         normalized_emails.add(user_profile.email)
         realm_domains.add(user_profile.realm.domain)
 
     if not_forged_mirror_message and user_profile.id not in recipient_profile_ids:
-        raise ValidationError("User not authorized for this query")
+        raise ValidationError(_("User not authorized for this query"))
 
     # Prevent cross realm private messages unless it is between only two realms
     # and one of users is a zuliper
@@ -794,9 +795,9 @@ def recipient_for_emails(emails, not_forged_mirror_message,
         admin_realm_admin_emails = {u.email for u in admin_realm.get_admin_users()}
         # We allow settings.CROSS_REALM_BOT_EMAILS for the hardcoded emails for the feedback and notification bots
         if not (normalized_emails & admin_realm_admin_emails or normalized_emails & settings.CROSS_REALM_BOT_EMAILS):
-            raise ValidationError("You can't send private messages outside of your organization.")
+            raise ValidationError(_("You can't send private messages outside of your organization."))
     if len(realm_domains) > 2:
-        raise ValidationError("You can't send private messages outside of your organization.")
+        raise ValidationError(_("You can't send private messages outside of your organization."))
 
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
@@ -867,11 +868,11 @@ def check_send_message(*args, **kwargs):
 def check_stream_name(stream_name):
     # type: (text_type) -> None
     if stream_name == "":
-        raise JsonableError("Stream can't be empty")
+        raise JsonableError(_("Stream can't be empty"))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError("Stream name too long")
+        raise JsonableError(_("Stream name too long"))
     if not valid_stream_name(stream_name):
-        raise JsonableError("Invalid stream name")
+        raise JsonableError(_("Invalid stream name"))
 
 def send_pm_if_empty_stream(sender, stream, stream_name):
     # type: (UserProfile, Stream, text_type) -> None
@@ -927,9 +928,9 @@ def check_message(sender, client, message_type_name, message_to,
         # Use the users default stream
         message_to = [sender.default_sending_stream.name]
     elif len(message_to) == 0:
-        raise JsonableError("Message must have recipients")
+        raise JsonableError(_("Message must have recipients"))
     if len(message_content.strip()) == 0:
-        raise JsonableError("Message must not be empty")
+        raise JsonableError(_("Message must not be empty"))
     message_content = truncate_body(message_content)
 
     if realm is None:
@@ -937,27 +938,27 @@ def check_message(sender, client, message_type_name, message_to,
 
     if message_type_name == 'stream':
         if len(message_to) > 1:
-            raise JsonableError("Cannot send to multiple streams")
+            raise JsonableError(_("Cannot send to multiple streams"))
 
         stream_name = message_to[0].strip()
         check_stream_name(stream_name)
 
         if subject_name is None:
-            raise JsonableError("Missing topic")
+            raise JsonableError(_("Missing topic"))
         subject = subject_name.strip()
         if subject == "":
-            raise JsonableError("Topic can't be empty")
+            raise JsonableError(_("Topic can't be empty"))
         subject = truncate_topic(subject)
         ## FIXME: Commented out temporarily while we figure out what we want
         # if not valid_stream_name(subject):
-        #     return json_error("Invalid subject name")
+        #     return json_error(_("Invalid subject name"))
 
         stream = get_stream(stream_name, realm)
 
         send_pm_if_empty_stream(sender, stream, stream_name)
 
         if stream is None:
-            raise JsonableError("Stream does not exist")
+            raise JsonableError(_("Stream does not exist"))
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
         if not stream.invite_only:
@@ -975,7 +976,7 @@ def check_message(sender, client, message_type_name, message_to,
             pass
         else:
             # All other cases are an error.
-            raise JsonableError("Not authorized to send to stream '%s'" % (stream.name,))
+            raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
 
     elif message_type_name == 'private':
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]
@@ -987,7 +988,7 @@ def check_message(sender, client, message_type_name, message_to,
             assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
     else:
-        raise JsonableError("Invalid message type")
+        raise JsonableError(_("Invalid message type"))
 
     message = Message()
     message.sender = sender
@@ -1003,7 +1004,7 @@ def check_message(sender, client, message_type_name, message_to,
     message.sending_client = client
 
     if not message.maybe_render_content(realm.domain):
-        raise JsonableError("Unable to render message")
+        raise JsonableError(_("Unable to render message"))
 
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)
@@ -1110,11 +1111,11 @@ def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_
         raise ValidationError("Requesting user not on given realm")
 
     if stream_dict["realm__domain"] == "mit.edu" and not stream_dict["invite_only"]:
-        raise JsonableError("You cannot get subscribers for public streams in this realm")
+        raise JsonableError(_("You cannot get subscribers for public streams in this realm"))
 
     if (user_profile is not None and stream_dict["invite_only"] and
         not check_user_subscribed()):
-        raise JsonableError("Unable to retrieve subscribers for invite-only stream")
+        raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))
 
 # sub_dict is a dictionary mapping stream_id => whether the user is subscribed to that stream
 def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
@@ -1642,7 +1643,7 @@ def _default_stream_permision_check(user_profile, stream):
         else:
             user = user_profile
         if stream.invite_only and not subscribed_to_stream(user, stream):
-            raise JsonableError('Insufficient permission')
+            raise JsonableError(_('Insufficient permission'))
 
 def do_change_default_sending_stream(user_profile, stream, log=True):
     # type: (UserProfile, Stream, bool) -> None
@@ -1729,10 +1730,10 @@ def do_make_stream_public(user_profile, realm, stream_name):
     stream = get_stream(stream_name, realm)
 
     if not stream:
-        raise JsonableError('Unknown stream "%s"' % (stream_name,))
+        raise JsonableError(_('Unknown stream "%s"') % (stream_name,))
 
     if not subscribed_to_stream(user_profile, stream):
-        raise JsonableError('You are not invited to this stream.')
+        raise JsonableError(_('You are not invited to this stream.'))
 
     stream.invite_only = False
     stream.save(update_fields=['invite_only'])
@@ -1743,7 +1744,7 @@ def do_make_stream_private(realm, stream_name):
     stream = get_stream(stream_name, realm)
 
     if not stream:
-        raise JsonableError('Unknown stream "%s"' % (stream_name,))
+        raise JsonableError(_('Unknown stream "%s"') % (stream_name,))
 
     stream.invite_only = True
     stream.save(update_fields=['invite_only'])
@@ -1756,13 +1757,13 @@ def do_rename_stream(realm, old_name, new_name, log=True):
     stream = get_stream(old_name, realm)
 
     if not stream:
-        raise JsonableError('Unknown stream "%s"' % (old_name,))
+        raise JsonableError(_('Unknown stream "%s"') % (old_name,))
 
     # Will raise if there's an issue.
     check_stream_name(new_name)
 
     if get_stream(new_name, realm) and old_name.lower() != new_name.lower():
-        raise JsonableError('Stream name "%s" is already taken' % (new_name,))
+        raise JsonableError(_('Stream name "%s" is already taken') % (new_name,))
 
     old_name = stream.name
     stream.name = new_name
@@ -2029,7 +2030,7 @@ def do_remove_default_stream(realm, stream_name):
     # type: (Realm, text_type) -> None
     stream = get_stream(stream_name, realm)
     if stream is None:
-        raise JsonableError("Stream does not exist")
+        raise JsonableError(_("Stream does not exist"))
     DefaultStream.objects.filter(realm=realm, stream=stream).delete()
 
 def get_default_streams_for_realm(realm):
@@ -2210,20 +2211,20 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
         # Hack to let you star any message
         if msgs.count() == 0:
             if not len(messages) == 1:
-                raise JsonableError("Invalid message(s)")
+                raise JsonableError(_("Invalid message(s)"))
             if flag != "starred":
-                raise JsonableError("Invalid message(s)")
+                raise JsonableError(_("Invalid message(s)"))
             # Check that the user could have read the relevant message
             try:
                 message = Message.objects.get(id=messages[0])
             except Message.DoesNotExist:
-                raise JsonableError("Invalid message(s)")
+                raise JsonableError(_("Invalid message(s)"))
             recipient = Recipient.objects.get(id=message.recipient_id)
             if recipient.type != Recipient.STREAM:
-                raise JsonableError("Invalid message(s)")
+                raise JsonableError(_("Invalid message(s)"))
             stream = Stream.objects.select_related("realm").get(id=recipient.type_id)
             if not stream.is_public():
-                raise JsonableError("Invalid message(s)")
+                raise JsonableError(_("Invalid message(s)"))
 
             # OK, this is a message that you legitimately have access
             # to via narrowing to the stream it is on, even though you
@@ -2322,7 +2323,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     try:
         message = Message.objects.select_related().get(id=message_id)
     except Message.DoesNotExist:
-        raise JsonableError("Unknown message id")
+        raise JsonableError(_("Unknown message id"))
 
     event = {'type': 'update_message',
              'sender': user_profile.email,
@@ -2340,7 +2341,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
                                 user_profile.is_realm_admin):
         pass
     else:
-        raise JsonableError("You don't have permission to edit this message")
+        raise JsonableError(_("You don't have permission to edit this message"))
 
     # Set first_rendered_content to be the oldest version of the
     # rendered content recorded; which is the current version if the
@@ -2363,7 +2364,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
         rendered_content = message.render_markdown(content)
 
         if not rendered_content:
-            raise JsonableError("We were unable to render your updated message")
+            raise JsonableError(_("We were unable to render your updated message"))
 
         update_user_message_flags(message, ums)
 
@@ -2386,7 +2387,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
         orig_subject = message.subject
         subject = subject.strip()
         if subject == "":
-            raise JsonableError("Topic can't be empty")
+            raise JsonableError(_("Topic can't be empty"))
         subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
         event["propagate_mode"] = propagate_mode
@@ -2851,7 +2852,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                                    narrow=narrow)
 
     if queue_id is None:
-        raise JsonableError("Could not allocate event queue")
+        raise JsonableError(_("Could not allocate event queue"))
     if event_types is not None:
         event_types_set = set(event_types) # type: Optional[Set[str]]
     else:
@@ -2988,11 +2989,11 @@ def do_invite_users(user_profile, invitee_emails, streams):
         try:
             validators.validate_email(email)
         except ValidationError:
-            errors.append((email, "Invalid address."))
+            errors.append((email, _("Invalid address.")))
             continue
 
         if not email_allowed_for_realm(email, user_profile.realm):
-            errors.append((email, "Outside your domain."))
+            errors.append((email, _("Outside your domain.")))
             continue
 
         try:
@@ -3007,7 +3008,7 @@ def do_invite_users(user_profile, invitee_emails, streams):
                 # Other users should not already exist at all.
                 user_email_is_unique(email)
         except ValidationError:
-            skipped.append((email, "Already has an account."))
+            skipped.append((email, _("Already has an account.")))
             continue
 
         # The logged in user is the referrer.
@@ -3022,12 +3023,12 @@ def do_invite_users(user_profile, invitee_emails, streams):
         new_prereg_users.append(prereg_user)
 
     if errors:
-        ret_error = "Some emails did not validate, so we didn't send any invitations."
+        ret_error = _("Some emails did not validate, so we didn't send any invitations.")
         ret_error_data = {'errors': errors}
 
     if skipped and len(skipped) == len(invitee_emails):
         # All e-mails were skipped, so we didn't actually invite anyone.
-        ret_error = "We weren't able to invite anyone."
+        ret_error = _("We weren't able to invite anyone.")
         ret_error_data = {'errors': skipped}
         return ret_error, ret_error_data
 
@@ -3039,8 +3040,9 @@ def do_invite_users(user_profile, invitee_emails, streams):
                            lambda event: do_send_confirmation_email(user, user_profile))
 
     if skipped:
-        ret_error = "Some of those addresses are already using Zulip, \
-so we didn't send them an invitation. We did send invitations to everyone else!"
+        ret_error = _("Some of those addresses are already using Zulip, "
+                      "so we didn't send them an invitation. We did send "
+                      "invitations to everyone else!")
         ret_error_data = {'errors': skipped}
 
     return ret_error, ret_error_data
@@ -3163,7 +3165,7 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
                    include_all_active=False):
     # type: (UserProfile, bool, bool, bool) -> List[Dict[str, Any]]
     if include_all_active and not user_profile.is_api_super_user:
-        raise JsonableError("User not authorized for this query")
+        raise JsonableError(_("User not authorized for this query"))
 
     # Listing public streams are disabled for the mit.edu realm.
     include_public = include_public and user_profile.realm.domain != "mit.edu"

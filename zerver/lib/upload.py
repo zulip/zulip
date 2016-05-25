@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.template.defaultfilters import slugify
 from django.utils.encoding import force_text
@@ -254,7 +255,7 @@ def claim_attachment(path_id, message):
         attachment.save()
         return True
     except Attachment.DoesNotExist:
-        raise JsonableError("The upload was not successful. Please reupload the file again in a new message.")
+        raise JsonableError(_("The upload was not successful. Please reupload the file again in a new message."))
     return False
 
 def create_attachment(file_name, path_id, user_profile):

@@ -1,5 +1,8 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+
+from django.utils.translation import ugettext as _
+
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_dict
@@ -24,7 +27,7 @@ def api_newrelic_webhook(request, user_profile, client, stream=REQ(),
 
 %(changelog)s""" % (deployment)
     else:
-        return json_error("Unknown webhook request")
+        return json_error(_("Unknown webhook request"))
 
     check_send_message(user_profile, client, "stream",
                        [stream], subject, content)

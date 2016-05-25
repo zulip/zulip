@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.views.decorators.csrf import csrf_exempt
@@ -92,7 +93,7 @@ def require_realm_admin(func):
     @wraps(func)
     def wrapper(request, user_profile, *args, **kwargs):
         if not user_profile.is_realm_admin:
-            raise JsonableError("Must be a realm administrator")
+            raise JsonableError(_("Must be a realm administrator"))
         return func(request, user_profile, *args, **kwargs)
     return wrapper
 
@@ -144,21 +145,22 @@ def validate_api_key(role, api_key):
     try:
         profile = get_deployment_or_userprofile(role)
     except UserProfile.DoesNotExist:
-        raise JsonableError("Invalid user: %s" % (role,))
+        raise JsonableError(_("Invalid user: %s") % (role,))
     except Deployment.DoesNotExist:
-        raise JsonableError("Invalid deployment: %s" % (role,))
+        raise JsonableError(_("Invalid deployment: %s") % (role,))
 
     if api_key != profile.api_key:
         if len(api_key) != 32:
-            reason = "Incorrect API key length (keys should be 32 characters long)"
+            reason = _("Incorrect API key length (keys should be 32 "
+                       "characters long) for role '%s'")
         else:
-            reason = "Invalid API key"
-        raise JsonableError(reason + " for role '%s'" % (role,))
+            reason = _("Invalid API key for role '%s'")
+        raise JsonableError(reason % (role,))
     if not profile.is_active:
-        raise JsonableError("Account not active")
+        raise JsonableError(_("Account not active"))
     try:
         if profile.realm.deactivated:
-            raise JsonableError("Realm for account has been deactivated")
+            raise JsonableError(_("Realm for account has been deactivated"))
     except AttributeError:
         # Deployment objects don't have realms
         pass
@@ -176,11 +178,11 @@ def api_key_only_webhook_view(client_name):
             try:
                 user_profile = UserProfile.objects.get(api_key=api_key)
             except UserProfile.DoesNotExist:
-                raise JsonableError("Invalid API key")
+                raise JsonableError(_("Invalid API key"))
             if not user_profile.is_active:
-                raise JsonableError("Account not active")
+                raise JsonableError(_("Account not active"))
             if user_profile.realm.deactivated:
-                raise JsonableError("Realm for account has been deactivated")
+                raise JsonableError(_("Realm for account has been deactivated"))
 
             request.user = user_profile
             request._email = user_profile.email
@@ -309,10 +311,10 @@ def authenticated_rest_api_view(view_func):
             auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
             # case insensitive per RFC 1945
             if auth_type.lower() != "basic":
-                return json_error("Only Basic authentication is supported.")
+                return json_error(_("Only Basic authentication is supported."))
             role, api_key = base64.b64decode(encoded_value).split(":")
         except ValueError:
-            return json_error("Invalid authorization header for basic auth")
+            return json_error(_("Invalid authorization header for basic auth"))
         except KeyError:
             return json_unauthorized("Missing authorization header for basic auth")
 
@@ -361,12 +363,12 @@ def process_as_post(view_func):
 
 def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if not request.user.is_authenticated():
-        return json_error("Not logged in", status=401)
+        return json_error(_("Not logged in"), status=401)
     user_profile = request.user
     if not user_profile.is_active:
-        raise JsonableError("Account not active")
+        raise JsonableError(_("Account not active"))
     if user_profile.realm.deactivated:
-        raise JsonableError("Realm for account has been deactivated")
+        raise JsonableError(_("Realm for account has been deactivated"))
     process_client(request, user_profile, True)
     request._email = user_profile.email
     return view_func(request, user_profile, *args, **kwargs)
@@ -403,7 +405,7 @@ def internal_notify_view(view_func):
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         if not authenticate_notify(request):
-            return json_error('Access denied', status=403)
+            return json_error(_('Access denied'), status=403)
         if not hasattr(request, '_tornado_handler'):
             # We got called through the non-Tornado server somehow.
             # This is not a security check; it's an internal assertion

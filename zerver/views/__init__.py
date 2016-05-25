@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from typing import Any
 
+from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
 from django.core.urlresolvers import reverse
@@ -267,9 +268,9 @@ from zerver.lib.ccache import make_ccache
 def webathena_kerberos_login(request, user_profile,
                              cred=REQ(default=None)):
     if cred is None:
-        return json_error("Could not find Kerberos credential")
+        return json_error(_("Could not find Kerberos credential"))
     if not user_profile.realm.domain == "mit.edu":
-        return json_error("Webathena login only for mit.edu realm")
+        return json_error(_("Webathena login only for mit.edu realm"))
 
     try:
         parsed_cred = ujson.loads(cred)
@@ -281,7 +282,7 @@ def webathena_kerberos_login(request, user_profile,
         assert(user == user_profile.email.split("@")[0])
         ccache = make_ccache(parsed_cred)
     except Exception:
-        return json_error("Invalid Kerberos cache")
+        return json_error(_("Invalid Kerberos cache"))
 
     # TODO: Send these data via (say) rabbitmq
     try:
@@ -292,7 +293,7 @@ def webathena_kerberos_login(request, user_profile,
                                base64.b64encode(ccache)])
     except Exception:
         logging.exception("Error updating the user's ccache")
-        return json_error("We were unable to setup mirroring for you")
+        return json_error(_("We were unable to setup mirroring for you"))
 
     return json_success()
 
@@ -324,13 +325,13 @@ def api_endpoint_docs(request):
 @has_request_variables
 def json_invite_users(request, user_profile, invitee_emails=REQ()):
     if not invitee_emails:
-        return json_error("You must specify at least one email address.")
+        return json_error(_("You must specify at least one email address."))
 
     invitee_emails = set(re.split(r'[, \n]', invitee_emails))
 
     stream_names = request.POST.getlist('stream')
     if not stream_names:
-        return json_error("You must specify at least one stream for invitees to join.")
+        return json_error(_("You must specify at least one stream for invitees to join."))
 
     # We unconditionally sub you to the notifications stream if it
     # exists and is public.
@@ -342,7 +343,7 @@ def json_invite_users(request, user_profile, invitee_emails=REQ()):
     for stream_name in stream_names:
         stream = get_stream(stream_name, user_profile.realm)
         if stream is None:
-            return json_error("Stream does not exist: %s. No invites were sent." % (stream_name,))
+            return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
         streams.append(stream)
 
     ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
@@ -403,7 +404,7 @@ def remote_user_sso(request):
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
-        raise JsonableError("No REMOTE_USER set.")
+        raise JsonableError(_("No REMOTE_USER set."))
 
     user_profile = authenticate(remote_user=remote_user)
     return login_or_register_remote_user(request, remote_user, user_profile)
@@ -414,16 +415,16 @@ def remote_user_jwt(request):
         json_web_token = request.POST["json_web_token"]
         payload, signing_input, header, signature = jwt.load(json_web_token)
     except KeyError:
-        raise JsonableError("No JSON web token passed in request")
+        raise JsonableError(_("No JSON web token passed in request"))
     except jwt.DecodeError:
-        raise JsonableError("Bad JSON web token")
+        raise JsonableError(_("Bad JSON web token"))
 
     remote_user = payload.get("user", None)
     if remote_user is None:
-        raise JsonableError("No user specified in JSON web token claims")
+        raise JsonableError(_("No user specified in JSON web token claims"))
     domain = payload.get('realm', None)
     if domain is None:
-        raise JsonableError("No domain specified in JSON web token claims")
+        raise JsonableError(_("No domain specified in JSON web token claims"))
 
     email = "%s@%s" % (remote_user, domain)
 
@@ -435,9 +436,9 @@ def remote_user_jwt(request):
         # that the request.backend attribute gets set.
         user_profile = authenticate(username=email, use_dummy_backend=True)
     except (jwt.DecodeError, jwt.ExpiredSignature):
-        raise JsonableError("Bad JSON web token signature")
+        raise JsonableError(_("Bad JSON web token signature"))
     except KeyError:
-        raise JsonableError("Realm not authorized for JWT login")
+        raise JsonableError(_("Realm not authorized for JWT login"))
     except UserProfile.DoesNotExist:
         user_profile = None
 
@@ -918,7 +919,7 @@ def update_pointer_backend(request, user_profile,
             message__id=pointer
         )
     except UserMessage.DoesNotExist:
-        raise JsonableError("Invalid message ID")
+        raise JsonableError(_("Invalid message ID"))
 
     request._log_data["extra"] = "[%s]" % (pointer,)
     update_flags = (request.client.name.lower() in ['android', "zulipandroid"])
@@ -935,7 +936,7 @@ def generate_client_id():
 def export(request, user_profile):
     if (Message.objects.filter(sender__realm=user_profile.realm).count() > 1000000 or
         UserMessage.objects.filter(user_profile__realm=user_profile.realm).count() > 3000000):
-        return json_error("Realm has too much data for non-batched export.")
+        return json_error(_("Realm has too much data for non-batched export."))
 
     response = {}
 
@@ -1039,13 +1040,13 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
 @has_request_variables
 def json_upload_file(request, user_profile):
     if len(request.FILES) == 0:
-        return json_error("You must specify a file to upload")
+        return json_error(_("You must specify a file to upload"))
     if len(request.FILES) != 1:
-        return json_error("You may only upload one file at a time")
+        return json_error(_("You may only upload one file at a time"))
 
     user_file = list(request.FILES.values())[0]
     if ((settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024) < user_file._get_size()):
-        return json_error("File Upload is larger than allowed limit")
+        return json_error(_("File Upload is larger than allowed limit"))
 
     uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
@@ -1064,7 +1065,7 @@ def get_uploaded_file(request, realm_id, filename,
         realm_id = get_realm_for_filename(url_path)
         if realm_id is None:
             # File does not exist
-            return json_error("That file does not exist.", status=404)
+            return json_error(_("That file does not exist."), status=404)
 
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
     if user_profile.realm.id == int(realm_id) or user_profile.realm.domain == 'zulip.com':
@@ -1087,29 +1088,29 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
     else:
         user_profile = authenticate(username=username, password=password, return_data=return_data)
     if return_data.get("inactive_user") == True:
-        return json_error("Your account has been disabled.", data={"reason": "user disable"}, status=403)
+        return json_error(_("Your account has been disabled."), data={"reason": "user disable"}, status=403)
     if return_data.get("inactive_realm") == True:
-        return json_error("Your realm has been deactivated.", data={"reason": "realm deactivated"}, status=403)
+        return json_error(_("Your realm has been deactivated."), data={"reason": "realm deactivated"}, status=403)
     if return_data.get("password_auth_disabled") == True:
-        return json_error("Password auth is disabled in your team.", data={"reason": "password auth disabled"}, status=403)
+        return json_error(_("Password auth is disabled in your team."), data={"reason": "password auth disabled"}, status=403)
     if user_profile is None:
         if return_data.get("valid_attestation") == True:
             # We can leak that the user is unregistered iff they present a valid authentication string for the user.
-            return json_error("This user is not registered; do so from a browser.", data={"reason": "unregistered"}, status=403)
-        return json_error("Your username or password is incorrect.", data={"reason": "incorrect_creds"}, status=403)
+            return json_error(_("This user is not registered; do so from a browser."), data={"reason": "unregistered"}, status=403)
+        return json_error(_("Your username or password is incorrect."), data={"reason": "incorrect_creds"}, status=403)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 @authenticated_json_post_view
 @has_request_variables
 def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     if password_auth_enabled(user_profile.realm) and not user_profile.check_password(password):
-        return json_error("Your username or password is incorrect.")
+        return json_error(_("Your username or password is incorrect."))
     return json_success({"api_key": user_profile.api_key})
 
 @csrf_exempt
 def api_fetch_google_client_id(request):
     if not settings.GOOGLE_CLIENT_ID:
-        return json_error("GOOGLE_CLIENT_ID is not configured", status=400)
+        return json_error(_("GOOGLE_CLIENT_ID is not configured"), status=400)
     return json_success({"google_client_id": settings.GOOGLE_CLIENT_ID})
 
 def get_status_list(requesting_user_profile):
@@ -1121,7 +1122,7 @@ def update_active_status_backend(request, user_profile, status=REQ(),
                                  new_user_input=REQ(validator=check_bool, default=False)):
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
-        raise JsonableError("Invalid presence status: %s" % (status,))
+        raise JsonableError(_("Invalid presence status: %s") % (status,))
     else:
         update_user_presence(user_profile, request.client, now(), status_val,
                              new_user_input)
@@ -1186,9 +1187,9 @@ def events_register_backend(request, user_profile, apply_markdown=True,
 @has_request_variables
 def json_refer_friend(request, user_profile, email=REQ()):
     if not email:
-        return json_error("No email address specified")
+        return json_error(_("No email address specified"))
     if user_profile.invites_granted - user_profile.invites_used <= 0:
-        return json_error("Insufficient invites")
+        return json_error(_("Insufficient invites"))
 
     do_refer_friend(user_profile, email);
 
@@ -1203,7 +1204,7 @@ def json_set_muted_topics(request, user_profile,
 
 def add_push_device_token(request, user_profile, token, kind, ios_app_id=None):
     if token == '' or len(token) > 4096:
-        return json_error('Empty or invalid length token')
+        return json_error(_('Empty or invalid length token'))
 
     # If another user was previously logged in on the same device and didn't
     # properly log out, the token will still be registered to the wrong account
@@ -1230,13 +1231,13 @@ def add_android_reg_id(request, user_profile, token=REQ()):
 
 def remove_push_device_token(request, user_profile, token, kind):
     if token == '' or len(token) > 4096:
-        return json_error('Empty or invalid length token')
+        return json_error(_('Empty or invalid length token'))
 
     try:
         token = PushDeviceToken.objects.get(token=token, kind=kind)
         token.delete()
     except PushDeviceToken.DoesNotExist:
-        return json_error("Token does not exist")
+        return json_error(_("Token does not exist"))
 
     return json_success()
 

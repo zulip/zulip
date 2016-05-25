@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+from django.utils.translation import ugettext as _
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.views import login as django_login_page
@@ -83,7 +85,7 @@ def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dic
     elif type == 'server':
         notify_server_error(report)
     else:
-        return json_error("Invalid type parameter")
+        return json_error(_("Invalid type parameter"))
     return json_success()
 
 def realm_for_email(email):
@@ -102,7 +104,7 @@ def lookup_endpoints_for_user(request, email=REQ()):
     try:
         return json_response(realm_for_email(email).deployment.endpoints)
     except AttributeError:
-        return json_error("Cannot determine endpoint for user.", status=404)
+        return json_error(_("Cannot determine endpoint for user."), status=404)
 
 def account_deployment_dispatch(request, **kwargs):
     sso_unknown_email = False

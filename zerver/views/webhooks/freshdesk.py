@@ -1,5 +1,8 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+
+from django.utils.translation import ugettext as _
+
 from zerver.models import get_client
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
@@ -106,7 +109,7 @@ def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body
         if ticket_data.get(key) is None:
             logging.warning("Freshdesk webhook error. Payload was:")
             logging.warning(request.body)
-            return json_error("Missing key %s in JSON" % (key,))
+            return json_error(_("Missing key %s in JSON") % (key,))
 
     ticket = TicketDict(ticket_data)
 
@@ -115,7 +118,7 @@ def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body
     try:
         event_info = parse_freshdesk_event(ticket.triggered_event)
     except ValueError:
-        return json_error("Malformed event %s" % (ticket.triggered_event,))
+        return json_error(_("Malformed event %s") % (ticket.triggered_event,))
 
     if event_info[1] == "created":
         content = format_freshdesk_ticket_creation_message(ticket)
