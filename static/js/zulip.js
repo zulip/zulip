@@ -9,45 +9,6 @@ var queued_mark_as_read = [];
 var queued_flag_timer;
 
 
-function recenter_view(message, opts) {
-    opts = opts || {};
-
-    // Barnowl-style recentering: if the pointer is too high, move it to
-    // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
-    // See keep_pointer_in_view() in pointer.js for related logic to keep the pointer onscreen.
-
-    var viewport_info = viewport.message_viewport_info();
-    var top_threshold = viewport_info.visible_top;
-
-    var bottom_threshold = viewport_info.visible_top + viewport_info.visible_height;
-
-    var message_top = message.offset().top;
-    var message_height = message.outerHeight(true);
-    var message_bottom = message_top + message_height;
-
-    var is_above = message_top < top_threshold;
-    var is_below = message_bottom > bottom_threshold;
-
-    if (opts.from_scroll) {
-        // If the message you're trying to center on is already in view AND
-        // you're already trying to move in the direction of that message,
-        // don't try to recenter. This avoids disorienting jumps when the
-        // pointer has gotten itself outside the threshold (e.g. by
-        // autoscrolling).
-        if (is_above && viewport.last_movement_direction >= 0) {
-            return;
-        }
-        if (is_below && viewport.last_movement_direction <= 0) {
-            return;
-        }
-    }
-
-    if (is_above || opts.force_center) {
-        viewport.set_message_position(message_top, message_height, viewport_info, 1/2);
-    } else if (is_below) {
-        viewport.set_message_position(message_top, message_height, viewport_info, 1/7);
-    }
-}
 
 function get_private_message_recipient(message, attr, fallback_attr) {
     var recipient, i;

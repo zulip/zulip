@@ -459,7 +459,7 @@ $(function () {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,
                 // just place it in the very center
-                recenter_view(row, {from_scroll: event.from_scroll,
+                viewport.recenter_view(row, {from_scroll: event.from_scroll,
                                     force_center: event.previously_selected === -1});
             }
         }
