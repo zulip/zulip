@@ -102,12 +102,19 @@ exports.cycle_stream = function (direction) {
     narrow.by('stream', nextStream.data('name'));
 };
 
+exports.scroll_to_selected = function () {
+    var selected_row = current_msg_list.selected_row();
+    if (selected_row && (selected_row.length !== 0)) {
+        recenter_view(selected_row);
+    }
+};
+
 
 exports.maybe_scroll_to_selected = function () {
     // If we have been previously instructed to re-center to the
     // selected message, then do so
     if (pointer.recenter_pointer_on_display) {
-        scroll_to_selected();
+        exports.scroll_to_selected();
         pointer.recenter_pointer_on_display = false;
     }
 };
