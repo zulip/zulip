@@ -10,7 +10,7 @@ function go_to_row(row) {
 }
 
 exports.up = function () {
-    last_viewport_movement_direction = -1;
+    viewport.last_movement_direction = -1;
     var next_row = rows.prev_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
@@ -18,7 +18,7 @@ exports.up = function () {
 };
 
 exports.down = function (with_centering) {
-    last_viewport_movement_direction = 1;
+    viewport.last_movement_direction = 1;
     var next_row = rows.next_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
@@ -36,7 +36,7 @@ exports.down = function (with_centering) {
 };
 
 exports.to_home = function () {
-    last_viewport_movement_direction = -1;
+    viewport.last_movement_direction = -1;
     var next_row = rows.first_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
@@ -45,7 +45,7 @@ exports.to_home = function () {
 
 exports.to_end = function () {
     var next_id = current_msg_list.last().id;
-    last_viewport_movement_direction = 1;
+    viewport.last_movement_direction = 1;
     current_msg_list.select_id(next_id, {then_scroll: true,
                                          from_scroll: true});
     unread.mark_current_list_as_read();

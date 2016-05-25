@@ -324,7 +324,7 @@ $(function () {
             }
         }
 
-        last_viewport_movement_direction = delta;
+        viewport.last_movement_direction = delta;
     });
 
     viewport.message_pane.mousewheel(function (e, delta) {

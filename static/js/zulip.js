@@ -8,9 +8,6 @@ var recent_subjects = new Dict({fold_case: true});
 var queued_mark_as_read = [];
 var queued_flag_timer;
 
-// Includes both scroll and arrow events. Negative means scroll up,
-// positive means scroll down.
-var last_viewport_movement_direction = 1;
 
 function recenter_view(message, opts) {
     opts = opts || {};
@@ -37,10 +34,10 @@ function recenter_view(message, opts) {
         // don't try to recenter. This avoids disorienting jumps when the
         // pointer has gotten itself outside the threshold (e.g. by
         // autoscrolling).
-        if (is_above && last_viewport_movement_direction >= 0) {
+        if (is_above && viewport.last_movement_direction >= 0) {
             return;
         }
-        if (is_below && last_viewport_movement_direction <= 0) {
+        if (is_below && viewport.last_movement_direction <= 0) {
             return;
         }
     }
