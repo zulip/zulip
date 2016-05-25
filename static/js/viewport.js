@@ -5,6 +5,11 @@ var jwindow;
 var dimensions = {};
 var in_stoppable_autoscroll = false;
 
+
+// Includes both scroll and arrow events. Negative means scroll up,
+// positive means scroll down.
+exports.last_movement_direction = 1;
+
 exports.at_top = function () {
     return (exports.scrollTop() <= 0);
 };
