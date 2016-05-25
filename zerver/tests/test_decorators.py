@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
+from django.utils.translation import ugettext as _
 
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user
@@ -25,7 +26,7 @@ class DecoratorTestCase(TestCase):
             if not isinstance(lst, list):
                 raise ValueError('not a list')
             if 13 in lst:
-                raise JsonableError('13 is an unlucky number!')
+                raise JsonableError(_('13 is an unlucky number!'))
             return lst
 
         @has_request_variables

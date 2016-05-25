@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -81,7 +82,7 @@ class BadNarrowOperator(JsonableError):
         self.status_code = status_code
 
     def to_json_error_msg(self):
-        return 'Invalid narrow operator: ' + self.desc
+        return _('Invalid narrow operator: {}').format(self.desc)
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder(object):
@@ -352,7 +353,7 @@ def narrow_parameter(json):
 
 def is_public_stream(stream, realm):
     if not valid_stream_name(stream):
-        raise JsonableError("Invalid stream name")
+        raise JsonableError(_("Invalid stream name"))
     stream = get_stream(stream, realm)
     if stream is None:
         return False
@@ -615,14 +616,14 @@ def update_message_flags(request, user_profile,
     if stream_name is not None:
         stream = get_stream(stream_name, user_profile.realm)
         if not stream:
-            raise JsonableError('No such stream \'%s\'' % (stream_name,))
+            raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
         if topic_name:
             topic_exists = UserMessage.objects.filter(user_profile=user_profile,
                                                       message__recipient__type_id=stream.id,
                                                       message__recipient__type=Recipient.STREAM,
                                                       message__subject__iexact=topic_name).exists()
             if not topic_exists:
-                raise JsonableError('No such topic \'%s\'' % (topic_name,))
+                raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
     do_update_message_flags(user_profile, operation, flag, messages, all, stream, topic_name)
     return json_success({'result': 'success',
                          'messages': messages,
@@ -726,17 +727,17 @@ def send_message_backend(request, user_profile,
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
-        return json_error("User not authorized for this query")
+        return json_error(_("User not authorized for this query"))
 
     realm = None
     if domain and domain != user_profile.realm.domain:
         if not is_super_user:
             # The email gateway bot needs to be able to send messages in
             # any realm.
-            return json_error("User not authorized for this query")
+            return json_error(_("User not authorized for this query"))
         realm = get_realm(domain)
         if not realm:
-            return json_error("Unknown domain " + domain)
+            return json_error(_("Unknown domain %s") % (domain,))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
@@ -756,18 +757,18 @@ def send_message_backend(request, user_profile,
         # same-realm constraint) and recipient_for_emails (which
         # checks that PMs are received by the forwarding user)
         if "sender" not in request.POST:
-            return json_error("Missing sender")
+            return json_error(_("Missing sender"))
         if message_type_name != "private" and not is_super_user:
-            return json_error("User not authorized for this query")
+            return json_error(_("User not authorized for this query"))
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user_profile, message_to)
         if not valid_input:
-            return json_error("Invalid mirrored message")
+            return json_error(_("Invalid mirrored message"))
         if client.name == "zephyr_mirror" and user_profile.realm.domain != "mit.edu":
-            return json_error("Invalid mirrored realm")
+            return json_error(_("Invalid mirrored realm"))
         if (client.name == "irc_mirror" and message_type_name != "private" and
             not message_to[0].startswith("#")):
-            return json_error("IRC stream names must start with #")
+            return json_error(_("IRC stream names must start with #"))
         sender = mirror_sender
     else:
         sender = user_profile
@@ -790,7 +791,7 @@ def update_message_backend(request, user_profile,
                            propagate_mode=REQ(default="change_one"),
                            content=REQ(default=None)):
     if subject is None and content is None:
-        return json_error("Nothing to change")
+        return json_error(_("Nothing to change"))
     do_update_message(user_profile, message_id, subject, propagate_mode, content)
     return json_success()
 
@@ -801,10 +802,10 @@ def json_fetch_raw_message(request, user_profile,
     try:
         message = Message.objects.get(id=message_id)
     except Message.DoesNotExist:
-        return json_error("No such message")
+        return json_error(_("No such message"))
 
     if message.sender != user_profile:
-        return json_error("Message was not sent by you")
+        return json_error(_("Message was not sent by you"))
 
     return json_success({"raw_content": message.content})
 

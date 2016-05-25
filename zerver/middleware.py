@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.utils.translation import ugettext as _
+
 from zerver.lib.response import json_error
 from django.db import connection
 from zerver.lib.utils import statsd
@@ -264,7 +266,7 @@ class JsonErrorHandler(object):
             return json_error(exception.to_json_error_msg(), status=status_code)
         if request.error_format == "JSON":
             logging.error(traceback.format_exc())
-            return json_error("Internal server error", status=500)
+            return json_error(_("Internal server error"), status=500)
         return None
 
 class TagRequests(object):
@@ -278,7 +280,7 @@ class TagRequests(object):
 
 def csrf_failure(request, reason=""):
     if request.error_format == "JSON":
-        return json_error("CSRF Error: %s" % (reason,), status=403)
+        return json_error(_("CSRF Error: %s") % (reason,), status=403)
     else:
         return html_csrf_failure(request, reason)
 
@@ -299,7 +301,7 @@ class RateLimitMiddleware(object):
 
     def process_exception(self, request, exception):
         if isinstance(exception, RateLimited):
-            resp = json_error("API usage exceeded rate limit, try again in %s secs" % (request._ratelimit_secs_to_freedom,), status=429)
+            resp = json_error(_("API usage exceeded rate limit, try again in %s secs") % (request._ratelimit_secs_to_freedom,), status=429)
             resp['Retry-After'] = request._ratelimit_secs_to_freedom
             return resp
 

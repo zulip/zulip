@@ -26,21 +26,22 @@ To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 '''
 from __future__ import absolute_import
+from django.utils.translation import ugettext as _
 import six
 
 def check_string(var_name, val):
     if not isinstance(val, six.string_types):
-        return '%s is not a string' % (var_name,)
+        return _('%s is not a string') % (var_name,)
     return None
 
 def check_int(var_name, val):
     if not isinstance(val, int):
-        return '%s is not an integer' % (var_name,)
+        return _('%s is not an integer') % (var_name,)
     return None
 
 def check_bool(var_name, val):
     if not isinstance(val, bool):
-        return '%s is not a boolean' % (var_name,)
+        return _('%s is not a boolean') % (var_name,)
     return None
 
 def check_none_or(sub_validator):
@@ -54,10 +55,11 @@ def check_none_or(sub_validator):
 def check_list(sub_validator, length=None):
     def f(var_name, val):
         if not isinstance(val, list):
-            return '%s is not a list' % (var_name,)
+            return _('%s is not a list') % (var_name,)
 
         if length is not None and length != len(val):
-            return '%s should have exactly %d items' % (var_name, length)
+            return (_('%(container)s should have exactly %(length)s items') %
+                    {'container': var_name, 'length': length})
 
         if sub_validator:
             for i, item in enumerate(val):
@@ -75,11 +77,12 @@ def check_dict(required_keys):
 
     def f(var_name, val):
         if not isinstance(val, dict):
-            return '%s is not a dict' % (var_name,)
+            return _('%s is not a dict') % (var_name,)
 
         for k, sub_validator in required_keys:
             if k not in val:
-                return '%s key is missing from %s' % (k, var_name)
+                return (_('%(key_name)s key is missing from %(var_name)s') %
+                        {'key_name': k, 'var_name': var_name})
             vname = '%s["%s"]' % (var_name, k)
             error = sub_validator(vname, val[k])
             if error:
@@ -101,12 +104,15 @@ def check_variable_type(allowed_type_funcs):
         for func in allowed_type_funcs:
             if not func(var_name, val):
                 return None
-        return '%s is not an allowed_type' % (var_name,)
+        return _('%s is not an allowed_type') % (var_name,)
     return enumerated_type_check
 
 def equals(expected_val):
     def f(var_name, val):
         if val != expected_val:
-            return '%s != %r (%r is wrong)' % (var_name, expected_val, val)
+            return (_('%(variable)s != %(expected_value)s (%(value)s is wrong)') %
+                    {'variable': var_name,
+                     'expected_value': expected_val,
+                     'value': val})
         return None
     return f

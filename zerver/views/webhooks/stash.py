@@ -1,5 +1,8 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+
+from django.utils.translation import ugettext as _
+
 from zerver.models import get_client
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
@@ -23,7 +26,7 @@ def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'),
                        entry in commit_entries]
         head_ref = commit_entries[-1]["toCommit"]["displayId"]
     except KeyError as e:
-        return json_error("Missing key %s in JSON" % (e.message,))
+        return json_error(_("Missing key %s in JSON") % (e.message,))
 
     subject = "%s/%s: %s" % (project_name, repo_name, branch_name)
 

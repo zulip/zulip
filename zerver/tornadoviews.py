@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from zerver.models import get_client
 
@@ -30,9 +31,9 @@ def notify(request):
 def cleanup_event_queue(request, user_profile, queue_id=REQ()):
     client = get_client_descriptor(queue_id)
     if client is None:
-        return json_error("Bad event queue id: %s" % (queue_id,))
+        return json_error(_("Bad event queue id: %s") % (queue_id,))
     if user_profile.id != client.user_profile_id:
-        return json_error("You are not authorized to access this queue")
+        return json_error(_("You are not authorized to access this queue"))
     request._log_data['extra'] = "[%s]" % (queue_id,)
     client.cleanup()
     return json_success()

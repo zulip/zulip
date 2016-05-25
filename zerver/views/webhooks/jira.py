@@ -1,5 +1,7 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+
+from django.utils.translation import ugettext as _
 from django.db.models import Q
 from django.conf import settings
 
@@ -167,7 +169,7 @@ def api_jira_webhook(request, user_profile, client,
                 logging.warning("Got JIRA event with None event type: %s" % (payload,))
             else:
                 logging.warning("Got JIRA event type we don't understand: %s" % (event,))
-        return json_error("Unknown JIRA event type")
+        return json_error(_("Unknown JIRA event type"))
 
     check_send_message(user_profile, client, "stream",
                        [stream], subject, content)

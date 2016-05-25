@@ -3,6 +3,8 @@ from functools import wraps
 import ujson
 from six.moves import zip
 
+from django.utils.translation import ugettext as _
+
 class JsonableError(Exception):
     def __init__(self, error, status_code=400):
         self.error = error
@@ -20,7 +22,7 @@ class RequestVariableMissingError(JsonableError):
         self.status_code = status_code
 
     def to_json_error_msg(self):
-        return "Missing '%s' argument" % (self.var_name,)
+        return _("Missing '%s' argument") % (self.var_name,)
 
 class RequestVariableConversionError(JsonableError):
     def __init__(self, var_name, bad_value, status_code=400):
@@ -29,7 +31,8 @@ class RequestVariableConversionError(JsonableError):
         self.status_code = status_code
 
     def to_json_error_msg(self):
-        return "Bad value for '%s': %s" % (self.var_name, self.bad_value)
+        return (_("Bad value for '%(var_name)s': %(value)s") %
+                {'var_name': self.var_name, 'value': self.bad_value})
 
 # Used in conjunction with @has_request_variables, below
 class REQ(object):
@@ -69,7 +72,7 @@ class REQ(object):
         self.argument_type = argument_type
 
         if converter and validator:
-            raise Exception('converter and validator are mutually exclusive')
+            raise Exception(_('converter and validator are mutually exclusive'))
 
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
@@ -117,12 +120,12 @@ def has_request_variables(view_func):
                 try:
                     val = ujson.loads(request.body)
                 except ValueError:
-                    raise JsonableError('Malformed JSON')
+                    raise JsonableError(_('Malformed JSON'))
                 kwargs[param.func_var_name] = val
                 continue
             elif param.argument_type is not None:
                 # This is a view bug, not a user error, and thus should throw a 500.
-                raise Exception("Invalid argument type")
+                raise Exception(_("Invalid argument type"))
 
             default_assigned = False
             try:
@@ -146,7 +149,7 @@ def has_request_variables(view_func):
                 try:
                     val = ujson.loads(val)
                 except:
-                    raise JsonableError('argument "%s" is not valid json.' % (param.post_var_name,))
+                    raise JsonableError(_('argument "%s" is not valid json.') % (param.post_var_name,))
 
                 error = param.validator(param.post_var_name, val)
                 if error:

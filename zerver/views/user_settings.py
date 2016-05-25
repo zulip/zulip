@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
@@ -56,9 +57,9 @@ def json_change_settings(request, user_profile,
                          confirm_password=REQ(default="")):
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
-            return json_error("New password must match confirmation password!")
+            return json_error(_("New password must match confirmation password!"))
         if not authenticate(username=user_profile.email, password=old_password):
-            return json_error("Wrong password!")
+            return json_error(_("Wrong password!"))
         do_change_password(user_profile, new_password)
 
     result = {}
@@ -70,7 +71,7 @@ def json_change_settings(request, user_profile,
         else:
             new_full_name = full_name.strip()
             if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
-                return json_error("Name too long!")
+                return json_error(_("Name too long!"))
             do_change_full_name(user_profile, new_full_name)
             result['full_name'] = new_full_name
 
@@ -165,7 +166,7 @@ def json_change_notify_settings(request, user_profile,
 @authenticated_json_post_view
 def json_set_avatar(request, user_profile):
     if len(request.FILES) != 1:
-        return json_error("You must upload exactly one avatar.")
+        return json_error(_("You must upload exactly one avatar."))
 
     user_file = list(request.FILES.values())[0]
     upload_avatar_image(user_file, user_profile, user_profile.email)
