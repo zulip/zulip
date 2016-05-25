@@ -416,6 +416,9 @@ class AuthedTestCase(TestCase):
         # type: () -> Message
         return Message.objects.latest('id')
 
+    def get_second_to_last_message(self):
+        return Message.objects.all().order_by('-id')[1]
+
 def get_all_templates():
     # type: () -> List[str]
     templates = []
