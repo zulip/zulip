@@ -218,7 +218,7 @@ $(function () {
         narrow.deactivate();
         // We need to maybe scroll to the selected message
         // once we have the proper viewport set up
-        setTimeout(maybe_scroll_to_selected, 0);
+        setTimeout(navigate.maybe_scroll_to_selected, 0);
         e.preventDefault();
     });
 
@@ -229,7 +229,7 @@ $(function () {
         } else {
             narrow.restore_home_state();
         }
-        maybe_scroll_to_selected();
+        navigate.maybe_scroll_to_selected();
         e.preventDefault();
     });
 

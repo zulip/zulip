@@ -57,7 +57,6 @@ var globals =
     + ' respond_to_message recenter_view'
     + ' scroll_to_selected get_private_message_recipient'
     + ' process_loaded_for_unread'
-    + ' maybe_scroll_to_selected'
     + ' recent_subjects unread_subjects'
     ;
 
