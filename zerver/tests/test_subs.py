@@ -442,7 +442,7 @@ class DefaultStreamTest(AuthedTestCase):
     def test_set_default_streams(self):
         (realm, _) = do_create_realm("testrealm.com", "Test Realm")
         stream_names = ['apple', 'banana', 'Carrot Cake']
-        expected_names = stream_names + ['zulip']
+        expected_names = stream_names + ['announce']
         set_default_streams(realm, stream_names)
         stream_names = self.get_default_stream_names(realm)
         self.assertEqual(stream_names, set(expected_names))
