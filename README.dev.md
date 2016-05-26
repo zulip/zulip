@@ -330,7 +330,7 @@ Finally continue with the All Systems instructions below.
 
 ```
 pip install --no-deps -r requirements.txt
-./tools/install-phantomjs
+./tools/setup/install-phantomjs
 ./tools/install-mypy
 ./tools/setup/download-zxcvbn
 ./tools/emoji_dump/build_emoji
