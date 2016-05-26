@@ -219,7 +219,7 @@ class Command(BaseCommand):
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
-                zulip_stream_list = ["devel", "all", "zulip", "design", "support", "social", "test",
+                zulip_stream_list = ["devel", "all", "announce", "design", "support", "social", "test",
                                       "errors", "sales"]
                 create_streams(realms, zulip_realm, zulip_stream_list)
 
