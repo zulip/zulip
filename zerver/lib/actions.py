@@ -331,7 +331,6 @@ def do_set_realm_name(realm, name):
         value=name,
     )
     send_event(event, active_user_ids(realm))
-    return {}
 
 def do_set_realm_restricted_to_domain(realm, restricted):
     realm.restricted_to_domain = restricted
@@ -343,7 +342,6 @@ def do_set_realm_restricted_to_domain(realm, restricted):
         value=restricted,
     )
     send_event(event, active_user_ids(realm))
-    return {}
 
 def do_set_realm_invite_required(realm, invite_required):
     realm.invite_required = invite_required
@@ -355,7 +353,6 @@ def do_set_realm_invite_required(realm, invite_required):
         value=invite_required,
     )
     send_event(event, active_user_ids(realm))
-    return {}
 
 def do_set_realm_invite_by_admins_only(realm, invite_by_admins_only):
     realm.invite_by_admins_only = invite_by_admins_only
@@ -367,7 +364,6 @@ def do_set_realm_invite_by_admins_only(realm, invite_by_admins_only):
         value=invite_by_admins_only,
     )
     send_event(event, active_user_ids(realm))
-    return {}
 
 def do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_only):
     realm.create_stream_by_admins_only = create_stream_by_admins_only
@@ -379,7 +375,6 @@ def do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_onl
         value=create_stream_by_admins_only,
     )
     send_event(event, active_user_ids(realm))
-    return {}
 
 def do_deactivate_realm(realm):
     """
@@ -1644,7 +1639,6 @@ def do_make_stream_public(user_profile, realm, stream_name):
 
     stream.invite_only = False
     stream.save(update_fields=['invite_only'])
-    return {}
 
 def do_make_stream_private(realm, stream_name):
     stream_name = stream_name.strip()
@@ -1655,7 +1649,6 @@ def do_make_stream_private(realm, stream_name):
 
     stream.invite_only = True
     stream.save(update_fields=['invite_only'])
-    return {}
 
 def do_rename_stream(realm, old_name, new_name, log=True):
     old_name = old_name.strip()
@@ -1738,7 +1731,6 @@ def do_change_stream_description(realm, stream_name, new_description):
                  property='description', name=stream_name,
                  value=new_description)
     send_event(event, stream_user_ids(stream))
-    return {}
 
 def do_create_realm(domain, name, restricted_to_domain=True):
     realm = get_realm(domain)
@@ -1915,17 +1907,14 @@ def set_default_streams(realm, stream_names):
 
 def do_add_default_stream(realm, stream_name):
     stream, _ = create_stream_if_needed(realm, stream_name)
-    if DefaultStream.objects.filter(realm=realm, stream=stream).exists():
-        return {}
-    DefaultStream.objects.create(realm=realm, stream=stream)
-    return {}
+    if not DefaultStream.objects.filter(realm=realm, stream=stream).exists():
+        DefaultStream.objects.create(realm=realm, stream=stream)
 
 def do_remove_default_stream(realm, stream_name):
     stream = get_stream(stream_name, realm)
     if stream is None:
         raise JsonableError("Stream does not exist")
     DefaultStream.objects.filter(realm=realm, stream=stream).delete()
-    return {}
 
 def get_default_streams_for_realm(realm):
     return [default.stream for default in
