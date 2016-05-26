@@ -3034,14 +3034,14 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     return streams
 
 def do_claim_attachments(message):
-    attachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+    attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
     attachment_url_list = attachment_url_re.findall(message['message'].content)
 
     results = []
     for url in attachment_url_list:
-        path_id = re.sub('[/\-]user[\-_]uploads[/\.-]', '', url)
+        path_id = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', url)
         # Remove any extra '.' after file extension. These are probably added by the user
-        path_id = re.sub('[.]+$', '', path_id, re.M)
+        path_id = re.sub(u'[.]+$', u'', path_id, re.M)
 
         if path_id is not None:
             is_claimed = claim_attachment(path_id, message['message'])
