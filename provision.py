@@ -183,7 +183,7 @@ def main():
     run(["scripts/setup/configure-rabbitmq"])
     run(["tools/postgres-init-dev-db"])
     run(["tools/do-destroy-rebuild-database"])
-    run(["tools/postgres-init-test-db"])
+    run(["tools/setup/postgres-init-test-db"])
     run(["tools/do-destroy-rebuild-test-database"])
     run(["python", "./manage.py", "compilemessages"])
     # Install the latest npm.
