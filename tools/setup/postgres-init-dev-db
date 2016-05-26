@@ -22,7 +22,7 @@ VAGRANTUSERNAME=$(whoami)
 
 if [[ $# == 0 ]]; then
     USERNAME=zulip
-    PASSWORD=$("$(dirname "$0")/../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
+    PASSWORD=$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
     DBNAME=zulip
     SEARCH_PATH="$USERNAME",public
 elif [[ $# == 4 ]]; then
@@ -60,7 +60,7 @@ else
 fi
 chmod go-rw ~/.pgpass
 
-"$(dirname "$0")/../scripts/setup/terminate-psql-sessions" "$USERNAME" "$DBNAME" "$DBNAME_BASE"
+"$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" "$USERNAME" "$DBNAME" "$DBNAME_BASE"
 
 psql -h localhost postgres "$USERNAME" <<EOF
 DROP DATABASE IF EXISTS $DBNAME;
@@ -80,7 +80,7 @@ psql -h localhost postgres "$USERNAME" <<EOF
 CREATE DATABASE $DBNAME TEMPLATE $DBNAME_BASE;
 EOF
 
-sh "$(dirname "$0")/../scripts/setup/flush-memcached"
+sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
 
 echo "Database created"
 
