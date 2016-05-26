@@ -181,7 +181,7 @@ def main():
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
     run(["scripts/setup/configure-rabbitmq"])
-    run(["tools/postgres-init-dev-db"])
+    run(["tools/setup/postgres-init-dev-db"])
     run(["tools/do-destroy-rebuild-database"])
     run(["tools/setup/postgres-init-test-db"])
     run(["tools/do-destroy-rebuild-test-database"])
