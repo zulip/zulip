@@ -108,7 +108,7 @@ def bot_owner_userids(user_profile):
         user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only or
         user_profile.default_events_register_stream and user_profile.default_events_register_stream.invite_only)
     if is_private_bot:
-        return (user_profile.bot_owner_id,)
+        return (user_profile.bot_owner_id,) # TODO: change this to list instead of tuple
     else:
         return active_user_ids(user_profile.realm)
 
@@ -290,7 +290,7 @@ def user_sessions(user_profile):
             if get_session_user(s) == user_profile.id]
 
 def delete_session(session):
-    return session_engine.SessionStore(session.session_key).delete()
+    session_engine.SessionStore(session.session_key).delete()
 
 def delete_user_sessions(user_profile):
     for session in Session.objects.all():
@@ -474,8 +474,6 @@ def do_deactivate_stream(stream, log=True):
         event = dict(type="stream", op="delete",
                      streams=[stream_dict])
         send_event(event, active_user_ids(stream.realm))
-
-    return
 
 def do_change_user_email(user_profile, new_email):
     old_email = user_profile.email
@@ -1034,7 +1032,7 @@ def validate_user_access_to_subscribers(user_profile, stream):
         * The stream is invite only, requesting_user is passed, and that user
           does not subscribe to the stream.
     """
-    return validate_user_access_to_subscribers_helper(
+    validate_user_access_to_subscribers_helper(
         user_profile,
         {"realm__domain": stream.realm.domain,
          "realm_id": stream.realm_id,
