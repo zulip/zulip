@@ -124,30 +124,35 @@ def deactivate_stream_backend(request, user_profile, stream_name):
 @require_realm_admin
 @has_request_variables
 def add_default_stream(request, user_profile, stream_name=REQ):
-    return json_success(do_add_default_stream(user_profile.realm, stream_name))
+    do_add_default_stream(user_profile.realm, stream_name)
+    return json_success()
 
 @require_realm_admin
 @has_request_variables
 def remove_default_stream(request, user_profile, stream_name=REQ):
-    return json_success(do_remove_default_stream(user_profile.realm, stream_name))
+    do_remove_default_stream(user_profile.realm, stream_name)
+    return json_success()
 
 @authenticated_json_post_view
 @require_realm_admin
 @has_request_variables
 def json_rename_stream(request, user_profile, old_name=REQ, new_name=REQ):
-    return json_success(do_rename_stream(user_profile.realm, old_name, new_name))
+    do_rename_stream(user_profile.realm, old_name, new_name)
+    return json_success()
 
 @authenticated_json_post_view
 @require_realm_admin
 @has_request_variables
 def json_make_stream_public(request, user_profile, stream_name=REQ):
-    return json_success(do_make_stream_public(user_profile, user_profile.realm, stream_name))
+    do_make_stream_public(user_profile, user_profile.realm, stream_name)
+    return json_success()
 
 @authenticated_json_post_view
 @require_realm_admin
 @has_request_variables
 def json_make_stream_private(request, user_profile, stream_name=REQ):
-    return json_success(do_make_stream_private(user_profile.realm, stream_name))
+    do_make_stream_private(user_profile.realm, stream_name)
+    return json_success()
 
 @require_realm_admin
 @has_request_variables
