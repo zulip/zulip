@@ -38,7 +38,7 @@ os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
 subprocess.check_call('tools/generate-fixtures')
 
-subprocess.check_call('tools/generate-test-credentials')
+subprocess.check_call('tools/setup/generate-test-credentials')
 
 subprocess.check_call(['rm', '-f'] + glob.glob('/tmp/casper-failure*.png'))
 
