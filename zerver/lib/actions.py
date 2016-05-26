@@ -819,6 +819,7 @@ def check_stream_name(stream_name):
         raise JsonableError("Invalid stream name")
 
 def send_pm_if_empty_stream(sender, stream, stream_name):
+    # TODO: It's not clear whether stream can be None.  Some cleanup is needed.
     if sender.realm.domain == 'mit.edu' or sender.realm.deactivated:
         return
 
@@ -1077,8 +1078,7 @@ def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
 def get_subscribers_query(stream, requesting_user):
     """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
 
-    'stream' can either be a string representing a stream name, or a Stream
-    object. If it's a Stream object, 'realm' is optional.
+    'realm' is optional in stream.
 
     The caller can refine this query with select_related(), values(), etc. depending
     on whether it wants objects or just certain fields
@@ -1099,8 +1099,8 @@ def get_subscribers(stream, requesting_user=None):
     return [subscription.user_profile for subscription in subscriptions]
 
 def get_subscriber_emails(stream, requesting_user=None):
-    subscriptions = get_subscribers_query(stream, requesting_user)
-    subscriptions = subscriptions.values('user_profile__email')
+    subscriptions_query = get_subscribers_query(stream, requesting_user)
+    subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
 def get_subscriber_ids(stream):
@@ -1140,7 +1140,8 @@ def get_subscribers_to_streams(streams):
     arrays of all the streams within 'streams' to which that user is
     subscribed.
     """
-    subscribes_to = {} # type: Dict[str, List[Stream]]
+    # TODO: Modify this function to not use UserProfile objects as dict keys
+    subscribes_to = {} # type: Dict[UserProfile, List[Stream]]
     for stream in streams:
         try:
             subscribers = get_subscribers(stream)
@@ -2705,9 +2706,11 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     if queue_id is None:
         raise JsonableError("Could not allocate event queue")
     if event_types is not None:
-        event_types = set(event_types)
+        event_types_set = set(event_types)
+    else:
+        event_types_set = None
 
-    ret = fetch_initial_state_data(user_profile, event_types, queue_id)
+    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
