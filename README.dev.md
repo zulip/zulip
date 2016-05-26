@@ -339,7 +339,7 @@ if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_
 ./scripts/setup/configure-rabbitmq
 ./tools/postgres-init-dev-db
 ./tools/do-destroy-rebuild-database
-./tools/postgres-init-test-db
+./tools/setup/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
 ./manage.py compilemessages
 npm install
@@ -534,7 +534,7 @@ databases, but you may need to rebuild the test database occasionally
 if you're working on new database migrations.  To do this, run:
 
 ```
-./tools/postgres-init-test-db
+./tools/setup/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
 ```
 
