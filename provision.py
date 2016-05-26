@@ -168,7 +168,7 @@ def main():
     else:
         run(["tools/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
-    run(["tools/emoji_dump/build_emoji"])
+    run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
     if "--travis" in sys.argv:
         run(["sudo", "service", "rabbitmq-server", "restart"])

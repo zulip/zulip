@@ -38,8 +38,8 @@ event_queues.json
 static/js/bundle.js
 static/third/gemoji/
 static/third/zxcvbn/
-tools/emoji_dump/bitmaps/
-tools/emoji_dump/*.ttx
+tools/setup/emoji_dump/bitmaps/
+tools/setup/emoji_dump/*.ttx
 tools/phantomjs
 node_modules
 npm-debug.log

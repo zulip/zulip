@@ -122,7 +122,7 @@ Copyright: 2013 Nijiko Yonskai
 License: Apache-2.0
 Comment: The software has been modified.
 
-Files: static/third/gemoji/images/emoji/unicode/* tools/emoji_dump/*.ttf
+Files: static/third/gemoji/images/emoji/unicode/* tools/setup/emoji_dump/*.ttf
 Copyright: Google, Inc.
 License: Apache-2.0
 Comment: These are actually Noto Emoji, not gemoji.
