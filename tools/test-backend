@@ -43,7 +43,7 @@ if __name__ == "__main__":
         prof = cProfile.Profile()
         prof.enable()
 
-    subprocess.call(os.path.join(TOOLS_DIR, 'generate-fixtures'))
+    subprocess.call(os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures'))
 
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
