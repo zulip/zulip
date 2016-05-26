@@ -34,7 +34,7 @@ subprocess.check_call(['python', 'tools/minify-js']
                       stdout=fp, stderr=fp)
 
 # Build emoji
-subprocess.check_call(['bash', '-ex', 'tools/emoji_dump/build_emoji'],
+subprocess.check_call(['bash', '-ex', 'tools/setup/emoji_dump/build_emoji'],
                       stdout=fp, stderr=fp)
 
 # Download and include zxcvbn.js
