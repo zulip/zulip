@@ -167,7 +167,7 @@ def main():
         run(["tools/install-phantomjs", "--travis"])
     else:
         run(["tools/install-phantomjs"])
-    run(["tools/download-zxcvbn"])
+    run(["tools/setup/download-zxcvbn"])
     run(["tools/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
     if "--travis" in sys.argv:
