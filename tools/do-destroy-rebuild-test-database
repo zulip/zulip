@@ -3,5 +3,5 @@ set -e
 set -x
 
 # This is a really simple wrapper script, pretty much for documenting clarity
-"`dirname "$0"`/../tools/generate-fixtures" --force
+"`dirname "$0"`/../tools/setup/generate-fixtures" --force
 
