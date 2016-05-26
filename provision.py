@@ -164,9 +164,9 @@ def main():
     os.chdir(ZULIP_PATH)
 
     if "--travis" in sys.argv:
-        run(["tools/install-phantomjs", "--travis"])
+        run(["tools/setup/install-phantomjs", "--travis"])
     else:
-        run(["tools/install-phantomjs"])
+        run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
     run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])

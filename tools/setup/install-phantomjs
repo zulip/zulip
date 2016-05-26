@@ -5,7 +5,7 @@ import sys
 import platform
 import subprocess
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from zulip_tools import run
 
 if platform.architecture()[0] == '64bit':
