@@ -147,6 +147,11 @@ python_rules = [
     {'pattern': '".*"%\([a-z_].*\)?$',
      'description': 'Missing space around "%"'},
     {'pattern': "'.*'%\([a-z_].*\)?$",
+     'exclude': set(['tools/lint-all']),
+     'exclude_line': set([
+         ('zerver/views/users.py',
+          "return json_error(_(\"Email '%(email)s' does not belong to domain '%(domain)s'\") %"),
+     ]),
      'description': 'Missing space around "%"'},
     # This rule is constructed with + to avoid triggering on itself
     {'pattern': " =" + '[^ =>~"]',
@@ -170,6 +175,44 @@ python_rules = [
     # this rule.
     {'pattern': '% [a-zA-Z0-9_.]*\)?$',
      'description': 'Used % comprehension without a tuple'},
+    # To avoid json_error(_variable) and json_error(_(variable))
+    {'pattern': '\Wjson_error\(_\(?\w+\)',
+     'exclude': set(['tools/lint-all']),
+     'description': 'Argument to json_error should be a literal string enclosed by _()'},
+    {'pattern': '\Wjson_error\([^_].+\)',
+     'exclude': set(['tools/lint-all']),
+     'exclude_line': set([
+         # function definition
+         ('zerver/lib/response.py', 'def json_error(msg, data={}, status=400):'),
+         # No need to worry about the following as the translation strings
+         # are already captured
+         ('zerver/middleware.py',
+          'return json_error(exception.to_json_error_msg(), status=status_code)'),
+         ('zerver/tornadoviews.py', 'return json_error(result["message"])'),
+         ('zerver/views/__init__.py',
+          'return json_error(data=error_data, msg=ret_error)'),
+         ('zerver/views/streams.py', 'return json_error(property_conversion)'),
+         # We can't do anything about this.
+         ('zerver/views/realm_emoji.py', 'return json_error(e.message_dict)'),
+     ]),
+     'description': 'Argument to json_error should a literal string enclosed by _()'},
+    # To avoid JsonableError(_variable) and JsonableError(_(variable))
+    {'pattern': '\WJsonableError\(_\(?\w.+\)',
+     'exclude': set(['tools/lint-all']),
+     'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
+    {'pattern': '\WJsonableError\([^_].+\)',
+     'exclude': set(['tools/lint-all']),
+     'exclude_line': set([
+         # class definition
+         ('zerver/lib/request.py', 'class JsonableError(Exception):'),
+         # No need to worry about the following as the translation strings
+         # are already captured
+         ('zerver/decorator.py', 'raise JsonableError(reason % (role,))'),
+         ('zerver/lib/actions.py', 'raise JsonableError(e.messages[0])'),
+         ('zerver/views/messages.py', 'raise JsonableError(error)'),
+         ('zerver/lib/request.py', 'raise JsonableError(error)'),
+     ]),
+     'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
     ] + whitespace_rules
 bash_rules = [
     {'pattern': '#!.*sh [-xe]',
