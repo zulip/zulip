@@ -732,6 +732,46 @@ $(function () {
         update_announce_stream_state();
     });
 
+    // Search People
+    $(document).on('input', '.add-user-list-filter', function (e) {
+        var users = people.get_rest_of_realm();
+
+        var user_list = $(".add-user-list-filter");
+        if (user_list === 0) {
+            return;
+        }
+        var search_term = user_list.expectOne().val().trim();
+        var search_terms = search_term.toLowerCase().split(",");
+
+        var filtered_users = {};
+        _.each(users, function (user) {
+            var person = people.get_by_email(user.email);
+            if (!person || !person.full_name) {
+                return;
+            }
+            var names = person.full_name.toLowerCase().split(/\s+/);
+            names = _.map(names, function (s) {
+                return s.trim();
+            });
+            return _.any(search_terms, function (search_term) {
+                return _.any(names, function (name) {
+                    if (name.indexOf(search_term.trim()) === 0) {
+                        filtered_users[user.email] = true;
+                    }
+                });
+            });
+        });
+
+        // Hide users which aren't in filtered users
+        _.each(users, function (user) {
+            var display_type = filtered_users.hasOwnProperty(user.email)? "block" : "none";
+            $("label[for='" + user.email + "']").css({"display":display_type});
+        });
+
+        update_announce_stream_state();
+        e.preventDefault();
+    });
+
     var announce_stream_docs = $("#announce-stream-docs");
     announce_stream_docs.popover({"placement": "right",
                                   "content": templates.render('announce_stream_docs'),

@@ -2619,6 +2619,10 @@ div.floating_recipient {
     margin: 0 30px 5px 20px;
 }
 
+#user-checkboxes .checkbox {
+    display: block;
+}
+
 .muted-sub {
     color: #A3A3A3;
 }
@@ -3801,7 +3805,8 @@ li.show-more-private-messages a {
     display: none;
 }
 
-.user-list-filter {
+.user-list-filter ,
+.add-user-list-filter {
     width: 80%;
 }
 
