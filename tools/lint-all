@@ -101,6 +101,9 @@ def custom_check_file(fn, rules, skip_rules=[]):
             exclude_list = rule.get('exclude', set())
             if fn in exclude_list:
                 continue
+            exclude_list = rule.get('exclude_line', set())
+            if (fn, line.strip()) in exclude_list:
+                continue
             try:
                 if re.search(rule['pattern'], line.strip(rule.get('strip', None))):
                     sys.stdout.write(rule['description'] + ' at %s line %s:\n' % (fn, i+1))
