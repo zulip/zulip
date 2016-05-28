@@ -189,6 +189,7 @@ function get_events_success(events) {
         case 'realm_filters':
             page_params.realm_filters = event.realm_filters;
             echo.set_realm_filters(page_params.realm_filters);
+            admin.populate_filters(event.realm_filters);
             break;
         case 'update_global_notifications':
             notifications.handle_global_notification_updates(event.notification_name,

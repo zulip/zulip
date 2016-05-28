@@ -777,6 +777,29 @@ function render(template_name, args) {
     assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
 }());
 
+(function admin_filter_list() {
+    global.use_template('admin_filter_list');
+    var args = {
+        filter: {
+            "pattern": "#(?P<id>[0-9]+)",
+            "url_format_string": "https://trac.humbughq.com/ticket/%(id)s"
+        }
+    };
+
+    var html = '';
+    html += '<tbody id="admin_filters_table">';
+    html += render('admin_filter_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_filter_list.handlebars', html);
+
+    var filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
+    var filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+
+    assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
+    assert.equal(filter_format.text(), 'https://trac.humbughq.com/ticket/%(id)s');
+}());
+
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.

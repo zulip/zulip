@@ -181,19 +181,24 @@ v1_api_and_json_patterns = patterns('zerver.views',
             {'PATCH': 'update_realm'}),
     url(r'^users/me/presence$', 'rest_dispatch',
             {'POST': 'update_active_status_backend'}),
-    # Endpoint used by iOS devices to register their
-    # unique APNS device token
     url(r'^users/me/apns_device_token$', 'rest_dispatch',
-        {'POST'  : 'add_apns_device_token',
+        {'POST': 'add_apns_device_token',
          'DELETE': 'remove_apns_device_token'}),
     url(r'^users/me/android_gcm_reg_id$', 'rest_dispatch',
         {'POST': 'add_android_reg_id',
          'DELETE': 'remove_android_reg_id'}),
     url(r'^register$', 'rest_dispatch',
-            {'POST': 'api_events_register'}),
-
+        {'POST': 'api_events_register'}),
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'generate_204'),
+) + patterns('zerver.views.realm_filters',
+    url(r'^realm/filters$', 'rest_dispatch',
+        {'GET': 'list_filters',
+         'PUT': 'create_filter'}),
+    url(r'^realm/filters/(?P<filter_id>\d+)$', 'rest_dispatch',
+        {'DELETE': 'delete_filter'}),
+    # Endpoint used by iOS devices to register their
+    # unique APNS device token
 ) + patterns('zerver.views.realm_emoji',
     url(r'^realm/emoji$', 'rest_dispatch',
         {'GET': 'list_emoji',

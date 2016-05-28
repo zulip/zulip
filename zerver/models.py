@@ -5,6 +5,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
@@ -249,10 +251,38 @@ def flush_realm_emoji(sender, **kwargs):
 post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
+def filter_pattern_validator(value):
+    prefix = value[0]
+    pattern = value[1:]
+    regex = re.compile(r'(\(\?P<\w+>.+\))')
+
+    if not value:
+        raise ValidationError('Filter pattern cannot be empty')
+
+    if prefix not in settings.ALLOWED_FILTER_PREFIXES:
+        raise ValidationError(
+            'Filter pattern cannot start with `%s`, use one of the valid prefixes: %s' %
+            (value[0], ', '.join(settings.ALLOWED_FILTER_PREFIXES)))
+
+    try:
+        re.compile(pattern)
+    except:
+        # Regex is invalid
+        raise ValidationError('Invalid filter pattern')
+
+    if not regex.match(pattern):
+        raise ValidationError('Pattern format string must be in the following format: (?P<\w+>.+)')
+
+def filter_format_validator(value):
+    regex = re.compile(r'.*(%\(\w+\))')
+
+    if not regex.match(value):
+        raise ValidationError('URL format string must be in the following format: `https://example.com/%(\w+)s`')
+
 class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm)
-    pattern = models.TextField()
-    url_format_string = models.TextField()
+    pattern = models.TextField(validators=[filter_pattern_validator])
+    url_format_string = models.TextField(validators=[URLValidator, filter_format_validator])
 
     class Meta(object):
         unique_together = ("realm", "pattern")
@@ -275,7 +305,7 @@ def realm_filters_for_domain(domain):
 def realm_filters_for_domain_remote_cache(domain):
     filters = []
     for realm_filter in RealmFilter.objects.filter(realm=get_realm(domain)):
-       filters.append((realm_filter.pattern, realm_filter.url_format_string))
+        filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.pk))
 
     return filters
 
@@ -283,7 +313,7 @@ def all_realm_filters():
     # type: () -> Dict[str, List[Tuple[str, str]]]
     filters = defaultdict(list) # type: Dict[str, List[Tuple[str, str]]]
     for realm_filter in RealmFilter.objects.all():
-       filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string))
+        filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.pk))
 
     return filters
 

@@ -509,12 +509,12 @@ class EventsRegisterTest(AuthedTestCase):
             ('type', equals('realm_filters')),
             ('realm_filters', check_list(None)), # TODO: validate tuples in the list
         ])
-        events = self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#[123]",
+        events = self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#(?P<id>[123])",
                                                           "https://realm.com/my_realm_filter/%(id)s"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#[123]"))
+        self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#(?P<id>[123])"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

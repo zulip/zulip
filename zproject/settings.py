@@ -982,3 +982,6 @@ if PRODUCTION:
 PROFILE_ALL_REQUESTS = False
 
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
+
+# Custom realm filters
+ALLOWED_FILTER_PREFIXES = ['#']
