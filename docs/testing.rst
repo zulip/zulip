@@ -152,6 +152,8 @@ you set a breakpoint and it is hit, the inspector will pause and you can
 do your normal JS debugging. You can also put breakpoints in the Zulip
 webpage itself if you wish to inspect the state of the Zulip frontend.
 
+You can also check the screenshots of failed tests at ``/tmp/casper-failure*.png``.
+
 If you need to use print debugging in casper, you can do using
 ``casper.log``; see http://docs.casperjs.org/en/latest/logging.html
 for details.
