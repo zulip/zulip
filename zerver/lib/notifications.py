@@ -9,7 +9,7 @@ from zerver.decorator import statsd_increment, uses_mandrill
 from zerver.models import Recipient, ScheduledJob, UserMessage, \
     Stream, get_display_recipient, get_user_profile_by_email, \
     get_user_profile_by_id, receives_offline_notifications, \
-    get_context_for_message, Message
+    get_context_for_message, Message, UserProfile
 
 import datetime
 import re
@@ -19,11 +19,13 @@ from six.moves import urllib
 from collections import defaultdict
 
 def unsubscribe_token(user_profile):
+    # type: (UserProfile) -> str
     # Leverage the Django confirmations framework to generate and track unique
     # unsubscription tokens.
     return Confirmation.objects.get_link_for_object(user_profile).split("/")[-1]
 
 def one_click_unsubscribe_link(user_profile, endpoint):
+    # type: (UserProfile, str) -> str
     """
     Generate a unique link that a logged-out user can visit to unsubscribe from
     Zulip e-mails without having to first log in.
@@ -34,6 +36,7 @@ def one_click_unsubscribe_link(user_profile, endpoint):
     return "%s/%s" % (base_url.rstrip("/"), resource_path)
 
 def hashchange_encode(string):
+    # type: (str) -> str
     # Do the same encoding operation as hashchange.encodeHashComponent on the
     # frontend.
     # `safe` has a default value of "/", but we want those encoded, too.
@@ -41,20 +44,24 @@ def hashchange_encode(string):
         string.encode("utf-8"), safe="").replace(".", "%2E").replace("%", ".")
 
 def pm_narrow_url(participants):
+    # type: (List[str]) -> str
     participants.sort()
     base_url = "https://%s/#narrow/pm-with/" % (settings.EXTERNAL_HOST,)
     return base_url + hashchange_encode(",".join(participants))
 
 def stream_narrow_url(stream):
+    # type: (str) -> str
     base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
     return base_url + hashchange_encode(stream)
 
 def topic_narrow_url(stream, topic):
+    # type: (str, str) -> str
     base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
     return "%s%s/topic/%s" % (base_url, hashchange_encode(stream),
                               hashchange_encode(topic))
 
 def build_message_list(user_profile, messages):
+    ## type: (List[Message]) -> List[Dict[str, Any]]
     """
     Builds the message list object for the missed message email template.
     The messages are collapsed into per-recipient and per-sender blocks, like
