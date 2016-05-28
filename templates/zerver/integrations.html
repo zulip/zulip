@@ -89,6 +89,12 @@
             <span class="integration-label">Codeship</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-crashlytics">
+         <a class="integration-link integration-crashlytics" href="#crashlytics">
+            <img class="integration-logo" src="/static/images/integrations/logos/crashlytics.png" alt="Crashlytics logo" />
+            <span class="integration-label">Crashlytics</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-deskcom">
          <a class="integration-link integration-deskcom" href="#deskcom">
             <img class="integration-logo" src="/static/images/integrations/logos/deskcom.png" alt="Desk.com logo" />
@@ -632,6 +638,32 @@
       triggered, you'll get a notification like this:</p>
 
       <img class="screenshot" src="/static/images/integrations/codeship/002.png" />
+
+    </div>
+
+    <div id="crashlytics" class="integration-instructions">
+
+      <p>Zulip supports integration with Crashlytics and can notify you
+          about Crashlytics issues.</p>
+
+      <p>First, create the stream you'd like to use for Crashlytics notifications,
+          and subscribe all interested parties to this stream. We
+          recommend the name <code>crashlytics</code>.</p>
+
+      <p><code>{{ external_api_uri }}/v1/external/crashlytics?api_key=abcdefgh&amp;stream=crashlytics</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to.</p>
+
+      <p>Click on the app in
+          your <a href="https://fabric.io/settings/apps">Crashlytics settings panel</a>.
+          Next, on the integrations subpage, click “Web Hook,” enter the URL we created above and click
+          <code>Verify</code>.</p>
+      <p><b>Congratulations! You're done!</b><br /> When an issue occurs,
+          you'll get a notification like this:</p>
+
+      <img class="screenshot" src="/static/images/integrations/crashlytics/001.png" />
 
     </div>
 
