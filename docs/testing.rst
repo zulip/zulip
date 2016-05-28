@@ -133,7 +133,7 @@ is not perfect. Here are some steps for using it and gotchas you might
 want to know.
 
 To turn on remote debugging, pass ``--remote-debug`` to the
-``./frontend_tests/tests/run`` script. This will run the tests with
+``./frontend_tests/run-casper`` script. This will run the tests with
 port ``7777`` open for remote debugging. You can now connect to
 ``localhost:7777`` in a Webkit browser. Somewhat recent versions of
 Chrome or Safari might be required.
