@@ -314,18 +314,20 @@ good goal.
 Manual testing (local app + web browser)
 ========================================
 
-Setting up the manual testing database
---------------------------------------
+Clearing the manual testing database
+------------------------------------
+
+You can use:
 
 ::
 
     ./tools/do-destroy-rebuild-database
 
-Will populate your local database with all the usual accounts plus some
-test messages involving Shakespeare characters.
-
-(This is run automatically as part of the development environment setup
-process.)
+to drop the database on your development environment and repopulate
+your it with the Shakespeare characters and some test messages between
+them.  This is run automatically as part of the development
+environment setup process, but is occasionally useful when you want to
+return to a clean state for testing.
 
 Javascript manual testing
 -------------------------
