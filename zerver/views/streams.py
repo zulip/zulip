@@ -1,13 +1,15 @@
 from __future__ import absolute_import
-from typing import Any
+from typing import Any, Optional
 
 from django.conf import settings
 from django.db import transaction
+from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
-    has_request_variables, authenticated_json_view, \
-    JsonableError, get_user_profile_by_email, REQ, require_realm_admin
+    authenticated_json_view, \
+    get_user_profile_by_email, require_realm_admin
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
@@ -158,6 +160,7 @@ def json_make_stream_private(request, user_profile, stream_name=REQ):
 @has_request_variables
 def update_stream_backend(request, user_profile, stream_name,
                           description=REQ(validator=check_string, default=None)):
+    # type: (HttpRequest, UserProfile, str, Optional[str]) -> HttpResponse
     if description is not None:
        do_change_stream_description(user_profile.realm, stream_name, description)
     return json_success({})
