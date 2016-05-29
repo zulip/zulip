@@ -1,4 +1,4 @@
-from zerver.decorator import JsonableError
+from zerver.lib.request import JsonableError
 
 def check_supported_events_narrow_filter(narrow):
     for element in narrow:

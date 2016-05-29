@@ -7,7 +7,7 @@ from jinja2 import Markup as mark_safe
 import unicodedata
 
 from zerver.lib.avatar import user_avatar_hash
-from zerver.decorator import JsonableError
+from zerver.lib.request import JsonableError
 
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection

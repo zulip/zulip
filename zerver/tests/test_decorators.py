@@ -6,7 +6,7 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
 from zerver.lib.test_helpers import (
     AuthedTestCase,
 )
-from zerver.decorator import \
+from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, JsonableError
 from zerver.lib.validator import (

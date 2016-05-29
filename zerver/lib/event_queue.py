@@ -18,7 +18,7 @@ import tornado
 import tornado.autoreload
 import random
 import traceback
-from zerver.decorator import RespondAsynchronously, JsonableError
+from zerver.decorator import RespondAsynchronously
 from zerver.lib.cache import cache_get_many, message_cache_key, \
     user_profile_by_id_cache_key, cache_save_user_profile, cache_with_key
 from zerver.lib.handlers import clear_handler_by_id, get_handler_by_id, \
@@ -27,6 +27,7 @@ from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import timestamp_to_datetime
 import copy
 import six

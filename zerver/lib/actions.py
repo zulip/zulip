@@ -53,7 +53,7 @@ from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, cache_set_many, \
     cache_delete, cache_delete_many, message_cache_key
-from zerver.decorator import JsonableError, statsd_increment
+from zerver.decorator import statsd_increment
 from zerver.lib.event_queue import request_event_queue, get_user_events, send_event
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
@@ -63,6 +63,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user, \
      send_apple_push_notification, send_android_push_notification
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
+from zerver.lib.request import JsonableError
 from zerver.lib.session_user import get_session_user
 from zerver.lib.upload import claim_attachment, delete_message_image
 
