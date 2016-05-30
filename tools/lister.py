@@ -44,6 +44,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     # type: (List[str], List[str], bool, bool, List[str], bool) -> Union[Dict[str, List[str]], List[str]]
     """
     List files tracked by git.
+
     Returns a list of files which are either in targets or in directories in targets.
     If targets is [], list of all tracked files in current directory is returned.
 
@@ -52,12 +53,18 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
         If ftypes is [], all files are included.
     use_shebang - Determine file type of extensionless files from their shebang.
     modified_only - Only include files which have been modified.
-    exclude - List of paths to be excluded.
+    exclude - List of paths to be excluded, relative to repository root.
     group_by_ftype - If True, returns a dict of lists keyed by file type.
         If False, returns a flat list of files.
     """
     ftypes = [x.strip('.') for x in ftypes]
     ftypes_set = set(ftypes)
+
+    # Really this is all bytes -- it's a file path -- but we get paths in
+    # sys.argv as str, so that battle is already lost.  Settle for hoping
+    # everything is UTF-8.
+    repository_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).strip().decode('utf-8')
+    exclude_abspaths = [os.path.join(repository_root, fpath).rstrip('/') for fpath in exclude]
 
     cmdline = ['git', 'ls-files'] + targets
     if modified_only:
@@ -72,13 +79,9 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
 
     for fpath in files:
         # this will take a long time if exclude is very large
-        in_exclude = False
         absfpath = abspath(fpath)
-        for expath in exclude:
-            expath = abspath(expath.rstrip('/'))
-            if absfpath == expath or absfpath.startswith(expath + '/'):
-                in_exclude = True
-        if in_exclude:
+        if any(absfpath == expath or absfpath.startswith(expath + '/')
+               for expath in exclude_abspaths):
             continue
 
         if ftypes or group_by_ftype:
@@ -113,7 +116,7 @@ if __name__=="__main__":
     parser.add_argument('--ext-only', dest='extonly', action='store_true', default=False,
                         help='only use extension to determine file type')
     parser.add_argument('--exclude', nargs='+', default=[],
-                        help='list of files and directories to exclude from listing')
+                        help='list of files and directories to exclude from results, relative to repo root')
     args = parser.parse_args()
     listing = list_files(targets=args.targets, ftypes=args.ftypes, use_shebang=not args.extonly,
                          modified_only=args.modified, exclude=args.exclude)
