@@ -1302,7 +1302,7 @@ def bulk_add_subscriptions(streams, users):
     with transaction.atomic():
         occupied_streams_before = list(get_occupied_streams(user_profile.realm))
         Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
-        Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in subs_to_activate]).update(active=True)
+        Subscription.objects.filter(id__in=[sub.id for (sub, stream) in subs_to_activate]).update(active=True)
         occupied_streams_after = list(get_occupied_streams(user_profile.realm))
 
     new_occupied_streams = [stream for stream in
@@ -1363,8 +1363,8 @@ def bulk_add_subscriptions(streams, users):
                              user_email=user_profile.email)
                 send_event(event, other_user_ids)
 
-    return ([(user_profile, stream_name) for (user_profile, recipient_id, stream_name) in new_subs] +
-            [(sub.user_profile, stream_name) for (sub, stream_name) in subs_to_activate],
+    return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
+            [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
             already_subscribed)
 
 # When changing this, also change bulk_add_subscriptions
