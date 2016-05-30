@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 from functools import wraps
 import ujson
+from six.moves import zip
 
 class JsonableError(Exception):
     def __init__(self, error, status_code=400):
