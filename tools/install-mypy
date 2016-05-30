@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # This script installs a python3 virtualenv called 'zulip-py3-venv' in zulip's parent directory.
 # It then installs mypy and some other dependencies into that virtualenv.
