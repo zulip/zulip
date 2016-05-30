@@ -35,8 +35,6 @@ if args.all:
     exclude = []
 
 # find all non-excluded files in current directory
-BASE_DIR = dirname(dirname(abspath(__file__)))
-exclude = [os.path.join(BASE_DIR, fpath) for fpath in exclude]
 python_files = lister.list_files(targets=args.targets, ftypes=['py'], use_shebang=False,
                                  modified_only=args.modified, exclude=exclude)
 
