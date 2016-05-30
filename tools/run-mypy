@@ -17,6 +17,7 @@ bots/zephyr_mirror_backend.py
 tools/deprecated/
 zproject/settings.py
 zproject/test_settings.py
+zerver/lib/request.py
 zerver/migrations/
 zerver/tests/
 """.split()
