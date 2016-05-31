@@ -322,7 +322,7 @@ def api_endpoint_docs(request):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_invite_users(request, user_profile, invitee_emails=REQ):
+def json_invite_users(request, user_profile, invitee_emails=REQ()):
     if not invitee_emails:
         return json_error("You must specify at least one email address.")
 
@@ -1079,7 +1079,7 @@ def get_uploaded_file(request, realm_id, filename,
 @csrf_exempt
 @require_post
 @has_request_variables
-def api_fetch_api_key(request, username=REQ, password=REQ):
+def api_fetch_api_key(request, username=REQ(), password=REQ()):
     # type: (Any, Any, Any) -> Any
     return_data = {} # type: Dict[str, bool]
     if username == "google-oauth2-token":
@@ -1117,7 +1117,7 @@ def get_status_list(requesting_user_profile):
             'server_timestamp': time.time()}
 
 @has_request_variables
-def update_active_status_backend(request, user_profile, status=REQ,
+def update_active_status_backend(request, user_profile, status=REQ(),
                                  new_user_input=REQ(validator=check_bool, default=False)):
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
@@ -1184,7 +1184,7 @@ def events_register_backend(request, user_profile, apply_markdown=True,
 
 @authenticated_json_post_view
 @has_request_variables
-def json_refer_friend(request, user_profile, email=REQ):
+def json_refer_friend(request, user_profile, email=REQ()):
     if not email:
         return json_error("No email address specified")
     if user_profile.invites_granted - user_profile.invites_used <= 0:
@@ -1221,11 +1221,11 @@ def add_push_device_token(request, user_profile, token, kind, ios_app_id=None):
     return json_success()
 
 @has_request_variables
-def add_apns_device_token(request, user_profile, token=REQ, appid=REQ(default=settings.ZULIP_IOS_APP_ID)):
+def add_apns_device_token(request, user_profile, token=REQ(), appid=REQ(default=settings.ZULIP_IOS_APP_ID)):
     return add_push_device_token(request, user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
 
 @has_request_variables
-def add_android_reg_id(request, user_profile, token=REQ):
+def add_android_reg_id(request, user_profile, token=REQ()):
     return add_push_device_token(request, user_profile, token, PushDeviceToken.GCM)
 
 def remove_push_device_token(request, user_profile, token, kind):
@@ -1241,11 +1241,11 @@ def remove_push_device_token(request, user_profile, token, kind):
     return json_success()
 
 @has_request_variables
-def remove_apns_device_token(request, user_profile, token=REQ):
+def remove_apns_device_token(request, user_profile, token=REQ()):
     return remove_push_device_token(request, user_profile, token, PushDeviceToken.APNS)
 
 @has_request_variables
-def remove_android_reg_id(request, user_profile, token=REQ):
+def remove_android_reg_id(request, user_profile, token=REQ()):
     return remove_push_device_token(request, user_profile, token, PushDeviceToken.GCM)
 
 

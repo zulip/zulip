@@ -50,7 +50,7 @@ def json_change_ui_settings(request, user_profile,
 @authenticated_json_post_view
 @has_request_variables
 def json_change_settings(request, user_profile,
-                         full_name=REQ,
+                         full_name=REQ(),
                          old_password=REQ(default=""),
                          new_password=REQ(default=""),
                          confirm_password=REQ(default="")):

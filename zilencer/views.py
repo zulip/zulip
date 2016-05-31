@@ -76,7 +76,7 @@ def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
     return HttpResponse(message['sender_email'])
 
 @has_request_variables
-def report_error(request, deployment, type=REQ, report=REQ(validator=check_dict([]))):
+def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dict([]))):
     report['deployment'] = deployment.name
     if type == 'browser':
         notify_browser_error(report)

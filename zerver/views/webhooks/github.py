@@ -124,7 +124,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
 
 @authenticated_api_view
 @has_request_variables
-def api_github_landing(request, user_profile, event=REQ,
+def api_github_landing(request, user_profile, event=REQ(),
                        payload=REQ(validator=check_dict([])),
                        branches=REQ(default=''),
                        stream=REQ(default=''),

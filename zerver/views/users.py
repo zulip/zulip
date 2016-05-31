@@ -164,7 +164,7 @@ def regenerate_bot_api_key(request, user_profile, email):
     return json_success(json_result)
 
 @has_request_variables
-def add_bot_backend(request, user_profile, full_name=REQ, short_name=REQ,
+def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
                     default_sending_stream=REQ(default=None),
                     default_events_register_stream=REQ(default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
@@ -266,8 +266,8 @@ def get_members_backend(request, user_profile):
 
 @require_realm_admin
 @has_request_variables
-def create_user_backend(request, user_profile, email=REQ, password=REQ,
-                        full_name=REQ, short_name=REQ):
+def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
+                        full_name=REQ(), short_name=REQ()):
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
         return json_error('Bad name or username')
