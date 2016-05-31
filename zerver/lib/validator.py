@@ -20,7 +20,7 @@ for arbitrarily complex validators.  See ValidatorTestCase for example usage.
 
 A simple example of composition is this:
 
-   check_list(check_string)('my_list', ['a', 'b', 'c']) == None
+   check_list(check_string)('my_list', ['a', 'b', 'c']) is None
 
 To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
