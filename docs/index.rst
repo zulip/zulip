@@ -16,6 +16,7 @@ Contents:
    directory-structure
    code-style
    testing
+   logging
    markdown
    queuing
    schema-migrations
