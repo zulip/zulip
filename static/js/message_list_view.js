@@ -196,15 +196,7 @@ MessageListView.prototype = {
 
             message_container.contains_mention = notifications.speaking_at_me(message_container.msg);
             message_container.msg.unread = unread.message_unread(message_container.msg);
-
-            if (message_container.msg.is_me_message) {
-                // Slice the '<p>/me ' off the front, and '</p>' off the end
-                message_container.status_message = message_container.msg.content.slice(4 + 3, -4);
-                message_container.include_sender = true;
-            }
-            else {
-                message_container.status_message = false;
-            }
+            self._maybe_format_me_message(message_container);
 
             prev = message_container;
         });
@@ -752,6 +744,7 @@ MessageListView.prototype = {
 
         // Re-render just this one message
         this._add_msg_timestring(message_container);
+        this._maybe_format_me_message(message_container);
 
         var msg_to_render = _.extend(message_container, {table_name: this.table_name});
         var rendered_msg = $(templates.render('single_message', msg_to_render));
@@ -893,6 +886,17 @@ MessageListView.prototype = {
             this.message_containers[new_id] = message_container;
         }
 
+    },
+
+    _maybe_format_me_message: function MessageListView__maybe_format_me_message(message_container) {
+        if (message_container.msg.is_me_message) {
+            // Slice the '<p>/me ' off the front, and '</p>' off the end
+            message_container.status_message = message_container.msg.content.slice(4 + 3, -4);
+            message_container.include_sender = true;
+        }
+        else {
+            message_container.status_message = false;
+        }
     }
 };
 

@@ -47,6 +47,30 @@ casper.waitForSelector(".message_edit_notice", function () {
     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
 });
 
+common.then_send_message('stream', {
+    stream:  'Verona',
+    subject: 'edits',
+    content: '/me test editing one line with me'
+});
+
+casper.waitForText("test editing one line with me");
+wait_for_message_actually_sent();
+
+then_edit_last_message();
+
+casper.then(function () {
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.message_edit_topic').val("edited");
+        msg.find('.message_edit_content').val("/me test edited one line with me");
+        msg.find('.message_edit_save').click();
+    });
+});
+
+casper.waitForSelector(".message_edit_notice", function () {
+    casper.test.assertSelectorHasText(".last_message .sender-status", "test edited one line with me");
+});
+
 common.then_send_message('private', {
     recipient: "cordelia@zulip.com",
     content: "test editing pm"
