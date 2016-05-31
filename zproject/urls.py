@@ -254,7 +254,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
          'PATCH': 'update_stream_backend',
          'DELETE': 'deactivate_stream_backend'}),
     url(r'^default_streams$', 'rest_dispatch',
-        {'PATCH': 'add_default_stream',
+        {'PUT': 'add_default_stream',
          'DELETE': 'remove_default_stream'}),
     # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
     url(r'^users/me/subscriptions$', 'rest_dispatch',
