@@ -18,6 +18,7 @@ run ./tools/clean-repo
 run ./tools/lint-all
 run ./tools/test-migrations
 run ./tools/test-js-with-node
+run ./tools/run-mypy
 run ./tools/test-backend
 run ./tools/test-js-with-casper
 # Not running management test since it takes 40s and thus is too slow to be worth it.
