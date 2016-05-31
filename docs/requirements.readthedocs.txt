@@ -3,3 +3,4 @@
 
 # require sphinx >= 1.3.6 to resolve https://github.com/spatialaudio/nbsphinx/issues/26
 sphinx>=1.3.6
+typing==3.5.0.1
