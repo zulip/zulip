@@ -27,6 +27,14 @@ if __name__ == "__main__":
     parser.add_option('--profile', dest='profile',
                       action="store_true",
                       default=False, help='Profile test runtime.')
+    parser.add_option('--no-shallow', dest='no_shallow',
+                      action="store_true",
+                      default=False,
+                      help="Don't allow shallow testing of templates")
+    parser.add_option('--verbose', dest='verbose',
+                      action="store_true",
+                      default=False,
+                      help="Show detailed output")
 
     (options, args) = parser.parse_args()
     if len(args) == 0:
@@ -48,6 +56,19 @@ if __name__ == "__main__":
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
     failures = test_runner.run_tests(suites, fatal_errors=options.fatal_errors)
+
+    templates_not_rendered = test_runner.get_shallow_tested_templates()
+    if templates_not_rendered:
+        missed_count = len(templates_not_rendered)
+        if options.no_shallow or options.verbose:
+            print("*** Shallow tested templates: {}".format(missed_count))
+
+        if options.verbose:
+            for template in templates_not_rendered:
+                print('--- {}'.format(template))
+
+        if options.no_shallow:
+            failures = True
 
     if options.coverage:
         cov.stop()

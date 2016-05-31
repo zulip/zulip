@@ -1,8 +1,13 @@
 from __future__ import print_function
+
+from typing import Any, Set
+
 from django.test.runner import DiscoverRunner
+from django.test.signals import template_rendered
 
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.views.messages import get_sqlalchemy_connection
+from zerver.lib.test_helpers import get_all_templates
 
 import os
 import subprocess
@@ -111,7 +116,29 @@ def run_test(test):
 
 class Runner(DiscoverRunner):
     def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         DiscoverRunner.__init__(self, *args, **kwargs)
+
+        # `templates_rendered` holds templates which were rendered
+        # in proper logical tests.
+        self.templates_rendered = set()  # type: Set[str]
+        # `shallow_tested_templates` holds templates which were rendered
+        # in `zerver.tests.test_templates`.
+        self.shallow_tested_templates = set()  # type: Set[str]
+        template_rendered.connect(self.on_template_rendered)
+
+    def on_template_rendered(self, sender, context, **kwargs):
+        if hasattr(sender, 'template'):
+            template_name = sender.template.name
+            if template_name not in self.templates_rendered:
+                if context.get('shallow_tested'):
+                    self.shallow_tested_templates.add(template_name)
+                else:
+                    self.templates_rendered.add(template_name)
+                    self.shallow_tested_templates.discard(template_name)
+
+    def get_shallow_tested_templates(self):
+        return self.shallow_tested_templates
 
     def run_suite(self, suite, fatal_errors=None):
         failed = False
