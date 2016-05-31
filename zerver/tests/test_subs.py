@@ -482,7 +482,7 @@ class DefaultStreamTest(AuthedTestCase):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         do_change_is_admin(user_profile, True)
         stream_name = 'stream ADDED via api'
-        result = self.client_patch('/json/default_streams', dict(stream_name=stream_name))
+        result = self.client_put('/json/default_streams', dict(stream_name=stream_name))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
 
