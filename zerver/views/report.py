@@ -68,9 +68,9 @@ def json_report_unnarrow_time(request, user_profile,
 
 @authenticated_json_post_view
 @has_request_variables
-def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
-                      ui_message=REQ(validator=check_bool), user_agent=REQ,
-                      href=REQ, log=REQ,
+def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
+                      ui_message=REQ(validator=check_bool), user_agent=REQ(),
+                      href=REQ(), log=REQ(),
                       more_info=REQ(validator=check_dict([]), default=None)):
 
     if not settings.ERROR_REPORTING:

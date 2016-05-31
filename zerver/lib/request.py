@@ -106,13 +106,6 @@ def has_request_variables(view_func):
             if value.post_var_name is None:
                 value.post_var_name = name
             post_params.append(value)
-        elif value == REQ:
-            # If the function definition does not actually instantiate
-            # a REQ object but instead uses the REQ class itself as a
-            # value, we instantiate it as a convenience
-            post_var = value(name)
-            post_var.func_var_name = name
-            post_params.append(post_var)
 
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):

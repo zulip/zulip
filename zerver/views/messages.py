@@ -809,7 +809,7 @@ def json_fetch_raw_message(request, user_profile,
     return json_success({"raw_content": message.content})
 
 @has_request_variables
-def render_message_backend(request, user_profile, content=REQ):
+def render_message_backend(request, user_profile, content=REQ()):
     rendered_content = bugdown.convert(content, user_profile.realm.domain)
     return json_success({"rendered": rendered_content})
 
