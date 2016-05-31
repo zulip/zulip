@@ -61,7 +61,7 @@ class Command(BaseCommand):
         (admin_realm, _) = do_create_realm(settings.ADMIN_DOMAIN,
                                            settings.ADMIN_DOMAIN, True)
 
-        set_default_streams(admin_realm, ["social", "engineering"])
+        set_default_streams(admin_realm, ["social", "general", "zulip"])
 
         self.stdout.write("Successfully populated database with initial data.\n")
 
