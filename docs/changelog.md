@@ -3,11 +3,22 @@
 All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
+- Added full support for translating the Zulip UI.
+- Added button to subscribe at bottom of stream narrows.
 - Added integration with CircleCI.
 - Added UI for marking all messages in a stream or topic as read.
 - Added new Attachment model to keep track of uploaded files.
 - Added caching of virtualenvs in development.
+- Added mypy static type annotations to about 20% of the Zulip Python codebase.
+- Added automated test of backend templates to test for regressions.
+- Added lots of detailed documentation on the Zulip development environment.
+- Added setting allowing only administrators to create new streams.
 - Fixed missing helper scripts for RabbitMQ Nagios plugins.
+- Fixed skipping forward to latest messages.
+- Migrated backend templates to the faster Jinja2 templating system.
+- Migrated development environment setup scripts to tools/setup/.
+- Simplified the API for writing new webhook integrations.
+- Removed most remaining javascript global variables.
 
 ### 1.3.12 - 2016-05-10
 - CVE-2016-4426: Bot API keys were accessible to other users in the same realm.
