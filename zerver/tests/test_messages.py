@@ -39,6 +39,8 @@ from zerver.lib.actions import (
 from zerver.lib.upload import create_attachment
 
 import datetime
+import DNS
+import mock
 import time
 import re
 import ujson
@@ -710,13 +712,15 @@ class MessagePOSTTest(AuthedTestCase):
                "sender": "sipbtest@mit.edu",
                "content": "Test message",
                "client": "zephyr_mirror",
-               "to": ujson.dumps(["sipbcert@mit.edu",
+               "to": ujson.dumps(["sipbexch@mit.edu",
                                   "starnine@mit.edu"])}
 
-        self.login("starnine@mit.edu")
-        result1 = self.client.post("/json/messages", msg)
-        self.login("sipbcert@mit.edu")
-        result2 = self.client.post("/json/messages", msg)
+        with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
+            self.login("starnine@mit.edu")
+            result1 = self.client.post("/json/messages", msg)
+        with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
+            self.login("sipbexch@mit.edu")
+            result2 = self.client.post("/json/messages", msg)
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
 
