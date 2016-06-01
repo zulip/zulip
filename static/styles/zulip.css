@@ -728,6 +728,10 @@ td.pointer {
     width: auto;
 }
 
+.sender-status .message_edit_notice {
+    line-height: 18px;
+}
+
 .message_edit_notice {
     font-size: 10px;
     color: #a1a1a1;
