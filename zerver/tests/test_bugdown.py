@@ -8,10 +8,12 @@ from zerver.lib import bugdown
 from zerver.lib.actions import (
     check_add_realm_emoji,
     do_remove_realm_emoji,
+    do_set_alert_words,
     get_realm,
 )
 from zerver.lib.camo import get_camo_url
 from zerver.models import (
+    get_client,
     get_user_profile_by_email,
     Message,
     RealmFilter,
@@ -351,6 +353,20 @@ class BugdownTest(TestCase):
                              subject=u"no match here")
         converted_boring_subject = bugdown.subject_links(realm.domain.lower(), boring_msg.subject)
         self.assertEqual(converted_boring_subject,  [])
+
+    def test_alert_words(self):
+        user_profile = get_user_profile_by_email("othello@zulip.com")
+        do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "We have an ALERTWORD day today!"
+        self.assertEqual(msg.render_markdown(content), "<p>We have an ALERTWORD day today!</p>")
+        self.assertEqual(msg.user_ids_with_alert_words, set([user_profile.id]))
+
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        content = "We have a NOTHINGWORD day today!"
+        self.assertEqual(msg.render_markdown(content), "<p>We have a NOTHINGWORD day today!</p>")
+        self.assertEqual(msg.user_ids_with_alert_words, set())
 
     def test_stream_subscribe_button_simple(self):
         msg = '!_stream_subscribe_button(simple)'
