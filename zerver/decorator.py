@@ -316,7 +316,7 @@ def authenticated_rest_api_view(view_func):
         except ValueError:
             return json_error(_("Invalid authorization header for basic auth"))
         except KeyError:
-            return json_unauthorized("Missing authorization header for basic auth")
+            return json_unauthorized(_("Missing authorization header for basic auth"))
 
         # Now we try to do authentication or die
         try:
