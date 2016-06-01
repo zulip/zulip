@@ -1025,16 +1025,13 @@ def subject_links(domain, subject):
     from zerver.models import get_realm, RealmFilter, realm_filters_for_domain
     matches = [] # type: List[text_type]
 
-    try:
-        realm_filters = realm_filters_for_domain(domain)
+    realm_filters = realm_filters_for_domain(domain)
 
-        for realm_filter in realm_filters:
-            pattern = prepare_realm_pattern(realm_filter[0])
-            for m in re.finditer(pattern, subject):
-                matches += [realm_filter[1] % m.groupdict()]
-        return matches
-    except RealmFilter.DoesNotExist:
-        return matches
+    for realm_filter in realm_filters:
+        pattern = prepare_realm_pattern(realm_filter[0])
+        for m in re.finditer(pattern, subject):
+            matches += [realm_filter[1] % m.groupdict()]
+    return matches
 
 def make_realm_filters(domain, filters):
     global md_engines, realm_filter_data
