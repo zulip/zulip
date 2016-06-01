@@ -142,6 +142,9 @@ urlpatterns += patterns('zerver.views',
 
     # This is for the signing in through the devAuthBackEnd on mobile apps.
     url(r'^api/v1/dev_fetch_api_key$',      'api_dev_fetch_api_key'),
+    # This is for fetching the emails of the admins and the users.
+    url(r'^api/v1/dev_get_emails$',         'api_dev_get_emails'),
+
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
     url(r'^api/v1/fetch_google_client_id$', 'api_fetch_google_client_id'),
 

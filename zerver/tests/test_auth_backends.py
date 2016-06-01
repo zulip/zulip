@@ -231,3 +231,17 @@ class DevFetchAPIKeyTest(AuthedTestCase):
             result = self.client.post("/api/v1/dev_fetch_api_key",
                                       dict(username=self.email))
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
+
+class DevGetEmailsTest(AuthedTestCase):
+    def test_success(self):
+        # type: () -> None
+        result = self.client.get("/api/v1/dev_get_emails")
+        self.assert_json_success(result)
+        self.assertIn("direct_admins", result.content)
+        self.assertIn("direct_users", result.content)
+
+    def test_dev_auth_disabled(self):
+        # type: () -> None
+        with mock.patch('zerver.views.dev_auth_enabled', return_value=False):
+            result = self.client.get("/api/v1/dev_get_emails")
+            self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
