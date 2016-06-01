@@ -590,6 +590,28 @@ def dev_direct_login(request, **kwargs):
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                           request.get_host()))
 
+@csrf_exempt
+@require_post
+@has_request_variables
+def api_dev_fetch_api_key(request, username=REQ()):
+    # type: (HttpRequest, str) -> HttpResponse
+    """This function allows logging in without a password on the Zulip
+    mobile apps when connecting to a Zulip development environment.  It
+    requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.
+    """
+    if not dev_auth_enabled() or settings.PRODUCTION:
+        return json_error(_("Dev environment not enabled."))
+    return_data = {} # type: Dict[str, bool]
+    user_profile = authenticate(username=username, return_data=return_data)
+    if return_data.get("inactive_realm") == True:
+        return json_error(_("Your realm has been deactivated."),
+                          data={"reason": "realm deactivated"}, status=403)
+    if return_data.get("inactive_user") == True:
+        return json_error(_("Your account has been disabled."),
+                          data={"reason": "user disable"}, status=403)
+    login(request, user_profile)
+    return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
+
 @authenticated_json_post_view
 @has_request_variables
 def json_bulk_invite_users(request, user_profile,
