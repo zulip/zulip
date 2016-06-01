@@ -10,12 +10,28 @@
           <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}}">
             {{! See ../js/notifications.js for another user of avatar_url. }}
             <div class="inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}"
-                 style="background-image: url('{{small_avatar_url}}');"/><span class="{{^status_message}}sender_name{{/status_message}}{{#status_message}}sender-status{{/status_message}}">{{#unless status_message}}{{msg/sender_full_name}}{{else}}<span class="sender_name{{#status_message}}-in-status{{/status_message}} sender_info_hover">{{msg/sender_full_name}}</span>{{{ status_message }}}{{/unless}}</span>
+                 style="background-image: url('{{small_avatar_url}}');"/>
+          <span class="{{^status_message}}sender_name{{/status_message}}{{#status_message}}sender-status{{/status_message}}">
+
+            {{#unless status_message}}
+              {{msg/sender_full_name}}
+            {{else}}
+              <span class="sender_name{{#status_message}}-in-status{{/status_message}} sender_info_hover">{{msg/sender_full_name}}</span>
+                  {{{ status_message }}}
+            {{/unless}}
+            {{#if_and last_edit_timestr include_sender}}
+              {{#if status_message}}
+                <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+              {{/if}}
+            {{/if_and}}
+          </span>
           </span>
           {{/include_sender}}
           <span class="message_time{{#if msg.local_id}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
           {{#if_and last_edit_timestr include_sender}}
-          <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+            {{#unless status_message}}
+                <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+            {{/unless}}
           {{/if_and}}
           <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}}">
             <div class="star">
@@ -33,7 +49,7 @@
         <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
         {{#if last_edit_timestr}}
           {{#unless include_sender}}
-          <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+            <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
           {{/unless}}
         {{/if}}
         <div class="message_edit">
