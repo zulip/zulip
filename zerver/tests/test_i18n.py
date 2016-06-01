@@ -3,10 +3,13 @@ from __future__ import absolute_import
 
 from typing import Any
 
+import mock
 from django.test import TestCase
 from django.conf import settings
 from django.http import HttpResponse
 from http.cookies import SimpleCookie
+
+from zerver.lib.test_helpers import AuthedTestCase
 
 
 class TranslationTestCase(TestCase):
@@ -62,3 +65,30 @@ class TranslationTestCase(TestCase):
         for lang, word in languages:
             response = self.fetch('get', '/{}/integrations/'.format(lang), 200)
             self.assertTrue(word in response.content)
+
+
+class JsonTranslationTestCase(AuthedTestCase):
+    @mock.patch('zerver.lib.request._')
+    def test_json_error(self, mock_gettext):
+        dummy_value = "Some other language '%s'"
+        mock_gettext.return_value = dummy_value
+
+        self.login("hamlet@zulip.com")
+        result = self.client.post("/json/refer_friend",
+                                  HTTP_ACCEPT_LANGUAGE='de')
+
+        self.assert_json_error_contains(result,
+                                        dummy_value % 'email',
+                                        status_code=400)
+
+    @mock.patch('zerver.views._')
+    def test_jsonable_error(self, mock_gettext):
+        dummy_value = "Some other language"
+        mock_gettext.return_value = dummy_value
+
+        self.login("hamlet@zulip.com")
+        result = self.client.get("/de/accounts/login/jwt/")
+
+        self.assert_json_error_contains(result,
+                                        dummy_value,
+                                        status_code=400)
