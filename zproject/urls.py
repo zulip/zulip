@@ -140,6 +140,8 @@ urlpatterns += patterns('zerver.views',
     # password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'api_fetch_api_key'),
 
+    # This is for the signing in through the devAuthBackEnd on mobile apps.
+    url(r'^api/v1/dev_fetch_api_key$',      'api_dev_fetch_api_key'),
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
     url(r'^api/v1/fetch_google_client_id$', 'api_fetch_google_client_id'),
 

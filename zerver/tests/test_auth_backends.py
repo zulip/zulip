@@ -195,3 +195,39 @@ class FetchAPIKeyTest(AuthedTestCase):
                                   dict(username=self.email,
                                        password=initial_password(self.email)))
         self.assert_json_error_contains(result, "Your realm has been deactivated", 403)
+
+class DevFetchAPIKeyTest(AuthedTestCase):
+    def setUp(self):
+        # type: () -> None
+        self.email = "hamlet@zulip.com"
+        self.user_profile = get_user_profile_by_email(self.email)
+
+    def test_success(self):
+        # type: () -> None
+        result = self.client.post("/api/v1/dev_fetch_api_key",
+                                  dict(username=self.email))
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(data['api_key'], self.user_profile.api_key)
+
+    def test_inactive_user(self):
+        # type: () -> None
+        do_deactivate_user(self.user_profile)
+        result = self.client.post("/api/v1/dev_fetch_api_key",
+                                  dict(username=self.email))
+        self.assert_json_error_contains(result, "Your account has been disabled", 403)
+
+    def test_deactivated_realm(self):
+        # type: () -> None
+        do_deactivate_realm(self.user_profile.realm)
+        result = self.client.post("/api/v1/dev_fetch_api_key",
+                                  dict(username=self.email))
+        self.assert_json_error_contains(result, "Your realm has been deactivated", 403)
+
+    def test_dev_auth_disabled(self):
+        # type: () -> None
+        with mock.patch('zerver.views.dev_auth_enabled', return_value=False):
+            result = self.client.post("/api/v1/dev_fetch_api_key",
+                                      dict(username=self.email))
+            self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
