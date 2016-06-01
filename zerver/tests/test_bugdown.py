@@ -330,14 +330,18 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>:test:</p>')
 
     def test_realm_patterns(self):
-        RealmFilter(realm=get_realm('zulip.com'), pattern=r"#(?P<id>[0-9]{2,8})",
+        realm = get_realm('zulip.com')
+        RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
-        msg = Message(sender=get_user_profile_by_email("othello@zulip.com"))
+        msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
+                      subject="#444")
 
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
         converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
+        converted_subject = bugdown.subject_links(realm.domain.lower(), msg.subject)
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
+        self.assertEqual(converted_subject,  [u'https://trac.zulip.net/ticket/444'])
 
     def test_stream_subscribe_button_simple(self):
         msg = '!_stream_subscribe_button(simple)'
