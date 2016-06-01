@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 
 from typing import Any, Dict
+
+from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
@@ -82,7 +84,7 @@ def rest_dispatch(request, globals_list, **kwargs):
                 # browser, send the user to the login page
                 return HttpResponseRedirect('%s/?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
             else:
-                return json_unauthorized("Not logged in: API authentication or user session required")
+                return json_unauthorized(_("Not logged in: API authentication or user session required"))
 
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because
