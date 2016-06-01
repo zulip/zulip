@@ -368,6 +368,69 @@ class BugdownTest(TestCase):
         self.assertEqual(msg.render_markdown(content), "<p>We have a NOTHINGWORD day today!</p>")
         self.assertEqual(msg.user_ids_with_alert_words, set())
 
+    def test_mention_wildcard(self):
+        user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@all test"
+        self.assertEqual(msg.render_markdown(content),
+                         '<p><span class="user-mention" data-user-email="*">@all</span> test</p>')
+        self.assertTrue(msg.mentions_wildcard)
+
+    def test_mention_everyone(self):
+        user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@everyone test"
+        self.assertEqual(msg.render_markdown(content),
+                         '<p><span class="user-mention" data-user-email="*">@everyone</span> test</p>')
+        self.assertTrue(msg.mentions_wildcard)
+
+    def test_mention_single(self):
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "@**King Hamlet**"
+        self.assertEqual(msg.render_markdown(content),
+                         '<p><span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span></p>')
+        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+
+    def test_mention_shortname(self):
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "@**hamlet**"
+        self.assertEqual(msg.render_markdown(content),
+                         '<p><span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span></p>')
+        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+
+    def test_mention_multiple(self):
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        cordelia = get_user_profile_by_email("cordelia@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "@**King Hamlet** and @**cordelia**, check this out"
+        self.assertEqual(msg.render_markdown(content),
+                         '<p>'
+                         '<span class="user-mention" '
+                         'data-user-email="hamlet@zulip.com">@King Hamlet</span> and '
+                         '<span class="user-mention" '
+                         'data-user-email="cordelia@zulip.com">@Cordelia Lear</span>, '
+                         'check this out</p>')
+        self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
+
+    def test_mention_invalid(self):
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "Hey @**Nonexistent User**"
+        self.assertEqual(msg.render_markdown(content),
+                         '<p>Hey @<strong>Nonexistent User</strong></p>')
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_stream_subscribe_button_simple(self):
         msg = '!_stream_subscribe_button(simple)'
         converted = bugdown_convert(msg)
