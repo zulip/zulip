@@ -612,6 +612,17 @@ def api_dev_fetch_api_key(request, username=REQ()):
     login(request, user_profile)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
+@csrf_exempt
+def api_dev_get_emails(request):
+    # type: (HttpRequest) -> HttpResponse
+    if not dev_auth_enabled() or settings.PRODUCTION:
+        return json_error(_("Dev environment not enabled."))
+    MAX_DEV_BACKEND_USERS = 100 # type: int
+    users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+    users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
+    return json_success(dict(direct_admins=[u.email for u in users if u.is_realm_admin],
+                             direct_users=[u.email for u in users if not u.is_realm_admin]))
+
 @authenticated_json_post_view
 @has_request_variables
 def json_bulk_invite_users(request, user_profile,
