@@ -609,7 +609,7 @@ def valid_stream_name(name):
 # received the message.  It is implemented as a set of triples (id,
 # type_id, type). We have 3 types of recipients: Huddles (for group
 # private messages), UserProfiles (for 1:1 private messages), and
-# Ttreams. The recipient table maps a globally unique recipient id
+# Streams. The recipient table maps a globally unique recipient id
 # (used by the Message table) to the type-specific unique id (the
 # stream id, user_profile id, or huddle id).
 class Recipient(ModelReprMixin, models.Model):
