@@ -22,9 +22,13 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
 import ujson
 
 class AuthBackendTest(TestCase):
-    def verify_backend(self, backend, good_args={},
-                       good_kwargs={}, bad_kwargs=None,
+    def verify_backend(self, backend, good_args=None,
+                       good_kwargs=None, bad_kwargs=None,
                        email_to_username=None):
+        if good_args is None:
+            good_args = []
+        if good_kwargs is None:
+            good_kwargs = {}
         email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(email)
 

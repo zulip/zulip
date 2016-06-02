@@ -220,6 +220,6 @@ class CodeHiliteExtension(markdown.Extension):
         md.registerExtension(self)
 
 
-def makeExtension(configs={}):
-  return CodeHiliteExtension(configs=configs)
+def makeExtension(configs=None):
+  return CodeHiliteExtension(configs=configs or [])
 
