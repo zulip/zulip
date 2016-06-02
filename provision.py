@@ -110,6 +110,19 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
+def setup_node_modules():
+    output = subprocess.check_output(['sha1sum', 'package.json'])
+    sha1sum = output.split()[0]
+    success_stamp = os.path.join('node_modules', '.npm-success-stamp', sha1sum)
+    if not os.path.exists(success_stamp):
+        print("Deleting cached version")
+        run(["rm", "-rf", "node_modules"])
+        print("Installing node modules")
+        run(["npm", "install"])
+        run(["mkdir", "-p", success_stamp])
+    else:
+        print("Using cached version of node_modules")
+
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     # Check if a cached version already exists
     output = subprocess.check_output(['sha1sum', requirements_file])
@@ -195,7 +208,7 @@ def main():
 
     # Run npm install last because it can be flaky, and that way one
     # only needs to rerun `npm install` to fix the installation.
-    run(["npm", "install"])
+    setup_node_modules()
     return 0
 
 if __name__ == "__main__":
