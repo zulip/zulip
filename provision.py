@@ -110,14 +110,14 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
-def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=[]):
+def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     # Check if a cached version already exists
     output = subprocess.check_output(['sha1sum', requirements_file])
     sha1sum = output.split()[0]
     cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, os.path.basename(target_venv_path))
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
-        do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args)
+        do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [])
         run(["touch", success_stamp])
 
     print("Using cached Python venv from %s" % (cached_venv_path,))
