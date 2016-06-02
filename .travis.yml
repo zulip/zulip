@@ -9,6 +9,7 @@ cache:
   - directories:
     - $HOME/phantomjs
     - $HOME/zulip-venv-cache
+    - node_modules
 env:
   global:
     - COVERALLS_PARALLEL=true
