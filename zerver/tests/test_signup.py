@@ -190,7 +190,7 @@ class LoginTest(AuthedTestCase):
     def test_register_first_user_with_invites(self):
         """
         The first user in a realm has a special step in their signup workflow
-        for inviting coworkers. Do as realistic an end-to-end test as we can
+        for inviting other users. Do as realistic an end-to-end test as we can
         without Tornado running.
         """
         username = "user1"
@@ -231,7 +231,7 @@ class LoginTest(AuthedTestCase):
         self.assertEquals(result.status_code, 302)
         self.assertTrue(result["Location"].endswith("/invite/"))
 
-        # Invite coworkers to join you.
+        # Invite other users to join you.
         result = self.client.get(result["Location"])
         self.assertIn("You're the first one here!", result.content)
 

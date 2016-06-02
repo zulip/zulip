@@ -586,7 +586,7 @@ msgstr "Unterhaltungen, keine Nachrichten"
 #: templates/zerver/hello.html:48
 msgid ""
 "Every conversation in Zulip has a <em>topic</em>, so it&rsquo;s\n"
-"      easy to keep conversations straight. Are your coworkers discussing\n"
+"      easy to keep conversations straight. Are other users discussing\n"
 "      a software bug and the content of your website at the same time?\n"
 "      No problem."
 msgstr "Jede Unterhaltung in Zulip hat ein <em>Thema</em>, so dass es\n      einfach ist, einer Unterhaltung zu folgen. Diskutieren Ihre Kollegen\n      gleichzeitig einen Softwarefehler und den Inhalr Ihrer Website?\n      Kein Problem."
@@ -787,7 +787,7 @@ msgid "Next"
 msgstr "Weiter"
 
 #: templates/zerver/invite_user.html:6
-msgid "Invite coworkers to"
+msgid "Invite more users to"
 msgstr "Mitarbeiter einladen zu"
 
 #: templates/zerver/invite_user.html:13
@@ -1082,7 +1082,7 @@ msgid "Administration"
 msgstr "Administration"
 
 #: templates/zerver/navbar.html:99 templates/zerver/right-sidebar.html:39
-msgid "Invite coworkers"
+msgid "Invite users"
 msgstr "Mitarbeiter einladen"
 
 #: templates/zerver/navbar.html:106

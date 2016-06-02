@@ -581,7 +581,7 @@ msgstr ""
 #: templates/zerver/hello.html:48
 msgid ""
 "Every conversation in Zulip has a <em>topic</em>, so it&rsquo;s\n"
-"      easy to keep conversations straight. Are your coworkers discussing\n"
+"      easy to keep conversations straight. Are other users discussing\n"
 "      a software bug and the content of your website at the same time?\n"
 "      No problem."
 msgstr ""
@@ -782,7 +782,7 @@ msgid "Next"
 msgstr ""
 
 #: templates/zerver/invite_user.html:6
-msgid "Invite coworkers to"
+msgid "Invite more users to"
 msgstr ""
 
 #: templates/zerver/invite_user.html:13
@@ -1077,7 +1077,7 @@ msgid "Administration"
 msgstr ""
 
 #: templates/zerver/navbar.html:99 templates/zerver/right-sidebar.html:39
-msgid "Invite coworkers"
+msgid "Invite users"
 msgstr ""
 
 #: templates/zerver/navbar.html:106
