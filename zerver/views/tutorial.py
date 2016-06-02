@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
 from zerver.lib.actions import internal_send_message
@@ -17,6 +18,7 @@ rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(req
 def json_tutorial_send_message(request, user_profile, type=REQ(validator=check_string),
                                recipient=REQ(validator=check_string), topic=REQ(validator=check_string),
                                content=REQ(validator=check_string)):
+    # type: (HttpRequest, UserProfile, str, str, str, str) -> HttpResponse
     """
     This function, used by the onboarding tutorial, causes the Tutorial Bot to
     send you the message you pass in here. (That way, the Tutorial Bot's
@@ -35,6 +37,7 @@ def json_tutorial_send_message(request, user_profile, type=REQ(validator=check_s
 @has_request_variables
 def json_tutorial_status(request, user_profile,
                          status=REQ(validator=check_string)):
+    # type: (HttpRequest, UserProfile, str) -> HttpResponse
     if status == 'started':
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
     elif status == 'finished':
