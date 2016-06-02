@@ -23,16 +23,17 @@ def json_method_not_allowed(methods):
         "allowed_methods": methods})
     return resp
 
-def json_response(res_type="success", msg="", data={}, status=200):
+def json_response(res_type="success", msg="", data=None, status=200):
     content = {"result": res_type, "msg": msg}
-    content.update(data)
+    if data is not None:
+        content.update(data)
     return HttpResponse(content=ujson.dumps(content) + "\n",
                         content_type='application/json', status=status)
 
-def json_success(data={}):
+def json_success(data=None):
     return json_response(data=data)
 
-def json_error(msg, data={}, status=400):
+def json_error(msg, data=None, status=400):
     return json_response(res_type="error", msg=msg, data=data, status=status)
 
 def json_unhandled_exception():

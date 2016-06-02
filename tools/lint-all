@@ -86,13 +86,13 @@ def check_pyflakes():
                 failed = True
     return failed
 
-def custom_check_file(fn, rules, skip_rules=[]):
+def custom_check_file(fn, rules, skip_rules=None):
     failed = False
     lineFlag = False
     for i, line in enumerate(open(fn)):
         skip = False
         lineFlag = True
-        for rule in skip_rules:
+        for rule in skip_rules or []:
             if re.match(rule, line):
                 skip = True
         if skip:
@@ -183,7 +183,7 @@ python_rules = [
      'exclude': set(['tools/lint-all']),
      'exclude_line': set([
          # function definition
-         ('zerver/lib/response.py', 'def json_error(msg, data={}, status=400):'),
+         ('zerver/lib/response.py', 'def json_error(msg, data=None, status=400):'),
          # No need to worry about the following as the translation strings
          # are already captured
          ('zerver/middleware.py',
