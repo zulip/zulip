@@ -94,7 +94,7 @@ be non-standard.
 * Allow tacking a bulleted list or block quote onto the end of a
   paragraph, i.e. without a blank line before it
 
-* Allow only `*` for bulleted lists, not `+` or `-` (previoulsy
+* Allow only `*` for bulleted lists, not `+` or `-` (previously
   created confusion with diff-style text sloppily not included in a
   code block)
 

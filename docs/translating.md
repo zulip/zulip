@@ -63,8 +63,8 @@ The first step in translating the frontend is to create the translation
 files using `python manage makemessages`. This command will create
 translation files under `static/locale`, the location can be changed by
 passing an argument to the command, however make sure that the location is
-publically accessible since these files are loaded through XHR in the
-frontend which will only work with publically accessible resources.
+publicly accessible since these files are loaded through XHR in the
+frontend which will only work with publicly accessible resources.
 
 The second step is to upload the translatable strings to Transifex using
 `tx push -s -a`.
