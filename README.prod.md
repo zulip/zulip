@@ -72,7 +72,6 @@ These instructions should be followed as root.
   and unpack it to `/root/zulip`, e.g.
   ```
   wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
-  tar -xf zulip-server-latest.tar.gz
   mkdir -p /root/zulip && tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
   ```
 
