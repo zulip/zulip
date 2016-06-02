@@ -362,7 +362,7 @@ Version Control
 We follow the Git project's own commit discipline practice of "Each
 commit is a minimal coherent idea". This discipline takes a bit of work,
 but it makes it much easier for code reviewers to spot bugs, and
-makesthe commit history a much more useful resource for developers
+makes the commit history a much more useful resource for developers
 trying to understand why the code works the way it does, which also
 helps a lot in preventing bugs.
 

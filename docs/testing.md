@@ -192,7 +192,7 @@ for writing Casper tests in addition to the debugging notes below:
     and the various assert statements available are documented here:
     <http://docs.casperjs.org/en/latest/modules/tester.html#the-tester-prototype>
 -   Casper uses CSS3 selectors; you can often save time by testing and
-    debugigng your selectors on the relevant page of the Zulip
+    debugging your selectors on the relevant page of the Zulip
     development app in the Chrome javascript console by using e.g.
     `$$("#settings-dropdown")`.
 -   The test suite uses a smaller set of default user accounts and other
