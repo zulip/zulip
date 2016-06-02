@@ -352,7 +352,7 @@ function finale() {
     var alert_contents;
 
     if (page_params.prompt_for_invites) {
-        alert_contents = "<i class='icon-vector-heart alert-icon'></i>It's lonely in here! <a href='#invite-user' data-toggle='modal'>Invite some coworkers</a>.";
+        alert_contents = "<i class='icon-vector-heart alert-icon'></i>It's lonely in here! <a href='#invite-user' data-toggle='modal'>Invite some users</a>.";
     } else {
         alert_contents = "<i class='icon-vector-desktop alert-icon'></i>What's better than " + page_params.product_name + " in your browser? The <a href='/apps' target='_blank'>"+ page_params.product_name + " desktop app</a>!";
     }
