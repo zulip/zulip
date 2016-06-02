@@ -21,6 +21,7 @@ def add_settings(request):
         'api_site_required':         settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_integration_enabled': settings.EMAIL_GATEWAY_BOT != "",
         'email_gateway_example':     settings.EMAIL_GATEWAY_EXAMPLE,
+        'open_realm_creation':       settings.OPEN_REALM_CREATION,
         'password_auth_enabled':     password_auth_enabled(realm),
         'dev_auth_enabled':          dev_auth_enabled(),
         'google_auth_enabled':       google_auth_enabled(),

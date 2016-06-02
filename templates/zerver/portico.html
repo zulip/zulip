@@ -67,6 +67,12 @@
           <a href="{{ url('register') }}">{{ _('Register') }}</a>
           {% endif %}
       </li>
+      <li><span class="little-bullet">·</span></li>
+      <li>
+          {% if open_realm_creation %}
+          <a href="/create_realm">{{ _('Create new organization') }}</a>
+          {% endif %}
+      </li>
       {% endif %}
     </ul>
   </div>
