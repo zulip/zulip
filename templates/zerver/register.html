@@ -46,6 +46,24 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
         </div>
     </div>
+
+  {% if creating_new_team %}
+        <div class="control-group">
+            <label for="id_team_name" class="control-label">{{ _('Organization name') }}</label>
+            <div class="controls">
+                <input id="id_team_name" class="required" type="text"
+                    placeholder="{{ _("E.g. Acme") }}"
+                    name="realm_name" maxlength="100" />
+                    {% if form.realm_name.errors %}
+                        {% for error in form.realm_name.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                <br /><span class="small">{{ _('You can change this later on the admin page.') }}</span>
+            </div>
+            </div>
+    {% endif %}
+
     {% if password_auth_enabled %}
         <div class="control-group">
             <label for="id_password" class="control-label">{{ _('Password') }}</label>

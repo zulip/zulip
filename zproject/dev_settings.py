@@ -20,3 +20,5 @@ EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 # Disable Camo in development
 CAMO_URI = ''
+OPEN_REALM_CREATION = True
+

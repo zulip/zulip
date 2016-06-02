@@ -68,6 +68,9 @@ i18n_urls = [
     # Portico-styled page used to provide email confirmation of terms acceptance.
     url(r'^accounts/accept_terms/$', 'zerver.views.accounts_accept_terms'),
 
+    # Realm Creation
+    url(r'^create_realm/$', 'zerver.views.create_realm'),
+
     # Login/registration
     url(r'^register/$', 'zerver.views.accounts_home', name='register'),
     url(r'^login/$',  'zerver.views.login_page', {'template_name': 'zerver/login.html'}),

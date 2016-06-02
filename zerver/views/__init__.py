@@ -26,7 +26,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm, \
     get_cross_realm_users
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
-    do_activate_user, do_create_user, \
+    do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     internal_send_message, update_user_presence, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, \
@@ -35,7 +35,7 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
     do_set_muted_topics, clear_followup_emails_queue, do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
-from zerver.forms import RegistrationForm, HomepageForm, ToSForm, \
+from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSForm, \
     CreateUserForm, is_inactive, OurAuthenticationForm
 from django.views.decorators.csrf import csrf_exempt
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -86,6 +86,7 @@ def accounts_register(request):
     confirmation = Confirmation.objects.get(confirmation_key=key)
     prereg_user = confirmation.content_object
     email = prereg_user.email
+    realm_creation = prereg_user.realm_creation
     mit_beta_user = isinstance(confirmation.content_object, MitUser)
     try:
         existing_user_profile = get_user_profile_by_email(email)
@@ -93,9 +94,10 @@ def accounts_register(request):
         existing_user_profile = None
 
     validators.validate_email(email)
-
+    # If OPEN_REALM_CREATION is enabled all user sign ups should go through the
+    # special URL with domain name so that REALM can be identified if multiple realms exist
     unique_open_realm = get_unique_open_realm()
-    if unique_open_realm:
+    if unique_open_realm is not None:
         realm = unique_open_realm
         domain = realm.domain
     elif not mit_beta_user and prereg_user.referred_by:
@@ -116,6 +118,9 @@ def accounts_register(request):
     else:
         domain = resolve_email_to_domain(email)
         realm = get_realm(domain)
+
+    if realm_creation and not settings.OPEN_REALM_CREATION:
+        return render_to_response("zerver/realm_creation_disabled.html")
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
@@ -196,6 +201,11 @@ def accounts_register(request):
             # SSO users don't need no passwords
             password = None
 
+        if realm_creation:
+            domain = split_email_to_domain(email)
+            (realm, _) = do_create_realm(domain, form.cleaned_data['realm_name'])
+            set_default_streams(realm, settings.DEFAULT_NEW_REALM_STREAMS)
+
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)
         first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
@@ -236,6 +246,7 @@ def accounts_register(request):
              # password_auth_enabled is normally set via our context processor,
              # but for the registration form, there is no logged in user yet, so
              # we have to set it here.
+             'creating_new_team': realm_creation,
              'password_auth_enabled': password_auth_enabled(realm),
             },
         request=request)
@@ -667,8 +678,8 @@ def logout_then_login(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     return django_logout_then_login(request, kwargs)
 
-def create_preregistration_user(email, request):
-    # type: (text_type, HttpRequest) -> HttpResponse
+def create_preregistration_user(email, request, realm_creation=False):
+    # type: (text_type, HttpRequest, bool) -> HttpResponse
     domain = request.session.get("domain")
     if completely_open(domain):
         # Clear the "domain" from the session object; it's no longer needed
@@ -677,14 +688,15 @@ def create_preregistration_user(email, request):
         # The user is trying to sign up for a completely open realm,
         # so create them a PreregistrationUser for that realm
         return PreregistrationUser.objects.create(email=email,
-                                                  realm=get_realm(domain))
+                                                  realm=get_realm(domain),
+                                                  realm_creation=realm_creation)
 
     # MIT users who are not explicitly signing up for an open realm
     # require special handling (They may already have an (inactive)
     # account, for example)
     if split_email_to_domain(email) == "mit.edu":
-        return MitUser.objects.get_or_create(email=email)[0]
-    return PreregistrationUser.objects.create(email=email)
+        return MitUser.objects.get_or_create(email=email, realm_creation=realm_creation)[0]
+    return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
 
 def accounts_home_with_domain(request, domain):
     # type: (HttpRequest, str) -> HttpResponse
@@ -699,17 +711,47 @@ def accounts_home_with_domain(request, domain):
     else:
         return HttpResponseRedirect(reverse('zerver.views.accounts_home'))
 
-def send_registration_completion_email(email, request):
-    # type: (str, HttpRequest) -> HttpResponse
+def send_registration_completion_email(email, request, realm_creation=False):
+    # type: (str, HttpRequest, bool) -> HttpResponse
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    prereg_user = create_preregistration_user(email, request)
+    prereg_user = create_preregistration_user(email, request, realm_creation)
     context = {'support_email': settings.ZULIP_ADMINISTRATOR,
                'voyager': settings.VOYAGER}
     Confirmation.objects.send_confirmation(prereg_user, email,
                                            additional_context=context)
+
+"""
+When settings.OPEN_REALM_CREATION is enabled public users can create new realm. For creating the realm the user should
+not be the member of any current realm. The realm is created with domain same as the that of the user's email.
+When there is no unique_open_realm user registrations are made by visiting /register/domain_of_the_realm.
+"""
+def create_realm(request):
+    # type: (HttpRequest) -> HttpResponse
+    if not settings.OPEN_REALM_CREATION:
+        return render_to_response("zerver/realm_creation_disabled.html")
+
+    if request.method == 'POST':
+        form = RealmCreationForm(request.POST, domain=request.session.get("domain"))
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            send_registration_completion_email(email, request, realm_creation=True)
+            return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
+        try:
+            email = request.POST['email']
+            user_email_is_unique(email)
+        except ValidationError:
+            # if the user user is already registered he can't create a new realm as a realm
+            # with the same domain as user's email already exists
+            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.parse.quote_plus(email))
+    else:
+        form = RealmCreationForm(domain=request.session.get("domain"))
+    return render_to_response('zerver/create_realm.html',
+                              {'form': form, 'current_url': request.get_full_path},
+                              request=request)
+
 
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse

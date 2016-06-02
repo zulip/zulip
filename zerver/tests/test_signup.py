@@ -560,3 +560,52 @@ class EmailUnsubscribeTests(AuthedTestCase):
         self.assertEqual(0, len(ScheduledJob.objects.filter(
                 type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
+class RealmCreationTest(AuthedTestCase):
+
+    def test_create_realm(self):
+        # type: () -> None
+        username = "user1"
+        password = "test"
+        domain = "test.com"
+        email = "user1@test.com"
+
+        # Make sure the realm does not exist
+        self.assertIsNone(get_realm("test.com"))
+
+        with self.settings(OPEN_REALM_CREATION=True):
+            # Create new realm with the email
+            result = self.client.post('/create_realm/', {'email': email})
+            self.assertEquals(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith(
+                    "/accounts/send_confirm/%s@%s" % (username, domain)))
+            result = self.client.get(result["Location"])
+            self.assertIn("Check your email so we can get started.", result.content)
+
+            # Visit the confirmation link.
+            from django.core.mail import outbox
+            for message in reversed(outbox):
+                if email in message.to:
+                    confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                    confirmation_url = confirmation_link_pattern.search(
+                        message.body).groups()[0]
+                    break
+            else:
+                raise ValueError("Couldn't find a confirmation email.")
+
+            result = self.client.get(confirmation_url)
+            self.assertEquals(result.status_code, 200)
+
+            result = self.submit_reg_form_for_user(username, password, domain)
+            self.assertEquals(result.status_code, 302)
+
+            # Make sure the realm is created
+            realm = get_realm("test.com")
+
+            self.assertIsNotNone(realm)
+            self.assertEqual(realm.domain, domain)
+            self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+            self.assertTrue(result["Location"].endswith("/invite/"))
+
+            result = self.client.get(result["Location"])
+            self.assertIn("You're the first one here!", result.content)
