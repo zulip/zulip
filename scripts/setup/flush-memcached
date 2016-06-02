@@ -3,4 +3,4 @@ set -e
 set -x
 
 # Flush memcached
-echo 'flush_all' | nc -w 0 localhost 11211
+echo 'flush_all' | nc -w 1 localhost 11211
