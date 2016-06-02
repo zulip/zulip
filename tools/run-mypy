@@ -30,6 +30,10 @@ parser.add_argument('-m', '--modified', action='store_true', default=False, help
 parser.add_argument('-a', '--all', dest='all', action='store_true', default=False,
                     help="""run mypy on all python files, ignoring the exclude list.
                     This is useful if you have to find out which files fail mypy check.""")
+parser.add_argument('--linecount-report', dest='linecount_report', action='store_true', default=False,
+                    help="""run the linecount report to see annotation coverage""")
+parser.add_argument('--disallow-untyped-defs', dest='disallow_untyped_defs', action='store_true', default=False,
+                    help="""throw errors when functions are not annotated""")
 args = parser.parse_args()
 if args.all:
     exclude = []
@@ -47,9 +51,17 @@ if six.PY2 and os.path.exists(MYPY_VENV_PATH):
 else:
     mypy_command = "mypy"
 
+extra_args = ["--fast-parser", "--silent-imports", "--py2", "--check-untyped-defs"]
+if args.linecount_report:
+    extra_args.append("--linecount-report")
+    extra_args.append("linecount-report")
+if args.disallow_untyped_defs:
+    extra_args.append("--disallow-untyped-defs")
+
+
 # run mypy
 if python_files:
-    rc = subprocess.call([mypy_command, "--fast-parser", "--silent-imports", "--py2", "--check-untyped-defs"] + python_files)
+    rc = subprocess.call([mypy_command] + extra_args + python_files)
     sys.exit(rc)
 else:
     print("There are no files to run mypy on.")
