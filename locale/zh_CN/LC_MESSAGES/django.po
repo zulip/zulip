@@ -583,7 +583,7 @@ msgstr "面向会话，而不仅是消息"
 #: templates/zerver/hello.html:48
 msgid ""
 "Every conversation in Zulip has a <em>topic</em>, so it&rsquo;s\n"
-"      easy to keep conversations straight. Are your coworkers discussing\n"
+"      easy to keep conversations straight. Are other users discussing\n"
 "      a software bug and the content of your website at the same time?\n"
 "      No problem."
 msgstr "Zulip里面的每个会话都有一个<em>话题</em>, 这样有利于让对话\\n\"\n保持有条不紊。你的同事们是不是在讨论一个软件Bug的同时，\n又在讨论关于网站的内容？\n用Zulip，没有任何问题。"
@@ -784,7 +784,7 @@ msgid "Next"
 msgstr "下一步"
 
 #: templates/zerver/invite_user.html:6
-msgid "Invite coworkers to"
+msgid "Invite more users to"
 msgstr "邀请同事到"
 
 #: templates/zerver/invite_user.html:13
@@ -1079,7 +1079,7 @@ msgid "Administration"
 msgstr "管理Zulip"
 
 #: templates/zerver/navbar.html:99 templates/zerver/right-sidebar.html:39
-msgid "Invite coworkers"
+msgid "Invite users"
 msgstr "邀请同事"
 
 #: templates/zerver/navbar.html:106
