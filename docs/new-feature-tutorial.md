@@ -85,7 +85,7 @@ Then create a Django migration that adds a new field,
 In `zerver/lib/actions.py`, create a new function named
 `do_set_realm_invite_by_admins_only`. This function will update the
 database and trigger an event to notify clients when this setting
-changes. In this case there was an exisiting `realm|update` event type
+changes. In this case there was an existing `realm|update` event type
 which was used for setting similar flags on the Realm model, so it was
 possible to add a new property to that event rather than creating a new
 one. The property name matches the database field to make it easy to
@@ -134,7 +134,7 @@ newly-added `actions.py` code to update the database. This example
 feature adds a new parameter that should be sent to clients when the
 application loads and be accessible via JavaScript, and there is already
 a view that does this for related flags: `update_realm`. So in this
-case, we can add out code to the exisiting view instead of creating a
+case, we can add out code to the existing view instead of creating a
 new one. :
 
     # zerver/views/__init__.py

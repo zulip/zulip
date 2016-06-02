@@ -18,7 +18,7 @@ together a roadmap detailing the major areas where the project is
 hoping to improve.  This can be especially important in an open source
 project like Zulip where development is distributed across many people
 around the world.  This roadmap is intended to organize a list of the
-most important improvements that should to be made to Zulip in the
+most important improvements that should be made to Zulip in the
 relatively near future.  Our aim is to complete most of these
 improvements in 2016.
 
