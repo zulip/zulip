@@ -135,9 +135,11 @@ if (window.bridge !== undefined) {
 }
 
 var new_message_count = 0;
+var narrowed_view_count = 0;
 
-exports.update_title_count = function (count) {
-    new_message_count = count;
+exports.update_title_count = function (res) {
+    new_message_count = res.home_unread_messages;
+    narrowed_view_count = res.unread_in_current_view;
     exports.redraw_title();
 };
 
@@ -145,7 +147,8 @@ exports.redraw_title = function () {
     // Update window title and favicon to reflect unread messages in current view
     var n;
 
-    var new_title = (new_message_count ? ("(" + new_message_count + ") ") : "")
+    var new_title = (new_message_count ? ("(" + (narrowed_view_count ? (narrowed_view_count + "/") : "")
+        + new_message_count + ") ") : "")
         + narrow.narrow_title + " - "
         + page_params.realm_name + " - "
         + page_params.product_name;
