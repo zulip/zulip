@@ -344,10 +344,12 @@ class Client(object):
                     "status_code": res.status_code}
 
     @classmethod
-    def _register(cls, name, url=None, make_request=(lambda request={}: request),
+    def _register(cls, name, url=None, make_request=None,
                   method="POST", computed_url=None, **query_kwargs):
         if url is None:
             url = name
+        if make_request is None:
+            make_request = lambda request=None: {} if request is None else request
         def call(self, *args, **kwargs):
             request = make_request(*args, **kwargs)
             if computed_url is not None:
@@ -358,7 +360,9 @@ class Client(object):
         call.__name__ = name
         setattr(cls, name, call)
 
-    def call_on_each_event(self, callback, event_types=None, narrow=[]):
+    def call_on_each_event(self, callback, event_types=None, narrow=None):
+        if narrow is None:
+            narrow = []
         def do_register():
             while True:
                 if event_types is None:
@@ -426,9 +430,11 @@ def _mk_rm_subs(streams):
 def _mk_deregister(queue_id):
     return {'queue_id': queue_id}
 
-def _mk_events(event_types=None, narrow=[]):
+def _mk_events(event_types=None, narrow=None):
     if event_types is None:
         return dict()
+    if narrow is None:
+        narrow = []
     return dict(event_types=event_types, narrow=narrow)
 
 def _kwargs_to_dict(**kwargs):
