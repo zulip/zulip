@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import subprocess
-import requests
 import optparse
 import time
 import sys
 import os
 import glob
+try:
+    import requests
+except ImportError as e:
+    print("ImportError: {}, Make sure your running tests inside Vagrant".format(e))
 
 #
 # In order to use remote casperjs debugging, pass the --remote-debug flag
