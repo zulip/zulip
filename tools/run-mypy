@@ -21,7 +21,6 @@ zerver/lib/request.py
 zerver/migrations/
 zerver/tests/test_bugdown.py
 zerver/tests/tests.py
-zerver/tests/test_events.py
 zerver/tests/test_email_mirror.py
 zerver/tests/test_decorators.py
 zerver/tests/test_auth_backends.py

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from typing import Optional
+
 from django.test import TestCase
 
 from zerver.models import (
@@ -196,7 +198,7 @@ class GetEventsTest(AuthedTestCase):
 class EventsRegisterTest(AuthedTestCase):
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
     bot = get_user_profile_by_email("welcome-bot@zulip.com")
-    maxDiff = None
+    maxDiff = None # type: Optional[int]
 
     def create_bot(self, email):
         return do_create_user(email, '123',
