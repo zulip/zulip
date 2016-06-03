@@ -87,7 +87,7 @@ def fill_remote_cache(cache):
     # type: (str) -> None
     remote_cache_time_start = get_remote_cache_time()
     remote_cache_requests_start = get_remote_cache_requests()
-    items_for_remote_cache = {} # type: Dict[str, Any]
+    items_for_remote_cache = {}  # type: Dict[str, Any]
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
     for obj in objects():
