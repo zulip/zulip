@@ -5,9 +5,8 @@ Context managers, i.e. things you can use with the 'with' statement.
 from __future__ import absolute_import
 
 import fcntl
-import os
 from contextlib import contextmanager
-from typing import Generator, Any
+from typing import Generator
 
 @contextmanager
 def flock(lockfile, shared=False):
