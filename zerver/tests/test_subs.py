@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from typing import Any, Dict, List
+
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
@@ -114,7 +116,7 @@ class StreamAdminTest(AuthedTestCase):
         do_add_subscription(user_profile, stream, no_log=True)
         do_change_is_admin(user_profile, True)
 
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
         self.assert_json_success(result)
@@ -160,7 +162,7 @@ class StreamAdminTest(AuthedTestCase):
         do_add_subscription(user_profile, stream, no_log=True)
         do_change_is_admin(user_profile, True)
 
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/streams/stream_name1',
                                       {'description': ujson.dumps('Test description')})
@@ -222,7 +224,7 @@ class StreamAdminTest(AuthedTestCase):
         """
         active_name = stream.name
 
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client.delete('/json/streams/' + active_name)
         self.assert_json_success(result)
@@ -738,7 +740,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
         add_streams = ["Verona2", "Denmark5"]
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                 add_streams, self.streams, self.test_email, self.streams + add_streams)
@@ -928,7 +930,7 @@ class SubscriptionAPITest(AuthedTestCase):
         email2 = 'iago@zulip.com'
         realm = get_realm("zulip.com")
         streams_to_sub = ['multi_user_stream']
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             with queries_captured() as queries:
                 self.common_subscribe_to_streams(
@@ -1009,7 +1011,7 @@ class SubscriptionAPITest(AuthedTestCase):
         for stream in streams:
             create_stream_if_needed(realm, stream)
 
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             with queries_captured() as queries:
                 self.common_subscribe_to_streams(
