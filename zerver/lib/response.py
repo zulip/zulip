@@ -25,7 +25,7 @@ def json_method_not_allowed(methods):
 
 def json_response(res_type="success", msg="", data=None, status=200):
     content = {"result": res_type, "msg": msg}
-    if data:
+    if data is not None:
         content.update(data)
     return HttpResponse(content=ujson.dumps(content) + "\n",
                         content_type='application/json', status=status)
