@@ -8,12 +8,14 @@ __revision__ = '$Id: views.py 21 2008-12-05 09:21:03Z jarek.zgoda $'
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 
 from confirmation.models import Confirmation
 from zproject.jinja2 import render_to_response
 
 
 def confirm(request, confirmation_key):
+    # type: (HttpRequest, str) -> HttpResponse
     confirmation_key = confirmation_key.lower()
     obj = Confirmation.objects.confirm(confirmation_key)
     confirmed = True
