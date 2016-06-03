@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.test import TestCase
 from django_auth_ldap.backend import _LDAPUser
+from typing import Dict
 
 import mock
 
@@ -93,7 +94,7 @@ class AuthBackendTest(TestCase):
         # Verify valid_attestation parameter is set correctly
         unverified_payload = dict(email_verified=False)
         with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=unverified_payload):
-            ret = dict()
+            ret = dict() # type: Dict[str, str]
             result = backend.authenticate(return_data=ret)
             self.assertIsNone(result)
             self.assertFalse(ret["valid_attestation"])
