@@ -12,11 +12,12 @@ from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.actions import set_default_streams, do_create_realm
 
 from optparse import make_option
+from six import text_type
 
 settings.TORNADO_SERVER = None
 
 def create_users(name_list, bot_type=None):
-    # type: (Iterable[Tuple[str, str]], int) -> None
+    # type: (Iterable[Tuple[text_type, str]], int) -> None
     realms = {}
     for realm in Realm.objects.all():
         realms[realm.domain] = realm
