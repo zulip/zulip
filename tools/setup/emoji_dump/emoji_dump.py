@@ -58,48 +58,53 @@ def code_point_to_file_name_map(ttx):
     return result
 
 
-# ttx is in the fonttools pacakge, the -z option is only on master
-# https://github.com/behdad/fonttools/
+def main():
+    # ttx is in the fonttools pacakge, the -z option is only on master
+    # https://github.com/behdad/fonttools/
 
-# NotoColorEmoji.tff is from
-# https://android.googlesource.com/platform/external/noto-fonts/+/marshmallow-release/other/NotoColorEmoji.ttf
-# note that you have to run it though base64 -D before being able
-# to use it, since it downloads from that page base64 encoded
-subprocess.call('ttx -v -z extfile NotoColorEmoji.ttf', shell=True)
+    # NotoColorEmoji.tff is from
+    # https://android.googlesource.com/platform/external/noto-fonts/+/marshmallow-release/other/NotoColorEmoji.ttf
+    # note that you have to run it though base64 -D before being able
+    # to use it, since it downloads from that page base64 encoded
+    subprocess.call('ttx -v -z extfile NotoColorEmoji.ttf', shell=True)
 
-try:
-    shutil.rmtree('out')
-except OSError:
-    pass
-
-os.mkdir('out')
-os.mkdir('out/unicode')
-
-emoji_map = json.load(open('emoji_map.json'))
-
-# Fix data problem with red/blue cars being inaccurate.
-emoji_map['blue_car'] = emoji_map['red_car']
-emoji_map['red_car'] = emoji_map['oncoming_automobile']
-
-failed = False
-code_point_to_fname_map = code_point_to_file_name_map("NotoColorEmoji.ttx")
-for name, code_point in emoji_map.items():
     try:
-        color_font(code_point, code_point_to_fname_map)
-    except MissingGlyphError:
+        shutil.rmtree('out')
+    except OSError:
+        pass
+
+    os.mkdir('out')
+    os.mkdir('out/unicode')
+
+    emoji_map = json.load(open('emoji_map.json'))
+
+    # Fix data problem with red/blue cars being inaccurate.
+    emoji_map['blue_car'] = emoji_map['red_car']
+    emoji_map['red_car'] = emoji_map['oncoming_automobile']
+
+    failed = False
+    code_point_to_fname_map = code_point_to_file_name_map("NotoColorEmoji.ttx")
+    for name, code_point in emoji_map.items():
         try:
-            bw_font(name, code_point)
-        except Exception as e:
-            print(e)
-            print('Missing {}, {}'.format(name, code_point))
-            failed = True
-            continue
+            color_font(code_point, code_point_to_fname_map)
+        except MissingGlyphError:
+            try:
+                bw_font(name, code_point)
+            except Exception as e:
+                print(e)
+                print('Missing {}, {}'.format(name, code_point))
+                failed = True
+                continue
 
-    os.symlink(
-        'unicode/{}.png'.format(code_point),
-        'out/{}.png'.format(name)
-    )
+        os.symlink(
+            'unicode/{}.png'.format(code_point),
+            'out/{}.png'.format(name)
+        )
 
-if failed:
-    print("Errors dumping emoji!")
-    sys.exit(1)
+    if failed:
+        print("Errors dumping emoji!")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
