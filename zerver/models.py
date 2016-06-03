@@ -923,7 +923,7 @@ class Message(models.Model):
             recipient_type,
             recipient_type_id,
     ):
-        # type: (bool, Message, int, int, str, str, str, int, str, int, int, str, str, str, str, str, bool, str, int, int, int) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, str, str, str, datetime.datetime, str, int, int, str, str, str, str, str, bool, str, int, int, int) -> Dict[str, Any]
         global bugdown
         if bugdown is None:
             from zerver.lib import bugdown
@@ -1395,7 +1395,7 @@ class UserPresence(models.Model):
     @staticmethod
     def to_presence_dict(client_name=None, status=None, dt=None, push_enabled=None,
                          has_push_devices=None, is_mirror_dummy=None):
-        # type: (Optional[str], Optional[int], Optional[int], Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
+        # type: (Optional[str], Optional[int], Optional[datetime.datetime], Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)
