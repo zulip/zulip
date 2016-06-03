@@ -349,7 +349,10 @@ class Client(object):
         if url is None:
             url = name
         if make_request is None:
-            make_request = lambda request=None: {} if request is None else request
+            def make_request(request=None):
+                if request is None:
+                    request = {}
+                return request
         def call(self, *args, **kwargs):
             request = make_request(*args, **kwargs)
             if computed_url is not None:
