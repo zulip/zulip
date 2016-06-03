@@ -167,7 +167,7 @@ memcached
 memcached is used to cache database model
 objects. ``zerver/lib/cache.py`` and ``zerver/lib/cache_helpers.py``
 manage putting things into memcached, and invalidating the cache when
-values change. The memcached configuration is in in
+values change. The memcached configuration is in
 ``puppet/zulip/files/memcached.conf``.
 
 Redis
@@ -193,61 +193,6 @@ memcached was used first and then we added Redis specifically to
 implement rate limiting. `We're discussing switching everything over
 to Redis.<https://github.com/zulip/zulip/issues/16>`__
 
-
-RabbitMQ
---------
-
-RabbitMQ is a queueing system. Its config files live in
-``zulip/puppet/zulip/files/rabbitmq``. Initial configuration happens
-in ``zulip/scripts/setup/configure-rabbitmq``.
-
-We use RabbitMQ for queuing expensive work (e.g. sending emails
-triggered by a message, push notifications, some analytics, etc.) that
-require reliable delivery but which we don't want to do on the main
-thread. It's also used for communication between the application
-server and the Tornado push system.
-
-Two simple wrappers around ``pika`` (the Python RabbitMQ client) are
-in ``zulip/server/lib/queue.py``. There's an asynchronous client for
-use in Tornado and a more general client for use elsewhere.
-
-``zerver/lib/event_queue.py`` has helper functions for putting events
-into one queue or another. Most of the processes started by Supervisor
-are queue processors that continually pull things out of a RabbitMQ
-queue and handle them.
-
-
-memcached
----------
-
-memcached is used to cache database model
-objects. ``zerver/lib/cache.py`` and ``zerver/lib/cache_helpers.py``
-manage putting things into memcached, and invalidating the cache when
-values change. The memcached configuration is in in
-``puppet/zulip/files/memcached.conf``.
-
-Redis
------
-
-Redis is used for a few very short-term data stores, such as in the
-basis of ``zerver/lib/rate_limiter.py``, a per-user rate limiting
-scheme `example
-<http://blog.domaintools.com/2013/04/rate-limiting-with-redis/>`__),
-and the `email-to-Zulip integration
-<https://zulip.com/integrations/#email>`__.
-
-Redis is configured in ``zulip/puppet/zulip/files/redis`` and it's a
-pretty standard configuration except for the last line, which turns
-off persistence:
-
-::
-
-     # Zulip-specific configuration: disable saving to disk.
-     save ""
-
-memcached was used first and then we added Redis specifically to
-implement rate limiting. `We're working on switching everything over
-to Redis.<https://github.com/zulip/zulip/issues/16>`__
 
 
 RabbitMQ
