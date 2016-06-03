@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import os
+import glob
 import shutil
 import subprocess
 import json
@@ -66,6 +67,12 @@ def main():
     # https://android.googlesource.com/platform/external/noto-fonts/+/marshmallow-release/other/NotoColorEmoji.ttf
     # note that you have to run it though base64 -D before being able
     # to use it, since it downloads from that page base64 encoded
+
+    # this is so we don't accidently leave ttx files from previous
+    # runs of this script lying around
+    for fname in glob.glob("*ttx*"):
+        os.remove(fname)
+
     subprocess.call('ttx -v -z extfile NotoColorEmoji.ttf', shell=True)
 
     try:
