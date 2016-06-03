@@ -28,24 +28,32 @@ for any particular type of object.
 from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 import six
+from typing import Any, Callable, Iterable, Optional, Tuple, TypeVar
+
+Validator = Callable[[str, Any], Optional[str]]
 
 def check_string(var_name, val):
+    # type: (str, Any) -> Optional[str]
     if not isinstance(val, six.string_types):
         return _('%s is not a string') % (var_name,)
     return None
 
 def check_int(var_name, val):
+    # type: (str, Any) -> Optional[str]
     if not isinstance(val, int):
         return _('%s is not an integer') % (var_name,)
     return None
 
 def check_bool(var_name, val):
+    # type: (str, Any) -> Optional[str]
     if not isinstance(val, bool):
         return _('%s is not a boolean') % (var_name,)
     return None
 
 def check_none_or(sub_validator):
+    # type: (Validator) -> Validator
     def f(var_name, val):
+        # type: (str, Any) -> Optional[str]
         if val is None:
             return None
         else:
@@ -53,7 +61,9 @@ def check_none_or(sub_validator):
     return f
 
 def check_list(sub_validator, length=None):
+    # type: (Validator, Optional[int]) -> Validator
     def f(var_name, val):
+        # type: (str, Any) -> Optional[str]
         if not isinstance(val, list):
             return _('%s is not a list') % (var_name,)
 
@@ -72,10 +82,9 @@ def check_list(sub_validator, length=None):
     return f
 
 def check_dict(required_keys):
-    # required_keys is a list of tuples of
-    # key_name/validator
-
+    # type: (Iterable[Tuple[str, Validator]]) -> Validator
     def f(var_name, val):
+        # type: (str, Any) -> Optional[str]
         if not isinstance(val, dict):
             return _('%s is not a dict') % (var_name,)
 
@@ -93,6 +102,7 @@ def check_dict(required_keys):
     return f
 
 def check_variable_type(allowed_type_funcs):
+    # type: (Iterable[Validator]) -> Validator
     """
     Use this validator if an argument is of a variable type (e.g. processing
     properties that might be strings or booleans).
@@ -101,6 +111,7 @@ def check_variable_type(allowed_type_funcs):
     types for this variable.
     """
     def enumerated_type_check(var_name, val):
+        # type: (str, Any) -> str
         for func in allowed_type_funcs:
             if not func(var_name, val):
                 return None
@@ -108,7 +119,9 @@ def check_variable_type(allowed_type_funcs):
     return enumerated_type_check
 
 def equals(expected_val):
+    # type: (Any) -> Validator
     def f(var_name, val):
+        # type: (str, Any) -> Optional[str]
         if val != expected_val:
             return (_('%(variable)s != %(expected_value)s (%(value)s is wrong)') %
                     {'variable': var_name,
