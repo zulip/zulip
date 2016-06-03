@@ -1,9 +1,9 @@
 from __future__ import absolute_import
-from typing import Any, Callable, Generator, Iterable, Tuple, Sized, Union, Optional # NOQA
+from typing import Any, Callable, Generator, Iterable, Tuple, Sized, Union, Optional
 
 from django.test import TestCase
 from django.template import loader
-from django.http import HttpResponse # NOQA
+from django.http import HttpResponse
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
@@ -17,7 +17,7 @@ from zerver.lib.actions import (
     get_display_recipient,
 )
 
-from zerver.models import ( # NOQA
+from zerver.models import (
     get_realm,
     get_stream,
     get_user_profile_by_email,
@@ -73,12 +73,12 @@ def simulated_empty_cache():
     # type: () -> Generator[List[Tuple[str, Union[str, List[str]], str]], None, None]
     cache_queries = [] # type: List[Tuple[str, Union[str, List[str]], str]]
     def my_cache_get(key, cache_name=None):
-        # type: (str, str) -> Any
+        # type: (str, Optional[str]) -> Any
         cache_queries.append(('get', key, cache_name))
         return None
 
     def my_cache_get_many(keys, cache_name=None):
-        # type: (List[str], str) -> Dict[str, Any]
+        # type: (List[str], Optional[str]) -> Dict[str, Any]
         cache_queries.append(('getmany', keys, cache_name))
         return None
 
@@ -118,12 +118,12 @@ def queries_captured():
 
     def cursor_execute(self, sql, params=()):
         # type: (TimeTrackingCursor, str, Iterable[Any]) -> None
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # NOQA
+        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.execute = cursor_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self, sql, params=()):
         # type: (TimeTrackingCursor, str, Iterable[Any]) -> None
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # NOQA
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.executemany = cursor_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
@@ -191,11 +191,11 @@ class DummyHandler(object):
     # Mocks RequestHandler.async_callback, which wraps a callback to
     # handle exceptions.  We return the callback as-is.
     def async_callback(self, cb):
-        # type: (Any) -> Any
+        # type: (Callable) -> Callable
         return cb
 
     def write(self, response):
-        # type: (Any) -> None
+        # type: (str) -> None
         raise NotImplemented
 
     def zulip_finish(self, response, *ignore):
@@ -228,12 +228,12 @@ class AuthedTestCase(TestCase):
     # Helper because self.client.patch annoying requires you to urlencode
 
     def client_patch(self, url, info={}, **kwargs):
-        # type: (str, Any, Dict[str, Any]) -> HttpResponse
+        # type: (str, Any, **Any) -> HttpResponse
         info = urllib.parse.urlencode(info)
         return self.client.patch(url, info, **kwargs)
 
     def client_put(self, url, info={}, **kwargs):
-        # type: (str, Any, Dict[str, Any]) -> HttpResponse
+        # type: (str, Any, **Any) -> HttpResponse
         info = urllib.parse.urlencode(info)
         return self.client.put(url, info, **kwargs)
 
@@ -295,7 +295,7 @@ class AuthedTestCase(TestCase):
 
     def send_message(self, sender_name, recipient_list, message_type,
                      content="test content", subject="test", **kwargs):
-        # type: (str, Iterable[str], int, str, str, Dict[str, Any]) -> int
+        # type: (str, Iterable[str], int, str, str, **Any) -> int
         sender = get_user_profile_by_email(sender_name)
         if message_type == Recipient.PERSONAL:
             message_type_name = "private"
@@ -395,7 +395,7 @@ class AuthedTestCase(TestCase):
         return result
 
     def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
-        # type: (str, str, Dict[str, Any], str, Dict[str, Any]) -> Message
+        # type: (str, str, Dict[str, Any], Optional[str], **Any) -> Message
         if stream_name is not None:
             self.subscribe_to_stream(email, stream_name)
 
