@@ -30,12 +30,6 @@ def lockfile(filename, shared=False):
        If shared is True, use a LOCK_SH lock, otherwise LOCK_EX.
 
        The file is given by name and will be created if it does not exist."""
-
-    if not os.path.exists(filename):
-        with open(filename, 'w') as lock:
-            lock.write('0')
-
-    # TODO: Can we just open the file for writing, and skip the above check?
-    with open(filename, 'r') as lock:
+    with open(filename, 'w') as lock:
         with flock(lock, shared=shared):
             yield
