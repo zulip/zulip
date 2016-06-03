@@ -26,7 +26,6 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   readme-symlink
    integration-guide
    new-feature-tutorial
    code-contribution-checklist
