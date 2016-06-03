@@ -3804,6 +3804,10 @@ form.admin-realm .control-label {
     text-align: right;
 }
 
+.btn-skip {
+    margin-right: 15px;
+}
+
 #share-the-love {
     margin-left: 0px;
     margin-right: 0px;
