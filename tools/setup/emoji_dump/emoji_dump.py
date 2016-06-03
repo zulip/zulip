@@ -16,7 +16,9 @@ class MissingGlyphError(Exception):
 
 
 def color_font(code_point, code_point_to_fname_map):
-    in_name = 'bitmaps/strike0/{}.png'.format(code_point_to_fname_map[int(code_point, 16)])
+    in_name = 'bitmaps/strike0/{}.png'.format(
+        code_point_to_fname_map[int(code_point, 16)]
+    )
     out_name = 'out/unicode/{}.png'.format(code_point)
     try:
         shutil.copyfile(in_name, out_name)
@@ -38,7 +40,11 @@ def bw_font(name, code_point):
     image = Image.new('RGBA', BIG_SIZE)
     draw = ImageDraw.Draw(image)
     draw.text((0, 0), char, font=font, fill='black')
-    image.resize(SIZE, Image.ANTIALIAS).save('out/unicode/{}.png'.format(code_point), 'PNG')
+    image.resize(SIZE, Image.ANTIALIAS).save(
+        'out/unicode/{}.png'.format(code_point), 'PNG'
+    )
+
+
 def code_point_to_file_name_map(ttx):
     """Given the NotoColorEmoji.ttx file, parse it to generate a map from
     codepoint to filename (a la glyph0****.png)
@@ -89,7 +95,10 @@ for name, code_point in emoji_map.items():
             failed = True
             continue
 
-    os.symlink('unicode/{}.png'.format(code_point), 'out/{}.png'.format(name))
+    os.symlink(
+        'unicode/{}.png'.format(code_point),
+        'out/{}.png'.format(name)
+    )
 
 if failed:
     print("Errors dumping emoji!")
