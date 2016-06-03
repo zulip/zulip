@@ -27,7 +27,6 @@ zerver/tests/test_email_mirror.py
 zerver/tests/test_decorators.py
 zerver/tests/test_auth_backends.py
 zerver/tests/test_upload.py
-zerver/tests/test_subs.py
 zerver/tests/test_messages.py
 zerver/tests/test_hooks.py
 """.split()
