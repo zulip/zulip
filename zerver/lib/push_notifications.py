@@ -1,10 +1,11 @@
 from __future__ import absolute_import
+from typing import Any, Dict, Optional
 
-from zerver.models import PushDeviceToken
+from zerver.models import PushDeviceToken, UserProfile
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.decorator import statsd_increment
 
-from apnsclient import Session, Message, APNs
+from apnsclient import Session, Message, APNs, Connection
 import gcmclient
 
 from django.conf import settings
@@ -26,6 +27,7 @@ if settings.DBX_APNS_CERT_FILE is not None and os.path.exists(settings.DBX_APNS_
     dbx_connection = session.get_connection(settings.APNS_SANDBOX, cert_file=settings.DBX_APNS_CERT_FILE)
 
 def num_push_devices_for_user(user_profile, kind = None):
+    # type: (UserProfile, Optional[int]) -> PushDeviceToken
     if kind is None:
         return PushDeviceToken.objects.filter(user=user_profile).count()
     else:
@@ -33,12 +35,15 @@ def num_push_devices_for_user(user_profile, kind = None):
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data):
+    # type: (bytes) -> str
     return binascii.hexlify(base64.b64decode(data))
 
 def hex_to_b64(data):
+    # type: (bytes) -> str
     return base64.b64encode(binascii.unhexlify(data))
 
 def _do_push_to_apns_service(user, message, apns_connection):
+    # type: (UserProfile, Message, Connection) -> None
     if not apns_connection:
         logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user))
         return
@@ -75,6 +80,7 @@ def _do_push_to_apns_service(user, message, apns_connection):
 # mobile app
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user, alert, **extra_data):
+    # type: (UserProfile, str, Dict[str, Any]) -> None
     if not connection and not dbx_connection:
         logging.error("Attempting to send push notification, but no connection was found. This may be because we could not find the APNS Certificate file.")
         return
@@ -95,6 +101,7 @@ def send_apple_push_notification(user, alert, **extra_data):
 # NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
 # feedback() call can take up to 15s
 def check_apns_feedback():
+    # type: () -> None
     feedback_connection = session.get_connection(settings.APNS_FEEDBACK, cert_file=settings.APNS_CERT_FILE)
     apns_client = APNs(feedback_connection, tail_timeout=20)
 
@@ -113,6 +120,7 @@ else:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(user, data):
+    # type: (UserProfile, Dict[str, str]) -> None
     if not gcm:
         logging.error("Attempting to send a GCM push notification, but no API key was configured")
         return
