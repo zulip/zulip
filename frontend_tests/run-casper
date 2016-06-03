@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import subprocess
-import requests
 import optparse
 import time
 import sys
 import os
 import glob
+try:
+    import requests
+except ImportError as e:
+    print("ImportError: {}".format(e))
+    print("You need to run the Zulip tests inside a Zulip dev environment.")
+    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
+    sys.exit(1)
 
 #
 # In order to use remote casperjs debugging, pass the --remote-debug flag

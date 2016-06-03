@@ -7,8 +7,13 @@ import sys
 import optparse
 import subprocess
 import traceback
-
-import lister
+try:
+    import lister
+except ImportError as e:
+    print("ImportError: {}".format(e))
+    print("You need to run the Zulip linters inside a Zulip dev environment.")
+    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
+    sys.exit(1)
 
 parser = optparse.OptionParser()
 parser.add_option('--full',

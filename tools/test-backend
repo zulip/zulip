@@ -6,9 +6,15 @@ import os
 import sys
 import subprocess
 
-import django
-from django.conf import settings
-from django.test.utils import get_runner
+try:
+    import django
+    from django.conf import settings
+    from django.test.utils import get_runner
+except ImportError as e:
+    print("ImportError: {}".format(e))
+    print("You need to run the Zulip tests inside a Zulip dev environment.")
+    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
+    sys.exit(1)
 
 if __name__ == "__main__":
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
