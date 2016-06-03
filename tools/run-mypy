@@ -19,7 +19,17 @@ zproject/settings.py
 zproject/test_settings.py
 zerver/lib/request.py
 zerver/migrations/
-zerver/tests/
+zerver/tests/test_bugdown.py
+zerver/tests/tests.py
+zerver/tests/test_unread.py
+zerver/tests/test_events.py
+zerver/tests/test_email_mirror.py
+zerver/tests/test_decorators.py
+zerver/tests/test_auth_backends.py
+zerver/tests/test_upload.py
+zerver/tests/test_subs.py
+zerver/tests/test_messages.py
+zerver/tests/test_hooks.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
