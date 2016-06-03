@@ -5,21 +5,23 @@ import shutil
 import subprocess
 import json
 import sys
+import xml.etree.ElementTree as ET
 from six import unichr
 
 from PIL import Image, ImageDraw, ImageFont
+
 
 class MissingGlyphError(Exception):
     pass
 
 
-def color_font(name, code_point):
-    in_name = 'bitmaps/strike1/uni{}.png'.format(code_point)
+def color_font(code_point, code_point_to_fname_map):
+    in_name = 'bitmaps/strike0/{}.png'.format(code_point_to_fname_map[int(code_point, 16)])
     out_name = 'out/unicode/{}.png'.format(code_point)
     try:
         shutil.copyfile(in_name, out_name)
     except IOError:
-        raise MissingGlyphError('name: %r code_point: %r' % (name, code_point))
+        raise MissingGlyphError('code_point: %r' % (code_point))
 
 
 def bw_font(name, code_point):
@@ -37,13 +39,26 @@ def bw_font(name, code_point):
     draw = ImageDraw.Draw(image)
     draw.text((0, 0), char, font=font, fill='black')
     image.resize(SIZE, Image.ANTIALIAS).save('out/unicode/{}.png'.format(code_point), 'PNG')
+def code_point_to_file_name_map(ttx):
+    """Given the NotoColorEmoji.ttx file, parse it to generate a map from
+    codepoint to filename (a la glyph0****.png)
+    """
+    result = {}
+    xml = ET.parse(ttx)
+    for elem in xml.find("*cmap_format_12"): # type: ignore # https://github.com/python/typeshed/pull/254
+        code_point = int(elem.attrib["code"], 16)
+        fname = elem.attrib["name"]
+        result[code_point] = fname
+    return result
 
 
 # ttx is in the fonttools pacakge, the -z option is only on master
 # https://github.com/behdad/fonttools/
 
 # NotoColorEmoji.tff is from
-# https://android.googlesource.com/platform/external/noto-fonts/+/kitkat-release/NotoColorEmoji.ttf
+# https://android.googlesource.com/platform/external/noto-fonts/+/marshmallow-release/other/NotoColorEmoji.ttf
+# note that you have to run it though base64 -D before being able
+# to use it, since it downloads from that page base64 encoded
 subprocess.call('ttx -v -z extfile NotoColorEmoji.ttf', shell=True)
 
 try:
@@ -61,9 +76,10 @@ emoji_map['blue_car'] = emoji_map['red_car']
 emoji_map['red_car'] = emoji_map['oncoming_automobile']
 
 failed = False
+code_point_to_fname_map = code_point_to_file_name_map("NotoColorEmoji.ttx")
 for name, code_point in emoji_map.items():
     try:
-        color_font(name, code_point)
+        color_font(code_point, code_point_to_fname_map)
     except MissingGlyphError:
         try:
             bw_font(name, code_point)
