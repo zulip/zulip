@@ -23,7 +23,7 @@ def upload_emoji(request, user_profile):
     try:
         check_add_realm_emoji(user_profile.realm, emoji_name, emoji_url)
     except ValidationError as e:
-        return json_error(e.message_dict)
+        return json_error(e.messages[0])
     return json_success()
 
 def delete_emoji(request, user_profile, emoji_name):
