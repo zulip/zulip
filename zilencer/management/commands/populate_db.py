@@ -30,13 +30,14 @@ import random
 import glob
 import os
 from optparse import make_option
+from six import text_type
 from six.moves import range
 from typing import Any, Dict, List, IO, Iterable, Mapping, Set, Tuple
 
 settings.TORNADO_SERVER = None
 
 def create_users(realms, name_list, bot_type=None):
-    # type: (Mapping[str, Realm], Iterable[Tuple[str, str]], int) -> None
+    # type: (Mapping[str, Realm], Iterable[Tuple[text_type, str]], int) -> None
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
