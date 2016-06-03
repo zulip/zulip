@@ -2,19 +2,23 @@ from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
-from zerver.models import get_client
+from django.http import HttpRequest, HttpResponse
+
+from zerver.models import get_client, UserProfile, Client
 
 from zerver.decorator import asynchronous, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, REQ
+    has_request_variables, REQ, _RespondAsynchronously
 
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_bool, check_list, check_string
 from zerver.lib.event_queue import allocate_client_descriptor, get_client_descriptor, \
     process_notification, fetch_events
+
 from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.narrow import check_supported_events_narrow_filter
 
+from typing import Union, Optional, Tuple, List, Any
 import time
 import ujson
 import logging
@@ -24,11 +28,13 @@ rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(req
 
 @internal_notify_view
 def notify(request):
+    # type: (HttpRequest) -> HttpResponse
     process_notification(ujson.loads(request.POST['data']))
     return json_success()
 
 @has_request_variables
 def cleanup_event_queue(request, user_profile, queue_id=REQ()):
+    # type: (HttpRequest, UserProfile, str) -> HttpResponse
     client = get_client_descriptor(queue_id)
     if client is None:
         return json_error(_("Bad event queue id: %s") % (queue_id,))
@@ -40,6 +46,7 @@ def cleanup_event_queue(request, user_profile, queue_id=REQ()):
 
 @authenticated_json_post_view
 def json_get_events(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> Union[HttpResponse, _RespondAsynchronously]
     return get_events_backend(request, user_profile, apply_markdown=True)
 
 @asynchronous
@@ -54,6 +61,7 @@ def get_events_backend(request, user_profile, handler,
                        dont_block = REQ(default=False, validator=check_bool),
                        narrow = REQ(default=[], validator=check_list(None)),
                        lifespan_secs = REQ(default=0, converter=int)):
+    # type: (HttpRequest, UserProfile, Any, Optional[Client], Optional[int], Optional[List[str]], bool, bool, Optional[str], bool, List[Tuple[str, str]], int) -> Union[HttpResponse, _RespondAsynchronously]
     if user_client is None:
         user_client = request.client
 
