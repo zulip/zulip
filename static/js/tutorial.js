@@ -321,16 +321,22 @@ function update_popover_info(popover_func) {
     current_popover_info = popover_func;
 }
 
-function finale() {
+function finale(skip) {
     var finale_modal = $("#tutorial-finale");
-    $(".screen").css({opacity: 0.0});
-    finale_modal.css("z-index", 20001);
-    finale_modal.modal("show");
+    if (skip === undefined) {
+        $(".screen").css({opacity: 0.0});
+        finale_modal.css("z-index", 20001);
+        finale_modal.modal("show");
 
-    $("#tutorial-get-started").click(function () {
+        $("#tutorial-get-started").click(function () {
+            finale_modal.modal("hide");
+            $(".screen").css({opacity: 0.0, width: 0, height: 0});
+        }).focus();
+    }
+    else {
         finale_modal.modal("hide");
         $(".screen").css({opacity: 0.0, width: 0, height: 0});
-    }).focus();
+    }
 
     // Restore your actual stream colors and rerender to display any
     // messages received during the tutorial.
@@ -508,6 +514,10 @@ function welcome() {
     $("#tutorial-message-next").click(function () {
         bar.popover("destroy");
         stream();
+    }).focus();
+    $("#tutorial-message-skip").click(function () {
+        bar.popover("destroy");
+        finale(true);
     }).focus();
 }
 
