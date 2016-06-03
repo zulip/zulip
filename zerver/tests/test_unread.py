@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-AA
 from __future__ import absolute_import
 
+from typing import Any, Dict, List
+
 from zerver.models import (
     get_user_profile_by_email, Recipient, UserMessage
 )
@@ -145,7 +147,7 @@ class UnreadCountTests(AuthedTestCase):
         message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello")
         unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello")
 
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                "op": "add",
@@ -194,7 +196,7 @@ class UnreadCountTests(AuthedTestCase):
 
         message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello", "test_topic")
         unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello", "Denmark2")
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                "op": "add",
