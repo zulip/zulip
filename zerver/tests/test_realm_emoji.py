@@ -14,7 +14,6 @@ class RealmEmojiTest(AuthedTestCase):
     def test_list(self):
         self.login("iago@zulip.com")
         realm = get_realm('zulip.com')
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
         check_add_realm_emoji(realm, "my_emoji", "https://realm.com/my_emoji")
         result = self.client.get("/json/realm/emoji")
         self.assert_json_success(result)
