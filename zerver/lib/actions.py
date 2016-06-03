@@ -3197,16 +3197,7 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
             # We're including nothing, so don't bother hitting the DB.
             query = []
 
-    def make_dict(row):
-        # type: (Stream) -> Dict[str, Any]
-        return dict(
-            stream_id = row.id,
-            name = row.name,
-            description = row.description,
-            invite_only = row.invite_only,
-        )
-
-    streams = [make_dict(row) for row in query]
+    streams = [(row.to_dict()) for row in query]
     streams.sort(key=lambda elt: elt["name"])
 
     return streams
