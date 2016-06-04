@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.http import HttpResponse
 from django.test import TestCase
 
 from zerver.forms import not_mit_mailing_list
@@ -27,38 +28,45 @@ from six.moves import range
 
 class MITNameTest(TestCase):
     def test_valid_hesiod(self):
+        # type: () -> None
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
             self.assertEquals(compute_mit_user_fullname("starnine@mit.edu"), "Athena Consulting Exchange User")
         with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
             self.assertEquals(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
 
     def test_invalid_hesiod(self):
+        # type: () -> None
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertEquals(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertEquals(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
 
     def test_mailinglist(self):
+        # type: () -> None
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertRaises(ValidationError, not_mit_mailing_list, "1234567890@mit.edu")
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertRaises(ValidationError, not_mit_mailing_list, "ec-discuss@mit.edu")
     def test_notmailinglist(self):
+        # type: () -> None
         with mock.patch('DNS.dnslookup', return_value=[['POP IMAP.EXCHANGE.MIT.EDU starnine']]):
             self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
 class RateLimitTests(AuthedTestCase):
 
     def setUp(self):
+        # type: () -> None
         settings.RATE_LIMITING = True
         add_ratelimit_rule(1, 5)
 
 
     def tearDown(self):
+        # type: () -> None
         settings.RATE_LIMITING = False
         remove_ratelimit_rule(1, 5)
 
     def send_api_message(self, email, api_key, content):
+        # type: (str, str, str) -> HttpResponse
         return self.client.post("/api/v1/send_message", {"type": "stream",
                                                                    "to": "Verona",
                                                                    "client": "test suite",
@@ -67,6 +75,7 @@ class RateLimitTests(AuthedTestCase):
                                                                    "email": email,
                                                                    "api-key": api_key})
     def test_headers(self):
+        # type: () -> None
         email = "hamlet@zulip.com"
         user = get_user_profile_by_email(email)
         clear_user_history(user)
@@ -78,6 +87,7 @@ class RateLimitTests(AuthedTestCase):
         self.assertTrue('X-RateLimit-Reset' in result)
 
     def test_ratelimit_decrease(self):
+        # type: () -> None
         email = "hamlet@zulip.com"
         user = get_user_profile_by_email(email)
         clear_user_history(user)
@@ -91,6 +101,7 @@ class RateLimitTests(AuthedTestCase):
 
     @slow(1.1, 'has to sleep to work')
     def test_hit_ratelimits(self):
+        # type: () -> None
         email = "cordelia@zulip.com"
         user = get_user_profile_by_email(email)
         clear_user_history(user)
@@ -117,6 +128,7 @@ class RateLimitTests(AuthedTestCase):
 
 class APNSTokenTests(AuthedTestCase):
     def test_add_token(self):
+        # type: () -> None
         email = "cordelia@zulip.com"
         self.login(email)
 
@@ -124,6 +136,7 @@ class APNSTokenTests(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_delete_token(self):
+        # type: () -> None
         email = "cordelia@zulip.com"
         self.login(email)
 
@@ -136,6 +149,7 @@ class APNSTokenTests(AuthedTestCase):
 
 class GCMTokenTests(AuthedTestCase):
     def test_add_token(self):
+        # type: () -> None
         email = "cordelia@zulip.com"
         self.login(email)
 
@@ -143,6 +157,7 @@ class GCMTokenTests(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_delete_token(self):
+        # type: () -> None
         email = "cordelia@zulip.com"
         self.login(email)
 
@@ -154,6 +169,7 @@ class GCMTokenTests(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_change_user(self):
+        # type: () -> None
         token = "test_token"
 
         self.login("cordelia@zulip.com")

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from django.conf import settings
+from django.http import HttpResponse
 from django.test import TestCase
 
 from zilencer.models import Deployment
@@ -28,7 +29,7 @@ import ujson
 from six.moves import urllib
 from six.moves import range
 import six
-
+from six import text_type
 
 class PublicURLTest(TestCase):
     """
@@ -37,6 +38,7 @@ class PublicURLTest(TestCase):
     """
 
     def fetch(self, method, urls, expected_status):
+        # type: (str, List[str], int) -> None
         for url in urls:
             response = getattr(self.client, method)(url) # e.g. self.client.post(url) if method is "post"
             self.assertEqual(response.status_code, expected_status,
@@ -44,6 +46,7 @@ class PublicURLTest(TestCase):
                     expected_status, response.status_code, method, url))
 
     def test_public_urls(self):
+        # type: () -> None
         """
         Test which views are accessible when not logged in.
         """
@@ -87,6 +90,7 @@ class PublicURLTest(TestCase):
             self.fetch("put", url_set, status_code)
 
     def test_get_gcid_when_not_configured(self):
+        # type: () -> None
         with self.settings(GOOGLE_CLIENT_ID=None):
             resp = self.client.get("/api/v1/fetch_google_client_id")
             self.assertEquals(400, resp.status_code,
@@ -96,6 +100,7 @@ class PublicURLTest(TestCase):
             self.assertEqual('error', data['result'])
 
     def test_get_gcid_when_configured(self):
+        # type: () -> None
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
             resp = self.client.get("/api/v1/fetch_google_client_id")
             self.assertEquals(200, resp.status_code,
@@ -111,19 +116,23 @@ class LoginTest(AuthedTestCase):
     """
 
     def test_login(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_login_bad_password(self):
+        # type: () -> None
         self.login("hamlet@zulip.com", "wrongpassword")
         self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_login_nonexist_user(self):
+        # type: () -> None
         result = self.login("xxx@zulip.com", "xxx")
         self.assertIn("Please enter a correct email and password", result.content)
 
     def test_register(self):
+        # type: () -> None
         realm = get_realm("zulip.com")
         streams = ["stream_%s" % i for i in range(40)]
         for stream in streams:
@@ -138,6 +147,7 @@ class LoginTest(AuthedTestCase):
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_register_deactivated(self):
+        # type: () -> None
         """
         If you try to register for a deactivated realm, you get a clear error
         page.
@@ -153,6 +163,7 @@ class LoginTest(AuthedTestCase):
             get_user_profile_by_email('test@zulip.com')
 
     def test_login_deactivated(self):
+        # type: () -> None
         """
         If you try to log in to a deactivated realm, you get a clear error page.
         """
@@ -164,11 +175,13 @@ class LoginTest(AuthedTestCase):
         self.assertIn("has been deactivated", result.content.replace("\n", " "))
 
     def test_logout(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         self.client.post('/accounts/logout/')
         self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_non_ascii_login(self):
+        # type: () -> None
         """
         You can log in even if your password contain non-ASCII characters.
         """
@@ -188,6 +201,7 @@ class LoginTest(AuthedTestCase):
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_register_first_user_with_invites(self):
+        # type: () -> None
         """
         The first user in a realm has a special step in their signup workflow
         for inviting other users. Do as realistic an end-to-end test as we can
@@ -260,6 +274,7 @@ class LoginTest(AuthedTestCase):
 class InviteUserTest(AuthedTestCase):
 
     def invite(self, users, streams):
+        # type: (str, List[text_type]) -> HttpResponse
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -274,13 +289,15 @@ class InviteUserTest(AuthedTestCase):
                     "stream": streams})
 
     def check_sent_emails(self, correct_recipients):
+        # type: (List[str]) -> None
         from django.core.mail import outbox
         self.assertEqual(len(outbox), len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in outbox]
         self.assertItemsEqual(email_recipients, correct_recipients)
 
     def test_bulk_invite_users(self):
-        # The bulk_invite_users code path is for the first user in a realm.
+        # type: () -> None
+        """The bulk_invite_users code path is for the first user in a realm."""
         self.login('hamlet@zulip.com')
         invitees = ['alice@zulip.com', 'bob@zulip.com']
         params = {
@@ -291,6 +308,7 @@ class InviteUserTest(AuthedTestCase):
         self.check_sent_emails(invitees)
 
     def test_successful_invite_user(self):
+        # type: () -> None
         """
         A call to /json/invite_users with valid parameters causes an invitation
         email to be sent.
@@ -302,6 +320,7 @@ class InviteUserTest(AuthedTestCase):
         self.check_sent_emails([invitee])
 
     def test_invite_user_signup_initial_history(self):
+        # type: () -> None
         """
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
@@ -327,6 +346,7 @@ class InviteUserTest(AuthedTestCase):
         self.assertFalse(secret_msg_id in invitee_msg_ids)
 
     def test_multi_user_invite(self):
+        # type: () -> None
         """
         Invites multiple users with a variety of delimiters.
         """
@@ -344,6 +364,7 @@ earl-test@zulip.com""", ["Denmark"]))
                                 "dave-test@zulip.com", "earl-test@zulip.com"])
 
     def test_missing_or_invalid_params(self):
+        # type: () -> None
         """
         Tests inviting with various missing or invalid parameters.
         """
@@ -359,6 +380,7 @@ earl-test@zulip.com""", ["Denmark"]))
         self.check_sent_emails([])
 
     def test_invalid_stream(self):
+        # type: () -> None
         """
         Tests inviting to a non-existent stream.
         """
@@ -368,6 +390,7 @@ earl-test@zulip.com""", ["Denmark"]))
         self.check_sent_emails([])
 
     def test_invite_existing_user(self):
+        # type: () -> None
         """
         If you invite an address already using Zulip, no invitation is sent.
         """
@@ -383,6 +406,7 @@ earl-test@zulip.com""", ["Denmark"]))
         self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self):
+        # type: () -> None
         """
         If you invite a mix of already existing and new users, invitations are
         only sent to the new users.
@@ -410,6 +434,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.check_sent_emails(new)
 
     def test_invite_outside_domain_in_closed_realm(self):
+        # type: () -> None
         """
         In a realm with `restricted_to_domain = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
@@ -427,6 +452,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     @slow(0.20, 'inviting is slow')
     def test_invite_outside_domain_in_open_realm(self):
+        # type: () -> None
         """
         In a realm with `restricted_to_domain = False`, you can invite people
         with a different domain from that of the realm or your e-mail address.
@@ -442,6 +468,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.check_sent_emails([external_address])
 
     def test_invite_with_non_ascii_streams(self):
+        # type: () -> None
         """
         Inviting someone to streams with non-ASCII characters succeeds.
         """
@@ -461,6 +488,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
 class EmailUnsubscribeTests(AuthedTestCase):
     def test_missedmessage_unsubscribe(self):
+        # type: () -> None
         """
         We provide one-click unsubscribe links in missed message
         e-mails that you can click even when logged out to update your
@@ -480,6 +508,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
         self.assertFalse(user_profile.enable_offline_email_notifications)
 
     def test_welcome_unsubscribe(self):
+        # type: () -> None
         """
         We provide one-click unsubscribe links in welcome e-mails that you can
         click even when logged out to stop receiving them.
@@ -502,6 +531,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
                 type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
     def test_digest_unsubscribe(self):
+        # type: () -> None
         """
         We provide one-click unsubscribe links in digest e-mails that you can
         click even when logged out to stop receiving them.
