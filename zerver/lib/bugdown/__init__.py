@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import Any, Callable, Dict, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union
 from typing.re import Match
 
 import markdown
@@ -40,7 +40,6 @@ import zerver.lib.mention as mention
 import six
 from six.moves import range
 from six import text_type
-
 
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -402,6 +401,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         p = current_node = markdown.util.etree.Element('p')
 
         def set_text(text):
+            # type: (text_type) -> None
             """
             Helper to set the text or the tail of the current_node
             """
@@ -811,16 +811,19 @@ def prepare_realm_pattern(source):
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
     def __init__(self, source_pattern, format_string, markdown_instance=None):
+        # type: (str, str, Optional[markdown.Markdown]) -> None
         self.pattern = prepare_realm_pattern(source_pattern)
         self.format_string = format_string
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
 
     def handleMatch(self, m):
+        # type: (Match[text_type]) -> Union[Element, text_type]
         return url_to_a(self.format_string % m.groupdict(),
                         m.group("name"))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def find_user_for_mention(self, name):
+        # type: (str) -> Tuple[bool, Dict[str, Any]]
         if db_data is None:
             return (False, None)
 
@@ -834,6 +837,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
         return (False, user)
 
     def handleMatch(self, m):
+        # type: (Match[text_type]) -> Optional[Element]
         name = m.group(2) or m.group(3)
 
         if current_message:
@@ -858,6 +862,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
+        # type: (Iterable[str]) -> Iterable[str]
         if current_message and db_data is not None:
             # We check for a user's custom notifications here, as we want
             # to check for plaintext words that depend on the recipient.
@@ -884,6 +889,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 # might be worth sending a version of this change upstream.
 class AtomicLinkPattern(LinkPattern):
     def handleMatch(self, m):
+        # type: (Match[text_type]) -> Optional[Element]
         ret = LinkPattern.handleMatch(self, m)
         if ret is None:
             return None
@@ -893,6 +899,7 @@ class AtomicLinkPattern(LinkPattern):
 
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
+        # type: (markdown.Markdown, Dict[str, Any]) -> None
         del md.preprocessors['reference']
 
         for k in ('image_link', 'image_reference', 'automail',
@@ -1006,9 +1013,10 @@ class Bugdown(markdown.Extension):
                     del md.parser.blockprocessors[k]
 
 md_engines = {}
-realm_filter_data = {}
+realm_filter_data = {} # type: Dict[str, List[Tuple[str, str]]]
 
 def make_md_engine(key, opts):
+    # type: (str, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         safe_mode     = 'escape',
         output_format = 'html',
@@ -1034,6 +1042,7 @@ def subject_links(domain, subject):
     return matches
 
 def make_realm_filters(domain, filters):
+    # type: (str, List[Tuple[str, str]]) -> None
     global md_engines, realm_filter_data
     if domain in md_engines:
         del md_engines[domain]
