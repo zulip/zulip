@@ -1603,6 +1603,7 @@ blockquote p {
     width: 10px;
 }
 
+.compose-all-everyone-controls,
 .compose_invite_user_controls {
     float: right;
 }

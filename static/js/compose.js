@@ -2,6 +2,7 @@ var compose = (function () {
 
 var exports = {};
 var is_composing_message = false;
+var user_acknowledged_all_everyone;
 var message_snapshot;
 var empty_subject_placeholder = "(no topic)";
 
@@ -696,6 +697,11 @@ function validate_stream_message() {
         }
     }
 
+    if (user_acknowledged_all_everyone === false) {
+        compose_error("Please remove @all / @everyone or acknowledge that you will be spamming everyone!");
+        return false;
+    }
+
     var response;
 
     if (!stream_data.is_subscribed(stream_name)) {
@@ -789,6 +795,25 @@ $(function () {
 
         if (data !== undefined && data.mentioned !== undefined) {
             var email = data.mentioned.email;
+            var current_stream = stream_data.get_sub(compose.stream_name());
+            var stream_count = current_stream.subscribers.num_items();
+
+            // warn if @all or @everyone is mentioned
+            if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone') {
+                var all_everyone_template = templates.render("compose_all_everyone",
+                                                             {count: stream_count, name: data.mentioned.full_name});
+                var error_area_all_everyone = $("#compose-all-everyone");
+
+                // only show one error for any number of @all or @everyone mentions
+                if (!error_area_all_everyone.is(':visible')) {
+                    error_area_all_everyone.append(all_everyone_template);
+                }
+
+                error_area_all_everyone.show();
+                user_acknowledged_all_everyone = false;
+                return; // don't check if @all or @everyone is subscribed to a stream
+            }
+
             if (compose_fade.would_receive_message(email) === false) {
                 var new_row = templates.render("compose-invite-users", {email: email,
                                                                         name: data.mentioned.full_name});
@@ -805,6 +830,16 @@ $(function () {
                 error_area.show();
             }
         }
+
+    });
+
+    $("#compose-all-everyone").on('click', '.compose-all-everyone-confirm', function (event) {
+        event.preventDefault();
+
+        $(event.target).parents('.compose-all-everyone').remove();
+        $("#compose-all-everyone").hide();
+        $("#send-status").hide();
+        user_acknowledged_all_everyone = true;
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
