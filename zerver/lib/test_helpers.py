@@ -38,6 +38,7 @@ import re
 import time
 import ujson
 from six.moves import urllib
+from six import text_type
 
 from contextlib import contextmanager
 import six
@@ -133,7 +134,7 @@ def queries_captured():
 
 
 def find_key_by_email(address):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     from django.core.mail import outbox
     key_regex = re.compile("accounts/do_confirm/([a-f0-9]{40})>")
     for message in reversed(outbox):
@@ -243,20 +244,20 @@ class AuthedTestCase(TestCase):
         return self.client.delete(url, encoded, **kwargs)
 
     def login(self, email, password=None):
-        # type: (str, Optional[str]) -> HttpResponse
+        # type: (text_type, Optional[text_type]) -> HttpResponse
         if password is None:
             password = initial_password(email)
         return self.client.post('/accounts/login/',
                                 {'username': email, 'password': password})
 
     def register(self, username, password, domain="zulip.com"):
-        # type: (str, str, str) -> HttpResponse
+        # type: (text_type, text_type, text_type) -> HttpResponse
         self.client.post('/accounts/home/',
                          {'email': username + "@" + domain})
         return self.submit_reg_form_for_user(username, password, domain=domain)
 
     def submit_reg_form_for_user(self, username, password, domain="zulip.com"):
-        # type: (str, str, str) -> HttpResponse
+        # type: (text_type, text_type, text_type) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -282,7 +283,7 @@ class AuthedTestCase(TestCase):
         }
 
     def get_streams(self, email):
-        # type: (str) -> Iterable[Dict[str, Any]]
+        # type: (text_type) -> List[text_type]
         """
         Helper function to get the stream names for a user
         """
@@ -319,7 +320,7 @@ class AuthedTestCase(TestCase):
         return data['messages']
 
     def users_subscribed_to_stream(self, stream_name, realm_domain):
-        # type: (str, str) -> List[UserProfile]
+        # type: (text_type, text_type) -> List[UserProfile]
         realm = get_realm(realm_domain)
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
@@ -387,7 +388,7 @@ class AuthedTestCase(TestCase):
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False):
-        # type: (str, Iterable[str], Dict[str, Any], bool) -> HttpResponse
+        # type: (str, Iterable[text_type], Dict[str, Any], bool) -> HttpResponse
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
