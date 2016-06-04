@@ -10,7 +10,7 @@ SQLAlchemy==0.7.8
 Werkzeug==0.11.8  # Dependency of moto s3 mock
 South==1.0.2
 Twisted==15.2.1
-apns-client==0.2.1
+apns-client==0.1.8
 argparse==1.2.1
 boto==2.38.0
 certifi==2015.4.28
