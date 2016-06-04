@@ -1,5 +1,10 @@
 from __future__ import absolute_import
-from zerver.models import get_client
+
+from typing import Any
+
+from django.http import HttpRequest
+
+from zerver.models import get_client, UserProfile
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
@@ -12,6 +17,7 @@ from .github import build_commit_list_content
 @has_request_variables
 def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dict([])),
                           stream=REQ(default='commits')):
+    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> None
     repository = payload['repository']
     commits = [{'id': commit['raw_node'], 'message': commit['message'],
                 'url': '%s%scommits/%s' % (payload['canon_url'],
