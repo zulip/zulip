@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
 from django.conf import settings
 settings.RUNNING_INSIDE_TORNADO = True
 # We must call zerver.lib.tornado_ioloop_logging.instrument_tornado_ioloop
@@ -12,6 +14,7 @@ from zerver.lib.tornado_ioloop_logging import instrument_tornado_ioloop
 instrument_tornado_ioloop()
 
 from django.core.management.base import BaseCommand, CommandError
+from django.http import HttpRequest, HttpResponse
 from optparse import make_option
 import os
 import sys
@@ -55,6 +58,7 @@ class Command(BaseCommand):
     args = '[optional port number or ipaddr:port]\n  (use multiple ports to start multiple servers)'
 
     def handle(self, addrport, **options):
+        # type: (str, **bool) -> None
         # setup unbuffered I/O
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
         sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
@@ -83,6 +87,7 @@ class Command(BaseCommand):
                 format='%(asctime)s %(levelname)-8s %(message)s')
 
         def inner_run():
+            # type: () -> None
             from django.conf import settings
             from django.utils import translation
             translation.activate(settings.LANGUAGE_CODE)
@@ -139,6 +144,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
     initLock = Lock()
 
     def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         super(AsyncDjangoHandler, self).__init__(*args, **kwargs)
 
         # Set up middleware if needed. We couldn't do this earlier, because
@@ -155,9 +161,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         allocate_handler_id(self)
 
     def __repr__(self):
+        # type: () -> str
         return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, get_descriptor_by_handler_id(self.handler_id))
 
     def get(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         environ  = WSGIContainer.environ(self.request)
         environ['PATH_INFO'] = urllib.parse.unquote(environ['PATH_INFO'])
         request  = WSGIRequest(environ)
@@ -186,21 +194,26 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
 
     def head(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         self.get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         self.get(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         self.get(*args, **kwargs)
 
     def on_connection_close(self):
+        # type: () -> None
         client_descriptor = get_descriptor_by_handler_id(self.handler_id)
         if client_descriptor is not None:
             client_descriptor.disconnect_handler(client_closed=True)
 
     # Based on django.core.handlers.base: get_response
     def get_response(self, request):
+        # type: (HttpRequest) -> HttpResponse
         "Returns an HttpResponse object for the given HttpRequest"
         try:
             try:
@@ -325,6 +338,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     ### Copied from get_response (above in this file)
     def apply_response_middleware(self, request, response, resolver):
+        # type: (HttpRequest, HttpResponse, urlresolvers.RegexURLResolver) -> HttpResponse
         try:
             # Apply response middleware, regardless of the response
             for middleware_method in self._response_middleware:
@@ -337,6 +351,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         return response
 
     def zulip_finish(self, response, request, apply_markdown):
+        # type: (HttpResponse, HttpRequest, bool) -> None
         # Make sure that Markdown rendering really happened, if requested.
         # This is a security issue because it's where we escape HTML.
         # c.f. ticket #64

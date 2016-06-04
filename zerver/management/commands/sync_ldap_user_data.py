@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import logging
+from typing import Any
 
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
@@ -24,6 +25,7 @@ logger.addHandler(file_handler)
 
 # Run this on a cronjob to pick up on name changes.
 def sync_ldap_user_data():
+    # type: () -> None
     logger.info("Starting update.")
     backend = ZulipLDAPUserPopulator()
     for u in UserProfile.objects.select_related().filter(is_active=True, is_bot=False).all():
@@ -40,4 +42,5 @@ def sync_ldap_user_data():
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         sync_ldap_user_data()

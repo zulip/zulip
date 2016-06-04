@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.core.management import CommandError
 from django.conf import settings
@@ -11,6 +14,7 @@ import threading
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('--queue_name', metavar='<queue name>', type=str,
                             help="queue to process")
         parser.add_argument('--worker_num', metavar='<worker number>', type=int, nargs='?', default=0,
@@ -20,6 +24,7 @@ class Command(BaseCommand):
 
     help = "Runs a queue processing worker"
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         logging.basicConfig()
         logger = logging.getLogger('process_queue')
 
@@ -51,10 +56,12 @@ class Command(BaseCommand):
 
 class Threaded_worker(threading.Thread):
     def __init__(self, queue_name):
+        # type: (str) -> None
         threading.Thread.__init__(self)
         self.worker = get_worker(queue_name)
 
     def run(self):
+        # type: () -> None
         self.worker.setup()
         logging.debug('starting consuming ' + self.worker.queue_name)
         self.worker.start()

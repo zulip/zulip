@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any, Iterable
+
 from optparse import make_option
 import logging
 import sys
@@ -41,6 +43,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if not options["flag"] or not options["op"] or not options["email"]:
             print("Please specify an operation, a flag and an email")
             exit(1)
@@ -65,6 +68,7 @@ class Command(BaseCommand):
             sys.stderr.close()
 
         def do_update(batch):
+            # type: (Iterable[int]) -> None
             msgs = UserMessage.objects.filter(id__in=batch)
             if op == 'add':
                 msgs.update(flags=models.F('flags').bitor(flag))

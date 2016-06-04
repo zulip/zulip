@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from typing import Any, Iterable, Tuple
+
 from django.core.management.base import BaseCommand
 
 from django.contrib.sites.models import Site
@@ -14,6 +16,7 @@ from optparse import make_option
 settings.TORNADO_SERVER = None
 
 def create_users(name_list, bot_type=None):
+    # type: (Iterable[Tuple[str, str]], int) -> None
     realms = {}
     for realm in Realm.objects.all():
         realms[realm.domain] = realm
@@ -35,7 +38,8 @@ class Command(BaseCommand):
                     help='The number of extra users to create'),
         )
 
-    def handle(self, **options):
+    def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         Realm.objects.create(domain="zulip.com")
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]

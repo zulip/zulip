@@ -2,6 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 import datetime
 import pytz
 
@@ -19,10 +22,12 @@ class Command(BaseCommand):
     help = "Generate statistics on realm activity."
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('realms', metavar='<realm>', type=str, nargs='*',
                             help="realm to generate statistics for")
 
     def active_users(self, realm):
+        # type: (Realm) -> List[UserProfile]
         # Has been active (on the website, for now) in the last 7 days.
         activity_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=7)
         return [activity.user_profile for activity in \
@@ -33,36 +38,44 @@ class Command(BaseCommand):
                                                 client__name="website")]
 
     def messages_sent_by(self, user, days_ago):
+        # type: (UserProfile, int) -> int
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender=user, pub_date__gt=sent_time_cutoff).count()
 
     def total_messages(self, realm, days_ago):
+        # type: (Realm, int) -> int
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
         return Message.objects.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).count()
 
     def human_messages(self, realm, days_ago):
+        # type: (Realm, int) -> int
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).count()
 
     def api_messages(self, realm, days_ago):
+        # type: (Realm, int) -> int
         return (self.total_messages(realm, days_ago) - self.human_messages(realm, days_ago))
 
     def stream_messages(self, realm, days_ago):
+        # type: (Realm, int) -> int
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff,
                                      recipient__type=Recipient.STREAM).count()
 
     def private_messages(self, realm, days_ago):
+        # type: (Realm, int) -> int
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
             recipient__type=Recipient.STREAM).exclude(recipient__type=Recipient.HUDDLE).count()
 
     def group_private_messages(self, realm, days_ago):
+        # type: (Realm, int) -> int
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
             recipient__type=Recipient.STREAM).exclude(recipient__type=Recipient.PERSONAL).count()
 
     def report_percentage(self, numerator, denominator, text):
+        # type: (float, float, str) -> None
         if not denominator:
             fraction = 0.0
         else:
@@ -70,6 +83,7 @@ class Command(BaseCommand):
         print("%.2f%% of" % (fraction * 100,), text)
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if options['realms']:
             try:
                 realms = [get_realm(domain) for domain in options['realms']]

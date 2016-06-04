@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import send_referral_event
@@ -9,12 +12,14 @@ class Command(BaseCommand):
     help = """Grants a user invites and resets the number of invites they've used."""
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('email', metavar='<email>', type=str,
                             help="user to grant invites to")
         parser.add_argument('num_invites', metavar='<num invites>', type=int,
                             help="number of invites to grant")
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         email = options['email']
         num_invites = options['num_invites']
 

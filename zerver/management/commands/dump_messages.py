@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from zerver.models import get_realm, Message, Realm, Stream, Recipient
@@ -24,6 +26,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         realm = get_realm(options["domain"])
         streams = Stream.objects.filter(realm=realm, invite_only=False)
         recipients = Recipient.objects.filter(

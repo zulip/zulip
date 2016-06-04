@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from zerver.models import UserProfile, get_user_profile_by_email
 from zerver.lib.rate_limiter import block_user, unblock_user
 
@@ -11,6 +14,7 @@ class Command(BaseCommand):
     help = """Manually block or unblock a user from accessing the API"""
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('-e', '--email',
                             dest='email',
                             help="Email account of user.")
@@ -35,6 +39,7 @@ class Command(BaseCommand):
                             help="operation to perform (block or unblock)")
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if (not options['api_key'] and not options['email']) or \
            (options['api_key'] and options['email']):
             print("Please enter either an email or API key to manage")

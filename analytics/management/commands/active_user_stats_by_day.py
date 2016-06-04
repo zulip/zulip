@@ -5,6 +5,7 @@ import datetime
 import pytz
 
 from optparse import make_option
+from typing import Any
 from django.core.management.base import BaseCommand
 from zerver.lib.statistics import activity_averages_during_day
 
@@ -16,6 +17,7 @@ class Command(BaseCommand):
                      help="Day to query in format 2013-12-05.  Default is yesterday"),)
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if options["date"] is None:
             date = datetime.datetime.now() - datetime.timedelta(days=1)
         else:

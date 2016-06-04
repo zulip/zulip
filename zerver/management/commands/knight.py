@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 
@@ -15,6 +18,7 @@ ONLY perform this on customer request from an authorized person.
 """
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('-f', '--for-real',
                             dest='ack',
                             action="store_true",
@@ -34,6 +38,7 @@ ONLY perform this on customer request from an authorized person.
                             help="email of user to knight")
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         email = options['email']
         try:
             profile = UserProfile.objects.get(email=email)

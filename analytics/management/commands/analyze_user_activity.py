@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from typing import Any, Dict
+
 from zerver.lib.statistics import seconds_usage_between
 
 from optparse import make_option
@@ -11,6 +13,7 @@ import datetime
 from django.utils.timezone import utc
 
 def analyze_activity(options):
+    # type: (Dict[str, Any]) -> None
     day_start = datetime.datetime.strptime(options["date"], "%Y-%m-%d").replace(tzinfo=utc)
     day_end = day_start + datetime.timedelta(days=options["duration"])
 
@@ -56,4 +59,5 @@ is shown for all realms"""
         )
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         analyze_activity(options)

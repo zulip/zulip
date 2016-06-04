@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from zerver.models import Realm, get_realm
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
@@ -16,6 +19,7 @@ Example: python manage.py realm_emoji --realm=zulip.com --op=show
 """
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('-r', '--realm',
                             dest='domain',
                             type=str,
@@ -32,6 +36,7 @@ Example: python manage.py realm_emoji --realm=zulip.com --op=show
                             help="URL of image to display for the emoji")
 
     def handle(self, *args, **options):
+        # type: (*Any, **str) -> None
         realm = get_realm(options["domain"])
         if options["op"] == "show":
             for name, url in six.iteritems(realm.get_emoji()):

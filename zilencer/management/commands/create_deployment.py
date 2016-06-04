@@ -1,7 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
+
 from optparse import make_option
 import sys
+from typing import Any
 
 from django.core.management.base import BaseCommand
 
@@ -31,6 +33,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if None in (options["api"], options["web"], options["domain"]):
             print("\033[1;31mYou must provide a domain, an API URL, and a web URL.\033[0m\n", file=sys.stderr)
             self.print_help("python manage.py", "create_realm")

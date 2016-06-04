@@ -36,6 +36,9 @@ This script can be used via two mechanisms:
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 import email
 import os
 from email.header import decode_header
@@ -123,9 +126,11 @@ def login_failed(failure):
     return failure
 
 def done(_):
+    # type: (Any) -> None
     reactor.callLater(0, reactor.stop)
 
 def main():
+    # type: () -> None
     imap_client = protocol.ClientCreator(reactor, imap4.IMAP4Client)
     d = imap_client.connectSSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT, ssl.ClientContextFactory())
     d.addCallbacks(connected, login_failed)
@@ -135,10 +140,12 @@ class Command(BaseCommand):
     help = __doc__
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('recipient', metavar='<recipient>', type=str, nargs='?', default=None,
                             help="original recipient")
 
     def handle(self, *args, **options):
+        # type: (*Any, **str) -> None
         rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", options['recipient'])
         if rcpt_to is not None:
             if is_missed_message_address(rcpt_to):

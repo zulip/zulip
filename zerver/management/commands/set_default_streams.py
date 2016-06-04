@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
 from django.core.management.base import BaseCommand
 
 from zerver.models import get_realm
@@ -36,6 +38,7 @@ python manage.py set_default_streams --domain=foo.com --streams=
         )
 
     def handle(self, **options):
+        # type: (*Any, **str) -> None
         if options["domain"] is None or options["streams"] is None:
             print("Please provide both a domain name and a default \
 set of streams (which can be empty, with `--streams=`).", file=sys.stderr)

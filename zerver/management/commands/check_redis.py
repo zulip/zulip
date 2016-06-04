@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any, Callable, Optional
+
 from zerver.models import get_user_profile_by_id
 from zerver.lib.rate_limiter import client, max_api_calls, max_api_window
 
@@ -24,6 +26,7 @@ class Command(BaseCommand):
         )
 
     def _check_within_range(self, key, count_func, trim_func=None):
+        # type: ignore # should be (str, Callable[[], int], Optional[Callable[[str, int], None]]) -> None
         user_id = int(key.split(':')[1])
         try:
             user = get_user_profile_by_id(user_id)
@@ -44,6 +47,7 @@ than max_api_calls! (trying to trim) %s %s" % (key, count))
                 trim_func(key, max_calls)
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if not settings.RATE_LIMITING:
             print("This machine is not using redis or rate limiting, aborting")
             exit(1)

@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
 import os
 import ujson
 from optparse import make_option
@@ -32,6 +34,7 @@ Example:
         )
 
     def handle(self, **options):
+        # type: (*Any, **str) -> None
         if options['fixture'] is None or options['url'] is None:
             self.print_help('python manage.py', 'send_webhook_fixture_message')
             exit(1)
@@ -47,7 +50,9 @@ Example:
         client.post(options['url'], json, content_type="application/json")
 
     def _does_fixture_path_exist(self, fixture_path):
+        # type: (str) -> bool
         return os.path.exists(fixture_path)
 
     def _get_fixture_as_json(self, fixture_path):
+        # type: (str) -> str
         return ujson.dumps(ujson.loads(open(fixture_path).read()))
