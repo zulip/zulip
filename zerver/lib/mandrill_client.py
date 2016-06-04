@@ -3,7 +3,10 @@ from django.conf import settings
 
 MAIL_CLIENT = None
 
+from typing import Optional
+
 def get_mandrill_client():
+    # type: () -> Optional[mandrill.Mandrill]
     if settings.MANDRILL_API_KEY == '' or settings.DEVELOPMENT or settings.VOYAGER:
         return None
 
