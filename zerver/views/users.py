@@ -71,7 +71,7 @@ def reactivate_user_backend(request, user_profile, email):
 @has_request_variables
 def update_user_backend(request, user_profile, email,
                         is_admin=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, text_type, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, Optional[bool]) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -108,7 +108,7 @@ def get_stream_name(stream):
     return name
 
 def stream_or_none(stream_name, realm):
-    # type: (text_type, Realm) -> Stream
+    # type: (text_type, Realm) -> Optional[Stream]
     if stream_name == '':
         return None
     else:
@@ -123,7 +123,7 @@ def patch_bot_backend(request, user_profile, email,
                       default_sending_stream=REQ(default=None),
                       default_events_register_stream=REQ(default=None),
                       default_all_public_streams=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, text_type, text_type, Stream, Stream, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[text_type], Optional[text_type], Optional[bool]) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
     except:
@@ -181,10 +181,10 @@ def regenerate_bot_api_key(request, user_profile, email):
 
 @has_request_variables
 def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
-                    default_sending_stream=REQ(default=None),
-                    default_events_register_stream=REQ(default=None),
+                    default_sending_stream_name=REQ('default_sending_stream', default=None),
+                    default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, text_type, text_type, Stream, Stream, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, text_type, Optional[text_type], Optional[text_type], Optional[bool]) -> HttpResponse
     short_name += "-bot"
     email = short_name + "@" + user_profile.realm.domain
     form = CreateUserForm({'full_name': full_name, 'email': email})
@@ -207,15 +207,17 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
         upload_avatar_image(user_file, user_profile, email)
         avatar_source = UserProfile.AVATAR_FROM_USER
 
-    if default_sending_stream is not None:
-        default_sending_stream = stream_or_none(default_sending_stream, user_profile.realm)
+    default_sending_stream = None
+    if default_sending_stream_name is not None:
+        default_sending_stream = stream_or_none(default_sending_stream_name, user_profile.realm)
     if default_sending_stream and not default_sending_stream.is_public() and not \
         subscribed_to_stream(user_profile, default_sending_stream):
         return json_error(_('Insufficient permission'))
 
-    if default_events_register_stream is not None:
-        default_events_register_stream = stream_or_none(default_events_register_stream,
-                                                         user_profile.realm)
+    default_events_register_stream = None
+    if default_events_register_stream_name is not None:
+        default_events_register_stream = stream_or_none(default_events_register_stream_name,
+                                                        user_profile.realm)
     if default_events_register_stream and not default_events_register_stream.is_public() and not \
         subscribed_to_stream(user_profile, default_events_register_stream):
         return json_error(_('Insufficient permission'))
