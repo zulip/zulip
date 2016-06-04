@@ -26,7 +26,7 @@ class Command(BaseCommand):
         )
 
     def _check_within_range(self, key, count_func, trim_func=None):
-        # type: ignore # should be (str, Callable[[], int], Optional[Callable[[str, int], None]]) -> None
+        # type: ignore # mypy #1567 should be (str, Callable[[], int], Optional[Callable[[str, int], None]]) -> None
         user_id = int(key.split(':')[1])
         try:
             user = get_user_profile_by_id(user_id)
