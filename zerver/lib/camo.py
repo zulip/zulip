@@ -3,10 +3,12 @@ import codecs
 import hashlib
 import hmac
 
+from six import text_type
+
 # Encodes the provided URL using the same algorithm used by the camo
 # caching https image proxy
 def get_camo_url(url):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     # Only encode the url if Camo is enabled
     if settings.CAMO_URI == '':
         return url
