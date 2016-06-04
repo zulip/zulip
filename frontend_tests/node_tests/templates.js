@@ -190,6 +190,19 @@ function render(template_name, args) {
     assert.equal(button.text(), "Subscribe");
 }());
 
+(function compose_all_everyone() {
+    var args = {
+        count: '101',
+        name: 'all'
+    };
+    var html = render('compose_all_everyone', args);
+    global.write_test_output("compose_all_everyone.handlebars", html);
+    var button = $(html).find("button:first");
+    assert.equal(button.text(), "YES");
+    var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
+    assert.equal(error_msg, "Are you sure you want to message all 101 people in this stream?");
+}());
+
 (function compose_notification() {
     var args = {
         "note": "You sent a message to a muted topic.",

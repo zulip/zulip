@@ -2,6 +2,14 @@ var compose = (function () {
 
 var exports = {};
 var is_composing_message = false;
+
+// Track the state of the @all warning. The user must acknowledge that they are spamming the entire stream
+// before the warning will go away. If they try to send before explicitly dismissing the warning, they will
+// get an error message too.
+// undefined: no @all/@everyone in message; false: user typed @all/@everyone; true: user clicked YES
+var user_acknowledged_all_everyone;
+var all_everyone_re = /(@\*{2}(all|everyone)\*{2})|(@(all|everyone))/;
+
 var message_snapshot;
 var empty_subject_placeholder = "(no topic)";
 
@@ -85,6 +93,28 @@ function show_box(tabname, focus_area, opts) {
 
 }
 
+function show_all_everyone_warnings() {
+    var current_stream = stream_data.get_sub(compose.stream_name());
+    var stream_count = current_stream.subscribers.num_items();
+
+    var all_everyone_template = templates.render("compose_all_everyone", {count: stream_count});
+    var error_area_all_everyone = $("#compose-all-everyone");
+
+    // only show one error for any number of @all or @everyone mentions
+    if (!error_area_all_everyone.is(':visible')) {
+        error_area_all_everyone.append(all_everyone_template);
+    }
+
+    error_area_all_everyone.show();
+    user_acknowledged_all_everyone = false;
+}
+
+function clear_all_everyone_warnings() {
+    $("#compose-all-everyone").hide();
+    $("#compose-all-everyone").empty();
+    $("#send-status").hide();
+}
+
 function clear_invites() {
     $("#compose_invite_users").hide();
     $("#compose_invite_users").empty();
@@ -93,6 +123,8 @@ function clear_invites() {
 function clear_box() {
     exports.snapshot_message();
     clear_invites();
+    clear_all_everyone_warnings();
+    user_acknowledged_all_everyone = undefined;
     $("#compose").find('input[type=text], textarea').val('');
     autosize_textarea();
     $("#send-status").hide(0);
@@ -342,6 +374,11 @@ exports.restore_message = function () {
     clear_message_snapshot();
     compose_fade.clear_compose();
     compose.start(snapshot_copy.type, snapshot_copy);
+
+    if (snapshot_copy.content !== undefined &&
+        all_everyone_re.test(snapshot_copy.content)) {
+        show_all_everyone_warnings();
+    }
 };
 
 function compose_error(error_text, bad_input) {
@@ -696,6 +733,23 @@ function validate_stream_message() {
         }
     }
 
+    // check if @all or @everyone is in the message
+    if (all_everyone_re.test(exports.message_content())) {
+        if (user_acknowledged_all_everyone === undefined ||
+            user_acknowledged_all_everyone === false) {
+            // user has not seen a warning message yet if undefined
+            show_all_everyone_warnings();
+            // user has not acknowledge the warning message yet
+            compose_error("Please remove @all / @everyone or acknowledge that you will be spamming everyone!");
+            return false;
+        }
+    } else {
+        // the message no longer contains @all or @everyone
+        clear_all_everyone_warnings();
+    }
+    // at this point, the user has either acknowledged the warning or removed @all / @everyone
+    user_acknowledged_all_everyone = undefined;
+
     var response;
 
     if (!stream_data.is_subscribed(stream_name)) {
@@ -789,6 +843,13 @@ $(function () {
 
         if (data !== undefined && data.mentioned !== undefined) {
             var email = data.mentioned.email;
+
+            // warn if @all or @everyone is mentioned
+            if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone') {
+                show_all_everyone_warnings();
+                return; // don't check if @all or @everyone is subscribed to a stream
+            }
+
             if (compose_fade.would_receive_message(email) === false) {
                 var new_row = templates.render("compose-invite-users", {email: email,
                                                                         name: data.mentioned.full_name});
@@ -805,6 +866,16 @@ $(function () {
                 error_area.show();
             }
         }
+
+    });
+
+    $("#compose-all-everyone").on('click', '.compose-all-everyone-confirm', function (event) {
+        event.preventDefault();
+
+        $(event.target).parents('.compose-all-everyone').remove();
+        user_acknowledged_all_everyone = true;
+        clear_all_everyone_warnings();
+        $('#new_message_content').focus().select();
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
