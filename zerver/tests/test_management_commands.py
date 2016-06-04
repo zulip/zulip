@@ -10,6 +10,7 @@ class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
 
     def setUp(self):
+        # type: () -> None
         self.fixture_path = os.path.join('some', 'fake', 'path.json')
         self.url = '/some/url/with/hook'
 
