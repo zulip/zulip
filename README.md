@@ -24,8 +24,8 @@ at https://www.zulip.org.
 
 [1]: https://travis-ci.org/zulip/zulip.svg?branch=master
 [2]: https://travis-ci.org/zulip/zulip
-[3]: https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=coveralls
-[4]: https://coveralls.io/github/zulip/zulip?branch=coveralls
+[3]: https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master
+[4]: https://coveralls.io/github/zulip/zulip?branch=master
 [5]: http://mypy-lang.org/
 
 ## Installing the Zulip Development environment
