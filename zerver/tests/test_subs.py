@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from zerver.lib import cache
 
@@ -29,14 +29,17 @@ from zerver.lib.actions import (
     get_user_profile_by_email, set_default_streams,
 )
 
+from django.http import HttpResponse
 import random
 import ujson
 import six
+from six import text_type
 from six.moves import range, urllib
 
 
 class StreamAdminTest(AuthedTestCase):
     def test_make_stream_public(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
@@ -62,6 +65,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertFalse(stream.invite_only)
 
     def test_make_stream_private(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
@@ -78,6 +82,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertTrue(stream.invite_only)
 
     def test_deactivate_stream_backend(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
@@ -97,6 +102,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertFalse(subscription_exists)
 
     def test_deactivate_stream_backend_requires_realm_admin(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
@@ -108,6 +114,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_rename_stream(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
@@ -144,6 +151,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertTrue(stream_name2_exists)
 
     def test_rename_stream_requires_realm_admin(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
@@ -154,6 +162,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_change_stream_description(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
@@ -186,6 +195,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertEqual('Test description', stream.description)
 
     def test_change_stream_description_requires_realm_admin(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
@@ -201,6 +211,7 @@ class StreamAdminTest(AuthedTestCase):
 
     def set_up_stream_for_deletion(self, stream_name, invite_only=False,
                                    subscribed=True):
+        # type: (str, bool, bool) -> Stream
         """
         Create a stream for deletion by an administrator.
         """
@@ -219,6 +230,7 @@ class StreamAdminTest(AuthedTestCase):
         return stream
 
     def delete_stream(self, stream, subscribed=True):
+        # type: (Stream, bool) -> None
         """
         Delete the stream and assess the result.
         """
@@ -269,6 +281,7 @@ class StreamAdminTest(AuthedTestCase):
             result, "Unable to access stream (%s)." % (deactivated_stream_name,))
 
     def test_delete_public_stream(self):
+        # type: () -> None
         """
         When an administrator deletes a public stream, that stream is not
         visible to users at all anymore.
@@ -277,6 +290,7 @@ class StreamAdminTest(AuthedTestCase):
         self.delete_stream(stream)
 
     def test_delete_private_stream(self):
+        # type: () -> None
         """
         Administrators can delete private streams they are on.
         """
@@ -284,6 +298,7 @@ class StreamAdminTest(AuthedTestCase):
         self.delete_stream(stream)
 
     def test_delete_streams_youre_not_on(self):
+        # type: () -> None
         """
         Administrators can delete public streams they aren't on, but cannot
         delete private streams they aren't on.
@@ -301,6 +316,8 @@ class StreamAdminTest(AuthedTestCase):
 
     def attempt_unsubscribe_of_principal(self, is_admin=False, is_subbed=True,
                                          invite_only=False, other_user_subbed=True):
+        # type: (bool, bool, bool, bool) -> HttpResponse
+
         # Set up the main user, who is in most cases an admin.
         email = "hamlet@zulip.com"
         self.login(email)
@@ -337,6 +354,7 @@ class StreamAdminTest(AuthedTestCase):
         return result
 
     def test_cant_remove_others_from_stream(self):
+        # type: () -> None
         """
         If you're not an admin, you can't remove other people from streams.
         """
@@ -347,6 +365,7 @@ class StreamAdminTest(AuthedTestCase):
             result, "This action requires administrative rights")
 
     def test_admin_remove_others_from_public_stream(self):
+        # type: () -> None
         """
         If you're an admin, you can remove people from public streams, even
         those you aren't on.
@@ -359,6 +378,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertEqual(len(json["not_subscribed"]), 0)
 
     def test_admin_remove_others_from_subbed_private_stream(self):
+        # type: () -> None
         """
         If you're an admin, you can remove other people from private streams you
         are on.
@@ -371,6 +391,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertEqual(len(json["not_subscribed"]), 0)
 
     def test_admin_remove_others_from_unsubbed_private_stream(self):
+        # type: () -> None
         """
         Even if you're an admin, you can't remove people from private
         streams you aren't on.
@@ -382,6 +403,7 @@ class StreamAdminTest(AuthedTestCase):
             result, "Cannot administer invite-only streams this way")
 
     def test_create_stream_by_admins_only_setting(self):
+        # type: () -> None
         """
         When realm.create_stream_by_admins_only setting is active,
         non admin users shouldn't be able to create new streams.
@@ -403,6 +425,7 @@ class StreamAdminTest(AuthedTestCase):
         do_set_realm_create_stream_by_admins_only(user_profile.realm, False)
 
     def test_remove_already_not_subbed(self):
+        # type: () -> None
         """
         Trying to unsubscribe someone who already isn't subscribed to a stream
         fails gracefully.
@@ -415,6 +438,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertEqual(len(json["not_subscribed"]), 1)
 
     def test_remove_invalid_user(self):
+        # type: () -> None
         """
         Trying to unsubscribe an invalid user from a stream fails gracefully.
         """
@@ -437,29 +461,33 @@ class StreamAdminTest(AuthedTestCase):
 
 class DefaultStreamTest(AuthedTestCase):
     def get_default_stream_names(self, realm):
+        # type: (Realm) -> Set[str]
         streams = get_default_streams_for_realm(realm)
         stream_names = [s.name for s in streams]
         return set(stream_names)
 
     def test_set_default_streams(self):
+        # type: () -> None
         (realm, _) = do_create_realm("testrealm.com", "Test Realm")
         stream_names = ['apple', 'banana', 'Carrot Cake']
         expected_names = stream_names + ['announce']
         set_default_streams(realm, stream_names)
-        stream_names = self.get_default_stream_names(realm)
-        self.assertEqual(stream_names, set(expected_names))
+        stream_names_set = self.get_default_stream_names(realm)
+        self.assertEqual(stream_names_set, set(expected_names))
 
     def test_set_default_streams_no_notifications_stream(self):
+        # type: () -> None
         (realm, _) = do_create_realm("testrealm.com", "Test Realm")
         realm.notifications_stream = None
         realm.save(update_fields=["notifications_stream"])
         stream_names = ['apple', 'banana', 'Carrot Cake']
         expected_names = stream_names
         set_default_streams(realm, stream_names)
-        stream_names = self.get_default_stream_names(realm)
-        self.assertEqual(stream_names, set(expected_names))
+        stream_names_set = self.get_default_stream_names(realm)
+        self.assertEqual(stream_names_set, set(expected_names))
 
     def test_add_and_remove_default_stream(self):
+        # type: () -> None
         realm = get_realm("zulip.com")
         orig_stream_names = self.get_default_stream_names(realm)
         do_add_default_stream(realm, 'Added Stream')
@@ -478,6 +506,7 @@ class DefaultStreamTest(AuthedTestCase):
         self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
 
     def test_api_calls(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         do_change_is_admin(user_profile, True)
@@ -493,6 +522,7 @@ class DefaultStreamTest(AuthedTestCase):
 
 class SubscriptionPropertiesTest(AuthedTestCase):
     def test_set_stream_color(self):
+        # type: () -> None
         """
         A POST request to /json/subscriptions/property with stream_name and
         color data sets the stream color, and for that stream only.
@@ -531,6 +561,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assertEqual(old_subs, new_subs)
 
     def test_set_color_missing_stream_name(self):
+        # type: () -> None
         """
         Updating the color property requires a `stream` key.
         """
@@ -545,6 +576,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
             result, "stream key is missing from subscription_data[0]")
 
     def test_set_color_missing_color(self):
+        # type: () -> None
         """
         Updating the color property requires a color.
         """
@@ -560,6 +592,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
             result, "value key is missing from subscription_data[0]")
 
     def test_set_invalid_property(self):
+        # type: () -> None
         """
         Trying to set an invalid property returns a JSON error.
         """
@@ -577,6 +610,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
 class SubscriptionRestApiTest(AuthedTestCase):
     def test_basic_add_delete(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
 
@@ -607,10 +641,12 @@ class SubscriptionRestApiTest(AuthedTestCase):
         self.assertTrue('my_test_stream_1' not in streams)
 
     def test_bad_add_parameters(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
 
         def check_for_error(val, expected_message):
+            # type: (Any, str) -> None
             request = {
                 'add': ujson.dumps(val)
             }
@@ -626,6 +662,7 @@ class SubscriptionRestApiTest(AuthedTestCase):
         check_for_error([{'name': {}}], 'add[0]["name"] is not a string')
 
     def test_bad_principals(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
 
@@ -641,6 +678,7 @@ class SubscriptionRestApiTest(AuthedTestCase):
         self.assert_json_error(result, 'principals[0] is not a string')
 
     def test_bad_delete_parameters(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
 
@@ -657,6 +695,7 @@ class SubscriptionRestApiTest(AuthedTestCase):
 class SubscriptionAPITest(AuthedTestCase):
 
     def setUp(self):
+        # type: () -> None
         """
         All tests will be logged in as hamlet. Also save various useful values
         as attributes that tests can access.
@@ -668,6 +707,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.streams = self.get_streams(self.test_email)
 
     def make_random_stream_names(self, existing_stream_names):
+        # type: (List[text_type]) -> List[text_type]
         """
         Helper function to make up random stream names. It takes
         existing_stream_names and randomly appends a digit to the end of each,
@@ -682,6 +722,7 @@ class SubscriptionAPITest(AuthedTestCase):
         return random_streams
 
     def test_successful_subscriptions_list(self):
+        # type: () -> None
         """
         Calling /api/v1/users/me/subscriptions should successfully return your subscriptions.
         """
@@ -706,6 +747,7 @@ class SubscriptionAPITest(AuthedTestCase):
     def helper_check_subs_before_and_after_add(self, subscriptions, other_params,
                                                subscribed, already_subscribed,
                                                email, new_subs, invite_only=False):
+        # type: (List[text_type], Dict[str, Any], List[text_type], List[text_type], text_type, List[text_type], bool) -> None
         """
         Check result of adding subscriptions.
 
@@ -730,6 +772,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertItemsEqual(new_streams, new_subs)
 
     def test_successful_subscriptions_add(self):
+        # type: () -> None
         """
         Calling POST /json/users/me/subscriptions should successfully add
         streams, and should determine which are new subscriptions vs
@@ -738,7 +781,7 @@ class SubscriptionAPITest(AuthedTestCase):
         are generated.
         """
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
-        add_streams = ["Verona2", "Denmark5"]
+        add_streams = [u"Verona2", u"Denmark5"]
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -747,6 +790,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_length(events, 4, True)
 
     def test_successful_subscriptions_notifies_pm(self):
+        # type: () -> None
         """
         Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
@@ -754,7 +798,7 @@ class SubscriptionAPITest(AuthedTestCase):
         invitee_full_name = 'Iago'
 
         current_stream = self.get_streams(invitee)[0]
-        invite_streams = self.make_random_stream_names(current_stream)[:1]
+        invite_streams = self.make_random_stream_names([current_stream])[:1]
         result = self.common_subscribe_to_streams(
             invitee,
             invite_streams,
@@ -776,6 +820,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(msg.content, expected_msg)
 
     def test_successful_subscriptions_notifies_stream(self):
+        # type: () -> None
         """
         Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
@@ -783,7 +828,7 @@ class SubscriptionAPITest(AuthedTestCase):
         invitee_full_name = 'Iago'
 
         current_stream = self.get_streams(invitee)[0]
-        invite_streams = self.make_random_stream_names(current_stream)[:1]
+        invite_streams = self.make_random_stream_names([current_stream])[:1]
 
         notifications_stream = Stream.objects.get(name=current_stream, realm=self.realm)
         self.realm.notifications_stream = notifications_stream
@@ -814,6 +859,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(msg.content, expected_msg)
 
     def test_successful_subscriptions_notifies_with_escaping(self):
+        # type: () -> None
         """
         Calling POST /json/users/me/subscriptions should notify when a new stream is created.
         """
@@ -846,6 +892,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(msg.content, expected_msg)
 
     def test_non_ascii_stream_subscription(self):
+        # type: () -> None
         """
         Subscribing to a stream name with non-ASCII characters succeeds.
         """
@@ -853,6 +900,7 @@ class SubscriptionAPITest(AuthedTestCase):
             [u"hümbüǵ"], self.streams, self.test_email, self.streams + [u"hümbüǵ"])
 
     def test_subscriptions_add_too_long(self):
+        # type: () -> None
         """
         Calling POST /json/users/me/subscriptions on a stream whose name is >60
         characters should return a JSON error.
@@ -864,6 +912,7 @@ class SubscriptionAPITest(AuthedTestCase):
                                "Stream name (%s) too long." % (long_stream_name,))
 
     def test_user_settings_for_adding_streams(self):
+        # type: () -> None
         with stub(UserProfile, 'can_create_streams', lambda self: False):
             result = self.common_subscribe_to_streams(self.test_email, ['stream1'])
             self.assert_json_error(result, 'User cannot create streams.')
@@ -878,6 +927,7 @@ class SubscriptionAPITest(AuthedTestCase):
             self.assert_json_success(result)
 
     def test_subscriptions_add_invalid_stream(self):
+        # type: () -> None
         """
         Calling POST /json/users/me/subscriptions on a stream whose name is invalid (as
         defined by valid_stream_name in zerver/views.py) should return a JSON
@@ -890,6 +940,7 @@ class SubscriptionAPITest(AuthedTestCase):
                                "Invalid stream name (%s)." % (invalid_stream_name,))
 
     def assert_adding_subscriptions_for_principal(self, invitee, streams, invite_only=False):
+        # type: (text_type, List[text_type], bool) -> None
         """
         Calling POST /json/users/me/subscriptions on behalf of another principal (for
         whom you have permission to add subscriptions) should successfully add
@@ -926,6 +977,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(recipients[0]['email'], invitee)
 
     def test_multi_user_subscription(self):
+        # type: () -> None
         email1 = 'cordelia@zulip.com'
         email2 = 'iago@zulip.com'
         realm = get_realm("zulip.com")
@@ -1006,6 +1058,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
 
     def test_bulk_subscribe_MIT(self):
+        # type: () -> None
         realm = get_realm("mit.edu")
         streams = ["stream_%s" % i for i in range(40)]
         for stream in streams:
@@ -1024,6 +1077,8 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_length(queries, 7)
 
     def test_bulk_subscribe_many(self):
+        # type: () -> None
+
         # Create a whole bunch of streams
         realm = get_realm("zulip.com")
         streams = ["stream_%s" % i for i in range(20)]
@@ -1041,6 +1096,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
+        # type: () -> None
         """
         You can subscribe other people to streams.
         """
@@ -1051,6 +1107,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal_invite_only(self):
+        # type: () -> None
         """
         You can subscribe other people to invite only streams.
         """
@@ -1062,6 +1119,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_non_ascii_subscription_for_principal(self):
+        # type: () -> None
         """
         You can subscribe other people to streams even if they containing
         non-ASCII characters.
@@ -1069,6 +1127,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_adding_subscriptions_for_principal("iago@zulip.com", [u"hümbüǵ"])
 
     def test_subscription_add_invalid_principal(self):
+        # type: () -> None
         """
         Calling subscribe on behalf of a principal that does not exist
         should return a JSON error.
@@ -1083,6 +1142,7 @@ class SubscriptionAPITest(AuthedTestCase):
                                % (invalid_principal,), status_code=403)
 
     def test_subscription_add_principal_other_realm(self):
+        # type: () -> None
         """
         Calling subscribe on behalf of a principal in another realm
         should return a JSON error.
@@ -1098,6 +1158,7 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def helper_check_subs_before_and_after_remove(self, subscriptions, json_dict,
                                                   email, new_subs):
+        # type: (List[text_type], Dict[str, Any], text_type, List[text_type]) -> None
         """
         Check result of removing subscriptions.
 
@@ -1118,6 +1179,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertItemsEqual(new_streams, new_subs)
 
     def test_successful_subscriptions_remove(self):
+        # type: () -> None
         """
         Calling /json/subscriptions/remove should successfully remove streams,
         and should determine which were removed vs which weren't subscribed to.
@@ -1140,6 +1202,7 @@ class SubscriptionAPITest(AuthedTestCase):
             self.test_email, [self.streams[0]])
 
     def test_subscriptions_remove_fake_stream(self):
+        # type: () -> None
         """
         Calling /json/subscriptions/remove on a stream that doesn't exist
         should return a JSON error.
@@ -1152,6 +1215,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
 
     def helper_subscriptions_exists(self, stream, exists, subscribed):
+        # type: (text_type, bool, bool) -> None
         """
         A helper function that calls /json/subscriptions/exists on a stream and
         verifies that the returned JSON dictionary has the exists and
@@ -1167,11 +1231,12 @@ class SubscriptionAPITest(AuthedTestCase):
             self.assert_json_success(result)
         else:
             self.assertEquals(result.status_code, 404)
-        if not subscribed is None:
+        if subscribed:
             self.assertIn("subscribed", json)
             self.assertEqual(json["subscribed"], subscribed)
 
     def test_successful_subscriptions_exists_subbed(self):
+        # type: () -> None
         """
         Calling /json/subscriptions/exist on a stream to which you are subbed
         should return that it exists and that you are subbed.
@@ -1180,6 +1245,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.helper_subscriptions_exists(self.streams[0], True, True)
 
     def test_successful_subscriptions_exists_not_subbed(self):
+        # type: () -> None
         """
         Calling /json/subscriptions/exist on a stream to which you are not
         subbed should return that it exists and that you are not subbed.
@@ -1190,15 +1256,17 @@ class SubscriptionAPITest(AuthedTestCase):
         self.helper_subscriptions_exists(streams_not_subbed[0], True, False)
 
     def test_subscriptions_does_not_exist(self):
+        # type: () -> None
         """
         Calling /json/subscriptions/exist on a stream that doesn't exist should
         return that it doesn't exist.
         """
         random_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(random_streams), 0)  # necessary for full test coverage
-        self.helper_subscriptions_exists(random_streams[0], False, None)
+        self.helper_subscriptions_exists(random_streams[0], False, False)
 
     def test_subscriptions_exist_invalid_name(self):
+        # type: () -> None
         """
         Calling /json/subscriptions/exist on a stream whose name is invalid (as
         defined by valid_stream_name in zerver/views.py) should return a JSON
@@ -1211,6 +1279,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_error(result, "Invalid characters in stream name")
 
     def get_subscription(self, user_profile, stream_name):
+        # type: (UserProfile, text_type) -> Subscription
         stream = Stream.objects.get(realm=self.realm, name=stream_name)
         return Subscription.objects.get(
             user_profile=user_profile,
@@ -1219,6 +1288,7 @@ class SubscriptionAPITest(AuthedTestCase):
         )
 
     def test_subscriptions_add_notification_default_true(self):
+        # type: () -> None
         """
         When creating a subscription, the desktop and audible notification
         settings for that stream are derived from the global notification
@@ -1230,13 +1300,14 @@ class SubscriptionAPITest(AuthedTestCase):
         user_profile.enable_stream_sounds = True
         user_profile.save()
         current_stream = self.get_streams(invitee)[0]
-        invite_streams = self.make_random_stream_names(current_stream)
+        invite_streams = self.make_random_stream_names([current_stream])
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
         subscription = self.get_subscription(user_profile, invite_streams[0])
         self.assertTrue(subscription.desktop_notifications)
         self.assertTrue(subscription.audible_notifications)
 
     def test_subscriptions_add_notification_default_false(self):
+        # type: () -> None
         """
         When creating a subscription, the desktop and audible notification
         settings for that stream are derived from the global notification
@@ -1248,7 +1319,7 @@ class SubscriptionAPITest(AuthedTestCase):
         user_profile.enable_stream_sounds = False
         user_profile.save()
         current_stream = self.get_streams(invitee)[0]
-        invite_streams = self.make_random_stream_names(current_stream)
+        invite_streams = self.make_random_stream_names([current_stream])
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
         subscription = self.get_subscription(user_profile, invite_streams[0])
         self.assertFalse(subscription.desktop_notifications)
@@ -1258,6 +1329,7 @@ class SubscriptionAPITest(AuthedTestCase):
 class GetPublicStreamsTest(AuthedTestCase):
 
     def test_public_streams(self):
+        # type: () -> None
         """
         Ensure that streams successfully returns a list of streams
         """
@@ -1273,6 +1345,7 @@ class GetPublicStreamsTest(AuthedTestCase):
         self.assertIsInstance(json["streams"], list)
 
     def test_public_streams_api(self):
+        # type: () -> None
         """
         Ensure that the query we use to get public streams successfully returns
         a list of streams
@@ -1315,6 +1388,7 @@ class GetPublicStreamsTest(AuthedTestCase):
 
 class InviteOnlyStreamTest(AuthedTestCase):
     def test_must_be_subbed_to_send(self):
+        # type: () -> None
         """
         If you try to send a message to an invite-only stream to which
         you aren't subscribed, you'll get a 400.
@@ -1330,6 +1404,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
             self.send_message(email, "Saxony", Recipient.STREAM)
 
     def test_list_respects_invite_only_bit(self):
+        # type: () -> None
         """
         Make sure that /api/v1/users/me/subscriptions properly returns
         the invite-only bit for streams that are invite-only
@@ -1353,6 +1428,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
 
     @slow(0.15, "lots of queries")
     def test_inviteonly(self):
+        # type: () -> None
         # Creating an invite-only stream is allowed
         email = 'hamlet@zulip.com'
         stream_name = "Saxony"
@@ -1404,11 +1480,13 @@ class InviteOnlyStreamTest(AuthedTestCase):
 class GetSubscribersTest(AuthedTestCase):
 
     def setUp(self):
+        # type: () -> None
         self.email = "hamlet@zulip.com"
         self.user_profile = get_user_profile_by_email(self.email)
         self.login(self.email)
 
     def check_well_formed_result(self, result, stream_name, domain):
+        # type: (Dict[str, Any], text_type, text_type) -> None
         """
         A successful call to get_subscribers returns the list of subscribers in
         the form:
@@ -1424,18 +1502,21 @@ class GetSubscribersTest(AuthedTestCase):
         self.assertItemsEqual(result["subscribers"], true_subscribers)
 
     def make_subscriber_request(self, stream_name, email=None):
+        # type: (text_type, Optional[str]) -> HttpResponse
         if email is None:
             email = self.email
         return self.client.get("/api/v1/streams/%s/members" % (stream_name,),
                                **self.api_auth(email))
 
     def make_successful_subscriber_request(self, stream_name):
+        # type: (text_type) -> None
         result = self.make_subscriber_request(stream_name)
         self.assert_json_success(result)
         self.check_well_formed_result(ujson.loads(result.content),
                                       stream_name, self.user_profile.realm.domain)
 
     def test_subscriber(self):
+        # type: () -> None
         """
         get_subscribers returns the list of subscribers.
         """
@@ -1444,6 +1525,7 @@ class GetSubscribersTest(AuthedTestCase):
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_gather_subscriptions(self):
+        # type: () -> None
         """
         gather_subscriptions returns correct results with only 3 queries
         """
@@ -1475,6 +1557,7 @@ class GetSubscribersTest(AuthedTestCase):
 
     @slow(0.15, "common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
+        # type: () -> None
         """
         gather_subscriptions returns correct results with only 3 queries
         """
@@ -1504,6 +1587,7 @@ class GetSubscribersTest(AuthedTestCase):
         self.assert_length(queries, 4, exact=True)
 
     def test_nonsubscriber(self):
+        # type: () -> None
         """
         Even a non-subscriber to a public stream can query a stream's membership
         with get_subscribers.
@@ -1518,6 +1602,7 @@ class GetSubscribersTest(AuthedTestCase):
         self.make_successful_subscriber_request(stream_name)
 
     def test_subscriber_private_stream(self):
+        # type: () -> None
         """
         A subscriber to a private stream can query that stream's membership.
         """
@@ -1527,6 +1612,7 @@ class GetSubscribersTest(AuthedTestCase):
         self.make_successful_subscriber_request(stream_name)
 
     def test_nonsubscriber_private_stream(self):
+        # type: () -> None
         """
         A non-subscriber to a private stream can't query that stream's membership.
         """
