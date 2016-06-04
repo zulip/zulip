@@ -29,9 +29,9 @@ exports.build_stream_list = function () {
 
     streams.sort(function (a, b) {
         if (sort_recent) {
-            if (recent_subjects.has(b) && ! recent_subjects.has(a)) {
+            if (stream_data.recent_subjects.has(b) && ! stream_data.recent_subjects.has(a)) {
                 return 1;
-            } else if (! recent_subjects.has(b) && recent_subjects.has(a)) {
+            } else if (! stream_data.recent_subjects.has(b) && stream_data.recent_subjects.has(a)) {
                 return -1;
             }
         }
@@ -52,7 +52,7 @@ exports.build_stream_list = function () {
     _.each(streams, function (stream) {
         var li = $(stream_data.get_sub(stream).sidebar_li);
         if (sort_recent) {
-            if (! recent_subjects.has(stream)) {
+            if (! stream_data.recent_subjects.has(stream)) {
                 li.addClass('inactive_stream');
             } else {
                 li.removeClass('inactive_stream');
@@ -291,7 +291,7 @@ exports.remove_narrow_filter = function (name, type) {
 };
 
 exports._build_subject_list = function (stream, active_topic, max_subjects) {
-    var subjects = recent_subjects.get(stream) || [];
+    var subjects = stream_data.recent_subjects.get(stream) || [];
 
     if (active_topic) {
         active_topic = active_topic.toLowerCase();

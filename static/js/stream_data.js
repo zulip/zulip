@@ -12,6 +12,8 @@ exports.clear_subscriptions = function () {
     stream_info = new Dict({fold_case: true});
     subs_by_stream_id = new Dict();
 };
+
+exports.recent_subjects = new Dict({fold_case: true});
 exports.clear_subscriptions();
 
 
