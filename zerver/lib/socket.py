@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any
+from typing import Any, Union, Optional
 
 from django.conf import settings
 from django.utils.importlib import import_module
@@ -28,7 +28,7 @@ logger = logging.getLogger('zulip.socket')
 
 djsession_engine = import_module(settings.SESSION_ENGINE)
 def get_user_profile(session_id):
-    # type: (str) -> UserProfile
+    # type: (str) -> Optional[UserProfile]
     if session_id is None:
         return None
 
@@ -43,14 +43,14 @@ def get_user_profile(session_id):
     except (UserProfile.DoesNotExist, KeyError):
         return None
 
-connections = dict() # type: Dict[str, SocketConnection]
+connections = dict() # type: Dict[Union[int, str], SocketConnection]
 
 def get_connection(id):
-    # type: (str) -> SocketConnection
+    # type: (Union[int, str]) -> SocketConnection
     return connections.get(id)
 
 def register_connection(id, conn):
-    # type: (str, SocketConnection) -> None
+    # type: (Union[int, str], SocketConnection) -> None
     # Kill any old connections if they exist
     if id in connections:
         connections[id].close()
@@ -80,7 +80,7 @@ class CloseErrorInfo(object):
         self.err_msg = err_msg
 
 class SocketConnection(sockjs.tornado.SockJSConnection):
-    client_id = None # type: str
+    client_id = None # type: Union[int, str]
 
     def on_open(self, info):
         # type: (ConnectionInfo) -> None
@@ -162,11 +162,11 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         ioloop = tornado.ioloop.IOLoop.instance()
         ioloop.remove_timeout(self.timeout_handle)
 
-    def on_message(self, msg):
-        # type: (Dict[str, Any]) -> None
+    def on_message(self, msg_raw):
+        # type: (str) -> None
         log_data = dict(extra='[transport=%s' % (self.session.transport_name,))
         record_request_start_data(log_data)
-        msg = ujson.loads(msg)
+        msg = ujson.loads(msg_raw)
 
         if self.did_close:
             logger.info("Received message on already closed socket! transport=%s user=%s client_id=%s"
