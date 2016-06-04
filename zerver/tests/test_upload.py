@@ -30,11 +30,13 @@ from moto import mock_s3
 TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
 
 def destroy_uploads():
+    # type: () -> None
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
 class FileUploadTest(AuthedTestCase):
     def test_multiple_upload_failure(self):
+        # type: () -> None
         """
         Attempting to upload two files should fail.
         """
@@ -48,6 +50,7 @@ class FileUploadTest(AuthedTestCase):
         self.assert_json_error(result, "You may only upload one file at a time")
 
     def test_no_file_upload_failure(self):
+        # type: () -> None
         """
         Calling this endpoint with no files should fail.
         """
@@ -59,6 +62,7 @@ class FileUploadTest(AuthedTestCase):
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
     def test_file_upload_authed(self):
+        # type: () -> None
         """
         A call to /json/upload_file should return a uri and actually create an
         entry in the database. This entry will be marked unclaimed till a message
@@ -87,6 +91,8 @@ class FileUploadTest(AuthedTestCase):
         self.assertEquals(entry.is_claimed(), False)
 
     def test_delete_old_unclaimed_attachments(self):
+        # type: () -> None
+
         # Upload some files and make them older than a weeek
         self.login("hamlet@zulip.com")
         d1 = StringIO("zulip!")
@@ -122,6 +128,7 @@ class FileUploadTest(AuthedTestCase):
         self.assertTrue(not delete_message_image(d2_path_id))
 
     def test_multiple_claim_attachments(self):
+        # type: () -> None
         """
         This test tries to claim the same attachment twice. The messages field in
         the Attachment model should have both the messages in its entry.
@@ -143,11 +150,13 @@ class FileUploadTest(AuthedTestCase):
         self.assertEquals(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
 
     def tearDown(self):
+        # type: () -> None
         destroy_uploads()
 
 class SetAvatarTest(AuthedTestCase):
 
     def test_multiple_upload_failure(self):
+        # type: () -> None
         """
         Attempting to upload two files should fail.
         """
@@ -159,6 +168,7 @@ class SetAvatarTest(AuthedTestCase):
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
     def test_no_file_upload_failure(self):
+        # type: () -> None
         """
         Calling this endpoint with no files should fail.
         """
@@ -175,6 +185,7 @@ class SetAvatarTest(AuthedTestCase):
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
     def test_valid_avatars(self):
+        # type: () -> None
         """
         A call to /json/set_avatar with a valid file should return a url and actually create an avatar.
         """
@@ -198,6 +209,7 @@ class SetAvatarTest(AuthedTestCase):
             self.assertEquals(rfp.read(), data)
 
     def test_invalid_avatars(self):
+        # type: () -> None
         """
         A call to /json/set_avatar with an invalid file should fail.
         """
@@ -210,11 +222,13 @@ class SetAvatarTest(AuthedTestCase):
             self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
 
     def tearDown(self):
+        # type: () -> None
         destroy_uploads()
 
 class LocalStorageTest(AuthedTestCase):
 
     def test_file_upload_local(self):
+        # type: () -> None
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
         uri = upload_message_image_local('dummy.txt', 'text/plain', 'zulip!', user_profile)
@@ -226,6 +240,7 @@ class LocalStorageTest(AuthedTestCase):
         self.assertTrue(os.path.isfile(file_path))
 
     def test_delete_message_image_local(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
@@ -237,6 +252,7 @@ class LocalStorageTest(AuthedTestCase):
         self.assertTrue(delete_message_image_local(path_id))
 
     def tearDown(self):
+        # type: () -> None
         destroy_uploads()
 
 class S3Test(AuthedTestCase):
@@ -247,6 +263,7 @@ class S3Test(AuthedTestCase):
 
     @mock_s3
     def test_file_upload_s3(self):
+        # type: () -> None
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
@@ -261,6 +278,7 @@ class S3Test(AuthedTestCase):
 
     @mock_s3
     def test_message_image_delete_s3(self):
+        # type: () -> None
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
@@ -274,6 +292,7 @@ class S3Test(AuthedTestCase):
     @slow(2.6, "has to contact external S3 service")
     @skip("Need S3 mock")
     def test_file_upload_authed(self):
+        # type: () -> None
         """
         A call to /json/upload_file should return a uri and actually create an object.
         """
@@ -296,6 +315,7 @@ class S3Test(AuthedTestCase):
         self.assertEquals("zulip!", urllib.request.urlopen(redirect_url).read().strip())
 
     def tearDown(self):
+        # type: () -> None
         # clean up
         return
         # TODO: un-deadden this code when we have proper S3 mocking.
@@ -314,6 +334,7 @@ class S3Test(AuthedTestCase):
 
 class SanitizeNameTests(TestCase):
     def test_file_name(self):
+        # type: () -> None
         self.assertEquals(sanitize_name(u'test.txt'), u'test.txt')
         self.assertEquals(sanitize_name(u'.hidden'), u'.hidden')
         self.assertEquals(sanitize_name(u'.hidden.txt'), u'.hidden.txt')
