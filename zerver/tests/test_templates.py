@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from typing import Any, Dict, Iterable
 import logging
 
 from django.test import TestCase
+from django.template import Template
 from django.template.loader import get_template
 
 from zerver.models import get_user_profile_by_email
@@ -12,9 +14,11 @@ from zerver.lib.test_helpers import get_all_templates
 
 class get_form_value(object):
     def __init__(self, value):
+        # type: (Any) -> None
         self._value = value
 
     def value(self):
+        # type: () -> Any
         return self._value
 
 
@@ -33,6 +37,8 @@ class TemplateTestCase(TestCase):
     function documentation for more information.
     """
     def test_templates(self):
+        # type: () -> None
+
         # Just add the templates whose context has a conflict with other
         # templates' context in `exclude`.
         exclude = ['analytics/activity.html']
@@ -44,6 +50,7 @@ class TemplateTestCase(TestCase):
         self.render_templates(exclude, self.get_context(**update))
 
     def render_templates(self, templates, context):
+        # type: (Iterable[Template], Dict[str, Any]) -> None
         for template in templates:
             template = get_template(template)
             try:
@@ -52,6 +59,7 @@ class TemplateTestCase(TestCase):
                 logging.exception("Exception while rendering '{}'".format(template.template.name))
 
     def get_context(self, **kwargs):
+        # type: (**Any) -> Dict[str, Any]
         """Get the dummy context for shallow testing.
 
         The context returned will always contain a parameter called

@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.test import TestCase
 from django_auth_ldap.backend import _LDAPUser
-from typing import Dict
+from typing import Any, Callable, Dict
 
 import mock
 
@@ -19,17 +19,19 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend
 
+from six import text_type
 import ujson
 
 class AuthBackendTest(TestCase):
     def verify_backend(self, backend, good_args=None,
                        good_kwargs=None, bad_kwargs=None,
                        email_to_username=None):
+        # type: (Any, List[Any], Dict[str, Any], Dict[str, Any], Callable[[text_type], text_type]) -> None
         if good_args is None:
             good_args = []
         if good_kwargs is None:
             good_kwargs = {}
-        email = "hamlet@zulip.com"
+        email = u"hamlet@zulip.com"
         user_profile = get_user_profile_by_email(email)
 
         username = email
@@ -63,11 +65,13 @@ class AuthBackendTest(TestCase):
         self.assertEqual(user_profile, result)
 
     def test_dummy_backend(self):
+        # type: () -> None
         self.verify_backend(ZulipDummyBackend(),
                             good_kwargs=dict(use_dummy_backend=True),
                             bad_kwargs=dict(use_dummy_backend=False))
 
     def test_email_auth_backend(self):
+        # type: () -> None
         email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(email)
         password = "testpassword"
@@ -78,6 +82,7 @@ class AuthBackendTest(TestCase):
                             good_kwargs=dict(password=password))
 
     def test_email_auth_backend_disabled_password_auth(self):
+        # type: () -> None
         email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(email)
         password = "testpassword"
@@ -88,6 +93,7 @@ class AuthBackendTest(TestCase):
             self.assertIsNone(EmailAuthBackend().authenticate(email, dict(password=password)))
 
     def test_google_backend(self):
+        # type: () -> None
         email = "hamlet@zulip.com"
         backend = GoogleMobileOauth2Backend()
         payload = dict(email_verified=True,
@@ -112,6 +118,7 @@ class AuthBackendTest(TestCase):
             self.assertTrue(ret["valid_attestation"])
 
     def test_ldap_backend(self):
+        # type: () -> None
         email = "hamlet@zulip.com"
         password = "test_password"
         backend = ZulipLDAPAuthBackend()
@@ -129,37 +136,44 @@ class AuthBackendTest(TestCase):
              mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements'), \
              mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
                         return_value=dict(full_name=['Hamlet'])):
-            self.verify_backend(backend, good_args=dict(password=password))
+            self.verify_backend(backend, good_kwargs=dict(password=password))
 
     def test_devauth_backend(self):
+        # type: () -> None
         self.verify_backend(DevAuthBackend())
 
     def test_remote_user_backend(self):
+        # type: () -> None
         self.verify_backend(ZulipRemoteUserBackend())
 
     def test_remote_user_backend_sso_append_domain(self):
+        # type: () -> None
         with self.settings(SSO_APPEND_DOMAIN='zulip.com'):
             self.verify_backend(ZulipRemoteUserBackend(),
                                 email_to_username=email_to_username)
 
 class FetchAPIKeyTest(AuthedTestCase):
     def setUp(self):
+        # type: () -> None
         self.email = "hamlet@zulip.com"
         self.user_profile = get_user_profile_by_email(self.email)
 
     def test_success(self):
+        # type: () -> None
         result = self.client.post("/api/v1/fetch_api_key",
                                   dict(username=self.email,
                                        password=initial_password(self.email)))
         self.assert_json_success(result)
 
     def test_wrong_password(self):
+        # type: () -> None
         result = self.client.post("/api/v1/fetch_api_key",
                                   dict(username=self.email,
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
     def test_password_auth_disabled(self):
+        # type: () -> None
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
             result = self.client.post("/api/v1/fetch_api_key",
                                       dict(username=self.email,
@@ -167,6 +181,7 @@ class FetchAPIKeyTest(AuthedTestCase):
             self.assert_json_error_contains(result, "Password auth is disabled", 403)
 
     def test_inactive_user(self):
+        # type: () -> None
         do_deactivate_user(self.user_profile)
         result = self.client.post("/api/v1/fetch_api_key",
                                   dict(username=self.email,
@@ -174,6 +189,7 @@ class FetchAPIKeyTest(AuthedTestCase):
         self.assert_json_error_contains(result, "Your account has been disabled", 403)
 
     def test_deactivated_realm(self):
+        # type: () -> None
         do_deactivate_realm(self.user_profile.realm)
         result = self.client.post("/api/v1/fetch_api_key",
                                   dict(username=self.email,

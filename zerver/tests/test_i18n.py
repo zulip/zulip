@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from typing import Any
+
 from django.test import TestCase
 from django.conf import settings
+from django.http import HttpResponse
 from http.cookies import SimpleCookie
 
 
@@ -12,8 +15,9 @@ class TranslationTestCase(TestCase):
     aware.
     """
 
+    # e.g. self.client.post(url) if method is "post"
     def fetch(self, method, url, expected_status, **kwargs):
-        # e.g. self.client.post(url) if method is "post"
+        # type: (str, str, int, **Any) -> HttpResponse
         response = getattr(self.client, method)(url, **kwargs)
         self.assertEqual(response.status_code, expected_status,
                          msg="Expected %d, received %d for %s to %s" % (
@@ -21,6 +25,7 @@ class TranslationTestCase(TestCase):
         return response
 
     def test_accept_language_header(self):
+        # type: () -> None
         languages = [('en', 'Register'),
                      ('de', 'Registrieren'),
                      ('sr', 'Региструј се'),
@@ -33,6 +38,7 @@ class TranslationTestCase(TestCase):
             self.assertTrue(word in response.content)
 
     def test_cookie(self):
+        # type: () -> None
         languages = [('en', 'Register'),
                      ('de', 'Registrieren'),
                      ('sr', 'Региструј се'),
@@ -46,6 +52,7 @@ class TranslationTestCase(TestCase):
             self.assertTrue(word in response.content)
 
     def test_i18n_urls(self):
+        # type: () -> None
         languages = [('en', 'Register'),
                      ('de', 'Registrieren'),
                      ('sr', 'Региструј се'),
