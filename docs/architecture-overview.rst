@@ -14,13 +14,13 @@ as well as Python API bindings and most of our integrations with other
 services and applications (see :doc:`directory-structure`).
 
 We maintain several separate repositories for integrations and other
-glue code: a `Hubot adapter <https://github.com/zulip/hubot-zulip>`__
-; integrations with `Phabricator
+glue code: a `Hubot adapter <https://github.com/zulip/hubot-zulip>`__;
+integrations with `Phabricator
 <https://github.com/zulip/phabricator-to-zulip>`__, `Jenkins
 <https://github.com/zulip/zulip-jenkins-plugin>`__, `Puppet
 <https://github.com/matthewbarr/puppet-zulip>`__, `Redmine
 <https://github.com/zulip/zulip-redmine-plugin>`__, and `Trello
-<https://github.com/zulip/trello-to-zulip>`__); `node.js API bindings
+<https://github.com/zulip/trello-to-zulip>`__; `node.js API bindings
 <https://github.com/zulip/zulip-node>`__; and our `full-text search
 PostgreSQL extension <https://github.com/zulip/tsearch_extras>`__ .
 
@@ -46,11 +46,12 @@ and similar groups ranging in size from a small team to more than a
 thousand users. It features real-time notifications, message
 persistence and search, public group conversations (*streams*),
 invite-only streams, private one-on-one and group conversations,
-inline image previews, team presence/a buddy list, a rich API, and
-several integrations with other services. The maintainer team aims to
-support users who connect to Zulip using dedicated iOS, Android,
-Linux, Windows, and Mac OS X clients, as well as people using modern
-web browsers or dedicated Zulip API clients.
+inline image previews, team presence/a buddy list, a rich API,
+Markdown message support, and several integrations with other
+services. The maintainer team aims to support users who connect to
+Zulip using dedicated iOS, Android, Linux, Windows, and Mac OS X
+clients, as well as people using modern web browsers or dedicated
+Zulip API clients.
 
 A server can host multiple Zulip *realms* (organizations) at the same
 domain, each of which is a private chamber with its own users,
@@ -68,7 +69,7 @@ it displays messages, starting at the oldest message that the user
 hasn't viewed yet. The home screen displays the most recent messages
 in all the streams a user has joined (except for the streams they've
 muted), as well as private messages from other users, in strict
-chronological order. A user can "narrow" to view only the messages in
+chronological order. A user can *narrow* to view only the messages in
 a single stream, and can further narrow to focus on a *topic* (thread)
 within that stream. Each narrow has its own URL.
 
@@ -95,18 +96,22 @@ by the Supervisor configuration (which explains how to start the
 server processes; see "Supervisor" below) and the nginx configuration
 (which explains which HTTP requests get sent to which app server).
 
-Tornado is an asynchronous server, so it can scale really well, but
-asynchronous programming has a learning curve. We attempt to (as much
-as possible) avoid doing cache or database queries inside the Tornado
-code paths, since those blocking requests carry a very high
-performance penalty for a single-threaded, asynchronous server. So
-Tornado is only used for a few routes that really need to scale
-because they involve maintaining a persistent connection from every
-open browser window. The parts that are activated relatively rarely
-(e.g. when people type or click on something) are processed by the
-Django application server. One exception to this is that Zulip uses
-websockets through Tornado to minimize latency on the code path for
-**sending** messages.
+Tornado is an asynchronous server and is meant specifically to hold
+open tens of thousands of long-lived (long-polling or websocket)
+connections -- that is to say, routes that maintain a persistent
+connection from every running client. For this reason, it's
+responsible for event (message) delivery, but not much else. We try to
+avoid any blocking calls in Tornado because we don't want to delay
+delivery to thousands of other connections (as this would make Zulip
+very much not real-time). For instance, we avoid doing cache or
+database queries inside the Tornado code paths, since those blocking
+requests carry a very high performance penalty for a single-threaded,
+asynchronous server.
+
+The parts that are activated relatively rarely (e.g. when people type
+or click on something) are processed by the Django application
+server. One exception to this is that Zulip uses websockets through
+Tornado to minimize latency on the code path for **sending** messages.
 
 
 nginx
@@ -132,8 +137,8 @@ come in from outside.
   ``/sockjs`` are sent to the Tornado server. These are requests to
   the real-time push system, because the user's web browser sets up a
   long-lived TCP connection with Tornado to serve as `a channel for
-  push notifications <
-  https://en.wikipedia.org/wiki/Push_technology#Long_Polling>`__. nginx
+  push notifications
+  <https://en.wikipedia.org/wiki/Push_technology#Long_Polling>`__. nginx
   gets the hostname for the Tornado server via
   ``puppet/zulip/files/nginx/zulip-include-frontend/upstreams``.
 
