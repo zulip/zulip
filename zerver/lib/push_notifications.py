@@ -6,7 +6,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.decorator import statsd_increment
 
 from apnsclient import Session, Message, APNs
-from apnsclient.transport import Connection
+from apnsclient.apns import Connection
 import gcmclient
 
 from django.conf import settings
