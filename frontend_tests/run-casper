@@ -10,6 +10,7 @@ try:
     import requests
 except ImportError as e:
     print("ImportError: {}, Make sure your running tests inside Vagrant".format(e))
+    sys.exit(1)
 
 #
 # In order to use remote casperjs debugging, pass the --remote-debug flag
