@@ -18,6 +18,7 @@ cffi==1.5.2
 chardet==2.3.0
 coverage==4.0.3
 cryptography==1.2.3
+decorator==4.0.9 # Needed for ipython
 defusedxml==0.4.1
 diff-match-patch==20121119
 django-auth-ldap==1.2.6
