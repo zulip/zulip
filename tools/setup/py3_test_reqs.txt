@@ -1,3 +1,3 @@
 six==1.10.0
-git+https://github.com/python/mypy.git@c129bc0046a58ba87e573d9fe75446d828196229
+git+https://github.com/rwbarton/mypy.git@3f4497689636cc9eea44239ba3ab73f1f5c7aaa6
 typed-ast==0.5.1

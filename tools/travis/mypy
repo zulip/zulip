@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo '+ ./tools/run-mypy'
-./tools/run-mypy
+echo '+ ./tools/run-mypy --linecoverage-report'
+./tools/run-mypy --linecoverage-report
 retcode="$?"
 
 if [ "$retcode" == "0" ]; then
