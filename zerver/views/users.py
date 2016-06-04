@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from django.http import HttpRequest, HttpResponse
+
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -16,13 +18,17 @@ from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool
-from zerver.models import UserProfile, get_user_profile_by_email, get_stream, \
-    email_allowed_for_realm
+from zerver.models import UserProfile, Stream, Realm, get_user_profile_by_email, \
+    get_stream, email_allowed_for_realm
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
+from six import text_type
+from typing import Optional, Dict, Any
+
 def deactivate_user_backend(request, user_profile, email):
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -32,6 +38,7 @@ def deactivate_user_backend(request, user_profile, email):
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def deactivate_bot_backend(request, user_profile, email):
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -41,6 +48,7 @@ def deactivate_bot_backend(request, user_profile, email):
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def _deactivate_user_profile_backend(request, user_profile, target):
+    # type: (HttpRequest, UserProfile, UserProfile) -> HttpResponse
     if not user_profile.can_admin_user(target):
         return json_error(_('Insufficient permission'))
 
@@ -48,6 +56,7 @@ def _deactivate_user_profile_backend(request, user_profile, target):
     return json_success({})
 
 def reactivate_user_backend(request, user_profile, email):
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -62,6 +71,7 @@ def reactivate_user_backend(request, user_profile, email):
 @has_request_variables
 def update_user_backend(request, user_profile, email,
                         is_admin=REQ(default=None, validator=check_bool)):
+    # type: (HttpRequest, UserProfile, text_type, Optional[bool]) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -75,6 +85,7 @@ def update_user_backend(request, user_profile, email,
     return json_success({})
 
 def avatar(request, email):
+    # type: (HttpRequest, text_type) -> HttpResponse
     try:
         user_profile = get_user_profile_by_email(email)
         avatar_source = user_profile.avatar_source
@@ -89,6 +100,7 @@ def avatar(request, email):
     return redirect(url)
 
 def get_stream_name(stream):
+    # type: (Stream) -> Optional[text_type]
     if stream:
         name = stream.name
     else :
@@ -96,6 +108,7 @@ def get_stream_name(stream):
     return name
 
 def stream_or_none(stream_name, realm):
+    # type: (text_type, Realm) -> Optional[Stream]
     if stream_name == '':
         return None
     else:
@@ -110,6 +123,7 @@ def patch_bot_backend(request, user_profile, email,
                       default_sending_stream=REQ(default=None),
                       default_events_register_stream=REQ(default=None),
                       default_all_public_streams=REQ(default=None, validator=check_bool)):
+    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[text_type], Optional[text_type], Optional[bool]) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
     except:
@@ -150,6 +164,7 @@ def patch_bot_backend(request, user_profile, email,
 
 @has_request_variables
 def regenerate_bot_api_key(request, user_profile, email):
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
     except:
@@ -166,9 +181,10 @@ def regenerate_bot_api_key(request, user_profile, email):
 
 @has_request_variables
 def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
-                    default_sending_stream=REQ(default=None),
-                    default_events_register_stream=REQ(default=None),
+                    default_sending_stream_name=REQ('default_sending_stream', default=None),
+                    default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
+    # type: (HttpRequest, UserProfile, text_type, text_type, Optional[text_type], Optional[text_type], Optional[bool]) -> HttpResponse
     short_name += "-bot"
     email = short_name + "@" + user_profile.realm.domain
     form = CreateUserForm({'full_name': full_name, 'email': email})
@@ -191,15 +207,17 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
         upload_avatar_image(user_file, user_profile, email)
         avatar_source = UserProfile.AVATAR_FROM_USER
 
-    if default_sending_stream is not None:
-        default_sending_stream = stream_or_none(default_sending_stream, user_profile.realm)
+    default_sending_stream = None
+    if default_sending_stream_name is not None:
+        default_sending_stream = stream_or_none(default_sending_stream_name, user_profile.realm)
     if default_sending_stream and not default_sending_stream.is_public() and not \
         subscribed_to_stream(user_profile, default_sending_stream):
         return json_error(_('Insufficient permission'))
 
-    if default_events_register_stream is not None:
-        default_events_register_stream = stream_or_none(default_events_register_stream,
-                                                         user_profile.realm)
+    default_events_register_stream = None
+    if default_events_register_stream_name is not None:
+        default_events_register_stream = stream_or_none(default_events_register_stream_name,
+                                                        user_profile.realm)
     if default_events_register_stream and not default_events_register_stream.is_public() and not \
         subscribed_to_stream(user_profile, default_events_register_stream):
         return json_error(_('Insufficient permission'))
@@ -224,12 +242,14 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
     return json_success(json_result)
 
 def get_bots_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                               bot_owner=user_profile)
     bot_profiles = bot_profiles.select_related('default_sending_stream', 'default_events_register_stream')
     bot_profiles = bot_profiles.order_by('date_joined')
 
     def bot_info(bot_profile):
+        # type: (UserProfile) -> Dict[str, Any]
         default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
         default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
 
@@ -246,6 +266,7 @@ def get_bots_backend(request, user_profile):
     return json_success({'bots': list(map(bot_info, bot_profiles))})
 
 def get_members_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     realm = user_profile.realm
     admins = set(user_profile.realm.get_admin_users())
     members = []
@@ -269,6 +290,7 @@ def get_members_backend(request, user_profile):
 @has_request_variables
 def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
                         full_name=REQ(), short_name=REQ()):
+    # type: (HttpRequest, UserProfile, text_type, text_type, text_type, text_type) -> HttpResponse
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
         return json_error(_('Bad name or username'))
