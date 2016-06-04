@@ -183,7 +183,7 @@ def list_subscriptions_backend(request, user_profile):
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
                                  delete=REQ(validator=check_list(check_string), default=[]),
-                                 add=REQ(validator=check_list(check_dict([['name', check_string]])), default=[])):
+                                 add=REQ(validator=check_list(check_dict([('name', check_string)])), default=[])):
     # type: (HttpRequest, UserProfile, List[str], List[Dict[str, str]]) -> HttpResponse
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
@@ -279,7 +279,7 @@ def stream_button(stream_name):
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions",
-                              validator=check_list(check_dict([['name', check_string]]))),
+                              validator=check_list(check_dict([('name', check_string)]))),
                               invite_only = REQ(validator=check_bool, default=False),
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
@@ -464,10 +464,10 @@ def get_subscription_or_die(stream_name, user_profile):
 @has_request_variables
 def json_subscription_property(request, user_profile, subscription_data=REQ(
         validator=check_list(
-            check_dict([["stream", check_string],
-                        ["property", check_string],
-                        ["value", check_variable_type(
-                            [check_string, check_bool])]])))):
+            check_dict([("stream", check_string),
+                        ("property", check_string),
+                        ("value", check_variable_type(
+                            [check_string, check_bool]))])))):
     # type: (HttpRequest, UserProfile, List[Dict[str, Any]]) -> HttpResponse
     """
     This is the entry point to changing subscription properties. This

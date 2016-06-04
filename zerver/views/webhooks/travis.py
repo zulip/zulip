@@ -13,9 +13,9 @@ def api_travis_webhook(request, user_profile, client,
                        stream=REQ(default='travis'),
                        topic=REQ(default=None),
                        message=REQ('payload', validator=check_dict([
-                           ['author_name', check_string],
-                           ['status_message', check_string],
-                           ['compare_url', check_string],
+                           ('author_name', check_string),
+                           ('status_message', check_string),
+                           ('compare_url', check_string),
                        ]))):
     author = message['author_name']
     message_type = message['status_message']
