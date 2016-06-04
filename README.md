@@ -20,8 +20,13 @@ at https://www.zulip.org.
 
 [![Build Status][1]][2]
 
+[Mypy][5] static typing [![Coverage Status][3]][4]
+
 [1]: https://travis-ci.org/zulip/zulip.svg?branch=master
 [2]: https://travis-ci.org/zulip/zulip
+[3]: https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=coveralls
+[4]: https://coveralls.io/github/zulip/zulip?branch=coveralls
+[5]: http://mypy-lang.org/
 
 ## Installing the Zulip Development environment
 
