@@ -716,7 +716,7 @@ def restore_saved_messages():
 # - multiple messages per subject
 # - both single and multi-line content
 def send_messages(data):
-    # type: ignore # Should be (Tuple[int, List[UserProfile], Dict[str, Any], Any]) -> int
+    # type: (Tuple[int, List[List[UserProfile]], Dict[str, Any], Any]) -> int
     (tot_messages, personals_pairs, options, output) = data
     random.seed(os.getpid())
     texts = open("zilencer/management/commands/test_messages.txt", "r").readlines()
