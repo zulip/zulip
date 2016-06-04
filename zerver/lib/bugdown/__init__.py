@@ -19,7 +19,8 @@ import httplib2
 import itertools
 from six.moves import urllib
 import xml.etree.cElementTree as etree
-from xml.etree.cElementTree import Element, SubElement
+# importing Element to reference type - python2 is confused by cElementTree's version
+from xml.etree.ElementTree import Element
 
 from collections import defaultdict
 
@@ -47,12 +48,8 @@ from six import text_type
 version = 1
 
 _T = TypeVar('_T')
-# We need to avoid this running at runtime, but mypy will see this.
-# The problem is that under python 2, Element isn't exactly a type,
-# which means that at runtime Union causes this to blow up.
-if False:
-    # mypy requires the Optional to be inside Union
-    ElementStringNone = Union[Element, Optional[text_type]]
+# mypy requires the Optional to be inside Union
+ElementStringNone = Union[Element, Optional[string_types]]
 
 def list_of_tlds():
     # type: () -> List[str]
