@@ -381,8 +381,8 @@ def clear_followup_emails_queue(email, mail_client=None):
         return
 
     # Mandrill implementation
-    for email in mail_client.messages.list_scheduled(to=email):
-        result = mail_client.messages.cancel_scheduled(id=email["_id"])
+    for email_message in mail_client.messages.list_scheduled(to=email):
+        result = mail_client.messages.cancel_scheduled(id=email_message["_id"])
         if result.get("status") == "error":
             print(result.get("name"), result.get("error"))
     return
