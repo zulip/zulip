@@ -346,7 +346,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             for msg in response['messages']:
                 if msg['content_type'] != 'text/html':
                     self.set_status(500)
-                    return self.finish('Internal error: bad message format')
+                    self.finish('Internal error: bad message format')
         if response['result'] == 'error':
             self.set_status(400)
 
@@ -362,4 +362,4 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # Pass through the content-type from Django, as json content should be
         # served as application/json
         self.set_header("Content-Type", django_response['Content-Type'])
-        return self.finish(django_response.content)
+        self.finish(django_response.content)
