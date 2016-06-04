@@ -1,6 +1,7 @@
 before_install:
    - nvm install 0.10
 install:
+  - pip install coveralls
   - tools/travis/setup-$TEST_SUITE
   - tools/clean-venv-cache --travis
 cache:
@@ -9,10 +10,15 @@ cache:
     - $HOME/phantomjs
     - $HOME/zulip-venv-cache
 env:
-  - TEST_SUITE=frontend
-  - TEST_SUITE=backend
-  - TEST_SUITE=production
-  - TEST_SUITE=py3k
+  global:
+    - COVERALLS_PARALLEL=true
+    - COVERALLS_SERVICE_NAME=travis-pro
+    - COVERALLS_REPO_TOKEN=hnXUEBKsORKHc8xIENGs9JjktlTb2HKlG
+  matrix:
+    - TEST_SUITE=frontend
+    - TEST_SUITE=backend
+    - TEST_SUITE=production
+    - TEST_SUITE=py3k
 language: python
 python:
   - "2.7"
@@ -28,3 +34,7 @@ services:
 - docker
 addons:
   postgresql: "9.3"
+after_success:
+  coveralls
+notifications:
+  webhooks: https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN
