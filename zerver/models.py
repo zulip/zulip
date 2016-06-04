@@ -25,6 +25,7 @@ from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.core.validators import MinLengthValidator, RegexValidator
+from django.utils.translation import ugettext as _
 import zlib
 
 from bitfield import BitField
@@ -243,7 +244,8 @@ class RealmEmoji(models.Model):
     realm = models.ForeignKey(Realm)
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
-                                        RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$')])
+                                        RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$',
+                                                       message=_("Invalid characters in Emoji name"))])
     # URLs start having browser compatibility problem below 2000
     # characters, so 1000 seems like a safe limit.
     img_url = models.URLField(max_length=1000)
