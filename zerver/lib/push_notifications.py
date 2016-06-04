@@ -5,7 +5,8 @@ from zerver.models import PushDeviceToken, UserProfile
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.decorator import statsd_increment
 
-from apnsclient import Session, Message, APNs, Connection
+from apnsclient import Session, Message, APNs
+from apnsclient.transport import Connection
 import gcmclient
 
 from django.conf import settings
