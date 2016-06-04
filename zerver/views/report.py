@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ, \
@@ -10,6 +11,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import check_bool, check_dict
+from zerver.models import UserProfile
 
 import subprocess
 import os
@@ -31,6 +33,7 @@ def json_report_send_time(request, user_profile,
                           displayed=REQ(converter=to_non_negative_int, default="(unknown)"),
                           locally_echoed=REQ(validator=check_bool, default=False),
                           rendered_content_disparity=REQ(validator=check_bool, default=False)):
+    # type: (HttpRequest, UserProfile, int, int, int, bool, bool) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
         % (time, received, displayed, locally_echoed, rendered_content_disparity)
     statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), time)
@@ -50,6 +53,7 @@ def json_report_narrow_time(request, user_profile,
                             initial_core=REQ(converter=to_non_negative_int),
                             initial_free=REQ(converter=to_non_negative_int),
                             network=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int, int, int) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
     statsd.timing("narrow.initial_core.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_core)
     statsd.timing("narrow.initial_free.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_free)
@@ -61,6 +65,7 @@ def json_report_narrow_time(request, user_profile,
 def json_report_unnarrow_time(request, user_profile,
                             initial_core=REQ(converter=to_non_negative_int),
                             initial_free=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int, int) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
     statsd.timing("unnarrow.initial_core.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_core)
     statsd.timing("unnarrow.initial_free.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_free)
@@ -72,7 +77,7 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
                       ui_message=REQ(validator=check_bool), user_agent=REQ(),
                       href=REQ(), log=REQ(),
                       more_info=REQ(validator=check_dict([]), default=None)):
-
+    # type: (HttpRequest, UserProfile, str, str, bool, str, str, str, Dict) -> HttpResponse
     if not settings.ERROR_REPORTING:
         return json_success()
 
