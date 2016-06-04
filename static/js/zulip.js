@@ -3,8 +3,6 @@ var home_msg_list = new message_list.MessageList('zhome',
 );
 var current_msg_list = home_msg_list;
 
-var recent_subjects = new Dict({fold_case: true});
-
 var queued_mark_as_read = [];
 var queued_flag_timer;
 

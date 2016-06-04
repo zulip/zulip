@@ -22,11 +22,11 @@ set_global('feature_flags', {
 set_global('page_params', {
     email: 'bob@zulip.com'
 });
-set_global('recent_subjects', new global.Dict({fold_case: true}));
 
 var stream_data = require('js/stream_data.js');
 set_global('stream_data', {
-    get_name: stream_data.get_name
+    get_name: stream_data.get_name,
+    recent_subjects: new global.Dict({fold_case: true})
 });
 
 set_global('narrow', {});
@@ -243,7 +243,7 @@ set_global('narrow', {});
         return 'office';
     };
 
-    global.recent_subjects = new global.Dict.from({
+    global.stream_data.recent_subjects = new global.Dict.from({
         'devel': [
             {subject: 'REXX'}
         ],
@@ -311,7 +311,7 @@ set_global('narrow', {});
         return;
     };
 
-    global.recent_subjects = new global.Dict({fold_case: true});
+    global.stream_data.recent_subjects = new global.Dict({fold_case: true});
 
     var suggestions = search.get_suggestions(query);
 
@@ -333,7 +333,7 @@ set_global('narrow', {});
         return;
     };
 
-    global.recent_subjects = new global.Dict({fold_case: true});
+    global.stream_data.recent_subjects = new global.Dict({fold_case: true});
 
     var suggestions = search.get_suggestions(query);
 
@@ -371,7 +371,7 @@ set_global('narrow', {});
         }
     ];
 
-    global.recent_subjects = new global.Dict.from({
+    global.stream_data.recent_subjects = new global.Dict.from({
         office: [
             {subject: 'team'},
             {subject: 'ignore'},

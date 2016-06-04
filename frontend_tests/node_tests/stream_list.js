@@ -11,7 +11,8 @@ add_dependencies({
     hashchange: 'js/hashchange'
 });
 
-set_global('recent_subjects', new global.Dict());
+global.recent_subjects = new global.Dict();
+
 set_global('unread', {});
 set_global('message_store', {
     recent_private_messages: new global.Array()
@@ -38,7 +39,7 @@ global.use_template('stream_privacy');
     var topics = [
         {subject: "coding"}
     ];
-    global.recent_subjects.set("devel", topics);
+    global.stream_data.recent_subjects.set("devel", topics);
     global.unread.num_unread_for_subject = function () {
         return 1;
     };

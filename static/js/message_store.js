@@ -47,22 +47,20 @@ exports.process_message_for_recent_subjects = function process_message_for_recen
     var stream = message.stream;
     var canon_subject = stream_data.canonicalized_name(message.subject);
 
-    if (! recent_subjects.has(stream)) {
-        recent_subjects.set(stream, []);
+    if (! stream_data.recent_subjects.has(stream)) {
+        stream_data.recent_subjects.set(stream, []);
     } else {
-        recent_subjects.set(stream,
-                            _.filter(recent_subjects.get(stream), function (item) {
-                                var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
-                                if (is_duplicate) {
-                                    current_timestamp = item.timestamp;
-                                    count = item.count;
-                                }
-
-                                return !is_duplicate;
-                            }));
+        stream_data.recent_subjects.set(stream, _.filter(stream_data.recent_subjects.get(stream), function (item) {
+            var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
+            if (is_duplicate) {
+                current_timestamp = item.timestamp;
+                count = item.count;
+            }
+            return !is_duplicate;
+        }));
     }
 
-    var recents = recent_subjects.get(stream);
+    var recents = stream_data.recent_subjects.get(stream);
 
     if (remove_message !== undefined) {
         count = count - 1;
@@ -81,7 +79,7 @@ exports.process_message_for_recent_subjects = function process_message_for_recen
         return b.timestamp - a.timestamp;
     });
 
-    recent_subjects.set(stream, recents);
+    stream_data.recent_subjects.set(stream, recents);
 };
 
 exports.process_message_for_recent_private_messages = function process_message_for_recent_private_messages(message, remove_message) {
