@@ -193,7 +193,7 @@ python_rules = [
           'return json_error(data=error_data, msg=ret_error)'),
          ('zerver/views/streams.py', 'return json_error(property_conversion)'),
          # We can't do anything about this.
-         ('zerver/views/realm_emoji.py', 'return json_error(e.message_dict)'),
+         ('zerver/views/realm_emoji.py', 'return json_error(e.messages[0])'),
      ]),
      'description': 'Argument to json_error should a literal string enclosed by _()'},
     # To avoid JsonableError(_variable) and JsonableError(_(variable))
