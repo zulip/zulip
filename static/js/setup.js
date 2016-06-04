@@ -32,11 +32,6 @@ $(function () {
         }
     });
 
-    if (page_params.password_auth_enabled !== false) {
-        // zxcvbn.js is pretty big, and is only needed on password change, so load it asynchronously.
-        $.getScript('/static/third/zxcvbn/zxcvbn.js');
-    }
-
     if (typeof $ !== 'undefined') {
         $.fn.expectOne = function () {
             if (blueslip && this.length !== 1) {

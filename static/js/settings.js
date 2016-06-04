@@ -183,6 +183,13 @@ function _setup_page() {
         e.preventDefault();
         $('#pw_change_link').hide();
         $('#pw_change_controls').show();
+        if (page_params.password_auth_enabled !== false) {
+            // zxcvbn.js is pretty big, and is only needed on password
+            // change, so load it asynchronously.
+            $.getScript('/static/third/zxcvbn/zxcvbn.js', function () {
+                $('#pw_strength .bar').removeClass("fade");
+            });
+        }
     });
 
     $('#new_password').on('change keyup', function () {

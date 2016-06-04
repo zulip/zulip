@@ -20,19 +20,21 @@ casper.waitForSelector("#settings-change-box", function () {
 });
 
 casper.waitUntilVisible("#old_password", function () {
-    casper.test.assertVisible("#old_password");
-    casper.test.assertVisible("#new_password");
-    casper.test.assertVisible("#confirm_password");
+    casper.waitForResource("zxcvbn.js", function () {
+        casper.test.assertVisible("#old_password");
+        casper.test.assertVisible("#new_password");
+        casper.test.assertVisible("#confirm_password");
 
-    casper.test.assertEqual(casper.getFormValues(form_sel).full_name, "Iago");
+        casper.test.assertEqual(casper.getFormValues(form_sel).full_name, "Iago");
 
-    casper.fill(form_sel, {
-        "full_name": "IagoNew",
-        "old_password": test_credentials.default_user.password,
-        "new_password": "qwertyuiop",
-        "confirm_password": "qwertyuiop"
+        casper.fill(form_sel, {
+            "full_name": "IagoNew",
+            "old_password": test_credentials.default_user.password,
+            "new_password": "qwertyuiop",
+            "confirm_password": "qwertyuiop"
+        });
+        casper.click('input[name="change_settings"]');
     });
-    casper.click('input[name="change_settings"]');
 });
 
 casper.waitUntilVisible('#settings-status', function () {
