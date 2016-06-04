@@ -8,6 +8,7 @@ import ujson
 class RealmEmojiTest(AuthedTestCase):
 
     def test_list(self):
+        # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip.com')
         check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
@@ -18,6 +19,7 @@ class RealmEmojiTest(AuthedTestCase):
         self.assertEqual(len(content["emoji"]), 1)
 
     def test_upload(self):
+        # type: () -> None
         self.login("iago@zulip.com")
         data = {"name": "my_emoji", "url": "https://example.com/my_emoji"}
         result = self.client_put("/json/realm/emoji", info=data)
@@ -30,12 +32,14 @@ class RealmEmojiTest(AuthedTestCase):
         self.assertEqual(len(content["emoji"]), 1)
 
     def test_upload_exception(self):
+        # type: () -> None
         self.login("iago@zulip.com")
         data = {"name": "my_em*/oji", "url": "https://example.com/my_emoji"}
         result = self.client_put("/json/realm/emoji", info=data)
-        self.assert_json_error(result, u'Invalid characters in Emoji name')
+        self.assert_json_error(result, 'Invalid characters in Emoji name')
 
     def test_delete(self):
+        # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip.com')
         check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
