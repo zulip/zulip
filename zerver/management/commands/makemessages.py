@@ -30,6 +30,9 @@ http://stackoverflow.com/questions/2090717/getting-translation-strings-for-jinja
 """
 from __future__ import absolute_import
 
+from typing import Any, Dict, Iterable, Mapping, Set, Tuple
+
+from argparse import ArgumentParser
 import os
 import re
 import glob
@@ -53,6 +56,7 @@ regexes = ['{{#tr .*?}}(.*?){{/tr}}',
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 
 def strip_whitespaces(src):
+    # type: (str) -> str
     src = strip_whitespace_left.sub(r'\1', src)
     src = strip_whitespace_right.sub(r'\1', src)
     return src
@@ -60,6 +64,7 @@ def strip_whitespaces(src):
 class Command(makemessages.Command):
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         super(Command, self).add_arguments(parser)
         parser.add_argument('--frontend-source', type=str,
                             default='static/templates',
@@ -72,10 +77,12 @@ class Command(makemessages.Command):
                             help='Namespace of the frontend locale file')
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         self.handle_django_locales(*args, **options)
         self.handle_frontend_locales(*args, **options)
 
     def handle_frontend_locales(self, *args, **options):
+        # type: (*Any, **Any) -> None
         self.frontend_source = options.get('frontend_source')
         self.frontend_output = options.get('frontend_output')
         self.frontend_namespace = options.get('frontend_namespace')
@@ -87,6 +94,7 @@ class Command(makemessages.Command):
         self.write_translation_strings(translation_strings)
 
     def handle_django_locales(self, *args, **options):
+        # type: (*Any, **Any) -> None
         old_endblock_re = trans_real.endblock_re
         old_block_re = trans_real.block_re
         old_constant_re = trans_real.constant_re
@@ -117,7 +125,8 @@ class Command(makemessages.Command):
             trans_real.constant_re = old_constant_re
 
     def extract_strings(self, data):
-        translation_strings = {}
+        # type: (str) -> Dict[str, str]
+        translation_strings = {} # type: Dict[str, str]
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 translation_strings[match] = ""
@@ -125,6 +134,7 @@ class Command(makemessages.Command):
         return translation_strings
 
     def get_translation_strings(self):
+        # type: () -> Dict[str, str]
         translation_strings = {} # type: Dict[str, str]
         dirname = self.get_template_dir()
 
@@ -137,13 +147,16 @@ class Command(makemessages.Command):
         return translation_strings
 
     def get_template_dir(self):
+        # type: () -> str
         return self.frontend_source
 
 
     def get_namespace(self):
+        # type: () -> str
         return self.frontend_namespace
 
     def get_locales(self):
+        # type: () -> Iterable[str]
         locale = self.frontend_locale
         exclude = self.frontend_exclude
         process_all = self.frontend_all
@@ -159,9 +172,11 @@ class Command(makemessages.Command):
             return set(locales) - set(exclude)
 
     def get_base_path(self):
+        # type: () -> str
         return self.frontend_output
 
     def get_output_paths(self):
+        # type: () -> Iterable[str]
         base_path = self.get_base_path()
         locales = self.get_locales()
         for path in [os.path.join(base_path, locale) for locale in locales]:
@@ -171,17 +186,19 @@ class Command(makemessages.Command):
             yield os.path.join(path, self.get_namespace())
 
     def get_new_strings(self, old_strings, translation_strings):
+        # type: (Mapping[str, str], Iterable[str]) -> Dict[str, str]
         """
         Missing strings are removed, new strings are added and already
         translated strings are not touched.
         """
-        new_strings = {}
+        new_strings = {} # Dict[str, str]
         for k in translation_strings:
             new_strings[k] = old_strings.get(k, k)
 
         return new_strings
 
     def write_translation_strings(self, translation_strings):
+        # type: (Iterable[str]) -> None
         for locale, output_path in zip(self.get_locales(), self.get_output_paths()):
             self.stdout.write("[frontend] processing locale {}".format(locale))
             try:

@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from django.core.management.base import BaseCommand
+from typing import Any
 
 from zerver.models import UserPresence, UserActivity
 from zerver.lib.utils import statsd, statsd_key
@@ -15,6 +16,7 @@ class Command(BaseCommand):
     Run as a cron job that runs every 10 minutes."""
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         # Get list of all active users in the last 1 week
         cutoff = datetime.now() - timedelta(minutes=30, hours=168)
 

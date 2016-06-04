@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from typing import Any
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
@@ -24,6 +25,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if options["realm"]:
             realm = get_realm(options["realm"])
             delete_realm_user_sessions(realm)

@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
@@ -12,6 +15,7 @@ class Command(BaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('-f', '--for-real',
                             dest='for_real',
                             action='store_true',
@@ -21,6 +25,7 @@ class Command(BaseCommand):
                             help='email of user to deactivate')
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         user_profile = get_user_profile_by_email(options['email'])
 
         print("Deactivating %s (%s) - %s" % (user_profile.full_name,

@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_change_full_name
@@ -10,10 +13,12 @@ class Command(BaseCommand):
     help = """Change the names for many users."""
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('data_file', metavar='<data file>', type=str,
                             help="file containing rows of the form <email>,<desired name>")
 
     def handle(self, *args, **options):
+        # type: (*Any, **str) -> None
         data_file = options['data_file']
         with open(data_file, "r") as f:
             for line in f:

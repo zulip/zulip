@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from confirmation.models import Confirmation
 from zerver.models import UserProfile, PreregistrationUser, \
@@ -10,6 +13,7 @@ class Command(BaseCommand):
     help = "Generate activation links for users and print them to stdout."
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('--domain',
                             dest='domain',
                             type=str,
@@ -23,6 +27,7 @@ class Command(BaseCommand):
                             help='email of user to generate an activation link for')
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         duplicates = False
         for email in options['emails']:
             try:

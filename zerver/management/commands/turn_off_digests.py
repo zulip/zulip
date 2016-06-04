@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
@@ -23,6 +25,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, **options):
+        # type: (**str) -> None
         if options["domain"] is None and options["users"] is None:
             self.print_help("python manage.py", "turn_off_digests")
             exit(1)

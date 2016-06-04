@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
@@ -12,6 +15,7 @@ class Command(BaseCommand):
               One week is taken as the default value."""
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('-w', '--weeks',
                             dest='delta_weeks',
                             default=1,
@@ -24,7 +28,7 @@ class Command(BaseCommand):
                             help="Actually remove the files from the storage.")
 
     def handle(self, *args, **options):
-
+        # type: (*Any, **Any) -> None
         delta_weeks = options['delta_weeks']
         print("Deleting unclaimed attached files older than %s" % (delta_weeks,))
         print("")

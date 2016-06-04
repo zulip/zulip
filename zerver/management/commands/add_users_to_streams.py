@@ -3,6 +3,8 @@ from __future__ import print_function
 
 from optparse import make_option
 
+from typing import Any
+
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import create_stream_if_needed, do_add_subscription
@@ -32,6 +34,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, **options):
+        # type: (**Any) -> None
         if options["domain"] is None or options["streams"] is None or \
                 (options["users"] is None and options["all_users"] is None):
             self.print_help("python manage.py", "add_users_to_streams")

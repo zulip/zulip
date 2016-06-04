@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from optparse import make_option
 
+from typing import Any
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_realm, set_default_streams
@@ -40,6 +42,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
         )
 
     def validate_domain(self, domain):
+        # type: (str) -> None
         # Domains can't contain whitespace if they are to be used in memcached
         # keys. Seems safer to leave that as the default case regardless of
         # which backing store we use.
@@ -56,6 +59,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             raise ValueError("Cannot create a new realm that is already an alias for an existing realm")
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if options["domain"] is None or options["name"] is None:
             print("\033[1;31mPlease provide both a domain and name.\033[0m\n", file=sys.stderr)
             self.print_help("python manage.py", "create_realm")

@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
 import sys
 import argparse
 
@@ -25,6 +27,7 @@ Omit both <email> and <full name> for interactive user creation.
 """
 
     def add_arguments(self, parser):
+        # type: (argparse.ArgumentParser) -> None
         parser.add_argument('--this-user-has-accepted-the-tos',
                             dest='tos',
                             action="store_true",
@@ -40,6 +43,7 @@ Omit both <email> and <full name> for interactive user creation.
                             help='full name of new user')
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         if not options["tos"]:
             raise CommandError("""You must confirm that this user has accepted the
 Terms of Service by passing --this-user-has-accepted-the-tos.""")

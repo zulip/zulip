@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_rename_stream
@@ -12,6 +15,7 @@ class Command(BaseCommand):
     help = """Change the stream name for a realm."""
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('domain', metavar='<domain>', type=str,
                             help="domain to operate on")
         parser.add_argument('old_name', metavar='<old name>', type=str,
@@ -20,6 +24,7 @@ class Command(BaseCommand):
                             help='new name to rename the stream to')
 
     def handle(self, *args, **options):
+        # type: (*Any, **str) -> None
         domain = options['domain']
         old_name = options['old_name']
         new_name = options['new_name']

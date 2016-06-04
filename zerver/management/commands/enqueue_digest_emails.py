@@ -3,6 +3,8 @@ import datetime
 import pytz
 import logging
 
+from typing import Any
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -25,6 +27,7 @@ logger.addHandler(file_handler)
 
 VALID_DIGEST_DAYS = (1, 2, 3, 4)
 def inactive_since(user_profile, cutoff):
+    # type: (UserProfile, datetime.datetime) -> bool
     # Hasn't used the app in the last 24 business-day hours.
     most_recent_visit = [row.last_visit for row in \
                              UserActivity.objects.filter(
@@ -38,6 +41,7 @@ def inactive_since(user_profile, cutoff):
     return last_visit < cutoff
 
 def last_business_day():
+    # type: () -> datetime.datetime
     one_day = datetime.timedelta(hours=23)
     previous_day = datetime.datetime.now(tz=pytz.utc) - one_day
     while previous_day.weekday() not in VALID_DIGEST_DAYS:
@@ -47,12 +51,14 @@ def last_business_day():
 # Changes to this should also be reflected in
 # zerver/worker/queue_processors.py:DigestWorker.consume()
 def queue_digest_recipient(user_profile, cutoff):
+    # type: (UserProfile, datetime.datetime) -> None
     # Convert cutoff to epoch seconds for transit.
     event = {"user_profile_id": user_profile.id,
              "cutoff": cutoff.strftime('%s')}
     queue_json_publish("digest_emails", event, lambda event: None)
 
 def domains_for_this_deployment():
+    # type: () -> List[str]
     if settings.ZULIP_COM:
         # Voyager deployments don't have a Deployment entry.
         # Only send zulip.com digests on staging.
@@ -69,6 +75,7 @@ def domains_for_this_deployment():
     return []
 
 def should_process_digest(domain, deployment_domains):
+    # type: (str, List[str]) -> bool
     if settings.VOYAGER:
         # Voyager. We ship with a zulip.com realm for the feedback bot, but
         # don't try to send e-mails to it.
@@ -85,6 +92,7 @@ class Command(BaseCommand):
 in a while.
 """
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         # To be really conservative while we don't have user timezones or
         # special-casing for companies with non-standard workweeks, only
         # try to send mail on Tuesdays, Wednesdays, and Thursdays.

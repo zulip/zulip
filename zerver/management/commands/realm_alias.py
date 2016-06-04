@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from zerver.models import Realm, RealmAlias, get_realm
 from zerver.lib.actions import realm_aliases
@@ -10,6 +13,7 @@ class Command(BaseCommand):
     help = """Manage aliases for the specified realm"""
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('-r', '--realm',
                             dest='domain',
                             type=str,
@@ -24,6 +28,7 @@ class Command(BaseCommand):
                             help="alias to add or remove")
 
     def handle(self, *args, **options):
+        # type: (*Any, **str) -> None
         realm = get_realm(options["domain"])
         if options["op"] == "show":
             print("Aliases for %s:" % (realm.domain,))

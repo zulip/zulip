@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from zerver.models import Realm, Stream, Message, Subscription, Recipient, get_realm
@@ -9,10 +12,12 @@ class Command(BaseCommand):
     help = "Generate statistics on the streams for a realm."
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('realms', metavar='<realm>', type=str, nargs='*',
                             help="realm to generate statistics for")
 
     def handle(self, *args, **options):
+        # type: (*Any, **str) -> None
         if options['realms']:
             try:
                 realms = [get_realm(domain) for domain in options['realms']]
