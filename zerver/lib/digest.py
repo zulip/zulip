@@ -1,10 +1,12 @@
 from __future__ import absolute_import
-from typing import Tuple
+from typing import Any, Callable, Iterable, Tuple
 
 from collections import defaultdict
 import datetime
+import six
+from six import text_type
 
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.template import loader
 from django.conf import settings
 
@@ -34,6 +36,7 @@ logger.addHandler(file_handler)
 #    diversely comment upon topics.
 
 def gather_hot_conversations(user_profile, stream_messages):
+    # type: (UserProfile, QuerySet) -> List[Dict[str, Any]]
     # Gather stream conversations of 2 types:
     # 1. long conversations
     # 2. conversations where many different people participated
@@ -97,6 +100,7 @@ def gather_hot_conversations(user_profile, stream_messages):
     return hot_conversation_render_payloads
 
 def gather_new_users(user_profile, threshold):
+    # type: (UserProfile, datetime.datetime) -> Tuple[int, List[text_type]]
     # Gather information on users in the realm who have recently
     # joined.
     if user_profile.realm.domain == "mit.edu":
@@ -110,6 +114,7 @@ def gather_new_users(user_profile, threshold):
     return len(user_names), user_names
 
 def gather_new_streams(user_profile, threshold):
+    # type: (UserProfile, datetime.datetime) -> Tuple[int, Dict[str, List[str]]]
     if user_profile.realm.domain == "mit.edu":
         new_streams = [] # type: List[Stream]
     else:
@@ -130,6 +135,7 @@ def gather_new_streams(user_profile, threshold):
     return len(new_streams), {"html": streams_html, "plain": streams_plain}
 
 def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
+    # type: (str, str, int, int) -> bool
     if unread_pms or hot_conversations:
         # If you have any unread traffic, good enough.
         return True
@@ -140,6 +146,7 @@ def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
     return False
 
 def send_digest_email(user_profile, html_content, text_content):
+    # type: (UserProfile, str, str) -> None
     recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
     subject = "While you've been gone - Zulip"
     sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
@@ -150,13 +157,14 @@ def send_digest_email(user_profile, html_content, text_content):
                       tags=["digest-emails"])
 
 def handle_digest_email(user_profile_id, cutoff):
+    # type: (int, int) -> None
     user_profile=UserProfile.objects.get(id=user_profile_id)
     # Convert from epoch seconds to a datetime object.
-    cutoff = datetime.datetime.utcfromtimestamp(int(cutoff))
+    cutoff_date = datetime.datetime.utcfromtimestamp(int(cutoff))
 
     all_messages = UserMessage.objects.filter(
         user_profile=user_profile,
-        message__pub_date__gt=cutoff).order_by("message__pub_date")
+        message__pub_date__gt=cutoff_date).order_by("message__pub_date")
 
     # Start building email template data.
     template_payload = {
@@ -193,13 +201,13 @@ def handle_digest_email(user_profile_id, cutoff):
 
     # Gather new streams.
     new_streams_count, new_streams = gather_new_streams(
-        user_profile, cutoff)
+        user_profile, cutoff_date)
     template_payload["new_streams"] = new_streams
     template_payload["new_streams_count"] = new_streams_count
 
     # Gather users who signed up recently.
     new_users_count, new_users = gather_new_users(
-        user_profile, cutoff)
+        user_profile, cutoff_date)
     template_payload["new_users"] = new_users
 
     text_content = loader.render_to_string(
