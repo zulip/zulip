@@ -321,6 +321,10 @@ a:hover code {
     display: inline;
 }
 
+.stream_search {
+    margin-left: 10px;
+}
+
 #streams_list #streams_inline_cog:hover {
    opacity: 1.0;
 }
