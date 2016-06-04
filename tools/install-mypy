@@ -30,4 +30,4 @@ source "$PY3_VENV_PATH/bin/activate"
 
 # install mypy
 sudo "$PY3_VENV_PATH/bin/pip3" install --upgrade pip
-sudo "$PY3_VENV_PATH/bin/pip3" install --no-deps -r "$TOOLS_DIR/setup/py3_test_reqs.txt"
+sudo "$PY3_VENV_PATH/bin/pip3" install --upgrade --no-deps -r "$TOOLS_DIR/setup/py3_test_reqs.txt"
