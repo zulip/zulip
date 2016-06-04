@@ -88,8 +88,7 @@ def walk_tree(root, processor, stop_after_first=False):
 # height is not actually used
 def add_a(root, url, link, height="", title=None, desc=None,
           class_attr="message_inline_image"):
-    # type: ignore # (Element, text_type, text_type, text_type, Optional[text_type], Optional[text_type], text_type) -> None
-    # above ignored until mypy picks up https://github.com/python/typeshed/pull/244
+    # type: (Element, text_type, text_type, text_type, Optional[text_type], Optional[text_type], text_type) -> None
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
@@ -631,10 +630,9 @@ class ModalLink(markdown.inlinepatterns.Pattern):
 
         return a_tag
 
-upload_re = re.compile(r"^(?:https://%s.s3.amazonaws.com|/user_uploads/\d+)/[^/]*/([^/]*)$" % (settings.S3_BUCKET,))
+upload_re = re.compile(ur"^(?:https://%s.s3.amazonaws.com|/user_uploads/\d+)/[^/]*/([^/]*)$" % (settings.S3_BUCKET,))
 def url_filename(url):
-    # type: ignore # (text_type) -> text_type
-    # above ignored until mypy picks up https://github.com/python/typeshed/pull/244
+    # type: (text_type) -> text_type
     """Extract the filename if a URL is an uploaded file, or return the original URL"""
     match = upload_re.match(url)
     if match:
