@@ -327,7 +327,7 @@ class EventQueue(object):
         return contents
 
 # maps queue ids to client descriptors
-clients = {} # type: Dict[str, ClientDescriptor]
+clients = {} # type: Dict[text_type, ClientDescriptor]
 # maps user id to list of client descriptors
 user_clients = {} # type: Dict[int, List[ClientDescriptor]]
 # maps realm id to list of client descriptors with all_public_streams=True
@@ -347,7 +347,7 @@ def add_client_gc_hook(hook):
     gc_hooks.append(hook)
 
 def get_client_descriptor(queue_id):
-    # type: (str) -> ClientDescriptor
+    # type: (text_type) -> ClientDescriptor
     return clients.get(queue_id)
 
 def get_client_descriptors_for_user(user_profile_id):
@@ -376,9 +376,9 @@ def allocate_client_descriptor(new_queue_data):
     return client
 
 def do_gc_event_queues(to_remove, affected_users, affected_realms):
-    # type: (Set[str], Set[int], Set[int]) -> None
+    # type: (Set[text_type], Set[int], Set[int]) -> None
     def filter_client_dict(client_dict, key):
-        # type: (Dict, Union[int, str]) -> None
+        # type: (Dict, Union[int, text_type]) -> None
         if key not in client_dict:
             return
 
@@ -586,7 +586,7 @@ def request_event_queue(user_profile, user_client, apply_markdown,
     return None
 
 def get_user_events(user_profile, queue_id, last_event_id):
-    # type: (UserProfile, str, str) -> List[Dict]
+    # type: (UserProfile, text_type, int) -> List[Dict]
     if settings.TORNADO_SERVER:
         resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
                             auth=requests.auth.HTTPBasicAuth(user_profile.email,
@@ -609,10 +609,6 @@ def build_offline_notification(user_profile_id, message_id):
     return {"user_profile_id": user_profile_id,
             "message_id": message_id,
             "timestamp": time.time()}
-
-def nop(n):
-    # type: (Any) -> None
-    pass
 
 def missedmessage_hook(user_profile_id, queue, last_for_client):
     # type: (int, ClientDescriptor, bool) -> None
@@ -639,9 +635,9 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
         msg_id = notify_info['message_id']
         notice = build_offline_notification(user_profile_id, msg_id)
         if notify_info.get('send_push', False):
-            queue_json_publish("missedmessage_mobile_notifications", notice, nop)
+            queue_json_publish("missedmessage_mobile_notifications", notice, lambda x: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
         if notify_info.get('send_email', False):
-            queue_json_publish("missedmessage_emails", notice, nop)
+            queue_json_publish("missedmessage_emails", notice, lambda x: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
 
 def receiver_is_idle(user_profile_id, realm_presences):
     # type: (int, Dict[int, Dict]) -> bool
@@ -718,13 +714,13 @@ def process_message_event(event_template, users):
         always_push_notify = user_data.get('always_push_notify', False)
         if (received_pm or mentioned) and (idle or always_push_notify):
             notice = build_offline_notification(user_profile_id, message_id)
-            queue_json_publish("missedmessage_mobile_notifications", notice, nop)
+            queue_json_publish("missedmessage_mobile_notifications", notice, lambda x: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
             notified = dict(push_notified=True)
             # Don't send missed message emails if always_push_notify is True
             if idle:
                 # We require RabbitMQ to do this, as we can't call the email handler
                 # from the Tornado process. So if there's no rabbitmq support do nothing
-                queue_json_publish("missedmessage_emails", notice, nop)
+                queue_json_publish("missedmessage_emails", notice, lambda x: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
                 notified['email_notified'] = True
 
             extra_user_data[user_profile_id] = notified

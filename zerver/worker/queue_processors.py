@@ -324,7 +324,7 @@ class MessageSenderWorker(QueueProcessingWorker):
         self.redis_client.hmset(redis_key, {'status': 'complete',
                                             'response': resp_content});
 
-        queue_json_publish(server_meta['return_queue'], result, lambda e: None)
+        queue_json_publish(server_meta['return_queue'], result, lambda x: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):

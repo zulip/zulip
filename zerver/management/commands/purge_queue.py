@@ -19,6 +19,6 @@ class Command(BaseCommand):
         # type: (*Any, **str) -> None
         queue_name = options['queue_name']
         queue = SimpleQueueClient()
-        queue.ensure_queue(queue_name, lambda: None)
+        queue.ensure_queue(queue_name, lambda: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
         queue.channel.queue_purge(queue_name)
         print("Done")

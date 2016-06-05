@@ -13,6 +13,7 @@ from django.views.debug import ExceptionReporter, get_exception_reporter_filter
 
 from zerver.lib.queue import queue_json_publish
 
+
 class AdminZulipHandler(logging.Handler):
     """An exception log handler that sends the exception to the queue to be
        sent to the Zulip feedback server.
@@ -74,7 +75,7 @@ class AdminZulipHandler(logging.Handler):
                 from zilencer.error_notify import notify_server_error
                 notify_server_error(report)
             else:
-                queue_json_publish('error_reports', dict(
+                queue_json_publish('error_reports', dict( # type: ignore # waiting on https://github.com/python/mypy/issues/1425
                     type = "server",
                     report = report,
                 ), lambda x: None)

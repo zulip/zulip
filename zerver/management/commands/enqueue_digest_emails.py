@@ -55,7 +55,7 @@ def queue_digest_recipient(user_profile, cutoff):
     # Convert cutoff to epoch seconds for transit.
     event = {"user_profile_id": user_profile.id,
              "cutoff": cutoff.strftime('%s')}
-    queue_json_publish("digest_emails", event, lambda event: None)
+    queue_json_publish("digest_emails", event, lambda x: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
 
 def domains_for_this_deployment():
     # type: () -> List[str]

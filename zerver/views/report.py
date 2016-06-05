@@ -92,7 +92,8 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
     except Exception:
         version = None
 
-    queue_json_publish('error_reports', dict(
+
+    queue_json_publish('error_reports', dict( # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
         type = "browser",
         report = dict(
             user_email = user_profile.email,
