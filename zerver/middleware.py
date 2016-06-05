@@ -1,10 +1,13 @@
 from __future__ import absolute_import
+from typing import Any, Callable, Iterable, Optional
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_error
+from zerver.lib.request import JsonableError
 from django.db import connection
+from django.http import HttpRequest, HttpResponse
 from zerver.lib.utils import statsd
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
@@ -24,6 +27,7 @@ import traceback
 logger = logging.getLogger('zulip.requests')
 
 def record_request_stop_data(log_data):
+    # type: (Dict[str, Any]) -> None
     log_data['time_stopped'] = time.time()
     log_data['remote_cache_time_stopped'] = get_remote_cache_time()
     log_data['remote_cache_requests_stopped'] = get_remote_cache_requests()
@@ -33,9 +37,11 @@ def record_request_stop_data(log_data):
         log_data["prof"].disable()
 
 def async_request_stop(request):
+    # type: (HttpRequest) -> None
     record_request_stop_data(request._log_data)
 
 def record_request_restart_data(log_data):
+    # type: (Dict[str, Any]) -> None
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].enable()
     log_data['time_restarted'] = time.time()
@@ -45,6 +51,7 @@ def record_request_restart_data(log_data):
     log_data['bugdown_requests_restarted'] = get_bugdown_requests()
 
 def async_request_restart(request):
+    # type: (HttpRequest) -> None
     if "time_restarted" in request._log_data:
         # Don't destroy data when being called from
         # finish_current_handler
@@ -52,6 +59,7 @@ def async_request_restart(request):
     record_request_restart_data(request._log_data)
 
 def record_request_start_data(log_data):
+    # type: (Dict[str, Any]) -> None
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"] = cProfile.Profile()
         log_data["prof"].enable()
@@ -63,14 +71,17 @@ def record_request_start_data(log_data):
     log_data['bugdown_requests_start'] = get_bugdown_requests()
 
 def timedelta_ms(timedelta):
+    # type: (float) -> float
     return timedelta * 1000
 
 def format_timedelta(timedelta):
+    # type: (float) -> str
     if (timedelta >= 1):
         return "%.1fs" % (timedelta)
     return "%.0fms" % (timedelta_ms(timedelta),)
 
 def is_slow_query(time_delta, path):
+    # type: (float, str) -> bool
     if time_delta < 1.2:
         return False
     is_exempt = \
@@ -86,6 +97,7 @@ def is_slow_query(time_delta, path):
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=None, error_content_iter=None):
+    # type: (Dict[str, Any], str, str, str, str, str, int, Optional[str], Optional[Iterable[str]]) -> None
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
@@ -210,12 +222,14 @@ class LogRequests(object):
     # for some views, process_view isn't run, so we call the start
     # method here too
     def process_request(self, request):
+        # type: (HttpRequest) -> None
         request._log_data = dict()
         record_request_start_data(request._log_data)
         if connection.connection is not None:
             connection.connection.queries = []
 
     def process_view(self, request, view_func, args, kwargs):
+        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -228,6 +242,7 @@ class LogRequests(object):
             connection.connection.queries = []
 
     def process_response(self, request, response):
+        # type: (HttpRequest, HttpResponse) -> HttpResponse
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
         if remote_ip is None:
@@ -257,6 +272,7 @@ class LogRequests(object):
 
 class JsonErrorHandler(object):
     def process_exception(self, request, exception):
+        # type: (HttpRequest, Any) -> Optional[HttpResponse]
         if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
             try:
                 status_code = exception.status_code
@@ -271,14 +287,17 @@ class JsonErrorHandler(object):
 
 class TagRequests(object):
     def process_view(self, request, view_func, args, kwargs):
+        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         self.process_request(request)
     def process_request(self, request):
+        # type: (HttpRequest) -> None
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
             request.error_format = "JSON"
         else:
             request.error_format = "HTML"
 
 def csrf_failure(request, reason=""):
+    # type: (HttpRequest, Optional[str]) -> HttpResponse
     if request.error_format == "JSON":
         return json_error(_("CSRF Error: %s") % (reason,), status=403)
     else:
@@ -286,6 +305,7 @@ def csrf_failure(request, reason=""):
 
 class RateLimitMiddleware(object):
     def process_response(self, request, response):
+        # type: (HttpRequest, HttpResponse) -> HttpResponse
         if not settings.RATE_LIMITING:
             return response
 
@@ -300,6 +320,7 @@ class RateLimitMiddleware(object):
         return response
 
     def process_exception(self, request, exception):
+        # type: (HttpRequest, Exception) -> HttpResponse
         if isinstance(exception, RateLimited):
             resp = json_error(_("API usage exceeded rate limit, try again in %s secs") % (request._ratelimit_secs_to_freedom,), status=429)
             resp['Retry-After'] = request._ratelimit_secs_to_freedom
@@ -307,6 +328,7 @@ class RateLimitMiddleware(object):
 
 class FlushDisplayRecipientCache(object):
     def process_response(self, request, response):
+        # type: (HttpRequest, HttpResponse) -> HttpResponse
         # We flush the per-request caches after every request, so they
         # are not shared at all between requests.
         flush_per_request_caches()
@@ -314,6 +336,7 @@ class FlushDisplayRecipientCache(object):
 
 class SessionHostDomainMiddleware(SessionMiddleware):
     def process_response(self, request, response):
+        # type: (HttpRequest, HttpResponse) -> HttpResponse
         """
         If request.session was modified, or if the configuration is to save the
         session every time, save the changes and set a session cookie.
