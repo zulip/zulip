@@ -1,14 +1,18 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+from typing import Any, Optional
 
 from django.utils.translation import ugettext as _
 from django.db.models import Q
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 
-from zerver.models import UserProfile, get_user_profile_by_email
+from zerver.models import Client, UserProfile, get_user_profile_by_email, Realm
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import api_key_only_webhook_view, has_request_variables, REQ
+
+from six import text_type
 
 import logging
 import re
@@ -16,6 +20,7 @@ import ujson
 
 
 def guess_zulip_user_from_jira(jira_username, realm):
+    # type: (str, Realm) -> Optional[UserProfile]
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
@@ -31,6 +36,7 @@ def guess_zulip_user_from_jira(jira_username, realm):
         return None
 
 def convert_jira_markup(content, realm):
+    # type: (str, Realm) -> str
     # Attempt to do some simplistic conversion of JIRA
     # formatting to Markdown, for consumption in Zulip
 
@@ -86,7 +92,9 @@ def convert_jira_markup(content, realm):
 def api_jira_webhook(request, user_profile, client,
                      payload=REQ(argument_type='body'),
                      stream=REQ(default='jira')):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
     def get_in(payload, keys, default=''):
+        # type: (Dict[str, Any], List[str], str) -> Any
         try:
             for key in keys:
                 payload = payload[key]
