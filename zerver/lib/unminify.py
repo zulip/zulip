@@ -4,16 +4,21 @@ import re
 import os.path
 import sourcemap
 from six.moves import map
+from six import text_type
+
+from typing import Dict
 
 
 class SourceMap(object):
     '''Map (line, column) pairs from generated to source file.'''
 
     def __init__(self, sourcemap_dir):
+        # type: (text_type) -> None
         self._dir = sourcemap_dir
-        self._indices = {} # type: Dict[str, sourcemap.SourceMapDecoder]
+        self._indices = {} # type: Dict[text_type, sourcemap.SourceMapDecoder]
 
     def _index_for(self, minified_src):
+        # type: (text_type) -> sourcemap.SourceMapDecoder
         '''Return the source map index for minified_src, loading it if not
            already loaded.'''
         if minified_src not in self._indices:
@@ -23,7 +28,8 @@ class SourceMap(object):
         return self._indices[minified_src]
 
     def annotate_stacktrace(self, stacktrace):
-        out = ''
+        # type: (text_type) -> text_type
+        out = '' # type: text_type
         for ln in stacktrace.splitlines():
             out += ln + '\n'
             match = re.search(r'/static/min/(.+)(\.[0-9a-f]+)\.js:(\d+):(\d+)', ln)
