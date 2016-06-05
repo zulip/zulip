@@ -70,6 +70,7 @@ class SimpleQueueClient(object):
         return self.channel is not None
 
     def ensure_queue(self, queue_name, callback):
+        # type: (str, Callable) -> None
         '''Ensure that a given queue has been declared, and then call
            the callback with no arguments.'''
         if not self.connection.is_open:
@@ -81,6 +82,7 @@ class SimpleQueueClient(object):
         callback()
 
     def publish(self, queue_name, body):
+        # type: (str, str) -> None
         def do_publish():
             self.channel.basic_publish(
                             exchange='',
@@ -93,6 +95,7 @@ class SimpleQueueClient(object):
         self.ensure_queue(queue_name, do_publish)
 
     def json_publish(self, queue_name, body):
+        # type: (str, Dict[str, Any]) -> None
         try:
             self.publish(queue_name, ujson.dumps(body))
         except (AttributeError, pika.exceptions.AMQPConnectionError):
@@ -263,9 +266,9 @@ def setup_tornado_rabbitmq():
 queue_lock = threading.RLock()
 
 def queue_json_publish(queue_name, event, processor):
+    # type: (str, Dict[str, Any], Callable) -> None
     with queue_lock:
         if settings.USING_RABBITMQ:
             get_queue_client().json_publish(queue_name, event)
         else:
             processor(event)
-
