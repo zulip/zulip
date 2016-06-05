@@ -383,7 +383,7 @@ class EventsRegisterTest(AuthedTestCase):
             ('type', equals('muted_topics')),
             ('muted_topics', check_list(check_list(check_string, 2))),
         ])
-        events = self.do_test(lambda: do_set_muted_topics(self.user_profile, [["Denmark", "topic"]]))
+        events = self.do_test(lambda: do_set_muted_topics(self.user_profile, [[u"Denmark", u"topic"]]))
         error = muted_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -958,22 +958,22 @@ class TestEventsRegisterNarrowDefaults(TestCase):
         # type: () -> None
         self.user_profile.default_events_register_stream_id = None
         self.user_profile.save()
-        result = _default_narrow(self.user_profile, [('stream', 'my_stream')])
-        self.assertEqual(result, [('stream', 'my_stream')])
+        result = _default_narrow(self.user_profile, [[u'stream', u'my_stream']])
+        self.assertEqual(result, [[u'stream', u'my_stream']])
 
     def test_use_passed_narrow_with_default(self):
         # type: () -> None
         self.user_profile.default_events_register_stream_id = self.stream.id
         self.user_profile.save()
-        result = _default_narrow(self.user_profile, [('stream', 'my_stream')])
-        self.assertEqual(result, [('stream', 'my_stream')])
+        result = _default_narrow(self.user_profile, [[u'stream', u'my_stream']])
+        self.assertEqual(result, [[u'stream', u'my_stream']])
 
     def test_use_default_if_narrow_is_empty(self):
         # type: () -> None
         self.user_profile.default_events_register_stream_id = self.stream.id
         self.user_profile.save()
         result = _default_narrow(self.user_profile, [])
-        self.assertEqual(result, [('stream', 'Verona')])
+        self.assertEqual(result, [[u'stream', u'Verona']])
 
     def test_use_narrow_if_default_is_none(self):
         # type: () -> None

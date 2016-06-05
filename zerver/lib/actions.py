@@ -2842,7 +2842,7 @@ def apply_events(state, events, user_profile):
 def do_events_register(user_profile, user_client, apply_markdown=True,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
                        narrow=[]):
-    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, Iterable[Sequence[str]]) -> Dict[str, Any]
+    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, Iterable[Sequence[text_type]]) -> Dict[str, Any]
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -3113,7 +3113,7 @@ def do_set_alert_words(user_profile, alert_words):
     notify_alert_words(user_profile, alert_words)
 
 def do_set_muted_topics(user_profile, muted_topics):
-    # type: (UserProfile, List[Union[List[text_type], Tuple[text_type, text_type]]]) -> None
+    # type: (UserProfile, Union[List[List[text_type]], List[Tuple[text_type, text_type]]]) -> None
     user_profile.muted_topics = ujson.dumps(muted_topics)
     user_profile.save(update_fields=['muted_topics'])
     event = dict(type="muted_topics", muted_topics=muted_topics)
