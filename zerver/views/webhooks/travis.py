@@ -1,9 +1,14 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+
+from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.lib.validator import check_dict, check_string
+from zerver.models import UserProfile, Client
+
 import ujson
 
 
@@ -17,6 +22,7 @@ def api_travis_webhook(request, user_profile, client,
                            ('status_message', check_string),
                            ('compare_url', check_string),
                        ]))):
+    # type: (HttpRequest, UserProfile, Client, str, str, Dict[str, str]) -> HttpResponse
     author = message['author_name']
     message_type = message['status_message']
     changes = message['compare_url']
