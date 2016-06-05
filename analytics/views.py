@@ -1,11 +1,12 @@
 from __future__ import absolute_import
 from __future__ import division
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Union
 
 from django.db import connection
+from django.db.models.query import QuerySet
 from django.template import RequestContext, loader
 from django.core import urlresolvers
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
 from jinja2 import Markup as mark_safe
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
@@ -27,9 +28,11 @@ eastern_tz = pytz.timezone('US/Eastern')
 from zproject.jinja2 import render_to_response
 
 def make_table(title, cols, rows, has_row_class=False):
+    # type: (str, List[str], List[Any], bool) -> str
 
     if not has_row_class:
         def fix_row(row):
+            # type: (Any) -> Dict[str, Any]
             return dict(cells=row, row_class=None)
         rows = list(map(fix_row, rows))
 
@@ -43,6 +46,7 @@ def make_table(title, cols, rows, has_row_class=False):
     return content
 
 def dictfetchall(cursor):
+    # type: (connection.cursor) -> List[Dict[str, Any]]
     "Returns all rows from a cursor as a dict"
     desc = cursor.description
     return [
@@ -52,6 +56,7 @@ def dictfetchall(cursor):
 
 
 def get_realm_day_counts():
+    # type: () -> Dict[str, Dict[str, str]]
     query = '''
         select
             r.domain,
@@ -91,6 +96,7 @@ def get_realm_day_counts():
         max_cnt = max(raw_cnts)
 
         def format_count(cnt):
+            # type: (int) -> str
             if cnt == min_cnt:
                 good_bad = 'bad'
             elif cnt == max_cnt:
@@ -106,6 +112,7 @@ def get_realm_day_counts():
     return result
 
 def realm_summary_table(realm_minutes):
+    # type: (Dict[str, float]) -> str
     query = '''
         SELECT
             realm.domain,
@@ -218,10 +225,10 @@ def realm_summary_table(realm_minutes):
             row['history'] = ''
 
     # augment data with realm_minutes
-    total_hours = 0
+    total_hours = 0.0
     for row in rows:
         domain = row['domain']
-        minutes = realm_minutes.get(domain, 0)
+        minutes = realm_minutes.get(domain, 0.0)
         hours = minutes / 60.0
         total_hours += hours
         row['hours'] = str(int(hours))
@@ -236,6 +243,7 @@ def realm_summary_table(realm_minutes):
 
     # Count active sites
     def meets_goal(row):
+        # type: (Dict[str, int]) -> bool
         return row['active_user_count'] >= 5
 
     num_active_sites = len(list(filter(meets_goal, rows)))
@@ -269,6 +277,7 @@ def realm_summary_table(realm_minutes):
 
 
 def user_activity_intervals():
+    # type: () -> Tuple[mark_safe, Dict[str, float]]
     day_end = timestamp_to_datetime(time.time())
     day_start = day_end - timedelta(hours=24)
 
@@ -319,6 +328,7 @@ def user_activity_intervals():
     return content, realm_minutes
 
 def sent_messages_report(realm):
+    # type: (str) -> str
     title = 'Recently sent messages for ' + realm
 
     cols = [
@@ -386,7 +396,9 @@ def sent_messages_report(realm):
     return make_table(title, cols, rows)
 
 def ad_hoc_queries():
+    # type: () -> List[Dict[str, str]]
     def get_page(query, cols, title):
+        # type: (str, List[str], str) -> Dict[str, str]
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -394,6 +406,7 @@ def ad_hoc_queries():
         cursor.close()
 
         def fix_rows(i, fixup_func):
+            # type: (int, Union[Callable[[Realm], mark_safe], Callable[[datetime], str]]) -> None
             for row in rows:
                 row[i] = fixup_func(row[i])
 
@@ -556,8 +569,9 @@ def ad_hoc_queries():
 @zulip_internal
 @has_request_variables
 def get_activity(request):
-    duration_content, realm_minutes = user_activity_intervals()
-    counts_content = realm_summary_table(realm_minutes)
+    # type: (HttpRequest) -> HttpResponse
+    duration_content, realm_minutes = user_activity_intervals() # type: Tuple[mark_safe, Dict[str, float]]
+    counts_content = realm_summary_table(realm_minutes) # type: str
     data = [
         ('Counts', counts_content),
         ('Durations', duration_content),
@@ -574,6 +588,7 @@ def get_activity(request):
     )
 
 def get_user_activity_records_for_realm(realm, is_bot):
+    # type: (str, bool) -> QuerySet
     fields = [
         'user_profile__full_name',
         'user_profile__email',
@@ -593,6 +608,7 @@ def get_user_activity_records_for_realm(realm, is_bot):
     return records
 
 def get_user_activity_records_for_email(email):
+    # type: (str) -> List[QuerySet]
     fields = [
         'user_profile__full_name',
         'query',
@@ -609,6 +625,7 @@ def get_user_activity_records_for_email(email):
     return records
 
 def raw_user_activity_table(records):
+    # type: (List[QuerySet]) -> str
     cols = [
         'query',
         'client',
@@ -617,6 +634,7 @@ def raw_user_activity_table(records):
     ]
 
     def row(record):
+        # type: (QuerySet) -> List[Any]
         return [
                 record.query,
                 record.client.name,
@@ -629,9 +647,15 @@ def raw_user_activity_table(records):
     return make_table(title, cols, rows)
 
 def get_user_activity_summary(records):
-    # type: (Any) -> Any
+    # type: (List[QuerySet]) -> Dict[str, Dict[str, Any]]
+    #: `Any` used above should be `Union(int, datetime)`.
+    #: However current version of `Union` does not work inside other function.
+    #: We could use something like:
+    # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
+    #: but that would require this long `Union` to carry on throughout inner functions.
     summary = {} # type: Dict[str, Dict[str, Any]]
     def update(action, record):
+        # type: (str, QuerySet) -> None
         if action not in summary:
             summary[action] = dict(
                     count=record.count,
@@ -673,24 +697,28 @@ def get_user_activity_summary(records):
     return summary
 
 def format_date_for_activity_reports(date):
+    # type: (Optional[datetime]) -> str
     if date:
         return date.astimezone(eastern_tz).strftime('%Y-%m-%d %H:%M')
     else:
         return ''
 
 def user_activity_link(email):
+    # type: (str) -> mark_safe
     url_name = 'analytics.views.get_user_activity'
     url = urlresolvers.reverse(url_name, kwargs=dict(email=email))
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
 
 def realm_activity_link(realm):
+    # type: (str) -> mark_safe
     url_name = 'analytics.views.get_realm_activity'
     url = urlresolvers.reverse(url_name, kwargs=dict(realm=realm))
     realm_link = '<a href="%s">%s</a>' % (url, realm)
     return mark_safe(realm_link)
 
 def realm_client_table(user_summaries):
+    # type: (Dict[str, Dict[str, Dict[str, Any]]]) -> str
     exclude_keys = [
             'internal',
             'name',
@@ -735,6 +763,7 @@ def realm_client_table(user_summaries):
     return make_table(title, cols, rows)
 
 def user_activity_summary_table(user_summary):
+    # type: (Dict[str, Dict[str, Any]]) -> str
     rows = []
     for k, v in user_summary.items():
         if k == 'name':
@@ -761,28 +790,33 @@ def user_activity_summary_table(user_summary):
     return make_table(title, cols, rows)
 
 def realm_user_summary_table(all_records, admin_emails):
+    # type: (List[QuerySet], Set[str]) -> Tuple[Dict[str, Dict[str, Any]], str]
     user_records = {}
 
     def by_email(record):
+        # type: (QuerySet) -> str
         return record.user_profile.email
 
     for email, records in itertools.groupby(all_records, by_email):
         user_records[email] = get_user_activity_summary(list(records))
 
     def get_last_visit(user_summary, k):
+        # type: (Dict[str, Dict[str, datetime]], str) -> Optional[datetime]
         if k in user_summary:
             return user_summary[k]['last_visit']
         else:
             return None
 
     def get_count(user_summary, k):
+        # type: (Dict[str, Dict[str, str]], str) -> str
         if k in user_summary:
             return user_summary[k]['count']
         else:
             return ''
 
     def is_recent(val):
-        age = datetime.now(val.tzinfo) - val
+        # type: (Optional[datetime]) -> bool
+        age = datetime.now(val.tzinfo) - val # type: ignore # datetie.now tzinfo bug.
         return age.total_seconds() < 5 * 60
 
     rows = []
@@ -792,18 +826,19 @@ def realm_user_summary_table(all_records, admin_emails):
         cells = [user_summary['name'], email_link, sent_count]
         row_class = ''
         for field in ['use', 'send', 'pointer', 'desktop', 'ZulipiOS', 'Android']:
-            val = get_last_visit(user_summary, field)
+            visit = get_last_visit(user_summary, field)
             if field == 'use':
-                if val and is_recent(val):
+                if visit and is_recent(visit):
                     row_class += ' recently_active'
                 if email in admin_emails:
                     row_class += ' admin'
-            val = format_date_for_activity_reports(val)
+            val = format_date_for_activity_reports(visit)
             cells.append(val)
         row = dict(cells=cells, row_class=row_class)
         rows.append(row)
 
     def by_used_time(row):
+        # type: (Dict[str, Sequence[str]]) -> str
         return row['cells'][3]
 
     rows = sorted(rows, key=by_used_time, reverse=True)
@@ -827,7 +862,7 @@ def realm_user_summary_table(all_records, admin_emails):
 
 @zulip_internal
 def get_realm_activity(request, realm):
-    # type: (Any, Any) -> Any
+    # type: (HttpRequest, str) -> HttpResponse
     data = [] # type: List[Tuple[str, str]]
     all_user_records = {} # type: Dict[str, Any]
 
@@ -869,6 +904,7 @@ def get_realm_activity(request, realm):
 
 @zulip_internal
 def get_user_activity(request, email):
+    # type: (HttpRequest, str) -> HttpResponse
     records = get_user_activity_records_for_email(email)
 
     data = [] # type: List[Tuple[str, str]]
