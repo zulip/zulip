@@ -7,6 +7,7 @@ import traceback
 import platform
 
 from django.core import mail
+from django.http import HttpRequest
 from django.utils.log import AdminEmailHandler
 from django.views.debug import ExceptionReporter, get_exception_reporter_filter
 
@@ -20,11 +21,13 @@ class AdminZulipHandler(logging.Handler):
     # adapted in part from django/utils/log.py
 
     def __init__(self):
+        # type: () -> None
         logging.Handler.__init__(self)
 
     def emit(self, record):
+        # type: (ExceptionReporter) -> None
         try:
-            request = record.request
+            request = record.request # type: HttpRequest
 
             filter = get_exception_reporter_filter(request)
 
