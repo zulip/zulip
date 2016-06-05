@@ -1,10 +1,12 @@
 from __future__ import absolute_import
+from typing import Any, Callable, Optional
 
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.conf import settings
+from django.db.models.query import QuerySet
 from jinja2 import Markup as mark_safe
 
 import logging
@@ -24,12 +26,14 @@ if settings.ZULIP_COM:
                     u"by following the instructions on <a href=\"https://www.zulip.org\">www.zulip.org</a>!"
 
 def has_valid_realm(value):
+    # type: (str) -> bool
     # Checks if there is a realm without invite_required
     # matching the domain of the input e-mail.
     realm = get_realm(resolve_email_to_domain(value))
     return realm is not None and not realm.invite_required
 
 def not_mit_mailing_list(value):
+    # type: (str) -> bool
     # I don't want ec-discuss signed up for Zulip
     if "@mit.edu" in value:
         username = value.rsplit("@", 1)[0]
@@ -65,12 +69,14 @@ class HomepageForm(forms.Form):
     email = forms.EmailField(validators=[is_inactive,])
 
     def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         self.domain = kwargs.get("domain")
         if "domain" in kwargs:
             del kwargs["domain"]
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
+        # type: () -> str
         data = self.cleaned_data['email']
         if (get_unique_open_realm() or
             completely_open(self.domain) or
@@ -80,12 +86,14 @@ class HomepageForm(forms.Form):
 
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
+        # type: (bool) -> UserProfile
         do_change_password(self.user, self.cleaned_data['new_password1'],
                            log=True, commit=commit)
         return self.user
 
 class ZulipPasswordResetForm(PasswordResetForm):
     def get_users(self, email):
+        # type: (str) -> QuerySet
         """Given an email, return matching user(s) who should receive a reset.
 
         This is modified from the original in that it allows non-bot
@@ -107,6 +115,7 @@ class CreateUserForm(forms.Form):
 
 class OurAuthenticationForm(AuthenticationForm):
     def clean_username(self):
+        # type: () -> str
         email = self.cleaned_data['username']
         try:
             user_profile = get_user_profile_by_email(email)
