@@ -1,7 +1,8 @@
 from __future__ import print_function
 
-from typing import Any, Set
+from typing import Any, Callable, Iterable, List, Optional, Set
 
+from django.test import TestCase
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
 
@@ -17,6 +18,7 @@ import traceback
 import unittest
 
 def slow(expected_run_time, slowness_reason):
+    # type: (float, str) -> Callable[[Callable], Callable]
     '''
     This is a decorate that annotates a test as being "known
     to be slow."  The decorator will set expected_run_time and slowness_reason
@@ -24,6 +26,7 @@ def slow(expected_run_time, slowness_reason):
     as needed, e.g. to exclude these tests in "fast" mode.
     '''
     def decorator(f):
+        # type: (Any) -> Any
         f.expected_run_time = expected_run_time
         f.slowness_reason = slowness_reason
         return f
@@ -31,18 +34,22 @@ def slow(expected_run_time, slowness_reason):
     return decorator
 
 def is_known_slow_test(test_method):
+    # type: (Any) -> bool
     return hasattr(test_method, 'slowness_reason')
 
 def full_test_name(test):
+    # type: (TestCase) -> str
     test_module = test.__module__
     test_class = test.__class__.__name__
     test_method = test._testMethodName
     return '%s.%s.%s' % (test_module, test_class, test_method)
 
 def get_test_method(test):
+    # type: (TestCase) -> Callable[[], None]
     return getattr(test, test._testMethodName)
 
 def enforce_timely_test_completion(test_method, test_name, delay):
+    # type: (Any, str, float) -> None
     if hasattr(test_method, 'expected_run_time'):
         # Allow for tests to run 50% slower than normal due
         # to random variations.
@@ -57,9 +64,11 @@ def enforce_timely_test_completion(test_method, test_name, delay):
         print('Test is TOO slow: %s (%.3f s)' % (test_name, delay))
 
 def fast_tests_only():
+    # type: () -> bool
     return "FAST_TESTS_ONLY" in os.environ
 
 def run_test(test):
+    # type: (TestCase) -> bool
     failed = False
     test_method = get_test_method(test)
 
@@ -128,6 +137,7 @@ class Runner(DiscoverRunner):
         template_rendered.connect(self.on_template_rendered)
 
     def on_template_rendered(self, sender, context, **kwargs):
+        # type: (Any, Dict[str, Any], **Any) -> None
         if hasattr(sender, 'template'):
             template_name = sender.template.name
             if template_name not in self.templates_rendered:
@@ -138,9 +148,11 @@ class Runner(DiscoverRunner):
                     self.shallow_tested_templates.discard(template_name)
 
     def get_shallow_tested_templates(self):
+        # type: () -> Set[str]
         return self.shallow_tested_templates
 
-    def run_suite(self, suite, fatal_errors=None):
+    def run_suite(self, suite, fatal_errors=True):
+        # type: (Iterable[TestCase], bool) -> bool
         failed = False
         for test in suite:
             if run_test(test):
@@ -150,6 +162,7 @@ class Runner(DiscoverRunner):
         return failed
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
+        # type: (List[str], Optional[List[TestCase]], **Any) -> bool
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
@@ -170,4 +183,3 @@ class Runner(DiscoverRunner):
         failed = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
         self.teardown_test_environment()
         return failed
-        print()
