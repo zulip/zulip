@@ -94,12 +94,12 @@ class SimpleQueueClient(object):
 
     def json_publish(self, queue_name, body):
         try:
-            return self.publish(queue_name, ujson.dumps(body))
+            self.publish(queue_name, ujson.dumps(body))
         except (AttributeError, pika.exceptions.AMQPConnectionError):
             self.log.warning("Failed to send to rabbitmq, trying to reconnect and send again")
             self._reconnect()
 
-            return self.publish(queue_name, ujson.dumps(body))
+            self.publish(queue_name, ujson.dumps(body))
 
     def register_consumer(self, queue_name, consumer):
         def wrapped_consumer(ch, method, properties, body):
