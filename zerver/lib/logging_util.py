@@ -9,6 +9,7 @@ class _RateLimitFilter(object):
     last_error = datetime.min
 
     def filter(self, record):
+        # type: (logging.LogRecord) -> bool
         from django.conf import settings
         from django.core.cache import cache
 
@@ -44,9 +45,11 @@ class EmailLimiter(_RateLimitFilter):
 
 class ReturnTrue(logging.Filter):
     def filter(self, record):
+        # type: (logging.LogRecord) -> bool
         return True
 
 class RequireReallyDeployed(logging.Filter):
     def filter(self, record):
+        # type: (logging.LogRecord) -> bool
         from django.conf import settings
         return settings.PRODUCTION

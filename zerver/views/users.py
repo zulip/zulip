@@ -85,7 +85,7 @@ def update_user_backend(request, user_profile, email,
     return json_success({})
 
 def avatar(request, email):
-    # type: (HttpRequest, text_type) -> HttpResponse
+    # type: (HttpRequest, str) -> HttpResponse
     try:
         user_profile = get_user_profile_by_email(email)
         avatar_source = user_profile.avatar_source
