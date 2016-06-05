@@ -6,15 +6,18 @@ from django.conf import settings
 from django.core.mail import mail_admins
 
 from zerver.lib.actions import internal_send_message
+from typing import Dict
 import six
 
 def format_subject(subject):
+    # type: (str) -> str
     """
     Escape CR and LF characters.
     """
     return subject.replace('\n', '\\n').replace('\r', '\\r')
 
 def user_info_str(report):
+    # type: (Dict[str, Dict[str, str]]) -> str
     if report['user_full_name'] and report['user_email']:
         user_info = "%(user_full_name)s (%(user_email)s)" % (report)
     else:
@@ -24,12 +27,14 @@ def user_info_str(report):
     return user_info
 
 def notify_browser_error(report):
+    # type: (Dict[str, Dict[str, str]]) -> None
     report = defaultdict(lambda: None, report)
     if settings.ERROR_BOT:
         zulip_browser_error(report)
     email_browser_error(report)
 
 def email_browser_error(report):
+    # type: (Dict[str, Dict[str, str]]) -> None
     subject = "Browser error for %s" % (user_info_str(report))
 
     body = ("User: %(user_full_name)s <%(user_email)s> on %(deployment)s\n\n"
@@ -51,6 +56,7 @@ def email_browser_error(report):
     mail_admins(subject, body)
 
 def zulip_browser_error(report):
+    # type: (Dict[str, Dict[str, str]]) -> None
     subject = "JS error: %s" % (report['user_email'],)
 
     user_info = user_info_str(report)
@@ -63,12 +69,14 @@ def zulip_browser_error(report):
             "stream", "errors", format_subject(subject), body)
 
 def notify_server_error(report):
+    # type: (Dict[str, Dict[str, str]]) -> None
     report = defaultdict(lambda: None, report)
     email_server_error(report)
     if settings.ERROR_BOT:
         zulip_server_error(report)
 
 def zulip_server_error(report):
+    # type: (Dict[str, Dict[str, str]]) -> None
     subject = '%(node)s: %(message)s' %  report
     stack_trace = report['stack_trace'] or "No stack trace available"
 
@@ -89,6 +97,7 @@ def zulip_server_error(report):
             user_info, stack_trace, request_repr))
 
 def email_server_error(report):
+    # type: (Dict[str, Dict[str, str]]) -> None
     subject = '%(node)s: %(message)s' % (report)
 
     user_info = user_info_str(report)
