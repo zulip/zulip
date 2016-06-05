@@ -638,9 +638,9 @@ class Client(models.Model):
         # type: () -> str
         return "<Client: %s>" % (self.name,)
 
-get_client_cache = {} # type: Dict[str, Client]
+get_client_cache = {} # type: Dict[text_type, Client]
 def get_client(name):
-    # type: (str) -> Client
+    # type: (text_type) -> Client
     if name not in get_client_cache:
         result = get_client_remote_cache(name)
         get_client_cache[name] = result

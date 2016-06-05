@@ -1,7 +1,10 @@
 from django.db import models
 import zerver.models
 
+from six import text_type
+
 def get_deployment_by_domain(domain):
+    # type: (text_type) -> Deployment
     return Deployment.objects.get(realms__domain=domain)
 
 class Deployment(models.Model):

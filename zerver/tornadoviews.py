@@ -16,6 +16,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_bool, check_list, check_string
 from zerver.lib.event_queue import allocate_client_descriptor, get_client_descriptor, \
     process_notification, fetch_events
+from django.core.handlers import base
 
 from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.narrow import check_supported_events_narrow_filter
@@ -63,7 +64,7 @@ def get_events_backend(request, user_profile, handler,
                        dont_block = REQ(default=False, validator=check_bool),
                        narrow = REQ(default=[], validator=check_list(None)),
                        lifespan_secs = REQ(default=0, converter=int)):
-    # type: (HttpRequest, UserProfile, Any, Optional[Client], Optional[int], Optional[List[text_type]], bool, bool, Optional[text_type], bool, Iterable[Sequence[text_type]], int) -> Union[HttpResponse, _RespondAsynchronously]
+    # type: (HttpRequest, UserProfile, base.BaseHandler, Optional[Client], Optional[int], Optional[List[text_type]], bool, bool, Optional[text_type], bool, Iterable[Sequence[text_type]], int) -> Union[HttpResponse, _RespondAsynchronously]
     if user_client is None:
         user_client = request.client
 
