@@ -431,6 +431,7 @@ exports.setup_page = function () {
 
     function populate_and_fill(public_streams) {
 
+        exports.all_streams = public_streams.streams;
         // Build up our list of subscribed streams from the data we already have.
         var subscribed_rows = stream_data.subscribed_subs();
 
@@ -663,6 +664,45 @@ exports.remove_user_from_stream = function (user_email, stream_name, success, fa
     });
 };
 
+exports.filter_streams = function (search_list, stream_ids) {
+    if (search_list === 0) {
+        return;
+    }
+    var dom = search_list.attr('class');
+    var search_term = search_list.expectOne().val().trim();
+    var search_terms = search_term.toLowerCase().split(",");
+    search_terms = _.map(search_terms, function (s) {
+        return s.trim();
+    });
+
+    _.each(stream_ids, function (stream_id) {
+        var stream_name = stream_data.get_sub_by_id(stream_id).name;
+        stream_name = stream_name.toLowerCase().split(/\s+/);
+        stream_name = _.map(stream_name, function (s) {
+            return s.trim();
+        });
+
+        _.any(search_terms, function (search_term) {
+            if (dom === "all_stream_search") {
+                $("#subscriptions_table").find("[data-subscription-id='" + stream_id + "']").css({"display":"none"});
+            } else {
+                $("#stream_filters").find("[data-name='" + stream_data.get_sub_by_id(stream_id).name + "']").css({"display":"none"});
+            }
+
+            return _.any(stream_name, function (name) {
+                if (name.indexOf(search_term) === 0) {
+                    if (dom === "all_stream_search") {
+                        $("#subscriptions_table").find("[data-subscription-id='" + stream_id + "']").css({"display":"block"});
+                    } else {
+                        $("#stream_filters").find("[data-name='" + stream_data.get_sub_by_id(stream_id).name + "']").css({"display":"block"});
+                    }
+                    return;
+                }
+            });
+        });
+    });
+};
+
 function inline_emails_into_subscriber_list(subs, email_dict) {
     // When we get subscriber lists from the back end, they are sent as user ids to
     // save bandwidth, but the legacy JS code wants emails.
@@ -785,6 +825,15 @@ $(function () {
         } else {
             ajaxSubscribe(stream_name);
         }
+    });
+
+    $(document).on('input', ".all_stream_search", function (e) {
+        var search_list = $(".all_stream_search");
+        var streams = subs.all_streams;
+        var stream_ids = _.map(streams, function (stream) {
+            return stream.stream_id;
+        });
+        subs.filter_streams(search_list, stream_ids);
     });
 
     $("#zfilt").on("click", ".stream_sub_unsub_button", function (e) {

@@ -595,32 +595,8 @@ $(function () {
 
     $(document).on('input', '.stream_search', function (e) {
         var search_list = $(".stream_search");
-        if (search_list === 0) {
-            return;
-        }
-
-        var search_term = search_list.expectOne().val().trim();
-        var search_terms = search_term.toLowerCase().split(",");
-        search_terms = _.map(search_terms, function (s) {
-            return s.trim();
-        });
-        var streams = stream_data.subscribed_streams();
-        _.each(streams, function (stream) {
-            var stream_name = stream.toLowerCase().split(/\s+/);
-            stream_name = _.map(stream_name, function (s) {
-                return s.trim();
-            });
-
-            _.any(search_terms, function (search_term) {
-                $("#stream_filters").find("[data-name='" + stream + "']").css({"display":"none"});
-                return _.any(stream_name, function (name) {
-                    if (name.indexOf(search_term) === 0) {
-                        $("#stream_filters").find("[data-name='" + stream + "']").css({"display":"block"});
-                        return;
-                    }
-                });
-            });
-        });
+        var streams = stream_data.subscribed_stream_ids();
+        subs.filter_streams(search_list, streams);
     });
 
     $('#stream_filters').on('click', '.show-more-topics', function (e) {
