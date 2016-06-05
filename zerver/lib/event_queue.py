@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any
+from typing import Any, Dict, Iterable, Union
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -760,9 +760,14 @@ def send_notification_http(data):
         process_notification(data)
 
 def send_notification(data):
-    return queue_json_publish("notify_tornado", data, send_notification_http)
+    # type: (Dict[str, Any]) -> None
+    queue_json_publish("notify_tornado", data, send_notification_http)
 
 def send_event(event, users):
-    return queue_json_publish("notify_tornado",
-                              dict(event=event, users=users),
-                              send_notification_http)
+    # type: (Dict[str, Any], Union[Iterable[int], Iterable[Dict[str, Any]]]) -> None
+    """`users` is a list of user IDs, or in the case of `message` type
+    events, a list of dicts describing the users and metadata about
+    the user/message pair."""
+    queue_json_publish("notify_tornado",
+                       dict(event=event, users=users),
+                       send_notification_http)
