@@ -1,7 +1,10 @@
 # Webhooks for teamcity integration
 from __future__ import absolute_import
+
 from django.db.models import Q
-from zerver.models import UserProfile
+from typing import Optional
+
+from zerver.models import UserProfile, Realm
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -11,6 +14,7 @@ import logging
 import ujson
 
 def guess_zulip_user_from_teamcity(teamcity_username, realm):
+    # type: (str, Realm) -> Optional[UserProfile]
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
@@ -26,6 +30,7 @@ def guess_zulip_user_from_teamcity(teamcity_username, realm):
         return None
 
 def get_teamcity_property_value(property_list, name):
+    # type: (List[Dict[str, str]], str) -> Optional[str]
     for property in property_list:
         if property['name'] == name:
             return property['value']
@@ -35,6 +40,7 @@ def get_teamcity_property_value(property_list, name):
 @has_request_variables
 def api_teamcity_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                          stream=REQ(default='teamcity')):
+    # (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
     message = payload['build']
 
     build_name = message['buildFullName']
