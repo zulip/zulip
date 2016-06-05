@@ -1,23 +1,29 @@
-# Webhooks for external integrations.
+"""Webhooks for external integrations."""
 from __future__ import absolute_import
 
+from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
+from zerver.models import UserProfile, Client
 
 from defusedxml.ElementTree import fromstring as xml_fromstring
 
 import logging
 import re
 import ujson
+from six import text_type
+from typing import List, Optional, Tuple
 
 
 def api_pivotal_webhook_v3(request, user_profile, stream):
+    # type: (HttpRequest, UserProfile, text_type) -> Tuple[text_type, text_type]
     payload = xml_fromstring(request.body)
 
     def get_text(attrs):
+        # type: (List[str]) -> str
         start = payload
         try:
             for attr in attrs:
@@ -67,6 +73,7 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
     return subject, content
 
 def api_pivotal_webhook_v5(request, user_profile, stream):
+    # type: (HttpRequest, UserProfile, text_type) -> Tuple[text_type, text_type]
     payload = ujson.loads(request.body)
 
     event_type = payload["kind"]
@@ -90,6 +97,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
     subject = "#%s: %s" % (story_id, story_name)
 
     def extract_comment(change):
+        # type: (Dict[str, Dict]) -> Optional[text_type]
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None
@@ -152,6 +160,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
 @api_key_only_webhook_view("Pivotal")
 @has_request_variables
 def api_pivotal_webhook(request, user_profile, client, stream=REQ()):
+    # type: (HttpRequest, UserProfile, Client, text_type) -> HttpResponse
     subject = content = None
     try:
         subject, content = api_pivotal_webhook_v3(request, user_profile, stream)
