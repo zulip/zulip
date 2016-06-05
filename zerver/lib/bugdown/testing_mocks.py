@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from typing import Any, Dict, Optional
 import ujson
 
 
@@ -236,6 +237,7 @@ MEDIA_TWEET = """{
 
 
 def twitter(tweet_id):
+    # type: (str) -> Optional[Dict[str, Any]]
     if tweet_id in ["112652479837110273", "287977969287315456", "287977969287315457"]:
         return ujson.loads(NORMAL_TWEET)
     elif tweet_id == "287977969287315458":
