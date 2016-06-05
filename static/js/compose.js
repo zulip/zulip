@@ -864,6 +864,7 @@ $(function () {
         $(event.target).parents('.compose-all-everyone').remove();
         user_acknowledged_all_everyone = true;
         clear_all_everyone_warnings();
+        $('#new_message_content').focus().select();
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
