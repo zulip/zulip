@@ -19,21 +19,26 @@ subject of US/task should be in bold.
 """
 
 from __future__ import absolute_import
+from typing import Any, Mapping, Optional, Tuple
 
 from django.utils.translation import ugettext as _
+from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.models import UserProfile, Client
 
 import ujson
 from six.moves import range
+import six
 
 
 @api_key_only_webhook_view('Taiga')
 @has_request_variables
 def api_taiga_webhook(request, user_profile, client, message=REQ(argument_type='body'),
                       stream=REQ(default='taiga'), topic=REQ(default='General')):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], six.text_type, six.text_type) -> HttpResponse
     parsed_events = parse_message(message)
 
     content = ""
@@ -101,6 +106,7 @@ templates = {
 
 
 def get_old_and_new_values(change_type, message):
+    # type: (str, Mapping[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
     """ Parses the payload and finds previous and current value of change_type."""
     values_map = {
         'assigned_to': 'users',
@@ -133,6 +139,7 @@ def get_old_and_new_values(change_type, message):
 
 
 def parse_comment(message):
+    # type: (Mapping[str, Any]) -> Dict[str, Any]
     """ Parses the comment to issue, task or US. """
     return {
         'event': 'commented',
@@ -144,6 +151,7 @@ def parse_comment(message):
     }
 
 def parse_create_or_delete(message):
+    # type: (Mapping[str, Any]) -> Dict[str, Any]
     """ Parses create or delete event. """
     return {
         'type': message["type"],
@@ -157,6 +165,7 @@ def parse_create_or_delete(message):
 
 
 def parse_change_event(change_type, message):
+    # type: (str, Mapping[str, Any]) -> Dict[str, Any]
     """ Parses change event. """
     evt = {}
     values = {
@@ -223,6 +232,7 @@ def parse_change_event(change_type, message):
 
 
 def parse_message(message):
+    # type: (Mapping[str, Any]) -> List[Dict[str, Any]]
     """ Parses the payload by delegating to specialized functions. """
     events = []
     if message["action"] in ['create', 'delete']:
@@ -238,6 +248,7 @@ def parse_message(message):
     return events
 
 def generate_content(data):
+    # type: (Mapping[str, Any]) -> str
     """ Gets the template string and formats it with parsed data. """
     try:
         return templates[data['type']][data['event']] % data['values']
