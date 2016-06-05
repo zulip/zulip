@@ -192,8 +192,8 @@ class ClientDescriptor(object):
         # invariant that event queues are idle when passed to
         # `do_gc_event_queues` is preserved.
         self.finish_current_handler(need_timeout=False)
-        do_gc_event_queues([self.event_queue.id], [self.user_profile_id],
-                           [self.realm_id])
+        do_gc_event_queues({self.event_queue.id}, {self.user_profile_id},
+                           {self.realm_id})
 
 descriptors_by_handler_id = {} # type: Dict[int, ClientDescriptor]
 
