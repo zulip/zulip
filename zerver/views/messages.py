@@ -6,6 +6,10 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import Q
+from django.http import HttpRequest, HttpResponse
+from six import text_type
+from typing import Optional
+
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, REQ, JsonableError, \
     to_non_negative_int, to_non_negative_float
@@ -665,6 +669,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     return (True, sender)
 
 def same_realm_zephyr_user(user_profile, email):
+    # type: (UserProfile, text_type) -> bool
     # Are the sender and recipient both @mit.edu addresses?
     # We have to handle this specially, inferring the domain from the
     # e-mail address, because the recipient may not existing in Zulip
@@ -679,6 +684,7 @@ def same_realm_zephyr_user(user_profile, email):
     return user_profile.realm.domain == "mit.edu" and domain == "mit.edu"
 
 def same_realm_irc_user(user_profile, email):
+    # type: (UserProfile, text_type) -> bool
     # Check whether the target email address is an IRC user in the
     # same realm as user_profile, i.e. if the domain were example.com,
     # the IRC user would need to be username@irc.example.com
@@ -692,6 +698,7 @@ def same_realm_irc_user(user_profile, email):
     return user_profile.realm.domain == domain.replace("irc.", "")
 
 def same_realm_jabber_user(user_profile, email):
+    # type: (UserProfile, text_type) -> bool
     try:
         validators.validate_email(email)
     except ValidationError:
@@ -782,6 +789,7 @@ def send_message_backend(request, user_profile,
 
 @authenticated_json_post_view
 def json_update_message(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     return update_message_backend(request, user_profile)
 
 @has_request_variables
@@ -790,6 +798,7 @@ def update_message_backend(request, user_profile,
                            subject=REQ(default=None),
                            propagate_mode=REQ(default="change_one"),
                            content=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, int, Optional[text_type], Optional[str], Optional[text_type]) -> HttpResponse
     if subject is None and content is None:
         return json_error(_("Nothing to change"))
     do_update_message(user_profile, message_id, subject, propagate_mode, content)
@@ -799,6 +808,7 @@ def update_message_backend(request, user_profile,
 @has_request_variables
 def json_fetch_raw_message(request, user_profile,
                            message_id=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
     try:
         message = Message.objects.get(id=message_id)
     except Message.DoesNotExist:
@@ -811,6 +821,7 @@ def json_fetch_raw_message(request, user_profile,
 
 @has_request_variables
 def render_message_backend(request, user_profile, content=REQ()):
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     rendered_content = bugdown.convert(content, user_profile.realm.domain)
     return json_success({"rendered": rendered_content})
 
