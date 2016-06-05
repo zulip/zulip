@@ -216,9 +216,9 @@ def compute_full_event_type(event):
 
 class EventQueue(object):
     def __init__(self, id):
-        # type: (Any) -> None
-        self.queue = deque() # type: deque[Dict[str, str]]
-        self.next_event_id = 0
+        # type: (str) -> None
+        self.queue = deque() # type: deque[Dict[str, Any]]
+        self.next_event_id = 0 # type: int
         self.id = id
         self.virtual_events = {} # type: Dict[str, Dict[str, str]]
 
