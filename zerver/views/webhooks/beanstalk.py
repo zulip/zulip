@@ -1,7 +1,8 @@
 # Webhooks for external integrations.
 
 from __future__ import absolute_import
-from zerver.models import get_client
+from django.http import HttpRequest, HttpResponse
+from zerver.models import get_client, UserProfile
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
@@ -12,14 +13,17 @@ from functools import wraps
 
 from .github import build_message_from_gitlog
 
+from typing import Any, Callable, Dict
 
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40
 # We manually fix the username here before passing it along to @authenticated_rest_api_view
 def beanstalk_decoder(view_func):
+    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
         try:
             auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
             if auth_type.lower() == "basic":
@@ -38,6 +42,7 @@ def beanstalk_decoder(view_func):
 @has_request_variables
 def api_beanstalk_webhook(request, user_profile,
                           payload=REQ(validator=check_dict([]))):
+    # type: (HttpRequest, UserProfile, Dict[str, Any]) -> HttpResponse
     # Beanstalk supports both SVN and git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for git repos
