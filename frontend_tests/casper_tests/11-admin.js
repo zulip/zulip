@@ -83,14 +83,21 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 
-    casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"]', function () {
+    casper.test.assertSelectorHasText("#administration a[aria-controls='deactivated-users']", "Deactivated Users");
+    casper.click("#administration a[aria-controls='deactivated-users']");
+
+
+    casper.waitForSelector('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] .reactivate', function () {
         casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"]', 'Reactivate');
         casper.click('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] .reactivate');
     });
 
-    casper.waitForSelector('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"]:not(.deactivated_user)', function () {
+    casper.waitForSelector('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] button:not(.reactivate)', function () {
         casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
     });
+
+    casper.test.assertSelectorHasText("#administration a[aria-controls='organization']", "Organization");
+    casper.click("#administration a[aria-controls='organization']");
 });
 
 // Test bot deactivation and reactivation
