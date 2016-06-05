@@ -1,9 +1,12 @@
 from __future__ import absolute_import
+from typing import Optional
+from six import text_type
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
+from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
 from zerver.lib.actions import do_change_password, \
@@ -18,12 +21,13 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool
-from zerver.models import UserProfile
+from zerver.models import UserProfile, Realm
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def name_changes_disabled(realm):
+    # type: (Realm) -> bool
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 @authenticated_json_post_view
@@ -33,6 +37,7 @@ def json_change_ui_settings(request, user_profile,
                                                    default=None),
                             default_desktop_notifications=REQ(validator=check_bool,
                                                               default=None)):
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool]) -> HttpResponse
 
     result = {}
 
@@ -55,6 +60,7 @@ def json_change_settings(request, user_profile,
                          old_password=REQ(default=""),
                          new_password=REQ(default=""),
                          confirm_password=REQ(default="")):
+    # type: (HttpRequest, UserProfile, text_type, text_type, text_type, text_type) -> HttpResponse
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
             return json_error(_("New password must match confirmation password!"))
@@ -80,6 +86,7 @@ def json_change_settings(request, user_profile,
 @authenticated_json_post_view
 @has_request_variables
 def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator=check_bool, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
     result = {}
     if twenty_four_hour_time is not None and \
         user_profile.twenty_four_hour_time != twenty_four_hour_time:
@@ -92,6 +99,7 @@ def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator
 @authenticated_json_post_view
 @has_request_variables
 def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
     result = {}
     if left_side_userlist is not None and \
         user_profile.left_side_userlist != left_side_userlist:
@@ -118,7 +126,7 @@ def json_change_notify_settings(request, user_profile,
                                                                       default=None),
                                 enable_digest_emails=REQ(validator=check_bool,
                                                          default=None)):
-
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
     result = {}
 
     # Stream notification settings.
@@ -165,6 +173,7 @@ def json_change_notify_settings(request, user_profile,
 
 @authenticated_json_post_view
 def json_set_avatar(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one avatar."))
 
@@ -180,6 +189,7 @@ def json_set_avatar(request, user_profile):
 
 @has_request_variables
 def regenerate_api_key(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     do_regenerate_api_key(user_profile)
     json_result = dict(
         api_key = user_profile.api_key
@@ -189,5 +199,6 @@ def regenerate_api_key(request, user_profile):
 @has_request_variables
 def change_enter_sends(request, user_profile,
                        enter_sends=REQ('enter_sends', validator=check_bool)):
+    # type: (HttpRequest, UserProfile, bool) -> HttpResponse
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()
