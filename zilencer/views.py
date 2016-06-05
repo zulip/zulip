@@ -15,13 +15,12 @@ from zerver.lib.response import json_success, json_error, json_response, json_me
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.lib.validator import check_dict
 from zerver.models import get_realm, get_user_profile_by_email, resolve_email_to_domain, \
-        UserProfile
+        UserProfile, Realms
 from .error_notify import notify_server_error, notify_browser_error
 from django.conf import settings
 import time
 
 from typing import Dict, Optional, Any
-
 
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
