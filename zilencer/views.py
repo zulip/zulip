@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.views import login as django_login_page
 from django.http import HttpResponseRedirect
+
+from zilencer.models import Deployment
 
 from zerver.decorator import has_request_variables, REQ
 from zerver.lib.actions import internal_send_message
@@ -13,16 +15,19 @@ from zerver.lib.response import json_success, json_error, json_response, json_me
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.lib.validator import check_dict
 from zerver.models import get_realm, get_user_profile_by_email, resolve_email_to_domain, \
-        UserProfile
+        UserProfile, Realm
 from .error_notify import notify_server_error, notify_browser_error
 from django.conf import settings
 import time
+
+from typing import Dict, Optional, Any
 
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 client = get_redis_client()
 
 def has_enough_time_expired_since_last_message(sender_email, min_delay):
+    # type: (str, float) -> bool
     # This function returns a boolean, but it also has the side effect
     # of noting that a new message was received.
     key = 'zilencer:feedback:%s' % (sender_email,)
@@ -34,6 +39,7 @@ def has_enough_time_expired_since_last_message(sender_email, min_delay):
     return delay > min_delay
 
 def get_ticket_number():
+    # type: () -> int
     fn = '/var/tmp/.feedback-bot-ticket-number'
     try:
         ticket_number = int(open(fn).read()) + 1
@@ -44,6 +50,7 @@ def get_ticket_number():
 
 @has_request_variables
 def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
+    # type: (HttpRequest, Deployment, Dict[str, str]) -> HttpResponse
     domainish = message["sender_domain"]
     if get_realm("zulip.com") not in deployment.realms.all():
         domainish += " via " + deployment.name
@@ -79,6 +86,7 @@ def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
 
 @has_request_variables
 def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dict([]))):
+    # type: (HttpRequest, Deployment, str, Dict[str, Optional[str]]) -> HttpResponse
     report['deployment'] = deployment.name
     if type == 'browser':
         notify_browser_error(report)
@@ -89,6 +97,7 @@ def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dic
     return json_success()
 
 def realm_for_email(email):
+    # type: (str) -> Optional[Realm]
     try:
         user = get_user_profile_by_email(email)
         return user.realm
@@ -101,12 +110,14 @@ def realm_for_email(email):
 @csrf_exempt
 @has_request_variables
 def lookup_endpoints_for_user(request, email=REQ()):
+    # type: (HttpRequest, str) -> HttpResponse
     try:
         return json_response(realm_for_email(email).deployment.endpoints)
     except AttributeError:
         return json_error(_("Cannot determine endpoint for user."), status=404)
 
 def account_deployment_dispatch(request, **kwargs):
+    # type: (HttpRequest, **Any) -> HttpResponse
     sso_unknown_email = False
     if request.method == 'POST':
         email = request.POST['username']
