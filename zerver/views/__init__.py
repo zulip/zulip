@@ -359,7 +359,7 @@ def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_ema
         return json_success()
 
 def create_homepage_form(request, user_info=None):
-    # type: (HttpRequest) -> HomepageForm
+    # type: (HttpRequest, Optional[Dict[str,Any]]) -> HomepageForm
     if user_info:
         return HomepageForm(user_info, domain=request.session.get("domain"))
     # An empty fields dict is not treated the same way as not
@@ -459,7 +459,7 @@ def google_oauth2_csrf(request, value):
     return hmac.new(get_token(request).encode('utf-8'), value, hashlib.sha256).hexdigest()
 
 def start_google_oauth2(request):
-    # type: (HttpRequest, int) -> HttpResponse
+    # type: (HttpRequest) -> HttpResponse
     uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
     csrf_state = '{}:{}'.format(
@@ -592,7 +592,7 @@ def dev_direct_login(request, **kwargs):
 @has_request_variables
 def json_bulk_invite_users(request, user_profile,
                            invitee_emails=REQ(validator=check_list(check_string))):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, List[str]) -> HttpResponse
     invitee_emails = set(invitee_emails)
     streams = get_default_subs(user_profile)
 
@@ -1217,7 +1217,7 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                             event_types=REQ(validator=check_list(check_string), default=None),
                             narrow=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
                             queue_lifespan_secs=REQ(converter=int, default=0)):
-    # type: (HttpRequest, UserProfile, bool, Optional[bool], Optional[List[List[str]]], int) -> HttpResponse
+    # type: (HttpRequest, UserProfile, bool, Optional[bool], Optional[List[str]], List[List[str]], int) -> HttpResponse
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
     narrow = _default_narrow(user_profile, narrow)
 
@@ -1249,7 +1249,7 @@ def json_set_muted_topics(request, user_profile,
     return json_success()
 
 def add_push_device_token(request, user_profile, token, kind, ios_app_id=None):
-    # type: (HttpRequest, UserProfile, str, int, Optional[str,bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, int, Optional[str]) -> HttpResponse
     if token == '' or len(token) > 4096:
         return json_error(_('Empty or invalid length token'))
 
@@ -1306,7 +1306,7 @@ def generate_204(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponse(content=None, status=204)
 
-def process_unsubscribe(token, subcription_type, unsubscribe_function):
+def process_unsubscribe(token, subscription_type, unsubscribe_function):
     # type: (HttpRequest, str, Callable[[UserProfile], None]) -> HttpResponse
     try:
         confirmation = Confirmation.objects.get(confirmation_key=token)
