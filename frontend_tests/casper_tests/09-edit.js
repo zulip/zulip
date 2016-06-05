@@ -43,7 +43,7 @@ casper.then(function () {
     });
 });
 
-casper.waitForSelector(".message_edit_notice", function () {
+casper.waitForSelector(".selected_message .message_edit_notice", function () {
     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
 });
 
@@ -67,7 +67,7 @@ casper.then(function () {
     });
 });
 
-casper.waitForSelector(".message_edit_notice", function () {
+casper.waitForSelector(".selected_message .message_edit_notice", function () {
     casper.test.assertSelectorHasText(".last_message .sender-status", "test edited one line with me");
 });
 
