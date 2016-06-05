@@ -25,7 +25,7 @@ from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.core.validators import MinLengthValidator, RegexValidator
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 import zlib
 
 from bitfield import BitField
