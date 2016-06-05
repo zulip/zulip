@@ -310,7 +310,6 @@ exports.initialize_compose_typeahead = function (selector, completions) {
         stopAdvance: true, // Do not advance to the next field on a tab or enter
         completions: completions
     });
-
 };
 
 exports.initialize = function () {

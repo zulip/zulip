@@ -117,6 +117,31 @@ casper.waitUntilVisible('#compose', function () {
         'Recipients are displayed correctly in a huddle reply');
 });
 
+// FIXME:
+// test @all and @everyone mentions produce a warning
+common.then_send_message('stream', {
+        stream:  'Verona',
+        subject: '@all',
+        content: '@all test spamming everyone'
+});
+casper.waitForText("Are you sure you want to message all");
+// casper.waitUntilVisible('#stream', function () {
+    // S: enter a new message with @all
+    // A: warning message appears
+    // S: enter more text in the message content
+    // S: click YES
+    // A: warning message disappears
+    //
+    // S: add @everyone to message
+    // A: warning message
+    // S: click send
+    // A: error message
+    // S: click YES
+    // A: messages disappear
+    // S: click send
+    // A: message posted
+//});
+
 common.then_log_out();
 
 casper.run(function () {

@@ -52,7 +52,7 @@ exports.initialize_casper = function (viewport) {
     var casper_failure_count = 1;
     casper.test.on('fail', function failure() {
         if (casper_failure_count <= 10) {
-            casper.capture("/tmp/casper-failure" + casper_failure_count + ".png");
+            casper.capture("/srv/zulip/casper-failure" + casper_failure_count + ".png");
             casper_failure_count++;
         }
     });

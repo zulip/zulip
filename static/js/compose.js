@@ -375,7 +375,8 @@ exports.restore_message = function () {
     compose.start(snapshot_copy.type, snapshot_copy);
 
     if (snapshot_copy.content !== undefined &&
-            (snapshot_copy.content.includes("@**all**") || snapshot_copy.content.includes("@**everyone**"))) {
+        (snapshot_copy.content.includes("@**all**") ||
+         snapshot_copy.content.includes("@**everyone**"))) {
         show_all_everyone_warnings();
     }
 };
@@ -830,8 +831,6 @@ $(function () {
 
         if (data !== undefined && data.mentioned !== undefined) {
             var email = data.mentioned.email;
-            var current_stream = stream_data.get_sub(compose.stream_name());
-            var stream_count = current_stream.subscribers.num_items();
 
             // warn if @all or @everyone is mentioned
             if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone') {

@@ -75,7 +75,7 @@ try:
     remote_debug = ""
     if options.remote_debug:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
-    cmd = "frontend_tests/casperjs/bin/casperjs %s test " % (remote_debug,)
+    cmd = "frontend_tests/casperjs/bin/casperjs --verbose %s test " % (remote_debug,)
 
     if test_files:
         cmd += ' '.join(test_files)
