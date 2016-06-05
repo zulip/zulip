@@ -294,16 +294,18 @@ class AuthedTestCase(TestCase):
             recipient__type=Recipient.STREAM)
         return [get_display_recipient(sub.recipient) for sub in subs]
 
-    def send_message(self, sender_name, recipient_list, message_type,
-                     content="test content", subject="test", **kwargs):
-        # type: (str, Iterable[str], int, str, str, **Any) -> int
+    def send_message(self, sender_name, raw_recipients, message_type,
+                     content=u"test content", subject=u"test", **kwargs):
+        # type: (str, Union[text_type, List[text_type]], int, text_type, text_type, **Any) -> int
         sender = get_user_profile_by_email(sender_name)
         if message_type == Recipient.PERSONAL:
             message_type_name = "private"
         else:
             message_type_name = "stream"
-        if isinstance(recipient_list, six.string_types):
-            recipient_list = [recipient_list]
+        if isinstance(raw_recipients, six.string_types):
+            recipient_list = [raw_recipients]
+        else:
+            recipient_list = raw_recipients
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         return check_send_message(

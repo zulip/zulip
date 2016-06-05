@@ -860,9 +860,14 @@ def extract_recipients(s):
 
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
-def check_send_message(*args, **kwargs):
-    # type: (*Any, **Any) -> int # TODO: Impose same argspec as check_message.
-    message = check_message(*args, **kwargs)
+def check_send_message(sender, client, message_type_name, message_to,
+                       subject_name, message_content, realm=None, forged=False,
+                       forged_timestamp=None, forwarder_user_profile=None, local_id=None,
+                       sender_queue_id=None):
+    # type: (UserProfile, Client, str, List[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[text_type]) -> int
+    message = check_message(sender, client, message_type_name, message_to,
+                            subject_name, message_content, realm, forged, forged_timestamp,
+                            forwarder_user_profile, local_id, sender_queue_id)
     return do_send_messages([message])[0]
 
 def check_stream_name(stream_name):
@@ -922,7 +927,7 @@ def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
-    # type: (UserProfile, Client, str, Optional[List[text_type]], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[text_type]) -> Dict[str, Any]
+    # type: (UserProfile, Client, str, List[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[text_type]) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
