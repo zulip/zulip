@@ -48,8 +48,10 @@ var hotkeys_shift_insensitive = {
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
     74: {name: 'page_down', message_view_only: true}, // 'J'
     75: {name: 'page_up', message_view_only: true}, // 'K'
+    77: {name: 'mute_topic', message_view_only: true}, // 'M'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    85: {name: 'unmute_topic', message_view_only: true}, // 'U'
     99: {name: 'compose', message_view_only: true}, // 'c'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
@@ -301,6 +303,10 @@ function process_hotkey(e) {
     switch (event_name) {
         case 'message_actions':
             return popovers.open_message_menu();
+        case 'mute_topic':
+            return muting.mute_message_topic();
+        case 'unmute_topic':
+            return muting.unmute_message_topic();
         case 'narrow_by_recipient':
             return do_narrow_action(narrow.by_recipient);
         case 'narrow_by_subject':
