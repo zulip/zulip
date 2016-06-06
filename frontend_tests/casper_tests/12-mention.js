@@ -1,33 +1,8 @@
 var common = require('../casper_lib/common.js').common;
 
-common.start_and_log_in();
-casper.verbonse = true;
-
-casper.waitForSelector('#new_message_content', function () {
-	casper.test.info('compose box visible????');
-	casper.page.sendEvent('keypress', "c"); // brings up the compose box
-//	casper.fill('form[action^="/json/messages"]', {
-//		stream:  'Verona',
-//		subject: '@all',
-//		content: '@all test spamming everyone'
-//	});
-//	casper.click('#compose-send-button');
-//	casper.waitForText("Are you sure you want to message all", function () {
-//	});
-});
-
-
-function do_compose(str, item) {
+function enter_mention_in_composer(str, item) {
     casper.then(function () {
-		casper.test.info('Filling contents of compose box????');
-		casper.fill('form[action^="/json/messages"]', {
-			stream:  'Verona',
-			subject: 'Test mention all',
-		});
-		casper.then(function () {
-				casper.test.info('Start using typeahead');
-			}
-		);
+        casper.test.info('Start typing @all');
         casper.evaluate(function (str, item) {
             // Set the value and then send a bogus keyup event to trigger
             // the typeahead.
@@ -46,39 +21,62 @@ function do_compose(str, item) {
             tah.select();
         }, {str: str, item: item});
     });
-
-	casper.waitForText("Are you sure you want to message all", function () {
-		casper.test.assertVisible('#stream', 'Stream input box visible');
-	});
 }
 
-var all_item = {
-	special_item_text: "all (Notify everyone)",
-	email: "all",
-	// Always sort above, under the assumption that names will
-	// be longer and only contain "all" as a substring.
-	pm_recipient_count: Infinity,
-	full_name: "all"
-};
+/////////////////////////////////////////////////////
+common.start_and_log_in();
+casper.verbonse = true;
 
-do_compose('@all', 'all');
+casper.waitForSelector('#new_message_content', function () {
+    casper.test.info('compose box visible');
+    casper.page.sendEvent('keypress', "c"); // brings up the compose box
+});
 
-// casper.waitUntilVisible('#stream', function () {
-    // S: enter a new message with @all
-    // A: warning message appears
-    // S: enter more text in the message content
-    // S: click YES
-    // A: warning message disappears
-    //
-    // S: add @everyone to message
-    // A: warning message
-    // S: click send
-    // A: error message
-    // S: click YES
-    // A: messages disappear
-    // S: click send
-    // A: message posted
-//});
+casper.then(function () {
+    casper.fill('form[action^="/json/messages"]', {
+        stream:  'Verona',
+        subject: 'Test mention all'
+    });
+});
+enter_mention_in_composer('@all', 'all');
+
+casper.waitForText("Are you sure you want to message all", function () {
+    casper.test.info('Warning message appears when mentioning @all');
+    casper.test.assertSelectorHasText('.compose-all-everyone', 'Are you sure you want to message all');
+});
+
+casper.then( function () {
+    casper.test.info('Click Send Button');
+    casper.click('#compose-send-button');
+});
+casper.waitForText("Please remove @all", function () {
+    casper.test.info('Error message appears when attempting to send a message without acknowledging the @all mention warning');
+    casper.test.assertSelectorHasText('#error-msg', "Please remove @all / @everyone or acknowledge that you will be spamming everyone!");
+});
+
+casper.waitForSelector('.compose-all-everyone-confirm', function () {
+    casper.click('.compose-all-everyone-confirm');
+}, function () {
+    casper.test.error('Could not click confirm button.');
+});
+
+casper.waitWhileVisible('.compose-all-everyone-confirm', function () {
+    casper.test.info('Check that error messages are gone.');
+    casper.test.assertNotVisible('.compose-all-everyone-msg');
+    casper.test.assertNotVisible('#error-msg');
+});
+
+casper.then( function () {
+    casper.test.info('Click Send Button');
+    casper.click('#compose-send-button');
+});
+
+casper.then( function () {
+    common.expected_messages('zhome', ['Verona > Test mention all'],
+     ["<p><span class=\"user-mention user-mention-me\" data-user-email=\"*\">@all</span> </p>"]
+    );
+});
+
 
 common.then_log_out();
 
