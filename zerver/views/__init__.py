@@ -45,8 +45,6 @@ from zerver.decorator import require_post, authenticated_json_post_view, \
     JsonableError, get_user_profile_by_email, REQ, require_realm_admin, \
     zulip_login_required
 from zerver.lib.avatar import avatar_url
-from zerver.lib.upload import upload_message_image_through_web_client, \
-    get_signed_upload_url, get_realm_for_filename
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd, generate_random_token
 from zproject.backends import password_auth_enabled, dev_auth_enabled
@@ -1071,49 +1069,6 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
         do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_only)
         data['create_stream_by_admins_only'] = create_stream_by_admins_only
     return json_success(data)
-
-@authenticated_json_post_view
-@has_request_variables
-def json_upload_file(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    if len(request.FILES) == 0:
-        return json_error(_("You must specify a file to upload"))
-    if len(request.FILES) != 1:
-        return json_error(_("You may only upload one file at a time"))
-
-    user_file = list(request.FILES.values())[0]
-    if ((settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024) < user_file._get_size()):
-        return json_error(_("File Upload is larger than allowed limit"))
-
-    uri = upload_message_image_through_web_client(request, user_file, user_profile)
-    return json_success({'uri': uri})
-
-@zulip_login_required
-@has_request_variables
-def get_uploaded_file(request, realm_id_str, filename,
-                      redir=REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, str, str, bool) -> HttpResponse
-    if settings.LOCAL_UPLOADS_DIR is not None:
-        return HttpResponseForbidden() # Should have been served by nginx
-
-    user_profile = request.user
-    url_path = "%s/%s" % (realm_id_str, filename)
-
-    if realm_id_str == "unk":
-        realm_id = get_realm_for_filename(url_path)
-        if realm_id is None:
-            # File does not exist
-            return json_error(_("That file does not exist."), status=404)
-
-    # Internal users can access all uploads so we can receive attachments in cross-realm messages
-    if user_profile.realm.id == int(realm_id) or user_profile.realm.domain == 'zulip.com':
-        uri = get_signed_upload_url(url_path)
-        if redir:
-            return redirect(uri)
-        else:
-            return json_success({'uri': uri})
-    else:
-        return HttpResponseForbidden()
 
 @csrf_exempt
 @require_post
