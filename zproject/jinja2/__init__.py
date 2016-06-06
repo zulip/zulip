@@ -26,7 +26,7 @@ def environment(**options):
         'minified_js': minified_js,
     })
 
-    env.install_gettext_translations(translation)
+    env.install_gettext_translations(translation, True)
 
     env.filters['slugify'] = slugify
     env.filters['pluralize'] = pluralize
