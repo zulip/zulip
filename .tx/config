@@ -13,5 +13,5 @@ source_file = static/locale/en/translations.json
 source_lang = en
 type = KEYVALUEJSON
 file_filter = static/locale/<lang>/translations.json
-lang_map = zh-Hans: zh_CN
+lang_map = zh-Hans: zh-CN
 
