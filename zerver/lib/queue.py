@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
-from pika.spec import Deliver, BasicProperties
+from pika.spec import Basic, BasicProperties
 import logging
 import ujson
 import random
@@ -59,7 +59,7 @@ class SimpleQueueClient(object):
         return "%s_%s" % (queue_name, str(random.getrandbits(16)))
 
     def _reconnect_consumer_callback(self, queue, consumer):
-        # type: (str, Callable[[BlockingChannel, Deliver, BasicProperties, str], None]) -> None
+        # type: (str, Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]) -> None
         self.log.info("Queue reconnecting saved consumer %s to queue %s" % (consumer, queue))
         self.ensure_queue(queue, lambda: self.channel.basic_consume(consumer,
                                                                     queue=queue,
@@ -118,9 +118,9 @@ class SimpleQueueClient(object):
             self.publish(queue_name, ujson.dumps(body))
 
     def register_consumer(self, queue_name, consumer):
-        # type: (str, Callable[[BlockingChannel, Deliver, BasicProperties, str], None]) -> None
+        # type: (str, Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]) -> None
         def wrapped_consumer(ch, method, properties, body):
-            # type: (BlockingChannel, Deliver, BasicProperties, str) -> None
+            # type: (BlockingChannel, Basic.Deliver, pika.BasicProperties, str) -> None
             try:
                 consumer(ch, method, properties, body)
                 ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -136,7 +136,7 @@ class SimpleQueueClient(object):
     def register_json_consumer(self, queue_name, callback):
         # type: (str, Callable[[Dict[str, Any]], None]) -> None
         def wrapped_callback(ch, method, properties, body):
-            # type: (BlockingChannel, Deliver, BasicProperties, str) -> None
+            # type: (BlockingChannel, Basic.Deliver, pika.BasicProperties, str) -> None
             callback(ujson.loads(body))
         self.register_consumer(queue_name, wrapped_callback)
 
@@ -260,9 +260,9 @@ class TornadoQueueClient(SimpleQueueClient):
             callback()
 
     def register_consumer(self, queue_name, consumer):
-        # type: (str, Callable[[BlockingChannel, Deliver, BasicProperties, str], None]) -> None
+        # type: (str, Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]) -> None
         def wrapped_consumer(ch, method, properties, body):
-            # type: (BlockingChannel, Deliver, BasicProperties, str) -> None
+            # type: (BlockingChannel, Basic.Deliver, pika.BasicProperties, str) -> None
             consumer(ch, method, properties, body)
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
