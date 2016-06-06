@@ -7,6 +7,9 @@ import sys
 import os
 import glob
 try:
+    # We don't actually need typing, but it's a good guard for being
+    # outside a Zulip virtualenv.
+    import typing
     import requests
 except ImportError as e:
     print("ImportError: {}".format(e))
