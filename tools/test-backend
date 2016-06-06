@@ -10,6 +10,9 @@ try:
     import django
     from django.conf import settings
     from django.test.utils import get_runner
+    # We don't actually need typing, but it's a good guard for being
+    # outside a Zulip virtualenv.
+    import typing
 except ImportError as e:
     print("ImportError: {}".format(e))
     print("You need to run the Zulip tests inside a Zulip dev environment.")
