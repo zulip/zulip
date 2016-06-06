@@ -124,7 +124,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^json/report_send_time$',         'report.json_report_send_time'),
     url(r'^json/report_narrow_time$',       'report.json_report_narrow_time'),
     url(r'^json/report_unnarrow_time$',     'report.json_report_unnarrow_time'),
-    url(r'^json/upload_file$',              'json_upload_file'),
+    url(r'^json/upload_file$',              'upload.json_upload_file'),
     url(r'^json/messages_in_narrow$',       'messages.json_messages_in_narrow'),
     url(r'^json/update_message$',           'messages.json_update_message'),
     url(r'^json/fetch_raw_message$',        'messages.json_fetch_raw_message'),
@@ -167,7 +167,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/external/yo$',            'webhooks.yo.api_yo_app_webhook'),
     url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
 
-    url(r'^user_uploads/(?P<realm_id>(\d*|unk))/(?P<filename>.*)', 'get_uploaded_file'),
+    url(r'^user_uploads/(?P<realm_id>(\d*|unk))/(?P<filename>.*)', 'upload.get_uploaded_file'),
 )
 
 # JSON format views used by the redesigned API, accept basic auth username:password.
