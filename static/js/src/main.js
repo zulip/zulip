@@ -4,7 +4,7 @@ var i18n = window.i18n = require('i18next');
 var XHR = require('i18next-xhr-backend');
 var lngDetector = require('i18next-browser-languagedetector');
 var backendOptions = {
-    loadPath: '/static/locale/__lng__/__ns__.json'
+    loadPath: '/static/locale/__lng__/translations.json'
 };
 
 var detectionOptions = {
