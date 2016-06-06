@@ -58,11 +58,13 @@ server = subprocess.Popen(('tools/run-dev.py', '--test'),
                           stdout=log, stderr=log)
 
 def assert_server_running():
-    # Get the exit code of the server, or None if it is still running.
+    # type: () -> None
+    """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         raise RuntimeError('Server died unexpectedly! Check frontend_tests/casper_tests/server.log')
 
 def server_is_up():
+    # type: () -> bool
     assert_server_running()
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
