@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from typing import Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -77,7 +78,7 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
                       ui_message=REQ(validator=check_bool), user_agent=REQ(),
                       href=REQ(), log=REQ(),
                       more_info=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, str, str, bool, str, str, str, Dict) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, unicode, bool, str, str, str, Dict[str, Any]) -> HttpResponse
     if not settings.ERROR_REPORTING:
         return json_success()
 
