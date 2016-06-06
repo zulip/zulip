@@ -408,6 +408,17 @@ function render(template_name, args) {
     assert.equal(input.text().trim(), "devel");
 }());
 
+(function mute_topic_row() {
+    var args = {
+        stream: "scream_stream",
+        topic: "such topic"
+    };
+    var html = render("topic_muted", args);
+    assert.equal($(html).find("button:first").text(), "Unmute");
+    assert.equal($(html).data("stream"), "scream_stream");
+    assert.equal($(html).data("topic"), "such topic");
+}());
+
 (function single_message() {
     var message =  {
         msg: {
