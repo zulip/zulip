@@ -7,8 +7,11 @@ import sys
 import optparse
 import subprocess
 import traceback
-
-import lister
+try:
+    import lister
+except ImportError as e:
+    print("ImportError: {}, Make sure your running lints inside Vagrant".format(e))
+    sys.exit(1)
 
 parser = optparse.OptionParser()
 parser.add_option('--full',
