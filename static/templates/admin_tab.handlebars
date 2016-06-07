@@ -69,8 +69,9 @@
           </div>
           <div id="emoji-settings" class="settings-section">
             <div class="settings-section-title"><i class="icon-vector-smile settings-section-icon"></i>
-            {{t "Custom realm emoji" }}</div>
+            {{t "Custom emoji" }}</div>
             <div class="admin-table-wrapper">
+            <p>{{#tr this}}Add extra emoji for members of the {{ realm_name }} organization.{{/tr}}</p>
               <table class="table table-condensed table-striped admin_emoji_table">
                 <tbody id="admin_emoji_table">
                   <th>{{t "Name" }}</th>
