@@ -7,3 +7,4 @@ export PATH=$PATH:/srv/zulip-venv/bin
 ./tools/test-backend
 ./tools/test-management
 ./tools/test-migrations
+./tools/test-run-dev
