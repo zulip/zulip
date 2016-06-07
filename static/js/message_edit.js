@@ -4,7 +4,7 @@ var currently_editing_messages = {};
 
 
 //returns true if the edit task should end.
-exports.save = function (row) {
+exports.save = function (row, from_topic_edited_only) {
     var msg_list = current_msg_list;
     var message_id;
 
@@ -45,7 +45,7 @@ exports.save = function (row) {
         changed = true;
     }
 
-    if (new_content !== message.raw_content) {
+    if (new_content !== message.raw_content && !from_topic_edited_only) {
         request.content = new_content;
         changed = true;
     }
@@ -69,13 +69,13 @@ exports.save = function (row) {
     // The message will automatically get replaced when it arrives.
 };
 
-function handle_edit_keydown(e) {
+function handle_edit_keydown(from_topic_edited_only, e) {
     var row, code = e.keyCode || e.which;
 
     if (e.target.id === "message_edit_content" && code === 13 &&
         (e.metaKey || e.ctrlKey)) {
         row = $(".message_edit_content").filter(":focus").closest(".message_row");
-        if (message_edit.save(row) === true) {
+        if (message_edit.save(row, from_topic_edited_only) === true) {
             message_edit.end(row);
         }
     } else if (e.target.id === "message_edit_topic" && code === 13) {
@@ -101,7 +101,7 @@ function edit_message (row, raw_content) {
 
     current_msg_list.show_edit_message(row, edit_obj);
 
-    form.keydown(handle_edit_keydown);
+    form.keydown(_.partial(handle_edit_keydown, false));
 
     currently_editing_messages[message.id] = edit_obj;
     if (message.type === 'stream' && message.subject === compose.empty_subject_placeholder()) {
@@ -161,7 +161,7 @@ exports.start_local_failed_edit = function (row, message) {
 exports.start_topic_edit = function (recipient_row) {
     var form = $(templates.render('topic_edit_form'));
     current_msg_list.show_edit_topic(recipient_row, form);
-    form.keydown(handle_edit_keydown);
+    form.keydown(_.partial(handle_edit_keydown, true));
     var msg_id = rows.id_for_recipient_row(recipient_row);
     var message = current_msg_list.get(msg_id);
     var topic = message.subject;
