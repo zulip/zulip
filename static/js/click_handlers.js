@@ -98,7 +98,7 @@ $(function () {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         var recipient_row = $(this).closest(".recipient_row");
-        if (message_edit.save(recipient_row) === true) {
+        if (message_edit.save(recipient_row, true) === true) {
             current_msg_list.hide_edit_topic(recipient_row);
         }
         e.stopPropagation();
@@ -112,7 +112,7 @@ $(function () {
     });
     $("body").on("click", ".message_edit_save", function (e) {
         var row = $(this).closest(".message_row");
-        if (message_edit.save(row) === true) {
+        if (message_edit.save(row, false) === true) {
             // Re-fetch the message row in case .save() re-rendered the message list
             message_edit.end($(this).closest(".message_row"));
         }
