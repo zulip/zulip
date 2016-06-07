@@ -563,7 +563,7 @@ def extract_json_response(resp):
 def request_event_queue(user_profile, user_client, apply_markdown,
                         queue_lifespan_secs, event_types=None, all_public_streams=False,
                         narrow=[]):
-    # type: (UserProfile, Client, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[str]]) -> text_type
+    # type: (UserProfile, Client, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[text_type]]) -> text_type
     if settings.TORNADO_SERVER:
         req = {'dont_block'    : 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
