@@ -61,7 +61,7 @@ var _ = global._;
             {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}
         ));
 
-        assert(!same(
+        assert(same(
             {type: 'private', reply_to: 'fred@zulip.com'},
             {type: 'private', reply_to: 'Fred@zulip.com'}
         ));

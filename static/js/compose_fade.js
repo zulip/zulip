@@ -121,8 +121,8 @@ exports.would_receive_message = function (email) {
     }
 
     // PM, so check if the given email is in the recipients list.
-    var recipients = focused_recipient.reply_to.split(',');
-    return recipients.indexOf(email) !== -1;
+    var recipients = focused_recipient.reply_to.toLowerCase().split(',');
+    return recipients.indexOf(email.toLowerCase()) !== -1;
 };
 
 function _fade_users() {
