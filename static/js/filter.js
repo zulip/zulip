@@ -100,11 +100,11 @@ function message_matches_search_term(message, operator, operand) {
         }
 
     case 'sender':
-        return (message.sender_email.toLowerCase() === operand);
+        return (message.sender_email.toLowerCase() === operand.toLowerCase());
 
     case 'pm-with':
         return (message.type === 'private') &&
-            (message.reply_to.toLowerCase() === operand.split(',').sort().join(','));
+            (message.reply_to.toLowerCase() === operand.split(',').sort().join(',').toLowerCase());
     }
 
     return true; // unknown operators return true (effectively ignored)
