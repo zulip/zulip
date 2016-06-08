@@ -23,9 +23,6 @@ SQLAlchemy==0.7.8
 # Needed for the email mirror
 Twisted==15.2.1
 
-# Needed for iOS push notifications
-apns-client==0.1.8
-
 # Needed for S3 file uploads
 boto==2.38.0
 
@@ -140,3 +137,6 @@ zope.interface==4.1.2
 
 # Django extension for static asset pipeline
 django-pipeline==1.6.8
+
+# Needed for iOS push notifications
+git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns-2.0.1
