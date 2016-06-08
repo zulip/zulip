@@ -196,14 +196,6 @@ class BeanstalkHookTests(WebhookTestCase):
     STREAM_NAME = 'commits'
     URL_TEMPLATE = "/api/v1/external/beanstalk"
 
-    def send_beanstalk_message(self, action):
-        email = "hamlet@zulip.com"
-        return self.send_json_payload(email,
-                                      "/api/v1/external/beanstalk",
-                                      self.get_body(action),
-                                      stream_name="commits",
-                                      **self.api_auth(email))
-
     def test_git_single(self):
         expected_subject = "work-test"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
