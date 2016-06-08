@@ -175,6 +175,7 @@ function update_stream_name(sub, new_name) {
 
 function update_stream_pin(sub, value) {
     sub.pin_stream_open = value;
+    stream_list.update_streams_sidebar();
 }
 
 function update_stream_description(sub, description) {
