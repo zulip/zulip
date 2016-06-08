@@ -61,6 +61,10 @@ exports.same_stream_and_subject = function util_same_stream_and_subject(a, b) {
             (a.subject.toLowerCase() === b.subject.toLowerCase()));
 };
 
+exports.is_current_user = function (email) {
+    return email.toLowerCase() === page_params.email.toLowerCase();
+};
+
 exports.same_major_recipient = function (a, b) {
     // Same behavior as same_recipient, except that it returns true for messages
     // on different topics but the same stream.

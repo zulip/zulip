@@ -44,7 +44,7 @@ function people_cmp(person1, person2) {
 exports.get_rest_of_realm = function get_rest_of_realm() {
     var people_minus_you = [];
     realm_people_dict.each(function (person) {
-        if (person.email !== page_params.email) {
+        if (!util.is_current_user(person.email)) {
             people_minus_you.push({"email": person.email,
                                    "full_name": person.full_name});
         }
@@ -129,7 +129,7 @@ exports.update = function update(person) {
 
         person_obj.full_name = person.full_name;
 
-        if (person.email === page_params.email) {
+        if (util.is_current_user(person.email)) {
             page_params.fullname = person.full_name;
         }
     }
@@ -137,7 +137,7 @@ exports.update = function update(person) {
     if (_.has(person, 'is_admin')) {
         person_obj.is_admin = person.is_admin;
 
-        if (person.email === page_params.email) {
+        if (util.is_current_user(person.email)) {
             page_params.is_admin = person.is_admin;
             admin.show_or_hide_menu_item();
         }

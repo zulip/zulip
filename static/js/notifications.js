@@ -488,7 +488,7 @@ function get_message_header(message) {
     if (message.display_recipient.length > 2) {
         return "group PM with " + message.display_reply_to;
     }
-    if (message.reply_to === page_params.email) {
+    if (util.is_current_user(message.reply_to)) {
         return "PM with yourself";
     }
     return "PM with " + message.display_reply_to;
@@ -496,7 +496,7 @@ function get_message_header(message) {
 
 exports.possibly_notify_new_messages_outside_viewport = function (messages) {
     _.each(messages, function (message) {
-        if (message.sender_email !== page_params.email) {
+        if (!util.is_current_user(message.sender_email)) {
             return;
         }
         // queue up offscreen because of narrowed, or (secondarily) offscreen
@@ -533,7 +533,7 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
 // the current_msg_list (!can_apply_locally; a.k.a. "a search").
 exports.notify_messages_outside_current_search = function (messages) {
     _.each(messages, function (message) {
-        if (message.sender_email !== page_params.email) {
+        if (!util.is_current_user(message.sender_email)) {
             return;
         }
         exports.notify_above_composebox("Sent! Your recent message is outside the current search.",
