@@ -65,6 +65,11 @@ exports.is_current_user = function (email) {
     return email.toLowerCase() === page_params.email.toLowerCase();
 };
 
+exports.is_pm_recipient = function (email, message) {
+    var recipients = message.reply_to.toLowerCase().split(',');
+    return recipients.indexOf(email.toLowerCase()) !== -1;
+};
+
 exports.same_major_recipient = function (a, b) {
     // Same behavior as same_recipient, except that it returns true for messages
     // on different topics but the same stream.
