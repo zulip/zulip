@@ -173,6 +173,10 @@ function update_stream_name(sub, new_name) {
     });
 }
 
+function update_stream_pin(sub, value) {
+    sub.pin_stream_open = value;
+}
+
 function update_stream_description(sub, description) {
     sub.description = description;
 
@@ -204,6 +208,13 @@ exports.set_color = function (stream_name, color) {
     stream_color.update_stream_color(sub, stream_name, color, {update_historical: true});
     set_stream_property(stream_name, 'color', color);
 };
+
+exports.set_pin_stream_open = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+    sub.pin_stream_open = ! sub.pin_stream_open;
+    set_stream_property(stream_name, 'pin_stream_open', sub.pin_stream_open);
+};
+
 
 function create_sub(stream_name, attrs) {
     var sub = stream_data.get_sub(stream_name);
@@ -415,6 +426,7 @@ function populate_subscriptions(subs, subscribed) {
                                            invite_only: elem.invite_only,
                                            desktop_notifications: elem.desktop_notifications,
                                            audible_notifications: elem.audible_notifications,
+                                           pin_stream_open: elem.pin_stream_open,
                                            subscribed: subscribed,
                                            email_address: elem.email_address,
                                            stream_id: elem.stream_id,
@@ -532,6 +544,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'name':
         update_stream_name(sub, value);
+        break;
+    case 'pin_stream_open':
+        update_stream_pin(sub, value);
         break;
     case 'description':
         update_stream_description(sub, value);

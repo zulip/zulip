@@ -330,6 +330,14 @@ exports._build_subject_list = function (stream, active_topic, max_subjects) {
     return topic_dom;
 };
 
+function open_pinned_stream(stream) {
+    // Always keep pinned stream open
+    var max_subjects = 5;
+    var stream_li = get_filter_li('stream', stream.name);
+    var topic_dom = exports._build_subject_list(stream.name, undefined, max_subjects);
+    stream_li.append(topic_dom);
+}
+
 exports._build_private_messages_list = function (active_conversation, max_private_messages) {
 
     var private_messages = message_store.recent_private_messages || [];
@@ -416,6 +424,13 @@ exports.update_streams_sidebar = function () {
             rebuild_recent_subjects(op_stream[0], subject);
         }
     }
+
+    var streams = stream_data.pinned_open_streams();
+    _.each(streams, function (stream) {
+        if (op_stream[0] !== stream.name) {
+            open_pinned_stream(stream);        
+        }
+    });
 };
 
 exports.update_private_messages = function () {
