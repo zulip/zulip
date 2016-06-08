@@ -67,7 +67,7 @@ exports.add_in_realm = function add_in_realm(person) {
 exports.remove = function remove(person) {
     var i;
     for (i = 0; i < page_params.people_list.length; i++) {
-        if (page_params.people_list[i].email === person.email) {
+        if (page_params.people_list[i].email.toLowerCase() === person.email.toLowerCase()) {
             page_params.people_list.splice(i, 1);
             break;
         }
