@@ -167,7 +167,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/external/yo$',            'webhooks.yo.api_yo_app_webhook'),
     url(r'^api/v1/external/zendesk$',       'webhooks.zendesk.api_zendesk_webhook'),
 
-    url(r'^user_uploads/(?P<realm_id>(\d*|unk))/(?P<filename>.*)', 'upload.get_uploaded_file'),
+    url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)', 'upload.get_uploaded_file'),
 )
 
 # JSON format views used by the redesigned API, accept basic auth username:password.
