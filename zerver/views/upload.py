@@ -13,9 +13,7 @@ from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
 from django.conf import settings
 
-@authenticated_json_post_view
-@has_request_variables
-def json_upload_file(request, user_profile):
+def upload_file_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     if len(request.FILES) == 0:
         return json_error(_("You must specify a file to upload"))
@@ -29,15 +27,8 @@ def json_upload_file(request, user_profile):
     uri = upload_message_image_through_web_client(request, user_file, user_profile)
     return json_success({'uri': uri})
 
-@zulip_login_required
-@has_request_variables
-def get_uploaded_file(request, realm_id_str, filename,
-                      redir=REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, str, str, bool) -> HttpResponse
-    if settings.LOCAL_UPLOADS_DIR is not None:
-        return HttpResponseForbidden() # Should have been served by nginx
-
-    user_profile = request.user
+def serve_s3(request, user_profile, realm_id_str, filename, redir):
+    # type: (HttpRequest, UserProfile, str, str, bool) -> HttpResponse
     url_path = "%s/%s" % (realm_id_str, filename)
 
     if realm_id_str == "unk":
@@ -55,3 +46,25 @@ def get_uploaded_file(request, realm_id_str, filename,
             return json_success({'uri': uri})
     else:
         return HttpResponseForbidden()
+
+def serve_file_backend(request, user_profile, realm_id_str, filename, redir):
+    # type: (HttpRequest, UserProfile, str, str, bool) -> HttpResponse
+    if settings.LOCAL_UPLOADS_DIR is not None:
+         return HttpResponseForbidden() # Should have been served by nginx
+
+    return serve_s3(request, user_profile, realm_id_str, filename, redir)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_upload_file(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    return upload_file_backend(request, user_profile)
+
+@zulip_login_required
+@has_request_variables
+def get_uploaded_file(request, realm_id_str, filename,
+                      redir=REQ(validator=check_bool, default=True)):
+    # type: (HttpRequest, str, str, bool) -> HttpResponse
+    user_profile = request.user
+    return serve_file_backend(request, user_profile, realm_id_str, filename, redir)
+
