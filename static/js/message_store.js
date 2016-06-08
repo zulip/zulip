@@ -20,7 +20,7 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     var recipient, i;
     var other_recipients = _.filter(message.display_recipient,
                                   function (element) {
-                                      return element.email !== page_params.email;
+                                      return !util.is_current_user(element.email);
                                   });
     if (other_recipients.length === 0) {
         // private message with oneself
@@ -131,7 +131,7 @@ function add_message_metadata(message) {
 
     var involved_people;
 
-    message.sent_by_me = (message.sender_email === page_params.email);
+    message.sent_by_me = util.is_current_user(message.sender_email);
 
     message.flags = message.flags || [];
     message.historical = (message.flags !== undefined &&

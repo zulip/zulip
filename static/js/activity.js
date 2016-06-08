@@ -371,7 +371,7 @@ function focus_ping() {
 
             // Ping returns the active peer list
             _.each(data.presences, function (presence, this_email) {
-                if (page_params.email !== this_email) {
+                if (!util.is_current_user(this_email)) {
                     exports.presence_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
                 }
             });
@@ -413,7 +413,7 @@ exports.set_user_statuses = function (users, server_time) {
     var updated_users = {};
     var status;
     _.each(users, function (presence, email) {
-        if (email === page_params.email) {
+        if (util.is_current_user(email)) {
             return;
         }
         status = status_from_timestamp(server_time, presence);

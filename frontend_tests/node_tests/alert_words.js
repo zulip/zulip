@@ -1,3 +1,7 @@
+add_dependencies({
+    util: 'js/util.js'
+});
+
 set_global('page_params', {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+'],
     email: 'tester@zulip.com'

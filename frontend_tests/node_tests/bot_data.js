@@ -1,3 +1,7 @@
+add_dependencies({
+    util: 'js/util.js'
+});
+
 var _ = global._;
 
 set_global('$', function (f) {

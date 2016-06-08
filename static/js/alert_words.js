@@ -42,7 +42,7 @@ exports.process_message = function (message) {
 };
 
 exports.notifies = function (message) {
-    return ((message.sender_email !== page_params.email) && message.alerted);
+    return !util.is_current_user(message.sender_email) && message.alerted;
 };
 
 return exports;
