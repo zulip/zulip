@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Mapping, Any
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -20,7 +20,7 @@ from mimetypes import guess_type, guess_extension
 
 from zerver.models import get_user_profile_by_id
 from zerver.models import Attachment
-from zerver.models import Realm, UserProfile, UserMessage
+from zerver.models import Realm, UserProfile
 
 import base64
 import os
@@ -272,7 +272,7 @@ else:
     delete_message_image = delete_message_image_s3
 
 def claim_attachment(path_id, message):
-    # type: (text_type, UserMessage) -> bool
+    # type: (text_type, Mapping[str, Any]) -> bool
     try:
         attachment = Attachment.objects.get(path_id=path_id)
         attachment.messages.add(message)
