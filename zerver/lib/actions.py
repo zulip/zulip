@@ -1074,7 +1074,7 @@ def pick_color_helper(user_profile, subs):
         "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
         "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
     used_colors = [sub.color for sub in subs if sub.active]
-    available_colors = [x for x in stream_assignment_colors if x not in used_colors]
+    available_colors = [s for s in stream_assignment_colors if s not in used_colors]
 
     if available_colors:
         return available_colors[0]
@@ -2728,7 +2728,7 @@ def apply_events(state, events, user_profile):
             if event['op'] == "add":
                 state['realm_users'].append(person)
             elif event['op'] == "remove":
-                state['realm_users'] = [x for x in state['realm_users'] if not our_person(x)]
+                state['realm_users'] = [user for user in state['realm_users'] if not our_person(user)]
             elif event['op'] == 'update':
                 for p in state['realm_users']:
                     if our_person(p):
@@ -2801,7 +2801,7 @@ def apply_events(state, events, user_profile):
                 state['subscriptions'] += event['subscriptions']
 
                 # remove them from unsubscribed if they had been there
-                state['unsubscribed'] = [x for x in state['unsubscribed'] if not was_added(x)]
+                state['unsubscribed'] = [s for s in state['unsubscribed'] if not was_added(s)]
 
             elif event['op'] == "remove":
                 removed_names = set(map(name, event["subscriptions"]))
@@ -2819,7 +2819,7 @@ def apply_events(state, events, user_profile):
                 state['unsubscribed'] += removed_subs
 
                 # Now filter out the removed subscriptions from subscriptions.
-                state['subscriptions'] = [x for x in state['subscriptions'] if not was_removed(x)]
+                state['subscriptions'] = [s for s in state['subscriptions'] if not was_removed(s)]
 
             elif event['op'] == 'update':
                 for sub in state['subscriptions']:
