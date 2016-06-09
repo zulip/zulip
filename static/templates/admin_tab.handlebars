@@ -35,7 +35,7 @@
                 <div class="alert" id="admin-realm-invite-required-status"></div>
                 <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
                 <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
-                <label for="realm_name" class="control-label">Your organization's name</label>
+                <label for="realm_name" class="control-label">{{t "Your organization's name" }}</label>
                 <div class="controls">
                   <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
                          value="{{ realm_name }}" />
@@ -60,7 +60,7 @@
                 </div>
               </div>
               <div class="control-group">
-                <label for="realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" title="If checked, only administrators may create new streams." class="control-label">Only admins may create streams</label>
+                <label for="realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" title="{{t 'If checked, only administrators may create new streams.'}}" class="control-label">Only admins may create streams</label>
                 <div class="controls">
                   <input type="checkbox" id="id_realm_create_stream_by_admins_only" name="realm_create_stream_by_admins_only" {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
                 </div>
@@ -74,7 +74,7 @@
             <div class="settings-section-title"><i class="icon-vector-smile settings-section-icon"></i>
             {{t "Custom emoji" }}</div>
             <div class="admin-table-wrapper">
-            <p>{{#tr this}}Add extra emoji for members of the {{ realm_name }} organization.{{/tr}}</p>
+            <p>{{#tr this}}Add extra emoji for members of the __realm_name__ organization.{{/tr}}</p>
               <table class="table table-condensed table-striped admin_emoji_table">
                 <tbody id="admin_emoji_table">
                   <th>{{t "Name" }}</th>
@@ -154,7 +154,7 @@
         <div role="tabpanel" class="tab-pane" id="streams">
           <div id="admin-streams-list" class="settings-section">
           <div class="settings-section-title"><i class="icon-vector-exchange settings-section-icon"></i>
-          Streams Deletion</div>
+          {{t "Streams Deletion" }}</div>
           <p class="admin-streams-note">Most stream administration is done on the <a href="/#subscriptions">subscriptions page</a>.</p>
 
           <table class="table table-condensed table-striped">
