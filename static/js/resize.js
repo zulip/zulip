@@ -212,8 +212,7 @@ exports.resize_page_components = function () {
             $("#group-pms").css("margin", "0px");
             $("#userlist-toggle").css("display", "none");
             $("#invite-user-link").hide();
-        }
-        else if (!css_narrow_mode && narrow_window) {
+        } else if (!css_narrow_mode && narrow_window) {
             // move stuff to the right sidebar (wide mode)
             narrow_window = false;
             popovers.set_userlist_placement("right");
