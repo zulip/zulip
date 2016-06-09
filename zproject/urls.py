@@ -98,8 +98,6 @@ if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
     urlpatterns += patterns('',
         url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
             {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
-        url(r'^user_uploads/(?P<path>.*)$', 'django.views.static.serve',
-            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "files")}),
     )
 
 urlpatterns += patterns('zerver.views',
