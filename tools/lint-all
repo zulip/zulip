@@ -140,6 +140,8 @@ js_rules = [
      'description': 'The module blueslip has no function warning, try using blueslip.warn'},
     {'pattern': '[)]{$',
      'description': 'Missing space between ) and {'},
+    {'pattern': '["\']json/',
+     'description': 'Relative URL for JSON route not supported by i18n'},
     # This rule is constructed with + to avoid triggering on itself
     {'pattern': " =" + '[^ =>~"]',
      'description': 'Missing whitespace after "="'},
