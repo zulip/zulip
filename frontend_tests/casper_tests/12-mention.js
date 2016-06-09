@@ -1,29 +1,5 @@
 var common = require('../casper_lib/common.js').common;
 
-function enter_mention_in_composer(str, item) {
-    casper.then(function () {
-        casper.test.info('Start typing @all');
-        casper.evaluate(function (str, item) {
-            // Set the value and then send a bogus keyup event to trigger
-            // the typeahead.
-            $('#new_message_content')
-                .focus()
-                .val(str)
-                .trigger($.Event('keyup', { which: 0 }));
-
-            // Trigger the typeahead.
-            // Reaching into the guts of Bootstrap Typeahead like this is not
-            // great, but I found it very hard to do it any other way.
-            var tah = $('#new_message_content').data().typeahead;
-            tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0]
-            });
-            tah.select();
-        }, {str: str, item: item});
-    });
-}
-
-/////////////////////////////////////////////////////
 common.start_and_log_in();
 casper.verbonse = true;
 
@@ -38,7 +14,7 @@ casper.then(function () {
         subject: 'Test mention all'
     });
 });
-enter_mention_in_composer('@all', 'all');
+common.select_item_via_typeahead('#new_message_content', '@all', 'all');
 
 casper.waitForText("Are you sure you want to message all", function () {
     casper.test.info('Warning message appears when mentioning @all');
