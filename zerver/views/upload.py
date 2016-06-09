@@ -36,9 +36,11 @@ def serve_s3(request, user_profile, realm_id_str, filename, redir):
         if realm_id is None:
             # File does not exist
             return json_error(_("That file does not exist."), status=404)
+    else:
+        realm_id = int(realm_id_str)
 
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
-    if user_profile.realm.id == int(realm_id) or user_profile.realm.domain == 'zulip.com':
+    if user_profile.realm.id == realm_id or user_profile.realm.domain == 'zulip.com':
         uri = get_signed_upload_url(url_path)
         if redir:
             return redirect(uri)
