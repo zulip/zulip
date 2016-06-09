@@ -41,7 +41,7 @@ exports.subscribed_streams = function () {
 };
 
 exports.pinned_open_streams = function () {
-    return _.filter(exports.subscribed_subs(), function(stream) {
+    return _.filter(exports.subscribed_subs(), function (stream) {
                             return stream.pin_stream_open === true;
                         });
 };
