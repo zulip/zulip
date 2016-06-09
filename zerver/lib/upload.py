@@ -240,6 +240,13 @@ def write_local_file(type, path, file_data):
     with open(file_path, 'wb') as f:
         f.write(file_data)
 
+def get_local_file_path(path_id):
+    local_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
+    if os.path.isfile(local_path):
+        return local_path
+    else:
+        return None
+
 class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
         # type: (str, str, str, UserProfile, Optional[Realm]) -> str
