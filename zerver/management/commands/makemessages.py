@@ -143,8 +143,9 @@ class Command(makemessages.Command):
 
         for filename in os.listdir(dirname):
             if filename.endswith('handlebars'):
-                with open(os.path.join(dirname, filename)) as reader:
+                with open(os.path.join(dirname, filename), 'r') as reader:
                     data = reader.read()
+                    data = data.replace('\n', '\\n')
                     translation_strings.update(self.extract_strings(data))
 
         dirname = os.path.join(settings.DEPLOY_ROOT, 'static/js')
@@ -203,6 +204,7 @@ class Command(makemessages.Command):
         """
         new_strings = {} # Dict[str, str]
         for k in translation_strings:
+            k = k.replace('\\n', '\n')
             new_strings[k] = old_strings.get(k, k)
 
         return new_strings
