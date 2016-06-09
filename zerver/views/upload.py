@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import authenticated_json_post_view, zulip_login_required
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
-from zerver.lib.upload import upload_message_image_through_web_client, \
+from zerver.lib.upload import upload_message_image_from_request, \
     get_signed_upload_url, get_realm_for_filename
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
@@ -24,7 +24,7 @@ def upload_file_backend(request, user_profile):
     if ((settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024) < user_file._get_size()):
         return json_error(_("File Upload is larger than allowed limit"))
 
-    uri = upload_message_image_through_web_client(request, user_file, user_profile)
+    uri = upload_message_image_from_request(request, user_file, user_profile)
     return json_success({'uri': uri})
 
 def serve_s3(request, user_profile, realm_id_str, filename, redir):
