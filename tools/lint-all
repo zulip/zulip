@@ -145,6 +145,8 @@ js_rules = [
     # This rule is constructed with + to avoid triggering on itself
     {'pattern': " =" + '[^ =>~"]',
      'description': 'Missing whitespace after "="'},
+    {'pattern': '^[ ]*//[A-Za-z0-9]',
+     'description': 'Missing space after // in comment'},
     {'pattern': 'else{$',
      'description': 'Missing space between else and {'},
     ] + whitespace_rules
