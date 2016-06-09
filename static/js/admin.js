@@ -232,7 +232,7 @@ exports.setup_page = function () {
     });
 
     $("#id_realm_invite_required").change(function () {
-        if(this.checked) {
+        if (this.checked) {
             $("#id_realm_invite_by_admins_only").removeAttr("disabled");
             $("#id_realm_invite_by_admins_only_label").removeClass("control-label-disabled");
         } else {

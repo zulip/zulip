@@ -551,7 +551,7 @@ MessageListView.prototype = {
             if (elem.is("div")) {
                 new_messages_height += elem.height();
                 // starting from the last message, ignore message heights that weren't sent by me.
-                if(id_of_last_message_sent_by_us > -1) {
+                if (id_of_last_message_sent_by_us > -1) {
                     distance_to_last_message_sent_by_me += elem.height();
                     return;
                 }
