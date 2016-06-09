@@ -17,6 +17,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
     active_bot_dict_fields
 from zerver.lib.utils import make_safe_digest, generate_random_token
+from zerver.lib.str_utils import force_bytes, dict_with_str_keys
 from django.db import transaction
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
 from zerver.lib.camo import get_camo_url
@@ -35,7 +36,7 @@ import pylibmc
 import re
 import ujson
 import logging
-from six import text_type
+from six import binary_type, text_type
 import time
 import datetime
 
@@ -748,13 +749,13 @@ def linebreak(string):
     # type: (str) -> str
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
-def extract_message_dict(message_str):
-    # type: (str) -> Dict[str, Any]
-    return ujson.loads(zlib.decompress(message_str).decode("utf-8"))
+def extract_message_dict(message_bytes):
+    # type: (binary_type) -> Dict[str, Any]
+    return dict_with_str_keys(ujson.loads(zlib.decompress(message_bytes).decode("utf-8")))
 
 def stringify_message_dict(message_dict):
-    # type: (Dict[Any, Any]) -> str
-    return zlib.compress(ujson.dumps(message_dict).encode("utf-8"))
+    # type: (Dict[str, Any]) -> binary_type
+    return zlib.compress(force_bytes(ujson.dumps(message_dict)))
 
 def to_dict_cache_key_id(message_id, apply_markdown):
     # type: (int, bool) -> str
@@ -869,7 +870,7 @@ class Message(models.Model):
 
     @cache_with_key(to_dict_cache_key, timeout=3600*24)
     def to_dict_json(self, apply_markdown):
-        # type: (bool) -> str
+        # type: (bool) -> binary_type
         return stringify_message_dict(self.to_dict_uncached(apply_markdown))
 
     def to_dict_uncached(self, apply_markdown):
