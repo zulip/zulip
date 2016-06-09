@@ -176,8 +176,7 @@ function _update_faded_messages() {
             _display_messages_normally();
             _display_users_normally();
         }
-    }
-    else {
+    } else {
         _fade_messages();
         _fade_users();
     }
@@ -212,8 +211,7 @@ exports.clear_compose = function () {
 exports.update_message_list = function () {
     if (_want_normal_display()) {
        _display_messages_normally();
-    }
-    else {
+    } else {
         _fade_messages();
     }
 };

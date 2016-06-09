@@ -82,8 +82,7 @@ function copy_handler(e) {
         if (!skip_same_td_check &&
             startc.parents('.selectable_row>div')[0] === endc.parents('.selectable_row>div')[0]) {
             return;
-        }
-        else {
+        } else {
 
             // Construct a div for what we want to copy (div)
             for (row = current_msg_list.get_row(start_id);

@@ -177,8 +177,7 @@ exports.activate = function (raw_operators, opts) {
 
     if (!had_message_content) {
         compose.cancel();
-    }
-    else {
+    } else {
         compose_fade.update_message_list();
     }
 
@@ -336,8 +335,7 @@ exports.activate = function (raw_operators, opts) {
     if (!had_message_content && opts.trigger === 'sidebar' && exports.narrowed_by_reply()) {
         if (exports.narrowed_to_topic()) {
             compose.start('stream');
-        }
-        else {
+        } else {
             compose.start('private');
         }
     }

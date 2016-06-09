@@ -78,8 +78,7 @@ function prefix_sort(query, objs, get_item) {
         var item;
         if (get_item) {
             item = get_item(obj);
-        }
-        else {
+        } else {
             item = obj;
         }
         if (item.indexOf(query) === 0) {

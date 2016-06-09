@@ -115,8 +115,7 @@ exports.build_widget = function (
             } else {
                 accept(file);
             }
-        }
-        else {
+        } else {
             input_error.text('Please just upload one file.');
         }
     });
@@ -202,8 +201,7 @@ exports.build_direct_upload_widget = function (
             } else {
                 accept(file);
             }
-        }
-        else {
+        } else {
             input_error.text('Please just upload one file.');
         }
     });

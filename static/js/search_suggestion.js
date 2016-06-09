@@ -122,8 +122,7 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
         if (query === undefined) {
             return [];
         }
-    }
-    else {
+    } else {
         return [];
     }
 

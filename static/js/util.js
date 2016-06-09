@@ -47,8 +47,7 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
             first = middle;
             first++;
             len = len - step - 1;
-        }
-        else {
+        } else {
             len = step;
         }
     }
