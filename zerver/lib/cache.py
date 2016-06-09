@@ -87,7 +87,7 @@ def bounce_key_prefix_for_testing(test_name):
     KEY_PREFIX = test_name + u':' + text_type(os.getpid()) + u':'
 
 def get_cache_backend(cache_name):
-    # type: (str) -> get_cache
+    # type: (Optional[str]) -> get_cache
     if cache_name is None:
         return djcache
     return get_cache(cache_name)
@@ -138,14 +138,14 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
     return decorator
 
 def cache_set(key, val, cache_name=None, timeout=None):
-    # type: (str, Any, Optional[str], Optional[int]) -> None
+    # type: (text_type, Any, Optional[str], Optional[int]) -> None
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
     remote_cache_stats_finish()
 
 def cache_get(key, cache_name=None):
-    # type: (str, Optional[str]) -> Any
+    # type: (text_type, Optional[str]) -> Any
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.get(KEY_PREFIX + key)
@@ -153,31 +153,31 @@ def cache_get(key, cache_name=None):
     return ret
 
 def cache_get_many(keys, cache_name=None):
-    # type: (List[str], Optional[str]) -> Dict[str, Any]
-    keys = [KEY_PREFIX + key for key in keys] # type: ignore # temporary
+    # type: (List[text_type], Optional[str]) -> Dict[text_type, Any]
+    keys = [KEY_PREFIX + key for key in keys]
     remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
     remote_cache_stats_finish()
     return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
 
 def cache_set_many(items, cache_name=None, timeout=None):
-    # type: (Dict[str, Any], Optional[str], Optional[int]) -> None
+    # type: (Dict[text_type, Any], Optional[str], Optional[int]) -> None
     new_items = {}
     for key in items:
         new_items[KEY_PREFIX + key] = items[key]
-    items = new_items # type: ignore # temporary
+    items = new_items
     remote_cache_stats_start()
     get_cache_backend(cache_name).set_many(items, timeout=timeout)
     remote_cache_stats_finish()
 
 def cache_delete(key, cache_name=None):
-    # type: (str, Optional[str]) -> None
+    # type: (text_type, Optional[str]) -> None
     remote_cache_stats_start()
     get_cache_backend(cache_name).delete(KEY_PREFIX + key)
     remote_cache_stats_finish()
 
 def cache_delete_many(items, cache_name=None):
-    # type: (Iterable[str], Optional[str]) -> None
+    # type: (Iterable[text_type], Optional[str]) -> None
     remote_cache_stats_start()
     get_cache_backend(cache_name).delete_many(
         KEY_PREFIX + item for item in items)
@@ -202,8 +202,8 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                               setter=lambda obj: obj,
                               id_fetcher=lambda obj: obj.id,
                               cache_transformer=lambda obj: obj):
-    # type: (Callable[[Any], str], Callable[[List[Any]], List[Any]], List[Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any]) -> Dict[Any, Any]
-    cache_keys = {} # type: Dict[int, str]
+    # type: (Callable[[Any], text_type], Callable[[List[Any]], Iterable[Any]], Iterable[Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any]) -> Dict[Any, Any]
+    cache_keys = {} # type: Dict[Any, text_type]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
     cached_objects = cache_get_many([cache_keys[object_id]
@@ -214,7 +214,7 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
 
-    items_for_remote_cache = {} # type: Dict[str, Any]
+    items_for_remote_cache = {} # type: Dict[text_type, Any]
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
