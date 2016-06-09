@@ -268,10 +268,6 @@ def use_s3_backend(method):
     return new_method
 
 class S3Test(AuthedTestCase):
-    # full URIs in public bucket
-    test_uris = [] # type: List[str]
-    # keys in authed bucket
-    test_keys = [] # type: List[str]
 
     @use_s3_backend
     def test_file_upload_s3(self):
@@ -301,13 +297,15 @@ class S3Test(AuthedTestCase):
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
 
-    @slow(2.6, "has to contact external S3 service")
-    @skip("Need S3 mock")
+    @use_s3_backend
     def test_file_upload_authed(self):
         # type: () -> None
         """
         A call to /json/upload_file should return a uri and actually create an object.
         """
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
         self.login("hamlet@zulip.com")
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
@@ -319,30 +317,11 @@ class S3Test(AuthedTestCase):
         uri = json["uri"]
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
-        self.test_keys.append(uri[len(base):])
 
         response = self.client.get(uri)
         redirect_url = response['Location']
 
         self.assertEquals("zulip!", urllib.request.urlopen(redirect_url).read().strip())
-
-    def tearDown(self):
-        # type: () -> None
-        # clean up
-        return
-        # TODO: un-deadden this code when we have proper S3 mocking.
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        for uri in self.test_uris:
-            key = Key(conn.get_bucket(settings.S3_BUCKET))
-            key.name = urllib.parse.urlparse(uri).path[1:]
-            key.delete()
-            self.test_uris.remove(uri)
-
-        for path in self.test_keys:
-            key = Key(conn.get_bucket(settings.S3_AUTH_UPLOADS_BUCKET))
-            key.name = path
-            key.delete()
-            self.test_keys.remove(path)
 
 class SanitizeNameTests(TestCase):
     def test_file_name(self):
