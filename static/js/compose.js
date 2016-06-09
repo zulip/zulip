@@ -954,7 +954,7 @@ $(function () {
     }
 
     $("#compose").filedrop({
-        url: "json/upload_file",
+        url: "/json/upload_file",
         fallback_id: "file_input",
         paramname: "file",
         maxfilesize: page_params.maxfilesize,
