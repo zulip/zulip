@@ -136,12 +136,11 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
     return decorator
 
 def cache_set(key, val, cache_name=None, timeout=None):
-    # type: (str, Any, Optional[str], Optional[int]) -> Any
+    # type: (str, Any, Optional[str], Optional[int]) -> None
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
-    ret = cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
+    cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
     remote_cache_stats_finish()
-    return ret
 
 def cache_get(key, cache_name=None):
     # type: (str, Optional[str]) -> Any
@@ -160,15 +159,14 @@ def cache_get_many(keys, cache_name=None):
     return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
 
 def cache_set_many(items, cache_name=None, timeout=None):
-    # type: (Dict[str, Any], Optional[str], Optional[int]) -> Any
+    # type: (Dict[str, Any], Optional[str], Optional[int]) -> None
     new_items = {}
     for key in items:
         new_items[KEY_PREFIX + key] = items[key]
     items = new_items
     remote_cache_stats_start()
-    ret = get_cache_backend(cache_name).set_many(items, timeout=timeout)
+    get_cache_backend(cache_name).set_many(items, timeout=timeout)
     remote_cache_stats_finish()
-    return ret
 
 def cache_delete(key, cache_name=None):
     # type: (str, Optional[str]) -> None
