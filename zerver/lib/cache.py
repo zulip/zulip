@@ -244,23 +244,23 @@ def cache(func):
     return cache_with_key(keyfunc)(func)
 
 def message_cache_key(message_id):
-    # type: (int) -> str
-    return "message:%d" % (message_id,)
+    # type: (int) -> text_type
+    return u"message:%d" % (message_id,)
 
 def display_recipient_cache_key(recipient_id):
-    # type: (int) -> str
-    return "display_recipient_dict:%d" % (recipient_id,)
+    # type: (int) -> text_type
+    return u"display_recipient_dict:%d" % (recipient_id,)
 
 def user_profile_by_email_cache_key(email):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     # See the comment in zerver/lib/avatar.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
-    return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
+    return u'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
 def user_profile_by_id_cache_key(user_profile_id):
-    # type: (int) -> str
-    return "user_profile_by_id:%s" % (user_profile_id,)
+    # type: (int) -> text_type
+    return u"user_profile_by_id:%s" % (user_profile_id,)
 
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that we can replace many of these type: Anys
@@ -271,8 +271,8 @@ def cache_save_user_profile(user_profile):
 
 active_user_dict_fields = ['id', 'full_name', 'short_name', 'email', 'is_realm_admin', 'is_bot'] # type: List[str]
 def active_user_dicts_in_realm_cache_key(realm):
-    # type: (Any) -> str
-    return "active_user_dicts_in_realm:%s" % (realm.id,)
+    # type: (Any) -> text_type
+    return u"active_user_dicts_in_realm:%s" % (realm.id,)
 
 active_bot_dict_fields = ['id', 'full_name', 'short_name',
                           'email', 'default_sending_stream__name',
@@ -280,17 +280,17 @@ active_bot_dict_fields = ['id', 'full_name', 'short_name',
                           'default_all_public_streams', 'api_key',
                           'bot_owner__email', 'avatar_source'] # type: List[str]
 def active_bot_dicts_in_realm_cache_key(realm):
-    # type: (Any) -> str
-    return "active_bot_dicts_in_realm:%s" % (realm.id,)
+    # type: (Any) -> text_type
+    return u"active_bot_dicts_in_realm:%s" % (realm.id,)
 
 def get_stream_cache_key(stream_name, realm):
-    # type: (six.text_type, Any) -> str
+    # type: (text_type, Any) -> text_type
     from zerver.models import Realm
     if isinstance(realm, Realm):
         realm_id = realm.id
     else:
         realm_id = realm
-    return "stream_by_realm_and_name:%s:%s" % (
+    return u"stream_by_realm_and_name:%s:%s" % (
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 def update_user_profile_caches(user_profiles):
@@ -341,8 +341,8 @@ def flush_realm(sender, **kwargs):
         cache_delete(realm_alert_words_cache_key(realm))
 
 def realm_alert_words_cache_key(realm):
-    # type: (Any) -> str
-    return "realm_alert_words:%s" % (realm.domain,)
+    # type: (Any) -> text_type
+    return u"realm_alert_words:%s" % (realm.domain,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.

@@ -758,8 +758,8 @@ def stringify_message_dict(message_dict):
     return zlib.compress(force_bytes(ujson.dumps(message_dict)))
 
 def to_dict_cache_key_id(message_id, apply_markdown):
-    # type: (int, bool) -> str
-    return 'message_dict:%d:%d' % (message_id, apply_markdown)
+    # type: (int, bool) -> text_type
+    return u'message_dict:%d:%d' % (message_id, apply_markdown)
 
 def to_dict_cache_key(message, apply_markdown):
     # type: (Message, bool) -> str
