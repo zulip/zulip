@@ -45,7 +45,7 @@ bugdown = None # type: Any
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 
-STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[str], AbstractSet[str])
+STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[text_type], AbstractSet[text_type])
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
@@ -701,7 +701,7 @@ def bulk_get_streams(realm, stream_names):
         realm_id = realm
 
     def fetch_streams_by_name(stream_names):
-        # type: (List[str]) -> List[str]
+        # type: (List[text_type]) -> Sequence[Stream]
         #
         # This should be just
         #
@@ -758,11 +758,11 @@ def stringify_message_dict(message_dict):
     return zlib.compress(force_bytes(ujson.dumps(message_dict)))
 
 def to_dict_cache_key_id(message_id, apply_markdown):
-    # type: (int, bool) -> str
-    return 'message_dict:%d:%d' % (message_id, apply_markdown)
+    # type: (int, bool) -> text_type
+    return u'message_dict:%d:%d' % (message_id, apply_markdown)
 
 def to_dict_cache_key(message, apply_markdown):
-    # type: (Message, bool) -> str
+    # type: (Message, bool) -> text_type
     return to_dict_cache_key_id(message.id, apply_markdown)
 
 class Message(models.Model):
