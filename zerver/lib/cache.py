@@ -19,6 +19,7 @@ import os
 import os.path
 import hashlib
 import six
+from six import text_type
 
 remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
@@ -46,16 +47,17 @@ def remote_cache_stats_finish():
     remote_cache_total_time += (time.time() - remote_cache_time_start)
 
 def get_or_create_key_prefix():
-    # type: () -> str
+    # type: () -> text_type
     if settings.TEST_SUITE:
         # This sets the prefix mostly for the benefit of the JS tests.
         # The Python tests overwrite KEY_PREFIX on each test.
-        return 'test_suite:' + str(os.getpid()) + ':'
+        return u'test_suite:%s:' % (text_type(os.getpid()),)
 
     filename = os.path.join(settings.DEPLOY_ROOT, "remote_cache_prefix")
     try:
         fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o444)
-        prefix = base64.b16encode(hashlib.sha256(str(random.getrandbits(256))).digest())[:32].lower() + ':'
+        random_hash = hashlib.sha256(text_type(random.getrandbits(256)).encode('utf-8')).digest()
+        prefix = base64.b16encode(random_hash)[:32].decode('utf-8').lower() + ':'
         # This does close the underlying file
         with os.fdopen(fd, 'w') as f:
             f.write(prefix + "\n")
@@ -77,12 +79,12 @@ def get_or_create_key_prefix():
 
     return prefix
 
-KEY_PREFIX = get_or_create_key_prefix() # type: str
+KEY_PREFIX = get_or_create_key_prefix() # type: text_type
 
 def bounce_key_prefix_for_testing(test_name):
-    # type: (str) -> None
+    # type: (text_type) -> None
     global KEY_PREFIX
-    KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
+    KEY_PREFIX = test_name + u':' + text_type(os.getpid()) + u':'
 
 def get_cache_backend(cache_name):
     # type: (str) -> get_cache
@@ -152,7 +154,7 @@ def cache_get(key, cache_name=None):
 
 def cache_get_many(keys, cache_name=None):
     # type: (List[str], Optional[str]) -> Dict[str, Any]
-    keys = [KEY_PREFIX + key for key in keys]
+    keys = [KEY_PREFIX + key for key in keys] # type: ignore # temporary
     remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
     remote_cache_stats_finish()
@@ -163,7 +165,7 @@ def cache_set_many(items, cache_name=None, timeout=None):
     new_items = {}
     for key in items:
         new_items[KEY_PREFIX + key] = items[key]
-    items = new_items
+    items = new_items # type: ignore # temporary
     remote_cache_stats_start()
     get_cache_backend(cache_name).set_many(items, timeout=timeout)
     remote_cache_stats_finish()
