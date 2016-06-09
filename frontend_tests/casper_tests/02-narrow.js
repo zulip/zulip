@@ -186,38 +186,8 @@ casper.waitUntilVisible('#zfilt', function () {
 
 // Narrow by typing in search strings or operators.
 
-// Put the specified string into the search box, then
-// select the menu item matching 'item'.
-function do_search(str, item) {
-    casper.then(function () {
-        casper.test.info('Searching ' + str + ', ' + item);
-
-        casper.evaluate(function (str, item) {
-            // Set the value and then send a bogus keyup event to trigger
-            // the typeahead.
-            $('#search_query')
-                .focus()
-                .val(str)
-                .trigger($.Event('keyup', { which: 0 }));
-
-            // You might think these steps should be split by casper.then,
-            // but apparently that's enough to make the typeahead close (??),
-            // but not the first time you use do_search.
-
-            // Trigger the typeahead.
-            // Reaching into the guts of Bootstrap Typeahead like this is not
-            // great, but I found it very hard to do it any other way.
-            var tah = $('#search_query').data().typeahead;
-            tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0]
-            });
-            tah.select();
-        }, {str: str, item: item});
-    });
-}
-
 function search_and_check(str, item, check, narrow_title) {
-    do_search(str, item);
+    common.select_item_via_typeahead('#search_query', str, item);
     casper.then(check);
     casper.then(check_narrow_title(narrow_title));
     un_narrow();

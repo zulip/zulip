@@ -96,6 +96,37 @@ exports.then_log_out = function () {
     });
 };
 
+// Put the specified string into the field_selector, then
+// select the menu item matching item by typing str.
+exports.select_item_via_typeahead = function (field_selector, str, item) {
+    casper.then(function () {
+        casper.test.info('Looking in ' + field_selector + ' to select ' + str + ', ' + item);
+
+        casper.evaluate(function (field_selector, str, item) {
+            // Set the value and then send a bogus keyup event to trigger
+            // the typeahead.
+            $(field_selector)
+                .focus()
+                .val(str)
+                .trigger($.Event('keyup', { which: 0 }));
+
+            // You might think these steps should be split by casper.then,
+            // but apparently that's enough to make the typeahead close (??),
+            // but not the first time.
+
+            // Trigger the typeahead.
+            // Reaching into the guts of Bootstrap Typeahead like this is not
+            // great, but I found it very hard to do it any other way.
+
+            var tah = $(field_selector).data().typeahead;
+            tah.mouseenter({
+                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0]
+            });
+            tah.select();
+        }, {field_selector:field_selector, str: str, item: item});
+    });
+};
+
 exports.enable_page_console = function () {
     // Call this (after casper.start) to enable printing page-context
     // console.log (plus some CasperJS-specific messages) to the
