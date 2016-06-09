@@ -71,15 +71,15 @@ def tornado_redirected_to_list(lst):
 
 @contextmanager
 def simulated_empty_cache():
-    # type: () -> Generator[List[Tuple[str, Union[str, List[str]], str]], None, None]
-    cache_queries = [] # type: List[Tuple[str, Union[str, List[str]], str]]
+    # type: () -> Generator[List[Tuple[str, Union[text_type, List[text_type]], text_type]], None, None]
+    cache_queries = [] # type: List[Tuple[str, Union[text_type, List[text_type]], text_type]]
     def my_cache_get(key, cache_name=None):
-        # type: (str, Optional[str]) -> Any
+        # type: (text_type, Optional[str]) -> Any
         cache_queries.append(('get', key, cache_name))
         return None
 
     def my_cache_get_many(keys, cache_name=None):
-        # type: (List[str], Optional[str]) -> Dict[str, Any]
+        # type: (List[text_type], Optional[str]) -> Dict[text_type, Any]
         cache_queries.append(('getmany', keys, cache_name))
         return None
 
