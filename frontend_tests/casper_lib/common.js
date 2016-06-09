@@ -120,7 +120,7 @@ exports.check_form = function (form_selector, expected, test_name) {
 exports.then_send_message = function (type, params) {
     casper.waitForSelector('#compose-send-button:enabled');
     casper.waitForSelector('#new_message_content', function () {
-        if(type === "stream") {
+        if (type === "stream") {
             casper.page.sendEvent('keypress', "c");
         }
         else if (type === "private") {

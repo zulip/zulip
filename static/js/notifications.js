@@ -104,7 +104,7 @@ exports.initialize = function () {
                 return;
             }
             if (notifications_api.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
-                if(tutorial.is_running()) {
+                if (tutorial.is_running()) {
                     tutorial.defer(function () {
                         notifications_api.requestPermission(function () {
                             asked_permission_already = true;

@@ -147,6 +147,8 @@ js_rules = [
      'description': 'Missing whitespace after "="'},
     {'pattern': '^[ ]*//[A-Za-z0-9]',
      'description': 'Missing space after // in comment'},
+    {'pattern': 'if[(]',
+     'description': 'Missing space between if and ('},
     {'pattern': 'else{$',
      'description': 'Missing space between else and {'},
     ] + whitespace_rules
