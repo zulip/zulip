@@ -212,11 +212,9 @@ function update_count_in_dom(count_span, value_span, count) {
         count_span.hide();
         if (count_span.parent().hasClass("subscription_block")) {
             count_span.parent(".subscription_block").removeClass("stream-with-count");
-        }
-        else if (count_span.parent().hasClass("user_sidebar_entry")) {
+        } else if (count_span.parent().hasClass("user_sidebar_entry")) {
             count_span.parent(".user_sidebar_entry").removeClass("user-with-count");
-        }
-        else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
+        } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
             count_span.parent(".group-pms-sidebar-entry").removeClass("group-with-count");
         }
         value_span.text('');
@@ -227,11 +225,9 @@ function update_count_in_dom(count_span, value_span, count) {
 
     if (count_span.parent().hasClass("subscription_block")) {
         count_span.parent(".subscription_block").addClass("stream-with-count");
-    }
-    else if (count_span.parent().hasClass("user_sidebar_entry")) {
+    } else if (count_span.parent().hasClass("user_sidebar_entry")) {
         count_span.parent(".user_sidebar_entry").addClass("user-with-count");
-    }
-    else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
+    } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
             count_span.parent(".group-pms-sidebar-entry").addClass("group-with-count");
     }
     value_span.text(count);

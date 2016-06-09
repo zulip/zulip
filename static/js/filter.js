@@ -62,8 +62,7 @@ function message_matches_search_term(message, operator, operand) {
     case 'in':
         if (operand === 'home') {
             return message_in_home(message);
-        }
-        else if (operand === 'all') {
+        } else if (operand === 'all') {
             return true;
         }
         return true; // in:whatever returns true

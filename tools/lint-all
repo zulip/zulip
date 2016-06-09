@@ -153,6 +153,8 @@ js_rules = [
      'description': 'Missing space between else and {'},
     {'pattern': '^else {$',
      'description': 'Write JS else statements on same line as }'},
+    {'pattern': '^else if',
+     'description': 'Write JS else statements on same line as }'},
     ] + whitespace_rules
 python_rules = [
     {'pattern': '^(?!#)@login_required',

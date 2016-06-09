@@ -25,8 +25,7 @@ function selectText(element) {
 
         sel.removeAllRanges();
         sel.addRange(range);
-    }
-    else if (document.body.createTextRange) {
+    } else if (document.body.createTextRange) {
         range = document.body.createTextRange();
         range.moveToElementText(element);
         range.select();

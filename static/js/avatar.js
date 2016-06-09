@@ -107,8 +107,7 @@ exports.build_widget = function (
                 input_error.text('File size must be < 5Mb.');
                 input_error.show();
                 clear();
-            }
-            else if (!is_image_format(file)) {
+            } else if (!is_image_format(file)) {
                 input_error.text('File type is not supported.');
                 input_error.show();
                 clear();
@@ -193,8 +192,7 @@ exports.build_direct_upload_widget = function (
                 input_error.text('File size must be < 5Mb.');
                 input_error.show();
                 clear();
-            }
-            else if (!is_image_format(file)) {
+            } else if (!is_image_format(file)) {
                 input_error.text('File type is not supported.');
                 input_error.show();
                 clear();
