@@ -67,6 +67,7 @@ from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.session_user import get_session_user
 from zerver.lib.upload import claim_attachment, delete_message_image
+from zerver.lib.str_utils import NonBinaryStr
 
 import DNS
 import ujson
@@ -80,7 +81,6 @@ import logging
 import itertools
 from collections import defaultdict
 
-NON_BINARY_STR = TypeVar('NON_BINARY_STR', str, text_type)
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
 SizedTextIterable = Union[Sequence[text_type], AbstractSet[text_type]]
@@ -521,15 +521,15 @@ def do_change_user_email(user_profile, new_email):
                'new_email': new_email})
 
 def compute_irc_user_fullname(email):
-    # type: (NON_BINARY_STR) -> NON_BINARY_STR
+    # type: (NonBinaryStr) -> NonBinaryStr
     return email.split("@")[0] + " (IRC)"
 
 def compute_jabber_user_fullname(email):
-    # type: (NON_BINARY_STR) -> NON_BINARY_STR
+    # type: (NonBinaryStr) -> NonBinaryStr
     return email.split("@")[0] + " (XMPP)"
 
 def compute_mit_user_fullname(email):
-    # type: (NON_BINARY_STR) -> NON_BINARY_STR
+    # type: (NonBinaryStr) -> NonBinaryStr
     try:
         # Input is either e.g. username@mit.edu or user|CROSSREALM.INVALID@mit.edu
         match_user = re.match(r'^([a-zA-Z0-9_.-]+)(\|.+)?@mit\.edu$', email.lower())
