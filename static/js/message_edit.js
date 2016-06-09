@@ -3,7 +3,7 @@ var exports = {};
 var currently_editing_messages = {};
 
 
-//returns true if the edit task should end.
+// Returns true if the edit task should end.
 exports.save = function (row, from_topic_edited_only) {
     var msg_list = current_msg_list;
     var message_id;
@@ -79,7 +79,7 @@ function handle_edit_keydown(from_topic_edited_only, e) {
             message_edit.end(row);
         }
     } else if (e.target.id === "message_edit_topic" && code === 13) {
-        //hitting enter in topic field isn't so great.
+        // Hitting enter in topic field isn't so great.
         e.stopPropagation();
         e.preventDefault();
     }

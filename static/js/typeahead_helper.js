@@ -143,7 +143,7 @@ exports.sort_recipients = function (matches, query) {
 };
 
 exports.sort_emojis = function (matches, query) {
-    //TODO: sort by category in v2
+    // TODO: sort by category in v2
     var results = prefix_sort(query, matches, function (x) { return x.emoji_name; });
     return results.matches.concat(results.rest);
 };
