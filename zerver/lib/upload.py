@@ -287,7 +287,7 @@ def create_attachment(file_name, path_id, user_profile):
     Attachment.objects.create(file_name=file_name, path_id=path_id, owner=user_profile)
     return True
 
-def upload_message_image_through_web_client(request, user_file, user_profile):
+def upload_message_image_from_request(request, user_file, user_profile):
     # type: (HttpRequest, File, UserProfile) -> str
     uploaded_file_name, content_type = get_file_info(request, user_file)
     return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile)
