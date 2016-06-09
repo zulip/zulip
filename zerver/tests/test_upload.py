@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from unittest import skip
 
 from zerver.lib.test_helpers import AuthedTestCase
 from zerver.lib.test_runner import slow
-from zerver.lib.upload import sanitize_name, delete_message_image, delete_message_image_local, \
-    delete_message_image_s3, upload_message_image_s3, upload_message_image_local
+from zerver.lib.upload import sanitize_name, S3UploadBackend, \
+    upload_message_image, delete_message_image, LocalUploadBackend
+import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
     get_old_unclaimed_attachments
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
@@ -231,7 +232,7 @@ class LocalStorageTest(AuthedTestCase):
         # type: () -> None
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image_local('dummy.txt', 'text/plain', 'zulip!', user_profile)
+        uri = upload_message_image('dummy.txt', 'text/plain', 'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
@@ -249,11 +250,22 @@ class LocalStorageTest(AuthedTestCase):
         json = ujson.loads(result.content)
         uri = json["uri"]
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertTrue(delete_message_image_local(path_id))
+        self.assertTrue(delete_message_image(path_id))
 
     def tearDown(self):
         # type: () -> None
         destroy_uploads()
+
+def use_s3_backend(method):
+    @mock_s3
+    @override_settings(LOCAL_UPLOADS_DIR=None)
+    def new_method(*args, **kwargs):
+        zerver.lib.upload.upload_backend = S3UploadBackend()
+        try:
+            return method(*args, **kwargs)
+        finally:
+            zerver.lib.upload.upload_backend = LocalUploadBackend()
+    return new_method
 
 class S3Test(AuthedTestCase):
     # full URIs in public bucket
@@ -261,7 +273,7 @@ class S3Test(AuthedTestCase):
     # keys in authed bucket
     test_keys = [] # type: List[str]
 
-    @mock_s3
+    @use_s3_backend
     def test_file_upload_s3(self):
         # type: () -> None
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
@@ -269,14 +281,14 @@ class S3Test(AuthedTestCase):
 
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image_s3('dummy.txt', 'text/plain', 'zulip!', user_profile)
+        uri = upload_message_image('dummy.txt', 'text/plain', 'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertEquals("zulip!", bucket.get_key(path_id).get_contents_as_string())
 
-    @mock_s3
+    @use_s3_backend
     def test_message_image_delete_s3(self):
         # type: () -> None
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
@@ -284,10 +296,10 @@ class S3Test(AuthedTestCase):
 
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image_s3('dummy.txt', 'text/plain', 'zulip!', user_profile)
+        uri = upload_message_image('dummy.txt', 'text/plain', 'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertTrue(delete_message_image_s3(path_id))
+        self.assertTrue(delete_message_image(path_id))
 
     @slow(2.6, "has to contact external S3 service")
     @skip("Need S3 mock")

@@ -84,6 +84,20 @@ def resize_avatar(image_data):
     im.save(out, format='png')
     return out.getvalue()
 
+### Common
+
+class ZulipUploadBackend(object):
+    def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
+        # type: (str, str, str, UserProfile, Optional[Realm]) -> str
+        raise NotImplementedError()
+
+    def upload_avatar_image(self, user_file, user_profile, email):
+        # type: (File, UserProfile, str) -> None
+        raise NotImplementedError()
+
+    def delete_message_image(self, path_id):
+        # type: (str) -> bool
+        raise NotImplementedError()
 
 ### S3
 
@@ -133,26 +147,6 @@ def get_file_info(request, user_file):
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
     return uploaded_file_name, content_type
 
-def upload_message_image_s3(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-    # type: (str, str, str, UserProfile, Optional[Realm]) -> str
-    bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-    s3_file_name = "/".join([
-        str(target_realm.id if target_realm is not None else user_profile.realm.id),
-        random_name(18),
-        sanitize_name(uploaded_file_name)
-    ])
-    url = "/user_uploads/%s" % (s3_file_name)
-
-    upload_image_to_s3(
-            bucket_name,
-            s3_file_name,
-            content_type,
-            user_profile,
-            file_data
-    )
-
-    create_attachment(uploaded_file_name, s3_file_name, user_profile)
-    return url
 
 def get_signed_upload_url(path):
     # type: (str) -> str
@@ -168,46 +162,68 @@ def get_realm_for_filename(path):
         return None
     return get_user_profile_by_id(key.metadata["user_profile_id"]).realm.id
 
-def delete_message_image_s3(path_id):
-    # type: (str) -> bool
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET)
+class S3UploadBackend(ZulipUploadBackend):
+    def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
+        # type: (str, str, str, UserProfile, Optional[Realm]) -> str
+        bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
+        s3_file_name = "/".join([
+            str(target_realm.id if target_realm is not None else user_profile.realm.id),
+            random_name(18),
+            sanitize_name(uploaded_file_name)
+        ])
+        url = "/user_uploads/%s" % (s3_file_name)
 
-    # check if file exists
-    key = bucket.get_key(path_id)
-    if key is not None:
-        bucket.delete_key(key)
-        return True
+        upload_image_to_s3(
+                bucket_name,
+                s3_file_name,
+                content_type,
+                user_profile,
+                file_data
+        )
 
-    file_name = path_id.split("/")[-1]
-    logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
-    return False
+        create_attachment(uploaded_file_name, s3_file_name, user_profile)
+        return url
 
-def upload_avatar_image_s3(user_file, user_profile, email):
-    # type: (File, UserProfile, str) -> None
-    content_type = guess_type(user_file.name)[0]
-    bucket_name = settings.S3_AVATAR_BUCKET
-    s3_file_name = user_avatar_hash(email)
+    def delete_message_image(self, path_id):
+        # type: (str) -> bool
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET)
 
-    image_data = user_file.read()
-    upload_image_to_s3(
-        bucket_name,
-        s3_file_name + ".original",
-        content_type,
-        user_profile,
-        image_data,
-    )
+        # check if file exists
+        key = bucket.get_key(path_id)
+        if key is not None:
+            bucket.delete_key(key)
+            return True
 
-    resized_data = resize_avatar(image_data)
-    upload_image_to_s3(
-        bucket_name,
-        s3_file_name,
-        'image/png',
-        user_profile,
-        resized_data,
-    )
-    # See avatar_url in avatar.py for URL.  (That code also handles the case
-    # that users use gravatar.)
+        file_name = path_id.split("/")[-1]
+        logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
+        return False
+
+    def upload_avatar_image(self, user_file, user_profile, email):
+        # type: (File, UserProfile, str) -> None
+        content_type = guess_type(user_file.name)[0]
+        bucket_name = settings.S3_AVATAR_BUCKET
+        s3_file_name = user_avatar_hash(email)
+
+        image_data = user_file.read()
+        upload_image_to_s3(
+            bucket_name,
+            s3_file_name + ".original",
+            content_type,
+            user_profile,
+            image_data,
+        )
+
+        resized_data = resize_avatar(image_data)
+        upload_image_to_s3(
+            bucket_name,
+            s3_file_name,
+            'image/png',
+            user_profile,
+            resized_data,
+        )
+        # See avatar_url in avatar.py for URL.  (That code also handles the case
+        # that users use gravatar.)
 
 ### Local
 
@@ -224,52 +240,61 @@ def write_local_file(type, path, file_data):
     with open(file_path, 'wb') as f:
         f.write(file_data)
 
-def upload_message_image_local(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-    # type: (str, str, str, UserProfile, Optional[Realm]) -> str
-    # Split into 256 subdirectories to prevent directories from getting too big
-    path = "/".join([
-        str(user_profile.realm.id),
-        format(random.randint(0, 255), 'x'),
-        random_name(18),
-        sanitize_name(uploaded_file_name)
-    ])
+class LocalUploadBackend(ZulipUploadBackend):
+    def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
+        # type: (str, str, str, UserProfile, Optional[Realm]) -> str
+        # Split into 256 subdirectories to prevent directories from getting too big
+        path = "/".join([
+            str(user_profile.realm.id),
+            format(random.randint(0, 255), 'x'),
+            random_name(18),
+            sanitize_name(uploaded_file_name)
+        ])
 
-    write_local_file('files', path, file_data)
-    create_attachment(uploaded_file_name, path, user_profile)
-    return '/user_uploads/' + path
+        write_local_file('files', path, file_data)
+        create_attachment(uploaded_file_name, path, user_profile)
+        return '/user_uploads/' + path
 
-def delete_message_image_local(path_id):
-    # type: (str) -> bool
-    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
-    if os.path.isfile(file_path):
-        # This removes the file but the empty folders still remain.
-        os.remove(file_path)
-        return True
+    def delete_message_image(self, path_id):
+        # type: (str) -> bool
+        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
+        if os.path.isfile(file_path):
+            # This removes the file but the empty folders still remain.
+            os.remove(file_path)
+            return True
 
-    file_name = path_id.split("/")[-1]
-    logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
-    return False
+        file_name = path_id.split("/")[-1]
+        logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
+        return False
 
-def upload_avatar_image_local(user_file, user_profile, email):
-    # type: (File, UserProfile, str) -> None
-    email_hash = user_avatar_hash(email)
+    def upload_avatar_image(self, user_file, user_profile, email):
+        # type: (File, UserProfile, str) -> None
+        email_hash = user_avatar_hash(email)
 
-    image_data = user_file.read()
-    write_local_file('avatars', email_hash+'.original', image_data)
+        image_data = user_file.read()
+        write_local_file('avatars', email_hash+'.original', image_data)
 
-    resized_data = resize_avatar(image_data)
-    write_local_file('avatars', email_hash+'.png', resized_data)
+        resized_data = resize_avatar(image_data)
+        write_local_file('avatars', email_hash+'.png', resized_data)
 
-### Common
-
+# Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:
-    upload_message_image = upload_message_image_local
-    upload_avatar_image  = upload_avatar_image_local
-    delete_message_image = delete_message_image_local
+    upload_backend = LocalUploadBackend() # type: ZulipUploadBackend
 else:
-    upload_message_image = upload_message_image_s3
-    upload_avatar_image  = upload_avatar_image_s3
-    delete_message_image = delete_message_image_s3
+    upload_backend = S3UploadBackend()
+
+def delete_message_image(path_id):
+    # type: (str) -> bool
+    return upload_backend.delete_message_image(path_id)
+
+def upload_avatar_image(user_file, user_profile, email):
+    # type: (File, UserProfile, str) -> None
+    upload_backend.upload_avatar_image(user_file, user_profile, email)
+
+def upload_message_image(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
+    # type: (str, str, str, UserProfile, Optional[Realm]) -> str
+    return upload_backend.upload_message_image(uploaded_file_name, content_type, file_data,
+                                               user_profile, target_realm=target_realm)
 
 def claim_attachment(path_id, message):
     # type: (text_type, Mapping[str, Any]) -> bool
