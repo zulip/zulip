@@ -892,8 +892,7 @@ MessageListView.prototype = {
             // Slice the '<p>/me ' off the front, and '</p>' off the end
             message_container.status_message = message_container.msg.content.slice(4 + 3, -4);
             message_container.include_sender = true;
-        }
-        else {
+        } else {
             message_container.status_message = false;
         }
     }

@@ -122,11 +122,9 @@ exports.then_send_message = function (type, params) {
     casper.waitForSelector('#new_message_content', function () {
         if (type === "stream") {
             casper.page.sendEvent('keypress', "c");
-        }
-        else if (type === "private") {
+        } else if (type === "private") {
             casper.page.sendEvent('keypress', "C");
-        }
-        else {
+        } else {
             casper.test.assertTrue(false, "send_message got valid message type");
         }
         casper.fill('form[action^="/json/messages"]', params);

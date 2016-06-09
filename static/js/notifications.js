@@ -110,8 +110,7 @@ exports.initialize = function () {
                             asked_permission_already = true;
                         });
                     });
-                }
-                else {
+                } else {
                     notifications_api.requestPermission(function () {
                         asked_permission_already = true;
                     });

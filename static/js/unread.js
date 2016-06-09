@@ -149,8 +149,7 @@ exports.get_counts = function () {
 
     if (narrow.active()) {
         res.unread_in_current_view = exports.num_unread_current_messages();
-    }
-    else {
+    } else {
         res.unread_in_current_view = res.home_unread_messages;
     }
 

@@ -191,8 +191,7 @@ exports.redraw_stream_privacy = function (stream_name) {
 
     if (sub.invite_only) {
         swatch.addClass("private-stream-swatch");
-    }
-    else {
+    } else {
         swatch.removeClass("private-stream-swatch");
     }
 

@@ -281,32 +281,28 @@ exports.setup_page = function () {
                 if (data.restricted_to_domain !== undefined) {
                     if (data.restricted_to_domain) {
                         ui.report_success("New users must have @" + page_params.domain + " e-mails!", restricted_to_domain_status);
-                    }
-                    else {
+                    } else {
                         ui.report_success("New users may have arbitrary e-mails!", restricted_to_domain_status);
                     }
                 }
                 if (data.invite_required !== undefined) {
                     if (data.invite_required) {
                         ui.report_success("New users must be invited by e-mail!", invite_required_status);
-                    }
-                    else {
+                    } else {
                         ui.report_success("New users may sign up online!", invite_required_status);
                     }
                 }
                 if (data.invite_by_admins_only !== undefined) {
                     if (data.invite_by_admins_only) {
                         ui.report_success("New users must be invited by an admin!", invite_by_admins_only_status);
-                    }
-                    else {
+                    } else {
                         ui.report_success("Any user may now invite new users!", invite_by_admins_only_status);
                     }
                 }
                 if (data.create_stream_by_admins_only !== undefined) {
                     if (data.create_stream_by_admins_only) {
                         ui.report_success("Only Admins may now create new streams!", create_stream_by_admins_only_status);
-                    }
-                    else {
+                    } else {
                         ui.report_success("Any user may now create new streams!", create_stream_by_admins_only_status);
                     }
                 }

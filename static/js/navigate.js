@@ -54,8 +54,7 @@ exports.to_end = function () {
 exports.page_up = function () {
     if (viewport.at_top() && !current_msg_list.empty()) {
         current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
-    }
-    else {
+    } else {
         ui.page_up_the_right_amount();
     }
 };
@@ -64,8 +63,7 @@ exports.page_down = function () {
     if (viewport.at_bottom() && !current_msg_list.empty()) {
         current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
         unread.mark_current_list_as_read();
-    }
-    else {
+    } else {
         ui.page_down_the_right_amount();
     }
 };
