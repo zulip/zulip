@@ -777,14 +777,38 @@ function validate_stream_message() {
 
     return true;
 }
-
+// The function checks whether the recipients are users of the realm or cross realm users (bots for now)
 function validate_private_message() {
     if (exports.recipient() === "") {
         compose_error("Please specify at least one recipient", $("#private_message_recipient"));
         return false;
-    }
+    } else {
+        var private_recipients = util.extract_pm_recipients(compose.recipient());
+        var invalid_recipients = [];
+        _.each(private_recipients, function (email) {
+            // This case occurs when exports.recipient() ends with ','
+            if (email === "") {
+                return;
+            }
+            if (people.realm_get(email) !== undefined) {
+                return;
+            }
+            if (util.string_in_list_case_insensitive(email, page_params.cross_realm_user_emails)) {
+                return;
+            }
+            invalid_recipients.push(email);
+        });
 
-    return true;
+        if (invalid_recipients.length === 1) {
+            compose_error("The recipient " + invalid_recipients.join() + " is not valid ", $("#private_message_recipient"));
+            return false;
+        } else if (invalid_recipients.length > 1) {
+            compose_error("The recipients " + invalid_recipients.join() + " are not valid ", $("#private_message_recipient"));
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
 
 exports.validate = function () {

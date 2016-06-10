@@ -23,7 +23,8 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     PreregistrationUser, get_client, MitUser, UserActivity, PushDeviceToken, \
     get_stream, UserPresence, get_recipient, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
-    completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm
+    completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm, \
+    get_cross_realm_users
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, \
     internal_send_message, update_user_presence, do_events_register, \
@@ -836,6 +837,7 @@ def home(request):
         first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
         notifications_stream  = notifications_stream,
+        cross_realm_user_emails = list(get_cross_realm_users()),
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled =
