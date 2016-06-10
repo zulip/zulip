@@ -41,7 +41,7 @@
         </dl>
         {% if blurb.example_request %}
         <h3>Example request</h3>
-        {% for lang, req in blurb.example_request.items %}
+        {% for lang, req in blurb.example_request.items() %}
             <div class="example_request {{ lang }}">
                 {{ req }}
             </div>
