@@ -126,7 +126,7 @@ function render_bots() {
 // Choose avatar stamp fairly randomly, to help get old avatars out of cache.
 exports.avatar_stamp = Math.floor(Math.random()*100);
 
-exports.setup_page = function () {
+function _setup_page() {
     // To build the edit bot streams dropdown we need both the bot and stream
     // API results. To prevent a race streams will be initialized to a promise
     // at page load. This promise will be resolved with a list of streams after
@@ -670,6 +670,10 @@ exports.setup_page = function () {
             }
         });
     });
+}
+
+exports.setup_page = function () {
+    i18n.ensure_i18n(_setup_page);
 };
 
 return exports;
