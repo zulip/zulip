@@ -30,6 +30,13 @@ You can learn more about it at:
 The mypy type checker is run automatically as part of Zulip's Travis
 CI testing process.
 
+## Zulip goals
+
+Zulip is hoping to reach 100% of the codebase annotated with mypy
+static types, and then enforce that it stays that way.  Our current
+coverage is shown in
+[Coveralls](https://coveralls.io/github/zulip/zulip).
+
 ## Installing mypy
 
 If you installed Zulip's development environment correctly, mypy
