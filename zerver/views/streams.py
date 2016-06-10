@@ -169,16 +169,11 @@ def json_make_stream_private(request, user_profile, stream_name=REQ()):
 @require_realm_admin
 @has_request_variables
 def update_stream_backend(request, user_profile, stream_name,
-                          description=REQ(validator=check_string, default=None),
-                          is_default=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, str, Optional[str], Optional[bool]) -> HttpResponse
+                          description=REQ(validator=check_string, default=None)):
+    # type: (HttpRequest, UserProfile, str, Optional[str]) -> HttpResponse
     if description is not None:
        do_change_stream_description(user_profile.realm, stream_name, description)
-    if is_default is not None:
-        if is_default:
-            do_add_default_stream(user_profile.realm, stream_name)
-        else:
-            do_remove_default_stream(user_profile.realm, stream_name)
+
     return json_success({})
 
 def list_subscriptions_backend(request, user_profile):
