@@ -428,7 +428,7 @@ function populate_subscriptions(subs, subscribed) {
 exports.setup_page = function () {
     loading.make_indicator($('#subs_page_loading_indicator'));
 
-    function populate_and_fill(public_streams) {
+    function _populate_and_fill(public_streams) {
 
         // Build up our list of subscribed streams from the data we already have.
         var subscribed_rows = stream_data.subscribed_subs();
@@ -484,6 +484,12 @@ exports.setup_page = function () {
 
         loading.destroy_indicator($('#subs_page_loading_indicator'));
         $(document).trigger($.Event('subs_page_loaded.zulip'));
+    }
+
+    function populate_and_fill(public_streams) {
+        i18n.ensure_i18n(function () {
+            _populate_and_fill(public_streams);
+        });
     }
 
     function failed_listing(xhr, error) {

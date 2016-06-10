@@ -8,6 +8,9 @@ var form_sel = 'form[action^="/json/settings/change"]';
 casper.then(function () {
     casper.test.info('Settings page');
     casper.click('a[href^="#settings"]');
+});
+
+casper.waitForSelector("#settings-change-box", function () {
     casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#settings/, 'URL suggests we are on settings page');
     casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
 
