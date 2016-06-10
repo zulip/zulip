@@ -182,6 +182,11 @@ exports.array_compare = function util_array_compare(a, b) {
     return true;
 };
 
+exports.string_in_list_case_insensitive = function (str, list) {
+    var dict = Dict.from_array(list || [], {fold_case: true});
+    return dict.has(str);
+};
+
 /* Represents a value that is expensive to compute and should be
  * computed on demand and then cached.  The value can be forcefully
  * recalculated on the next call to get() by calling reset().
