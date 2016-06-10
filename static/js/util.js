@@ -69,6 +69,10 @@ exports.is_pm_recipient = function (email, message) {
     return recipients.indexOf(email.toLowerCase()) !== -1;
 };
 
+exports.extract_pm_recipients = function (recipients) {
+    return recipients.split(/\s*[,;]\s*/);
+};
+
 exports.same_major_recipient = function (a, b) {
     // Same behavior as same_recipient, except that it returns true for messages
     // on different topics but the same stream.
