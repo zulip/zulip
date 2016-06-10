@@ -13,15 +13,10 @@ var composebox_typeahead = (function () {
 
 var exports = {};
 
-function get_pm_recipients(query_string) {
-    // Assumes email addresses don't have commas or semicolons in them
-    return query_string.split(/\s*[,;]\s*/);
-}
-
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
 exports.get_cleaned_pm_recipients = function (query_string) {
-    var recipients = get_pm_recipients(query_string);
+    var recipients = util.extract_pm_recipients(query_string);
     recipients = _.filter(recipients, function (elem) {
         return elem.match(/\S/);
     });
@@ -55,7 +50,7 @@ exports.topics_seen_for = function (stream) {
 };
 
 function get_last_recipient_in_pm(query_string) {
-    var recipients = get_pm_recipients(query_string);
+    var recipients = util.extract_pm_recipients(query_string);
     return recipients[recipients.length-1];
 }
 
