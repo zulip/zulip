@@ -1234,3 +1234,13 @@ class CrashlyticsHookTests(WebhookTestCase):
         expected_subject = u"123: Issue Title"
         expected_message = u"[Issue](http://crashlytics.com/full/url/to/issue) impacts at least 16 device(s)."
         self.send_and_test_stream_message('issue_message', expected_subject, expected_message)
+
+class AirbrakeHookTests(WebhookTestCase):
+    STREAM_NAME = 'airbrake'
+    URL_TEMPLATE = "/api/v1/external/airbrake?stream={stream}&api_key={api_key}"
+    FIXTURE_DIR_NAME = 'airbrake'
+
+    def test_airbrake_error_message(self):
+        expected_subject = u"ZulipIntegrationTest"
+        expected_message = u"[ZeroDivisionError](https://zulip.airbrake.io/projects/125209/groups/1705190192091077626): \"Error message from logger\" occurred."
+        self.send_and_test_stream_message('error_message', expected_subject, expected_message)
