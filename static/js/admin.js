@@ -135,7 +135,7 @@ exports.populate_emoji = function (emoji_data) {
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
 
-exports.setup_page = function () {
+function _setup_page() {
     var options = {
         realm_name:                 page_params.realm_name,
         domain:                     page_params.domain,
@@ -596,6 +596,10 @@ exports.setup_page = function () {
         });
     });
 
+}
+
+exports.setup_page = function () {
+    i18n.ensure_i18n(_setup_page);
 };
 
 return exports;
