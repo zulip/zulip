@@ -17,7 +17,14 @@ def get_user_profile_by_email(email):
 
 You can learn more about it at:
 
-* [Python 2 type annotation syntax in PEP 484](https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code)
+* [The mypy cheat
+  sheet](https://github.com/python/mypy/blob/master/docs/source/cheat_sheet.rst)
+  is the best resource for quickly understanding how to write the PEP
+  484 type annotations used by mypy correctly.
+
+* The [Python 2 type annotation syntax spec in PEP
+  484](https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code)
+
 * [Using mypy with Python 2 code](http://mypy.readthedocs.io/en/latest/python2.html)
 
 The mypy type checker is run automatically as part of Zulip's Travis
@@ -74,5 +81,33 @@ pass the `--all` option to tools/run-mypy.
 
     tools/run-mypy --all
 
-If you type annotate some of those files, please remove them from the
-exclude list.
+If you type annotate some of those files so that they pass without
+errors, please remove them from the exclude list.
+
+## Mypy is there to find bugs in Zulip before they impact users
+
+For the purposes of Zulip development, you can treat `mypy` like a
+much more powerful linter that can catch a wide range of bugs.  If,
+after running tools/run-mypy on your Zulip branch, you get mypy
+errors, it's important to get to the bottom of the issue, not just do
+something quick to silence the warnings.  Possible explanations include:
+
+* A bug in any new type annotations you added.
+* A bug in the existing type annotations.
+* A bug in Zulip!
+* Some Zulip code is correct but confusingly reuses variables with
+  different types.
+* A bug in mypy (though this is increasingly rare as mypy is now
+  fairly mature as a project).
+
+Each explanation has its own solution, but in every case the result
+should be solving the mypy warning in a way that makes the Zulip
+codebase better.  If you need help understanding an issue, please feel
+free to, mention @sharmaeklavya2 or @timabbott on the relevant pull
+request or issue on GitHub.
+
+If you think you have found a bug in Zulip or mypy, inform the zulip
+developers by opening an issue on [Zulip's github
+repository](https://github.com/zulip/zulip/issues) or posting on
+[zulip-devel](https://groups.google.com/d/forum/zulip-devel).  If it's
+indeed a mypy bug, we can help with reporting it upstream.
