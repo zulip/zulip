@@ -42,6 +42,12 @@
     </div>
 
     <div class="integration-lozenges">
+      <div class="integration-lozenge integration-airbrake">
+         <a class="integration-link integration-airbrake" href="#airbrake">
+            <img class="integration-logo" src="/static/images/integrations/logos/airbrake.png" alt="Airbrake logo" />
+            <span class="integration-label">Airbrake</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-asana">
          <a class="integration-link integration-asana" href="#asana">
             <img class="integration-logo" src="/static/images/integrations/logos/asana.png" alt="Asana logo" />
@@ -351,6 +357,33 @@
     </div>
 
 <div id="integration-instructions-group">
+
+<div id="airbrake" class="integration-instructions">
+
+    <p>Get Zulip notifications for your Airbrake bug tracker!</p>
+
+    <p>First, create the stream you'd like to use for Airbrake notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>airbrake</code>.</p>
+
+    <p>Next, on your <a href="/#settings" target="_blank">Zulip
+    settings page</a>, create an Airbrake bot.  Construct the URL for
+    the Airbrake bot using the API key and stream name:
+      <code>{{ external_api_uri }}/v1/external/airbrake?api_key=abcdefgh&amp;stream=airbrake</code>
+    </p>
+
+    <p>Now, go to your project's settings on the Airbrake site.  Click
+      on the <code>Integration</code> section.
+      Choose <code>Webhook</code>, provide the above URL,
+      check <code>Enabled</code>, and save.  Your Webhook
+      configuration should look similar to:
+    </p>
+    <img class="screenshot" src="/static/images/integrations/airbrake/001.png" />
+
+    <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
+
+    <img class="screenshot" src="/static/images/integrations/airbrake/002.png" />
+</div>
 
 <div id="asana" class="integration-instructions">
 
