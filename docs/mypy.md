@@ -18,6 +18,7 @@ def get_user_profile_by_email(email):
 You can learn more about it at:
 
 * [Python 2 type annotation syntax in PEP 484](https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code)
+* [mypy cheat sheet](https://github.com/python/mypy/blob/master/docs/source/cheat_sheet.rst)
 * [Using mypy with Python 2 code](http://mypy.readthedocs.io/en/latest/python2.html)
 
 The mypy type checker is run automatically as part of Zulip's Travis
@@ -76,3 +77,14 @@ pass the `--all` option to tools/run-mypy.
 
 If you type annotate some of those files, please remove them from the
 exclude list.
+
+## Mypy can help find bugs in Zulip
+
+If after running tools/run-mypy you get mypy errors, it is not necessary
+that your annotations are wrong.  It could be a bug in Zulip!
+If you think you have found a bug in Zulip, inform the developers by
+opening an issue on [Zulip's github repository](https://github.com/zulip/zulip/issues)
+or posting on [zulip-devel](https://groups.google.com/d/forum/zulip-devel).
+
+Making your annotations somehow pass on buggy code is harmful for Zulip.
+Please avoid that.
