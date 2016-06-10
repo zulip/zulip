@@ -118,3 +118,43 @@ developers by opening an issue on [Zulip's github
 repository](https://github.com/zulip/zulip/issues) or posting on
 [zulip-devel](https://groups.google.com/d/forum/zulip-devel).  If it's
 indeed a mypy bug, we can help with reporting it upstream.
+
+## Annotating strings
+
+In python 3, strings can have non-ASCII characters without any problems.
+Such characters are required to support languages which use non-latin
+scripts like Japanese and Hindi.  They are also needed to support special
+characters like mathematical symbols, musical symbols, etc.
+In python 2, however, `str` generally doesn't work well with non-ASCII
+characters.  That's why `unicode` was introduced in python 2.
+
+But there are problems with the `unicode` and `str` system.  Implicit
+conversions between `str` and `unicode` use the `ascii` codec, which
+fails on strings containing non-ASCII characters.  Such errors are hard
+to detect by people who always write in English.  To minimize such
+implicit conversions, we should have a strict separation between `str`
+and `unicode` in python 2.  It might seem that using `unicode` everywhere
+will solve all problems, but unfortunately it doesn't.  This is because
+some parts of the standard library and the python language (like keyword
+argument unpacking) insist that parameters passed to them are `str`.
+
+To make our code work correctly on python 2, we have to identify strings
+which contain data which could come from non-ASCII sources like stream
+names, people's names, domain names, content of messages, emails, etc.
+These strings should be `unicode`.  We also have to identify strings
+which should be `str` like Exception names, attribute names, parameter
+names, etc.
+
+Mypy can help with this.  We just have to annotate each string as either
+`str` or `unicode` and mypy's static type checking will tell us if we
+are incorrectly mixing the two.  However, `unicode` is not defined in
+python 3.  We want our code to be python 3 compatible in the future.
+This can be achieved using 'six', a Python 2 and 3 compatibility library.
+
+`six.text_type` is defined as `str` on python 3 and as `unicode` on
+python 2.  We'll be using `text_type` (instead of `unicode`) and `str`
+to annotate strings in Zulip's code.  We follow the style of doing
+`from six import text_type` and using `text_type` for annotation instead
+of doing `import six` and using `six.text_type` for annotation, because
+`text_type` is used so extensively for type annotations that we don't
+need to be that verbose.
