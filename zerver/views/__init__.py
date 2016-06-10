@@ -74,7 +74,9 @@ from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def name_changes_disabled(realm):
-    # type: (Realm) -> bool
+    # type: (Optional[Realm]) -> bool
+    if realm is None:
+        return settings.NAME_CHANGES_DISABLED
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 @require_post
