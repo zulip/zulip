@@ -8,7 +8,7 @@ from django.core.cache import get_cache
 from django.conf import settings
 from django.db.models import Q
 
-from typing import Any, Callable, Iterable, Optional, TypeVar
+from typing import Any, Callable, Iterable, Optional, Union, TypeVar
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import time
@@ -20,6 +20,11 @@ import os.path
 import hashlib
 import six
 from six import text_type
+
+if False:
+    from zerver.models import UserProfile, Realm
+    # These modules have to be imported for type annotations but
+    # they cannot be imported at runtime due to cyclic dependency.
 
 remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
@@ -266,15 +271,15 @@ def user_profile_by_id_cache_key(user_profile_id):
     return u"user_profile_by_id:%s" % (user_profile_id,)
 
 # TODO: Refactor these cache helpers into another file that can import
-# models.py so that we can replace many of these type: Anys
+# models.py so that python3-style type annotations can also work.
 
 def cache_save_user_profile(user_profile):
-    # type: (Any) -> None
+    # type: (UserProfile) -> None
     cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
 
 active_user_dict_fields = ['id', 'full_name', 'short_name', 'email', 'is_realm_admin', 'is_bot'] # type: List[str]
 def active_user_dicts_in_realm_cache_key(realm):
-    # type: (Any) -> text_type
+    # type: (Realm) -> text_type
     return u"active_user_dicts_in_realm:%s" % (realm.id,)
 
 active_bot_dict_fields = ['id', 'full_name', 'short_name',
@@ -283,11 +288,11 @@ active_bot_dict_fields = ['id', 'full_name', 'short_name',
                           'default_all_public_streams', 'api_key',
                           'bot_owner__email', 'avatar_source'] # type: List[str]
 def active_bot_dicts_in_realm_cache_key(realm):
-    # type: (Any) -> text_type
+    # type: (Realm) -> text_type
     return u"active_bot_dicts_in_realm:%s" % (realm.id,)
 
 def get_stream_cache_key(stream_name, realm):
-    # type: (text_type, Any) -> text_type
+    # type: (text_type, Union[Realm, int]) -> text_type
     from zerver.models import Realm
     if isinstance(realm, Realm):
         realm_id = realm.id
@@ -297,7 +302,7 @@ def get_stream_cache_key(stream_name, realm):
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 def update_user_profile_caches(user_profiles):
-    # type: (Iterable[Any]) -> None
+    # type: (Iterable[UserProfile]) -> None
     items_for_remote_cache = {}
     for user_profile in user_profiles:
         items_for_remote_cache[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
@@ -344,7 +349,7 @@ def flush_realm(sender, **kwargs):
         cache_delete(realm_alert_words_cache_key(realm))
 
 def realm_alert_words_cache_key(realm):
-    # type: (Any) -> text_type
+    # type: (Realm) -> text_type
     return u"realm_alert_words:%s" % (realm.domain,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
