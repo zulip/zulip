@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from zerver.lib import cache
 
@@ -974,6 +974,10 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(msg.content, expected_msg)
         recipients = get_display_recipient(msg.recipient)
         self.assertEqual(len(recipients), 1)
+        assert isinstance(recipients, Sequence)
+        assert isinstance(recipients[0], Mapping)
+        # The 2 assert statements above are required to make the mypy check pass.
+        # They inform mypy that in the line below, recipients is a Sequence of Mappings.
         self.assertEqual(recipients[0]['email'], invitee)
 
     def test_multi_user_subscription(self):

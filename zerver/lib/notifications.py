@@ -1,5 +1,7 @@
 from __future__ import print_function
-from typing import Any, Tuple, Iterable, Optional
+
+from six import text_type
+from typing import cast, Any, Iterable, Mapping, Optional, Sequence, Tuple
 
 import mandrill
 from confirmation.models import Confirmation
@@ -46,7 +48,7 @@ def one_click_unsubscribe_link(user_profile, endpoint):
     return "%s/%s" % (base_url.rstrip("/"), resource_path)
 
 def hashchange_encode(string):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     # Do the same encoding operation as hashchange.encodeHashComponent on the
     # frontend.
     # `safe` has a default value of "/", but we want those encoded, too.
@@ -54,20 +56,20 @@ def hashchange_encode(string):
         string.encode("utf-8"), safe="").replace(".", "%2E").replace("%", ".")
 
 def pm_narrow_url(participants):
-    # type: (List[str]) -> str
+    # type: (List[text_type]) -> text_type
     participants.sort()
-    base_url = "https://%s/#narrow/pm-with/" % (settings.EXTERNAL_HOST,)
+    base_url = u"https://%s/#narrow/pm-with/" % (settings.EXTERNAL_HOST,)
     return base_url + hashchange_encode(",".join(participants))
 
 def stream_narrow_url(stream):
-    # type: (str) -> str
-    base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    # type: (text_type) -> text_type
+    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
     return base_url + hashchange_encode(stream)
 
 def topic_narrow_url(stream, topic):
-    # type: (str, str) -> str
-    base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
-    return "%s%s/topic/%s" % (base_url, hashchange_encode(stream),
+    # type: (text_type, text_type) -> text_type
+    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    return u"%s%s/topic/%s" % (base_url, hashchange_encode(stream),
                               hashchange_encode(topic))
 
 def build_message_list(user_profile, messages):
@@ -142,13 +144,14 @@ def build_message_list(user_profile, messages):
                 'content': [build_message_payload(message)]}
 
     def message_header(user_profile, message):
-        # type: (UserProfile, Message) -> Dict[str, str]
+        # type: (UserProfile, Message) -> Dict[str, text_type]
         disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
             header = "You and %s" % (message.sender.full_name)
             html_link = pm_narrow_url([message.sender.email])
             header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
+            assert not isinstance(disp_recipient, text_type)
             other_recipients = [r['full_name'] for r in disp_recipient
                                     if r['email'] != user_profile.email]
             header = "You and %s" % (", ".join(other_recipients),)
@@ -156,6 +159,7 @@ def build_message_list(user_profile, messages):
                                        if r["email"] != user_profile.email])
             header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
+            assert isinstance(disp_recipient, text_type)
             header = "%s > %s" % (disp_recipient, message.subject)
             stream_link = stream_narrow_url(disp_recipient)
             topic_link = topic_narrow_url(disp_recipient, message.subject)
@@ -303,7 +307,7 @@ def do_send_missedmessage_events(user_profile, missed_messages, message_count):
         # If we have one huddle, set a reply-to to all of the members
         # of the huddle except the user herself
         disp_recipients = [", ".join(recipient['email']
-                                for recipient in get_display_recipient(mesg.recipient)
+                                for recipient in cast(Sequence[Mapping[str, Any]], get_display_recipient(mesg.recipient))
                                     if recipient['email'] != user_profile.email)
                                  for mesg in missed_messages]
         if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages) and \

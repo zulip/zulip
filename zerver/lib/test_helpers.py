@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Callable, Generator, Iterable, Tuple, Sized, Union, Optional
+from typing import cast, Any, Callable, Generator, Iterable, Tuple, Sized, Union, Optional
 
 from django.test import TestCase
 from django.template import loader
@@ -292,7 +292,7 @@ class AuthedTestCase(TestCase):
             user_profile=user_profile,
             active=True,
             recipient__type=Recipient.STREAM)
-        return [get_display_recipient(sub.recipient) for sub in subs]
+        return [cast(text_type, get_display_recipient(sub.recipient)) for sub in subs]
 
     def send_message(self, sender_name, raw_recipients, message_type,
                      content=u"test content", subject=u"test", **kwargs):
