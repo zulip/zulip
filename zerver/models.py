@@ -50,16 +50,16 @@ STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[text_type], AbstractSet[text_typ
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
-per_request_display_recipient_cache = {} # type: Dict[int, List[Dict[text_type, Any]]]
+per_request_display_recipient_cache = {} # type: Dict[int, List[Dict[str, Any]]]
 def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id):
-    ## type: (int, int, int) -> Union[text_type, List[Dict[text_type, Any]]]
+    # type: (int, int, int) -> Union[text_type, List[Dict[str, Any]]]
     if recipient_id not in per_request_display_recipient_cache:
         result = get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
         per_request_display_recipient_cache[recipient_id] = result
     return per_request_display_recipient_cache[recipient_id]
 
 def get_display_recipient(recipient):
-    ## type: (Recipient) -> Union[text_type, List[Dict[text_type, Any]]]
+    # type: (Recipient) -> Union[text_type, List[Dict[str, Any]]]
     return get_display_recipient_by_id(
             recipient.id,
             recipient.type,
@@ -76,7 +76,7 @@ def flush_per_request_caches():
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
 def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id):
-    ## type: (int, int, int) -> Union[text_type, List[Dict[text_type, Any]]]
+    # type: (int, int, int) -> Union[text_type, List[Dict[str, Any]]]
     """
     returns: an appropriate object describing the recipient.  For a
     stream this will be the stream name as a string.  For a huddle or
@@ -962,6 +962,7 @@ class Message(ModelReprMixin, models.Model):
         if recipient_type == Recipient.STREAM:
             display_type = "stream"
         elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
+            assert not isinstance(display_recipient, text_type)
             display_type = "private"
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between

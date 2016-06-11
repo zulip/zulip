@@ -126,7 +126,9 @@ def send_to_missed_message_address(address, message):
     # Testing with basestring so we don't depend on the list return type from
     # get_display_recipient
     if not isinstance(display_recipient, six.string_types):
-        display_recipient = ','.join([user['email'] for user in display_recipient])
+        recipient_str = ','.join([user['email'] for user in display_recipient])
+    else:
+        recipient_str = display_recipient
 
     body = filter_footer(extract_body(message))
     body += extract_and_upload_attachments(message, user_profile.realm)
@@ -139,7 +141,7 @@ def send_to_missed_message_address(address, message):
         recipient_type_name = 'private'
 
     internal_send_message(user_profile.email, recipient_type_name,
-                          display_recipient, subject, body)
+                          recipient_str, subject, body)
 
 
 ## Sending the Zulip ##
