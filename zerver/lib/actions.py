@@ -22,7 +22,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments
+    get_old_unclaimed_attachments, get_cross_realm_users
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
@@ -788,13 +788,12 @@ def recipient_for_emails(emails, not_forged_mirror_message,
         raise ValidationError(_("User not authorized for this query"))
 
     # Prevent cross realm private messages unless it is between only two realms
-    # and one of users is a zuliper
+    # and one of users is a cross-realm user
     if len(realm_domains) == 2:
-        # I'm assuming that cross-realm PMs with the "admin realm" are rare, and therefore can be slower
-        admin_realm = get_realm(settings.ADMIN_DOMAIN)
-        admin_realm_admin_emails = {u.email for u in admin_realm.get_admin_users()}
-        # We allow settings.CROSS_REALM_BOT_EMAILS for the hardcoded emails for the feedback and notification bots
-        if not (normalized_emails & admin_realm_admin_emails or normalized_emails & settings.CROSS_REALM_BOT_EMAILS):
+        # get_cross_realm_users does database queries; We assume that
+        # cross-realm PMs with the "admin realm" are rare, and
+        # therefore can be slower
+        if not (normalized_emails & get_cross_realm_users()):
             raise ValidationError(_("You can't send private messages outside of your organization."))
     if len(realm_domains) > 2:
         raise ValidationError(_("You can't send private messages outside of your organization."))
