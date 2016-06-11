@@ -1294,6 +1294,12 @@ def get_prereg_user_by_email(email):
     # invite.
     return PreregistrationUser.objects.filter(email__iexact=email.strip()).latest("invited_at")
 
+def get_cross_realm_users():
+    # type: () -> Set[text_type]
+    admin_realm = get_realm(settings.ADMIN_DOMAIN)
+    admin_realm_domain_admins = {u.email for u in admin_realm.get_admin_users()}
+    return admin_realm_domain_admins.union(set(settings.CROSS_REALM_BOT_EMAILS))
+
 # The Huddle class represents a group of individuals who have had a
 # Group Private Message conversation together.  The actual membership
 # of the Huddle is stored in the Subscription table just like with
