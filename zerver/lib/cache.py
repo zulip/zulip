@@ -294,7 +294,7 @@ def get_stream_cache_key(stream_name, realm):
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 def update_user_profile_caches(user_profiles):
-    # type: (Iterable[Any]) -> Any
+    # type: (Iterable[Any]) -> None
     items_for_remote_cache = {}
     for user_profile in user_profiles:
         items_for_remote_cache[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
