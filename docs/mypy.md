@@ -158,3 +158,8 @@ to annotate strings in Zulip's code.  We follow the style of doing
 of doing `import six` and using `six.text_type` for annotation, because
 `text_type` is used so extensively for type annotations that we don't
 need to be that verbose.
+
+Sometimes you'll find that you have to convert strings from one type to
+another.  `zerver/lib/str_utils.py` has utility functions to help with that.
+It also has documentation (in docstrings) which explains the right way
+to use them.
