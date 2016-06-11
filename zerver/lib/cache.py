@@ -7,6 +7,7 @@ from django.core.cache import cache as djcache
 from django.core.cache import get_cache
 from django.conf import settings
 from django.db.models import Q
+from django.core.cache.backends.base import BaseCache
 
 from typing import Any, Callable, Iterable, Optional, Union, TypeVar
 
@@ -92,7 +93,7 @@ def bounce_key_prefix_for_testing(test_name):
     KEY_PREFIX = test_name + u':' + text_type(os.getpid()) + u':'
 
 def get_cache_backend(cache_name):
-    # type: (Optional[str]) -> get_cache
+    # type: (Optional[str]) -> BaseCache
     if cache_name is None:
         return djcache
     return get_cache(cache_name)
