@@ -8,16 +8,18 @@ from django.views.decorators.csrf import csrf_exempt
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ, \
     to_non_negative_int
 from zerver.lib.response import json_success
+from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import check_bool, check_dict
 from zerver.models import UserProfile
 
+from six import text_type
+
 import subprocess
 import os
 
-from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 # Read the source map information for decoding JavaScript backtraces
@@ -78,7 +80,7 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
                       ui_message=REQ(validator=check_bool), user_agent=REQ(),
                       href=REQ(), log=REQ(),
                       more_info=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, str, unicode, bool, str, str, str, Dict[str, Any]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, text_type, bool, str, str, str, Dict[str, Any]) -> HttpResponse
     if not settings.ERROR_REPORTING:
         return json_success()
 
