@@ -8,7 +8,7 @@ from django.core.cache import get_cache
 from django.conf import settings
 from django.db.models import Q
 
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, TypeVar
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import time
@@ -197,13 +197,16 @@ def cache_delete_many(items, cache_name=None):
 # * cache_transformer: Function mapping an object from database =>
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
+ObjKT = TypeVar('ObjKT', int, text_type)
+CompressedItemT = TypeVar('CompressedItemT')
+ItemT = TypeVar('ItemT')
 def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                               extractor=lambda obj: obj,
                               setter=lambda obj: obj,
                               id_fetcher=lambda obj: obj.id,
                               cache_transformer=lambda obj: obj):
-    # type: (Callable[[Any], text_type], Callable[[List[Any]], Iterable[Any]], Iterable[Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any], Callable[[Any], Any]) -> Dict[Any, Any]
-    cache_keys = {} # type: Dict[Any, text_type]
+    # type: (Callable[[ObjKT], text_type], Callable[[List[ObjKT]], Iterable[Any]], Iterable[ObjKT], Callable[[CompressedItemT], ItemT], Callable[[ItemT], CompressedItemT], Callable[[Any], ObjKT], Callable[[Any], ItemT]) -> Dict[ObjKT, Any]
+    cache_keys = {} # type: Dict[ObjKT, text_type]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
     cached_objects = cache_get_many([cache_keys[object_id]
