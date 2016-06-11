@@ -80,7 +80,7 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
                       ui_message=REQ(validator=check_bool), user_agent=REQ(),
                       href=REQ(), log=REQ(),
                       more_info=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, str, text_type, bool, str, str, str, Dict[str, Any]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, text_type, bool, text_type, text_type, text_type, Dict[str, Any]) -> HttpResponse
     if not settings.ERROR_REPORTING:
         return json_success()
 
