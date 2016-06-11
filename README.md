@@ -18,15 +18,7 @@ missed-message emails, desktop apps, and much more.
 Further information on the Zulip project and its features can be found
 at https://www.zulip.org.
 
-[![Build Status][1]][2]
-
-[Mypy][5] static typing [![Coverage Status][3]][4]
-
-[1]: https://travis-ci.org/zulip/zulip.svg?branch=master
-[2]: https://travis-ci.org/zulip/zulip
-[3]: https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master
-[4]: https://coveralls.io/github/zulip/zulip?branch=master
-[5]: http://mypy-lang.org/
+[![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master)
 
 ## Installing the Zulip Development environment
 
