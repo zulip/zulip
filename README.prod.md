@@ -38,7 +38,8 @@ These instructions should be followed as root.
 
 (1) Install the SSL certificates for your machine to
   `/etc/ssl/private/zulip.key` and `/etc/ssl/certs/zulip.combined-chain.crt`.
-  If you don't know how to generate an SSL certificate, you, you can
+
+  If you don't know how to generate an SSL certificate, you can
   do the following to generate a self-signed certificate:
 
   ```
@@ -53,20 +54,39 @@ These instructions should be followed as root.
   cp zulip.combined-chain.crt /etc/ssl/certs/zulip.combined-chain.crt
   ```
 
-  You will eventually want to get a properly signed certificate (and
-  note that at present the Zulip desktop app doesn't support
+  You will eventually want to get a properly signed SSL certificate
+  (and note that at present the Zulip desktop app doesn't support
   self-signed certificates), but this will let you finish the
-  installation process.  You can get a free properly signed
-  certificate from the new [Letsencrypt](https://letsencrypt.org/)
-  service, by following their [nginx
-  instructions](https://letsencrypt.readthedocs.io/en/latest/using.html#nginx).
-
-  When you do get an actual certificate, you will need to install as
-  /etc/ssl/certs/zulip.combined-chain.crt the full certificate
-  authority chain, not just the certificate; see the section on "SSL
-  certificate chains" [in the nginx
+  installation process.  When you do get an actual certificate, you
+  will need to install as /etc/ssl/certs/zulip.combined-chain.crt the
+  full certificate authority chain, not just the certificate; see the
+  section on "SSL certificate chains" [in the nginx
   docs](http://nginx.org/en/docs/http/configuring_https_servers.html)
   for how to do this:
+
+  You can get a free, properly signed certificate from the [Let's
+  Encrypt service](https://letsencrypt.org/); here are the simplified
+  instructions for using it with Zulip (run it all as root):
+
+  ```
+  sudo apt-get install git bc nginx
+  git clone https://github.com/letsencrypt/letsencrypt /opt/letsencrypt
+  cd /opt/letsencrypt
+  letsencrypt-auto certonly --standalone
+
+  # Now symlink the certificates to make them available where Zulip expects them.
+  ln -s /etc/letsencrypt/live/your_domain/privkey.pem /etc/ssl/private/zulip.key
+  ln -s /etc/letsencrypt/live/your_domain/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+  ```
+
+  If you already had a webserver installed on the system (e.g. you
+  previously installed Zulip and are now getting a cert), you will
+  need to stop the webserver (e.g. `service nginx stop`) and start it
+  again after (e.g. `service nginx start`) running the above.
+
+  Finally, if you want to proceed with just an IP address, it is
+  possible to finish a Zulip installation that way; just set
+  EXTERNAL_HOST to be the IP address.
 
 (2) Download [the latest built server tarball](https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz)
   and unpack it to `/root/zulip`, e.g.
