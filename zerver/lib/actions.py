@@ -1622,7 +1622,7 @@ def do_regenerate_api_key(user_profile, log=True):
                     bot_owner_userids(user_profile))
 
 def do_change_avatar_source(user_profile, avatar_source, log=True):
-    # type: (UserProfile, str, bool) -> None
+    # type: (UserProfile, text_type, bool) -> None
     user_profile.avatar_source = avatar_source
     user_profile.save(update_fields=["avatar_source"])
 
