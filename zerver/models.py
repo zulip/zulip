@@ -1207,8 +1207,8 @@ class Attachment(models.Model):
         return self.messages.count() > 0
 
     def get_url(self):
-        # type: () -> str
-        return "/user_uploads/%s" % (self.path_id)
+        # type: () -> text_type
+        return u"/user_uploads/%s" % (self.path_id)
 
 def get_attachments_by_owner_id(uid):
     # type: (int) -> Sequence[Attachment]
@@ -1296,7 +1296,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
             for botdict in result]
 
 def get_prereg_user_by_email(email):
-    # type: (str) -> PreregistrationUser
+    # type: (text_type) -> PreregistrationUser
     # A user can be invited many times, so only return the result of the latest
     # invite.
     return PreregistrationUser.objects.filter(email__iexact=email.strip()).latest("invited_at")
@@ -1335,7 +1335,7 @@ def get_huddle(id_list):
 
 @cache_with_key(lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600*24*7)
 def get_huddle_backend(huddle_hash, id_list):
-    # type: (str, List[int]) -> Huddle
+    # type: (text_type, List[int]) -> Huddle
     (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
     if created:
         with transaction.atomic():
