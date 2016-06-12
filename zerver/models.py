@@ -541,7 +541,7 @@ class MitUser(models.Model):
     status = models.IntegerField(default=0)
 
 def generate_email_token_for_stream():
-    # type: () -> str
+    # type: () -> text_type
     return generate_random_token(32)
 
 class Stream(models.Model):
