@@ -410,9 +410,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # to a nonexistent stream
     BOT_OWNER_STREAM_ALERT_WAITPERIOD = 1
 
-    AVATAR_FROM_GRAVATAR = 'G'
-    AVATAR_FROM_USER = 'U'
-    AVATAR_FROM_SYSTEM = 'S'
+    AVATAR_FROM_GRAVATAR = u'G'
+    AVATAR_FROM_USER = u'U'
+    AVATAR_FROM_SYSTEM = u'S'
     AVATAR_SOURCES = (
             (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
             (AVATAR_FROM_USER, 'Uploaded by user'),
@@ -420,9 +420,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
     avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1)
 
-    TUTORIAL_WAITING  = 'W'
-    TUTORIAL_STARTED  = 'S'
-    TUTORIAL_FINISHED = 'F'
+    TUTORIAL_WAITING  = u'W'
+    TUTORIAL_STARTED  = u'S'
+    TUTORIAL_FINISHED = u'F'
     TUTORIAL_STATES   = ((TUTORIAL_WAITING,  "Waiting"),
                          (TUTORIAL_STARTED,  "Started"),
                          (TUTORIAL_FINISHED, "Finished"))
