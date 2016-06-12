@@ -73,3 +73,22 @@ def dict_with_str_keys(dct):
     # type: (Mapping[NonBinaryStr, Any]) -> Dict[str, Any]
     """applies force_str on the keys of a dict (non-recursively)"""
     return {force_str(key): value for key, value in six.iteritems(dct)}
+
+class ModelReprMixin(object):
+    """
+    This mixin provides a python 2 and 3 compatible way of handling string representation of a model.
+    When declaring a model, inherit this mixin before django.db.models.Model.
+    Define __unicode__ on your model which returns a six.text_type object.
+    This mixin will automatically define __str__ and __repr__.
+    """
+    def __unicode__(self):
+        # type: () -> text_type
+        raise NotImplementedError("__unicode__ is not implemented in subclass of ModelReprMixin")
+
+    def __str__(self):
+        # type: () -> str
+        return force_str(self.__unicode__())
+
+    def __repr__(self):
+        # type: () -> str
+        return force_str(self.__unicode__())
