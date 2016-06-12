@@ -576,7 +576,7 @@ class Stream(models.Model):
 
     @classmethod
     def create(cls, name, realm):
-        # type: (Any, str, Realm) -> Tuple[Stream, Recipient]
+        # type: (Any, text_type, Realm) -> Tuple[Stream, Recipient]
         stream = cls(name=name, realm=realm)
         stream.save()
 
@@ -649,9 +649,9 @@ class Client(models.Model):
         # type: () -> str
         return "<Client: %s>" % (self.name,)
 
-get_client_cache = {} # type: Dict[str, Client]
+get_client_cache = {} # type: Dict[text_type, Client]
 def get_client(name):
-    # type: (str) -> Client
+    # type: (text_type) -> Client
     if name not in get_client_cache:
         result = get_client_remote_cache(name)
         get_client_cache[name] = result
@@ -663,7 +663,7 @@ def get_client_cache_key(name):
 
 @cache_with_key(get_client_cache_key, timeout=3600*24*7)
 def get_client_remote_cache(name):
-    # type: (str) -> Client
+    # type: (text_type) -> Client
     (client, _) = Client.objects.get_or_create(name=name)
     return client
 
