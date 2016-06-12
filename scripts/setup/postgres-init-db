@@ -1,4 +1,17 @@
 #!/bin/bash
+while true; do
+
+read -t 10 -p "This will delete current zulip database. (Enter N/n to stop)" yn
+
+case $yn in
+
+
+[Nn]* )
+echo -e "\nNew database not created";
+break;;
+
+* )
+
 set -e
 set -x
 
@@ -35,4 +48,9 @@ EOF
 sh "$(dirname "$0")/flush-memcached"
 
 echo "Database created"
+break;;
+
+esac
+
+done
 
