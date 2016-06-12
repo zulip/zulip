@@ -110,5 +110,5 @@ def log_statsd_event(name):
     statsd.incr(event_name)
 
 def generate_random_token(length):
-    # type: (int) -> str
-    return base64.b16encode(os.urandom(length // 2)).lower()
+    # type: (int) -> text_type
+    return base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower()

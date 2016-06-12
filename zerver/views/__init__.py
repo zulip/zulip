@@ -961,7 +961,7 @@ def update_pointer_backend(request, user_profile,
     return json_success()
 
 def generate_client_id():
-    # type: () -> str
+    # type: () -> text_type
     return generate_random_token(32)
 
 # The order of creation of the various dictionaries are important.
