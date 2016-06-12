@@ -1312,7 +1312,7 @@ class Huddle(models.Model):
     huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)
 
 def get_huddle_hash(id_list):
-    # type: (List[int]) -> str
+    # type: (List[int]) -> text_type
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
     return make_safe_digest(hash_key)

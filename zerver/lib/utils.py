@@ -11,6 +11,7 @@ from time import sleep
 
 from django.conf import settings
 from six.moves import range
+from zerver.lib.str_utils import force_text
 
 T = TypeVar('T')
 
@@ -85,13 +86,13 @@ def run_in_batches(all_list, batch_size, callback, sleep_time = 0, logger = None
             sleep(sleep_time)
 
 def make_safe_digest(string, hash_func=hashlib.sha1):
-    # type: (text_type, Callable[[binary_type], Any]) -> str
+    # type: (text_type, Callable[[binary_type], Any]) -> text_type
     """
     return a hex digest of `string`.
     """
     # hashlib.sha1, md5, etc. expect bytes, so non-ASCII strings must
     # be encoded.
-    return hash_func(string.encode('utf-8')).hexdigest()
+    return force_text(hash_func(string.encode('utf-8')).hexdigest())
 
 
 def log_statsd_event(name):
