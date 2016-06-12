@@ -18,7 +18,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
     active_bot_dict_fields
 from zerver.lib.utils import make_safe_digest, generate_random_token
-from zerver.lib.str_utils import force_bytes, dict_with_str_keys
+from zerver.lib.str_utils import force_bytes, ModelReprMixin, dict_with_str_keys
 from django.db import transaction
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
 from zerver.lib.camo import get_camo_url
@@ -127,7 +127,7 @@ def get_realm_emoji_cache_key(realm):
     # type: (Realm) -> text_type
     return u'realm_emoji:%s' % (realm.id,)
 
-class Realm(models.Model):
+class Realm(ModelReprMixin, models.Model):
     # domain is a domain in the Internet sense. It must be structured like a
     # valid email domain. We use is to restrict access, identify bots, etc.
     domain = models.CharField(max_length=40, db_index=True, unique=True)
@@ -148,12 +148,9 @@ class Realm(models.Model):
 
     DEFAULT_NOTIFICATION_STREAM_NAME = 'announce'
 
-    def __repr__(self):
-        # type: () -> str
-        return (u"<Realm: %s %s>" % (self.domain, self.id)).encode("utf-8")
-    def __str__(self):
-        # type: () -> str
-        return self.__repr__()
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Realm: %s %s>" % (self.domain, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
@@ -248,7 +245,7 @@ def remote_user_to_email(remote_user):
         remote_user += "@" + settings.SSO_APPEND_DOMAIN
     return remote_user
 
-class RealmEmoji(models.Model):
+class RealmEmoji(ModelReprMixin, models.Model):
     realm = models.ForeignKey(Realm)
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
@@ -261,9 +258,9 @@ class RealmEmoji(models.Model):
     class Meta(object):
         unique_together = ("realm", "name")
 
-    def __str__(self):
-        # type: () -> str
-        return "<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
 
 def get_realm_emoji_uncached(realm):
     # type: (Realm) -> Dict[text_type, Dict[str, text_type]]
@@ -283,7 +280,7 @@ def flush_realm_emoji(sender, **kwargs):
 post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
-class RealmFilter(models.Model):
+class RealmFilter(ModelReprMixin, models.Model):
     realm = models.ForeignKey(Realm)
     pattern = models.TextField()
     url_format_string = models.TextField()
@@ -291,9 +288,9 @@ class RealmFilter(models.Model):
     class Meta(object):
         unique_together = ("realm", "pattern")
 
-    def __str__(self):
-        # type: () -> str
-        return "<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
 
 def get_realm_filters_cache_key(domain):
     # type: (text_type) -> text_type
@@ -337,7 +334,7 @@ def flush_realm_filter(sender, **kwargs):
 post_save.connect(flush_realm_filter, sender=RealmFilter)
 post_delete.connect(flush_realm_filter, sender=RealmFilter)
 
-class UserProfile(AbstractBaseUser, PermissionsMixin):
+class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     DEFAULT_BOT = 1
     """
     Incoming webhook bots are limited to only sending messages via webhooks.
@@ -467,12 +464,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         return self.last_reminder
 
-    def __repr__(self):
-        # type: () -> str
-        return (u"<UserProfile: %s %s>" % (self.email, self.realm)).encode("utf-8")
-    def __str__(self):
-        # type: () -> str
-        return self.__repr__()
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<UserProfile: %s %s>" % (self.email, self.realm)
 
     @property
     def is_incoming_webhook(self):
@@ -547,7 +541,7 @@ def generate_email_token_for_stream():
     # type: () -> text_type
     return generate_random_token(32)
 
-class Stream(models.Model):
+class Stream(ModelReprMixin, models.Model):
     MAX_NAME_LENGTH = 60
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)
@@ -562,12 +556,9 @@ class Stream(models.Model):
     date_created = models.DateTimeField(default=timezone.now)
     deactivated = models.BooleanField(default=False)
 
-    def __repr__(self):
-        # type: () -> str
-        return (u"<Stream: %s>" % (self.name,)).encode("utf-8")
-    def __str__(self):
-        # type: () -> str
-        return self.__repr__()
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Stream: %s>" % (self.name,)
 
     def is_public(self):
         # type: () -> bool
@@ -618,7 +609,7 @@ def valid_stream_name(name):
 # Ttreams. The recipient table maps a globally unique recipient id
 # (used by the Message table) to the type-specific unique id (the
 # stream id, user_profile id, or huddle id).
-class Recipient(models.Model):
+class Recipient(ModelReprMixin, models.Model):
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, stream, huddle}
@@ -640,17 +631,17 @@ class Recipient(models.Model):
         # Raises KeyError if invalid
         return self._type_names[self.type]
 
-    def __repr__(self):
-        # type: () -> str
+    def __unicode__(self):
+        # type: () -> text_type
         display_recipient = get_display_recipient(self)
-        return (u"<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)).encode("utf-8")
+        return u"<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
-class Client(models.Model):
+class Client(ModelReprMixin, models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
-    def __repr__(self):
-        # type: () -> str
-        return "<Client: %s>" % (self.name,)
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Client: %s>" % (self.name,)
 
 get_client_cache = {} # type: Dict[text_type, Client]
 def get_client(name):
@@ -769,7 +760,7 @@ def to_dict_cache_key(message, apply_markdown):
     # type: (Message, bool) -> text_type
     return to_dict_cache_key_id(message.id, apply_markdown)
 
-class Message(models.Model):
+class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True)
@@ -785,13 +776,10 @@ class Message(models.Model):
     has_link = models.BooleanField(default=False, db_index=True)
 
 
-    def __repr__(self):
-        # type: () -> str
+    def __unicode__(self):
+        # type: () -> text_type
         display_recipient = get_display_recipient(self.recipient)
-        return (u"<Message: %s / %s / %r>" % (display_recipient, self.subject, self.sender)).encode("utf-8")
-    def __str__(self):
-        # type: () -> str
-        return self.__repr__()
+        return u"<Message: %s / %s / %r>" % (display_recipient, self.subject, self.sender)
 
     def get_realm(self):
         # type: () -> Realm
@@ -1155,7 +1143,7 @@ def get_context_for_message(message):
 #
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
-class UserMessage(models.Model):
+class UserMessage(ModelReprMixin, models.Model):
     user_profile = models.ForeignKey(UserProfile)
     message = models.ForeignKey(Message)
     # We're not using the archived field for now, but create it anyway
@@ -1169,10 +1157,10 @@ class UserMessage(models.Model):
     class Meta(object):
         unique_together = ("user_profile", "message")
 
-    def __repr__(self):
-        # type: () -> str
+    def __unicode__(self):
+        # type: () -> text_type
         display_recipient = get_display_recipient(self.message.recipient)
-        return (u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.email, self.flags_list())).encode("utf-8")
+        return u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.email, self.flags_list())
 
     def flags_list(self):
         # type: () -> List[str]
@@ -1188,7 +1176,7 @@ def parse_usermessage_flags(val):
         mask <<= 1
     return flags
 
-class Attachment(models.Model):
+class Attachment(ModelReprMixin, models.Model):
     MAX_FILENAME_LENGTH = 100
     file_name = models.CharField(max_length=MAX_FILENAME_LENGTH, db_index=True)
     # path_id is a storage location agnostic representation of the path of the file.
@@ -1199,9 +1187,9 @@ class Attachment(models.Model):
     messages = models.ManyToManyField(Message)
     create_time = models.DateTimeField(default=timezone.now, db_index=True)
 
-    def __repr__(self):
-        # type: () -> str
-        return (u"<Attachment: %s>" % (self.file_name))
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Attachment: %s>" % (self.file_name,)
 
     def is_claimed(self):
         # type: () -> bool
@@ -1230,7 +1218,7 @@ def get_old_unclaimed_attachments(weeks_ago):
     old_attachments = Attachment.objects.filter(messages=None, create_time__lt=delta_weeks_ago)
     return old_attachments
 
-class Subscription(models.Model):
+class Subscription(ModelReprMixin, models.Model):
     user_profile = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
     active = models.BooleanField(default=True)
@@ -1249,12 +1237,9 @@ class Subscription(models.Model):
     class Meta(object):
         unique_together = ("user_profile", "recipient")
 
-    def __repr__(self):
-        # type: () -> str
-        return (u"<Subscription: %r -> %s>" % (self.user_profile, self.recipient)).encode("utf-8")
-    def __str__(self):
-        # type: () -> str
-        return self.__repr__()
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Subscription: %r -> %s>" % (self.user_profile, self.recipient)
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):
