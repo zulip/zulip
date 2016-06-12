@@ -800,7 +800,7 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         return el
 
 def prepare_realm_pattern(source):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     """ Augment a realm filter so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as "name". """
@@ -1013,10 +1013,10 @@ class Bugdown(markdown.Extension):
                     del md.parser.blockprocessors[k]
 
 md_engines = {}
-realm_filter_data = {} # type: Dict[str, List[Tuple[str, str]]]
+realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
 
 def make_md_engine(key, opts):
-    # type: (str, Dict[str, Any]) -> None
+    # type: (text_type, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         safe_mode     = 'escape',
         output_format = 'html',
@@ -1029,7 +1029,7 @@ def make_md_engine(key, opts):
                          Bugdown(opts)])
 
 def subject_links(domain, subject):
-    # type: (str, text_type) -> List[text_type]
+    # type: (text_type, text_type) -> List[text_type]
     from zerver.models import get_realm, RealmFilter, realm_filters_for_domain
     matches = [] # type: List[text_type]
 
@@ -1042,7 +1042,7 @@ def subject_links(domain, subject):
     return matches
 
 def make_realm_filters(domain, filters):
-    # type: (str, List[Tuple[str, str]]) -> None
+    # type: (text_type, List[Tuple[text_type, text_type]]) -> None
     global md_engines, realm_filter_data
     if domain in md_engines:
         del md_engines[domain]
@@ -1054,7 +1054,7 @@ def make_realm_filters(domain, filters):
                            "realm": [domain, "Realm name"]})
 
 def maybe_update_realm_filters(domain):
-    # type: (str) -> None
+    # type: (Optional[text_type]) -> None
     from zerver.models import realm_filters_for_domain, all_realm_filters
 
     # If domain is None, load all filters

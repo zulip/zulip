@@ -156,7 +156,7 @@ class Realm(models.Model):
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
-        # type: () -> Dict[str, Dict[str, str]]
+        # type: () -> Dict[text_type, Dict[str, text_type]]
         return get_realm_emoji_uncached(self)
 
     @property
@@ -263,7 +263,7 @@ class RealmEmoji(models.Model):
         return "<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
 
 def get_realm_emoji_uncached(realm):
-    # type: (Realm) -> Dict[str, Dict[str, str]]
+    # type: (Realm) -> Dict[text_type, Dict[str, text_type]]
     d = {}
     for row in RealmEmoji.objects.filter(realm=realm):
         d[row.name] = dict(source_url=row.img_url,
@@ -297,9 +297,9 @@ def get_realm_filters_cache_key(domain):
     return u'all_realm_filters:%s' % (domain,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache = {} # type: Dict[str, List[Tuple[str, str]]]
+per_request_realm_filters_cache = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
 def realm_filters_for_domain(domain):
-    # type: (str) -> List[Tuple[str, str]]
+    # type: (text_type) -> List[Tuple[text_type, text_type]]
     domain = domain.lower()
     if domain not in per_request_realm_filters_cache:
         per_request_realm_filters_cache[domain] = realm_filters_for_domain_remote_cache(domain)
@@ -307,7 +307,7 @@ def realm_filters_for_domain(domain):
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
 def realm_filters_for_domain_remote_cache(domain):
-    # type: (str) -> List[Tuple[str, str]]
+    # type: (text_type) -> List[Tuple[text_type, text_type]]
     filters = []
     for realm_filter in RealmFilter.objects.filter(realm=get_realm(domain)):
        filters.append((realm_filter.pattern, realm_filter.url_format_string))
@@ -315,8 +315,8 @@ def realm_filters_for_domain_remote_cache(domain):
     return filters
 
 def all_realm_filters():
-    # type: () -> Dict[str, List[Tuple[str, str]]]
-    filters = defaultdict(list) # type: Dict[str, List[Tuple[str, str]]]
+    # type: () -> Dict[text_type, List[Tuple[text_type, text_type]]]
+    filters = defaultdict(list) # type: Dict[text_type, List[Tuple[text_type, text_type]]]
     for realm_filter in RealmFilter.objects.all():
        filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string))
 
