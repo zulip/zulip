@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from typing import Any, List, Set, Tuple, TypeVar, \
     Union, Optional, Sequence, AbstractSet
 from typing.re import Match
+from zerver.lib.str_utils import NonBinaryStr
 
 from django.db import models
 from django.db.models.query import QuerySet
@@ -1443,7 +1444,7 @@ class UserPresence(models.Model):
     @staticmethod
     def to_presence_dict(client_name=None, status=None, dt=None, push_enabled=None,
                          has_push_devices=None, is_mirror_dummy=None):
-        # type: (Optional[str], Optional[int], Optional[datetime.datetime], Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
+        # type: (Optional[text_type], Optional[int], Optional[datetime.datetime], Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)
@@ -1464,7 +1465,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def status_from_string(status):
-        # type: (str) -> Optional[int]
+        # type: (NonBinaryStr) -> Optional[int]
         if status == 'active':
             status_val = UserPresence.ACTIVE
         elif status == 'idle':
