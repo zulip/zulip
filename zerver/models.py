@@ -746,7 +746,7 @@ def bulk_get_recipients(type, type_ids):
 
 # NB: This function is currently unused, but may come in handy.
 def linebreak(string):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
 def extract_message_dict(message_bytes):
@@ -794,7 +794,7 @@ class Message(models.Model):
         return self.sender.realm
 
     def render_markdown(self, content, domain=None):
-        # type: (str, Optional[str]) -> str
+        # type: (text_type, Optional[text_type]) -> text_type
         """Return HTML for given markdown. Bugdown may add properties to the
         message object such as `mentions_user_ids` and `mentions_wildcard`.
         These are only on this Django object and are not saved in the
@@ -814,7 +814,7 @@ class Message(models.Model):
         if self.sending_client.name == "zephyr_mirror" and domain == "mit.edu":
             # Use slightly customized Markdown processor for content
             # delivered via zephyr_mirror
-            domain = "mit.edu/zephyr_mirror"
+            domain = u"mit.edu/zephyr_mirror"
         rendered_content = bugdown.convert(content, domain, self)
 
         # For /me syntax, JS can detect the is_me_message flag
@@ -826,7 +826,7 @@ class Message(models.Model):
         return rendered_content
 
     def set_rendered_content(self, rendered_content, save = False):
-        # type: (str, bool) -> bool
+        # type: (text_type, bool) -> bool
         """Set the content on the message.
         """
         global bugdown
@@ -848,7 +848,7 @@ class Message(models.Model):
         self.save(update_fields=["rendered_content", "rendered_content_version"])
 
     def maybe_render_content(self, domain, save = False):
-        # type: (str, bool) -> bool
+        # type: (Optional[text_type], bool) -> bool
         """Render the markdown if there is no existing rendered_content"""
         global bugdown
         if bugdown is None:
@@ -861,7 +861,7 @@ class Message(models.Model):
 
     @staticmethod
     def need_to_render_content(rendered_content, rendered_content_version):
-        # type: (str, int) -> bool
+        # type: (Optional[text_type], int) -> bool
         return rendered_content is None or rendered_content_version < bugdown.version
 
     def to_dict(self, apply_markdown):
@@ -954,7 +954,7 @@ class Message(models.Model):
             recipient_type,
             recipient_type_id,
     ):
-        # type: (bool, Message, int, datetime.datetime, str, str, str, datetime.datetime, str, int, int, str, str, str, str, str, bool, str, int, int, int) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
         global bugdown
         if bugdown is None:
             from zerver.lib import bugdown
@@ -1029,7 +1029,7 @@ class Message(models.Model):
             if rendered_content is not None:
                 obj['content'] = rendered_content
             else:
-                obj['content'] = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
+                obj['content'] = u'<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
 
             obj['content_type'] = 'text/html'
         else:
