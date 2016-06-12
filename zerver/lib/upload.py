@@ -27,7 +27,7 @@ import os
 import re
 import six
 from PIL import Image, ImageOps
-from six import text_type
+from six import binary_type, text_type
 from six.moves import cStringIO as StringIO
 import random
 import logging
@@ -102,7 +102,7 @@ class ZulipUploadBackend(object):
 ### S3
 
 def get_bucket(conn, bucket_name):
-    # type: (S3Connection, str) -> Bucket
+    # type: (S3Connection, text_type) -> Bucket
     # Calling get_bucket() with validate=True can apparently lead
     # to expensive S3 bills:
     #    http://www.appneta.com/blog/s3-list-get-bucket-default/
@@ -121,7 +121,7 @@ def upload_image_to_s3(
         user_profile,
         contents,
     ):
-    # type: (str, str, str, UserProfile, str) -> None
+    # type: (text_type, text_type, text_type, UserProfile, text_type) -> None
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = get_bucket(conn, bucket_name)
@@ -234,7 +234,7 @@ def mkdirs(path):
         os.makedirs(dirname)
 
 def write_local_file(type, path, file_data):
-    # type: (str, str, str) -> None
+    # type: (text_type, text_type, binary_type) -> None
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
     mkdirs(file_path)
     with open(file_path, 'wb') as f:
