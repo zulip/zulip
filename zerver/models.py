@@ -173,12 +173,14 @@ class Realm(models.Model):
         self._deployments = [value] # type: Any
 
     def get_admin_users(self):
-        # type: () -> List[UserProfile]
+        # type: () -> Sequence[UserProfile]
+        # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_realm_admin=True,
                                           is_active=True).select_related()
 
     def get_active_users(self):
-        # type: () -> List[UserProfile]
+        # type: () -> Sequence[UserProfile]
+        # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
     class Meta(object):
@@ -738,7 +740,8 @@ def bulk_get_recipients(type, type_ids):
         # type: (int) -> text_type
         return get_recipient_cache_key(type, type_id)
     def query_function(type_ids):
-        # type: (List[int]) -> List[Recipient]
+        # type: (List[int]) -> Sequence[Recipient]
+        # TODO: Change return type to QuerySet[Recipient]
         return Recipient.objects.filter(type=type, type_id__in=type_ids)
 
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
@@ -1128,7 +1131,8 @@ def pre_save_message(sender, **kwargs):
         message.update_calculated_fields()
 
 def get_context_for_message(message):
-    # type: (Message) -> List[Message]
+    # type: (Message) -> Sequence[Message]
+    # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
         subject=message.subject,
@@ -1207,17 +1211,20 @@ class Attachment(models.Model):
         return "/user_uploads/%s" % (self.path_id)
 
 def get_attachments_by_owner_id(uid):
-    # type: (int) -> List[Attachment]
+    # type: (int) -> Sequence[Attachment]
+    # TODO: Change return type to QuerySet[Attachment]
     return Attachment.objects.filter(owner=uid).select_related('owner')
 
 def get_owners_from_file_name(file_name):
-    # type: (str) -> List[Attachment]
+    # type: (str) -> Sequence[Attachment]
+    # TODO: Change return type to QuerySet[Attachment]
     # The returned vaule will list of owners since different users can upload
     # same files with the same filename.
     return Attachment.objects.filter(file_name=file_name).select_related('owner')
 
 def get_old_unclaimed_attachments(weeks_ago):
-    # type: (int) -> List[Attachment]
+    # type: (int) -> Sequence[Attachment]
+    # TODO: Change return type to QuerySet[Attachment]
     delta_weeks_ago = timezone.now() - datetime.timedelta(weeks=weeks_ago)
     old_attachments = Attachment.objects.filter(messages=None, create_time__lt=delta_weeks_ago)
     return old_attachments
