@@ -1104,12 +1104,12 @@ class Message(models.Model):
     @staticmethod
     def content_has_attachment(content):
         # type: (text_type) -> Match
-        return re.search('[/\-]user[\-_]uploads[/\.-]', content)
+        return re.search(r'[/\-]user[\-_]uploads[/\.-]', content)
 
     @staticmethod
     def content_has_image(content):
         # type: (text_type) -> bool
-        return bool(re.search('[/\-]user[\-_]uploads[/\.-]\S+\.(bmp|gif|jpg|jpeg|png|webp)', content, re.IGNORECASE))
+        return bool(re.search(r'[/\-]user[\-_]uploads[/\.-]\S+\.(bmp|gif|jpg|jpeg|png|webp)', content, re.IGNORECASE))
 
     @staticmethod
     def content_has_link(content):
