@@ -123,8 +123,8 @@ def get_unique_open_realm():
     return realm
 
 def get_realm_emoji_cache_key(realm):
-    # type: (Realm) -> str
-    return 'realm_emoji:%s' % (realm.id,)
+    # type: (Realm) -> text_type
+    return u'realm_emoji:%s' % (realm.id,)
 
 class Realm(models.Model):
     # domain is a domain in the Internet sense. It must be structured like a
@@ -293,8 +293,8 @@ class RealmFilter(models.Model):
         return "<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
 
 def get_realm_filters_cache_key(domain):
-    # type: (str) -> str
-    return 'all_realm_filters:%s' % (domain,)
+    # type: (text_type) -> text_type
+    return u'all_realm_filters:%s' % (domain,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
 per_request_realm_filters_cache = {} # type: Dict[str, List[Tuple[str, str]]]
@@ -658,8 +658,8 @@ def get_client(name):
     return get_client_cache[name]
 
 def get_client_cache_key(name):
-    # type: (str) -> str
-    return 'get_client:%s' % (make_safe_digest(name),)
+    # type: (text_type) -> text_type
+    return u'get_client:%s' % (make_safe_digest(name),)
 
 @cache_with_key(get_client_cache_key, timeout=3600*24*7)
 def get_client_remote_cache(name):
@@ -724,8 +724,8 @@ def bulk_get_streams(realm, stream_names):
                                      id_fetcher=lambda stream: stream.name.lower())
 
 def get_recipient_cache_key(type, type_id):
-    # type: (int, int) -> str
-    return "get_recipient:%s:%s" % (type, type_id,)
+    # type: (int, int) -> text_type
+    return u"get_recipient:%s:%s" % (type, type_id,)
 
 @cache_with_key(get_recipient_cache_key, timeout=3600*24*7)
 def get_recipient(type, type_id):
@@ -735,7 +735,7 @@ def get_recipient(type, type_id):
 def bulk_get_recipients(type, type_ids):
     # type: (int, List[int]) -> Dict[int, Any]
     def cache_key_function(type_id):
-        # type: (int) -> str
+        # type: (int) -> text_type
         return get_recipient_cache_key(type, type_id)
     def query_function(type_ids):
         # type: (List[int]) -> List[Recipient]
@@ -1318,8 +1318,8 @@ def get_huddle_hash(id_list):
     return make_safe_digest(hash_key)
 
 def huddle_hash_cache_key(huddle_hash):
-    # type: (str) -> str
-    return "huddle_by_hash:%s" % (huddle_hash,)
+    # type: (text_type) -> text_type
+    return u"huddle_by_hash:%s" % (huddle_hash,)
 
 def get_huddle(id_list):
     # type: (List[int]) -> Huddle
