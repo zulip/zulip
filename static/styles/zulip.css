@@ -321,17 +321,24 @@ a:hover code {
     display: inline;
 }
 
-#streams_list #streams_inline_cog:hover {
+#streams_inline_cog,
+#streams_filter_icon {
+    float: right;
+    color: #000;
+    font-size: 13px;
+    margin-top: 3px;
+    margin-left: 6px;
+    opacity: 0.5;
+}
+
+#streams_inline_cog:hover,
+#streams_filter_icon:hover {
    opacity: 1.0;
 }
 
-#streams_inline_cog {
-    float: right;
-    color: #000;
+#streams_header a {
+    color: inherit;
     text-decoration: none;
-    font-size: 13px;
-    margin-top: 3px;
-    opacity: 0.5;
 }
 
 .tooltip {
@@ -357,6 +364,10 @@ a:hover code {
 
 #stream-filters-container .ps-scrollbar-y {
     width: 4px !important;
+}
+
+.stream-list-filter {
+    margin-left: 1ex;
 }
 
 .narrow-filter {

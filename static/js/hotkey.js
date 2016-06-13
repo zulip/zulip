@@ -57,7 +57,8 @@ var hotkeys_shift_insensitive = {
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
-    118: {name: 'narrow_private', message_view_only: true} // 'v'
+    118: {name: 'narrow_private', message_view_only: true}, // 'v'
+    119: {name: 'query_streams', message_view_only: false} // 'w'
 };
 
 function get_hotkey_from_event(e) {
@@ -177,6 +178,9 @@ function process_hotkey(e) {
             } else if (activity.searching()) {
                 activity.escape_search();
                 return true;
+            } else if (stream_list.searching()) {
+                stream_list.escape_search();
+                return true;
             } else if (compose.composing()) {
                 // If the user hit the escape key, cancel the current compose
                 compose.cancel();
@@ -193,6 +197,9 @@ function process_hotkey(e) {
         if (event_name === 'enter') {
             if (activity.searching()) {
                 activity.blur_search();
+                return true;
+            } else if (stream_list.searching()) {
+                stream_list.clear_and_hide_search();
                 return true;
             }
         }
@@ -244,6 +251,9 @@ function process_hotkey(e) {
             return true;
         case 'query_users':
             activity.initiate_search();
+            return true;
+        case 'query_streams':
+            stream_list.initiate_search();
             return true;
         case 'search':
             search.initiate_search();
