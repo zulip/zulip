@@ -347,64 +347,64 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
-    email = models.EmailField(blank=False, db_index=True, unique=True)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True, db_index=True)
-    is_realm_admin = models.BooleanField(default=False, db_index=True)
-    is_bot = models.BooleanField(default=False, db_index=True)
-    bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
-    is_api_super_user = models.BooleanField(default=False, db_index=True)
-    date_joined = models.DateTimeField(default=timezone.now)
-    is_mirror_dummy = models.BooleanField(default=False)
-    bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
+    email = models.EmailField(blank=False, db_index=True, unique=True) # type: text_type
+    is_staff = models.BooleanField(default=False) # type: bool
+    is_active = models.BooleanField(default=True, db_index=True) # type: bool
+    is_realm_admin = models.BooleanField(default=False, db_index=True) # type: bool
+    is_bot = models.BooleanField(default=False, db_index=True) # type: bool
+    bot_type = models.PositiveSmallIntegerField(null=True, db_index=True) # type: Optional[int]
+    is_api_super_user = models.BooleanField(default=False, db_index=True) # type: bool
+    date_joined = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+    is_mirror_dummy = models.BooleanField(default=False) # type: bool
+    bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL) # type: Optional[UserProfile]
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
 
     # Our custom site-specific fields
-    full_name = models.CharField(max_length=MAX_NAME_LENGTH)
-    short_name = models.CharField(max_length=MAX_NAME_LENGTH)
+    full_name = models.CharField(max_length=MAX_NAME_LENGTH) # type: text_type
+    short_name = models.CharField(max_length=MAX_NAME_LENGTH) # type: text_type
     # pointer points to Message.id, NOT UserMessage.id.
-    pointer = models.IntegerField()
-    last_pointer_updater = models.CharField(max_length=64)
-    realm = models.ForeignKey(Realm)
-    api_key = models.CharField(max_length=32)
+    pointer = models.IntegerField() # type: int
+    last_pointer_updater = models.CharField(max_length=64) # type: text_type
+    realm = models.ForeignKey(Realm) # type: Realm
+    api_key = models.CharField(max_length=32) # type: text_type
 
     ### Notifications settings. ###
 
     # Stream notifications.
-    enable_stream_desktop_notifications = models.BooleanField(default=False)
-    enable_stream_sounds = models.BooleanField(default=False)
+    enable_stream_desktop_notifications = models.BooleanField(default=False) # type: bool
+    enable_stream_sounds = models.BooleanField(default=False) # type: bool
 
     # PM + @-mention notifications.
-    enable_desktop_notifications = models.BooleanField(default=True)
-    enable_sounds = models.BooleanField(default=True)
-    enable_offline_email_notifications = models.BooleanField(default=True)
-    enable_offline_push_notifications = models.BooleanField(default=True)
+    enable_desktop_notifications = models.BooleanField(default=True) # type: bool
+    enable_sounds = models.BooleanField(default=True) # type: bool
+    enable_offline_email_notifications = models.BooleanField(default=True) # type: bool
+    enable_offline_push_notifications = models.BooleanField(default=True) # type: bool
 
-    enable_digest_emails = models.BooleanField(default=True)
+    enable_digest_emails = models.BooleanField(default=True) # type: bool
 
     # Old notification field superseded by existence of stream notification
     # settings.
-    default_desktop_notifications = models.BooleanField(default=True)
+    default_desktop_notifications = models.BooleanField(default=True) # type: bool
 
     ###
 
-    last_reminder = models.DateTimeField(default=timezone.now, null=True)
-    rate_limits = models.CharField(default="", max_length=100) # comma-separated list of range:max pairs
+    last_reminder = models.DateTimeField(default=timezone.now, null=True) # type: Optional[datetime.datetime]
+    rate_limits = models.CharField(default="", max_length=100) # type: text_type # comma-separated list of range:max pairs
 
     # Default streams
-    default_sending_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+')
-    default_events_register_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+')
-    default_all_public_streams = models.BooleanField(default=False)
+    default_sending_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+') # type: Optional[Stream]
+    default_events_register_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+') # type: Optional[Stream]
+    default_all_public_streams = models.BooleanField(default=False) # type: bool
 
     # UI vars
-    enter_sends = models.NullBooleanField(default=True)
-    autoscroll_forever = models.BooleanField(default=False)
-    left_side_userlist = models.BooleanField(default=False)
+    enter_sends = models.NullBooleanField(default=True) # type: Optional[bool]
+    autoscroll_forever = models.BooleanField(default=False) # type: bool
+    left_side_userlist = models.BooleanField(default=False) # type: bool
 
     # display settings
-    twenty_four_hour_time = models.BooleanField(default=False)
+    twenty_four_hour_time = models.BooleanField(default=False) # type: bool
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
@@ -420,7 +420,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
             (AVATAR_FROM_USER, 'Uploaded by user'),
             (AVATAR_FROM_SYSTEM, 'System generated'),
     )
-    avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1)
+    avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1) # type: text_type
 
     TUTORIAL_WAITING  = u'W'
     TUTORIAL_STARTED  = u'S'
@@ -429,21 +429,21 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
                          (TUTORIAL_STARTED,  "Started"),
                          (TUTORIAL_FINISHED, "Finished"))
 
-    tutorial_status = models.CharField(default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1)
+    tutorial_status = models.CharField(default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1) # type: text_type
     # Contains serialized JSON of the form:
     #    [("step 1", true), ("step 2", false)]
     # where the second element of each tuple is if the step has been
     # completed.
-    onboarding_steps = models.TextField(default=ujson.dumps([]))
+    onboarding_steps = models.TextField(default=ujson.dumps([])) # type: text_type
 
-    invites_granted = models.IntegerField(default=0)
-    invites_used = models.IntegerField(default=0)
+    invites_granted = models.IntegerField(default=0) # type: int
+    invites_used = models.IntegerField(default=0) # type: int
 
-    alert_words = models.TextField(default=ujson.dumps([])) # json-serialized list of strings
+    alert_words = models.TextField(default=ujson.dumps([])) # type: text_type # json-serialized list of strings
 
     # Contains serialized JSON of the form:
     # [["social", "mit"], ["devel", "ios"]]
-    muted_topics = models.TextField(default=ujson.dumps([]))
+    muted_topics = models.TextField(default=ujson.dumps([])) # type: text_type
 
     objects = UserManager() # type: UserManager
 
