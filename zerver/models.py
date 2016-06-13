@@ -130,23 +130,23 @@ def get_realm_emoji_cache_key(realm):
 class Realm(ModelReprMixin, models.Model):
     # domain is a domain in the Internet sense. It must be structured like a
     # valid email domain. We use is to restrict access, identify bots, etc.
-    domain = models.CharField(max_length=40, db_index=True, unique=True)
+    domain = models.CharField(max_length=40, db_index=True, unique=True) # type: text_type
     # name is the user-visible identifier for the realm. It has no required
     # structure.
-    name = models.CharField(max_length=40, null=True)
-    restricted_to_domain = models.BooleanField(default=True)
-    invite_required = models.BooleanField(default=False)
-    invite_by_admins_only = models.BooleanField(default=False)
-    create_stream_by_admins_only = models.BooleanField(default=False)
-    mandatory_topics = models.BooleanField(default=False)
-    show_digest_email = models.BooleanField(default=True)
-    name_changes_disabled = models.BooleanField(default=False)
+    name = models.CharField(max_length=40, null=True) # type: Optional[text_type]
+    restricted_to_domain = models.BooleanField(default=True) # type: bool
+    invite_required = models.BooleanField(default=False) # type: bool
+    invite_by_admins_only = models.BooleanField(default=False) # type: bool
+    create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
+    mandatory_topics = models.BooleanField(default=False) # type: bool
+    show_digest_email = models.BooleanField(default=True) # type: bool
+    name_changes_disabled = models.BooleanField(default=False) # type: bool
 
-    date_created = models.DateTimeField(default=timezone.now)
-    notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True)
-    deactivated = models.BooleanField(default=False)
+    date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+    notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]
+    deactivated = models.BooleanField(default=False) # type: bool
 
-    DEFAULT_NOTIFICATION_STREAM_NAME = 'announce'
+    DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
 
     def __unicode__(self):
         # type: () -> text_type
@@ -190,8 +190,8 @@ class Realm(ModelReprMixin, models.Model):
 post_save.connect(flush_realm, sender=Realm)
 
 class RealmAlias(models.Model):
-    realm = models.ForeignKey(Realm, null=True)
-    domain = models.CharField(max_length=80, db_index=True, unique=True)
+    realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
+    domain = models.CharField(max_length=80, db_index=True, unique=True) # type: text_type
 
 # These functions should only be used on email addresses that have
 # been validated via django.core.validators.validate_email
