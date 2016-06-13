@@ -37,7 +37,7 @@ from typing import Any, Dict, List, IO, Iterable, Mapping, Set, Tuple
 settings.TORNADO_SERVER = None
 
 def create_users(realms, name_list, bot_type=None):
-    # type: (Mapping[str, Realm], Iterable[Tuple[text_type, str]], int) -> None
+    # type: (Mapping[text_type, Realm], Iterable[Tuple[text_type, text_type]], int) -> None
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
@@ -45,7 +45,7 @@ def create_users(realms, name_list, bot_type=None):
     bulk_create_users(realms, user_set, bot_type)
 
 def create_streams(realms, realm, stream_list):
-    # type: (Mapping[str, Realm], Realm, Iterable[str]) -> None
+    # type: (Mapping[text_type, Realm], Realm, Iterable[text_type]) -> None
     stream_set = set()
     for stream_name in stream_list:
         stream_set.add((realm.domain, stream_name))

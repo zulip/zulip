@@ -17,7 +17,7 @@ from six import text_type
 settings.TORNADO_SERVER = None
 
 def create_users(name_list, bot_type=None):
-    # type: (Iterable[Tuple[text_type, str]], int) -> None
+    # type: (Iterable[Tuple[text_type, text_type]], int) -> None
     realms = {}
     for realm in Realm.objects.all():
         realms[realm.domain] = realm
