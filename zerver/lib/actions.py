@@ -2347,7 +2347,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
 
     event = {'type': 'update_message',
              'sender': user_profile.email,
-             'message_id': message_id}
+             'message_id': message_id} # type: Dict[str, Any]
     edit_history_event = {}
     changed_messages = [message]
 

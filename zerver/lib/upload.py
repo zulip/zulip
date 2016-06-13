@@ -92,7 +92,7 @@ class ZulipUploadBackend(object):
         raise NotImplementedError()
 
     def upload_avatar_image(self, user_file, user_profile, email):
-        # type: (File, UserProfile, str) -> None
+        # type: (File, UserProfile, text_type) -> None
         raise NotImplementedError()
 
     def delete_message_image(self, path_id):
@@ -200,7 +200,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return False
 
     def upload_avatar_image(self, user_file, user_profile, email):
-        # type: (File, UserProfile, str) -> None
+        # type: (File, UserProfile, text_type) -> None
         content_type = guess_type(user_file.name)[0]
         bucket_name = settings.S3_AVATAR_BUCKET
         s3_file_name = user_avatar_hash(email)
@@ -275,7 +275,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return False
 
     def upload_avatar_image(self, user_file, user_profile, email):
-        # type: (File, UserProfile, str) -> None
+        # type: (File, UserProfile, text_type) -> None
         email_hash = user_avatar_hash(email)
 
         image_data = user_file.read()
@@ -295,7 +295,7 @@ def delete_message_image(path_id):
     return upload_backend.delete_message_image(path_id)
 
 def upload_avatar_image(user_file, user_profile, email):
-    # type: (File, UserProfile, str) -> None
+    # type: (File, UserProfile, text_type) -> None
     upload_backend.upload_avatar_image(user_file, user_profile, email)
 
 def upload_message_image(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
