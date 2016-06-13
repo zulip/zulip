@@ -114,21 +114,21 @@ def gather_new_users(user_profile, threshold):
     return len(user_names), user_names
 
 def gather_new_streams(user_profile, threshold):
-    # type: (UserProfile, datetime.datetime) -> Tuple[int, Dict[str, List[str]]]
+    # type: (UserProfile, datetime.datetime) -> Tuple[int, Dict[str, List[text_type]]]
     if user_profile.realm.domain == "mit.edu":
         new_streams = [] # type: List[Stream]
     else:
         new_streams = list(get_active_streams(user_profile.realm).filter(
                 invite_only=False, date_created__gt=threshold))
 
-    base_url = "https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
 
     streams_html = []
     streams_plain = []
 
     for stream in new_streams:
         narrow_url = base_url + hashchange_encode(stream.name)
-        stream_link = "<a href='%s'>%s</a>" % (narrow_url, stream.name)
+        stream_link = u"<a href='%s'>%s</a>" % (narrow_url, stream.name)
         streams_html.append(stream_link)
         streams_plain.append(stream.name)
 
