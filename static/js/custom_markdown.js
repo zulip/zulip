@@ -45,13 +45,13 @@ var exports = {};
     }
 
     function display_subscribe($button, stream_name) {
-        $button.text('Subscribe to ' + stream_data.canonicalized_name(stream_name))
+        $button.text(i18n.t('Subscribe to') + ' ' + stream_data.canonicalized_name(stream_name))
             .removeClass('btn-success')
             .addClass('btn-default');
     }
 
     function display_unsubscribe($button, stream_name) {
-        $button.text('Unsubscribe from ' + stream_data.canonicalized_name(stream_name))
+        $button.text(i18n.t('Unsubscribe from') + ' ' + stream_data.canonicalized_name(stream_name))
             .removeClass('btn-default')
             .addClass('btn-success');
     }

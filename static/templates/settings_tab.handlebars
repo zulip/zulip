@@ -267,13 +267,13 @@
           <div class="control-group">
             <label for="create_bot_name" class="control-label">{{t "Full name" }}</label>
             <input type="text" name="bot_name" id="create_bot_name" class="required"
-                   maxlength=100 placeholder="Full Bot Name" value="" />
+                   maxlength=100 placeholder="{{t 'Full Bot Name' }}" value="" />
             <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
           </div>
           <div class="control-group">
             <label for="bot_short_name" class="control-label">{{t "Username" }}</label>
             <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
-                   placeholder="bot_user_name" value="" />-{{t "bot" }}@{{ page_params.domain }}
+                   placeholder="{{t 'bot_user_name' }}" value="" />-{{t "bot" }}@{{ page_params.domain }}
             <div><label for="create_bot_short_name" generated="true" class="text-error"></label></div>
           </div>
           <div class="control-group new-bot-ui">
