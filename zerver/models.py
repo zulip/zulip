@@ -474,6 +474,10 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     def is_incoming_webhook(self):
         return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
 
+    @property
+    def is_incoming_webhook(self):
+        return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
+
     @staticmethod
     def emails_from_ids(user_ids):
         # type: (Sequence[int]) -> Dict[int, text_type]

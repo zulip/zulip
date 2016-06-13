@@ -713,7 +713,7 @@ def same_realm_jabber_user(user_profile, email):
     return user_profile.realm.domain == domain
 
 
-@authenticated_api_view
+@authenticated_api_view(is_webhook=False)
 def api_send_message(request, user_profile):
     return send_message_backend(request, user_profile)
 
