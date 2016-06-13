@@ -155,6 +155,14 @@ js_rules = [
      'description': 'Write JS else statements on same line as }'},
     {'pattern': '^else if',
      'description': 'Write JS else statements on same line as }'},
+    {'pattern': 'button\.text\(["\']',
+     'exclude': set(['tools/lint-all',
+                     'frontend_tests/node_tests/templates.js']),
+     'description': 'Argument to button.text should be a literal string enclosed by i18n.t()'},
+    {'pattern': 'compose_error\(["\']',
+     'exclude': set(['tools/lint-all']),
+     'description': 'Argument to compose_error should be a literal string enclosed '
+                    'by i18n.t()'},
     ] + whitespace_rules
 python_rules = [
     {'pattern': '^(?!#)@login_required',
@@ -245,7 +253,12 @@ css_rules = [
      'description': "Missing whitespace after '{' in CSS (should be newline)."},
     ] + whitespace_rules
 handlebars_rules = whitespace_rules
-html_rules = whitespace_rules
+html_rules = whitespace_rules + [
+    {'pattern': 'placeholder="[^{]',
+     'description': "`placeholder` value should be translatable."},
+    {'pattern': "placeholder='[^{]",
+     'description': "`placeholder` value should be translatable."},
+    ]
 json_rules = [] # just fix newlines at ends of files
 markdown_rules = whitespace_rules
 txt_rules = whitespace_rules
