@@ -288,7 +288,7 @@ exports.setup_page = function () {
                 button.removeClass("btn-danger");
                 button.addClass("reactivate");
                 button.removeClass("deactivate");
-                button.text("Reactivate");
+                button.text(i18n.t("Reactivate"));
                 row.addClass("deactivated_user");
             }
         });
@@ -313,7 +313,7 @@ exports.setup_page = function () {
                         $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
                     );
                 } else {
-                     button.text("Failed!");
+                     button.text(i18n.t("Failed!"));
                 }
             },
             success: function () {
@@ -322,7 +322,7 @@ exports.setup_page = function () {
                 button.removeClass("btn-warning");
                 button.addClass("deactivate");
                 button.removeClass("reactivate");
-                button.text("Deactivate");
+                button.text(i18n.t("Deactivate"));
                 row.removeClass("deactivated_user");
             }
         });
@@ -434,7 +434,7 @@ exports.setup_page = function () {
                 button.removeClass("btn-warning");
                 button.addClass("remove-admin");
                 button.removeClass("make-admin");
-                button.text("Remove admin");
+                button.text(i18n.t("Remove admin"));
             },
             error: function (xhr, error) {
                 var status = row.find(".admin-user-status");
@@ -467,7 +467,7 @@ exports.setup_page = function () {
                 button.removeClass("btn-danger");
                 button.addClass("make-admin");
                 button.removeClass("remove-admin");
-                button.text("Make admin");
+                button.text(i18n.t("Make admin"));
             },
             error: function (xhr, error) {
                 var status = row.find(".admin-user-status");
@@ -504,7 +504,7 @@ exports.setup_page = function () {
                 button.removeClass("btn-danger");
                 button.addClass("reactivate");
                 button.removeClass("deactivate");
-                button.text("Reactivate");
+                button.text(i18n.t("Reactivate"));
                 row.addClass("deactivated_user");
                 row.find(".user-admin-settings").hide();
             }
