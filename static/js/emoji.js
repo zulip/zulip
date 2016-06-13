@@ -11,7 +11,7 @@ var default_emojis = [];
 emoji_names.push("zulip");
 
 _.each(emoji_names, function (value) {
-    default_emojis.push({emoji_name: value, emoji_url: "static/third/gemoji/images/emoji/" + value + ".png"});
+    default_emojis.push({emoji_name: value, emoji_url: "/static/third/gemoji/images/emoji/" + value + ".png"});
 });
 
 exports.update_emojis = function update_emojis(realm_emojis) {
