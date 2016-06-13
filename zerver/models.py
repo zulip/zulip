@@ -763,19 +763,19 @@ def to_dict_cache_key(message, apply_markdown):
     return to_dict_cache_key_id(message.id, apply_markdown)
 
 class Message(ModelReprMixin, models.Model):
-    sender = models.ForeignKey(UserProfile)
-    recipient = models.ForeignKey(Recipient)
-    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True)
-    content = models.TextField()
-    rendered_content = models.TextField(null=True)
-    rendered_content_version = models.IntegerField(null=True)
-    pub_date = models.DateTimeField('date published', db_index=True)
-    sending_client = models.ForeignKey(Client)
-    last_edit_time = models.DateTimeField(null=True)
-    edit_history = models.TextField(null=True)
-    has_attachment = models.BooleanField(default=False, db_index=True)
-    has_image = models.BooleanField(default=False, db_index=True)
-    has_link = models.BooleanField(default=False, db_index=True)
+    sender = models.ForeignKey(UserProfile) # type: UserProfile
+    recipient = models.ForeignKey(Recipient) # type: Recipient
+    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
+    content = models.TextField() # type: text_type
+    rendered_content = models.TextField(null=True) # type: Optional[text_type]
+    rendered_content_version = models.IntegerField(null=True) # type: Optional[int]
+    pub_date = models.DateTimeField('date published', db_index=True) # type: datetime.datetime
+    sending_client = models.ForeignKey(Client) # type: Client
+    last_edit_time = models.DateTimeField(null=True) # type: Optional[datetime.datetime]
+    edit_history = models.TextField(null=True) # type: Optional[text_type]
+    has_attachment = models.BooleanField(default=False, db_index=True) # type: bool
+    has_image = models.BooleanField(default=False, db_index=True) # type: bool
+    has_link = models.BooleanField(default=False, db_index=True) # type: bool
 
 
     def __unicode__(self):
