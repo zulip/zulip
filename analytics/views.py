@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
+from six import text_type
 from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Union
 
 from django.db import connection
@@ -790,7 +791,7 @@ def user_activity_summary_table(user_summary):
     return make_table(title, cols, rows)
 
 def realm_user_summary_table(all_records, admin_emails):
-    # type: (List[QuerySet], Set[str]) -> Tuple[Dict[str, Dict[str, Any]], str]
+    # type: (List[QuerySet], Set[text_type]) -> Tuple[Dict[str, Dict[str, Any]], str]
     user_records = {}
 
     def by_email(record):
