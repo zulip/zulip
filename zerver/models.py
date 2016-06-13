@@ -517,26 +517,26 @@ class PushDeviceToken(models.Model):
         (GCM,   'gcm'),
     )
 
-    kind = models.PositiveSmallIntegerField(choices=KINDS)
+    kind = models.PositiveSmallIntegerField(choices=KINDS) # type: int
 
     # The token is a unique device-specific token that is
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
-    token = models.CharField(max_length=4096, unique=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    token = models.CharField(max_length=4096, unique=True) # type: text_type
+    last_updated = models.DateTimeField(auto_now=True) # type: datetime.datetime
 
     # The user who's device this is
-    user = models.ForeignKey(UserProfile, db_index=True)
+    user = models.ForeignKey(UserProfile, db_index=True) # type: UserProfile
 
     # [optional] Contains the app id of the device if it is an iOS device
-    ios_app_id = models.TextField(null=True)
+    ios_app_id = models.TextField(null=True) # type: Optional[text_type]
 
 class MitUser(models.Model):
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True) # type: text_type
     # status: whether an object has been confirmed.
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
-    status = models.IntegerField(default=0)
+    status = models.IntegerField(default=0) # type: int
 
 def generate_email_token_for_stream():
     # type: () -> text_type
