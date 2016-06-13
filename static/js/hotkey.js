@@ -15,113 +15,82 @@ var actions_dropdown_hotkeys = [
     'enter'
 ];
 
-function get_event_name(e) {
-    // Note that multiple keys can map to the same event_name, which
-    // we'll do in cases where they have the exact same semantics.
-    // DON'T FORGET: update keyboard_shortcuts.html
+// Note that multiple keys can map to the same event_name, which
+// we'll do in cases where they have the exact same semantics.
+// DON'T FORGET: update keyboard_shortcuts.html
 
-    if ((e.which === 9) && e.shiftKey) {
-        return 'shift_tab';
-    }
+var hotkeys_shift = {
+    // these can be triggered by shift + key only
+    9: {name: 'shift_tab', message_view_only: false}, // tab
+    32: {name: 'page_up', message_view_only: true}  // space bar
+};
+var hotkeys_no_modifiers = {
+    // these can be triggered by key only (without shift)
+    9: {name: 'tab', message_view_only: false}, // tab
+    32: {name: 'page_down', message_view_only: true}, // space bar
+    33: {name: 'page_up', message_view_only: true}, // page up
+    34: {name: 'page_down', message_view_only: true}, // page down
+    35: {name: 'end', message_view_only: true}, // end
+    36: {name: 'home', message_view_only: true}, // home
+    38: {name: 'up_arrow', message_view_only: true}, // up arrow
+    40: {name: 'down_arrow', message_view_only: true} // down arrow
+};
+var hotkeys_shift_insensitive = {
+    // these can be triggered by key or shift + key
+    // Note that codes for letters are still case sensitive!
+    8: {name: 'backspace', message_view_only: true}, // backspace
+    13: {name: 'enter', message_view_only: false}, // enter
+    27: {name: 'escape', message_view_only: false}, // escape
+    47: {name: 'search', message_view_only: false}, // '/'
+    63: {name: 'show_shortcuts', message_view_only: false}, // '?'
+    65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
+    67: {name: 'compose_private_message', message_view_only: true}, // 'C'
+    68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
+    74: {name: 'page_down', message_view_only: true}, // 'J'
+    75: {name: 'page_up', message_view_only: true}, // 'K'
+    82: {name: 'respond_to_author', message_view_only: true}, // 'R'
+    83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    99: {name: 'compose', message_view_only: true}, // 'c'
+    105: {name: 'message_actions', message_view_only: true}, // 'i'
+    106: {name: 'vim_down', message_view_only: true}, // 'j'
+    107: {name: 'vim_up', message_view_only: true}, // 'k'
+    113: {name: 'query_users', message_view_only: false}, // 'q'
+    114: {name: 'reply_message', message_view_only: true}, // 'r'
+    115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
+    118: {name: 'narrow_private', message_view_only: true} // 'v'
+};
+
+function get_hotkey_from_event(e) {
 
     // We're in the middle of a combo; stop processing because
     // we want the browser to handle it (to avoid breaking
     // things like Ctrl-C or Command-C for copy).
     if (e.metaKey || e.ctrlKey) {
-        return 'ignore';
+        return {name: 'ignore', message_view_only: false};
     }
 
-    if (!e.shiftKey) {
-        switch (e.keyCode) {
-        case 33: // Page Up
-            return 'page_up';
-        case 34: // Page Down
-            return 'page_down';
-        case 35:
-            return 'end';
-        case 36:
-            return 'home';
-        case 38:
-            return 'up_arrow';
-        case 40:
-            return 'down_arrow';
-        }
+    if (e.shiftKey && hotkeys_shift[e.which] !== undefined) {
+        return hotkeys_shift[e.which];
+    } else if (!e.shiftKey && hotkeys_no_modifiers[e.which] !== undefined) {
+        return hotkeys_no_modifiers[e.which];
+    } else if (hotkeys_shift_insensitive[e.which] !== undefined) {
+        return hotkeys_shift_insensitive[e.which];
     }
 
-    switch (e.which) {
-    case 8:
-        return 'backspace';
-    case 9:
-        return 'tab';
-    case 13:
-        return 'enter';
-    case 27:
-        return 'escape';
-    case 32: // Spacebar
-        if (e.shiftKey) {
-            return 'page_up';
-        } else {
-            return 'page_down';
-        }
-    case 47: // '/': initiate search
-        return 'search';
-    case 63: // '?': Show keyboard shortcuts page
-        return 'show_shortcuts';
-    case 65: // 'A'
-        return 'stream_cycle_backward';
-    case 67: // 'C'
-        return 'compose_private_message';
-    case 68: // 'D'
-        return 'stream_cycle_forward';
-    case 74: // 'J'
-        return 'page_down';
-    case 75: // 'K'
-        return 'page_up';
-    case 82: // 'R': respond to author
-        return 'respond_to_author';
-    case 83: //'S'
-        return 'narrow_by_subject';
-    case 99: // 'c'
-        return 'compose';
-    case 105: // 'i'
-        return 'message_actions';
-    case 106: // 'j'
-        return 'vim_down';
-    case 107: // 'k'
-        return 'vim_up';
-    case 113: // 'q'
-        return 'query_users';
-    case 114: // 'r': respond to message
-        return 'reply_message';
-    case 115: // 's'
-        return 'narrow_by_recipient';
-    case 118: // 'v'
-        return 'narrow_private';
-    }
-    return 'ignore';
+    return {name: 'ignore', message_view_only: false};
 }
 
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
 function process_hotkey(e) {
-    var row, focused_message_edit_content, focused_message_edit_save, message_edit_form;
+    var row, alert_words_content, focused_message_edit_content, focused_message_edit_save, message_edit_form;
 
-    var event_name = get_event_name(e);
+    var hotkey = get_hotkey_from_event(e);
+    var event_name = hotkey.name;
     activity.new_user_input = true;
 
-    if (event_name === "tab") {
-        // The alert word configuration is on the settings page,
-        // so handle this before we abort early
-        var alert_words_content = $(".edit-alert-word").filter(":focus");
-        if (alert_words_content.length > 0) {
-            var add_word_li = alert_words_content.closest(".alert-word-item");
-            add_word_li.find(".add-alert-word").focus();
-            return true;
-        }
-    }
-
-    if (ui.home_tab_obscured() && event_name !== 'search' && event_name !== 'query_users') {
+    if (ui.home_tab_obscured() && hotkey.message_view_only) {
         return false;
     }
 
@@ -150,6 +119,13 @@ function process_hotkey(e) {
     // In Safari and the desktop app, we can't tab to buttons. Intercept the
     // tab from the message edit content box to Save and then Cancel.
     if (event_name === "tab") {
+        alert_words_content = $(".edit-alert-word").filter(":focus");
+        if (alert_words_content.length > 0) {
+            var add_word_li = alert_words_content.closest(".alert-word-item");
+            add_word_li.find(".add-alert-word").focus();
+            return true;
+        }
+
         focused_message_edit_content = $(".message_edit_content").filter(":focus");
         if (focused_message_edit_content.length > 0) {
             message_edit_form = focused_message_edit_content.closest(".message_edit_form");
