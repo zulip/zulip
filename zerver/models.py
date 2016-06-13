@@ -1181,14 +1181,14 @@ def parse_usermessage_flags(val):
 
 class Attachment(ModelReprMixin, models.Model):
     MAX_FILENAME_LENGTH = 100
-    file_name = models.CharField(max_length=MAX_FILENAME_LENGTH, db_index=True)
+    file_name = models.CharField(max_length=MAX_FILENAME_LENGTH, db_index=True) # type: text_type
     # path_id is a storage location agnostic representation of the path of the file.
     # If the path of a file is http://localhost:9991/user_uploads/a/b/abc/temp_file.py
     # then its path_id will be a/b/abc/temp_file.py.
-    path_id = models.TextField(db_index=True)
-    owner = models.ForeignKey(UserProfile)
-    messages = models.ManyToManyField(Message)
-    create_time = models.DateTimeField(default=timezone.now, db_index=True)
+    path_id = models.TextField(db_index=True) # type: text_type
+    owner = models.ForeignKey(UserProfile) # type: UserProfile
+    messages = models.ManyToManyField(Message) # type: Manager
+    create_time = models.DateTimeField(default=timezone.now, db_index=True) # type: datetime.datetime
 
     def __unicode__(self):
         # type: () -> text_type
