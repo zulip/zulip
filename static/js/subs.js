@@ -316,7 +316,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
-            button.text("Subscribed").addClass("subscribed-button").addClass("btn-success");
+            button.text(i18n.t("Subscribed")).addClass("subscribed-button").addClass("btn-success");
             // Add the user to the member list if they're currently
             // viewing the members of this stream
             if (sub.render_subscribers && settings.hasClass('in')) {
@@ -359,7 +359,7 @@ exports.mark_sub_unsubscribed = function (sub) {
     } else if (sub.subscribed) {
         stream_list.remove_narrow_filter(sub.name, 'stream');
         sub.subscribed = false;
-        button_for_sub(sub).removeClass("subscribed-button").removeClass("btn-success").removeClass("btn-danger").text("Subscribe");
+        button_for_sub(sub).removeClass("subscribed-button").removeClass("btn-success").removeClass("btn-danger").text(i18n.t("Subscribe"));
         var settings = settings_for_sub(sub);
         if (settings.hasClass('in')) {
             settings.collapse('hide');
@@ -503,7 +503,7 @@ exports.setup_page = function () {
         });
     } else {
         populate_and_fill({streams: []});
-        $('#create_stream_button').val("Subscribe");
+        $('#create_stream_button').val(i18n.t("Subscribe"));
     }
 };
 
@@ -759,9 +759,9 @@ $(function () {
     });
 
     $("body").on("mouseover", ".subscribed-button", function (e) {
-        $(e.target).addClass("btn-danger").text("Unsubscribe");
+        $(e.target).addClass("btn-danger").text(i18n.t("Unsubscribe"));
     }).on("mouseout", ".subscribed-button", function (e) {
-        $(e.target).removeClass("btn-danger").text("Subscribed");
+        $(e.target).removeClass("btn-danger").text(i18n.t("Subscribed"));
     });
 
     $("#subscriptions-status").on("click", "#close-subscriptions-status", function (e) {

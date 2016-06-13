@@ -710,7 +710,7 @@ function check_stream_for_send(stream_name, autosubscribe) {
     var result = exports.check_stream_existence(stream_name, autosubscribe);
 
     if (result === "error") {
-        compose_error("Error checking subscription", $("#stream"));
+        compose_error(i18n.t("Error checking subscription"), $("#stream"));
         $("#compose-send-button").removeAttr('disabled');
         $("#sending-indicator").hide();
     }
@@ -721,14 +721,14 @@ function check_stream_for_send(stream_name, autosubscribe) {
 function validate_stream_message() {
     var stream_name = exports.stream_name();
     if (stream_name === "") {
-        compose_error("Please specify a stream", $("#stream"));
+        compose_error(i18n.t("Please specify a stream"), $("#stream"));
         return false;
     }
 
     if (page_params.mandatory_topics) {
         var topic = exports.subject();
         if (topic === "") {
-            compose_error("Please specify a topic", $("#subject"));
+            compose_error(i18n.t("Please specify a topic"), $("#subject"));
             return false;
         }
     }
@@ -740,7 +740,7 @@ function validate_stream_message() {
             // user has not seen a warning message yet if undefined
             show_all_everyone_warnings();
             // user has not acknowledge the warning message yet
-            compose_error("Please remove @all / @everyone or acknowledge that you will be spamming everyone!");
+            compose_error(i18n.t("Please remove @all / @everyone or acknowledge that you will be spamming everyone!"));
             return false;
         }
     } else {
@@ -780,11 +780,12 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots for now)
 function validate_private_message() {
     if (exports.recipient() === "") {
-        compose_error("Please specify at least one recipient", $("#private_message_recipient"));
+        compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
         return false;
     } else {
         var private_recipients = util.extract_pm_recipients(compose.recipient());
         var invalid_recipients = [];
+        var context = {};
         _.each(private_recipients, function (email) {
             // This case occurs when exports.recipient() ends with ','
             if (email === "") {
@@ -800,10 +801,12 @@ function validate_private_message() {
         });
 
         if (invalid_recipients.length === 1) {
-            compose_error("The recipient " + invalid_recipients.join() + " is not valid ", $("#private_message_recipient"));
+            context = {'recipient': invalid_recipients.join()};
+            compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));
             return false;
         } else if (invalid_recipients.length > 1) {
-            compose_error("The recipients " + invalid_recipients.join() + " are not valid ", $("#private_message_recipient"));
+            context = {'recipients': invalid_recipients.join()};
+            compose_error(i18n.t("The recipients __recipients__ are not valid ", context), $("#private_message_recipient"));
             return false;
         } else {
             return true;
@@ -816,12 +819,12 @@ exports.validate = function () {
     $("#sending-indicator").show();
 
     if (/^\s*$/.test(exports.message_content())) {
-        compose_error("You have nothing to send!", $("#new_message_content"));
+        compose_error(i18n.t("You have nothing to send!"), $("#new_message_content"));
         return false;
     }
 
     if ($("#zephyr-mirror-error").is(":visible")) {
-        compose_error("You need to be running Zephyr mirroring in order to send messages!");
+        compose_error(i18n.t("You need to be running Zephyr mirroring in order to send messages!"));
         return false;
     }
 
