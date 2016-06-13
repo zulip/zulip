@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Optional, Tuple, List, Set
+from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -36,7 +36,7 @@ from six import text_type
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
-    # type: (List[str], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
+    # type: (Iterable[text_type], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
     """Converts plaintext stream names to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -90,7 +90,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
 
 class PrincipalError(JsonableError):
     def __init__(self, principal, status_code=403):
-        self.principal = principal # type: UserProfile
+        self.principal = principal # type: text_type
         self.status_code = status_code # type: int
 
     def to_json_error_msg(self):
@@ -117,7 +117,7 @@ def principal_to_user_profile(agent, principal):
 
 @require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_name):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     target = get_stream(stream_name, user_profile.realm)
     if not target:
         return json_error(_('No such stream name'))
@@ -131,14 +131,14 @@ def deactivate_stream_backend(request, user_profile, stream_name):
 @require_realm_admin
 @has_request_variables
 def add_default_stream(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     do_add_default_stream(user_profile.realm, stream_name)
     return json_success()
 
 @require_realm_admin
 @has_request_variables
 def remove_default_stream(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     do_remove_default_stream(user_profile.realm, stream_name)
     return json_success()
 
@@ -146,7 +146,7 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
 @require_realm_admin
 @has_request_variables
 def json_rename_stream(request, user_profile, old_name=REQ(), new_name=REQ()):
-    # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, text_type) -> HttpResponse
     do_rename_stream(user_profile.realm, old_name, new_name)
     return json_success()
 
@@ -154,7 +154,7 @@ def json_rename_stream(request, user_profile, old_name=REQ(), new_name=REQ()):
 @require_realm_admin
 @has_request_variables
 def json_make_stream_public(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     do_make_stream_public(user_profile, user_profile.realm, stream_name)
     return json_success()
 
@@ -162,7 +162,7 @@ def json_make_stream_public(request, user_profile, stream_name=REQ()):
 @require_realm_admin
 @has_request_variables
 def json_make_stream_private(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     do_make_stream_private(user_profile.realm, stream_name)
     return json_success()
 
@@ -170,7 +170,7 @@ def json_make_stream_private(request, user_profile, stream_name=REQ()):
 @has_request_variables
 def update_stream_backend(request, user_profile, stream_name,
                           description=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, str, Optional[str]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, Optional[text_type]) -> HttpResponse
     if description is not None:
        do_change_stream_description(user_profile.realm, stream_name, description)
 
@@ -185,7 +185,7 @@ def list_subscriptions_backend(request, user_profile):
 def update_subscriptions_backend(request, user_profile,
                                  delete=REQ(validator=check_list(check_string), default=[]),
                                  add=REQ(validator=check_list(check_dict([('name', check_string)])), default=[])):
-    # type: (HttpRequest, UserProfile, List[str], List[Dict[str, str]]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Iterable[text_type], Iterable[Mapping[str, Any]]) -> HttpResponse
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
@@ -207,7 +207,7 @@ def json_remove_subscriptions(request, user_profile):
 def remove_subscriptions_backend(request, user_profile,
                                  streams_raw = REQ("subscriptions", validator=check_list(check_string)),
                                  principals = REQ(validator=check_list(check_string), default=None)):
-    # type: (HttpRequest, UserProfile, List[str], Optional[List[str]]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Iterable[text_type], Optional[Iterable[text_type]]) -> HttpResponse
 
     removing_someone_else = principals and \
         set(principals) != set((user_profile.email,))
@@ -231,7 +231,7 @@ def remove_subscriptions_backend(request, user_profile,
     else:
         people_to_unsub = set([user_profile])
 
-    result = dict(removed=[], not_subscribed=[]) # type: Dict[str, List[str]]
+    result = dict(removed=[], not_subscribed=[]) # type: Dict[str, List[text_type]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams)
 
     for (subscriber, stream) in removed:
@@ -242,7 +242,7 @@ def remove_subscriptions_backend(request, user_profile,
     return json_success(result)
 
 def filter_stream_authorization(user_profile, streams):
-    # type: (UserProfile, List[Stream]) -> Tuple[List[Stream], List[Stream]]
+    # type: (UserProfile, Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]
     streams_subscribed = set()
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
     subs = Subscription.objects.filter(user_profile=user_profile,
@@ -262,17 +262,17 @@ def filter_stream_authorization(user_profile, streams):
         if stream.invite_only:
             unauthorized_streams.append(stream)
 
-    streams = [stream for stream in streams if
+    authorized_streams = [stream for stream in streams if
                stream.id not in set(stream.id for stream in unauthorized_streams)]
-    return streams, unauthorized_streams
+    return authorized_streams, unauthorized_streams
 
 def stream_link(stream_name):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     "Escapes a stream name to make a #narrow/stream/stream_name link"
-    return "#narrow/stream/%s" % (urllib.parse.quote(stream_name.encode('utf-8')),)
+    return u"#narrow/stream/%s" % (urllib.parse.quote(stream_name.encode('utf-8')),)
 
 def stream_button(stream_name):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     stream_name = stream_name.replace('\\', '\\\\')
     stream_name = stream_name.replace(')', '\\)')
     return '!_stream_subscribe_button(%s)' % (stream_name,)
@@ -285,7 +285,7 @@ def add_subscriptions_backend(request, user_profile,
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, UserProfile, List[Dict[str, str]], bool, bool, Optional[List[str]], bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Iterable[Mapping[str, text_type]], bool, bool, Optional[List[text_type]], bool) -> HttpResponse
     stream_names = []
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"].strip()
@@ -397,7 +397,7 @@ def add_subscriptions_backend(request, user_profile,
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     stream = get_stream(stream_name, user_profile.realm)
     if stream is None:
         raise JsonableError(_("Stream does not exist: %s") % (stream_name,))
@@ -432,11 +432,11 @@ def get_streams_backend(request, user_profile,
 @has_request_variables
 def json_stream_exists(request, user_profile, stream=REQ(),
                        autosubscribe=REQ(default=False)):
-    # type: (HttpRequest, UserProfile, str, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, bool) -> HttpResponse
     return stream_exists_backend(request, user_profile, stream, autosubscribe)
 
 def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
-    # type: (HttpRequest, UserProfile, str, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, bool) -> HttpResponse
     if not valid_stream_name(stream_name):
         return json_error(_("Invalid characters in stream name"))
     stream = get_stream(stream_name, user_profile.realm)
@@ -452,7 +452,7 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
     return json_response(data=result, status=404)
 
 def get_subscription_or_die(stream_name, user_profile):
-    # type: (str, UserProfile) -> Subscription
+    # type: (text_type, UserProfile) -> Subscription
     stream = get_stream(stream_name, user_profile.realm)
     if not stream:
         raise JsonableError(_("Invalid stream %s") % (stream.name,))
