@@ -737,7 +737,7 @@ def home(request):
     request._email = request.user.email
     request.client = get_client("website")
 
-    narrow = [] # type: List[List[str]]
+    narrow = [] # type: List[List[text_type]]
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):

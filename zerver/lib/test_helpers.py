@@ -379,7 +379,7 @@ class AuthedTestCase(TestCase):
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
-        # type: (str, str, Optional[Realm]) -> None
+        # type: (text_type, text_type, Optional[Realm]) -> None
         if realm is None:
             realm = get_realm(resolve_email_to_domain(email))
         stream = get_stream(stream_name, realm)

@@ -461,7 +461,7 @@ class StreamAdminTest(AuthedTestCase):
 
 class DefaultStreamTest(AuthedTestCase):
     def get_default_stream_names(self, realm):
-        # type: (Realm) -> Set[str]
+        # type: (Realm) -> Set[text_type]
         streams = get_default_streams_for_realm(realm)
         stream_names = [s.name for s in streams]
         return set(stream_names)
