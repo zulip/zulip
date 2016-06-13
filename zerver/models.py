@@ -1467,29 +1467,29 @@ class UserPresence(models.Model):
         unique_together = ("user_profile", "client")
 
 class DefaultStream(models.Model):
-    realm = models.ForeignKey(Realm)
-    stream = models.ForeignKey(Stream)
+    realm = models.ForeignKey(Realm) # type: Realm
+    stream = models.ForeignKey(Stream) # type: Stream
 
     class Meta(object):
         unique_together = ("realm", "stream")
 
 class Referral(models.Model):
-    user_profile = models.ForeignKey(UserProfile)
-    email = models.EmailField(blank=False, null=False)
-    timestamp = models.DateTimeField(auto_now_add=True, null=False)
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    email = models.EmailField(blank=False, null=False) # type: text_type
+    timestamp = models.DateTimeField(auto_now_add=True, null=False) # type: datetime.datetime
 
 # This table only gets used on Zulip Voyager instances
 # For reasons of deliverability (and sending from multiple email addresses),
 # we will still send from mandrill when we send things from the (staging.)zulip.com install
 class ScheduledJob(models.Model):
-    scheduled_timestamp = models.DateTimeField(auto_now_add=False, null=False)
-    type = models.PositiveSmallIntegerField()
+    scheduled_timestamp = models.DateTimeField(auto_now_add=False, null=False) # type: datetime.datetime
+    type = models.PositiveSmallIntegerField() # type: int
     # Valid types are {email}
     # for EMAIL, filter_string is recipient_email
     EMAIL = 1
 
     # JSON representation of the job's data. Be careful, as we are not relying on Django to do validation
-    data = models.TextField()
+    data = models.TextField() # type: text_type
     # Kind if like a ForeignKey, but table is determined by type.
-    filter_id = models.IntegerField(null=True)
-    filter_string = models.CharField(max_length=100)
+    filter_id = models.IntegerField(null=True) # type: Optional[int]
+    filter_string = models.CharField(max_length=100) # type: text_type
