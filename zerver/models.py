@@ -246,14 +246,14 @@ def remote_user_to_email(remote_user):
     return remote_user
 
 class RealmEmoji(ModelReprMixin, models.Model):
-    realm = models.ForeignKey(Realm)
+    realm = models.ForeignKey(Realm) # type: Realm
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$',
-                                                       message=_("Invalid characters in Emoji name"))])
+                                                       message=_("Invalid characters in Emoji name"))]) # type: text_type
     # URLs start having browser compatibility problem below 2000
     # characters, so 1000 seems like a safe limit.
-    img_url = models.URLField(max_length=1000)
+    img_url = models.URLField(max_length=1000) # type: text_type
 
     class Meta(object):
         unique_together = ("realm", "name")
@@ -281,9 +281,9 @@ post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 class RealmFilter(ModelReprMixin, models.Model):
-    realm = models.ForeignKey(Realm)
-    pattern = models.TextField()
-    url_format_string = models.TextField()
+    realm = models.ForeignKey(Realm) # type: Realm
+    pattern = models.TextField() # type: text_type
+    url_format_string = models.TextField() # type: text_type
 
     class Meta(object):
         unique_together = ("realm", "pattern")
