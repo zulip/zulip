@@ -472,8 +472,12 @@ $(function () {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $('#streams_inline_cog').tooltip({ placement: 'left',
+    $('#streams_header h4').tooltip({ placement: 'right',
                                        animation: false });
+
+    $('#streams_header i[data-toggle="tooltip"]').tooltip({ placement: 'left',
+                                       animation: false });
+
 
     if (feature_flags.disable_message_editing) {
         $("#edit-message-hotkey-help").hide();

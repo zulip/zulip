@@ -222,6 +222,66 @@ casper.then(check_narrow_title('private - Zulip Dev - Zulip'));
 un_narrow();
 
 
+// Make sure stream search filters the stream list
+casper.then(function () {
+    casper.test.info('Search streams using left sidebar');
+});
+
+casper.then(function () {
+    casper.test.assertExists('.stream-list-filter.notdisplayed', 'Stream filter box not visible initially');
+});
+
+casper.thenClick('#streams_header .sidebar-title');
+
+casper.then(function () {
+    casper.test.assertDoesntExist('.stream-list-filter.notdisplayed', 'Stream filter box visible after click');
+});
+
+casper.then(function () {
+    casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Original stream list contains Denmark');
+    casper.test.assertExists('#stream_filters [data-name="Scotland"]', 'Original stream list contains Scotland');
+    casper.test.assertExists('#stream_filters [data-name="Verona"]', 'Original stream list contains Verona');
+});
+
+// We search for the beginning of "Verona", not case sensitive
+casper.then(function () {
+    casper.evaluate(function () {
+        $('.stream-list-filter').expectOne()
+            .focus()
+            .val('ver')
+            .trigger($.Event('input'));
+    });
+});
+casper.then(function () {
+    casper.test.assertDoesntExist('#stream_filters [data-name="Denmark"]', 'Filtered stream list does not contain Denmark');
+    casper.test.assertDoesntExist('#stream_filters [data-name="Scotland"]', 'Filtered stream list does not contain Scotland');
+    casper.test.assertExists('#stream_filters [data-name="Verona"]', 'Filtered stream list does contain Verona');
+});
+
+// Clearing the list should give us back all the streams in the list
+casper.then(function () {
+    casper.evaluate(function () {
+        $('.stream-list-filter').expectOne()
+            .focus()
+            .val('')
+            .trigger($.Event('input'));
+    });
+});
+casper.then(function () {
+    casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Denmark');
+    casper.test.assertExists('#stream_filters [data-name="Scotland"]', 'Restored stream list contains Scotland');
+    casper.test.assertExists('#stream_filters [data-name="Verona"]', 'Restored stream list contains Verona');
+});
+
+casper.thenClick('#streams_header .sidebar-title');
+
+casper.then(function () {
+    casper.test.assertExists('.stream-list-filter.notdisplayed', 'Stream filter box not visible after second click');
+});
+
+un_narrow();
+
+
 common.then_log_out();
 
 // Run the above queued actions.

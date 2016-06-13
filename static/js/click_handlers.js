@@ -235,7 +235,7 @@ $(function () {
 
     // MISC
 
-    $('#streams_header a').click(function (e) {
+    $('#streams_inline_cog').click(function (e) {
         ui.change_tab_to('#subscriptions');
 
         e.preventDefault();
