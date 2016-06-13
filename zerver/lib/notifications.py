@@ -82,14 +82,14 @@ def build_message_list(user_profile, messages):
     messages_to_render = [] # type: List[Dict[str, Any]]
 
     def sender_string(message):
-        # type: (Message) -> str
-        sender = ''
+        # type: (Message) -> text_type
         if message.recipient.type in (Recipient.STREAM, Recipient.HUDDLE):
-            sender = message.sender.full_name
-        return sender
+            return message.sender.full_name
+        else:
+            return ''
 
     def relative_to_full_url(content):
-        # type: (str) -> str
+        # type: (text_type) -> text_type
         # URLs for uploaded content are of the form
         # "/user_uploads/abc.png". Make them full paths.
         #
@@ -115,18 +115,18 @@ def build_message_list(user_profile, messages):
         return content
 
     def fix_plaintext_image_urls(content):
-        # type: (str) -> str
+        # type: (text_type) -> text_type
         # Replace image URLs in plaintext content of the form
         #     [image name](image url)
         # with a simple hyperlink.
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
     def fix_emoji_sizes(html):
-        # type: (str) -> str
+        # type: (text_type) -> text_type
         return html.replace(' class="emoji"', ' height="20px"')
 
     def build_message_payload(message):
-        # type: (Message) -> Dict[str, str]
+        # type: (Message) -> Dict[str, text_type]
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         plain = relative_to_full_url(plain)
@@ -144,26 +144,26 @@ def build_message_list(user_profile, messages):
                 'content': [build_message_payload(message)]}
 
     def message_header(user_profile, message):
-        # type: (UserProfile, Message) -> Dict[str, text_type]
+        # type: (UserProfile, Message) -> Dict[str, Any]
         disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
-            header = "You and %s" % (message.sender.full_name)
+            header = u"You and %s" % (message.sender.full_name)
             html_link = pm_narrow_url([message.sender.email])
-            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
+            header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
             assert not isinstance(disp_recipient, text_type)
             other_recipients = [r['full_name'] for r in disp_recipient
                                     if r['email'] != user_profile.email]
-            header = "You and %s" % (", ".join(other_recipients),)
+            header = u"You and %s" % (", ".join(other_recipients),)
             html_link = pm_narrow_url([r["email"] for r in disp_recipient
                                        if r["email"] != user_profile.email])
-            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
+            header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
             assert isinstance(disp_recipient, text_type)
-            header = "%s > %s" % (disp_recipient, message.subject)
+            header = u"%s > %s" % (disp_recipient, message.subject)
             stream_link = stream_narrow_url(disp_recipient)
             topic_link = topic_narrow_url(disp_recipient, message.subject)
-            header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
+            header_html = u"<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
                 stream_link, disp_recipient, topic_link, message.subject)
         return {"plain": header,
                 "html": header_html,
