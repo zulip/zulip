@@ -545,18 +545,18 @@ def generate_email_token_for_stream():
 
 class Stream(ModelReprMixin, models.Model):
     MAX_NAME_LENGTH = 60
-    name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
-    realm = models.ForeignKey(Realm, db_index=True)
-    invite_only = models.NullBooleanField(default=False)
+    name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True) # type: text_type
+    realm = models.ForeignKey(Realm, db_index=True) # type: Realm
+    invite_only = models.NullBooleanField(default=False) # type: Optional[bool]
     # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
     # e-mail length of 254, and our max stream length is 30, so we
     # have plenty of room for the token.
     email_token = models.CharField(
-        max_length=32, default=generate_email_token_for_stream)
-    description = models.CharField(max_length=1024, default='')
+        max_length=32, default=generate_email_token_for_stream) # type: text_type
+    description = models.CharField(max_length=1024, default='') # type: text_type
 
-    date_created = models.DateTimeField(default=timezone.now)
-    deactivated = models.BooleanField(default=False)
+    date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+    deactivated = models.BooleanField(default=False) # type: bool
 
     def __unicode__(self):
         # type: () -> text_type
