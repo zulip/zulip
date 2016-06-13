@@ -22,6 +22,7 @@ from zerver.models import get_user_profile_by_id
 from zerver.models import Attachment
 from zerver.models import Realm, UserProfile
 
+from six.moves import urllib
 import base64
 import os
 import re
@@ -139,12 +140,17 @@ def upload_image_to_s3(
 
 def get_file_info(request, user_file):
     # type: (HttpRequest, File) -> Tuple[str, str]
-    uploaded_file_name = user_file.name
+
+    # `user_file.name` is a unicode whereas it should be an ascii
+    # so convert it into an ascii.
+    uploaded_file_name = user_file.name.encode('ascii')
     content_type = request.GET.get('mimetype')
     if content_type is None:
         content_type = guess_type(uploaded_file_name)[0]
     else:
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
+
+    uploaded_file_name = urllib.parse.unquote(uploaded_file_name).decode('utf-8')
     return uploaded_file_name, content_type
 
 
