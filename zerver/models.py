@@ -611,8 +611,8 @@ def valid_stream_name(name):
 # (used by the Message table) to the type-specific unique id (the
 # stream id, user_profile id, or huddle id).
 class Recipient(ModelReprMixin, models.Model):
-    type_id = models.IntegerField(db_index=True)
-    type = models.PositiveSmallIntegerField(db_index=True)
+    type_id = models.IntegerField(db_index=True) # type: int
+    type = models.PositiveSmallIntegerField(db_index=True) # type: int
     # Valid types are {personal, stream, huddle}
     PERSONAL = 1
     STREAM = 2
@@ -638,7 +638,7 @@ class Recipient(ModelReprMixin, models.Model):
         return u"<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
 class Client(ModelReprMixin, models.Model):
-    name = models.CharField(max_length=30, db_index=True, unique=True)
+    name = models.CharField(max_length=30, db_index=True, unique=True) # type: text_type
 
     def __unicode__(self):
         # type: () -> text_type
