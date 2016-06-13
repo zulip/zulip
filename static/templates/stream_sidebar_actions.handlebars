@@ -30,6 +30,16 @@
     </a>
   </li>
   <li>
+    <a class="pin_stream_open">
+      <i class="thumb-tack"></i>
+      {{#if stream.pin_stream_open}}
+      {{#tr this}}Don't Keep stream <b>{{stream.name}}</b> always open{{/tr}}
+      {{else}}
+      {{#tr this}}Keep stream <b>{{stream.name}}</b> always open{{/tr}}
+      {{/if}}
+    </a>
+  </li>
+  <li>
     <a class="open_stream_settings">
       <i class="icon-vector-cog"></i>
       {{t "Stream settings" }}

@@ -42,6 +42,12 @@ exports.subscribed_streams = function () {
     return _.pluck(exports.subscribed_subs(), 'name');
 };
 
+exports.pinned_open_streams = function () {
+    return _.filter(exports.subscribed_subs(), function (stream) {
+                            return stream.pin_stream_open === true;
+                        });
+};
+
 exports.get_colors = function () {
     return _.pluck(exports.subscribed_subs(), 'color');
 };

@@ -559,6 +559,13 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
     });
 
+    $('body').on('click', '.pin_stream_open', function (e) {
+        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        popovers.hide_stream_sidebar_popover();
+        subs.set_pin_stream_open(stream);
+        e.stopPropagation();
+    });
+
     $('body').on('click', '.open_stream_settings', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();

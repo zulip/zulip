@@ -8,7 +8,8 @@ add_dependencies({
     stream_color: 'js/stream_color',
     stream_data: 'js/stream_data',
     subs: 'js/subs',
-    hashchange: 'js/hashchange'
+    hashchange: 'js/hashchange',
+    util: 'js/util'
 });
 
 global.recent_subjects = new global.Dict();
@@ -119,4 +120,40 @@ global.use_template('stream_privacy');
     global.append_test_output(html);
 
     assert(li.find('.stream-privacy').find("i").hasClass("icon-vector-lock"));
+}());
+
+(function test_pin_open_streams() {
+
+    var stream_filters = $('<ul id="stream_filters">');
+    $("body").empty();
+    $("body").append(stream_filters);
+
+    var develSub = {
+        name: 'devel',
+        stream_id: 1000,
+        color: 'blue',
+        id: 5,
+        subscribed: true,
+        pin_stream_open: false,
+        sidebar_li: stream_list.add_stream_to_sidebar('devel')
+    };
+    global.stream_data.add_sub('devel', develSub);
+
+    var socialSub = {
+        name: 'social',
+        stream_id: 2000,
+        color: '#c2c2c2',
+        id: 6,
+        subscribed: true,
+        pin_stream_open: true,
+        sidebar_li: stream_list.add_stream_to_sidebar('social')
+    };
+    global.stream_data.add_sub('social', socialSub);
+    stream_list.build_stream_list();
+
+    // Topic list is open for stream social
+    assert.equal(socialSub.sidebar_li.find('[ data-stream="social"]').length, 1);
+
+    // Topic list is not open for stream devel
+    assert.equal(socialSub.sidebar_li.find('[ data-stream="devel"]').length, 0);
 }());
