@@ -1222,20 +1222,20 @@ def get_old_unclaimed_attachments(weeks_ago):
     return old_attachments
 
 class Subscription(ModelReprMixin, models.Model):
-    user_profile = models.ForeignKey(UserProfile)
-    recipient = models.ForeignKey(Recipient)
-    active = models.BooleanField(default=True)
-    in_home_view = models.NullBooleanField(default=True)
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    recipient = models.ForeignKey(Recipient) # type: Recipient
+    active = models.BooleanField(default=True) # type: bool
+    in_home_view = models.NullBooleanField(default=True) # type: Optional[bool]
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
-    color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
+    color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR) # type: text_type
 
-    desktop_notifications = models.BooleanField(default=True)
-    audible_notifications = models.BooleanField(default=True)
+    desktop_notifications = models.BooleanField(default=True) # type: bool
+    audible_notifications = models.BooleanField(default=True) # type: bool
 
     # Combination desktop + audible notifications superseded by the
     # above.
-    notifications = models.BooleanField(default=False)
+    notifications = models.BooleanField(default=False) # type: bool
 
     class Meta(object):
         unique_together = ("user_profile", "recipient")
@@ -1305,7 +1305,7 @@ def get_cross_realm_users():
 class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
-    huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)
+    huddle_hash = models.CharField(max_length=40, db_index=True, unique=True) # type: text_type
 
 def get_huddle_hash(id_list):
     # type: (List[int]) -> text_type
