@@ -32,6 +32,7 @@ from django.utils.translation import ugettext_lazy as _
 import zlib
 
 from bitfield import BitField
+from bitfield.types import BitHandler
 from collections import defaultdict
 from datetime import timedelta
 import pylibmc
@@ -1146,15 +1147,15 @@ def get_context_for_message(message):
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
 class UserMessage(ModelReprMixin, models.Model):
-    user_profile = models.ForeignKey(UserProfile)
-    message = models.ForeignKey(Message)
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    message = models.ForeignKey(Message) # type: Message
     # We're not using the archived field for now, but create it anyway
     # since this table will be an unpleasant one to do schema changes
     # on later
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
                  'has_alert_word', "historical", 'is_me_message']
-    flags = BitField(flags=ALL_FLAGS, default=0)
+    flags = BitField(flags=ALL_FLAGS, default=0) # type: BitHandler
 
     class Meta(object):
         unique_together = ("user_profile", "message")
