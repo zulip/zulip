@@ -44,6 +44,7 @@ from six.moves import zip
 from django.core.management.commands import makemessages
 from django.utils.translation import trans_real
 from django.template.base import BLOCK_TAG_START, BLOCK_TAG_END
+from django.conf import settings
 
 strip_whitespace_right = re.compile(r"(%s-?\s*(trans|pluralize).*?-%s)\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 strip_whitespace_left = re.compile(r"\s+(%s-\s*(endtrans|pluralize).*?-?%s)" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
@@ -51,6 +52,8 @@ strip_whitespace_left = re.compile(r"\s+(%s-\s*(endtrans|pluralize).*?-?%s)" % (
 regexes = ['{{#tr .*?}}(.*?){{/tr}}',
            '{{t "(.*?)"\W*}}',
            "{{t '(.*?)'\W*}}",
+           "i18n\.t\('(.*?)'\)",
+           'i18n\.t\("(.*?)"\)',
            ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
@@ -140,6 +143,13 @@ class Command(makemessages.Command):
 
         for filename in os.listdir(dirname):
             if filename.endswith('handlebars'):
+                with open(os.path.join(dirname, filename)) as reader:
+                    data = reader.read()
+                    translation_strings.update(self.extract_strings(data))
+
+        dirname = os.path.join(settings.DEPLOY_ROOT, 'static/js')
+        for filename in os.listdir(dirname):
+            if filename.endswith('.js'):
                 with open(os.path.join(dirname, filename)) as reader:
                     data = reader.read()
                     translation_strings.update(self.extract_strings(data))
