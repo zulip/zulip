@@ -96,7 +96,7 @@ class ZulipUploadBackend(object):
         raise NotImplementedError()
 
     def delete_message_image(self, path_id):
-        # type: (str) -> bool
+        # type: (text_type) -> bool
         raise NotImplementedError()
 
 ### S3
@@ -185,7 +185,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return url
 
     def delete_message_image(self, path_id):
-        # type: (str) -> bool
+        # type: (text_type) -> bool
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET)
 
@@ -263,7 +263,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return '/user_uploads/' + path
 
     def delete_message_image(self, path_id):
-        # type: (str) -> bool
+        # type: (text_type) -> bool
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
         if os.path.isfile(file_path):
             # This removes the file but the empty folders still remain.
@@ -291,7 +291,7 @@ else:
     upload_backend = S3UploadBackend()
 
 def delete_message_image(path_id):
-    # type: (str) -> bool
+    # type: (text_type) -> bool
     return upload_backend.delete_message_image(path_id)
 
 def upload_avatar_image(user_file, user_profile, email):
