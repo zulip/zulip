@@ -1356,31 +1356,31 @@ def clear_database():
     Session.objects.all().delete()
 
 class UserActivity(models.Model):
-    user_profile = models.ForeignKey(UserProfile)
-    client = models.ForeignKey(Client)
-    query = models.CharField(max_length=50, db_index=True)
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    client = models.ForeignKey(Client) # type: Client
+    query = models.CharField(max_length=50, db_index=True) # type: text_type
 
-    count = models.IntegerField()
-    last_visit = models.DateTimeField('last visit')
+    count = models.IntegerField() # type: int
+    last_visit = models.DateTimeField('last visit') # type: datetime.datetime
 
     class Meta(object):
         unique_together = ("user_profile", "client", "query")
 
 class UserActivityInterval(models.Model):
-    user_profile = models.ForeignKey(UserProfile)
-    start = models.DateTimeField('start time', db_index=True)
-    end = models.DateTimeField('end time', db_index=True)
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    start = models.DateTimeField('start time', db_index=True) # type: datetime.datetime
+    end = models.DateTimeField('end time', db_index=True) # type: datetime.datetime
 
 class UserPresence(models.Model):
-    user_profile = models.ForeignKey(UserProfile)
-    client = models.ForeignKey(Client)
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    client = models.ForeignKey(Client) # type: Client
 
     # Valid statuses
     ACTIVE = 1
     IDLE = 2
 
-    timestamp = models.DateTimeField('presence changed')
-    status = models.PositiveSmallIntegerField(default=ACTIVE)
+    timestamp = models.DateTimeField('presence changed') # type: datetime.datetime
+    status = models.PositiveSmallIntegerField(default=ACTIVE) # type: int
 
     @staticmethod
     def status_to_string(status):
