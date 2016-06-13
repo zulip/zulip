@@ -6,6 +6,7 @@ from zerver.lib.str_utils import NonBinaryStr
 
 from django.db import models
 from django.db.models.query import QuerySet
+from django.db.models import Manager
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -496,16 +497,16 @@ def receives_offline_notifications(user_profile):
 post_save.connect(flush_user_profile, sender=UserProfile)
 
 class PreregistrationUser(models.Model):
-    email = models.EmailField()
-    referred_by = models.ForeignKey(UserProfile, null=True)
-    streams = models.ManyToManyField('Stream')
-    invited_at = models.DateTimeField(auto_now=True)
+    email = models.EmailField() # type: text_type
+    referred_by = models.ForeignKey(UserProfile, null=True) # Optional[UserProfile]
+    streams = models.ManyToManyField('Stream') # type: Manager
+    invited_at = models.DateTimeField(auto_now=True) # type: datetime.datetime
 
     # status: whether an object has been confirmed.
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
-    status = models.IntegerField(default=0)
+    status = models.IntegerField(default=0) # type: int
 
-    realm = models.ForeignKey(Realm, null=True)
+    realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
 
 class PushDeviceToken(models.Model):
     APNS = 1
