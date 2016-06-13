@@ -9,8 +9,9 @@
                           <li data-name="mentioned" class="global-filter"><span class="filter-icon"><i class="icon-vector-tag"></i></span><a href="#narrow/is/mentioned">{{ _('@-mentions') }}<span class="count"><span class="value"></span></span></a></li>
                       </ul>
                       <div id="streams_list" class="zoom-out">
-                        <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title">{{ _('STREAMS') }}</h4>
+                        <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="Subscribed streams"><a href="">{{ _('STREAMS') }}</a></h4>
                           <a href=""><i id="streams_inline_cog" class='icon-vector-cog' data-toggle="tooltip" title="Subscribe, add, or configure streams"></i></a>
+                          <a href=""><i id='streams_filter_icon' class='icon-vector-search' data-toggle="tooltip" title="Filter streams list"></i></a>
                         </div>
                         <div id="topics_header">
                           <div class="all-streams-padding">
@@ -22,6 +23,7 @@
                           </div>
                         </div>
                         <div id="stream-filters-container" class="scrolling_list">
+                            <input class="stream-list-filter notdisplayed" type="text" placeholder="{{ _('Search streams') }}" />
                            <ul id="stream_filters" class="filters"></ul>
                         </div>
                       </div>

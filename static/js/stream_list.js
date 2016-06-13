@@ -19,11 +19,39 @@ function active_stream_name() {
     return false;
 }
 
+function filter_streams_by_search(streams) {
+    var search_box = $(".stream-list-filter");
+
+    var search_term = search_box.expectOne().val().trim();
+
+    if (search_term === '') {
+        return streams;
+    }
+
+    var search_terms = search_term.toLowerCase().split(",");
+    search_terms = _.map(search_terms, function (s) {
+        return s.trim();
+    });
+
+    var filtered_streams = _.filter(streams, function (stream) {
+        return _.any(search_terms, function (search_term) {
+            var lower_stream_name = stream.toLowerCase().split(" ");
+            return _.any(lower_stream_name, function (name) {
+                return name.indexOf(search_term) === 0;
+            });
+        });
+    });
+
+    return filtered_streams;
+}
+
 exports.build_stream_list = function () {
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
     }
+
+    streams = filter_streams_by_search(streams);
 
     var sort_recent = (streams.length > 40);
 
@@ -641,6 +669,89 @@ $(function () {
         e.preventDefault();
     });
 
+});
+
+function actually_update_streams_for_search() {
+    exports.update_streams_sidebar();
+    resize.resize_page_components();
+}
+
+var update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
+
+exports.searching = function () {
+    return $('.stream-list-filter').expectOne().is(':focus');
+};
+
+exports.escape_search = function () {
+    var filter = $('.stream-list-filter').expectOne();
+    if (filter.val() === '') {
+        exports.clear_and_hide_search();
+        return;
+    }
+    filter.val('');
+    update_streams_for_search();
+};
+
+exports.initiate_search = function () {
+    var filter = $('.stream-list-filter').expectOne();
+    filter.removeClass('notdisplayed');
+    filter.focus();
+};
+
+exports.clear_and_hide_search = function () {
+    var filter = $('.stream-list-filter');
+    if (filter.val() !== '') {
+        filter.val('');
+        update_streams_for_search();
+    }
+    filter.blur();
+    filter.addClass('notdisplayed');
+};
+
+function focus_stream_filter (e) {
+    e.stopPropagation();
+}
+
+function maybe_select_stream (e) {
+    if (e.keyCode === 13) {
+        // Enter key was pressed
+
+        var topStream = $('#stream_filters li.narrow-filter').first().data('name');
+        if (topStream !== undefined) {
+            // undefined if there are no results
+            if (ui.home_tab_obscured()) {
+                ui.change_tab_to('#home');
+            }
+            exports.clear_and_hide_search();
+            narrow.by('stream', topStream, {select_first_unread: true, trigger: 'sidebar enter key'});
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+}
+
+function toggle_filter_displayed(e) {
+    if (e.target.id === 'streams_inline_cog') {
+        return;
+    }
+    if (0 === $('.stream-list-filter.notdisplayed').length) {
+        exports.clear_and_hide_search();
+    } else {
+        exports.initiate_search();
+    }
+    e.preventDefault();
+}
+
+$(function () {
+    $(".stream-list-filter").expectOne()
+        .on('click', focus_stream_filter)
+        .on('input', update_streams_for_search)
+        .on('keydown', maybe_select_stream);
+});
+
+$(function () {
+    $("#streams_header").expectOne()
+        .on('click', toggle_filter_displayed);
 });
 
 return exports;
