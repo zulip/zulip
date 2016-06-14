@@ -132,7 +132,7 @@ exports.setup_page = function () {
     // at page load. This promise will be resolved with a list of streams after
     // the first settings page load. build_stream_list then adds a callback to
     // the promise, which in most cases will already be resolved.
-    if (!_streams_defered.isResolved()) {
+    if (_streams_defered.state() !== "resolved") {
         channel.get({
             url: '/json/streams',
             success: function (data) {
