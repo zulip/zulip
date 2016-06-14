@@ -22,7 +22,9 @@ VENV_PATH = "/srv/zulip-venv"
 PY3_VENV_PATH = "/srv/zulip-py3-venv"
 ZULIP_PATH = os.path.dirname(os.path.abspath(__file__))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
-if "--travis" in sys.argv:
+TRAVIS_NODE_PATH = os.path.join(os.environ['HOME'], 'node')
+
+if '--travis' in sys.argv:
     # In Travis CI, we don't have root access
     VENV_CACHE_PATH = os.path.join(os.environ['HOME'], "zulip-venv-cache")
 
@@ -123,6 +125,29 @@ def setup_node_modules():
     else:
         print("Using cached version of node_modules")
 
+def install_npm():
+    if "--travis" not in sys.argv:
+        if subprocess.check_output(['npm', '--version']).strip() != NPM_VERSION:
+            run(["sudo", "npm", "install", "-g", "npm@{}".format(NPM_VERSION)])
+
+        return
+
+    run(['mkdir', '-p', TRAVIS_NODE_PATH])
+
+    npm_exe = os.path.join(TRAVIS_NODE_PATH, 'bin', 'npm')
+    travis_npm = subprocess.check_output(['which', 'npm']).strip()
+    if os.path.exists(npm_exe):
+        run(['sudo', 'ln', '-sf', npm_exe, travis_npm])
+
+    version = subprocess.check_output(['npm', '--version']).strip()
+    if os.path.exists(npm_exe) and version == NPM_VERSION:
+        print("Using cached npm")
+        return
+
+    run(["npm", "install", "-g", "--prefix", TRAVIS_NODE_PATH, "npm@{}".format(NPM_VERSION)])
+    run(['sudo', 'ln', '-sf', npm_exe, travis_npm])
+
+
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     # Check if a cached version already exists
     output = subprocess.check_output(['sha1sum', requirements_file])
@@ -202,10 +227,8 @@ def main():
     run(["tools/setup/postgres-init-test-db"])
     run(["tools/do-destroy-rebuild-test-database"])
     run(["python", "./manage.py", "compilemessages"])
-    if subprocess.check_output(['npm', '--version']).strip() != NPM_VERSION:
-        # Install the pinned version of npm.
-        run(["sudo", "npm", "install", "-g", "npm@{}".format(NPM_VERSION)])
-
+    # Install the pinned version of npm.
+    install_npm()
     # Run npm install last because it can be flaky, and that way one
     # only needs to rerun `npm install` to fix the installation.
     setup_node_modules()
