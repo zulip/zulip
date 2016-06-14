@@ -175,7 +175,7 @@ function select_on_focus(field_id) {
 }
 
 exports.split_at_cursor = function (query, input) {
-    var cursor = input.caret().start;
+    var cursor = input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
 };
 

@@ -547,16 +547,14 @@ $(function () {
     }));
 
     $('#new_message_content').blur(function () {
-        saved_compose_cursor = $(this).caret().start;
+        saved_compose_cursor = $(this).caret();
     });
 });
 
 exports.restore_compose_cursor = function () {
-    // Restore as both the start and end point, i.e.
-    // nothing selected.
     $('#new_message_content')
         .focus()
-        .caret(saved_compose_cursor, saved_compose_cursor);
+        .caret(saved_compose_cursor);
 };
 
 $(function () {
