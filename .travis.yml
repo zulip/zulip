@@ -10,6 +10,7 @@ cache:
     - $HOME/phantomjs
     - $HOME/zulip-venv-cache
     - node_modules
+    - $HOME/node
 env:
   global:
     - COVERALLS_PARALLEL=true
