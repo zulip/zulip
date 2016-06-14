@@ -1,8 +1,8 @@
 var settings = (function () {
 
 var exports = {};
-var _streams_defered = $.Deferred();
-var streams = _streams_defered.promise(); // promise to the full stream list
+var _streams_deferred = $.Deferred();
+var streams = _streams_deferred.promise(); // promise to the full stream list
 
 function build_stream_list($select, extra_names) {
     if (extra_names === undefined) {
@@ -132,11 +132,11 @@ exports.setup_page = function () {
     // at page load. This promise will be resolved with a list of streams after
     // the first settings page load. build_stream_list then adds a callback to
     // the promise, which in most cases will already be resolved.
-    if (_streams_defered.state() !== "resolved") {
+    if (_streams_deferred.state() !== "resolved") {
         channel.get({
             url: '/json/streams',
             success: function (data) {
-                _streams_defered.resolve(data.streams);
+                _streams_deferred.resolve(data.streams);
 
                 build_stream_list($('#create_bot_default_sending_stream'));
                 build_stream_list(
