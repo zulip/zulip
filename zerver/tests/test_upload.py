@@ -4,6 +4,7 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from unittest import skip
 
+from zerver.lib.bugdown import url_filename
 from zerver.lib.test_helpers import AuthedTestCase
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
@@ -90,6 +91,11 @@ class FileUploadTest(AuthedTestCase):
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
         self.assertEquals(entry.is_claimed(), False)
+
+        self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
+        body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
 
     def test_delete_old_unclaimed_attachments(self):
         # type: () -> None
@@ -284,6 +290,11 @@ class S3Test(AuthedTestCase):
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertEquals("zulip!", bucket.get_key(path_id).get_contents_as_string())
 
+        self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
+        body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        self.assertIn('title="dummy.txt"', self.get_last_message().rendered_content)
+
     @use_s3_backend
     def test_message_image_delete_s3(self):
         # type: () -> None
@@ -322,6 +333,20 @@ class S3Test(AuthedTestCase):
         redirect_url = response['Location']
 
         self.assertEquals("zulip!", urllib.request.urlopen(redirect_url).read().strip())
+
+        self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
+        body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
+
+class UploadTitleTests(TestCase):
+    def test_upload_titles(self):
+        # type: () -> None
+        self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/LUeQZUG5jxkagzVzp1Ox_amr/dummy.txt"), "dummy.txt")
+        self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/94/SzGYe0RFT-tEcOhQ6n-ZblFZ/zulip.txt"), "zulip.txt")
+        self.assertEqual(url_filename("https://zulip.com/user_uploads/4142/LUeQZUG5jxkagzVzp1Ox_amr/pasted_image.png"), "pasted_image.png")
+        self.assertEqual(url_filename("https://zulip.com/integrations"), "https://zulip.com/integrations")
+        self.assertEqual(url_filename("https://example.com"), "https://example.com")
 
 class SanitizeNameTests(TestCase):
     def test_file_name(self):
