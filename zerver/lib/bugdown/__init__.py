@@ -630,11 +630,11 @@ class ModalLink(markdown.inlinepatterns.Pattern):
 
         return a_tag
 
-upload_re = re.compile(ur"^(https?://[^/]*)?(/user_uploads/\d+)(/[^/]*)?/[^/]*/(?P<filename>[^/]*)$")
+upload_title_re = re.compile(ur"^(https?://[^/]*)?(/user_uploads/\d+)(/[^/]*)?/[^/]*/(?P<filename>[^/]*)$")
 def url_filename(url):
     # type: (text_type) -> text_type
     """Extract the filename if a URL is an uploaded file, or return the original URL"""
-    match = upload_re.match(url)
+    match = upload_title_re.match(url)
     if match:
         return match.group('filename')
     else:
