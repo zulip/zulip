@@ -8,7 +8,7 @@ var private_messages_open = false;
 var last_private_message_count = 0;
 var last_mention_count = 0;
 var previous_sort_order;
-var previous_unstarred_order;
+var previous_unpinned_order;
 
 function active_stream_name() {
     if (narrow.active()) {
@@ -22,6 +22,11 @@ function active_stream_name() {
 
 function filter_streams_by_search(streams) {
     var search_box = $(".stream-list-filter");
+    if (search_box.length === 0) {
+        // If no stream filter box is there,
+        // return all streams.
+        return streams;
+    }
 
     var search_term = search_box.expectOne().val().trim();
 
@@ -55,8 +60,8 @@ exports.build_stream_list = function () {
     streams = filter_streams_by_search(streams);
 
     var sort_recent = (streams.length > 40);
-    var starred_streams = [];
-    var unstarred_streams = [];
+    var pinned_streams = [];
+    var unpinned_streams = [];
     var parent = $('#stream_filters');
     var elems = [];
 
@@ -72,20 +77,16 @@ exports.build_stream_list = function () {
         elems.push(li.get(0));
     }
 
-    if (streams.length === 0) {
-        return;
-    }
-
     _.each(streams, function (stream) {
-        var starred = stream_data.get_sub(stream).starred;
-        if (starred) {
-            starred_streams.push(stream);
+        var pinned = stream_data.get_sub(stream).pin_to_top;
+        if (pinned) {
+            pinned_streams.push(stream);
         } else {
-            unstarred_streams.push(stream);
+            unpinned_streams.push(stream);
         }
     });
 
-    unstarred_streams.sort(function (a, b) {
+    unpinned_streams.sort(function (a, b) {
         if (sort_recent) {
             if (stream_data.recent_subjects.has(b) && ! stream_data.recent_subjects.has(a)) {
                 return 1;
@@ -96,17 +97,17 @@ exports.build_stream_list = function () {
         return util.strcmp(a, b);
     });
 
-    streams = starred_streams.concat(unstarred_streams);
+    streams = pinned_streams.concat(unpinned_streams);
 
     if (previous_sort_order !== undefined && util.array_compare(previous_sort_order, streams)
-                                          && util.array_compare(previous_unstarred_order, unstarred_streams)) {
+                                          && util.array_compare(previous_unpinned_order, unpinned_streams)) {
         return;
     }
     previous_sort_order = streams;
-    previous_unstarred_order = unstarred_streams;
+    previous_unpinned_order = unpinned_streams;
     parent.empty();
 
-    _.each(starred_streams, function (stream) {
+    _.each(pinned_streams, function (stream) {
         var li = $(stream_data.get_sub(stream).sidebar_li);
         if (sort_recent) {
             if (! stream_data.recent_subjects.has(stream)) {
@@ -118,12 +119,12 @@ exports.build_stream_list = function () {
         elems.push(li.get(0));
     });
 
-    if (starred_streams.length > 0) {
-        _.each(starred_streams, add_sidebar_li);
+    if (pinned_streams.length > 0) {
+        _.each(pinned_streams, add_sidebar_li);
         elems.push($('<hr class="pinned-stream-split">').get(0));
     }
-    if (unstarred_streams.length > 0) {
-        _.each(unstarred_streams, add_sidebar_li);
+    if (unpinned_streams.length > 0) {
+        _.each(unpinned_streams, add_sidebar_li);
     }
 
     $(elems).appendTo(parent);
@@ -245,7 +246,7 @@ function build_stream_sidebar_row(name) {
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: sub.invite_only,
                 color: stream_data.get_color(name),
-                starred: sub.starred
+                pin_to_top: sub.pin_to_top
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
@@ -480,6 +481,7 @@ function rebuild_recent_private_messages(active_conversation) {
 
 exports.update_streams_sidebar = function () {
     exports.build_stream_list();
+
     if (! narrow.active()) {
         return;
     }
@@ -588,8 +590,8 @@ exports.rename_stream = function (sub) {
 };
 
 exports.refresh_stream_in_sidebar = function (sub) {
-    // used by subs.mark_starred_or_unstarred,
-    // since starring/unstarring requires reordering of streams in the sidebar
+    // used by subs.pin_or_unpin_stream,
+    // since pinning/unpinning requires reordering of streams in the sidebar
     sub.sidebar_li = build_stream_sidebar_row(sub.name);
     exports.build_stream_list();
     exports.update_streams_sidebar();
@@ -672,7 +674,7 @@ $(function () {
         exports.remove_narrow_filter(stream_name, 'stream');
         // We need to make sure we resort if the removed sub gets added again
         previous_sort_order = undefined;
-        previous_unstarred_order = undefined;
+        previous_unpinned_order = undefined;
     });
 
     $('.show-all-streams').on('click', function (e) {

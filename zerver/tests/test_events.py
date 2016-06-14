@@ -490,18 +490,18 @@ class EventsRegisterTest(AuthedTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
-    def test_change_starred_stream(self):
+    def test_change_pin_stream(self):
         schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('update')),
-            ('property', equals('starred')),
+            ('property', equals('pin_to_top')),
             ('value', check_bool),
         ])
         stream = "Denmark"
         sub = get_subscription(stream, self.user_profile)
         # The first False is probably a noop, then we get transitions in both directions.
-        for starred in (False, True, False):
-            events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "starred", starred ))
+        for pinned in (False, True, False):
+            events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", pinned))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

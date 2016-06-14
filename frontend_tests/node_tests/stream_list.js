@@ -122,7 +122,7 @@ global.use_template('stream_privacy');
 }());
 
 
-(function test_sort_starred_streams() {
+(function test_sort_pin_to_top_streams() {
 
     var stream_filters = $('<ul id="stream_filters">');
     $("body").empty();
@@ -133,7 +133,7 @@ global.use_template('stream_privacy');
         stream_id: 1000,
         color: 'blue',
         id: 5,
-        starred: false,
+        pin_to_top: false,
         subscribed: true,
         sidebar_li: stream_list.add_stream_to_sidebar('devel')
     };
@@ -144,7 +144,7 @@ global.use_template('stream_privacy');
         stream_id: 2000,
         color: 'green',
         id: 6,
-        starred: true,
+        pin_to_top: true,
         subscribed: true,
         sidebar_li: stream_list.add_stream_to_sidebar('social')
     };

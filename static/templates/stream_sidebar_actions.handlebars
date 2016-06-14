@@ -18,14 +18,14 @@
     </a>
   </li>
   <li>
-    <a class="star_stream">
-      {{#if stream.starred}}
-      <i class="icon-vector-star"></i>
-      Unstar stream <b>{{stream.name}}</b>
+    <a class="pin_to_top">
+      <i class="icon-vector-pushpin"></i>
+      {{#if stream.pin_to_top}}
+      Unpin
       {{else}}
-      <i class="icon-vector-star"></i>
-      Star stream <b>{{stream.name}}</b>
+      Pin to top
       {{/if}}
+      stream <b>{{stream.name}}</b>
     </a>
   </li>
   <li>

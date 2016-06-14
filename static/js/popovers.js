@@ -559,10 +559,10 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
     });
 
-    $('body').on('click', '.star_stream', function (e) {
+    $('body').on('click', '.pin_to_top', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();
-        subs.toggle_star_stream(stream);
+        subs.toggle_pin_to_top_stream(stream);
         e.stopPropagation();
     });
 
