@@ -1,0 +1,27 @@
+[{
+  "event": "check.down",
+  "check": {
+    "token": "ngg8",
+    "url": "https://updown.io",
+    "alias": "",
+    "last_status": 500,
+    "uptime": 100.0,
+    "down": true,
+    "down_since": "2016-02-07T13:11:43Z",
+    "error": "500",
+    "period": 30,
+    "apdex_t": 0.25,
+    "string_match": "",
+    "enabled": true,
+    "published": true,
+    "last_check_at": "2016-02-07T13:12:13Z",
+    "next_check_at": "2016-02-07T13:12:43Z",
+    "favicon_url": "https://updown.io/favicon.png"
+  },
+  "downtime": {
+    "error": "500",
+    "started_at": "2016-02-07T13:11:43Z",
+    "ended_at": null,
+    "duration": null
+  }
+}]
