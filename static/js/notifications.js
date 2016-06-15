@@ -44,7 +44,7 @@ if (window.webkitNotifications) {
 function browser_desktop_notifications_on () {
     return (notifications_api &&
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
-            $.browser.webkit &&
+            document.documentElement.style.hasOwnProperty('WebkitAppearance') &&
             // 0 is PERMISSION_ALLOWED
             notifications_api.checkPermission() === 0) ||
         // window.bridge is the desktop client

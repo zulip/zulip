@@ -12,9 +12,8 @@ exports.reset = function () {
 };
 
 exports.set = function (url) {
-    if ($.browser.webkit) {
-        // Works in Chrome 22 at least.
-        // Doesn't work in Firefox 10.
+    if (document.documentElement.style.hasOwnProperty('WebkitAppearance')) {
+        // The only problem with this is Microsoft Edge returns true too
         $(favicon_selector).attr('href', url);
     } else {
         // Delete and re-create the node.
