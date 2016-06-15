@@ -134,6 +134,17 @@ def generate_option_group(parser, prefix=''):
                           CA certificates. This will be used to
                           verify the server's identity. All
                           certificates should be PEM encoded.''')
+    group.add_option('--client-cert',
+                     action='store',
+                     dest='client_cert',
+                     help='''Specify a file containing a client
+                          certificate (not needed for most deployments).''')
+    group.add_option('--client-cert-key',
+                     action='store',
+                     dest='client_cert_key',
+                     help='''Specify a file containing the client
+                          certificate's key (if it is in a separate
+                          file).''')
     return group
 
 def init_from_options(options, client=None):
@@ -144,7 +155,9 @@ def init_from_options(options, client=None):
     return Client(email=options.zulip_email, api_key=options.zulip_api_key,
                   config_file=options.zulip_config_file, verbose=options.verbose,
                   site=options.zulip_site, client=client,
-                  cert_bundle=options.cert_bundle, insecure=options.insecure)
+                  cert_bundle=options.cert_bundle, insecure=options.insecure,
+                  client_cert=options.client_cert,
+                  client_cert_key=options.client_cert_key)
 
 def get_default_config_filename():
     config_file = os.path.join(os.environ["HOME"], ".zuliprc")
@@ -157,7 +170,8 @@ class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
                  site=None, client=None,
-                 cert_bundle=None, insecure=None):
+                 cert_bundle=None, insecure=None,
+                 client_cert=None, client_cert_key=None):
         if client is None:
             client = _default_client()
 
@@ -173,6 +187,10 @@ class Client(object):
                 email = config.get("api", "email")
             if site is None and config.has_option("api", "site"):
                 site = config.get("api", "site")
+            if client_cert is None and config.has_option("api", "client_cert"):
+                client_cert = config.get("api", "client_cert")
+            if client_cert_key is None and config.has_option("api", "client_cert_key"):
+                client_cert_key = config.get("api", "client_cert_key")
             if cert_bundle is None and config.has_option("api", "cert_bundle"):
                 cert_bundle = config.get("api", "cert_bundle")
             if insecure is None and config.has_option("api", "insecure"):
@@ -218,6 +236,21 @@ class Client(object):
         else:
             # Default behavior: verify against system CA certificates
             self.tls_verification=True
+
+        if client_cert is None:
+            if client_cert_key is not None:
+                raise RuntimeError("client cert key '%s' specified, but no client cert public part provided"
+                                   %(client_cert_key,))
+        else: # we have a client cert
+            if not os.path.isfile(client_cert):
+                raise RuntimeError("client cert '%s' does not exist"
+                                   %(client_cert,))
+            if client_cert_key is not None:
+                if not os.path.isfile(client_cert_key):
+                    raise RuntimeError("client cert key '%s' does not exist"
+                                       %(client_cert_key,))
+        self.client_cert = client_cert
+        self.client_cert_key = client_cert_key
 
     def get_user_agent(self):
         vendor = ''
@@ -288,12 +321,21 @@ class Client(object):
                 else:
                     kwarg = "data"
                 kwargs = {kwarg: query_state["request"]}
+
+                # Build a client cert object for requests
+                if self.client_cert_key is not None:
+                    client_cert = (self.client_cert, self.client_cert_key)
+                else:
+                    client_cert = self.client_cert
+
                 res = requests.request(
                         method,
                         urllib.parse.urljoin(self.base_url, url),
                         auth=requests.auth.HTTPBasicAuth(self.email,
                                                          self.api_key),
-                        verify=self.tls_verification, timeout=90,
+                        verify=self.tls_verification,
+                        cert=client_cert,
+                        timeout=90,
                         headers={"User-agent": self.get_user_agent()},
                         **kwargs)
 
