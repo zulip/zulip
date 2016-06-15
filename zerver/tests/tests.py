@@ -1347,8 +1347,8 @@ class AlertWordTests(AuthedTestCase):
     def message_does_alert(self, user_profile, message):
         # Send a bunch of messages as othello, so Hamlet is notified
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)
-        message = most_recent_usermessage(user_profile)
-        return 'has_alert_word' in message.flags_list()
+        user_message = most_recent_usermessage(user_profile)
+        return 'has_alert_word' in user_message.flags_list()
 
     def test_alert_flags(self):
         self.login("hamlet@zulip.com")
