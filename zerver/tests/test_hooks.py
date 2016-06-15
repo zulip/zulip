@@ -4,6 +4,7 @@ from zerver.lib.test_runner import slow
 from zerver.models import Message, Recipient
 
 import ujson
+from six import text_type
 from six.moves import urllib
 
 class WebhookTestCase(AuthedTestCase):
@@ -14,10 +15,10 @@ class WebhookTestCase(AuthedTestCase):
     If you create your url in uncommon way you can override build_webhook_url method
     In case that you need modify body or create it without using fixture you can also override get_body method
     """
-    STREAM_NAME = None
+    STREAM_NAME = None # type: text_type
     TEST_USER_EMAIL = 'webhook-bot@zulip.com'
-    URL_TEMPLATE = None
-    FIXTURE_DIR_NAME = None
+    URL_TEMPLATE = None # type: text_type
+    FIXTURE_DIR_NAME = None # type: text_type
 
     def setUp(self):
         self.url = self.build_webhook_url()
@@ -241,7 +242,7 @@ class BeanstalkHookTests(WebhookTestCase):
         return {'payload': self.fixture_data('beanstalk', fixture_name)}
 
 class GithubV1HookTests(WebhookTestCase):
-    STREAM_NAME = None
+    STREAM_NAME = None # type: text_type
     URL_TEMPLATE = "/api/v1/external/github"
     FIXTURE_DIR_NAME = 'github'
     SEND_STREAM = False
@@ -357,7 +358,7 @@ class GithubV1HookTests(WebhookTestCase):
                         "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on `cowbell`, line 13\n\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
 
 class GithubV2HookTests(WebhookTestCase):
-    STREAM_NAME = None
+    STREAM_NAME = None # type: text_type
     URL_TEMPLATE = "/api/v1/external/github"
     FIXTURE_DIR_NAME = 'github'
     SEND_STREAM = False
