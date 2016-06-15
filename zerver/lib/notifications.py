@@ -31,13 +31,13 @@ from six.moves import urllib
 from collections import defaultdict
 
 def unsubscribe_token(user_profile):
-    # type: (UserProfile) -> str
+    # type: (UserProfile) -> text_type
     # Leverage the Django confirmations framework to generate and track unique
     # unsubscription tokens.
     return Confirmation.objects.get_link_for_object(user_profile).split("/")[-1]
 
 def one_click_unsubscribe_link(user_profile, endpoint):
-    # type: (UserProfile, str) -> str
+    # type: (UserProfile, text_type) -> text_type
     """
     Generate a unique link that a logged-out user can visit to unsubscribe from
     Zulip e-mails without having to first log in.
@@ -357,7 +357,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     if not messages:
         return
 
-    messages_by_recipient_subject = defaultdict(list) # type: Dict[Tuple[int, str], List[Message]]
+    messages_by_recipient_subject = defaultdict(list) # type: Dict[Tuple[int, text_type], List[Message]]
     for msg in messages:
         messages_by_recipient_subject[(msg.recipient_id, msg.subject)].append(msg)
 
@@ -395,7 +395,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
 
 @uses_mandrill
 def clear_followup_emails_queue(email, mail_client=None):
-    # type: (str, Optional[mandrill.Mandrill]) -> None
+    # type: (text_type, Optional[mandrill.Mandrill]) -> None
     """
     Clear out queued emails (from Mandrill's queue) that would otherwise
     be sent to a specific email address. Optionally specify which sender
@@ -420,7 +420,7 @@ def clear_followup_emails_queue(email, mail_client=None):
     return
 
 def log_digest_event(msg):
-    # type: (str) -> None
+    # type: (text_type) -> None
     import logging
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
@@ -429,7 +429,7 @@ def log_digest_event(msg):
 def send_future_email(recipients, email_html, email_text, subject,
                       delay=datetime.timedelta(0), sender=None,
                       tags=[], mail_client=None):
-    # type: (List[Dict[str, Any]], str, str, str, datetime.timedelta, Optional[Dict[str, str]], Iterable[str], Optional[mandrill.Mandrill]) -> None
+    # type: (List[Dict[str, Any]], text_type, text_type, text_type, datetime.timedelta, Optional[Dict[str, text_type]], Iterable[text_type], Optional[mandrill.Mandrill]) -> None
     """
     Sends email via Mandrill, with optional delay
 
@@ -517,7 +517,7 @@ def send_future_email(recipients, email_html, email_text, subject,
 def send_local_email_template_with_delay(recipients, template_prefix,
                                          template_payload, delay,
                                          tags=[], sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}):
-    # type: (List[Dict[str, Any]], str, Dict[str, str], datetime.timedelta, Iterable[str], Dict[str, str]) -> None
+    # type: (List[Dict[str, Any]], text_type, Dict[str, text_type], datetime.timedelta, Iterable[text_type], Dict[str, text_type]) -> None
     html_content = loader.render_to_string(template_prefix + ".html", template_payload)
     text_content = loader.render_to_string(template_prefix + ".text", template_payload)
     subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()
@@ -531,8 +531,8 @@ def send_local_email_template_with_delay(recipients, template_prefix,
                              tags=tags)
 
 def enqueue_welcome_emails(email, name):
-    # type: (str, str) -> None
-    sender = {'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'}
+    # type: (text_type, text_type) -> None
+    sender = {'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'} # type: Dict[str, text_type]
     if settings.VOYAGER:
         sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
 
@@ -564,7 +564,7 @@ def enqueue_welcome_emails(email, name):
                                          sender=sender)
 
 def convert_html_to_markdown(html):
-    # type: (str) -> unicode
+    # type: (str) -> text_type
     # On Linux, the tool installs as html2markdown, and there's a command called
     # html2text that does something totally different. On OSX, the tool installs
     # as html2text.
