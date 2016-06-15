@@ -33,6 +33,9 @@ if __name__ == "__main__":
     parser.add_option('--coverage', dest='coverage',
                       action="store_true",
                       default=False, help='Compute test coverage.')
+    parser.add_option('--no-verbose-coverage', dest='verbose_coverage',
+                      action="store_false",
+                      default=True, help='Disable verbose print of coverage report.')
     parser.add_option('--profile', dest='profile',
                       action="store_true",
                       default=False, help='Profile test runtime.')
@@ -82,8 +85,9 @@ if __name__ == "__main__":
     if options.coverage:
         cov.stop()
         cov.save()
-        print("Printing coverage data")
-        cov.report(show_missing=False)
+        if options.verbose_coverage:
+            print("Printing coverage data")
+            cov.report(show_missing=False)
         cov.html_report()
         print("HTML report saved to htmlcov/")
     if options.profile:
