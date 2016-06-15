@@ -38,6 +38,7 @@ from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
 from zerver.models import Message
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
+from zerver.lib.str_utils import force_text
 import six
 from six.moves import range
 from six import text_type
@@ -55,13 +56,13 @@ if False:
     ElementStringNone = Union[Element, Optional[text_type]]
 
 def list_of_tlds():
-    # type: () -> List[str]
+    # type: () -> List[text_type]
     # HACK we manually blacklist .py
-    blacklist = ['PY\n', ]
+    blacklist = [u'PY\n', ]
 
     # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
-    tlds = [tld.lower().strip() for tld in open(tlds_file, 'r')
+    tlds = [force_text(tld).lower().strip() for tld in open(tlds_file, 'r')
                 if tld not in blacklist and not tld[0].startswith('#')]
     tlds.sort(key=len, reverse=True)
     return tlds
@@ -166,13 +167,13 @@ def fetch_tweet_data(tweet_id):
                 return None
     return res
 
-HEAD_START_RE = re.compile('^head[ >]')
-HEAD_END_RE = re.compile('^/head[ >]')
-META_START_RE = re.compile('^meta[ >]')
-META_END_RE = re.compile('^/meta[ >]')
+HEAD_START_RE = re.compile(u'^head[ >]')
+HEAD_END_RE = re.compile(u'^/head[ >]')
+META_START_RE = re.compile(u'^meta[ >]')
+META_END_RE = re.compile(u'^/meta[ >]')
 
 def fetch_open_graph_image(url):
-    # type: (text_type) -> Optional[Dict[text_type, Any]]
+    # type: (text_type) -> Optional[Dict[str, Any]]
     in_head = False
     # HTML will auto close meta tags, when we start the next tag add a closing tag if it has not been closed yet.
     last_closed = True
@@ -581,7 +582,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        realm_emoji = {} # type: Dict[str, Dict[str, str]]
+        realm_emoji = {} # type: Dict[text_type, Dict[str, text_type]]
         if db_data is not None:
             realm_emoji = db_data['emoji']
 
@@ -729,7 +730,7 @@ class AutoLink(markdown.inlinepatterns.Pattern):
         # Now replace with the real regex compiled with the flags we want.
 
         self.pattern = pattern
-        self.compiled_re = re.compile("^(.*?)%s(.*?)$" % pattern,
+        self.compiled_re = re.compile(u"^(.*?)%s(.*?)$" % pattern,
                                       re.DOTALL | re.UNICODE | re.VERBOSE)
 
     def handleMatch(self, match):
@@ -744,7 +745,7 @@ class UListProcessor(markdown.blockprocessors.OListProcessor):
         '+' or '-' as a bullet character."""
 
     TAG = 'ul'
-    RE = re.compile(r'^[ ]{0,3}[*][ ]+(.*)')
+    RE = re.compile(u'^[ ]{0,3}[*][ ]+(.*)')
 
 class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows unordered list blocks that come directly after a
@@ -754,11 +755,11 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
         directly after a line of text, and inserts a newline between
         to satisfy Markdown"""
 
-    LI_RE = re.compile(r'^[ ]{0,3}[*][ ]+(.*)', re.MULTILINE)
-    HANGING_ULIST_RE = re.compile(r'^.+\n([ ]{0,3}[*][ ]+.*)', re.MULTILINE)
+    LI_RE = re.compile(u'^[ ]{0,3}[*][ ]+(.*)', re.MULTILINE)
+    HANGING_ULIST_RE = re.compile(u'^.+\\n([ ]{0,3}[*][ ]+.*)', re.MULTILINE)
 
     def run(self, lines):
-        # type: (List[str]) -> List[str]
+        # type: (List[text_type]) -> List[text_type]
         """ Insert a newline between a paragraph and ulist if missing """
         inserts = 0
         fence = None
@@ -812,7 +813,7 @@ def prepare_realm_pattern(source):
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
     def __init__(self, source_pattern, format_string, markdown_instance=None):
-        # type: (str, str, Optional[markdown.Markdown]) -> None
+        # type: (text_type, text_type, Optional[markdown.Markdown]) -> None
         self.pattern = prepare_realm_pattern(source_pattern)
         self.format_string = format_string
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
@@ -824,7 +825,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def find_user_for_mention(self, name):
-        # type: (str) -> Tuple[bool, Dict[str, Any]]
+        # type: (text_type) -> Tuple[bool, Dict[str, Any]]
         if db_data is None:
             return (False, None)
 
@@ -863,7 +864,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
-        # type: (Iterable[str]) -> Iterable[str]
+        # type: (Iterable[text_type]) -> Iterable[text_type]
         if current_message and db_data is not None:
             # We check for a user's custom notifications here, as we want
             # to check for plaintext words that depend on the recipient.
@@ -876,7 +877,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             for user_id, words in six.iteritems(realm_words):
                 for word in words:
                     escaped = re.escape(word.lower())
-                    match_re = re.compile(r'(?:%s)%s(?:%s)' %
+                    match_re = re.compile(u'(?:%s)%s(?:%s)' %
                                             (allowed_before_punctuation,
                                              escaped,
                                              allowed_after_punctuation))
@@ -1080,7 +1081,7 @@ maybe_update_realm_filters(domain=None)
 #
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
-_privacy_re = re.compile(r'\w', flags=re.UNICODE)
+_privacy_re = re.compile(u'\\w', flags=re.UNICODE)
 def _sanitize_for_log(md):
     # type: (markdown.Markdown) -> text_type
     return repr(_privacy_re.sub('x', md))
