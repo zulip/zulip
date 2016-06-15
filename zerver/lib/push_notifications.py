@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+from six import text_type
 from typing import Any, Dict, Optional
 
 from zerver.models import PushDeviceToken, UserProfile
@@ -36,12 +38,12 @@ def num_push_devices_for_user(user_profile, kind = None):
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data):
-    # type: (bytes) -> str
-    return binascii.hexlify(base64.b64decode(data))
+    # type: (bytes) -> text_type
+    return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
 
 def hex_to_b64(data):
-    # type: (bytes) -> str
-    return base64.b64encode(binascii.unhexlify(data))
+    # type: (text_type) -> bytes
+    return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
 def _do_push_to_apns_service(user, message, apns_connection):
     # type: (UserProfile, Message, Connection) -> None
@@ -81,7 +83,7 @@ def _do_push_to_apns_service(user, message, apns_connection):
 # mobile app
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user, alert, **extra_data):
-    # type: (UserProfile, str, Dict[str, Any]) -> None
+    # type: (UserProfile, text_type, **Any) -> None
     if not connection and not dbx_connection:
         logging.error("Attempting to send push notification, but no connection was found. This may be because we could not find the APNS Certificate file.")
         return
@@ -121,7 +123,7 @@ else:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(user, data):
-    # type: (UserProfile, Dict[str, str]) -> None
+    # type: (UserProfile, Dict[str, Any]) -> None
     if not gcm:
         logging.error("Attempting to send a GCM push notification, but no API key was configured")
         return
