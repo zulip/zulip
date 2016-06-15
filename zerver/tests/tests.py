@@ -966,11 +966,14 @@ class ChangeSettingsTest(AuthedTestCase):
         json_result = self.client.post(pattern,
                                        {param: ujson.dumps(True)})
         self.assert_json_success(json_result)
+        # refetch user_profile object to correctly handle caching
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.assertEqual(getattr(user_profile, param), True)
 
         json_result = self.client.post(pattern,
                                        {param: ujson.dumps(False)})
         self.assert_json_success(json_result)
+        # refetch user_profile object to correctly handle caching
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.assertEqual(getattr(user_profile, param), False)
 
