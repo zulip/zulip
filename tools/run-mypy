@@ -17,7 +17,6 @@ bots/zephyr_mirror_backend.py
 tools/deprecated/
 zproject/settings.py
 zproject/test_settings.py
-zerver/lib/request.py
 zerver/migrations/
 zerver/tests/test_bugdown.py
 zerver/tests/tests.py
@@ -45,8 +44,12 @@ if args.all:
     exclude = []
 
 # find all non-excluded files in current directory
-python_files = lister.list_files(targets=args.targets, ftypes=['py'], use_shebang=False,
-                                 modified_only=args.modified, exclude=exclude)
+files_dict = lister.list_files(targets=args.targets, ftypes=['py', 'pyi'], use_shebang=False,
+                               modified_only=args.modified, exclude = exclude + ['stubs'],
+                               group_by_ftype=True)
+pyi_files = set(files_dict['pyi'])
+python_files = [fpath for fpath in files_dict['py']
+                if fpath.endswith('.py') and fpath + 'i' not in pyi_files]
 
 # Use zulip-py3-venv's mypy if it's available and we're on python 2
 PY3_VENV_DIR = "/srv/zulip-py3-venv"
