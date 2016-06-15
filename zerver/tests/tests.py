@@ -993,11 +993,20 @@ class ChangeSettingsTest(AuthedTestCase):
     def test_notify_settings(self):
         # This is basically a don't-explode test.
         self.login("hamlet@zulip.com")
-        json_result = self.client.post("/json/notify_settings/change",
-                                       {"enable_desktop_notifications": ujson.dumps(False)})
-        self.assert_json_success(json_result)
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
-                enable_desktop_notifications, False)
+
+        self.check_for_toggle_param("/json/notify_settings/change", "enable_desktop_notifications")
+
+        self.check_for_toggle_param("/json/notify_settings/change", "enable_stream_desktop_notifications")
+
+        self.check_for_toggle_param("/json/notify_settings/change", "enable_stream_sounds")
+
+        self.check_for_toggle_param("/json/notify_settings/change", "enable_sounds")
+
+        self.check_for_toggle_param("/json/notify_settings/change", "enable_offline_email_notifications")
+
+        self.check_for_toggle_param("/json/notify_settings/change", "enable_offline_push_notifications")
+
+        self.check_for_toggle_param("/json/notify_settings/change", "enable_digest_emails")
 
     def test_ui_settings(self):
         self.login("hamlet@zulip.com")
