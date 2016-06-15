@@ -5,6 +5,10 @@ import logging
 import platform
 import subprocess
 
+if False:
+    # Don't add a runtime dependency on typing
+    from typing import List
+
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -113,6 +117,7 @@ REPO_STOPWORDS_PATH = os.path.join(
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 def setup_node_modules():
+    # type: () -> None
     output = subprocess.check_output(['sha1sum', 'package.json'])
     sha1sum = output.split()[0]
     success_stamp = os.path.join('node_modules', '.npm-success-stamp', sha1sum)
@@ -126,6 +131,7 @@ def setup_node_modules():
         print("Using cached version of node_modules")
 
 def install_npm():
+    # type: () -> None
     if "--travis" not in sys.argv:
         if subprocess.check_output(['npm', '--version']).strip() != NPM_VERSION:
             run(["sudo", "npm", "install", "-g", "npm@{}".format(NPM_VERSION)])
@@ -149,6 +155,8 @@ def install_npm():
 
 
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
+    # type: (str, str, List[str]) -> None
+
     # Check if a cached version already exists
     output = subprocess.check_output(['sha1sum', requirements_file])
     sha1sum = output.split()[0]
@@ -164,6 +172,8 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
 
 def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
+    # type: (str, str, List[str]) -> None
+
     # Setup Python virtualenv
     run(["sudo", "rm", "-rf", venv_path])
     run(["sudo", "mkdir", "-p", venv_path])
@@ -178,6 +188,7 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     run(["pip", "install", "--no-deps", "--requirement", requirements_file])
 
 def main():
+    # type: () -> int
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install"] + APT_DEPENDENCIES[codename])
 
