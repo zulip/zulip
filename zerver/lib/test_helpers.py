@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.handlers import allocate_handler_id
+from zerver.lib.str_utils import force_text
 from zerver.lib import cache
 from zerver.lib import event_queue
 from zerver.worker import queue_processors
@@ -373,9 +374,9 @@ class AuthedTestCase(TestCase):
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
 
     def fixture_data(self, type, action, file_type='json'):
-        # type: (str, str, str) -> str
-        return open(os.path.join(os.path.dirname(__file__),
-                                 "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read()
+        # type: (text_type, text_type, text_type) -> text_type
+        return force_text(open(os.path.join(os.path.dirname(__file__),
+                                            "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read())
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
