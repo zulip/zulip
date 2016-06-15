@@ -1171,7 +1171,7 @@ docker build -t user/zulipdev .
 Now you're going to install Zulip dependencies in the image:
 
 ```
-docker run -itv $(pwd):/srv/zulip -p 80:9991 user/zulipdev /bin/bash
+docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev /bin/bash
 $ /usr/bin/python /srv/zulip/provision.py --docker
 docker ps -af ancestor=user/zulipdev
 docker commit -m "Zulip installed" <container id> user/zulipdev:v2
@@ -1180,7 +1180,7 @@ docker commit -m "Zulip installed" <container id> user/zulipdev:v2
 Finally you can run the docker server with:
 
 ```
-docker run -itv $(pwd):/srv/zulip -p 80:9991 user/zulipdev:v2 \
+docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev:v2 \
     /srv/zulip/scripts/start-dockers
 ```
 
