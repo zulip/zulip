@@ -5,6 +5,7 @@ if ./manage.py makemigrations -e --dry-run; then
     echo
     echo 'ERROR: Migrations are not consistent with models!  Fix with `./manage.py makemigrations`.'
     echo
+    exit 1
 else
     echo "Success!  Migrations are consistent with models."
 fi
