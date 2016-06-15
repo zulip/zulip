@@ -961,17 +961,17 @@ class ChangeSettingsTest(AuthedTestCase):
         self.assertIn("full_name", result)
 
     def check_for_toggle_param(self, pattern, param):
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
         json_result = self.client.post(pattern,
                                        {param: ujson.dumps(True)})
         self.assert_json_success(json_result)
-        self.assertEqual(getattr(get_user_profile_by_email("hamlet@zulip.com"),
-                param), True)
+        self.assertEqual(getattr(user_profile, param), True)
 
         json_result = self.client.post(pattern,
                                        {param: ujson.dumps(False)})
         self.assert_json_success(json_result)
-        self.assertEqual(getattr(get_user_profile_by_email("hamlet@zulip.com"),
-                param), False)
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.assertEqual(getattr(user_profile, param), False)
 
     def test_successful_change_settings(self):
         """
