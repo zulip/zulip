@@ -373,7 +373,7 @@ class AuthedTestCase(TestCase):
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
 
     def fixture_data(self, type, action, file_type='json'):
-        # type: (str, str, str) -> str
+        # type: (text_type, text_type, text_type) -> text_type
         return open(os.path.join(os.path.dirname(__file__),
                                  "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read()
 
