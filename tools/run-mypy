@@ -23,7 +23,6 @@ zerver/tests/test_email_mirror.py
 zerver/tests/test_decorators.py
 zerver/tests/test_upload.py
 zerver/tests/test_messages.py
-zerver/tests/test_hooks.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
