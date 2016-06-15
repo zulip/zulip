@@ -960,6 +960,19 @@ class ChangeSettingsTest(AuthedTestCase):
     def check_well_formed_change_settings_response(self, result):
         self.assertIn("full_name", result)
 
+    def check_for_toggle_param(self, pattern, param):
+        json_result = self.client.post(pattern,
+                                       {param: ujson.dumps(True)})
+        self.assert_json_success(json_result)
+        self.assertEqual(getattr(get_user_profile_by_email("hamlet@zulip.com"),
+                param), True)
+
+        json_result = self.client.post(pattern,
+                                       {param: ujson.dumps(False)})
+        self.assert_json_success(json_result)
+        self.assertEqual(getattr(get_user_profile_by_email("hamlet@zulip.com"),
+                param), False)
+
     def test_successful_change_settings(self):
         """
         A call to /json/settings/change with valid parameters changes the user's
