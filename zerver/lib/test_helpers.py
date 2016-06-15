@@ -399,7 +399,7 @@ class AuthedTestCase(TestCase):
         return result
 
     def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
-        # type: (text_type, text_type, Dict[str, Any], Optional[text_type], **Any) -> Message
+        # type: (text_type, text_type, Union[text_type, Dict[str, Any]], Optional[text_type], **Any) -> Message
         if stream_name is not None:
             self.subscribe_to_stream(email, stream_name)
 
