@@ -1025,6 +1025,11 @@ class ChangeSettingsTest(AuthedTestCase):
 
         self.check_for_toggle_param("/json/time_setting", "twenty_four_hour_time")
 
+    def test_enter_sends_setting(self):
+        self.login("hamlet@zulip.com")
+
+        self.check_for_toggle_param('/json/users/me/enter-sends', "enter_sends")
+
     def test_missing_params(self):
         """
         full_name is a required POST parameter for json_change_settings.
