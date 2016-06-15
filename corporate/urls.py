@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.views.generic import TemplateView, RedirectView
 
 i18n_urlpatterns = [
@@ -13,4 +13,4 @@ i18n_urlpatterns = [
     url(r'^privacy/$', TemplateView.as_view(template_name='corporate/privacy.html')),
 ]
 
-urlpatterns = patterns('', *i18n_urlpatterns)
+urlpatterns = i18n_urlpatterns
