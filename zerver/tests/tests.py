@@ -1015,6 +1015,11 @@ class ChangeSettingsTest(AuthedTestCase):
 
         self.check_for_toggle_param("/json/ui_settings/change", "default_desktop_notifications")
 
+    def test_toggling_left_side_userlist(self):
+        self.login("hamlet@zulip.com")
+
+        self.check_for_toggle_param("/json/left_side_userlist", "left_side_userlist")
+
     def test_missing_params(self):
         """
         full_name is a required POST parameter for json_change_settings.
