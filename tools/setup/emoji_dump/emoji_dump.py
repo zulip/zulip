@@ -18,6 +18,7 @@ EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 
 AA_SCALE = 8
 SIZE = (68, 68)
+SPRITE_SIZE = (50, 50)
 BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
 
 class MissingGlyphError(Exception):
@@ -29,9 +30,13 @@ def color_font(code_point, code_point_to_fname_map):
 
     in_name = 'bitmaps/strike0/{}.png'.format(name)
     out_name = 'out/unicode/{}.png'.format(code_point)
+    out_sprite_name = 'out/sprite/{}.png'.format(name)
 
     try:
         shutil.copyfile(in_name, out_name)
+        image = Image.new('RGBA', SIZE)
+        image.paste(Image.open(out_name), (0, 2))
+        image.resize(SPRITE_SIZE, Image.ANTIALIAS).save(out_sprite_name, 'PNG')
     except IOError:
         raise MissingGlyphError('code_point: %r' % (code_point))
 
@@ -49,7 +54,9 @@ def bw_font(name, code_point):
     image.resize(SIZE, Image.ANTIALIAS).save(
         'out/unicode/{}.png'.format(code_point), 'PNG'
     )
-
+    image.resize(SPRITE_SIZE, Image.ANTIALIAS).save(
+        'out/sprite/{}.png'.format(name), 'PNG'
+    )
 
 def code_point_to_file_name_map(ttx):
     """Given the NotoColorEmoji.ttx file, parse it to generate a map from
@@ -96,7 +103,11 @@ def main():
     except OSError:
         pass
 
+    for fname in glob.glob("sprite*"):
+        os.remove(fname)
+
     os.mkdir('out')
+    os.mkdir('out/sprite')
     os.mkdir('out/unicode')
 
     failed = False
@@ -118,10 +129,12 @@ def main():
             'out/{}.png'.format(name)
         )
 
+    subprocess.call('glue out/sprite . --namespace=emoji --sprite-namespace= --retina',
+                    shell=True)
+
     if failed:
         print("Errors dumping emoji!")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

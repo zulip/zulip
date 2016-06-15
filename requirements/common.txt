@@ -153,3 +153,8 @@ git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c42
 
 # To parse po files
 polib==1.0.7
+
+# Needed for sprite generation
+# We're using this version from git to ensure compatibility with
+# Jinja2==2.8 (see https://github.com/jorgebastida/glue/pull/211).
+git+https://github.com/lorenzogil/glue@01c00cd33b9b78ea868300c266c16acd59a81bfc#egg=glue==0.11.1
