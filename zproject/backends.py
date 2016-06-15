@@ -206,5 +206,5 @@ class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.
     # This is used for convenience when developing Zulip.
 
-    def authenticate(self, username):
-        return common_get_active_user_by_email(username)
+    def authenticate(self, username, return_data=None):
+        return common_get_active_user_by_email(username, return_data=return_data)
