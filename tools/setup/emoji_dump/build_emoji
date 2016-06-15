@@ -6,4 +6,5 @@ rm -rf static/third/gemoji/images
 (cd tools/setup/emoji_dump && python ./emoji_dump.py)
 mkdir -p static/third/gemoji/images
 mv tools/setup/emoji_dump/out static/third/gemoji/images/emoji
+mv tools/setup/emoji_dump/sprite* static/third/gemoji/
 cp -RPp assets/zulip-emoji/* static/third/gemoji/images/emoji/
