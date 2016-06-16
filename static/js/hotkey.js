@@ -235,8 +235,7 @@ function process_hotkey(e) {
         case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
             if ($('.emoji_popover').css('display') === 'inline-block') {
                 popovers.hide_emoji_map_popover();
-            }
-            else if (popovers.any_active()) {
+            } else if (popovers.any_active()) {
                 popovers.hide_all();
             } else if (compose.composing()) {
                 compose.cancel();

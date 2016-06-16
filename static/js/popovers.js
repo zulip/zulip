@@ -289,7 +289,7 @@ exports.register_click_handlers = function () {
 
     $("body").on("mousemove", function (e) {
         e.preventDefault();
-        if(isDragging) {
+        if (isDragging) {
             var new_height = emoji_popover_height + (previous_mouse_position - e.pageY);
             if (new_height + compose_box_padding > total_height) {
                 emoji_popover_elem.height(total_height - compose_box_padding);
