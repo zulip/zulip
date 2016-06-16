@@ -66,10 +66,11 @@ Dependencies:
 import re
 import markdown
 from zerver.lib.bugdown.codehilite import CodeHilite, CodeHiliteExtension
-from typing import Dict, List, Sequence
+from six import text_type
+from typing import Any, Dict, List, Sequence
 
 # Global vars
-FENCE_RE = re.compile(r"""
+FENCE_RE = re.compile(u"""
     # ~~~ or ```
     (?P<fence>
         ^(?:~{3,}|`{3,})
@@ -78,19 +79,19 @@ FENCE_RE = re.compile(r"""
     [ ]* # spaces
 
     (
-        \{?\.?
+        \\{?\\.?
         (?P<lang>
             [a-zA-Z0-9_+-]*
         ) # "py" or "javascript"
-        \}?
+        \\}?
     ) # language, like ".py" or "{javascript}"
     [ ]* # spaces
     $
     """, re.VERBOSE)
 
 
-CODE_WRAP = '<pre><code%s>%s</code></pre>'
-LANG_TAG = ' class="%s"'
+CODE_WRAP = u'<pre><code%s>%s</code></pre>'
+LANG_TAG = u' class="%s"'
 
 class FencedCodeExtension(markdown.Extension):
 
@@ -115,7 +116,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         markdown.preprocessors.Preprocessor.__init__(self, md)
 
         self.checked_for_codehilite = False
-        self.codehilite_conf = {} # type: Dict[str, Dict[int, str]]
+        self.codehilite_conf = {} # type: Dict[str, List[Any]]
 
     def run(self, lines):
         """ Match and store Fenced Code Blocks in the HtmlStash. """
@@ -221,9 +222,11 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return output
 
     def format_code(self, lang, text):
-        langclass = ''
+        # type: (text_type, text_type) -> text_type
         if lang:
             langclass = LANG_TAG % (lang,)
+        else:
+            langclass = ''
 
         # Check for code hilite extension
         if not self.checked_for_codehilite:
