@@ -198,7 +198,7 @@ def regenerate_api_key(request, user_profile):
 
 @has_request_variables
 def change_enter_sends(request, user_profile,
-                       enter_sends=REQ('enter_sends', validator=check_bool)):
+                       enter_sends=REQ(validator=check_bool)):
     # type: (HttpRequest, UserProfile, bool) -> HttpResponse
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()

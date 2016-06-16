@@ -282,7 +282,7 @@ def authenticated_api_view(view_func):
     @require_post
     @has_request_variables
     @wraps(view_func)
-    def _wrapped_view_func(request, email=REQ(), api_key=REQ('api_key', default=None),
+    def _wrapped_view_func(request, email=REQ(), api_key=REQ(default=None),
                            api_key_legacy=REQ('api-key', default=None),
                            *args, **kwargs):
         if not api_key and not api_key_legacy:
