@@ -2,14 +2,18 @@ from __future__ import absolute_import
 
 from django.contrib.auth.models import UserManager
 from django.utils import timezone
-from zerver.models import UserProfile, Recipient, Subscription
+from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream
 import base64
 import ujson
 import os
 import string
 from six.moves import range
 
+from six import text_type
+from typing import Optional
+
 def random_api_key():
+    # type: () -> text_type
     choices = string.ascii_letters + string.digits
     altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
     return base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
@@ -23,6 +27,7 @@ def random_api_key():
 # Recipient objects
 def create_user_profile(realm, email, password, active, bot_type, full_name,
                         short_name, bot_owner, is_mirror_dummy):
+    # type: (Realm, text_type, text_type, bool, Optional[int], text_type, text_type, Optional[UserProfile], bool) -> UserProfile
     now = timezone.now()
     email = UserManager.normalize_email(email)
 
@@ -50,10 +55,10 @@ def create_user(email, password, realm, full_name, short_name,
                 is_mirror_dummy=False, default_sending_stream=None,
                 default_events_register_stream=None,
                 default_all_public_streams=None, user_profile_id=None):
+    # type: (text_type, text_type, Realm, text_type, text_type, bool, Optional[int], Optional[UserProfile], text_type, bool, Optional[Stream], Optional[Stream], Optional[bool], Optional[int]) -> UserProfile
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy)
-
     user_profile.avatar_source = avatar_source
     user_profile.default_sending_stream = default_sending_stream
     user_profile.default_events_register_stream = default_events_register_stream
