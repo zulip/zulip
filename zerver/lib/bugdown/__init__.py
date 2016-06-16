@@ -111,7 +111,7 @@ def add_a(root, url, link, height="", title=None, desc=None,
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id):
-    # type: (str) -> Optional[Dict[str, Any]]
+    # type: (text_type) -> Optional[Dict[text_type, Any]]
     if settings.TEST_SUITE:
         from . import testing_mocks
         res = testing_mocks.twitter(tweet_id)
