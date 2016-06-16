@@ -241,6 +241,8 @@ python_rules = [
          ('zerver/lib/request.py', 'raise JsonableError(error)'),
      ]),
      'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
+    {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
+     'description': 'REQ\'s first argument already defaults to parameter name'},
     ] + whitespace_rules
 bash_rules = [
     {'pattern': '#!.*sh [-xe]',
