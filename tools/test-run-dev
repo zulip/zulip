@@ -50,6 +50,7 @@ def test_nagios(nagios_logfile):
     if 'success' in result:
         return True
 
+    print(result)
     return False
 
 
