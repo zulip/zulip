@@ -18,6 +18,7 @@ the tips below.
    testing
    logging
    mypy
+   settings
    front-end-build-process
    queuing
    schema-migrations
