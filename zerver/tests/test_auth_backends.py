@@ -230,3 +230,17 @@ class AndroidDevDirectLoginTest(AuthedTestCase):
             result = self.client.post("/api/v1/dev_android_direct_login",
                                       dict(username=self.email))
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
+
+class AndroidDevGetEmailTest(AuthedTestCase):
+    def test_success(self):
+        # type: () -> None
+        result = self.client.get("/api/v1/dev_android_get_email")
+        self.assertIn("direct_admins", result.content)
+        self.assertIn("direct_users", result.content)
+        self.assert_json_success(result)
+
+    def test_dev_auth_disabled(self):
+        # type: () -> None
+        with mock.patch('zerver.views.dev_auth_enabled', return_value=False):
+            result = self.client.get("/api/v1/dev_android_get_email")
+            self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
