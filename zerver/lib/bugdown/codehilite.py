@@ -18,6 +18,8 @@ Dependencies:
 
 """
 
+from typing import Any, Dict, List
+
 import markdown
 try:
     from pygments import highlight
@@ -202,7 +204,7 @@ class CodeHiliteExtension(markdown.Extension):
                            "Set class name for wrapper <div> - Default: codehilite"],
             'pygments_style' : ['default', 'Pygments HTML Formatter Style (Colorscheme) - Default: default'],
             'noclasses': [False, 'Use inline styles instead of CSS classes - Default false']
-            }
+            } # type: Dict[str, List[Any]]
 
         # Override defaults with user settings
         for key, value in configs:
