@@ -126,16 +126,23 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         output = [] # type: List[text_type]
 
-        class Record(object):
-            pass
+        class BaseHandler(object):
+            def handle_line(self, line):
+                # type: (text_type) -> None
+                raise NotImplementedError()
+            def done(self):
+                # type: () -> None
+                raise NotImplementedError()
 
         processor = self
-        handlers = []
+        handlers = [] # type: List[BaseHandler]
 
         def push(handler):
+            # type: (BaseHandler) -> None
             handlers.append(handler)
 
         def pop():
+            # type: () -> None
             handlers.pop()
 
         def check_for_new_fence(output, line):
@@ -149,7 +156,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             else:
                 output.append(line)
 
-        class OuterHandler(object):
+        class OuterHandler(BaseHandler):
             def __init__(self, output):
                 # type: (MutableSequence[text_type]) -> None
                 self.output = output
@@ -163,12 +170,13 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 pop()
 
         def generic_handler(output, fence, lang):
+            # type: (MutableSequence[text_type], text_type, text_type) -> BaseHandler
             if lang in ('quote', 'quoted'):
                 return QuoteHandler(output, fence)
             else:
                 return CodeHandler(output, fence, lang)
 
-        class QuoteHandler(object):
+        class QuoteHandler(BaseHandler):
             def __init__(self, output, fence):
                 # type: (MutableSequence[text_type], text_type) -> None
                 self.output = output
@@ -192,7 +200,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 self.output.append('')
                 pop()
 
-        class CodeHandler(object):
+        class CodeHandler(BaseHandler):
             def __init__(self, output, fence, lang):
                 # type: (MutableSequence[text_type], text_type, text_type) -> None
                 self.output = output
