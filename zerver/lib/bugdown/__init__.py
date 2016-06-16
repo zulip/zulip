@@ -237,10 +237,10 @@ def fetch_open_graph_image(url):
     return {'image': image, 'title': title, 'desc': desc}
 
 def get_tweet_id(url):
-    # type: (text_type) -> Union[bool, text_type]
+    # type: (text_type) -> Optional[text_type]
     parsed_url = urllib.parse.urlparse(url)
     if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
-        return False # TODO: probably should return None instead and change return type to Optional[str]
+        return None
     to_match = parsed_url.path
     # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs, we need to look at the fragment instead
     if parsed_url.path == '/' and len(parsed_url.fragment) > 5:
@@ -248,7 +248,7 @@ def get_tweet_id(url):
 
     tweet_id_match = re.match(r'^!?/.*?/status(es)?/(?P<tweetid>\d{10,18})(/photo/[0-9])?/?$', to_match)
     if not tweet_id_match:
-        return False # TODO: probably should return None instead and change return type to Optional[str]
+        return None
     return tweet_id_match.group("tweetid")
 
 class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
@@ -430,7 +430,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # type: (text_type) -> Optional[Element]
         tweet_id = get_tweet_id(url)
 
-        if not tweet_id:
+        if tweet_id is None:
             return None
 
         try:
@@ -525,7 +525,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if self.is_image(url):
                 add_a(root, url, url)
                 continue
-            if get_tweet_id(url):
+            if get_tweet_id(url) is not None:
                 if rendered_tweet_count >= self.TWITTER_MAX_TO_PREVIEW:
                     # Only render at most one tweet per message
                     continue
