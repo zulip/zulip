@@ -67,7 +67,7 @@ import re
 import markdown
 from zerver.lib.bugdown.codehilite import CodeHilite, CodeHiliteExtension
 from six import text_type
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, Iterable, List, MutableSequence, Optional, Tuple, Union
 
 # Global vars
 FENCE_RE = re.compile(u"""
@@ -96,6 +96,7 @@ LANG_TAG = u' class="%s"'
 class FencedCodeExtension(markdown.Extension):
 
     def extendMarkdown(self, md, md_globals):
+        # type: (markdown.Markdown, Dict[str, Any]) -> None
         """ Add FencedBlockPreprocessor to the Markdown instance. """
         md.registerExtension(self)
 
@@ -113,15 +114,17 @@ class FencedCodeExtension(markdown.Extension):
 class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
     def __init__(self, md):
+        # type: (markdown.Markdown) -> None
         markdown.preprocessors.Preprocessor.__init__(self, md)
 
         self.checked_for_codehilite = False
         self.codehilite_conf = {} # type: Dict[str, List[Any]]
 
     def run(self, lines):
+        # type: (Iterable[text_type]) -> List[text_type]
         """ Match and store Fenced Code Blocks in the HtmlStash. """
 
-        output = [] # type: List[str]
+        output = [] # type: List[text_type]
 
         class Record(object):
             pass
@@ -136,6 +139,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             handlers.pop()
 
         def check_for_new_fence(output, line):
+            # type: (MutableSequence[text_type], text_type) -> None
             m = FENCE_RE.match(line)
             if m:
                 fence = m.group('fence')
@@ -147,12 +151,15 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         class OuterHandler(object):
             def __init__(self, output):
+                # type: (MutableSequence[text_type]) -> None
                 self.output = output
 
             def handle_line(self, line):
+                # type: (text_type) -> None
                 check_for_new_fence(self.output, line)
 
             def done(self):
+                # type: () -> None
                 pop()
 
         def generic_handler(output, fence, lang):
@@ -163,17 +170,20 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         class QuoteHandler(object):
             def __init__(self, output, fence):
+                # type: (MutableSequence[text_type], text_type) -> None
                 self.output = output
                 self.fence = fence
-                self.lines = [] # type: Sequence[str]
+                self.lines = [] # type: List[text_type]
 
             def handle_line(self, line):
+                # type: (text_type) -> None
                 if line.rstrip() == self.fence:
                     self.done()
                 else:
                     check_for_new_fence(self.lines, line)
 
             def done(self):
+                # type: () -> None
                 text = '\n'.join(self.lines)
                 text = processor.format_quote(text)
                 processed_lines = text.split('\n')
@@ -184,18 +194,21 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         class CodeHandler(object):
             def __init__(self, output, fence, lang):
+                # type: (MutableSequence[text_type], text_type, text_type) -> None
                 self.output = output
                 self.fence = fence
                 self.lang = lang
-                self.lines = [] # type: Sequence[str]
+                self.lines = [] # type: List[text_type]
 
             def handle_line(self, line):
+                # type: (text_type) -> None
                 if line.rstrip() == self.fence:
                     self.done()
                 else:
                     self.lines.append(line)
 
             def done(self):
+                # type: () -> None
                 text = '\n'.join(self.lines)
                 text = processor.format_code(self.lang, text)
                 text = processor.placeholder(text)
@@ -255,6 +268,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return code
 
     def format_quote(self, text):
+        # type: (text_type) -> text_type
         paragraphs = text.split("\n\n")
         quoted_paragraphs = []
         for paragraph in paragraphs:
@@ -263,9 +277,11 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return "\n\n".join(quoted_paragraphs)
 
     def placeholder(self, code):
+        # type: (text_type) -> text_type
         return self.markdown.htmlStash.store(code, safe=True)
 
     def _escape(self, txt):
+        # type: (text_type) -> text_type
         """ basic html escaping """
         txt = txt.replace('&', '&amp;')
         txt = txt.replace('<', '&lt;')
@@ -275,6 +291,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
 
 def makeExtension(configs=None):
+    # type: (Optional[List[Tuple[str, Union[bool, None, text_type]]]]) -> FencedCodeExtension
     return FencedCodeExtension(configs=configs)
 
 
