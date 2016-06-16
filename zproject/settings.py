@@ -7,6 +7,9 @@ from __future__ import absolute_import
 # for the Zulip Django app.
 # * settings.py imports local_settings.py, and any site-specific configuration
 # belongs there.  The template for local_settings.py is local_settings_template.py
+#
+# See http://zulip.readthedocs.io/en/latest/settings.html for more information
+#
 ########################################################################
 import os
 import platform
