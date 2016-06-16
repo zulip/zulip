@@ -609,11 +609,11 @@ def get_old_messages_backend(request, user_profile,
 
 @has_request_variables
 def update_message_flags(request, user_profile,
-                         messages=REQ('messages', validator=check_list(check_int)),
-                         operation=REQ('op'), flag=REQ('flag'),
-                         all=REQ('all', validator=check_bool, default=False),
-                         stream_name=REQ('stream_name', default=None),
-                         topic_name=REQ('topic_name', default=None)):
+                         messages=REQ(validator=check_list(check_int)),
+                         operation=REQ('op'), flag=REQ(),
+                         all=REQ(validator=check_bool, default=False),
+                         stream_name=REQ(default=None),
+                         topic_name=REQ(default=None)):
 
     request._log_data["extra"] = "[%s %s]" % (operation, flag)
     stream = None
