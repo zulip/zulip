@@ -144,7 +144,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/fetch_google_client_id$', 'api_fetch_google_client_id'),
 
     # Sorted integration-specific webhook callbacks.
-    url(r'^api/v1/external/airbrake$',       'webhooks.airbrake.api_airbrake_webhook'),
+    url(r'^api/v1/external/airbrake$',      'webhooks.airbrake.api_airbrake_webhook'),
     url(r'^api/v1/external/beanstalk$',     'webhooks.beanstalk.api_beanstalk_webhook'),
     url(r'^api/v1/external/bitbucket$',     'webhooks.bitbucket.api_bitbucket_webhook'),
     url(r'^api/v1/external/circleci$',      'webhooks.circleci.api_circleci_webhook'),
