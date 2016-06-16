@@ -30,11 +30,12 @@ from django.conf import settings
 
 from zerver.lib.avatar  import gravatar_hash
 from zerver.lib.bugdown import codehilite
-from zerver.lib.bugdown import fenced_code # type: ignore # excluding fenced_code from checks
+from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
+from zerver.models import Message
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 import six
@@ -237,10 +238,10 @@ def fetch_open_graph_image(url):
     return {'image': image, 'title': title, 'desc': desc}
 
 def get_tweet_id(url):
-    # type: (text_type) -> Union[bool, text_type]
+    # type: (text_type) -> Optional[text_type]
     parsed_url = urllib.parse.urlparse(url)
     if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
-        return False # TODO: probably should return None instead and change return type to Optional[str]
+        return None
     to_match = parsed_url.path
     # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs, we need to look at the fragment instead
     if parsed_url.path == '/' and len(parsed_url.fragment) > 5:
@@ -248,7 +249,7 @@ def get_tweet_id(url):
 
     tweet_id_match = re.match(r'^!?/.*?/status(es)?/(?P<tweetid>\d{10,18})(/photo/[0-9])?/?$', to_match)
     if not tweet_id_match:
-        return False # TODO: probably should return None instead and change return type to Optional[str]
+        return None
     return tweet_id_match.group("tweetid")
 
 class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
@@ -1087,7 +1088,7 @@ def _sanitize_for_log(md):
 
 # Filters such as UserMentionPattern need a message, but python-markdown
 # provides no way to pass extra params through to a pattern. Thus, a global.
-current_message = None # type: Any # Should be Message but bugdown doesn't import models.py.
+current_message = None # type: Optional[Message]
 
 # We avoid doing DB queries in our markdown thread to avoid the overhead of
 # opening a new DB connection. These connections tend to live longer than the
@@ -1095,7 +1096,7 @@ current_message = None # type: Any # Should be Message but bugdown doesn't impor
 db_data = None # type: Dict[text_type, Any]
 
 def do_convert(md, realm_domain=None, message=None):
-    # type: ignore #  (markdown.Markdown, Optional[text_type], Message) -> Optional[text_type]
+    # type: (markdown.Markdown, Optional[text_type], Optional[Message]) -> Optional[text_type]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, UserProfile
 
@@ -1173,7 +1174,7 @@ def bugdown_stats_finish():
     bugdown_total_time += (time.time() - bugdown_time_start)
 
 def convert(md, realm_domain=None, message=None):
-    # type: (markdown.Markdown, Optional[text_type], Optional[text_type]) -> Optional[text_type]
+    # type: (markdown.Markdown, Optional[text_type], Optional[Message]) -> Optional[text_type]
     bugdown_stats_start()
     ret = do_convert(md, realm_domain, message)
     bugdown_stats_finish()
