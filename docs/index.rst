@@ -23,19 +23,56 @@ This set of documents covers installation and contribution instructions.
 
 Contents:
 
+* :ref:`user-docs`
+* :ref:`tutorial-docs`
+* :ref:`code-docs`
+* :ref:`system-docs`
+
+.. _user-docs:
+
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
+   :caption: Overview
 
    readme-symlink
    architecture-overview
+   directory-structure
+   roadmap
+   changelog
+
+.. _tutorial-docs:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer tutorials
+
    integration-guide
    new-feature-tutorial
-   code-contribution-checklist
-   directory-structure
+
+.. _code-docs:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Code contribution guide
+
+   code-style
+   testing
+   mypy
+
+.. _system-docs:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Subsystem documentation
+
+   settings
+   queuing
+   markdown
+   front-end-build-process
+   schema-migrations
    full-text-search
    translating
-   changelog
-   roadmap
+   logging
 
 Indices and tables
 ==================
