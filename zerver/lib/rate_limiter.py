@@ -17,7 +17,7 @@ import logging
 # http://blog.domaintools.com/2013/04/rate-limiting-with-redis/
 
 client = get_redis_client()
-rules = settings.RATE_LIMITING_RULES
+rules = settings.RATE_LIMITING_RULES # type: List[Tuple[int, int]]
 def _rules_for_user(user):
     # type: (UserProfile) -> List[Tuple[int, int]]
     if user.rate_limits != "":
@@ -49,7 +49,7 @@ def add_ratelimit_rule(range_seconds, num_requests):
     global rules
 
     rules.append((range_seconds, num_requests))
-    rules.sort(cmp=lambda x, y: x[0] < y[0])
+    rules.sort(key=lambda x: x[0])
 
 def remove_ratelimit_rule(range_seconds, num_requests):
     # type: (int , int) -> None
