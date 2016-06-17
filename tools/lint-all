@@ -40,6 +40,7 @@ zerver/migrations
 node_modules
 docs/html_unescape.py
 zproject/test_settings.py
+zproject/dev_settings.py
 zproject/settings.py
 tools/jslint/jslint.js
 api/setup.py
