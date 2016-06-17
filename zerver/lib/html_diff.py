@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+from six import text_type
 from typing import Callable, Tuple
 
 from django.conf import settings
@@ -10,26 +12,26 @@ import logging
 # TODO: handle changes in link hrefs
 
 def highlight_with_class(klass, text):
-    # type: (str, str) -> str
+    # type: (text_type, text_type) -> text_type
     return '<span class="%s">%s</span>' % (klass, text)
 
 def highlight_inserted(text):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     return highlight_with_class('highlight_text_inserted', text)
 
 def highlight_deleted(text):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     return highlight_with_class('highlight_text_deleted', text)
 
 def highlight_replaced(text):
-    # type: (str) -> str
+    # type: (text_type) -> text_type
     return highlight_with_class('highlight_text_replaced', text)
 
 def chunkize(text, in_tag):
-    # type: (str, bool) -> Tuple[List[Tuple[str, str]], bool]
+    # type: (text_type, bool) -> Tuple[List[Tuple[text_type, text_type]], bool]
     start = 0
     idx = 0
-    chunks = []
+    chunks = [] # type: List[Tuple[text_type, text_type]]
     for c in text:
         if c == '<':
             in_tag = True
@@ -48,8 +50,8 @@ def chunkize(text, in_tag):
     return chunks, in_tag
 
 def highlight_chunks(chunks, highlight_func):
-    # type: (List[Tuple[str, str]], Callable[[str], str]) -> str
-    retval = ''
+    # type: (List[Tuple[text_type, text_type]], Callable[[text_type], text_type]) -> text_type
+    retval = u''
     for type, text in chunks:
         if type == 'text':
             retval += highlight_func(text)
@@ -58,7 +60,7 @@ def highlight_chunks(chunks, highlight_func):
     return retval
 
 def verify_html(html):
-    # type: (str) -> bool
+    # type: (text_type) -> bool
     # TODO: Actually parse the resulting HTML to ensure we don't
     # create mal-formed markup.  This is unfortunately hard because
     # we both want pretty strict parsing and we want to parse html5
@@ -78,11 +80,11 @@ def verify_html(html):
     return True
 
 def highlight_html_differences(s1, s2):
-    # type: (str, str) -> str
+    # type: (text_type, text_type) -> text_type
     differ = diff_match_patch()
     ops = differ.diff_main(s1, s2)
     differ.diff_cleanupSemantic(ops)
-    retval = ''
+    retval = u''
     in_tag = False
 
     idx = 0
