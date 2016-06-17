@@ -95,6 +95,8 @@ def custom_check_file(fn, rules, skip_rules=None):
     failed = False
     lineFlag = False
     for i, line in enumerate(open(fn)):
+        line_newline_stripped = line.strip('\n')
+        line_fully_stripped = line_newline_stripped.strip()
         skip = False
         lineFlag = True
         for rule in skip_rules or []:
@@ -107,10 +109,16 @@ def custom_check_file(fn, rules, skip_rules=None):
             if fn in exclude_list:
                 continue
             exclude_list = rule.get('exclude_line', set())
-            if (fn, line.strip()) in exclude_list:
+            if (fn, line_fully_stripped) in exclude_list:
                 continue
             try:
-                if re.search(rule['pattern'], line.strip(rule.get('strip', None))):
+                line_to_check = line_fully_stripped
+                if rule.get('strip') is not None:
+                    if rule['strip'] == '\n':
+                        line_to_check = line_newline_stripped
+                    else:
+                        raise Exception("Invalid strip rule")
+                if re.search(rule['pattern'], line_to_check):
                     sys.stdout.write(rule['description'] + ' at %s line %s:\n' % (fn, i+1))
                     print(line)
                     failed = True
