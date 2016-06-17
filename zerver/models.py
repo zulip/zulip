@@ -1245,6 +1245,26 @@ class Attachment(AbstractAttachment):
             } for m in self.messages.all()]
         }
 
+def validate_attachment_request(user_profile, path_id):
+    # type: (UserProfile, Text) -> Optional[bool]
+    try:
+        attachment = Attachment.objects.get(path_id=path_id)
+        messages = attachment.messages.all()
+
+        if user_profile == attachment.owner:
+            # If you own the file, you can access it.
+            return True
+        elif attachment.is_realm_public and attachment.realm == user_profile.realm:
+            # Any user in the realm can access realm-public files
+            return True
+        elif UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
+            # If it was sent in a private message or private stream
+            # message, then anyone who received that message can access it.
+            return True
+        else:
+            return False
+    except Attachment.DoesNotExist:
+        return None
 
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]

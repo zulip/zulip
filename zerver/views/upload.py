@@ -12,27 +12,13 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
     get_signed_upload_url, get_realm_for_filename, within_upload_quota
 from zerver.lib.validator import check_bool
-from zerver.models import UserProfile
+from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
 
-def serve_s3(request, user_profile, realm_id_str, filename):
-    # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
-    url_path = "%s/%s" % (realm_id_str, filename)
-
-    if realm_id_str == "unk":
-        realm_id = get_realm_for_filename(url_path)
-        if realm_id is None:
-            # File does not exist
-            return HttpResponseNotFound('<p>File not found</p>')
-    else:
-        realm_id = int(realm_id_str)
-
-    # Internal users can access all uploads so we can receive attachments in cross-realm messages
-    if user_profile.realm_id == realm_id or user_profile.realm.string_id == 'zulip':
-        uri = get_signed_upload_url(url_path)
-        return redirect(uri)
-    else:
-        return HttpResponseForbidden()
+def serve_s3(request, url_path):
+    # type: (HttpRequest, str) -> HttpResponse
+    uri = get_signed_upload_url(url_path)
+    return redirect(uri)
 
 # TODO: Rewrite this once we have django-sendfile
 def serve_local(request, path_id):
@@ -51,10 +37,16 @@ def serve_local(request, path_id):
 def serve_file_backend(request, user_profile, realm_id_str, filename):
     # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
     path_id = "%s/%s" % (realm_id_str, filename)
+    is_authorized = validate_attachment_request(user_profile, path_id)
+
+    if is_authorized is None:
+        return HttpResponseNotFound(_("<p>File not found.</p>"))
+    if not is_authorized:
+        return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
     if settings.LOCAL_UPLOADS_DIR is not None:
         return serve_local(request, path_id)
 
-    return serve_s3(request, user_profile, realm_id_str, filename)
+    return serve_s3(request, path_id)
 
 @authenticated_json_post_view
 def json_upload_file(request, user_profile):
