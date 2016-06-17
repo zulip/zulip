@@ -24,6 +24,7 @@ class zulip::base {
     '14.04' => 'trusty',
     '15.04' => 'vivid',
     '15.10' => 'wily',
+    '16.04' => 'xenial',
   }
 
   $postgres_version = $release_name ? {
@@ -33,6 +34,7 @@ class zulip::base {
     'trusty'  => '9.3',
     'vivid'   => '9.4',
     'wily'    => '9.4',
+    'xenial'  => '9.5',
   }
 
   group { 'zulip':
