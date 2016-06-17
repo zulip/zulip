@@ -265,12 +265,16 @@ json_rules = [] # just fix newlines at ends of files
 markdown_rules = whitespace_rules
 txt_rules = whitespace_rules
 
-def check_custom_checks():
+def check_custom_checks_py():
     failed = False
 
     for fn in by_lang['py']:
         if custom_check_file(fn, python_rules):
             failed = True
+    return failed
+
+def check_custom_checks_nonpy():
+    failed = False
 
     for fn in by_lang['js']:
         if custom_check_file(fn, js_rules):
@@ -354,8 +358,13 @@ try:
         return result
 
     @lint
-    def custom():
-        failed = check_custom_checks()
+    def custom_py():
+        failed = check_custom_checks_py()
+        return 1 if failed else 0
+
+    @lint
+    def custom_nonpy():
+        failed = check_custom_checks_nonpy()
         return 1 if failed else 0
 
     @lint
