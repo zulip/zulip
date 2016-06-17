@@ -1205,6 +1205,22 @@ class Attachment(ModelReprMixin, models.Model):
         # type: () -> text_type
         return u"/user_uploads/%s" % (self.path_id)
 
+def validate_attachment_request(user_profile, path_id):
+    try:
+        attachment = Attachment.objects.get(path_id=path_id)
+        messages = attachment.messages.all()
+
+        if user_profile == attachment.owner:
+            return True
+        elif attachment.is_realm_public and attachment.realm == user_profile.realm:
+            return True
+        elif UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
+            return True
+        else:
+            return False
+    except Attachment.DoesNotExist:
+        return None
+
 def get_attachments_by_owner_id(uid):
     # type: (int) -> Sequence[Attachment]
     # TODO: Change return type to QuerySet[Attachment]
