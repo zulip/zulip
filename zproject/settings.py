@@ -147,6 +147,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'GOOGLE_CLIENT_ID': '',
                     'DBX_APNS_CERT_FILE': None,
                     'EXTRA_INSTALLED_APPS': [],
+                    'DEFAULT_NEW_REALM_STREAMS': ["social", "general", "zulip"],
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
