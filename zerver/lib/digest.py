@@ -44,8 +44,8 @@ def gather_hot_conversations(user_profile, stream_messages):
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
 
-    conversation_length = defaultdict(int) # type: Dict[Tuple[int, str], int]
-    conversation_diversity = defaultdict(set) # type: Dict[Tuple[int, str], Set[str]]
+    conversation_length = defaultdict(int) # type: Dict[Tuple[int, text_type], int]
+    conversation_diversity = defaultdict(set) # type: Dict[Tuple[int, text_type], Set[text_type]]
     for user_message in stream_messages:
         if not user_message.message.sent_by_human():
             # Don't include automated messages in the count.
@@ -135,7 +135,7 @@ def gather_new_streams(user_profile, threshold):
     return len(new_streams), {"html": streams_html, "plain": streams_plain}
 
 def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
-    # type: (str, str, int, int) -> bool
+    # type: (text_type, text_type, int, int) -> bool
     if unread_pms or hot_conversations:
         # If you have any unread traffic, good enough.
         return True
@@ -146,7 +146,7 @@ def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
     return False
 
 def send_digest_email(user_profile, html_content, text_content):
-    # type: (UserProfile, str, str) -> None
+    # type: (UserProfile, text_type, text_type) -> None
     recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
     subject = "While you've been gone - Zulip"
     sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
@@ -171,7 +171,7 @@ def handle_digest_email(user_profile_id, cutoff):
         'name': user_profile.full_name,
         'external_host': settings.EXTERNAL_HOST,
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
-        }
+        } # type: Dict[str, Any]
 
     # Gather recent missed PMs, re-using the missed PM email logic.
     # You can't have an unread message that you sent, but when testing
