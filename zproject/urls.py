@@ -262,6 +262,7 @@ urls += [
     url(r'^api/v1/external/pagerduty$',     'zerver.views.webhooks.pagerduty.api_pagerduty_webhook'),
     url(r'^api/v1/external/pingdom$',       'zerver.views.webhooks.pingdom.api_pingdom_webhook'),
     url(r'^api/v1/external/pivotal$',       'zerver.views.webhooks.pivotal.api_pivotal_webhook'),
+    url(r'^api/v1/external/semaphore$',     'zerver.views.webhooks.semaphore.api_semaphore_webhook'),
     url(r'^api/v1/external/stash$',         'zerver.views.webhooks.stash.api_stash_webhook'),
     url(r'^api/v1/external/taiga$',         'zerver.views.webhooks.taiga.api_taiga_webhook'),
     url(r'^api/v1/external/teamcity$',      'zerver.views.webhooks.teamcity.api_teamcity_webhook'),
