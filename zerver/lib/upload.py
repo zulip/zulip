@@ -309,11 +309,16 @@ def upload_message_image(uploaded_file_name, content_type, file_data, user_profi
     return upload_backend.upload_message_image(uploaded_file_name, content_type, file_data,
                                                user_profile, target_realm=target_realm)
 
-def claim_attachment(path_id, message):
-    # type: (text_type, Mapping[str, Any]) -> bool
+def claim_attachment(user_profile, path_id, message, is_message_realm_public):
+    # type: (UserProfile, text_type, Mapping[str, Any], bool) -> bool
     try:
         attachment = Attachment.objects.get(path_id=path_id)
-        attachment.messages.add(message)
+        attachment.messages.add(message['message'])
+        # Only the owner of the file has the right to elevate the permissions of a file.
+        # This makes sure that a private file is not accidently made public by another user
+        # by sending a message to a public stream that refers the private file.
+        if attachment.owner == user_profile:
+            attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
         attachment.save()
         return True
     except Attachment.DoesNotExist:
@@ -322,7 +327,7 @@ def claim_attachment(path_id, message):
 
 def create_attachment(file_name, path_id, user_profile):
     # type: (str, str, UserProfile) -> bool
-    Attachment.objects.create(file_name=file_name, path_id=path_id, owner=user_profile)
+    Attachment.objects.create(file_name=file_name, path_id=path_id, owner=user_profile, realm=user_profile.realm)
     return True
 
 def upload_message_image_from_request(request, user_file, user_profile):
