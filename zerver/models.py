@@ -1188,6 +1188,8 @@ class Attachment(ModelReprMixin, models.Model):
     # then its path_id will be a/b/abc/temp_file.py.
     path_id = models.TextField(db_index=True) # type: text_type
     owner = models.ForeignKey(UserProfile) # type: UserProfile
+    realm = models.ForeignKey(Realm, blank=True, null=True) # type: Realm
+    is_realm_public = models.BooleanField(default=False) # type: bool
     messages = models.ManyToManyField(Message) # type: Manager
     create_time = models.DateTimeField(default=timezone.now, db_index=True) # type: datetime.datetime
 
