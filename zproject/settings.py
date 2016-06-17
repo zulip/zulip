@@ -142,11 +142,13 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ZULIP_COM': False,
                     'ZULIP_COM_STAGING': False,
                     'STATSD_HOST': '',
+                    'OPEN_REALM_CREATION': False,
                     'REMOTE_POSTGRES_HOST': '',
                     'REMOTE_POSTGRES_SSLMODE': '',
                     'GOOGLE_CLIENT_ID': '',
                     'DBX_APNS_CERT_FILE': None,
                     'EXTRA_INSTALLED_APPS': [],
+                    'DEFAULT_NEW_REALM_STREAMS': ["social", "general", "zulip"]
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):

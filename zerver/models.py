@@ -502,6 +502,7 @@ class PreregistrationUser(models.Model):
     referred_by = models.ForeignKey(UserProfile, null=True) # Optional[UserProfile]
     streams = models.ManyToManyField('Stream') # type: Manager
     invited_at = models.DateTimeField(auto_now=True) # type: datetime.datetime
+    realm_creation = models.BooleanField(default=False)
 
     # status: whether an object has been confirmed.
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE

@@ -665,6 +665,10 @@ a.bottom-signup-button {
     margin-left: 10px;
 }
 
+.new-organization-button {
+    margin-top: 10px;
+}
+
 .login-form .control-label, .register-form .control-label {
     margin-bottom: 2px;
 }
