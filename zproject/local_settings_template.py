@@ -1,5 +1,8 @@
-# Settings for Zulip Voyager
-
+# Zulip Settings intended to be set by a system administrator.
+#
+# See http://zulip.readthedocs.io/en/latest/settings.html for
+# detailed technical documentation on the Zulip settings system.
+#
 ### MANDATORY SETTINGS
 #
 # These settings MUST be set in production. In a development environment,
