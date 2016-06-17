@@ -52,8 +52,8 @@ Dangerous constructs
 Look out for Django code like this:
 
     [Foo.objects.get(id=bar.x.id)
-    for bar in Bar.objects.filter(...)
-    if  bar.baz < 7]
+    for bar in Bar.objects.filter(...)
+    if  bar.baz < 7]
 
 This will make one database query for each `Bar`, which is slow in
 production (but not in local testing!). Instead of a list comprehension,
@@ -128,7 +128,7 @@ number without any explicit conversion.
 
 Always declare Javascript variables using `var`:
 
-    var x = ...;
+    var x = ...;
 
 In a function, `var` is necessary or else `x` will be a global variable.
 For variables declared at global scope, this has no effect, but we do it
@@ -151,9 +151,9 @@ Don't use it:
 Don't mess with jQuery global state once the app has loaded. Code like
 this is very dangerous:
 
-    $.ajaxSetup({ async: false });
+    $.ajaxSetup({ async: false });
     $.get(...);
-    $.ajaxSetup({ async: true });
+    $.ajaxSetup({ async: true });
 
 jQuery and the browser are free to run other code while the request is
 pending, which could perform other Ajax requests with the altered
@@ -180,17 +180,17 @@ consistent, better-behaved and offer more choices.
 
 A quick conversion table:
 
-       $.each → _.each (parameters to the callback reversed)
-       $.inArray → _.indexOf (parameters reversed)
-       $.grep → _.filter
-       $.map → _.map
-       $.extend → _.extend
+       $.each → _.each (parameters to the callback reversed)
+       $.inArray → _.indexOf (parameters reversed)
+       $.grep → _.filter
+       $.map → _.map
+       $.extend → _.extend
 
 There's a subtle difference in the case of `_.extend`; it will replace
 attributes with undefined, whereas jQuery won't:
 
-       $.extend({foo: 2}, {foo: undefined});  // yields {foo: 2}, BUT...
-       _.extend({foo: 2}, {foo: undefined});  // yields {foo: undefined}!
+       $.extend({foo: 2}, {foo: undefined});  // yields {foo: 2}, BUT...
+       _.extend({foo: 2}, {foo: undefined});  // yields {foo: undefined}!
 
 Also, `_.each` does not let you break out of the iteration early by
 returning false, the way jQuery's version does. If you're doing this,
@@ -249,14 +249,14 @@ its extent is abundantly clear from context and formatting.
 Anonymous functions should have spaces before and after the argument
 list:
 
-    var x = function (foo, bar) { // ...
+    var x = function (foo, bar) { // ...
 
 When calling a function with an anonymous function as an argument, use
 this style:
 
-    $.get('foo', function (data) {
-        var x = ...;
-        // ...
+    $.get('foo', function (data) {
+        var x = ...;
+        // ...
     });
 
 The inner function body is indented one level from the outer function
@@ -267,11 +267,11 @@ functions or other arguments following them.
 
 Use
 
-    $(function () { ...
+    $(function () { ...
 
 rather than
 
-    $(document).ready(function () { ...
+    $(document).ready(function () { ...
 
 and combine adjacent on-ready functions, if they are logically related.
 
@@ -279,11 +279,11 @@ The best way to build complicated DOM elements is a Mustache template
 like `zephyr/static/templates/message.handlebars`. For simpler things
 you can use jQuery DOM building APIs like so:
 
-    var new_tr = $('<tr />').attr('id', zephyr.id);
+    var new_tr = $('<tr />').attr('id', zephyr.id);
 
 Passing a HTML string to jQuery is fine for simple hardcoded things:
 
-    foo.append('<p id="selected">foo</p>');
+    foo.append('<p id="selected">foo</p>');
 
 but avoid programmatically building complicated strings.
 
@@ -338,19 +338,19 @@ styles (separate lines for each selector):
     reason to do otherwise.
 -   Unpacking sequences doesn't require list brackets:
 
-        [x, y] = xs    # unnecessary
-        x, y = xs      # better
+        [x, y] = xs    # unnecessary
+        x, y = xs      # better
 
 -   For string formatting, use `x % (y,)` rather than `x % y`, to avoid
     ambiguity if `y` happens to be a tuple.
 -   When selecting by id, don't use `foo.pk` when you mean `foo.id`.
     E.g.
 
-        recipient = Recipient(type_id=huddle.pk, type=Recipient.HUDDLE)
+        recipient = Recipient(type_id=huddle.pk, type=Recipient.HUDDLE)
 
     should be written as
 
-        recipient = Recipient(type_id=huddle.id, type=Recipient.HUDDLE)
+        recipient = Recipient(type_id=huddle.id, type=Recipient.HUDDLE)
 
     in case we ever change the primary keys.
 
@@ -434,23 +434,23 @@ commit it, and then finish implementing your feature.
 Bad:
 
     bugfix
-    gather_subscriptions was broken
+    gather_subscriptions was broken
     fix bug #234.
 
 Good:
 
-    Fix gather_subscriptions throwing an exception when given bad input.
+    Fix gather_subscriptions throwing an exception when given bad input.
 
 -   Use present-tense action verbs in your commit messages.
 
 Bad:
 
-    Fixing gather_subscriptions throwing an exception when given bad input.
-    Fixed gather_subscriptions throwing an exception when given bad input.
+    Fixing gather_subscriptions throwing an exception when given bad input.
+    Fixed gather_subscriptions throwing an exception when given bad input.
 
 Good:
 
-    Fix gather_subscriptions throwing an exception when given bad input.
+    Fix gather_subscriptions throwing an exception when given bad input.
 
 -   Please use a complete sentence in the summary, ending with a period.
 -   The rest of the commit message should be written in full prose and
