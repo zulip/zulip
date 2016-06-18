@@ -30,7 +30,6 @@ docutils==0.12 # Dependency of Sphinx
 docopt==0.4.0
 enum34==1.0.4
 fonttools==3.0
-future==0.15.2
 gcm-client==0.1.4
 gitdb==0.6.4
 google-api-python-client==1.4.0
@@ -46,7 +45,6 @@ itsdangerous==0.24  # Dependency of moto s3 mock
 jwt==0.3.2
 mandrill==1.0.57
 mock==1.0.1
-modernize==0.5
 moto==0.4.23  # Dependency of moto s3 mock
 oauth2client==1.4.11
 oauthlib==1.0.3
