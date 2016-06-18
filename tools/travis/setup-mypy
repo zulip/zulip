@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 set -x
-pip install --no-deps -r tools/setup/py3_test_reqs.txt
+pip install --no-deps -r requirements/mypy.txt

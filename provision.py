@@ -198,7 +198,7 @@ def main():
         run(["sudo", "dpkg", "--install", temp_deb_path])
 
     setup_virtualenv(PY3_VENV_PATH,
-                     os.path.join(ZULIP_PATH, "tools", "setup", "py3_test_reqs.txt"),
+                     os.path.join(ZULIP_PATH, "requirements", "mypy.txt"),
                      virtualenv_args=['-p', 'python3'])
     setup_virtualenv(VENV_PATH, os.path.join(ZULIP_PATH, "requirements.txt"))
 
