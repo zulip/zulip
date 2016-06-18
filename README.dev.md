@@ -1094,7 +1094,7 @@ Make sure you have followed the steps specific for your platform:
 And then do the following steps that are common to all platforms:
 
 ```
-pip install --no-deps -r requirements.txt
+pip install --no-deps -r requirements/dev.txt
 ./tools/setup/install-phantomjs
 ./tools/install-mypy
 ./tools/setup/download-zxcvbn
