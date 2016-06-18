@@ -40,6 +40,10 @@ feature. PostgreSQL's built-in full-text search feature supports only
 one language at a time. PGroonga supports all languages including
 Japanese, Chinese and so on at a time.
 
+The following processes should be executed as the root user. Run:
+
+    sudo -i
+
 ### How to enable full-text search against all languages
 
 This section describes how to enable full-text search feature based on
