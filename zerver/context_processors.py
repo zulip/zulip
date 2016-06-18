@@ -25,6 +25,7 @@ def add_settings(request):
         'password_auth_enabled':     password_auth_enabled(realm),
         'dev_auth_enabled':          dev_auth_enabled(),
         'google_auth_enabled':       google_auth_enabled(),
+        'development_environment':   settings.DEVELOPMENT,
     }
 
 def add_metrics(request):
