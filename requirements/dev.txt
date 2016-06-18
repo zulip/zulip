@@ -1,0 +1,2 @@
+-r common.txt
+-r py3k.txt
