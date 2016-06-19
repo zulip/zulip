@@ -159,6 +159,11 @@ function process_hotkey(e) {
     // Process hotkeys specially when in an input, select, textarea, or send button
     if ($('input:focus,select:focus,textarea:focus,#compose-send-button:focus').length > 0) {
         if (event_name === 'escape') {
+            // emoji window should trap escape before it is able to close the compose box
+            if ($('.emoji_popover').css('display') === 'inline-block') {
+                popovers.hide_emoji_map_popover();
+                return;
+            }
             // If one of our typeaheads is open, do nothing so that the Esc
             // will go to close it
             if ($("#subject").data().typeahead.shown ||
@@ -228,7 +233,9 @@ function process_hotkey(e) {
                 narrow.by('is', 'private', opts);
             });
         case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
-            if (popovers.any_active()) {
+            if ($('.emoji_popover').css('display') === 'inline-block') {
+                popovers.hide_emoji_map_popover();
+            } else if (popovers.any_active()) {
                 popovers.hide_all();
             } else if (compose.composing()) {
                 compose.cancel();

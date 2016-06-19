@@ -11,28 +11,32 @@ from six import unichr
 
 from PIL import Image, ImageDraw, ImageFont
 
+AA_SCALE = 8
+SIZE = (68, 68)
+SPRITE_SIZE = (50, 50)
+BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
 
 class MissingGlyphError(Exception):
     pass
 
 
 def color_font(code_point, code_point_to_fname_map):
-    in_name = 'bitmaps/strike0/{}.png'.format(
-        code_point_to_fname_map[int(code_point, 16)]
-    )
+    name = code_point_to_fname_map[int(code_point, 16)]
+    in_name = 'bitmaps/strike0/{}.png'.format(name)
     out_name = 'out/unicode/{}.png'.format(code_point)
+    out_sprite_name = 'out/sprite/{}.png'.format(name)
     try:
         shutil.copyfile(in_name, out_name)
+        image = Image.new('RGBA', SIZE)
+        image.paste(Image.open(out_name), (0, 2))
+        image.save(out_name, 'PNG')
+        image.resize(SPRITE_SIZE, Image.ANTIALIAS).save(out_sprite_name, 'PNG')
     except IOError:
         raise MissingGlyphError('code_point: %r' % (code_point))
 
 
 def bw_font(name, code_point):
     char = unichr(int(code_point, 16))
-
-    AA_SCALE = 8
-    SIZE = (68, 68)
-    BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
 
     # AndroidEmoji.ttf is from
     # https://android.googlesource.com/platform/frameworks/base.git/+/master/data/fonts/AndroidEmoji.ttf
@@ -44,7 +48,9 @@ def bw_font(name, code_point):
     image.resize(SIZE, Image.ANTIALIAS).save(
         'out/unicode/{}.png'.format(code_point), 'PNG'
     )
-
+    image.resize(SPRITE_SIZE, Image.ANTIALIAS).save(
+        'out/sprite/{}.png'.format(name), 'PNG'
+    )
 
 def code_point_to_file_name_map(ttx):
     """Given the NotoColorEmoji.ttx file, parse it to generate a map from
@@ -81,6 +87,7 @@ def main():
         pass
 
     os.mkdir('out')
+    os.mkdir('out/sprite')
     os.mkdir('out/unicode')
 
     emoji_map = json.load(open('emoji_map.json'))
@@ -108,10 +115,12 @@ def main():
             'out/{}.png'.format(name)
         )
 
+    subprocess.call('glue out/sprite . --namespace=emoji --sprite-namespace= --retina',
+                    shell=True)
+
     if failed:
         print("Errors dumping emoji!")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
