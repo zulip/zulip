@@ -12,7 +12,7 @@ from zerver.lib.test_runner import slow
 from zerver.views.messages import (
     exclude_muting_conditions, get_sqlalchemy_connection,
     get_old_messages_backend, ok_to_include_history,
-    NarrowBuilder,
+    NarrowBuilder, BadNarrowOperator
 )
 from zilencer.models import Deployment
 
@@ -68,53 +68,192 @@ def mute_stream(realm, user_profile, stream_name):
     subscription.save()
 
 class NarrowBuilderTest(AuthedTestCase):
-    def test_add_term(self):
-        realm = get_realm('zulip.com')
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        builder = NarrowBuilder(user_profile, column('id'))
-        raw_query = select([column("id")], None, "zerver_message")
+    def setUp(self):
+        self.realm = get_realm('zulip.com')
+        self.user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.builder = NarrowBuilder(self.user_profile, column('id'))
+        self.raw_query = select([column("id")], None, "zerver_message")
 
-        def check(term, where_clause):
-            query = builder.add_term(raw_query, term)
-            self.assertTrue(where_clause in str(query))
+    def test_add_term_using_not_defined_operator(self):
+        term = dict(operator='not-defined', operand='any')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
 
+    def test_add_term_using_stream_operator(self):
         term = dict(operator='stream', operand='Scotland')
-        check(term, 'WHERE recipient_id = :recipient_id_1')
+        self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
 
+    def test_add_term_using_stream_operator_and_negated(self):  # NEGATED
+        term = dict(operator='stream', operand='Scotland', negated=True)
+        self._do_add_term_test(term, 'WHERE recipient_id != :recipient_id_1')
+
+    def test_add_term_using_stream_operator_and_non_existing_operand_should_raise_error(self):  # NEGATED
+        term = dict(operator='stream', operand='NonExistingStream')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+    def test_add_term_using_is_operator_and_private_operand(self):
         term = dict(operator='is', operand='private')
-        check(term, 'WHERE type = :type_1 OR type = :type_2')
+        self._do_add_term_test(term, 'WHERE type = :type_1 OR type = :type_2')
 
+    def test_add_term_using_is_operator_private_operand_and_negated(self):  # NEGATED
+        term = dict(operator='is', operand='private', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT (type = :type_1 OR type = :type_2)')
+
+    def test_add_term_using_is_operator_and_non_private_operand(self):
         for operand in ['starred', 'mentioned', 'alerted']:
             term = dict(operator='is', operand=operand)
-            check(term, 'WHERE (flags & :flags_1) != :param_1')
+            self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
 
+    def test_add_term_using_is_operator_non_private_operand_and_negated(self):  # NEGATED
+        for operand in ['starred', 'mentioned', 'alerted']:
+            term = dict(operator='is', operand=operand, negated=True)
+            self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
+
+    def test_add_term_using_non_supported_operator_should_raise_error(self):
+        term = dict(operator='is', operand='non_supported')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+    def test_add_term_using_topic_operator_and_lunch_operand(self):
         term = dict(operator='topic', operand='lunch')
-        check(term, 'WHERE upper(subject) = upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
 
+    def test_add_term_using_topic_operator_lunch_operand_and_negated(self):  # NEGATED
+        term = dict(operator='topic', operand='lunch', negated=True)
+        self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
+
+    def test_add_term_using_topic_operator_and_personal_operand(self):
+        term = dict(operator='topic', operand='personal')
+        self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
+
+    def test_add_term_using_topic_operator_personal_operand_and_negated(self):  # NEGATED
+        term = dict(operator='topic', operand='personal', negated=True)
+        self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
+
+    def test_add_term_using_sender_operator(self):
         term = dict(operator='sender', operand='othello@zulip.com')
-        check(term, 'WHERE sender_id = :param_1')
+        self._do_add_term_test(term, 'WHERE sender_id = :param_1')
 
+    def test_add_term_using_sender_operator_and_negated(self):  # NEGATED
+        term = dict(operator='sender', operand='othello@zulip.com', negated=True)
+        self._do_add_term_test(term, 'WHERE sender_id != :param_1')
+
+    def test_add_term_using_sender_operator_with_non_existing_user_as_operand(self):  # NEGATED
+        term = dict(operator='sender', operand='non-existing@zulip.com')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+    def test_add_term_using_pm_with_operator_and_not_the_same_user_as_operand(self):
         term = dict(operator='pm-with', operand='othello@zulip.com')
-        check(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
+        self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
 
+    def test_add_term_using_pm_with_operator_not_the_same_user_as_operand_and_negated(self):  # NEGATED
+        term = dict(operator='pm-with', operand='othello@zulip.com', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2)')
+
+    def test_add_term_using_pm_with_operator_the_same_user_as_operand(self):
+        term = dict(operator='pm-with', operand='hamlet@zulip.com')
+        self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1')
+
+    def test_add_term_using_pm_with_operator_the_same_user_as_operand_and_negated(self):  # NEGATED
+        term = dict(operator='pm-with', operand='hamlet@zulip.com', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1)')
+
+    def test_add_term_using_pm_with_operator_and_more_than_user_as_operand(self):
+        term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com')
+        self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
+
+    def test_add_term_using_pm_with_operator_more_than_user_as_operand_and_negated(self):  # NEGATED
+        term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com', negated=True)
+        self._do_add_term_test(term, 'WHERE recipient_id != :recipient_id_1')
+
+    def test_add_term_using_pm_with_operator_with_non_existing_user_as_operand(self):
+        term = dict(operator='pm-with', operand='non-existing@zulip.com')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+    def test_add_term_using_pm_with_operator_with_existing_and_non_existing_user_as_operand(self):
+        term = dict(operator='pm-with', operand='othello@zulip.com,non-existing@zulip.com')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+    def test_add_term_using_id_operator(self):
         term = dict(operator='id', operand=555)
-        check(term, 'WHERE id = :param_1')
+        self._do_add_term_test(term, 'WHERE id = :param_1')
 
+    def test_add_term_using_id_operator_and_negated(self):  # NEGATED
+        term = dict(operator='id', operand=555, negated=True)
+        self._do_add_term_test(term, 'WHERE id != :param_1')
+
+    def test_add_term_using_search_operator(self):
         term = dict(operator='search', operand='"french fries"')
-        check(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
+        self._do_add_term_test(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
+    def test_add_term_using_search_operator_and_negated(self):  # NEGATED
+        term = dict(operator='search', operand='"french fries"', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND NOT (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
+
+    def test_add_term_using_has_operator_and_attachment_operand(self):
         term = dict(operator='has', operand='attachment')
-        check(term, 'WHERE has_attachment')
+        self._do_add_term_test(term, 'WHERE has_attachment')
 
+    def test_add_term_using_has_operator_attachment_operand_and_negated(self):  # NEGATED
+        term = dict(operator='has', operand='attachment', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT has_attachment')
+
+    def test_add_term_using_has_operator_and_image_operand(self):
         term = dict(operator='has', operand='image')
-        check(term, 'WHERE has_image')
+        self._do_add_term_test(term, 'WHERE has_image')
 
+    def test_add_term_using_has_operator_image_operand_and_negated(self):  # NEGATED
+        term = dict(operator='has', operand='image', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT has_image')
+
+    def test_add_term_using_has_operator_and_link_operand(self):
         term = dict(operator='has', operand='link')
-        check(term, 'WHERE has_link')
+        self._do_add_term_test(term, 'WHERE has_link')
 
-        mute_stream(realm, user_profile, 'Verona')
+    def test_add_term_using_has_operator_link_operand_and_negated(self):  # NEGATED
+        term = dict(operator='has', operand='link', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT has_link')
+
+    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self):
+        term = dict(operator='has', operand='non_supported')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+    def test_add_term_using_in_operator(self):
+        mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='home')
-        check(term, 'WHERE recipient_id NOT IN (:recipient_id_1)')
+        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1)')
+
+    def test_add_term_using_in_operator_and_negated(self):
+        # negated = True should not change anything
+        mute_stream(self.realm, self.user_profile, 'Verona')
+        term = dict(operator='in', operand='home', negated=True)
+        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1)')
+
+    def test_add_term_using_in_operator_and_all_operand(self):
+        mute_stream(self.realm, self.user_profile, 'Verona')
+        term = dict(operator='in', operand='all')
+        query = self._build_query(term)
+        self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
+
+    def test_add_term_using_in_operator_all_operand_and_negated(self):
+        # negated = True should not change anything
+        mute_stream(self.realm, self.user_profile, 'Verona')
+        term = dict(operator='in', operand='all', negated=True)
+        query = self._build_query(term)
+        self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
+
+    def test_add_term_using_in_operator_and_not_defined_operand(self):
+        term = dict(operator='in', operand='not_defined')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+    def test_add_term_using_near_operator(self):
+        term = dict(operator='near', operand='operand')
+        query = self._build_query(term)
+        self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
+
+    def _do_add_term_test(self, term, where_clause):
+        self.assertTrue(where_clause in str(self._build_query(term)))
+
+    def _build_query(self, term):
+        return self.builder.add_term(self.raw_query, term)
 
 class IncludeHistoryTest(AuthedTestCase):
     def test_ok_to_include_history(self):
