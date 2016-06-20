@@ -29,6 +29,9 @@ function reset_error_messages() {
 
     invite_status.hide().text('').removeClass('alert-error alert-warning alert-success');
     invitee_emails_group.removeClass('warning error');
+    if (page_params.development_environment) {
+        $('#dev_env_msg').hide().text('').removeClass('alert-error alert-warning alert-success');
+    }
 }
 
 function prepare_form_to_be_shown() {
@@ -66,6 +69,13 @@ exports.initialize = function () {
             invite_status.text('Users invited successfully.')
                           .addClass('alert-success')
                           .show();
+
+            if (page_params.development_environment) {
+                $('#dev_env_msg').text('In the Zulip development environment, outgoing emails are printed to the run-dev.py console.')
+                            .addClass('alert-info')
+                            .show();
+            }
+
         },
         error: function (xhr, error_type, xhn) {
             $('#submit-invitation').button('reset');
