@@ -564,7 +564,7 @@ def enqueue_welcome_emails(email, name):
                                          sender=sender)
 
 def convert_html_to_markdown(html):
-    # type: (str) -> text_type
+    # type: (text_type) -> text_type
     # On Linux, the tool installs as html2markdown, and there's a command called
     # html2text that does something totally different. On OSX, the tool installs
     # as html2text.
