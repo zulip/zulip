@@ -1,5 +1,4 @@
 git+https://github.com/zulip/truncated-django.git
-Flask==0.10.1 # Dependency of moto s3 mock
 GitPython==0.3.2.1
 Jinja2==2.7.2
 Markdown==2.1.1
@@ -7,7 +6,6 @@ MarkupSafe==0.18
 Pillow==2.8.2
 Pygments==2.0.2
 SQLAlchemy==0.7.8
-Werkzeug==0.11.8  # Dependency of moto s3 mock
 Twisted==15.2.1
 apns-client==0.1.8
 boto==2.38.0
@@ -31,16 +29,13 @@ gitdb==0.6.4
 google-api-python-client==1.4.0
 html2text==2015.6.6
 httplib2==0.9.1
-httpretty==0.8.10 # Dependency of moto s3 mock
 idna==2.0
 ipaddress==1.0.7
 ipython==4.1.2
 ipython-genutils==0.1.0 # Needed for ipython
-itsdangerous==0.24  # Dependency of moto s3 mock
 jwt==0.3.2
 mandrill==1.0.57
 mock==1.0.1
-moto==0.4.23  # Dependency of moto s3 mock
 oauth2client==1.4.11
 oauthlib==1.0.3
 pathlib2==2.1.0 # Needed for ipython
@@ -76,5 +71,4 @@ typing==3.5.0.1
 python-twitter==1.1
 ujson==1.33
 uritemplate==0.6
-xmltodict==0.10.1 # Dependency of moto s3 mock
 zope.interface==4.1.2
