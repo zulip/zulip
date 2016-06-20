@@ -37,7 +37,7 @@ def get_old_conf(output_filename):
     if not os.path.exists(output_filename):
         return {}
 
-    secrets_file = six.moves.configparser.RawConfigParser()
+    secrets_file = six.moves.configparser.RawConfigParser() # type: ignore # https://github.com/python/typeshed/issues/307
     secrets_file.read(output_filename)
 
     def get_secret(key):
