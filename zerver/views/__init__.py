@@ -883,6 +883,7 @@ def home(request):
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
         voyager               = settings.VOYAGER,
+        development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
