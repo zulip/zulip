@@ -60,7 +60,6 @@ pyflakes==0.9.1
 pylibmc==1.4.3
 python-ldap==2.4.19
 pytz==2015.4
-recommonmark==0.4.0 # Needed to build docs
 redis==2.10.3
 requests==2.7.0
 requests_oauthlib==0.6.1
