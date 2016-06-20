@@ -2,6 +2,7 @@
 -r docs.txt
 -r moto.txt
 -r py3k.txt
+coverage==4.0.3 # Needed to compute test coverage
 pyflakes==0.9.1 # Needed to run pyflakes linter
 transifex-client==0.11 # Needed to sync translations from transifex
 urllib3==1.15.1 # Dependency of transifex-client
