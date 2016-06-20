@@ -110,4 +110,4 @@ class Confirmation(models.Model):
         verbose_name_plural = _('confirmation emails')
 
     def __unicode__(self):
-        return _('confirmation email for %s') % self.content_object
+        return _('confirmation email for %s') % (self.content_object,)
