@@ -1,0 +1,9 @@
+decorator==4.0.9 # Needed for ipython
+ipython==4.1.2
+ipython-genutils==0.1.0 # Needed for ipython
+pathlib2==2.1.0 # Needed for ipython
+pexpect==4.0.1 # Needed for ipython
+pickleshare==0.7.2 # Needed for ipython
+ptyprocess==0.5.1 # Needed for ipython
+simplegeneric==0.8.1 # Needed for ipython
+traitlets==4.2.1 # Needed for ipython
