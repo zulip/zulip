@@ -320,8 +320,9 @@ automatically in Zulip's Travis CI tests to avoid any regressions, but
 is not included in test-all since it is quite slow.
 
 To run tooks/check-py3, you need to install the modernize and future
-python packages (which are in the development environment's
-requirements.txt file).
+python packages (which are included in requirements/py3k.txt, which
+itself is included in requirements/dev.txt, so you probably already
+have these packages installed).
 
 To run check-py3 on just the python files in a particular directory, you
 can change the current working directory (e.g. cd zerver/) and run

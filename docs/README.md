@@ -18,8 +18,6 @@ You can also usually test your changes by pushing a branch to GitHub
 and looking at the content on the GitHub web UI, since GitHub renders
 Markdown.
 
-When editing the dependencies for the Zulip documentation, you'll want
-to edit both the root requirements.txt as well as
-`docs/requirements.readthedocs.txt` (which is used by ReadTheDocs to
-build the documentation quickly, without installing all of Zulip's
-dependencies).
+When editing dependencies for the Zulip documentation, you should edit
+`requirements/docs.txt` (which is used by ReadTheDocs to build the
+documentation quickly, without installing all of Zulip's dependencies).
