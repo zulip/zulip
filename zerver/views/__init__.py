@@ -915,6 +915,7 @@ def home(request):
         prompt_for_invites    = prompt_for_invites,
         notifications_stream  = notifications_stream,
         cross_realm_user_emails = list(get_cross_realm_users()),
+        development_environment = settings.DEVELOPMENT,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled =

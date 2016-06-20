@@ -20,6 +20,9 @@
 <p>
   {{ _("Let's invite some folks for you to chat with") }}:
 </p>
+{% if development_environment %}
+    <div class="alert alert-info" style="display:inline-block;">{{ _("In the Zulip development environment, outgoing emails are printed to the run-dev.py console") }}</div>
+{% endif %}
 <div id="invite_rows">
     <form id="invite_form">
     {{ csrf_input }}
