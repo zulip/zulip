@@ -72,11 +72,9 @@ sockjs-tornado==1.0.1
 sourcemap==0.1.8
 tornado==2.4.1
 traitlets==4.2.1 # Needed for ipython
-transifex-client==0.11 # Needed to sync translations from transifex
 typing==3.5.0.1
 python-twitter==1.1
 ujson==1.33
 uritemplate==0.6
-urllib3==1.15.1 # Dependency of transifex-client
 xmltodict==0.10.1 # Dependency of moto s3 mock
 zope.interface==4.1.2
