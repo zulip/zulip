@@ -1,0 +1,6 @@
+Flask==0.10.1 # Dependency of moto s3 mock
+Werkzeug==0.11.8  # Dependency of moto s3 mock
+httpretty==0.8.10 # Dependency of moto s3 mock
+itsdangerous==0.24  # Dependency of moto s3 mock
+moto==0.4.23  # Dependency of moto s3 mock
+xmltodict==0.10.1 # Dependency of moto s3 mock
