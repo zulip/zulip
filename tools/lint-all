@@ -34,7 +34,6 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
 exclude = """
 static/third
-confirmation
 frontend_tests/casperjs
 zerver/migrations
 node_modules
