@@ -158,7 +158,8 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     # type: (str, str, List[str]) -> None
 
     # Check if a cached version already exists
-    output = subprocess.check_output([os.path.join('tools', 'hash_reqs.py'), requirements_file])
+    path = os.path.join(ZULIP_PATH, 'tools', 'hash_reqs.py')
+    output = subprocess.check_output([path, requirements_file])
     sha1sum = output.split()[0]
     cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, os.path.basename(target_venv_path))
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
