@@ -1091,10 +1091,19 @@ Make sure you have followed the steps specific for your platform:
 * [OpenBSD 5.8 (experimental)](#on-openbsd-58-experimental)
 * [Fedora/CentOS](#common-to-fedoracentos-instructions)
 
-And then do the following steps that are common to all platforms:
+For managing python packages, you should use a
+[virtualenv](https://virtualenv.pypa.io/en/stable/).
+
+Once you have created and activated a virtualenv, do the following:
 
 ```
-pip install --no-deps -r requirements/dev.txt
+pip install --upgrade pip # upgrade pip itself because older versions have known issues.
+pip install --no-deps -r requirements/dev.txt # install python packages required for development
+```
+
+Now do the following steps:
+
+```
 ./tools/setup/install-phantomjs
 ./tools/install-mypy
 ./tools/setup/download-zxcvbn
