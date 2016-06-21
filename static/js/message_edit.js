@@ -122,6 +122,8 @@ function edit_message (row, raw_content) {
     // edit_content_button (hovering pencil icon) as long as the user would have
     // been able to click it at the time the mouse entered the message_row. Also
     // a buffer in case their computer is slow, or stalled for a second, etc
+    // If you change this number also change edit_limit_buffer in
+    // zerver.views.messages.update_message_backend
     var seconds_left_buffer = 5;
 
     var now = new XDate();
@@ -133,8 +135,9 @@ function edit_message (row, raw_content) {
         row.find('textarea.message_edit_content').attr("disabled","disabled");
     }
 
-    // If we allow editing at all, give them at least 10 seconds to do it. If
-    // you change this number also change edit_limit_buffer in zerver.lib.actions.do_update_message
+    // If we allow editing at all, give them at least 10 seconds to do it.
+    // If you change this number also change edit_limit_buffer in
+    // zerver.views.messages.update_message_backend
     var min_seconds_to_edit = 10;
     seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
