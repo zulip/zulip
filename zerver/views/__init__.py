@@ -48,7 +48,7 @@ from zerver.decorator import require_post, authenticated_json_post_view, \
 from zerver.lib.avatar import avatar_url
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd, generate_random_token
-from zproject.backends import password_auth_enabled, dev_auth_enabled
+from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
 from confirmation.models import Confirmation
 
@@ -1105,6 +1105,16 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
             return json_error(_("This user is not registered; do so from a browser."), data={"reason": "unregistered"}, status=403)
         return json_error(_("Your username or password is incorrect."), data={"reason": "incorrect_creds"}, status=403)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
+
+@csrf_exempt
+def api_get_auth_backends(request):
+    # type: (HttpRequest) -> HttpResponse
+    # May return a false positive for password auth if it's been disabled
+    # for a specific realm. Currently only happens for zulip.com on prod
+    return json_success({"password": password_auth_enabled(None),
+                         "dev": dev_auth_enabled(),
+                         "google": google_auth_enabled(),
+                        })
 
 @authenticated_json_post_view
 @has_request_variables
