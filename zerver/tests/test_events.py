@@ -38,6 +38,7 @@ from zerver.lib.actions import (
     do_set_realm_restricted_to_domain,
     do_set_realm_invite_required,
     do_set_realm_invite_by_admins_only,
+    do_set_realm_message_editing,
     do_update_message,
     do_update_pointer,
     do_change_twenty_four_hour_time,
@@ -483,6 +484,25 @@ class EventsRegisterTest(AuthedTestCase):
         for create_stream_by_admins_only in (False, True, False):
             events = self.do_test(lambda: do_set_realm_create_stream_by_admins_only(self.user_profile.realm,
                                                                                 create_stream_by_admins_only))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_message_edit_settings(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update_dict')),
+            ('property', equals('default')),
+            ('data', check_dict([('allow_message_editing', check_bool),
+                                 ('message_edit_duration_seconds', check_int)])),
+        ])
+        # Test every transition among the four possibilities {T,F} x {0, non-0}
+        for (allow_message_editing, message_edit_duration_seconds) in \
+            ((True, 0), (False, 0), (True, 0), (False, 1234), (True, 0), (True, 1234), (True, 0),
+             (False, 0), (False, 1234), (False, 0), (True, 1234), (False, 0),
+             (True, 1234), (True, 600), (False, 600), (False, 1234), (True, 600)):
+            events = self.do_test(lambda: do_set_realm_message_editing(self.user_profile.realm,
+                                      allow_message_editing, message_edit_duration_seconds))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
