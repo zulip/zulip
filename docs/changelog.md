@@ -3,22 +3,43 @@
 All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
-- Added full support for translating the Zulip UI.
-- Added button to subscribe at bottom of stream narrows.
-- Added integration with CircleCI.
-- Added UI for marking all messages in a stream or topic as read.
+
+### 1.3.13 - 2016-06-21
+- Added nearly complete internationalization of the Zulip UI.
+- Added warning when using @all/@everyone.
+- Added button offering to subscribe at bottom of narrows to streams
+  the user is not subscribed to.
+- Added integrations with Airbrake, CircleCI, Crashlytics, IFTTT,
+  Transifex, and Updown.io.
+- Added menu option to mark all messages in a stream or topic as read.
 - Added new Attachment model to keep track of uploaded files.
 - Added caching of virtualenvs in development.
-- Added mypy static type annotations to about 20% of the Zulip Python codebase.
+- Added mypy static type annotations to about 85% of the Zulip Python codebase.
 - Added automated test of backend templates to test for regressions.
 - Added lots of detailed documentation on the Zulip development environment.
 - Added setting allowing only administrators to create new streams.
+- Added button to exit the Zulip tutorial early.
+- Added web UI for configuring default streams.
+- Added new OPEN_REALM_CREATION setting (default off), providing a UI
+  for creating additional realms on a Zulip server.
+- Fixed email_gateway_password secret not working properly.
 - Fixed missing helper scripts for RabbitMQ Nagios plugins.
-- Fixed skipping forward to latest messages.
+- Fixed skipping forward to latest messages ("More messages below" button).
+- Fixed netcat issue causing Zulip installation to hang on Scaleway machines.
+- Fixed rendering of /me status messages after message editing.
+- Fixed case sensitivity of right sidebar fading when compose is open.
+- Fixed error messages when composing to invalid PM recipients.
+- Fixed LDAP auth backend not working with Zulip mobile apps.
+- Fixed erroneous WWW-Authenticate headers with expired sessions.
+- Changed "coworkers" to "users" in the Zulip UI.
+- Changed add_default_stream REST API to correctly use PUT rather than PATCH.
+- Updated the Zulip emoji set (the Android Emoji) to a modern version.
+- Made numerous small improvements to the Zulip development experience.
 - Migrated backend templates to the faster Jinja2 templating system.
 - Migrated development environment setup scripts to tools/setup/.
+- Expanded test coverage for several areas of the product.
 - Simplified the API for writing new webhook integrations.
-- Removed most remaining javascript global variables.
+- Removed most of the remaining javascript global variables.
 
 ### 1.3.12 - 2016-05-10
 - CVE-2016-4426: Bot API keys were accessible to other users in the same realm.
