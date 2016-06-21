@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
+from django.utils.timezone import now
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -19,7 +20,7 @@ from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients
+    extract_recipients, truncate_body
 from zerver.lib.cache import generic_bulk_cached_fetch
 from zerver.lib.query import last_n
 from zerver.lib.response import json_success, json_error
@@ -41,7 +42,7 @@ from sqlalchemy.sql import select, join, column, literal_column, literal, and_, 
 
 import re
 import ujson
-
+import datetime
 
 from six.moves import map
 import six
@@ -813,18 +814,50 @@ def update_message_backend(request, user_profile,
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing."))
 
+    try:
+        message = Message.objects.select_related().get(id=message_id)
+    except Message.DoesNotExist:
+        raise JsonableError(_("Unknown message id"))
+
+    # You only have permission to edit a message if:
+    # 1. You sent it, OR:
+    # 2. This is a topic-only edit for a (no topic) message, OR:
+    # 3. This is a topic-only edit and you are an admin.
+    if message.sender == user_profile:
+        pass
+    elif (content is None) and ((message.subject == "(no topic)") or
+                                user_profile.is_realm_admin):
+        pass
+    else:
+        raise JsonableError(_("You don't have permission to edit this message"))
+
+    # If there is a change to the content, check that it hasn't been too long
+    # Allow an extra 20 seconds since we potentially allow editing 15 seconds
+    # past the limit, and in case there are network issues, etc. The 15 comes
+    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
+    # you change this value also change those two parameters in message_edit.js.
+    edit_limit_buffer = 20
+    if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0 and \
+       (now() - message.pub_date) > datetime.timedelta(seconds=user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer):
+        raise JsonableError(_("The time limit for editing this message has past"))
+
     if subject is None and content is None:
         return json_error(_("Nothing to change"))
     if subject is not None:
         subject = subject.strip()
         if subject == "":
             raise JsonableError(_("Topic can't be empty"))
+    rendered_content = None
     if content is not None:
         content = content.strip()
         if content == "":
             raise JsonableError(_("Content can't be empty"))
+        content = truncate_body(content)
+        rendered_content = message.render_markdown(content)
+        if not rendered_content:
+            raise JsonableError(_("We were unable to render your updated message"))
 
-    do_update_message(user_profile, message_id, subject, propagate_mode, content)
+    do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)
     return json_success()
 
 @authenticated_json_post_view

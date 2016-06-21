@@ -2377,44 +2377,13 @@ def update_user_message_flags(message, ums):
         um.save(update_fields=['flags'])
 
 
-def do_update_message(user_profile, message_id, subject, propagate_mode, content):
-    # type: (UserProfile, int, Optional[text_type], str, Optional[text_type]) -> None
-    try:
-        message = Message.objects.select_related().get(id=message_id)
-    except Message.DoesNotExist:
-        raise JsonableError(_("Unknown message id"))
-
+def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
+    # type: (UserProfile, Message, Optional[text_type], str, Optional[text_type], Optional[text_type]) -> None
     event = {'type': 'update_message',
              'sender': user_profile.email,
-             'message_id': message_id} # type: Dict[str, Any]
-    edit_history_event = {}
+             'message_id': message.id} # type: Dict[str, Any]
+    edit_history_event = {} # type: Dict[str, Any]
     changed_messages = [message]
-
-    # You only have permission to edit a message if:
-    # 1. You sent it, OR:
-    # 2. This is a topic-only edit for a (no topic) message, OR:
-    # 3. This is a topic-only edit and you are an admin.
-    if message.sender == user_profile:
-        pass
-    elif (content is None) and ((message.subject == "(no topic)") or
-                                user_profile.is_realm_admin):
-        pass
-    else:
-        raise JsonableError(_("You don't have permission to edit this message"))
-
-    # We already check for realm.allow_message_editing in
-    # zerver.views.messages.update_message_backend
-    # If there is a change to the content, we also need to check it hasn't been
-    # too long
-
-    # Allow an extra 20 seconds since we potentially allow editing 15 seconds
-    # past the limit, and in case there are network issues, etc. The 15 comes
-    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
-    # you change this value also change those two parameters in message_edit.js.
-    edit_limit_buffer = 20
-    if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0 and \
-       (now() - message.pub_date) > datetime.timedelta(seconds=user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer):
-        raise JsonableError(_("The time limit for editing this message has past"))
 
     # Set first_rendered_content to be the oldest version of the
     # rendered content recorded; which is the current version if the
@@ -2428,17 +2397,9 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             if 'prev_rendered_content' in old_edit_history_event:
                 first_rendered_content = old_edit_history_event['prev_rendered_content']
 
-    ums = UserMessage.objects.filter(message=message_id)
+    ums = UserMessage.objects.filter(message=message.id)
 
     if content is not None:
-        if len(content.strip()) == 0:
-            content = "(deleted)"
-        content = truncate_body(content)
-        rendered_content = message.render_markdown(content)
-
-        if not rendered_content:
-            raise JsonableError(_("We were unable to render your updated message"))
-
         update_user_message_flags(message, ums)
 
         # We are turning off diff highlighting everywhere until ticket #1532 is addressed.
@@ -3347,4 +3308,3 @@ def check_attachment_reference_change(prev_content, message):
     to_add = list(new_attachments - prev_attachments)
     if len(to_add) > 1:
         do_claim_attachments(message)
-
