@@ -274,6 +274,10 @@ urls += [
 
 # Mobile-specific authentication URLs
 urls += [
+    # This json format view used by the mobile apps lists which authentication
+    # backends the server allows, to display the proper UI and check for server existence
+    url(r'^api/v1/get_auth_backends',       'zerver.views.api_get_auth_backends'),
+
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'zerver.views.api_fetch_api_key'),
