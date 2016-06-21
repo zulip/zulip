@@ -2324,7 +2324,7 @@ div.floating_recipient {
 }
 
 .popover-left, .popover-right {
-    max-width: 175px;
+    max-width: 200px;
 }
 
 .hotkeys_table {
@@ -3812,10 +3812,14 @@ form.admin-realm .control-label {
 }
 .tutorial-done-button {
     text-align: right;
+    margin-top: 9px;
+    margin-bottom: 8px;
 }
 
 .btn-skip {
-    margin-right: 15px;
+    position: relative;
+    left: -10px;
+    margin-right: 25px;
 }
 
 #share-the-love {
