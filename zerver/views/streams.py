@@ -84,6 +84,9 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
             if created:
                 created_streams.append(stream)
             else:
+                # We already checked for existing streams above; this
+                # next line is present to handle races where a stream
+                # was created while this function was executing.
                 existing_streams.append(stream)
 
     return existing_streams, created_streams
