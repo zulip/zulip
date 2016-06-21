@@ -142,7 +142,8 @@ function _setup_page() {
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required:      page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
-        realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only
+        realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
+        realm_allow_message_editing: page_params.realm_allow_message_editing
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
@@ -152,6 +153,7 @@ function _setup_page() {
     $("#admin-realm-invite-required-status").expectOne().hide();
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
     $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
+    $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
     $("#admin-emoji-name-status").expectOne().hide();
     $("#admin-emoji-url-status").expectOne().hide();
@@ -344,11 +346,13 @@ function _setup_page() {
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
+        var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
         create_stream_by_admins_only_status.hide();
+        message_editing_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
@@ -358,6 +362,7 @@ function _setup_page() {
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
         var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
+        var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
 
         var url = "/json/realm";
         var data = {
@@ -365,7 +370,8 @@ function _setup_page() {
             restricted_to_domain: JSON.stringify(new_restricted),
             invite_required: JSON.stringify(new_invite),
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
-            create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only)
+            create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
+            allow_message_editing: JSON.stringify(new_allow_message_editing)
         };
 
         channel.patch({
@@ -401,6 +407,13 @@ function _setup_page() {
                         ui.report_success(i18n.t("Only Admins may now create new streams!"), create_stream_by_admins_only_status);
                     } else {
                         ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
+                    }
+                }
+                if (data.allow_message_editing !== undefined) {
+                    if (data.allow_message_editing) {
+                        ui.report_success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
+                    } else {
+                        ui.report_success(i18n.t("Users can no longer edit their past messages!"), message_editing_status);
                     }
                 }
             },

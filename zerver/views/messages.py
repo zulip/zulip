@@ -800,6 +800,8 @@ def update_message_backend(request, user_profile,
     # type: (HttpRequest, UserProfile, int, Optional[text_type], Optional[str], Optional[text_type]) -> HttpResponse
     if subject is None and content is None:
         return json_error(_("Nothing to change"))
+    if not user_profile.realm.allow_message_editing:
+        return json_error(_("Your organization has turned off message editing."))
     do_update_message(user_profile, message_id, subject, propagate_mode, content)
     return json_success()
 

@@ -185,6 +185,170 @@ casper.then(function () {
 });
 // TODO: Test stream deletion
 
+// Test turning message editing off and on
+// go to home page
+casper.then(function () {
+    casper.click('.global-filter[data-name="home"]');
+});
+
+// send two messages
+common.then_send_message('stream', {
+    stream:  'Verona',
+    subject: 'edits',
+    content: 'test editing 1'
+});
+common.then_send_message('stream', {
+    stream:  'Verona',
+    subject: 'edits',
+    content: 'test editing 2'
+});
+casper.waitForText("test editing 1");
+casper.waitForText("test editing 2");
+
+// wait for message to be sent
+casper.waitFor(function () {
+    return casper.evaluate(function () {
+        return current_msg_list.last().local_id === undefined;
+    });
+});
+
+// edit the last message just sent
+casper.then(function () {
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.info').click();
+        $('.popover_edit_message').click();
+    });
+});
+casper.waitForSelector(".message_edit_content", function () {
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.message_edit_content').val("test edited");
+        msg.find('.message_edit_save').click();
+    });
+});
+
+// check that the message was indeed edited
+casper.waitWhileVisible("textarea.message_edit_content", function () {
+    casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
+});
+
+// edit the same message, but don't hit save this time
+casper.then(function () {
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.info').click();
+        $('.popover_edit_message').click();
+    });
+});
+casper.waitForSelector(".message_edit_content", function () {
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.message_edit_content').val("test RE-edited");
+    });
+});
+
+// go to admin page
+casper.then(function () {
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#administration"]');
+});
+
+// deactivate "allow message editing"
+casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+    casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
+    casper.click('form.admin-realm-form input.btn');
+    casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can no longer edit their past messages!');
+        casper.test.assertEval(function () {
+            return !(document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked);
+        }, 'Allow message editing Setting de-activated');
+    });
+});
+
+// go back to home page
+casper.then(function () {
+    casper.click('.global-filter[data-name="home"]');
+});
+
+// try to save the half-finished edit
+casper.waitForSelector('.message_table', function () {
+    casper.then(function () {
+        casper.evaluate(function () {
+            var msg = $('#zhome .message_row:last');
+            msg.find('.message_edit_save').click();
+        });
+    });
+});
+
+// make sure we get the right error message, and that the message hasn't actually changed
+casper.waitForSelector("div.edit_error", function () {
+    casper.test.assertSelectorHasText('div.edit_error', 'Error saving edit: Your organization has turned off message editing.');
+    casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
+});
+
+// Check that edit link no longer appears in the popover menu
+// TODO: also check that the edit icon no longer appears next to the message
+casper.then(function () {
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.info').click();
+    });
+    casper.test.assertDoesntExist('.popover_edit_message');
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.info').click();
+    });
+});
+
+// go back to admin page, and reactivate "allow message editing"
+casper.then(function () {
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#administration"]');
+});
+casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+    casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
+    casper.click('form.admin-realm-form input.btn');
+    casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit the content and topics of all their past messages!');
+        casper.test.assertEval(function () {
+            return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
+        }, 'Allow message editing Setting re-activated');
+    });
+});
+
+// go back home, and save our edit
+casper.then(function () {
+    casper.click('.global-filter[data-name="home"]');
+});
+casper.waitForSelector('.message_table', function () {
+    casper.then(function () {
+        casper.evaluate(function () {
+            var msg = $('#zhome .message_row:last');
+            msg.find('.message_edit_save').click();
+        });
+    });
+});
+
+// check that edit went through
+casper.waitWhileVisible("textarea.message_edit_content", function () {
+    casper.test.assertSelectorHasText(".last_message .message_content", "test RE-edited");
+});
+
+// check that the edit link reappears in popover menu
+// TODO check for edit icon next to message on hover
+casper.then(function () {
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.info').click();
+    });
+    casper.test.assertExists('.popover_edit_message');
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.info').click();
+    });
+});
+
 common.then_log_out();
 
 casper.run(function () {

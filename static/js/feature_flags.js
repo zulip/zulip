@@ -11,9 +11,6 @@ exports.collect_send_times = false;
 exports.use_socket = true;
 exports.local_echo = true;
 
-// Permanent realm-specific stuff:
-exports.disable_message_editing = _.contains(['mit.edu'], page_params.domain);
-
 // Experimental modification to support much wider message views.
 exports.full_width = false;
 

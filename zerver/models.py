@@ -143,6 +143,7 @@ class Realm(ModelReprMixin, models.Model):
     mandatory_topics = models.BooleanField(default=False) # type: bool
     show_digest_email = models.BooleanField(default=True) # type: bool
     name_changes_disabled = models.BooleanField(default=False) # type: bool
+    allow_message_editing = models.BooleanField(default=True) # type: bool
 
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]

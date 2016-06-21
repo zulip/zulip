@@ -35,6 +35,7 @@
                 <div class="alert" id="admin-realm-invite-required-status"></div>
                 <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
                 <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
+                <div class="alert" id="admin-realm-message-editing-status"></div>
                 <label for="realm_name" class="control-label">{{t "Your organization's name" }}</label>
                 <div class="controls">
                   <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
@@ -84,8 +85,20 @@
                   {{t "Only admins may create streams" }}
                 </label>
                 <div class="controls">
-                  <input type="checkbox" id="id_realm_create_stream_by_admins_only" name="realm_create_stream_by_admins_only"
+                  <input type="checkbox" id="id_realm_create_stream_by_admins_only"
+                         name="realm_create_stream_by_admins_only"
                     {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
+                </div>
+              </div>
+              <div class="control-group">
+                <label for="realm_allow_message_editing"
+                  title="{{t 'If checked, users can edit the content and topics of their old messages.' }}"
+                  class="control-label">
+                  {{t "Users can edit old messages" }}
+                </label>
+                <div class="controls">
+                  <input type="checkbox" id="id_realm_allow_message_editing" name="realm_allow_message_editing"
+                    {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
                 </div>
               </div>
               <div class="controls organization-submission">
