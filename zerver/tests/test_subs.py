@@ -1316,6 +1316,19 @@ class SubscriptionAPITest(AuthedTestCase):
                                   {"stream": invalid_stream_name})
         self.assert_json_error(result, "Invalid characters in stream name")
 
+    def test_existing_subscriptions_autosubscription(self):
+        # type: () -> None
+        """
+        Call /json/subscriptions/exist on an existing stream and autosubscribe to it.
+        """
+        stream_name = self.streams[0]
+        result = self.client.post("/json/subscriptions/exists",
+                                  {"stream": stream_name, "autosubscribe": True})
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("exists", json)
+        self.assertTrue(json["exists"])
+
     def get_subscription(self, user_profile, stream_name):
         # type: (UserProfile, text_type) -> Subscription
         stream = Stream.objects.get(realm=self.realm, name=stream_name)
