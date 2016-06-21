@@ -39,6 +39,7 @@ from zerver.lib.actions import (
     do_set_realm_restricted_to_domain,
     do_set_realm_invite_required,
     do_set_realm_invite_by_admins_only,
+    do_set_realm_message_editing,
     do_update_message,
     do_update_pointer,
     do_change_twenty_four_hour_time,
@@ -503,6 +504,21 @@ class EventsRegisterTest(AuthedTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for pinned in (False, True, False):
             events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", pinned))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_message_edit_settings(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update_dict')),
+            ('property', equals('default')),
+            ('data', check_dict([('allow_message_editing', check_bool)])),
+        ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for allow_message_editing in [False, True, False]:
+            events = self.do_test(lambda: do_set_realm_message_editing(self.user_profile.realm,
+                                                                       allow_message_editing))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

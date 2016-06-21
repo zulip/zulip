@@ -33,9 +33,10 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, do_set_realm_name, do_set_realm_restricted_to_domain, \
     do_set_realm_invite_required, do_set_realm_invite_by_admins_only, \
-    do_set_realm_create_stream_by_admins_only, get_default_subs, \
-    user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname, \
-    do_set_muted_topics, clear_followup_emails_queue, do_update_pointer, realm_user_count
+    do_set_realm_create_stream_by_admins_only, do_set_realm_message_editing, \
+    get_default_subs, user_email_is_unique, do_invite_users, do_refer_friend, \
+    compute_mit_user_fullname, do_set_muted_topics, clear_followup_emails_queue, \
+    do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSForm, \
     CreateUserForm, is_inactive, OurAuthenticationForm
@@ -945,6 +946,7 @@ def home(request):
         realm_invite_required = register_ret['realm_invite_required'],
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
         realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
+        realm_allow_message_editing = register_ret['realm_allow_message_editing'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         enter_sends           = user_profile.enter_sends,
         left_side_userlist    = register_ret['left_side_userlist'],
@@ -1101,8 +1103,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  restricted_to_domain=REQ(validator=check_bool, default=None),
                  invite_required=REQ(validator=check_bool, default=None),
                  invite_by_admins_only=REQ(validator=check_bool, default=None),
-                 create_stream_by_admins_only=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
+                 create_stream_by_admins_only=REQ(validator=check_bool, default=None),
+                 allow_message_editing=REQ(validator=check_bool, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
     realm = user_profile.realm
     data = {} # type: Dict[str, Any]
     if name is not None and realm.name != name:
@@ -1120,6 +1123,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if create_stream_by_admins_only is not None and realm.create_stream_by_admins_only != create_stream_by_admins_only:
         do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_only)
         data['create_stream_by_admins_only'] = create_stream_by_admins_only
+    if allow_message_editing is not None and realm.allow_message_editing != allow_message_editing:
+        do_set_realm_message_editing(realm, allow_message_editing)
+        data['allow_message_editing'] = allow_message_editing
     return json_success(data)
 
 @csrf_exempt

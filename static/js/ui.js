@@ -118,7 +118,7 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
-    if (message && message.sent_by_me && !message.status_message && !feature_flags.disable_message_editing) {
+    if (message && message.sent_by_me && !message.status_message && page_params.realm_allow_message_editing) {
         message_row.find('.message_content').find('p:last').append(edit_content_button);
     }
     current_message_hover = message_row;
@@ -479,7 +479,7 @@ $(function () {
                                        animation: false });
 
 
-    if (feature_flags.disable_message_editing) {
+    if (!page_params.realm_allow_message_editing) {
         $("#edit-message-hotkey-help").hide();
     }
 

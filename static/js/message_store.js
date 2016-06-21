@@ -104,7 +104,7 @@ exports.process_message_for_recent_private_messages = function process_message_f
 function set_topic_edit_properties(message) {
     message.always_visible_topic_edit = false;
     message.on_hover_topic_edit = false;
-    if (feature_flags.disable_message_editing) {
+    if (!page_params.realm_allow_message_editing) {
         return;
     }
 

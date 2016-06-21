@@ -411,6 +411,18 @@ def do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_onl
     )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_message_editing(realm, allow_message_editing):
+    # type: (Realm, bool) -> None
+    realm.allow_message_editing = allow_message_editing
+    realm.save(update_fields=['allow_message_editing'])
+    event = dict(
+        type="realm",
+        op="update_dict",
+        property="default",
+        data=dict(allow_message_editing=allow_message_editing),
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
     """
@@ -2692,6 +2704,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_invite_required'] = user_profile.realm.invite_required
         state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only
         state['realm_create_stream_by_admins_only'] = user_profile.realm.create_stream_by_admins_only
+        state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
 
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain
@@ -2812,8 +2825,12 @@ def apply_events(state, events, user_profile):
         elif event['type'] == 'default_streams':
             state['realm_default_streams'] = event['default_streams']
         elif event['type'] == 'realm':
-            field = 'realm_' + event['property']
-            state[field] = event['value']
+            if event['op'] == "update":
+                field = 'realm_' + event['property']
+                state[field] = event['value']
+            elif event['op'] == "update_dict":
+                for key, value in event['data'].items():
+                    state['realm_' + key] = value
         elif event['type'] == "subscription":
             if event['op'] in ["add"]:
                 # Convert the user_profile IDs to emails since that's what register() returns
