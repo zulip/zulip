@@ -320,11 +320,12 @@ class EventsRegisterTest(AuthedTestCase):
             # it's kind of an unwanted but harmless side effect of calling log_event.
         ])
 
-        message_id = Message.objects.order_by('-id')[0].id
+        message = Message.objects.order_by('-id')[0]
         topic = 'new_topic'
         propagate_mode = 'change_all'
         content = 'new content'
-        events = self.do_test(lambda: do_update_message(self.user_profile, message_id, topic, propagate_mode, content))
+        rendered_content = message.render_markdown(content)
+        events = self.do_test(lambda: do_update_message(self.user_profile, message, topic, propagate_mode, content, rendered_content))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
