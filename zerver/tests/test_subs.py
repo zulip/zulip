@@ -1695,6 +1695,25 @@ class GetSubscribersTest(AuthedTestCase):
                                          invite_only=True)
         self.make_successful_subscriber_request(stream_name)
 
+    def test_json_get_subscribers(self):
+        # type: () -> None
+        """
+        json_get_subscribers in zerver/views/streams.py
+        also returns the list of subscribers for a stream.
+        """
+        stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
+        expected_subscribers = gather_subscriptions(self.user_profile)[0][0]['subscribers']
+        result = self.client.post("/json/get_subscribers", {"stream": stream_name})
+        self.assert_json_success(result)
+        result_dict = ujson.loads(result.content)
+        self.assertIn('subscribers', result_dict)
+        self.assertIsInstance(result_dict['subscribers'], list)
+        subscribers = [] # type: List[text_type]
+        for subscriber in result_dict['subscribers']:
+            self.assertIsInstance(subscriber, six.string_types)
+            subscribers.append(subscriber)
+        self.assertEqual(set(subscribers), set(expected_subscribers))
+
     def test_nonsubscriber_private_stream(self):
         # type: () -> None
         """
