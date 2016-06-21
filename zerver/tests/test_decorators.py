@@ -7,6 +7,7 @@ from zerver.tests.test_hooks import WebhookTestCase
 
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
+from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
     AuthedTestCase,
 )
@@ -336,6 +337,21 @@ class LoginRequiredTest(AuthedTestCase):
         user_profile.realm.save()
         result = self.client.get('/accounts/accept_terms/')
         self.assertEqual(result.status_code, 302)
+
+class FetchAPIKeyTest(AuthedTestCase):
+    def test_fetch_api_key_success(self):
+        email = "cordelia@zulip.com"
+
+        self.login(email)
+        result = self.client.post("/json/fetch_api_key", {"password": initial_password(email)})
+        self.assert_json_success(result)
+
+    def test_fetch_api_key_wrong_password(self):
+        email = "cordelia@zulip.com"
+
+        self.login(email)
+        result = self.client.post("/json/fetch_api_key", {"password": "wrong_password"})
+        self.assert_json_error_contains(result, "password is incorrect")
 
 class InactiveUserTest(AuthedTestCase):
     def test_send_deactivated_user(self):
