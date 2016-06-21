@@ -503,7 +503,7 @@ function welcome() {
     var spotlight_message = rows.first_visible();
     var bar = rows.get_message_recipient_header(spotlight_message);
     box_first_message();
-    create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome",
+    create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome to " + page_params.product_name,
                             "tutorial_message");
 
     var my_popover = $("#tutorial-message").closest(".popover");
