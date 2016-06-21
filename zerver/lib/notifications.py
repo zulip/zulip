@@ -266,7 +266,12 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     plural_messages = 's' if len(missed_messages) > 1 else ''
 
     subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
-    from_email = "%s (via Zulip) <%s>" % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
+    if len(senders) > 1:
+        from_email = "%s (via Zulip) <%s>" % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
+    else:
+        sender = missed_messages[0].sender
+        from_email = "%s <%s>" % (sender_str, sender.email)
+        headers['Sender'] = "Zulip <%s>" % (settings.NOREPLY_EMAIL_ADDRESS,)
 
     text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
     html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
@@ -372,25 +377,12 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             msg_list.extend(get_context_for_message(msg))
 
     # Send an email per recipient subject pair
-    if user_profile.realm.domain == 'zulip.com':
-        for recipient_subject, msg_list in messages_by_recipient_subject.items():
-            unique_messages = {m.id: m for m in msg_list}
-            do_send_missedmessage_events_reply_in_zulip(
-                user_profile,
-                list(unique_messages.values()),
-                message_count_by_recipient_subject[recipient_subject],
-            )
-    else:
-        all_messages = [
-            msg_
-            for msg_list in messages_by_recipient_subject.values()
-            for msg_ in msg_list
-        ]
-        unique_messages = {m.id: m for m in all_messages}
-        do_send_missedmessage_events(
+    for recipient_subject, msg_list in messages_by_recipient_subject.items():
+        unique_messages = {m.id: m for m in msg_list}
+        do_send_missedmessage_events_reply_in_zulip(
             user_profile,
             list(unique_messages.values()),
-            len(messages),
+            message_count_by_recipient_subject[recipient_subject],
         )
 
 @uses_mandrill
