@@ -555,7 +555,6 @@ class MessagePOSTTest(AuthedTestCase):
                                                      "to": "othello@zulip.com"})
         self.assert_json_error(result, "Message must not be empty")
 
-
     def test_mirrored_huddle(self):
         """
         Sending a mirrored huddle message works
@@ -632,6 +631,90 @@ class MessagePOSTTest(AuthedTestCase):
         sent_message = self.get_last_message()
         self.assertEquals(sent_message.subject,
                           "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
+
+    def test_send_forged_message_as_not_superuser(self):
+        self.login("hamlet@zulip.com")
+        result = self.client.post("/json/messages", {"type": "stream",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject",
+                                                     "forged": True})
+        self.assert_json_error(result, "User not authorized for this query")
+
+    def test_send_message_as_not_superuser_to_different_domain(self):
+        self.login("hamlet@zulip.com")
+        result = self.client.post("/json/messages", {"type": "stream",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject",
+                                                     "domain": "mit.edu"})
+        self.assert_json_error(result, "User not authorized for this query")
+
+    def test_send_message_as_superuser_to_domain_that_dont_exist(self):
+        email = "emailgateway@zulip.com"
+        user = get_user_profile_by_email(email)
+        password = "test_password"
+        user.set_password(password)
+        user.is_api_super_user = True
+        user.save()
+        self.login(email, password)
+        result = self.client.post("/json/messages", {"type": "stream",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject",
+                                                     "domain": "non-existing"})
+        user.is_api_super_user = False
+        user.save()
+        self.assert_json_error(result, "Unknown domain non-existing")
+
+    def test_send_message_when_sender_is_not_set(self):
+        self.login("starnine@mit.edu")
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "content": "Test message",
+                                                     "client": "zephyr_mirror",
+                                                     "to": "starnine@mit.edu"})
+        self.assert_json_error(result, "Missing sender")
+
+    def test_send_message_as_not_superuser_when_type_is_not_private(self):
+        self.login("starnine@mit.edu")
+        result = self.client.post("/json/messages", {"type": "not-private",
+                                                     "sender": "sipbtest@mit.edu",
+                                                     "content": "Test message",
+                                                     "client": "zephyr_mirror",
+                                                     "to": "starnine@mit.edu"})
+        self.assert_json_error(result, "User not authorized for this query")
+
+    @mock.patch("zerver.views.messages.create_mirrored_message_users")
+    def test_send_message_create_mirrored_message_user_returns_invalid_input(self, create_mirrored_message_users_mock):
+        create_mirrored_message_users_mock.return_value = (False, True)
+        self.login("starnine@mit.edu")
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "sender": "sipbtest@mit.edu",
+                                                     "content": "Test message",
+                                                     "client": "zephyr_mirror",
+                                                     "to": "starnine@mit.edu"})
+        self.assert_json_error(result, "Invalid mirrored message")
+
+    @mock.patch("zerver.views.messages.create_mirrored_message_users")
+    def test_send_message_when_client_is_zephyr_mirror_but_domain_is_not_mit_edu(self, create_mirrored_message_users_mock):
+        create_mirrored_message_users_mock.return_value = (True, True)
+        email = "starnine@mit.edu"
+        user = get_user_profile_by_email(email)
+        domain = user.realm.domain
+        user.realm.domain = 'not_mit.edu'
+        user.realm.save()
+        self.login("starnine@mit.edu")
+        result = self.client.post("/json/messages", {"type": "private",
+                                                     "sender": "sipbtest@mit.edu",
+                                                     "content": "Test message",
+                                                     "client": "zephyr_mirror",
+                                                     "to": "starnine@mit.edu"}, name='gownooo')
+        self.assert_json_error(result, "Invalid mirrored realm")
+        user.realm.domain = domain
+        user.realm.save()
 
 class EditMessageTest(AuthedTestCase):
     def check_message(self, msg_id, subject=None, content=None):
