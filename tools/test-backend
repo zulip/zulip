@@ -25,7 +25,6 @@ if __name__ == "__main__":
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
     os.environ['PYTHONUNBUFFERED'] = 'y'
-    django.setup()
 
     parser = optparse.OptionParser()
     parser.add_option('--nonfatal-errors', action="store_false", default=True,
@@ -62,6 +61,10 @@ if __name__ == "__main__":
         import cProfile
         prof = cProfile.Profile()
         prof.enable()
+
+    # setup() needs to be called after coverage is started to get proper coverage reports of model
+    # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
+    django.setup()
 
     subprocess.call(os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures'))
 
