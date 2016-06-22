@@ -16,7 +16,7 @@ apt-get update
 # or computational cost (e.g. initramfs rebuilds) and aren't really
 # used by Zulip in production.
 apt-mark hold initramfs-tools initramfs-tools-bin oracle-java8-installer udev linux-image-3.19.0-28-generic linux-image-generic-lts-vivid base-files linux-firmware chromium-browser google-chrome-stable g++-4.8 gcc-4.8 cpp-4.8 openjdk-6-jre-headless openjdk-7-jre-headless
-apt-get upgrade -y $APT_OPTIONS
+apt-get dist-upgrade -y $APT_OPTIONS
 # Install Zulip
 env TRAVIS=1 /root/zulip/scripts/setup/install
 
