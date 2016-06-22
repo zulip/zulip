@@ -5,7 +5,7 @@
   {{#each streams}}
   <label class="checkbox">
     <input type="checkbox" name="stream" value="{{name}}"
-           {{#unless invite_only}}checked="true"{{/unless}} /> {{name}}
+           {{#unless invite_only}}checked="checked"{{/unless}} /> {{name}}
     {{#if invite_only}}<i class="icon-vector-lock"></i>{{/if}}
   </label>
   {{/each}}
