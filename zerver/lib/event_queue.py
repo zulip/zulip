@@ -124,7 +124,7 @@ class ClientDescriptor(object):
         self._timeout_handle = None
 
     def add_event(self, event):
-        # type: (Dict[str, Any]) -> None
+        # type: (Dict[Any, Any]) -> None
         if self.current_handler_id is not None:
             handler = get_handler_by_id(self.current_handler_id)
             async_request_restart(handler._request)
@@ -147,7 +147,7 @@ class ClientDescriptor(object):
         return False
 
     def accepts_event(self, event):
-        # type: (Dict[str, Any]) -> bool
+        # type: (Dict[Any, Any]) -> bool
         if self.event_types is not None and event["type"] not in self.event_types:
             return False
         if event["type"] == "message":
@@ -239,7 +239,7 @@ class EventQueue(object):
         # type: (str) -> None
         self.queue = deque() # type: deque[Dict[str, Any]]
         self.next_event_id = 0 # type: int
-        self.id = id
+        self.id = id # type: text_type  # see allocate_client_descriptor, '{server_generation}:{next_queue_id}'
         self.virtual_events = {} # type: Dict[str, Dict[str, str]]
 
     def to_dict(self):
@@ -262,7 +262,7 @@ class EventQueue(object):
         return ret
 
     def push(self, event):
-        # type: (Dict[str, Any]) -> None
+        # type: (Dict[Any, Any]) -> None
         event['id'] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
@@ -463,9 +463,9 @@ def load_event_queues():
 
 def send_restart_events(immediate=False):
     # type: (Optional[bool]) -> None
-    event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
+    event = dict(type='restart', server_generation=settings.SERVER_GENERATION)  # type: Dict[text_type, Any]
     if immediate:
-        event['immediate'] = True
+        event[u'immediate'] = True
     for client in six.itervalues(clients):
         if client.accepts_event(event):
             client.add_event(event.copy())
@@ -690,10 +690,10 @@ def process_message_event(event_template, users):
     sending_client = message_dict_markdown['client']
 
     # To remove duplicate clients: Maps queue ID to {'client': Client, 'flags': flags}
-    send_to_clients = dict() # type: Dict[str, Dict[str, Any]]
+    send_to_clients = dict() # type: Dict[text_type, Dict[str, Any]]
 
     # Extra user-specific data to include
-    extra_user_data = {}
+    extra_user_data = {} # type: Dict[Union[text_type, int], Any]
 
     if 'stream_name' in event_template and not event_template.get("invite_only"):
         for client in get_client_descriptors_for_realm_all_streams(event_template['realm_id']):
@@ -770,7 +770,7 @@ def process_message_event(event_template, users):
         client.add_event(user_event)
 
 def process_event(event, users):
-    # type: (Dict[str, Any], List[int]) -> None
+    # type: (Dict[text_type, Any], List[int]) -> None
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):

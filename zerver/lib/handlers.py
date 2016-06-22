@@ -1,6 +1,7 @@
 import logging
 from zerver.middleware import async_request_restart
 from typing import Any
+from six import text_type
 
 current_handler_id = 0
 handlers = {} # type: Dict[int, Any] # TODO: Should be AsyncDjangoHandler but we don't important runtornado.py.
@@ -26,7 +27,7 @@ def handler_stats_string():
     return "%s handlers, latest ID %s" % (len(handlers), current_handler_id)
 
 def finish_handler(handler_id, event_queue_id, contents, apply_markdown):
-    # type: (int, int, List[Dict[str, Any]], bool) -> None
+    # type: (int, text_type, List[Dict[str, Any]], bool) -> None
     err_msg = "Got error finishing handler for queue %s" % (event_queue_id,)
     try:
         # We call async_request_restart here in case we are

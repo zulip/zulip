@@ -13,7 +13,7 @@ import atexit
 from collections import defaultdict
 
 from zerver.lib.utils import statsd
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
 # This simple queuing library doesn't expose much of the power of
 # rabbitmq/pika's queuing system; its purpose is to just provide an
@@ -107,7 +107,8 @@ class SimpleQueueClient(object):
         self.ensure_queue(queue_name, do_publish)
 
     def json_publish(self, queue_name, body):
-        # type: (str, Dict[str, Any]) -> None
+        # type: (str, Union[Dict[str, Any], str]) -> None
+        # Union because of zerver.middleware.write_log_line uses a str
         try:
             self.publish(queue_name, ujson.dumps(body))
         except (AttributeError, pika.exceptions.AMQPConnectionError):
@@ -300,7 +301,8 @@ def setup_tornado_rabbitmq():
 queue_lock = threading.RLock()
 
 def queue_json_publish(queue_name, event, processor):
-    # type: (str, Dict[str, Any], Callable[[Any], None]) -> None
+    # type: (str, Union[Dict[str, Any], str], Callable[[Any], None]) -> None
+    # most events are dicts, but zerver.middleware.write_log_line uses a str
     with queue_lock:
         if settings.USING_RABBITMQ:
             get_queue_client().json_publish(queue_name, event)
