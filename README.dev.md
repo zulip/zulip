@@ -338,7 +338,7 @@ Next, start the Zulip server:
 ```
 
 As you can see above the application's root directory, where you can execute
-Django's command line utilities.is :
+Django's command line utilities is :
 ```
 /srv/zulip/
 ```
