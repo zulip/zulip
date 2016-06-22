@@ -1,11 +1,9 @@
-Directory structure
-===================
+# Directory structure
 
 This page documents the Zulip directory structure and how to decide
 where to put a file.
 
-Scripts
--------
+### Scripts
 
 * `scripts/` Scripts that production deployments might run manually
   (e.g., `restart-server`).
@@ -31,8 +29,7 @@ Scripts
 
 ---------------------------------------------------------
 
-Bots
-----
+### Bots
 
 * `api/integrations/` Bots distributed as part of the Zulip API bundle.
 
@@ -41,8 +38,7 @@ Bots
 
 -----------------------------------------------------
 
-Management commands
--------------------
+### Management commands
 
 * `zerver/management/commands/` Management commands one might run at a
   production deployment site (e.g. scripts to change a value or
@@ -50,8 +46,7 @@ Management commands
 
 -------------------------------------------------------------------------
 
-Views
------
+### Views
 
 * `zerver/tornadoviews.py` Tornado views
 
@@ -63,8 +58,7 @@ Views
 
 ----------------------------------------
 
-Jinja2 Compatibility Files
---------------------------
+### Jinja2 Compatibility Files
 
 * `zproject/jinja2/__init__.py` Jinja2 environment
 
@@ -75,8 +69,7 @@ Jinja2 Compatibility Files
 
 -----------------------------------------------------------------------
 
-Static assets
--------------
+### Static assets
 
 * `assets/` For assets not to be served to the web (e.g. the system to
             generate our favicons)
@@ -86,15 +79,13 @@ Static assets
 
 ---------------------------------------------------------------
 
-Puppet
-------
+### Puppet
 
 * `puppet/zulip/` For configuration for production deployments
 
 -------------------------------------------------------------------
 
-Templates
----------
+### Templates
 
 * `templates/zerver/` For Jinja2 templates for the backend (for zerver app)
 
@@ -102,8 +93,7 @@ Templates
 
 -----------------------------------------------------------------------
 
-Tests
------
+### Tests
 
 * `zerver/tests/` Backend tests
 
@@ -114,8 +104,7 @@ Tests
 -----------------------------------------------------------------------
 
 
-Documentation
--------------
+### Documentation
 
 *  `docs/`        Source for this documentation
 
