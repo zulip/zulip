@@ -330,7 +330,6 @@ Congrats, you're now inside the Zulip dev environment!
 You can confirm this by looking at the command prompt, which starts with
 `(zulip-venv)`.
 
-
 Next, start the Zulip server:
 
 ```
@@ -338,11 +337,11 @@ Next, start the Zulip server:
 /srv/zulip/tools/run-dev.py --interface=''
 ```
 
-As you can see above the applications root directory is :
+As you can see above the application's root directory, where you can execute
+Django's command line utilities.is :
 ```
 /srv/zulip/
 ```
-This is where you can execute Django's command line utilities.
 
 You will see several lines of output starting with something like:
 
