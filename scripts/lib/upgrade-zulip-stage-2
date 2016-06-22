@@ -30,7 +30,10 @@ deploy_path = sys.argv[1]
 
 logging.info("Upgrading system packages...")
 subprocess.check_call(["apt-get", "update"])
-subprocess.check_call(["apt-get", "upgrade"])
+subprocess.check_call(["apt-get", "-y", "upgrade"])
+
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
+                       os.path.join(deploy_path, "zulip-venv")])
 
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
    subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
