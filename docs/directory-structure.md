@@ -3,6 +3,54 @@
 This page documents the Zulip directory structure and how to decide
 where to put a file.
 
+### Views
+
+* `zerver/tornadoviews.py` Tornado views
+
+* `zerver/views/webhooks.py` Webhook views
+
+* `zerver/views/messages.py` message-related views
+
+* `zerver/views/__init__.py` other Django views
+
+-------------------------------------------------------------------
+
+### Templates
+
+* `templates/zerver/` For Jinja2 templates for the backend (for zerver app)
+
+* `static/templates/` Handlebars templates for the frontend
+
+----------------------------------------
+
+### Static assets
+
+* `assets/` For assets not to be served to the web (e.g. the system to
+            generate our favicons)
+
+* `static/` For things we do want to both serve to the web and
+            distribute to production deployments (e.g. the webpages)
+
+-----------------------------------------------------------------------
+
+### Tests
+
+* `zerver/tests/` Backend tests
+
+* `frontend_tests/node_tests/` Node Frontend unit tests
+
+* `frontend_tests/casper_tests/` Casper frontend tests
+
+-----------------------------------------------------
+
+### Management commands
+
+* `zerver/management/commands/` Management commands one might run at a
+  production deployment site (e.g. scripts to change a value or
+  deactivate a user properly)
+
+---------------------------------------------------------------
+
 ### Scripts
 
 * `scripts/` Scripts that production deployments might run manually
@@ -36,27 +84,13 @@ where to put a file.
 * `bots/` Previously Zulip internal bots. These usually need a bit of
    work.
 
------------------------------------------------------
-
-### Management commands
-
-* `zerver/management/commands/` Management commands one might run at a
-  production deployment site (e.g. scripts to change a value or
-  deactivate a user properly)
-
 -------------------------------------------------------------------------
 
-### Views
+### Puppet
 
-* `zerver/tornadoviews.py` Tornado views
+* `puppet/zulip/` For configuration for production deployments
 
-* `zerver/views/webhooks.py` Webhook views
-
-* `zerver/views/messages.py` message-related views
-
-* `zerver/views/__init__.py` other Django views
-
-----------------------------------------
+-----------------------------------------------------------------------
 
 ### Jinja2 Compatibility Files
 
@@ -68,41 +102,6 @@ where to put a file.
    Django-Pipeline
 
 -----------------------------------------------------------------------
-
-### Static assets
-
-* `assets/` For assets not to be served to the web (e.g. the system to
-            generate our favicons)
-
-* `static/` For things we do want to both serve to the web and
-            distribute to production deployments (e.g. the webpages)
-
----------------------------------------------------------------
-
-### Puppet
-
-* `puppet/zulip/` For configuration for production deployments
-
--------------------------------------------------------------------
-
-### Templates
-
-* `templates/zerver/` For Jinja2 templates for the backend (for zerver app)
-
-* `static/templates/` Handlebars templates for the frontend
-
------------------------------------------------------------------------
-
-### Tests
-
-* `zerver/tests/` Backend tests
-
-* `frontend_tests/node_tests/` Node Frontend unit tests
-
-* `frontend_tests/casper_tests/` Casper frontend tests
-
------------------------------------------------------------------------
-
 
 ### Documentation
 
