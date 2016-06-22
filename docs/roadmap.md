@@ -36,6 +36,9 @@ community (if you're looking for a starter project, see the [guide to
 getting involved with
 Zulip](https://github.com/zulip/zulip#how-to-get-involved-with-contributing-to-zulip)).
 
+We occasionally update this roadmap by adding strikethrough for issues
+that have been resolved.
+
 Without further ado, below is the Zulip 2016 roadmap.
 
 ## Burning problems
@@ -78,10 +81,10 @@ The core Zulip UI has been mostly translated into 5 languages;
 however, more work is required to make those translations actually
 displayed in the Zulip UI for the users who would benefit from them.
 
-* [Merge support for using translations in Django templates](https://github.com/zulip/zulip/pull/607)
-* [Add text in handlebars templates to translatable string database](https://github.com/zulip/zulip/issues/726)
-* [Merge support for translating text in handlebars](https://github.com/zulip/zulip/issues/726)
-* [Add text in error messages to translatable strings](https://github.com/zulip/zulip/issues/727)
+* <strike>[Merge support for using translations in Django templates](https://github.com/zulip/zulip/pull/607)</strike>
+* <strike>[Add text in handlebars templates to translatable string database](https://github.com/zulip/zulip/issues/726)</strike>
+* <strike>[Merge support for translating text in handlebars](https://github.com/zulip/zulip/issues/726)</strike>
+* <strike>[Add text in error messages to translatable strings](https://github.com/zulip/zulip/issues/727)</strike>
 
 ## User Experience at scale
 
@@ -100,8 +103,8 @@ teams.
 Currently, Zulip has a number of administration features that can be
 controlled only via the command line.
 
-* [Make default streams web-configurable](https://github.com/zulip/zulip/issues/665)
-* [Make realm emoji web-configurable](https://github.com/zulip/zulip/pull/543)
+* <strike>[Make default streams web-configurable](https://github.com/zulip/zulip/issues/665)</strike>
+* <strike>[Make realm emoji web-configurable](https://github.com/zulip/zulip/pull/543)</strike>
 * [Make realm filters web-configurable](https://github.com/zulip/zulip/pull/544)
 * [Make realm aliases web-configurable](https://github.com/zulip/zulip/pull/651)
 * [Enhance the LDAP integration and make it web-configurable](https://github.com/zulip/zulip/issues/715)
@@ -126,7 +129,7 @@ are already quite good (E.g. narrowing and message sending is speedy),
 this is an area where one can always improve.  There are a few known
 performance opportunities:
 
-* [Migrate to faster jinja2 templating engine](https://github.com/zulip/zulip/issues/620)
+* <strike>[Migrate to faster jinja2 templating engine](https://github.com/zulip/zulip/issues/620)</strike>
 * [Don't load zxcvbn when it isn't needed](https://github.com/zulip/zulip/issues/263)
 * [Optimize the frontend performance of loading the Zulip webapp using profiling](https://github.com/zulip/zulip/issues/714)
 
@@ -171,15 +174,15 @@ of its size, it takes work to keep it that way.
 * [Extend Zulip's automated test coverage to include all API endpoints](https://github.com/zulip/zulip/issues/732)
 * [Build automated tests for the client API bindings](https://github.com/zulip/zulip/issues/713)
 * [Add Python static type-checking to Zulip using mypy](https://github.com/zulip/zulip/issues/733)
-* [Improve the runtime of Zulip's backend test suite](https://github.com/zulip/zulip/issues/441)
+* <strike>[Improve the runtime of Zulip's backend test suite](https://github.com/zulip/zulip/issues/441)</strike>
 * [Use caching to make Travis CI runtimes faster](https://github.com/zulip/zulip/issues/712)
 * [Add automated tests for the production upgrade process](https://github.com/zulip/zulip/issues/306)
-* [Improve Travis CI "production" test suite to catch more regressions](https://github.com/zulip/zulip/issues/598)
+* <strike>[Improve Travis CI "production" test suite to catch more regressions](https://github.com/zulip/zulip/issues/598)</strike>
 
 ## Development environment
 
 * [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
-* [Figure out a nice upgrade process for Zulip Vagrant VMs](https://github.com/zulip/zulip/issues/264)
+* <strike>[Figure out a nice upgrade process for Zulip Vagrant VMs](https://github.com/zulip/zulip/issues/264)</strike>
 * [Overhaul new contributor documentation](https://github.com/zulip/zulip/issues/677)
 * [Replace closure-compiler with a faster minifier toolchain](https://github.com/zulip/zulip/issues/693)
 * [Add support for building frontend features in React](https://github.com/zulip/zulip/issues/694)
@@ -204,12 +207,12 @@ reasonably good framework for writing new webhook integrations for
 getting notifications into Zulip, it'd be great to streamline that
 process and make bots that receive messages just as easy to build.
 
-* [Make it super easy to take screenshots for new webhook integrations](https://github.com/zulip/zulip/issues/658)
+* <strike>[Make it super easy to take screenshots for new webhook integrations](https://github.com/zulip/zulip/issues/658)</strike>
 * [Add an outgoing webhook integration system](https://github.com/zulip/zulip/issues/735)
 * [Build a framework to cut duplicated code in new webhook integrations](https://github.com/zulip/zulip/issues/660)
 * [Make setting up a new integration a smooth flow](https://github.com/zulip/zulip/issues/692)
-* [Optimize the integration writing documentation to make writing new
-   ones really easy.](https://github.com/zulip/zulip/issues/70)
+* <strike>[Optimize the integration writing documentation to make writing new
+   ones really easy.](https://github.com/zulip/zulip/issues/70)</strike>
 
 ## Android app
 
