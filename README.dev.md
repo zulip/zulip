@@ -330,12 +330,19 @@ Congrats, you're now inside the Zulip dev environment!
 You can confirm this by looking at the command prompt, which starts with
 `(zulip-venv)`.
 
+
 Next, start the Zulip server:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~ $
 /srv/zulip/tools/run-dev.py --interface=''
 ```
+
+As you can see above the applications root directory is :
+```
+/srv/zulip/
+```
+This is where you can execute Django's command line utilities.
 
 You will see several lines of output starting with something like:
 
