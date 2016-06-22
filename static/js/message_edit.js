@@ -47,6 +47,7 @@ exports.save = function (row, from_topic_edited_only) {
 
     if (new_content !== message.raw_content && !from_topic_edited_only) {
         request.content = new_content;
+        message.is_me_message = new_content.lastIndexOf('/me', 0) === 0;
         changed = true;
     }
     if (!changed) {
