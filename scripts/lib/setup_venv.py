@@ -17,6 +17,17 @@ if False:
     # Don't add a runtime dependency on typing
     from typing import List
 
+VENV_DEPENDENCIES = [
+    "libffi-dev",
+    "libfreetype6-dev",
+    "libldap2-dev",
+    "libmemcached-dev",
+    "postgresql-server-dev-all",
+    "python3-dev",          # Needed to install typed-ast dependency of mypy
+    "python-dev",
+    "python-virtualenv",
+]
+
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     # type: (str, str, List[str]) -> None
 
