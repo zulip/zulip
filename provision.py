@@ -149,7 +149,7 @@ def install_npm():
 def main():
     # type: () -> int
     run(["sudo", "apt-get", "update"])
-    run(["sudo", "apt-get", "-y", "install"] + APT_DEPENDENCIES[codename])
+    run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
     if subprocess.call(['dpkg', '-s', TSEARCH_PACKAGE_NAME]):
         temp_deb_path = subprocess.check_output(["mktemp", "package_XXXXXX.deb", "--tmpdir"])
