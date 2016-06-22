@@ -9,7 +9,7 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from zulip_tools import run
-from scripts.lib.setup_venv import setup_virtualenv
+from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
@@ -55,20 +55,12 @@ POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
 UBUNTU_COMMON_APT_DEPENDENCIES = [
     "closure-compiler",
-    "libfreetype6-dev",
-    "libffi-dev",
     "memcached",
     "rabbitmq-server",
-    "libldap2-dev",
     "redis-server",
-    "postgresql-server-dev-all",
-    "libmemcached-dev",
-    "python-dev",
-    "python3-dev",          # Needed to install typed-ast dependency of mypy
     "hunspell-en-us",
     "nodejs",
     "nodejs-legacy",
-    "python-virtualenv",
     "supervisor",
     "git",
     "npm",
@@ -79,7 +71,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "netcat",               # Used for flushing memcached
-]
+] + VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
     "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
