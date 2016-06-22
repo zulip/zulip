@@ -50,7 +50,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd, generate_random_token
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
 
 import requests
 
@@ -116,9 +116,6 @@ def accounts_register(request):
     else:
         domain = resolve_email_to_domain(email)
         realm = get_realm(domain)
-
-    if realm_creation and not settings.OPEN_REALM_CREATION:
-        return render_to_response("zerver/realm_creation_failed.html", {'message': _('New organization creation disabled.')})
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
@@ -727,10 +724,13 @@ When settings.OPEN_REALM_CREATION is enabled public users can create new realm. 
 not be the member of any current realm. The realm is created with domain same as the that of the user's email.
 When there is no unique_open_realm user registrations are made by visiting /register/domain_of_the_realm.
 """
-def create_realm(request):
-    # type: (HttpRequest) -> HttpResponse
+def create_realm(request, creation_key=None):
+    # type: (HttpRequest, Optional[text_type]) -> HttpResponse
     if not settings.OPEN_REALM_CREATION:
-        return render_to_response("zerver/realm_creation_failed.html", {'message': _('New organization creation disabled.')})
+        if creation_key is None:
+            return render_to_response("zerver/realm_creation_failed.html", {'message': _('New organization creation disabled.')})
+        elif not check_key_is_valid(creation_key):
+            return render_to_response("zerver/realm_creation_failed.html", {'message': _('The organization creation link has been expired or is not valid.')})
 
     if request.method == 'POST':
         form = RealmCreationForm(request.POST, domain=request.session.get("domain"))
@@ -739,6 +739,8 @@ def create_realm(request):
             confirmation_key = send_registration_completion_email(email, request, realm_creation=True).confirmation_key
             if settings.DEVELOPMENT:
                  request.session['confirmation_key'] = {'confirmation_key': confirmation_key}
+            if (creation_key is not None and check_key_is_valid(creation_key)):
+                RealmCreationKey.objects.get(creation_key=creation_key).delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
             email = request.POST['email']
