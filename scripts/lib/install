@@ -23,7 +23,7 @@ EOF
 
 apt-get update
 apt-get -y dist-upgrade $APT_OPTIONS
-apt-get install -y puppet git python $ADDITIONAL_PACKAGES
+apt-get install -y puppet git python python-six $ADDITIONAL_PACKAGES
 
 mkdir -p /etc/zulip
 echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE" > /etc/zulip/zulip.conf
