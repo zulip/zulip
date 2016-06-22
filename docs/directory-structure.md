@@ -11,12 +11,23 @@ Scripts
   (e.g., `restart-server`).
 
 * `scripts/lib/` Scripts that are needed on production deployments but
-  humans should never run.
+  humans should never run directly.
 
-* `scripts/setup/` Tools that production deployments will only run
+* `scripts/setup/` Scripts that production deployments will only run
   once, during installation.
 
-* `tools/` Development tools.
+* `tools/` Scripts used only in a Zulip development environment.
+  These are not included in production release tarballs for Zulip, so
+  that we can include scripts here one wouldn't want someone to run in
+  production accidentally (e.g. things that delete the Zulip database
+  without prompting).
+
+* `tools/setup/` Subdirectory of `tools/` for things only used during
+  the development environment setup process.
+
+* `tools/travis/` Subdirectory of `tools/` for things only used to
+  setup and run our tests in Travis CI.  Actually test suites should
+  go in `tools/`.
 
 ---------------------------------------------------------
 
