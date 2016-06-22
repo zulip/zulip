@@ -1,0 +1,23 @@
+#!/usr/bin/python
+
+import os
+import argparse
+from os.path import dirname, abspath
+import sys
+
+ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
+if ZULIP_PATH not in sys.path:
+    sys.path.append(ZULIP_PATH)
+
+from zulip_tools import run
+from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
+
+parser = argparse.ArgumentParser(description="Create a production virtualenv with caching")
+parser.add_argument("target")
+args = parser.parse_args()
+
+# install dependencies for setting up the virtualenv
+run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
+
+cached_venv_path = setup_virtualenv(args.target, os.path.join(ZULIP_PATH, "requirements", "prod.txt"))
+# Now the virtualenv has been activated
