@@ -1,35 +1,66 @@
 # Directory structure
 
-This page documents the Zulip directory structure and how to decide
-where to put a file.
+This page documents the Zulip directory structure, where to find
+things, and how to decide where to put a file.
 
-### Views
+You may also find the [new application feature
+tutorial](https://zulip.readthedocs.io/en/latest/new-feature-tutorial.html)
+helpful for understanding the flow through these files.
+
+### Core Python files
+
+Zulip uses the [Django web
+framework](https://docs.djangoproject.com/en/1.8/), so a lot of these
+paths will be familiar to Django developers.
+
+* `zproject/urls.py` Main [Django routes file](https://docs.djangoproject.com/en/1.8/topics/http/urls/)
+
+* `zerver/models.py` Main [Django models](https://docs.djangoproject.com/en/1.8/topics/db/models/) file
+
+* `zerver/lib/actions.py` Most code doing writes to user-facing database tables.
+
+* `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/1.8/topics/http/views/)
+
+* `zerver/views/webhooks/` Webhook views for [Zulip integrations](https://zulip.readthedocs.io/en/latest/integration-guide.html)
 
 * `zerver/tornadoviews.py` Tornado views
 
-* `zerver/views/webhooks.py` Webhook views
+* `zerver/worker/queue_processors.py` [Queue workers](https://zulip.readthedocs.io/en/latest/queuing.html)
 
-* `zerver/views/messages.py` message-related views
+* `zerver/lib/*.py` Most library code
 
-* `zerver/views/__init__.py` other Django views
+* `zerver/lib/bugdown/` [Backend Markdown processor](https://zulip.readthedocs.io/en/latest/markdown.html)
+
+* `zproject/backends.py` [Authenticate backends](https://docs.djangoproject.com/en/1.8/topics/auth/customizing/)
 
 -------------------------------------------------------------------
 
-### Templates
+### HTML Templates
 
-* `templates/zerver/` For Jinja2 templates for the backend (for zerver app)
+See [our translating
+docs](http://zulip.readthedocs.io/en/latest/translating.html) for
+details on Zulip's templating systems.
 
-* `static/templates/` Handlebars templates for the frontend
+* `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates for the backend (for zerver app)
+
+* `static/templates/` [Handlebars](http://handlebarsjs.com/) templates for the frontend
 
 ----------------------------------------
 
-### Static assets
+### Javascript and other static assets
+
+* `static/js/` Zulip's own javascript
+
+* `static/styles/` Zulip's own CSS
+
+* `static/images/` Zulip's images
+
+* `static/third/` Third-party javascript and CSS that has been vendored
+
+* `node_modules/` Third-party javascript installed via `npm`
 
 * `assets/` For assets not to be served to the web (e.g. the system to
             generate our favicons)
-
-* `static/` For things we do want to both serve to the web and
-            distribute to production deployments (e.g. the webpages)
 
 -----------------------------------------------------------------------
 
@@ -41,9 +72,14 @@ where to put a file.
 
 * `frontend_tests/casper_tests/` Casper frontend tests
 
+* `tools/test-*` Developer-facing test runner scripts
+
 -----------------------------------------------------
 
 ### Management commands
+
+These are distinguished from scripts, below, by needing to run a
+Django context (i.e. with database access).
 
 * `zerver/management/commands/` Management commands one might run at a
   production deployment site (e.g. scripts to change a value or
@@ -77,7 +113,11 @@ where to put a file.
 
 ---------------------------------------------------------
 
-### Bots
+### API and Bots
+
+* `api/` Zulip's Python API bindings (released separately)
+
+* `api/examples/` API examples
 
 * `api/integrations/` Bots distributed as part of the Zulip API bundle.
 
@@ -86,9 +126,28 @@ where to put a file.
 
 -------------------------------------------------------------------------
 
-### Puppet
+### Production puppet configuration
+
+This is used to deploy essentially all configuration in production.
 
 * `puppet/zulip/` For configuration for production deployments
+
+* `puppet/zulip/manifests/voyager.pp` Main manifest for Zulip standalone deployments
+
+-----------------------------------------------------------------------
+
+### Additional Django apps
+
+* `confirmation` Email confirmation system
+
+* `analytics` Analytics for Zulip server administrator (needs work to
+  be useful to normal Zulip sites)
+
+* `corporate` The old Zulip.com website.  Not included in production
+  distribution.
+
+* `zilencer` Primarily used to hold management commands that aren't
+  used in production.  Not included in production distribution.
 
 -----------------------------------------------------------------------
 
@@ -100,6 +159,14 @@ where to put a file.
 
 * `zproject/jinja2/compressors.py` Jinja2 compatible functions of
    Django-Pipeline
+
+-----------------------------------------------------------------------
+
+### Translation files
+
+* `locale/` Backend (Django) translations data files
+
+* `static/locale/` Frontend translations data files
 
 -----------------------------------------------------------------------
 
