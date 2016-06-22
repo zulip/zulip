@@ -146,9 +146,16 @@ exports.update_title_count = function (res) {
 exports.redraw_title = function () {
     // Update window title and favicon to reflect unread messages in current view
     var n;
+    var new_title;
 
-    var new_title = (new_message_count ? ("(" + (narrowed_view_count ? (narrowed_view_count + "/") : "")
-        + new_message_count + ") ") : "")
+    if (narrowed_view_count === new_message_count) {
+        new_title = (new_message_count ? ("(" + new_message_count + ") ") : "");
+    } else {
+        new_title = (new_message_count ? ("(" + (narrowed_view_count ? (narrowed_view_count + "/") : "")
+        + new_message_count + ") ") : "");
+    }
+
+    new_title = new_title
         + narrow.narrow_title + " - "
         + page_params.realm_name + " - "
         + page_params.product_name;
