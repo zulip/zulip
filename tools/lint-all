@@ -47,6 +47,7 @@ api/integrations/perforce/git_p4.py
 puppet/apt/.forge-release
 puppet/puppet-common/tests/
 puppet/apt/README.md
+static/locale
 """.split()
 
 by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
