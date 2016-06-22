@@ -25,6 +25,10 @@ apt-get update
 apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python python-six $ADDITIONAL_PACKAGES
 
+# Create and activate a virtualenv
+/root/zulip/scripts/lib/create-production-venv /root/zulip/zulip-venv
+
+# puppet apply
 mkdir -p /etc/zulip
 echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
