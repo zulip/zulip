@@ -2334,6 +2334,9 @@ def update_user_message_flags(message, ums):
 
         update_flag(um, wildcard, UserMessage.flags.wildcard_mentioned)
 
+        is_me_message = getattr(message, 'is_me_message', False)
+        update_flag(um, is_me_message, UserMessage.flags.is_me_message)
+
     for um in changed_ums:
         um.save(update_fields=['flags'])
 
