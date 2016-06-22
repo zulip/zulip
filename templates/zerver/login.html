@@ -91,7 +91,14 @@ autofocus('#id_username');
             <div class="control-group">
                 <label for="id_username" class="control-label">{{ _('Email') }}</label>
                 <div class="controls">
-                    <input id="id_username" type="email" name="username" class="email required" value="{{ email }}" maxlength="72" />
+                  <input id="id_username" type="email" name="username"
+                         class="email required"
+                         {% if email %}
+                         value="{{ email }}"
+                         {% else %}
+                         value=""
+                         {% endif %}
+                         maxlength="72" />
                 </div>
             </div>
 
