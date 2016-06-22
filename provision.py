@@ -181,7 +181,7 @@ def main():
     run(["tools/setup/download-zxcvbn"])
     run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
-    if "--travis" in sys.argv:
+    if "--travis" in sys.argv and '--production-travis' not in sys.argv:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
