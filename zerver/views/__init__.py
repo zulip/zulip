@@ -118,7 +118,7 @@ def accounts_register(request):
         realm = get_realm(domain)
 
     if realm_creation and not settings.OPEN_REALM_CREATION:
-        return render_to_response("zerver/realm_creation_disabled.html")
+        return render_to_response("zerver/realm_creation_failed.html", {'message': _('New organization creation disabled.')})
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
@@ -729,7 +729,7 @@ When there is no unique_open_realm user registrations are made by visiting /regi
 def create_realm(request):
     # type: (HttpRequest) -> HttpResponse
     if not settings.OPEN_REALM_CREATION:
-        return render_to_response("zerver/realm_creation_disabled.html")
+        return render_to_response("zerver/realm_creation_failed.html", {'message': _('New organization creation disabled.')})
 
     if request.method == 'POST':
         form = RealmCreationForm(request.POST, domain=request.session.get("domain"))
