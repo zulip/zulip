@@ -5,7 +5,7 @@ set -x
 # Uninstall the unnecessary extra versions of postgres that Travis CI
 # installs since if we don't do this, doing apt upgrades can fail due
 # to conflicts over which version of postgres should be running.
-sudo apt-get remove postgresql-9.1 postgresql-9.2 postgresql-9.4 -y
+sudo apt-get remove postgresql-9.1 postgresql-client-9.1 postgresql-9.1-postgis-2.2 postgresql-contrib-9.1 postgresql-9.2 postgresql-client-9.2 postgresql-9.2-postgis-2.2 postgresql-contrib-9.2 postgresql-9.4 -y
 
 python provision.py --travis --production-travis
 cp -a tools/travis/success-http-headers.txt ~/
