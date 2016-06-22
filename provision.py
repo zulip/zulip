@@ -191,12 +191,14 @@ def main():
         run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
-    run(["scripts/setup/configure-rabbitmq"])
-    run(["tools/setup/postgres-init-dev-db"])
-    run(["tools/do-destroy-rebuild-database"])
-    run(["tools/setup/postgres-init-test-db"])
-    run(["tools/do-destroy-rebuild-test-database"])
-    run(["python", "./manage.py", "compilemessages"])
+    if '--production-travis' not in sys.argv:
+        # These won't be used anyway
+        run(["scripts/setup/configure-rabbitmq"])
+        run(["tools/setup/postgres-init-dev-db"])
+        run(["tools/do-destroy-rebuild-database"])
+        run(["tools/setup/postgres-init-test-db"])
+        run(["tools/do-destroy-rebuild-test-database"])
+        run(["python", "./manage.py", "compilemessages"])
     # Install the pinned version of npm.
     install_npm()
     # Run npm install last because it can be flaky, and that way one
