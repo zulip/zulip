@@ -361,7 +361,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     for msg in messages:
         messages_by_recipient_subject[(msg.recipient_id, msg.subject)].append(msg)
 
-    mesage_count_by_recipient_subject = {
+    message_count_by_recipient_subject = {
         recipient_subject: len(msgs)
         for recipient_subject, msgs in messages_by_recipient_subject.items()
     }
@@ -378,7 +378,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             do_send_missedmessage_events_reply_in_zulip(
                 user_profile,
                 list(unique_messages.values()),
-                mesage_count_by_recipient_subject[recipient_subject],
+                message_count_by_recipient_subject[recipient_subject],
             )
     else:
         all_messages = [
