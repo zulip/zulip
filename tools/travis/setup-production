@@ -7,7 +7,7 @@ set -x
 # to conflicts over which version of postgres should be running.
 sudo apt-get remove postgresql-9.1 postgresql-9.2 postgresql-9.4 -y
 
-python provision.py --travis
+python provision.py --travis --production-travis
 cp -a tools/travis/success-http-headers.txt ~/
 source /srv/zulip-venv/bin/activate
 ./tools/build-release-tarball travis
