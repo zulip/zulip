@@ -20,6 +20,7 @@ casper.waitForSelector("#settings-change-box", function () {
 });
 
 casper.waitUntilVisible("#old_password", function () {
+  casper.waitForResource("zxcvbn.js", function () {
     casper.test.assertVisible("#old_password");
     casper.test.assertVisible("#new_password");
     casper.test.assertVisible("#confirm_password");
@@ -33,6 +34,7 @@ casper.waitUntilVisible("#old_password", function () {
         "confirm_password": "qwertyuiop"
     });
     casper.click('input[name="change_settings"]');
+  });
 });
 
 casper.waitUntilVisible('#settings-status', function () {
