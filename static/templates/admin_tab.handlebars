@@ -42,27 +42,50 @@
                 </div>
               </div>
               <div class="control-group">
-                <label for="realm_restricted_to_domain" title="{{#tr this}}If checked, only users with an @__domain__ e-mail address will be able to join the organization.{{/tr}}" class="control-label">{{#tr this}}Users restricted to __domain__{{/tr}}</label>
+                <label for="realm_restricted_to_domain"
+                  title="{{#tr this}}If checked, only users with an @__domain__ e-mail address will be able to join the organization.{{/tr}}"
+                  class="control-label">
+                  {{#tr this}}Users restricted to __domain__{{/tr}}
+                </label>
                 <div class="controls">
-                  <input type="checkbox" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain" {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
+                  <input type="checkbox" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"
+                     {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
                 </div>
               </div>
               <div class="control-group">
-                <label for="realm_invite_required" title="{{t 'If checked, users must be invited in order to join your organization.' }}" class="control-label">{{t "E-mail invitation required" }}</label>
+                <label for="realm_invite_required"
+                  title="{{t 'If checked, users must be invited in order to join your organization.' }}"
+                  class="control-label">
+                  {{t "E-mail invitation required" }}
+                </label>
                 <div class="controls">
-                  <input type="checkbox" id="id_realm_invite_required" name="realm_invite_required" {{#if realm_invite_required}}checked="checked"{{/if}} />
+                  <input type="checkbox" id="id_realm_invite_required" name="realm_invite_required"
+                    {{#if realm_invite_required}}checked="checked"{{/if}} />
                 </div>
               </div>
               <div class="control-group">
-                <label for="realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" title="{{t 'If checked, only administrators may invite new users.' }}" class="control-label{{#unless realm_invite_required}} control-label-disabled{{/unless}}">{{t "Only admins may invite" }}</label>
+                <label for="realm_invite_by_admins_only"
+                  id="id_realm_invite_by_admins_only_label"
+                  title="{{t 'If checked, only administrators may invite new users.' }}"
+                  class="control-label{{#unless realm_invite_required}} control-label-disabled{{/unless}}">
+                  {{t "Only admins may invite" }}
+                </label>
                 <div class="controls">
-                  <input type="checkbox" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only" {{#unless realm_invite_required}}disabled="disabled"{{/unless}} {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
+                  <input type="checkbox" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only"
+                    {{#unless realm_invite_required}}disabled="disabled"{{/unless}}
+                    {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
                 </div>
               </div>
               <div class="control-group">
-                <label for="realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" title="{{t 'If checked, only administrators may create new streams.'}}" class="control-label">Only admins may create streams</label>
+                <label for="realm_create_stream_by_admins_only"
+                  id="id_realm_create_stream_by_admins_only_label"
+                  title="{{t 'If checked, only administrators may create new streams.'}}"
+                  class="control-label">
+                  "Only admins may create streams"
+                </label>
                 <div class="controls">
-                  <input type="checkbox" id="id_realm_create_stream_by_admins_only" name="realm_create_stream_by_admins_only" {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
+                  <input type="checkbox" id="id_realm_create_stream_by_admins_only" name="realm_create_stream_by_admins_only"
+                    {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
                 </div>
               </div>
               <div class="controls organization-submission">
