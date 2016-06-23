@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.core.management import CommandError
 from django.conf import settings
+from django.utils import autoreload
 from zerver.worker.queue_processors import get_worker, get_active_worker_queues
 import sys
 import signal
@@ -32,11 +33,14 @@ class Command(BaseCommand):
             logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
             sys.exit(1)
 
-        if options['all']:
+        def run_threaded_workers(logger):
             for queue_name in get_active_worker_queues():
                 logger.info('launching queue worker thread ' + queue_name)
                 td = Threaded_worker(queue_name)
                 td.start()
+
+        if options['all']:
+            autoreload.main(run_threaded_workers, (logger,))
         else:
             queue_name = options['queue_name']
             worker_num = options['worker_num']
