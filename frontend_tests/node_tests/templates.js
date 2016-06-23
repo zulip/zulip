@@ -140,7 +140,7 @@ function render(template_name, args) {
 }());
 
 (function alert_word_settings_item() {
-    var html = '<ul id="word-alerts">';
+    var html = '<ul id="alert-words">';
     var words = ['lunch', 'support'];
     _.each(words, function (word) {
         var args = {
