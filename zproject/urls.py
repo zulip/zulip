@@ -19,10 +19,9 @@ from zproject.legacy_urls import legacy_urls
 #
 #   - Likewise for the local dev server in tools/run-dev.py.
 
-# These views serve pages (HTML). As such, their internationalization must
-# depend on the url.
-# If you're adding a new page to the website (as opposed to a new endpoint
-# for use by code), you should add it here.
+# These views serve pages (HTML). As such, their internationalization must depend on the url.
+# If you're adding a new page to the website (as opposed to a new endpoint for use by code),
+# you should add it here.
 i18n_urls = [
     url(r'^$', 'zerver.views.home'),
     # We have a desktop-specific landing page in case we change our / to not log in in the future. We don't
@@ -68,8 +67,8 @@ i18n_urls = [
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
     url(r'^invite/$', 'zerver.views.initial_invite_page', name='initial-invite-users'),
 
-    # Email unsubscription endpoint. Used for unsubscribing from various types
-    # of emails, including the welcome emails (day 1 & 2), missed PMs, etc.
+    # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
+    # including the welcome emails (day 1 & 2), missed PMs, etc.
     url(r'^accounts/unsubscribe/(?P<type>[\w]+)/(?P<token>[\w]+)',
         'zerver.views.email_unsubscribe'),
 
@@ -102,18 +101,12 @@ i18n_urls = [
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
-urlpattern = list(i18n_urls)
+urls = list(i18n_urls)
 
-# These are used for voyager development. On a real voyager instance,
-# these files would be served by nginx.
-if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
-    urlpatterns += patterns('',
-        url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
-            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
-    )
-
-# JSON format views used by the redesigned API, accept basic auth username:password.
-# These endpoints constitute the redesigned API (V1), which uses REST verbs.
+# These endpoints constitute the redesigned API (V1), which uses:
+# * REST verbs
+# * Basic auth (username:password is email:apiKey)
+# * Take and return json-formatted data
 #
 # If you're adding a new endpoint to the code that requires authentication,
 # please add it here.
@@ -121,42 +114,23 @@ if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
 #
 # All of these paths are accessed by either a /json or /api prefix
 v1_api_and_json_patterns = [
-    # zerver.views
+    # realm-level calls
     url(r'^export$', 'rest_dispatch',
             {'GET':  'zerver.views.export'}),
-    url(r'^users/me$', 'rest_dispatch',
-            {'GET': 'zerver.views.get_profile_backend'}),
-    url(r'^users/me/pointer$', 'rest_dispatch',
-            {'GET': 'zerver.views.get_pointer_backend',
-             'PUT': 'zerver.views.update_pointer_backend'}),
     url(r'^realm$', 'rest_dispatch',
             {'PATCH': 'zerver.views.update_realm'}),
-    url(r'^users/me/presence$', 'rest_dispatch',
-            {'POST': 'zerver.views.update_active_status_backend'}),
-    # Endpoint used by iOS devices to register their
-    # unique APNS device token
-    url(r'^users/me/apns_device_token$', 'rest_dispatch',
-        {'POST'  : 'zerver.views.add_apns_device_token',
-         'DELETE': 'zerver.views.remove_apns_device_token'}),
-    url(r'^users/me/android_gcm_reg_id$', 'rest_dispatch',
-        {'POST': 'zerver.views.add_android_reg_id',
-         'DELETE': 'zerver.views.remove_android_reg_id'}),
-
-    # used to register for an event queue in tornado
-    url(r'^register$', 'rest_dispatch',
-            {'POST': 'zerver.views.api_events_register'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'zerver.views.generate_204'),
 
-    # zerver.views.realm_emoji
+    # realm/emoji -> zerver.views.realm_emoji
     url(r'^realm/emoji$', 'rest_dispatch',
         {'GET': 'zerver.views.realm_emoji.list_emoji',
          'PUT': 'zerver.views.realm_emoji.upload_emoji'}),
     url(r'^realm/emoji/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$', 'rest_dispatch',
         {'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
 
-    # zerver.views.users
+    # users -> zerver.views.users
     url(r'^users$', 'rest_dispatch',
         {'GET': 'zerver.views.users.get_members_backend',
          'POST': 'zerver.views.users.create_user_backend'}),
@@ -174,31 +148,48 @@ v1_api_and_json_patterns = [
         {'PATCH': 'zerver.views.users.patch_bot_backend',
          'DELETE': 'zerver.views.users.deactivate_bot_backend'}),
 
-    # zerver.views.messages
+    # messages -> zerver.views.messages
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', 'rest_dispatch',
-            {'GET':  'zerver.views.messages.get_old_messages_backend',
-             'PATCH': 'zerver.views.messages.update_message_backend',
-             'POST': 'zerver.views.messages.send_message_backend'}),
+        {'GET':  'zerver.views.messages.get_old_messages_backend',
+         'PATCH': 'zerver.views.messages.update_message_backend',
+         'POST': 'zerver.views.messages.send_message_backend'}),
     url(r'^messages/render$', 'rest_dispatch',
-            {'GET':  'zerver.views.messages.render_message_backend'}),
+        {'GET':  'zerver.views.messages.render_message_backend'}),
     url(r'^messages/flags$', 'rest_dispatch',
-            {'POST':  'zerver.views.messages.update_message_flags'}),
+        {'POST':  'zerver.views.messages.update_message_flags'}),
 
-    # zerver.views.alert_words
+    # users/me -> zerver.views
+    url(r'^users/me$', 'rest_dispatch',
+        {'GET': 'zerver.views.get_profile_backend'}),
+    url(r'^users/me/pointer$', 'rest_dispatch',
+        {'GET': 'zerver.views.get_pointer_backend',
+         'PUT': 'zerver.views.update_pointer_backend'}),
+    url(r'^users/me/presence$', 'rest_dispatch',
+        {'POST': 'zerver.views.update_active_status_backend'}),
+    # Endpoint used by mobile devices to register their push
+    # notification credentials
+    url(r'^users/me/apns_device_token$', 'rest_dispatch',
+        {'POST': 'zerver.views.add_apns_device_token',
+         'DELETE': 'zerver.views.remove_apns_device_token'}),
+    url(r'^users/me/android_gcm_reg_id$', 'rest_dispatch',
+        {'POST': 'zerver.views.add_android_reg_id',
+         'DELETE': 'zerver.views.remove_android_reg_id'}),
+
+    # users/me -> zerver.views.user_settings
+    url(r'^users/me/api_key/regenerate$', 'rest_dispatch',
+        {'POST': 'zerver.views.user_settings.regenerate_api_key'}),
+    url(r'^users/me/enter-sends$', 'rest_dispatch',
+        {'POST': 'zerver.views.user_settings.change_enter_sends'}),
+
+    # users/me/alert_words -> zerver.views.alert_words
     url(r'^users/me/alert_words$', 'rest_dispatch',
         {'GET': 'zerver.views.alert_words.list_alert_words',
          'POST': 'zerver.views.alert_words.set_alert_words',
          'PUT': 'zerver.views.alert_words.add_alert_words',
          'DELETE': 'zerver.views.alert_words.remove_alert_words'}),
 
-    # zerver.views.user_settings
-    url(r'^users/me/api_key/regenerate$', 'rest_dispatch',
-        {'POST': 'zerver.views.user_settings.regenerate_api_key'}),
-    url(r'^users/me/enter-sends$', 'rest_dispatch',
-        {'POST': 'zerver.views.user_settings.change_enter_sends'}),
-
-    # zerver.views.streams
+    # streams -> zerver.views.streams
     url(r'^streams$', 'rest_dispatch',
         {'GET':  'zerver.views.streams.get_streams_backend'}),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
@@ -218,10 +209,20 @@ v1_api_and_json_patterns = [
          'POST': 'zerver.views.streams.add_subscriptions_backend',
          'PATCH': 'zerver.views.streams.update_subscriptions_backend'}),
 
-    # zerver.tornadoviews
+    # used to register for an event queue in tornado
+    url(r'^register$', 'rest_dispatch',
+        {'POST': 'zerver.views.api_events_register'}),
+
+    # events -> zerver.tornadoviews
     url(r'^events$', 'rest_dispatch',
         {'GET': 'zerver.tornadoviews.get_events_backend',
          'DELETE': 'zerver.tornadoviews.cleanup_event_queue'}),
+]
+
+# Include the dual-use patterns twice
+urls += [
+    url(r'^api/v1/', include(v1_api_and_json_patterns)),
+    url(r'^json/', include(v1_api_and_json_patterns)),
 ]
 
 # Include URL configuration files for site-specified extra installed
@@ -229,32 +230,33 @@ v1_api_and_json_patterns = [
 for app_name in settings.EXTRA_INSTALLED_APPS:
     app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
     if os.path.exists(os.path.join(app_dir, 'urls.py')):
-        urlpatterns += [url(r'^', include('%s.urls' % (app_name,)))]
+        urls += [url(r'^', include('%s.urls' % (app_name,)))]
         i18n_urls += import_string("{}.urls.i18n_urlpatterns".format(app_name))
 
-urlpatterns += [
-    # Tornado views
+# Tornado views
+urls += [
     url(r'^json/get_events$',               'zerver.tornadoviews.json_get_events'),
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'zerver.tornadoviews.notify'),
 ]
-
-# Include the dual-use patterns twice
-urlpatterns += [
-    url(r'^api/v1/', include(v1_api_and_json_patterns)),
-    url(r'^json/', include(v1_api_and_json_patterns)),
-]
-
 
 if settings.DEVELOPMENT:
     use_prod_static = getattr(settings, 'PIPELINE', False)
     static_root = os.path.join(settings.DEPLOY_ROOT,
         'prod-static/serve' if use_prod_static else 'static')
 
-    urlpatterns += [url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
+    urls += [url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
                         {'document_root': static_root})]
+
+# These are used for voyager development. On a real voyager instance,
+# these files would be served by nginx.
+if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
+    urls += [
+        url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
+            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
+    ]
 
 # The sequence is important; if i18n urls don't come first then
 # reverse url mapping points to i18n urls which causes the frontend
 # tests to fail
-urlpatterns = i18n_patterns(*i18n_urls) + legacy_urls + urlpatterns
+urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
