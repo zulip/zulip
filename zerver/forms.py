@@ -26,9 +26,13 @@ SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' +
 if settings.ZULIP_COM:
     SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \
                     u"The zulip.com service is not taking new customer teams. <br /> " + \
-                    u"<a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/\">Zulip is open source</a>, so you can install your own Zulip server " + \
+                    u"<a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/\">" + \
+                    u"Zulip is open source</a>, so you can install your own Zulip server " + \
                     u"by following the instructions on <a href=\"https://www.zulip.org\">www.zulip.org</a>!"
-
+MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
+                       u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
+                       u'If you want to sign up an alias for Zulip, ' + \
+                       u'<a href="mailto:support@zulip.com">contact us</a>.'
 
 def get_registration_string(domain):
     # type: (text_type) -> text_type
@@ -54,7 +58,7 @@ def not_mit_mailing_list(value):
             return True
         except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
-                raise ValidationError(mark_safe(u'That user does not exist at MIT or is a <a href="https://ist.mit.edu/email-lists">mailing list</a>. If you want to sign up an alias for Zulip, <a href="mailto:support@zulip.com">contact us</a>.'))
+                raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))
             else:
                 raise
     return True
