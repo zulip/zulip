@@ -290,7 +290,7 @@ function _setup_page() {
             page_params.enable_digest_emails = result.enable_digest_emails;
         }
 
-        ui.report_success("Updated notification settings!", notify_settings_status);
+        ui.report_success(i18n.t("Updated notification settings!"), notify_settings_status);
     }
 
     function update_notification_settings_error(xhr, error_type, xhn) {
@@ -378,7 +378,7 @@ function _setup_page() {
             url: '/json/left_side_userlist',
             data: data,
             success: function (resp, statusText, xhr, form) {
-                ui.report_success("Updated display settings!  You will need to reload the window for your changes to take effect.",
+                ui.report_success(i18n.t("Updated display settings!  You will need to reload the window for your changes to take effect."),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr, error_type, xhn) {
@@ -396,7 +396,7 @@ function _setup_page() {
             url: '/json/time_setting',
             data: data,
             success: function (resp, statusText, xhr, form) {
-                ui.report_success("Updated display settings!  You will need to reload the window for your changes to take effect",
+                ui.report_success(i18n.t("Updated display settings!  You will need to reload the window for your changes to take effect"),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr, error_type, xhn) {
@@ -661,7 +661,7 @@ function _setup_page() {
             url: '/json/ui_settings/change',
             data: labs_updates,
             success: function (resp, statusText, xhr, form) {
-                var message = "Updated " + page_params.product_name + " Labs settings!";
+                var message = i18n.t("Updated __product_name__ Labs settings!", page_params);
                 var result = $.parseJSON(xhr.responseText);
                 var ui_settings_status = $('#ui-settings-status').expectOne();
 
