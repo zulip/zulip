@@ -14,16 +14,12 @@ from zerver.decorator import asynchronous, \
 
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_bool, check_list, check_string
-from zerver.lib.event_queue import allocate_client_descriptor, get_client_descriptor, \
+from zerver.lib.event_queue import get_client_descriptor, \
     process_notification, fetch_events
-
-from zerver.lib.handlers import allocate_handler_id
-from zerver.lib.narrow import check_supported_events_narrow_filter
 
 from typing import Union, Optional, Iterable, Sequence, List, Any
 import time
 import ujson
-import logging
 
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
