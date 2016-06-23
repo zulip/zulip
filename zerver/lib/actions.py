@@ -2010,6 +2010,25 @@ def do_change_left_side_userlist(user_profile, setting_value, log=True):
         log_event(event)
     send_event(event, [user_profile.id])
 
+def do_change_default_language(user_profile, setting_value, log=True):
+    # type: (UserProfile, text_type, bool) -> None
+
+    if setting_value == 'zh_CN':
+        # NB: remove this once we upgrade to Django 1.9
+        # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
+        # Django 1.9
+        setting_value = 'zh_HANS'
+
+    user_profile.default_language = setting_value
+    user_profile.save(update_fields=["default_language"])
+    event = {'type': 'update_display_settings',
+             'user': user_profile.email,
+             'setting_name':'default_language',
+             'setting': setting_value}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
 def set_default_streams(realm, stream_names):
     # type: (Realm, Iterable[text_type]) -> None
     DefaultStream.objects.filter(realm=realm).delete()
@@ -2713,6 +2732,15 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
     if want('update_display_settings'):
         state['twenty_four_hour_time'] = user_profile.twenty_four_hour_time
         state['left_side_userlist'] = user_profile.left_side_userlist
+
+        default_language = user_profile.default_language
+        if user_profile.default_language == 'zh_HANS':
+            # NB: remove this once we upgrade to Django 1.9
+            # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
+            # Django 1.9
+            default_language = 'zh_CN'
+
+        state['default_language'] = default_language
 
     return state
 

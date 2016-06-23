@@ -94,6 +94,15 @@
       <div class="display-settings-form">
 
         <div class="control-group">
+          <label for="default_language" class="control-label inline">{{t "Default Language" }}:</label>
+          <select name="default_language" id="default_language" class="controls">
+            {{#each page_params.language_list}}
+            <option value='{{this.code}}'>{{this.name}}</option>
+            {{/each}}
+          </select>
+        </div>
+
+        <div class="control-group">
           <div class="controls">
             <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
               {{#if page_params.left_side_userlist}}

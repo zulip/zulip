@@ -2282,6 +2282,15 @@ div.floating_recipient {
     display: inline-block;
 }
 
+.settings-section #default_language {
+    width: 150px;
+    margin-left: 20px !important;
+}
+
+.settings-section .inline {
+    display: inline !important;
+}
+
 
 .twitter-image, .message_inline_image {
     margin-bottom: 5px;

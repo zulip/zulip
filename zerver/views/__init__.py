@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence
 
+from django.utils import translation
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
@@ -68,6 +70,7 @@ import logging
 import jwt
 import hashlib
 import hmac
+import os
 
 from zproject.jinja2 import render_to_response
 
@@ -807,6 +810,25 @@ def sent_time_in_epoch_seconds(user_message):
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
+def with_language(string, language):
+    old_language = translation.get_language()
+    translation.activate(language)
+    result = _(string)
+    translation.activate(old_language)
+    return result
+
+def get_language_list():
+    path = os.path.join(settings.DEPLOY_ROOT, 'static',
+                        'locale', 'language_options.json')
+    with open(path, 'r') as reader:
+        languages = ujson.load(reader)
+        lang_list = []
+        for lang_info in languages['languages']:
+            lang_info['name'] = with_language(lang_info['name'], lang_info['code'])
+            lang_list.append(lang_info)
+
+        return lang_list
+
 @zulip_login_required
 def home(request):
     # type: (HttpRequest) -> HttpResponse
@@ -884,6 +906,14 @@ def home(request):
     else:
         notifications_stream = ""
 
+    # Set default language and make it persist
+    default_language = register_ret['default_language']
+    url_lang = '/{}'.format(request.LANGUAGE_CODE)
+    if not request.path.startswith(url_lang):
+        translation.activate(default_language)
+
+    request.session[translation.LANGUAGE_SESSION_KEY] = default_language
+
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
@@ -914,6 +944,8 @@ def home(request):
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         enter_sends           = user_profile.enter_sends,
         left_side_userlist    = register_ret['left_side_userlist'],
+        default_language      = register_ret['default_language'],
+        language_list         = get_language_list(),
         referrals             = register_ret['referrals'],
         realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,

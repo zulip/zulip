@@ -15,11 +15,12 @@ from zerver.lib.actions import do_change_password, \
     do_change_enable_offline_push_notifications, do_change_autoscroll_forever, \
     do_change_default_desktop_notifications, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
-    do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, do_change_left_side_userlist
+    do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, \
+    do_change_left_side_userlist, do_change_default_language
 from zerver.lib.avatar import avatar_url
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile, Realm
 
 def name_changes_disabled(realm):
@@ -102,6 +103,19 @@ def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(valida
         do_change_left_side_userlist(user_profile, left_side_userlist)
 
     result['left_side_userlist'] = left_side_userlist
+
+    return json_success(result)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_language_setting(request, user_profile, default_language=REQ(validator=check_string, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[str]) -> HttpResponse
+    result = {}
+    if (default_language is not None and
+            user_profile.default_language != default_language):
+        do_change_default_language(user_profile, default_language)
+
+    result['default_language'] = default_language
 
     return json_success(result)
 
