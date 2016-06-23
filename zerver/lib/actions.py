@@ -229,7 +229,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     if newsletter_data is not None:
         # If the user was created automatically via the API, we may
         # not want to register them for the newsletter
-        queue_json_publish(
+        queue_json_publish( # type: ignore # waiting on https://github.com/python/mypy/issues/1425
             "signups",
             {
                 'EMAIL': user_profile.email,
@@ -240,7 +240,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
                     'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
                 },
             },
-        lambda event: None)
+            lambda x: None)
 
 def notify_created_user(user_profile):
     # type: (UserProfile) -> None
@@ -725,10 +725,10 @@ def do_send_messages(messages):
         if (settings.ENABLE_FEEDBACK and
             message['message'].recipient.type == Recipient.PERSONAL and
             settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
-            queue_json_publish(
+            queue_json_publish( # type: ignore # waiting on https://github.com/python/mypy/issues/1425
                     'feedback_messages',
                     message['message'].to_dict(apply_markdown=False),
-                    lambda x: None
+                lambda x: None
             )
 
     # Note that this does not preserve the order of message ids
@@ -1361,13 +1361,13 @@ def bulk_add_subscriptions(streams, users):
         new_users = [user for user in users if (user.id, stream.id) in new_streams]
         new_user_ids = [user.id for user in new_users]
         all_subscribed_ids = [user.id for user in all_subs_by_stream[stream.id]]
-        other_user_ids = set(all_subscribed_ids) - set(new_user_ids)
+        other_user_ids = set(all_subscribed_ids) - set(new_user_ids) # type: Set[int]
         if other_user_ids:
             for user_profile in new_users:
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
                              user_email=user_profile.email)
-                send_event(event, other_user_ids)
+                send_event(event, list(other_user_ids))
 
     return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
@@ -3235,9 +3235,9 @@ def do_claim_attachments(message):
 
     results = []
     for url in attachment_url_list:
-        path_id = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', url)
+        _path = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', url)
         # Remove any extra '.' after file extension. These are probably added by the user
-        path_id = re.sub(u'[.]+$', u'', path_id, re.M)
+        path_id = re.sub(u'[.]+$', u'', _path, re.M) # type: text_type
 
         if path_id is not None:
             is_claimed = claim_attachment(path_id, message['message'])

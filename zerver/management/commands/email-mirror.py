@@ -170,13 +170,13 @@ class Command(BaseCommand):
                 print("5.3.4 Message too big for system: Max size is 25MiB")
                 exit(posix.EX_DATAERR)
 
-            queue_json_publish(
+            queue_json_publish( # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
                     "email_mirror",
                     {
                         "message": message,
                         "rcpt_to": rcpt_to
                     },
-                    lambda x: None
+                lambda x: None
             )
         else:
             # We're probably running from cron, try to batch-process mail

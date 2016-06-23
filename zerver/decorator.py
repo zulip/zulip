@@ -70,7 +70,7 @@ def update_user_activity(request, user_profile):
            'user_profile_id': user_profile.id,
            'time': datetime_to_timestamp(now()),
            'client': request.client.name}
-    queue_json_publish("user_activity", event, lambda event: None)
+    queue_json_publish("user_activity", event, lambda x: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
 
 # Based on django.views.decorators.http.require_http_methods
 def require_post(func):

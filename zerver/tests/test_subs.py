@@ -781,7 +781,7 @@ class SubscriptionAPITest(AuthedTestCase):
         are generated.
         """
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
-        add_streams = [u"Verona2", u"Denmark5"]
+        add_streams = [u"Verona2", u"Denmark5"] # type: List[text_type]
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):

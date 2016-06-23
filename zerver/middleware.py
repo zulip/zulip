@@ -18,6 +18,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers
 from django.utils.http import cookie_date
+from six import text_type
 
 import logging
 import time
@@ -95,6 +96,17 @@ def is_slow_query(time_delta, path):
         return time_delta >= 10
     return True
 
+def get_statsd_path(path):
+    # type: (str) -> text_type
+    if path == '/':
+        return u'webreq'
+    else:
+        _statsd_path = u"webreq.%s" % (path[1:].replace('/', '.'),)
+        # Remove non-ascii chars from path (there should be none, if there are it's
+        # because someone manually entered a nonexistant path), as UTF-8 chars make
+        # statsd sad when it sends the key name over the socket
+        return _statsd_path.encode('ascii', errors='ignore').decode("ascii")
+
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=None, error_content_iter=None):
     # type: (Dict[str, Any], str, str, str, str, str, int, Optional[str], Optional[Iterable[str]]) -> None
@@ -103,14 +115,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         error_content_iter = (error_content,)
 
 # For statsd timer name
-    if path == '/':
-        statsd_path = u'webreq'
-    else:
-        statsd_path = u"webreq.%s" % (path[1:].replace('/', '.'),)
-        # Remove non-ascii chars from path (there should be none, if there are it's
-        # because someone manually entered a nonexistant path), as UTF-8 chars make
-        # statsd sad when it sends the key name over the socket
-        statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
+    statsd_path = get_statsd_path(path)
     blacklisted_requests = ['do_confirm', 'send_confirm',
                             'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
                             'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
@@ -203,7 +208,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         logger.info(logger_line)
 
     if (is_slow_query(time_delta, path)):
-        queue_json_publish("slow_queries", "%s (%s)" % (logger_timing, email), lambda e: None)
+        queue_json_publish("slow_queries", "%s (%s)" % (logger_timing, email), lambda x: None) # type: ignore  # waiting on https://github.com/python/mypy/issues/1425
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
