@@ -21,6 +21,10 @@ from zerver.models import Stream, Recipient, get_user_profile_by_email, \
     Message, Realm, UserProfile
 from six import text_type, binary_type
 import six
+import talon
+from talon import quotations
+
+talon.init()
 
 logger = logging.getLogger(__name__)
 
@@ -199,11 +203,12 @@ def extract_body(message):
     # that.
     plaintext_content = get_message_part_by_type(message, "text/plain")
     if plaintext_content:
-        return plaintext_content
+        return quotations.extract_from_plain(plaintext_content)
 
     # If we only have an HTML version, try to make that look nice.
     html_content = get_message_part_by_type(message, "text/html")
     if html_content:
+        html_content = quotations.extract_from_html(html_content)
         return convert_html_to_markdown(html_content)
 
     raise ZulipEmailForwardError("Unable to find plaintext or HTML message body")

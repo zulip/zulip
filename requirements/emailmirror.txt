@@ -1,0 +1,12 @@
+talon==1.2.10
+cchardet==1.0.0
+cssselect==0.9.2
+lxml==3.6.0
+regex==2016.6.19
+
+# Currently, Scikit-Learn and Numpy cannot be installed with pip in one
+# install pass. See https://github.com/scikit-learn/scikit-learn/issues/4164
+# for further details.
+-r numpy.txt
+
+scikit-learn==0.16.1

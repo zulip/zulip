@@ -137,3 +137,5 @@ ujson==1.33
 
 uritemplate==0.6
 zope.interface==4.1.2
+
+-r emailmirror.txt
