@@ -162,8 +162,7 @@ function zoom_in() {
 
     // Hide stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
-        var stream_title = $(this);
-        stream_title.hide();
+        $(this).hide();
     });
     $(".pinned-stream-split").each(function () {
         $(this).hide();
@@ -185,8 +184,7 @@ function zoom_out() {
     zoomed_to_topics = false;
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
-        var stream_title = $(this);
-        stream_title.show();
+        $(this).show();
     });
     $(".pinned-stream-split").each(function () {
         $(this).show();
