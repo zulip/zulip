@@ -24,7 +24,7 @@ var exports = {};
                                       $status_message);
                 }
             }, function (xhr) {
-                ui.report_error("Error adding subscription", xhr, $status_message);
+                ui.report_error(i18n.t("Error adding subscription"), xhr, $status_message);
             }
         );
     }
@@ -39,7 +39,7 @@ var exports = {};
             function (data) {
                 $status_message.hide();
             }, function (xhr) {
-                ui.report_error("Error removing subscription", xhr, $status_message);
+                ui.report_error(i18n.t("Error removing subscription"), xhr, $status_message);
             }
         );
     }

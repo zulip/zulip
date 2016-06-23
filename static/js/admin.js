@@ -14,15 +14,15 @@ exports.show_or_hide_menu_item = function () {
 
 function failed_listing_users(xhr, error) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
-    ui.report_error("Error listing users or bots", xhr, $("#administration-status"));
+    ui.report_error(i18n.t("Error listing users or bots"), xhr, $("#administration-status"));
 }
 
 function failed_listing_streams(xhr, error) {
-    ui.report_error("Error listing streams", xhr, $("#administration-status"));
+    ui.report_error(i18n.t("Error listing streams"), xhr, $("#administration-status"));
 }
 
 function failed_listing_emoji(xhr, error) {
-    ui.report_error("Error listing emoji", xhr, $("#administration-status"));
+    ui.report_error(i18n.t("Error listing emoji"), xhr, $("#administration-status"));
 }
 
 function populate_users (realm_people_data) {
@@ -405,7 +405,7 @@ function _setup_page() {
                 }
             },
             error: function (xhr, error) {
-                ui.report_error("Failed!", xhr, name_status);
+                ui.report_error(i18n.t("Failed!"), xhr, name_status);
             }
         });
     });
@@ -438,7 +438,7 @@ function _setup_page() {
             },
             error: function (xhr, error) {
                 var status = row.find(".admin-user-status");
-                ui.report_error("Failed!", xhr, status);
+                ui.report_error(i18n.t("Failed!"), xhr, status);
             }
         });
     });
@@ -471,7 +471,7 @@ function _setup_page() {
             },
             error: function (xhr, error) {
                 var status = row.find(".admin-user-status");
-                ui.report_error("Failed!", xhr, status);
+                ui.report_error(i18n.t("Failed!"), xhr, status);
             }
         });
     });
@@ -582,15 +582,15 @@ function _setup_page() {
                 var errors = $.parseJSON(xhr.responseText).msg;
                 if (errors.name !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.name});
-                    ui.report_error("Failed!", xhr, emoji_name_status);
+                    ui.report_error(i18n.t("Failed!"), xhr, emoji_name_status);
                 }
                 if (errors.img_url !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.img_url});
-                    ui.report_error("Failed!", xhr, emoji_url_status);
+                    ui.report_error(i18n.t("Failed!"), xhr, emoji_url_status);
                 }
                 if (errors.__all__ !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.__all__});
-                    ui.report_error("Failed!", xhr, emoji_status);
+                    ui.report_error(i18n.t("Failed!"), xhr, emoji_status);
                 }
             }
         });

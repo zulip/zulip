@@ -294,7 +294,7 @@ function _setup_page() {
     }
 
     function update_notification_settings_error(xhr, error_type, xhn) {
-        ui.report_error("Error changing settings", xhr, $('#notify-settings-status').expectOne());
+        ui.report_error(i18n.t("Error changing settings"), xhr, $('#notify-settings-status').expectOne());
     }
 
     function post_notify_settings_changes(notification_changes, success_func,
@@ -382,7 +382,7 @@ function _setup_page() {
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr, error_type, xhn) {
-                ui.report_error("Error updating display settings", xhr, $('#display-settings-status').expectOne());
+                ui.report_error(i18n.t("Error updating display settings"), xhr, $('#display-settings-status').expectOne());
             }
         });
     });
@@ -400,7 +400,7 @@ function _setup_page() {
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr, error_type, xhn) {
-                ui.report_error("Error updating display settings", xhr, $('#display-settings-status').expectOne());
+                ui.report_error(i18n.t(i18n.t("Error updating display settings")), xhr, $('#display-settings-status').expectOne());
             }
         });
     });
@@ -422,7 +422,7 @@ function _setup_page() {
             settings_status.hide();
         },
         error: function (xhr, error_type, xhn) {
-            ui.report_error("Error getting API key", xhr, $('#settings-status').expectOne());
+            ui.report_error(i18n.t("Error getting API key"), xhr, $('#settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
         }
@@ -673,7 +673,7 @@ function _setup_page() {
                 ui.report_success(message, ui_settings_status);
             },
             error: function (xhr, error_type, xhn) {
-                ui.report_error("Error changing settings", xhr, $('#ui-settings-status').expectOne());
+                ui.report_error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
             }
         });
     });
