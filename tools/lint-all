@@ -92,7 +92,7 @@ def check_pyflakes():
                 failed = True
     return failed
 
-def custom_check_file(fn, rules, skip_rules=None):
+def custom_check_file(fn, rules, skip_rules=None, max_length=None):
     failed = False
     lineFlag = False
     for i, line in enumerate(open(fn)):
@@ -126,6 +126,9 @@ def custom_check_file(fn, rules, skip_rules=None):
             except Exception:
                 print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                 traceback.print_exc()
+        if (max_length is not None and len(line) > max_length and
+            '# type' not in line and 'test' not in fn and 'example' not in fn):
+            print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
         lastLine = line
     if lineFlag and '\n' not in lastLine:
         print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
@@ -286,7 +289,7 @@ def check_custom_checks_py():
     failed = False
 
     for fn in by_lang['py']:
-        if custom_check_file(fn, python_rules):
+        if custom_check_file(fn, python_rules, max_length=180):
             failed = True
     return failed
 
