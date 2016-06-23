@@ -42,6 +42,10 @@ exports.subscribed_streams = function () {
     return _.pluck(exports.subscribed_subs(), 'name');
 };
 
+exports.subscribed_stream_ids = function () {
+    return _.pluck(exports.subscribed_subs(), 'stream_id');
+};
+
 exports.get_colors = function () {
     return _.pluck(exports.subscribed_subs(), 'color');
 };

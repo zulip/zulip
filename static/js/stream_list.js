@@ -588,6 +588,12 @@ $(function () {
         e.stopPropagation();
     });
 
+    $(document).on('input', '.stream_search', function (e) {
+        var search_list = $(".stream_search");
+        var streams = stream_data.subscribed_stream_ids();
+        subs.filter_streams(search_list, streams);
+    });
+
     $('#stream_filters').on('click', '.show-more-topics', function (e) {
         var stream = $(e.target).parents('.show-more-topics').attr('data-name');
 
