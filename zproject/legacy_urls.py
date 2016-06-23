@@ -33,6 +33,7 @@ legacy_urls = [
     url(r'^json/set_avatar$',               'zerver.views.user_settings.json_set_avatar'),
     url(r'^json/time_setting$',             'zerver.views.user_settings.json_time_setting'),
     url(r'^json/left_side_userlist$',       'zerver.views.user_settings.json_left_side_userlist'),
+    url(r'^json/language_setting$',         'zerver.views.user_settings.json_language_setting'),
 
     # This json format view is used by the LEGACY pre-REST API.  It
     # requires an API key.
