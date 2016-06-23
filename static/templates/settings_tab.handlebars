@@ -348,9 +348,17 @@
   </div>
 </div>
 
-<div id="word-alert-settings" class="settings-section">
-  <div class="settings-section-title"><i class="icon-vector-book settings-section-icon"></i>{{t "Custom Word Alerts" }}</div>
-  <ul id="word-alerts">
+<div id="alert-word-settings" class="settings-section">
+  <div class="settings-section-title"><i class="icon-vector-book settings-section-icon"></i>{{t "Custom Alert Words" }}</div>
+  <div class="form-horizontal" id="alert_word_info_box">
+    {{#tr this}}
+    <p class="alert-word-settings-note">
+      {{t "Alert words allow you to be notified as if you were @-mentioned
+      when certain words or phrases are used in Zulip."}}
+    </p>
+    {{/tr}}
+  </div>
+  <ul id="alert_words_list">
   </ul>
 </div>
 
