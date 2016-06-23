@@ -215,19 +215,19 @@ function show_app_alert(contents) {
 function disable_event_handlers() {
     $('body').css({'overflow':'hidden'}); // prevents scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
-        var existing_events = $(document).data("events")[event_name];
+        var existing_events = $._data(document, "events")[event_name];
         if (existing_events === undefined) {
             existing_events = [];
         }
         event_handlers[event_name] = existing_events;
-        $(document).data("events")[event_name] = [];
+        $._data(document, "events")[event_name] = [];
     });
 }
 
 function enable_event_handlers() {
     $('body').css({'overflow':'auto'}); // enables scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
-        $(document).data("events")[event_name] = event_handlers[event_name];
+        $._data(document, "events")[event_name] = event_handlers[event_name];
     });
 }
 
