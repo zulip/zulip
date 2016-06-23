@@ -121,6 +121,12 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "linkify_exclamation",
+      "input": "![link text](https://example.com)",
+      "expected_output": "<p>!<a href=\"https://example.com\" target=\"_blank\" title=\"https://example.com\">link text</a></p>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "linkify_interference",
       "input": "link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx",
       "expected_output": "<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\" target=\"_blank\" title=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\">xxxxx #xx</a>:<strong>xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>",

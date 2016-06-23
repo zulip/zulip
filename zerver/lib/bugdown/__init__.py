@@ -939,7 +939,12 @@ class Bugdown(markdown.Extension):
             '_begin')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
-        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
+        # The standard python-markdown LINK_RE excludes the case where
+        # the tag is preceeded by an `!` to support the image_link
+        # syntax; since we have the image_link syntax disabled, we
+        # remove that from the regular expression.
+        link_re = markdown.inlinepatterns.LINK_RE[len(markdown.inlinepatterns.NOIMG):]
+        md.inlinePatterns.add('link', AtomicLinkPattern(link_re, md), '>backtick')
 
         for (pattern, format_string) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
