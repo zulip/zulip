@@ -494,7 +494,7 @@ exports.setup_page = function () {
 
     function failed_listing(xhr, error) {
         loading.destroy_indicator($('#subs_page_loading_indicator'));
-        ui.report_error("Error listing streams or subscriptions", xhr,
+        ui.report_error(i18n.t("Error listing streams or subscriptions"), xhr,
                         $("#subscriptions-status"), 'subscriptions-status');
     }
 
@@ -570,7 +570,7 @@ function ajaxSubscribe(stream) {
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error("Error adding subscription", xhr,
+            ui.report_error(i18n.t("Error adding subscription"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
         }
     });
@@ -586,7 +586,7 @@ function ajaxUnsubscribe(stream) {
             // The rest of the work is done via the unsubscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error("Error removing subscription", xhr,
+            ui.report_error(i18n.t("Error removing subscription"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
         }
     });
@@ -608,7 +608,7 @@ function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error("Error creating stream", xhr,
+            ui.report_error(i18n.t("Error creating stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
             $('#stream-creation').modal("hide");
         }
@@ -974,7 +974,7 @@ $(function () {
                                   'subscriptions-status');
             },
             error: function (xhr) {
-                ui.report_error("Error renaming stream", xhr,
+                ui.report_error(i18n.t("Error renaming stream"), xhr,
                                 $("#subscriptions-status"), 'subscriptions-status');
             }
         });
@@ -1001,7 +1001,7 @@ $(function () {
                                  $("#subscriptions-status"), 'subscriptions-status');
             },
             error: function (xhr) {
-                ui.report_error("Error updating the stream description", xhr,
+                ui.report_error(i18n.t("Error updating the stream description"), xhr,
                                 $("#subscriptions-status"), 'subscriptions-status');
             }
         });
