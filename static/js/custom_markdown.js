@@ -20,7 +20,7 @@ var exports = {};
                 if (!$.isEmptyObject(data.already_subscribed)) {
                     // Display the canonical stream capitalization.
                     var true_stream_name = data.already_subscribed[page_params.email][0];
-                    ui.report_success("Already subscribed to " + true_stream_name,
+                    ui.report_success(i18n.t("Already subscribed to __stream__", {'stream': true_stream_name}),
                                       $status_message);
                 }
             }, function (xhr) {

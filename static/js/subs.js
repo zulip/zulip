@@ -564,7 +564,7 @@ function ajaxSubscribe(stream) {
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[page_params.email][0];
-                ui.report_success("Already subscribed to " + true_stream_name,
+                ui.report_success(i18n.t("Already subscribed to __stream__", {'stream': true_stream_name}),
                                   $("#subscriptions-status"), 'subscriptions-status');
             }
             // The rest of the work is done via the subscribe event we will get
@@ -970,7 +970,7 @@ $(function () {
                 old_name_box.text(new_name);
                 sub_row.find(".email-address").text(data.email_address);
 
-                ui.report_success("The stream has been renamed!", $("#subscriptions-status "),
+                ui.report_success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
                                   'subscriptions-status');
             },
             error: function (xhr) {
@@ -997,7 +997,7 @@ $(function () {
             },
             success: function () {
                 // The event from the server will update the rest of the UI
-                ui.report_success("The stream description has been updated!",
+                ui.report_success(i18n.t("The stream description has been updated!"),
                                  $("#subscriptions-status"), 'subscriptions-status');
             },
             error: function (xhr) {
