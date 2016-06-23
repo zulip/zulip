@@ -161,6 +161,8 @@ function _setup_page() {
     $("#show_api_key_box").hide();
     $("#api_key_button_box").show();
 
+    $('#default_language').val(page_params.default_language);
+
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
