@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from typing import Any, List, Dict, Optional, Callable, Tuple
 
+from django.utils import translation
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
@@ -904,6 +905,14 @@ def home(request):
         notifications_stream = user_profile.realm.notifications_stream.name
     else:
         notifications_stream = ""
+
+    # Set default language and make it persist
+    default_language = register_ret['default_language']
+    url_lang = '/{}'.format(request.LANGUAGE_CODE)
+    if not request.path.startswith(url_lang):
+        translation.activate(default_language)
+
+    request.session[translation.LANGUAGE_SESSION_KEY] = default_language
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
