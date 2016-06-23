@@ -1,8 +1,33 @@
 {{! Alert word in the settings page that can be removed }}
 <li class="alert-word-item" data-word='{{word}}'>
     {{#if editing}}
-        <input class="edit-alert-word input-medium" type="text" placeholder="{{t 'Alert Word' }}" /><button class="btn btn-default btn-mini add-alert-word" type="button">{{t "Add" }}</button>
+        <div class="alert-word-settings-form">
+            <form id="create_alert_word_form" class="form-horizontal">
+                <div class="add-new-alert-word-box">
+                    <div class="settings-section-title new-alert-word-section-title">{{t "Add a New Alert Word"}}</div>
+                    <div class="new-alert-word-form">
+                        <div class="control-group">
+                            <label for="create_alert_word_name" class="control-label">{{t "New Alert Word" }}</label>
+                            <input type="text" name="alert_word_name" id="create_alert_word_name" class="required"
+                                maxlength=100 placeholder="{{t 'Alert Word' }}" value="" />
+                        </div>
+                        <button class="btn btn-primary add-alert-word" id="create_alert_word_button" type="button">
+                            {{t 'Add Alert Word'}}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     {{else}}
-        {{word}}<button class="btn btn-default btn-mini remove-alert-word" type="button"><i class="icon-vector-remove"></i></button>
+        <div class="alert-word-information-box">
+            <div class="alert_word_listing">
+                <span class="value">{{word}}</span>
+            </div>
+            <div class="edit-alert-word-buttons">
+                <button type="submit" class="btn btn-small btn-danger remove-alert-word" title="{{t 'Delete Alert Word' }}" data-word="{{word}}">
+                    <i class="icon-vector-trash"></i>
+                </button>
+            </div>
+        </div>
     {{/if}}
 </li>
