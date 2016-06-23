@@ -6,13 +6,10 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-        process_as_post, JsonableError
-from zerver.lib.response import json_method_not_allowed, json_unauthorized, json_unhandled_exception
+        process_as_post
+from zerver.lib.response import json_method_not_allowed, json_unauthorized
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.conf import settings
-
-import logging
-
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 
@@ -20,6 +17,11 @@ METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 def rest_dispatch(request, globals_list, **kwargs):
     # type: (HttpRequest, Dict[str, Any], **Any) -> HttpResponse
     """Dispatch to a REST API endpoint.
+
+    Unauthenticated endpoints should not use this, as authentication is verified
+    in the following ways:
+        * for paths beginning with /api, HTTP Basic auth
+        * for paths beginning with /json (used by the web client), the session token
 
     This calls the function named in kwargs[request.method], if that request
     method is supported, and after wrapping that function to:
@@ -71,20 +73,27 @@ def rest_dispatch(request, globals_list, **kwargs):
         #
         # Security implications of this portion of the code are minimal,
         # as we should worst-case fail closed if we miscategorise a request.
+
+        # /json views (web client) validate with a session token (cookie)
         if not request.path.startswith("/api") and request.user.is_authenticated():
             # Authenticated via sessions framework, only CSRF check needed
             target_function = csrf_protect(authenticated_json_view(target_function))
+        # most clients (mobile, bots, etc) use HTTP Basic Auth and REST calls, where instead of
+        # username:password, we use email:apiKey
         elif request.META.get('HTTP_AUTHORIZATION', None):
             # Wrap function with decorator to authenticate the user before
             # proceeding
             target_function = authenticated_rest_api_view()(target_function)
+        # Pick a way to tell user they're not authed based on how the request was made
         else:
+            # If this looks like a request from a top-level page in a
+            # browser, send the user to the login page
             if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
-                # If this looks like a request from a top-level page in a
-                # browser, send the user to the login page
                 return HttpResponseRedirect('%s/?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
+            # Ask for basic auth (email:apiKey)
             elif request.path.startswith("/api"):
                 return json_unauthorized(_("Not logged in: API authentication or user session required"))
+            # Session cookie expired, notify the client
             else:
                 return json_unauthorized(_("Not logged in: API authentication or user session required"),
                                          www_authenticate='session')
