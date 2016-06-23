@@ -24,6 +24,7 @@ zerver/fixtures/available-migrations
 zerver/fixtures/migration-status
 zerver/fixtures/test_data1.json
 .kdev4
+.idea
 zulip.kdev4
 remote_cache_prefix
 coverage/
