@@ -176,6 +176,10 @@ js_rules = [
      'exclude': set(['tools/lint-all']),
      'description': 'Argument to report_success should be a literal string enclosed '
                     'by i18n.t()'},
+    {'pattern': 'report_error\(["\']',
+     'exclude': set(['tools/lint-all']),
+     'description': 'Argument to report_error should be a literal string enclosed '
+                    'by i18n.t()'},
     ] + whitespace_rules
 python_rules = [
     {'pattern': '^(?!#)@login_required',
