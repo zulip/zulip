@@ -407,6 +407,24 @@ function _setup_page() {
         });
     });
 
+    $("#default_language").change(function () {
+        var data = {};
+        var setting_value = $("#default_language").val();
+        data.default_language = JSON.stringify(setting_value);
+
+        channel.patch({
+            url: '/json/language_setting',
+            data: data,
+            success: function (resp, statusText, xhr, form) {
+                ui.report_success(i18n.t("Updated display settings!  You will need to reload the window for your changes to take effect"),
+                                  $('#display-settings-status').expectOne());
+            },
+            error: function (xhr, error_type, xhn) {
+                ui.report_error(i18n.t("Error updating display settings"), xhr, $('#display-settings-status').expectOne());
+            }
+        });
+    });
+
 
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
