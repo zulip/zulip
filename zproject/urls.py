@@ -9,6 +9,9 @@ from zproject.legacy_urls import legacy_urls
 
 # NB: There are several other pieces of code which route requests by URL:
 #
+#   - legacy_urls.py contains API endpoint written before the redesign
+#     and should not be added to.
+#
 #   - runtornado.py has its own URL list for Tornado views.  See the
 #     invocation of web.Application in that file.
 #
@@ -16,6 +19,10 @@ from zproject.legacy_urls import legacy_urls
 #
 #   - Likewise for the local dev server in tools/run-dev.py.
 
+# These views serve pages (HTML). As such, their internationalization must
+# depend on the url.
+# If you're adding a new page to the website (as opposed to a new endpoint
+# for use by code), you should add it here.
 i18n_urls = [
     url(r'^$', 'zerver.views.home'),
     # We have a desktop-specific landing page in case we change our / to not log in in the future. We don't
@@ -61,8 +68,8 @@ i18n_urls = [
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
     url(r'^invite/$', 'zerver.views.initial_invite_page', name='initial-invite-users'),
 
-    # Unsubscription endpoint. Used for various types of e-mails (day 1 & 2,
-    # missed PMs, etc.)
+    # Email unsubscription endpoint. Used for unsubscribing from various types
+    # of emails, including the welcome emails (day 1 & 2), missed PMs, etc.
     url(r'^accounts/unsubscribe/(?P<type>[\w]+)/(?P<token>[\w]+)',
         'zerver.views.email_unsubscribe'),
 
@@ -94,6 +101,7 @@ i18n_urls = [
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 ]
 
+# Make a copy of i18n_urls so that they appear without prefix for english
 urlpatterns = patterns('', *i18n_urls)
 
 # These are used for voyager development. On a real voyager instance,
@@ -105,7 +113,15 @@ if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
     )
 
 # JSON format views used by the redesigned API, accept basic auth username:password.
+# These endpoints constitute the redesigned API (V1), which uses REST verbs.
+#
+# If you're adding a new endpoint to the code that requires authentication,
+# please add it here.
+# See rest_dispatch in zerver.lib.rest for an explanation of auth methods used
+#
+# All of these paths are accessed by either a /json or /api prefix
 v1_api_and_json_patterns = patterns('zerver.views',
+    # zerver.views
     url(r'^export$', 'rest_dispatch',
             {'GET':  'export'}),
     url(r'^users/me$', 'rest_dispatch',
@@ -125,6 +141,8 @@ v1_api_and_json_patterns = patterns('zerver.views',
     url(r'^users/me/android_gcm_reg_id$', 'rest_dispatch',
         {'POST': 'add_android_reg_id',
          'DELETE': 'remove_android_reg_id'}),
+
+    # Used to register for an event queue in tornado
     url(r'^register$', 'rest_dispatch',
             {'POST': 'api_events_register'}),
 
