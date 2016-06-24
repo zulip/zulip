@@ -1,65 +1,155 @@
 -r ipython.txt
+# Django itself; we use a slightly patched version
 git+https://github.com/zulip/truncated-django.git
+
 GitPython==0.3.2.1
+
+# Needed for rendering backend templates
 Jinja2==2.7.2
+
+# Needed for markdown processing
 Markdown==2.1.1
 MarkupSafe==0.18
+
+# Needed for Image Processing
 Pillow==2.8.2
+
+# Needed for markdown processing
 Pygments==2.0.2
+
+# Needed for building complex DB queries
 SQLAlchemy==0.7.8
+
+# Needed for the email mirror
 Twisted==15.2.1
+
+# Needed for iOS push notifications
 apns-client==0.1.8
+
+# Needed for S3 file uploads
 boto==2.38.0
+
 certifi==2015.4.28
 cffi==1.5.2
 chardet==2.3.0
+
+# Needed to compute test coverage
 coverage==4.0.3
+
 cryptography==1.2.3
+
+# Needed for integrations
 defusedxml==0.4.1
+
+# Needed to generate diffs for edits
 diff-match-patch==20121119
+
+# Needed for LDAP support
 django-auth-ldap==1.2.6
+
+# Django extension providing bitfield support
 django-bitfield==1.8.0
+
+# Django-guardian is actually no longer used; just needed for the
+# migration that removes it.
 git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69
+
+# Django extension for static asset pipeline
 django-pipeline==1.2.2
+
 docopt==0.4.0
 enum34==1.0.4
 fonttools==3.0
+
+# Needed for Android push notifications
 gcm-client==0.1.4
+
 gitdb==0.6.4
+
+# Needed for Google Apps mobile auth
 google-api-python-client==1.4.0
+
+# Needed for the email mirror
 html2text==2015.6.6
+
 httplib2==0.9.1
 idna==2.0
 ipaddress==1.0.7
+
+# Needed for JWT-based auth
 jwt==0.3.2
+
+# Needed for USING_MANDRILL option for outgoing email
 mandrill==1.0.57
+
+# Needed for mock objects in decorators
 mock==1.0.1
+
 oauth2client==1.4.11
 oauthlib==1.0.3
+
+# Needed to access rabbitmq
 pika==0.10.0
+
+# Wrapper for mailchimp api
 postmonkey==1.0b0
+
+# Needed to access our database
 psycopg2==2.6
+
+# Python wrapper around OpenSSL
 pyOpenSSL==0.15.1
+
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
 pycparser==2.14
 pycrypto==2.6.1
+
+# Used for Hesiod lookups, etc.
 pydns==2.3.6
+
+# Needed for memcached usage
 pylibmc==1.4.3
+
+# Needed for LDAP integration
 python-ldap==2.4.19
+
+# Needed for timezone work
 pytz==2015.4
+
+# Needed for redis
 redis==2.10.3
+
+# Dependencies of our API
 requests==2.7.0
+
 requests_oauthlib==0.6.1
 rsa==3.1.4
+
+# Dependencies of our API
 simplejson==3.7.3
+
+# Needed for Python 2+3 compatibility
 six==1.9.0
 smmap==0.9.0
+
+# Needed for Tornado websockets support
 sockjs-tornado==1.0.1
+
+# Needed to parse source maps for error reporting
 sourcemap==0.1.8
+
+# Tornado used for server->client push system
 tornado==2.4.1
+
+# Needed for Python static typing
 typing==3.5.0.1
+
+# Needed for Twitter card integration
 python-twitter==1.1
+
+# Fast JSON parser
 ujson==1.33
+
 uritemplate==0.6
 zope.interface==4.1.2
