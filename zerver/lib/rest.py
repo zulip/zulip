@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from typing import Any, Dict
 
+from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
@@ -59,7 +60,7 @@ def rest_dispatch(request, **kwargs):
         method_to_use = request.META["zulip.emulated_method"]
 
     if method_to_use in supported_methods:
-        target_function = supported_methods[method_to_use]
+        target_function = import_string(supported_methods[method_to_use])
 
         # Set request._query for update_activity_user(), which is called
         # by some of the later wrappers.

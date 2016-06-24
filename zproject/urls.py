@@ -115,106 +115,106 @@ urls = list(i18n_urls)
 # All of these paths are accessed by either a /json or /api prefix
 v1_api_and_json_patterns = [
     # realm-level calls
-    url(r'^export$', 'rest_dispatch',
+    url(r'^export$', 'zerver.lib.rest.rest_dispatch',
             {'GET':  'zerver.views.export'}),
-    url(r'^realm$', 'rest_dispatch',
+    url(r'^realm$', 'zerver.lib.rest.rest_dispatch',
             {'PATCH': 'zerver.views.update_realm'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'zerver.views.generate_204'),
 
     # realm/emoji -> zerver.views.realm_emoji
-    url(r'^realm/emoji$', 'rest_dispatch',
+    url(r'^realm/emoji$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.realm_emoji.list_emoji',
          'PUT': 'zerver.views.realm_emoji.upload_emoji'}),
-    url(r'^realm/emoji/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$', 'rest_dispatch',
+    url(r'^realm/emoji/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$', 'zerver.lib.rest.rest_dispatch',
         {'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
 
     # users -> zerver.views.users
-    url(r'^users$', 'rest_dispatch',
+    url(r'^users$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.users.get_members_backend',
          'POST': 'zerver.views.users.create_user_backend'}),
-    url(r'^users/(?P<email>.*)/reactivate$', 'rest_dispatch',
+    url(r'^users/(?P<email>.*)/reactivate$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.users.reactivate_user_backend'}),
-    url(r'^users/(?P<email>[^/]*)$', 'rest_dispatch',
+    url(r'^users/(?P<email>[^/]*)$', 'zerver.lib.rest.rest_dispatch',
         {'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
-    url(r'^bots$', 'rest_dispatch',
+    url(r'^bots$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.users.get_bots_backend',
          'POST': 'zerver.views.users.add_bot_backend'}),
-    url(r'^bots/(?P<email>.*)/api_key/regenerate$', 'rest_dispatch',
+    url(r'^bots/(?P<email>.*)/api_key/regenerate$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.users.regenerate_bot_api_key'}),
-    url(r'^bots/(?P<email>.*)$', 'rest_dispatch',
+    url(r'^bots/(?P<email>.*)$', 'zerver.lib.rest.rest_dispatch',
         {'PATCH': 'zerver.views.users.patch_bot_backend',
          'DELETE': 'zerver.views.users.deactivate_bot_backend'}),
 
     # messages -> zerver.views.messages
     # GET returns messages, possibly filtered, POST sends a message
-    url(r'^messages$', 'rest_dispatch',
-        {'GET':  'zerver.views.messages.get_old_messages_backend',
+    url(r'^messages$', 'zerver.lib.rest.rest_dispatch',
+        {'GET': 'zerver.views.messages.get_old_messages_backend',
          'PATCH': 'zerver.views.messages.update_message_backend',
          'POST': 'zerver.views.messages.send_message_backend'}),
-    url(r'^messages/render$', 'rest_dispatch',
-        {'GET':  'zerver.views.messages.render_message_backend'}),
-    url(r'^messages/flags$', 'rest_dispatch',
-        {'POST':  'zerver.views.messages.update_message_flags'}),
+    url(r'^messages/render$', 'zerver.lib.rest.rest_dispatch',
+        {'GET': 'zerver.views.messages.render_message_backend'}),
+    url(r'^messages/flags$', 'zerver.lib.rest.rest_dispatch',
+        {'POST': 'zerver.views.messages.update_message_flags'}),
 
     # users/me -> zerver.views
-    url(r'^users/me$', 'rest_dispatch',
+    url(r'^users/me$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.get_profile_backend'}),
-    url(r'^users/me/pointer$', 'rest_dispatch',
+    url(r'^users/me/pointer$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.get_pointer_backend',
          'PUT': 'zerver.views.update_pointer_backend'}),
-    url(r'^users/me/presence$', 'rest_dispatch',
+    url(r'^users/me/presence$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.update_active_status_backend'}),
     # Endpoint used by mobile devices to register their push
     # notification credentials
-    url(r'^users/me/apns_device_token$', 'rest_dispatch',
+    url(r'^users/me/apns_device_token$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.add_apns_device_token',
          'DELETE': 'zerver.views.remove_apns_device_token'}),
-    url(r'^users/me/android_gcm_reg_id$', 'rest_dispatch',
+    url(r'^users/me/android_gcm_reg_id$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.add_android_reg_id',
          'DELETE': 'zerver.views.remove_android_reg_id'}),
 
     # users/me -> zerver.views.user_settings
-    url(r'^users/me/api_key/regenerate$', 'rest_dispatch',
+    url(r'^users/me/api_key/regenerate$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.user_settings.regenerate_api_key'}),
-    url(r'^users/me/enter-sends$', 'rest_dispatch',
+    url(r'^users/me/enter-sends$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.user_settings.change_enter_sends'}),
 
     # users/me/alert_words -> zerver.views.alert_words
-    url(r'^users/me/alert_words$', 'rest_dispatch',
+    url(r'^users/me/alert_words$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.alert_words.list_alert_words',
          'POST': 'zerver.views.alert_words.set_alert_words',
          'PUT': 'zerver.views.alert_words.add_alert_words',
          'DELETE': 'zerver.views.alert_words.remove_alert_words'}),
 
     # streams -> zerver.views.streams
-    url(r'^streams$', 'rest_dispatch',
-        {'GET':  'zerver.views.streams.get_streams_backend'}),
+    url(r'^streams$', 'zerver.lib.rest.rest_dispatch',
+        {'GET': 'zerver.views.streams.get_streams_backend'}),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
-    url(r'^streams/(?P<stream_name>.*)/members$', 'rest_dispatch',
+    url(r'^streams/(?P<stream_name>.*)/members$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.streams.get_subscribers_backend'}),
-    url(r'^streams/(?P<stream_name>.*)$', 'rest_dispatch',
+    url(r'^streams/(?P<stream_name>.*)$', 'zerver.lib.rest.rest_dispatch',
         {'HEAD': 'zerver.views.streams.stream_exists_backend',
          'GET': 'zerver.views.streams.stream_exists_backend',
          'PATCH': 'zerver.views.streams.update_stream_backend',
          'DELETE': 'zerver.views.streams.deactivate_stream_backend'}),
-    url(r'^default_streams$', 'rest_dispatch',
+    url(r'^default_streams$', 'zerver.lib.rest.rest_dispatch',
         {'PUT': 'zerver.views.streams.add_default_stream',
          'DELETE': 'zerver.views.streams.remove_default_stream'}),
     # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
-    url(r'^users/me/subscriptions$', 'rest_dispatch',
+    url(r'^users/me/subscriptions$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.streams.list_subscriptions_backend',
          'POST': 'zerver.views.streams.add_subscriptions_backend',
          'PATCH': 'zerver.views.streams.update_subscriptions_backend'}),
 
     # used to register for an event queue in tornado
-    url(r'^register$', 'rest_dispatch',
+    url(r'^register$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.api_events_register'}),
 
     # events -> zerver.tornadoviews
-    url(r'^events$', 'rest_dispatch',
+    url(r'^events$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.tornadoviews.get_events_backend',
          'DELETE': 'zerver.tornadoviews.cleanup_event_queue'}),
 ]
