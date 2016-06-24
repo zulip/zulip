@@ -117,7 +117,7 @@ urls = list(i18n_urls)
 #
 # All of these paths are accessed by either a /json or /api prefix
 v1_api_and_json_patterns = patterns('zerver.views',
-    # zerver.views
+    # realm-level calls
     url(r'^export$', 'rest_dispatch',
         {'GET':  'export'}),
     url(r'^realm$', 'rest_dispatch',
@@ -126,12 +126,14 @@ v1_api_and_json_patterns = patterns('zerver.views',
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'generate_204'),
 ) + patterns('zerver.views.realm_emoji',
+    # realm/emoji -> zerver.views.realm_emoji
     url(r'^realm/emoji$', 'rest_dispatch',
         {'GET': 'list_emoji',
          'PUT': 'upload_emoji'}),
     url(r'^realm/emoji/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$', 'rest_dispatch',
         {'DELETE': 'delete_emoji'}),
 ) + patterns('zerver.views.users',
+    # users -> zerver.views.users
     url(r'^users$', 'rest_dispatch',
         {'GET': 'get_members_backend',
          'POST': 'create_user_backend'}),
@@ -150,6 +152,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
          'DELETE': 'deactivate_bot_backend'}),
 
 ) + patterns('zerver.views.messages',
+    # messages -> zerver.views.messages
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', 'rest_dispatch',
         {'GET':  'get_old_messages_backend',
@@ -161,6 +164,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
         {'POST':  'update_message_flags'}),
 
 ) + patterns('zerver.views',
+    # users/me -> zerver.views
     url(r'^users/me$', 'rest_dispatch',
         {'GET': 'get_profile_backend'}),
     url(r'^users/me/pointer$', 'rest_dispatch',
@@ -178,12 +182,14 @@ v1_api_and_json_patterns = patterns('zerver.views',
          'DELETE': 'remove_android_reg_id'}),
 
 ) + patterns('zerver.views.user_settings',
+    # users/me -> zerver.views.user_settings
     url(r'^users/me/api_key/regenerate$', 'rest_dispatch',
         {'POST': 'regenerate_api_key'}),
     url(r'^users/me/enter-sends$', 'rest_dispatch',
         {'POST': 'change_enter_sends'}),
 
 ) + patterns('zerver.views.alert_words',
+    # users/me/alert_words -> zerver.views.alert_words
     url(r'^users/me/alert_words$', 'rest_dispatch',
         {'GET': 'list_alert_words',
          'POST': 'set_alert_words',
@@ -191,6 +197,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
          'DELETE': 'remove_alert_words'}),
 
 ) + patterns('zerver.views.streams',
+    # streams -> zerver.views.streams
     url(r'^streams$', 'rest_dispatch',
         {'GET':  'get_streams_backend'}),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
@@ -216,6 +223,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
         {'POST': 'api_events_register'}),
 
 ) + patterns('zerver.tornadoviews',
+    # events -> zerver.tornadoviews
     url(r'^events$', 'rest_dispatch',
         {'GET': 'get_events_backend',
          'DELETE': 'cleanup_event_queue'}),
