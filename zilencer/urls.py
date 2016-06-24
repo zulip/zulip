@@ -11,16 +11,15 @@ i18n_urlpatterns = [
 ]
 
 # Zilencer views following the REST API style
-v1_api_and_json_patterns = patterns('zilencer.views',
-    url('^feedback$', 'rest_dispatch',
-          {'POST': 'submit_feedback'}),
-    url('^report_error$', 'rest_dispatch',
-          {'POST': 'report_error'}),
-    url('^endpoints$', 'lookup_endpoints_for_user'),
-)
+v1_api_and_json_patterns = [
+    url('^feedback$', 'zerver.lib.rest.rest_dispatch',
+          {'POST': 'zilencer.views.submit_feedback'}),
+    url('^report_error$', 'zerver.lib.rest.rest_dispatch',
+          {'POST': 'zilencer.views.report_error'}),
+    url('^endpoints$', 'zilencer.views.lookup_endpoints_for_user'),
+]
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^api/v1/', include(v1_api_and_json_patterns)),
     url(r'^json/', include(v1_api_and_json_patterns)),
-    *i18n_urlpatterns
-)
+] + i18n_urlpatterns
