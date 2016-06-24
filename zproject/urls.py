@@ -19,14 +19,16 @@ from zproject.legacy_urls import legacy_urls
 #
 #   - Likewise for the local dev server in tools/run-dev.py.
 
-# These views serve pages (HTML). As such, their internationalization must
-# depend on the url.
-# If you're adding a new page to the website (as opposed to a new endpoint
-# for use by code), you should add it here.
+# These views serve pages (HTML). As such, their internationalization
+# must depend on the url.
+#
+# If you're adding a new page to the website (as opposed to a new
+# endpoint for use by code), you should add it here.
 i18n_urls = [
     url(r'^$', 'zerver.views.home'),
-    # We have a desktop-specific landing page in case we change our / to not log in in the future. We don't
-    # want to require a new desktop app build for everyone in that case
+    # We have a desktop-specific landing page in case we change our /
+    # to not log in in the future. We don't want to require a new
+    # desktop app build for everyone in that case
     url(r'^desktop_home/$', 'zerver.views.desktop_home'),
 
     url(r'^accounts/login/sso/$', 'zerver.views.remote_user_sso', name='login-sso'),
