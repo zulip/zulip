@@ -123,6 +123,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
      expected: '<p>mmm...<img alt=\":burrito:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/burrito.png\" title=\":burrito:\">s</p>'},
     {input: 'This is an :poop: message',
      expected: '<p>This is an <img alt=":poop:" class="emoji" src="/static/third/gemoji/images/emoji/poop.png" title=":poop:"> message</p>'},
+    {input: "\ud83d\udca9",
+     expected: '<p><img alt="\ud83d\udca9" class="emoji" src="/static/third/gemoji/images/emoji/unicode/1f4a9.png" title="\ud83d\udca9"></p>'},
     {input: 'This is a realm filter #1234 with text after it',
      expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
     {input: 'This is a realm filter with ZGROUP_123:45 groups',

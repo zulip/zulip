@@ -300,6 +300,18 @@ function escape(html, encode) {
     .replace(/'/g, '&#39;');
 }
 
+function handleUnicodeEmoji(unicode_emoji) {
+    var hex_value = unicode_emoji.codePointAt(0).toString(16);
+    if (emoji.emojis_by_name.hasOwnProperty(hex_value)) {
+        var emoji_url = emoji.emojis_by_name[hex_value];
+        return '<img alt="' + unicode_emoji + '"' +
+               ' class="emoji" src="' + emoji_url + '"' +
+               ' title="' + unicode_emoji + '">';
+    } else {
+        return unicode_emoji;
+    }
+}
+
 function handleEmoji(emoji_name) {
     var input_emoji = ':' + emoji_name + ":";
     if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
@@ -470,6 +482,7 @@ $(function () {
         smartypants: false,
         zulip: true,
         emojiHandler: handleEmoji,
+        unicodeEmojiHandler: handleUnicodeEmoji,
         userMentionHandler: handleUserMentions,
         realmFilterHandler: handleRealmFilter,
         renderer: r,
