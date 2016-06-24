@@ -400,7 +400,7 @@ function _setup_page() {
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr, error_type, xhn) {
-                ui.report_error(i18n.t(i18n.t("Error updating display settings")), xhr, $('#display-settings-status').expectOne());
+                ui.report_error(i18n.t("Error updating display settings"), xhr, $('#display-settings-status').expectOne());
             }
         });
     });
