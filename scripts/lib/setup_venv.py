@@ -18,6 +18,7 @@ if False:
     from typing import List, Optional
 
 VENV_DEPENDENCIES = [
+    "build-essential",
     "libffi-dev",
     "libfreetype6-dev",
     "libldap2-dev",
@@ -25,6 +26,7 @@ VENV_DEPENDENCIES = [
     "postgresql-server-dev-all",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
     "python-dev",
+    "python-pip",
     "python-virtualenv",
 ]
 
