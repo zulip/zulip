@@ -817,6 +817,34 @@ class SubscriptionAPITest(AuthedTestCase):
                 add_streams, self.streams, self.test_email, self.streams + add_streams)
         self.assert_length(events, 6, True)
 
+    def test_successful_subscriptions_add_with_announce(self):
+        # type: () -> None
+        """
+        Calling POST /json/users/me/subscriptions should successfully add
+        streams, and should determine which are new subscriptions vs
+        which were already subscribed. We add 2 new streams to the
+        list of subscriptions and confirm the right number of events
+        are generated.
+        """
+        self.assertNotEqual(len(self.streams), 0)
+        add_streams = [u"Verona2", u"Denmark5"]
+        self.assertNotEqual(len(add_streams), 0)
+        events = [] # type: List[Dict[str, Any]]
+        other_params = {
+            'announce': 'true',
+        }
+        notifications_stream = Stream.objects.get(name=self.streams[0], realm=self.realm)
+        self.realm.notifications_stream = notifications_stream
+        self.realm.save()
+
+        # Delete the UserProfile from the cache so the realm change will be
+        # picked up
+        cache.cache_delete(cache.user_profile_by_email_cache_key(self.test_email))
+        with tornado_redirected_to_list(events):
+            self.helper_check_subs_before_and_after_add(self.streams + add_streams, other_params,
+                add_streams, self.streams, self.test_email, self.streams + add_streams)
+        self.assertEqual(len(events), 7)
+
     def test_successful_subscriptions_notifies_pm(self):
         # type: () -> None
         """
