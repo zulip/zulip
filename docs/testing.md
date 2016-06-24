@@ -58,7 +58,7 @@ Since this is interacting with a real dev server, it can catch backend
 bugs as well.
 
 You can run this with `./tools/test-js-with-casper` or as
-`./tools/test-js-with-casper 05-settings.js` to run a single test file
+`./tools/test-js-with-casper 06-settings.js` to run a single test file
 from `frontend_tests/casper_tests/`.
 
 #### Debugging Casper.JS
