@@ -70,8 +70,8 @@ i18n_urls = [
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
     url(r'^invite/$', 'zerver.views.initial_invite_page', name='initial-invite-users'),
 
-    # Email unsubscription endpoint. Used for unsubscribing from various types
-    # of emails, including the welcome emails (day 1 & 2), missed PMs, etc.
+    # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
+    # including the welcome emails (day 1 & 2), missed PMs, etc.
     url(r'^accounts/unsubscribe/(?P<type>[\w]+)/(?P<token>[\w]+)',
         'zerver.views.email_unsubscribe'),
 
@@ -106,8 +106,10 @@ i18n_urls = [
 # Make a copy of i18n_urls so that they appear without prefix for english
 urlpatterns = patterns('', *i18n_urls)
 
-# JSON format views used by the redesigned API, accept basic auth username:password.
-# These endpoints constitute the redesigned API (V1), which uses REST verbs.
+# These endpoints constitute the redesigned API (V1), which uses:
+# * REST verbs
+# * Basic auth (username:password is email:apiKey)
+# * Take and return json-formatted data
 #
 # If you're adding a new endpoint to the code that requires authentication,
 # please add it here.
