@@ -172,8 +172,8 @@ v1_api_and_json_patterns = patterns('zerver.views',
          'PUT': 'update_pointer_backend'}),
     url(r'^users/me/presence$', 'rest_dispatch',
         {'POST': 'update_active_status_backend'}),
-    # Endpoint used by iOS devices to register their
-    # unique APNS device token
+    # Endpoint used by mobile devices to register their push
+    # notification credentials
     url(r'^users/me/apns_device_token$', 'rest_dispatch',
         {'POST'  : 'add_apns_device_token',
          'DELETE': 'remove_apns_device_token'}),
