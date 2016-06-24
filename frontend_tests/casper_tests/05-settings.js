@@ -107,6 +107,21 @@ casper.waitUntilVisible('.edit_bot_form[data-email="1-bot@zulip.com"]', function
     );
 });
 
+casper.waitForSelector('#create_alert_word_form', function () {
+    casper.test.info('Filling out the alert word input');
+    casper.sendKeys('#create_alert_word_name', 'some phrase');
+    casper.click('#create_alert_word_button');
+
+    casper.test.info('Checking that an element was created');
+    casper.test.assertExists('div.alert-word-information-box');
+    casper.test.assertSelectorHasText('span.value', 'some phrase');
+
+    casper.test.info('Deleting element');
+    casper.click('button.remove-alert-word');
+    casper.test.info('Checking that the element was deleted');
+    casper.test.assertDoesntExist('div.alert-word-information-box');
+});
+
 // TODO: test the "Declare Zulip Bankruptcy option"
 
 common.then_log_out();

@@ -3141,53 +3141,14 @@ li.expanded_private_message {
     opacity: .5;
 }
 
-#word-alerts {
+#alert_words_list {
     list-style-type: none;
-
-    width: 300px;
     margin: auto;
 }
 
-.alert-word-item {
-    padding: 8px;
-}
-
-#word-alerts li.alert-word-item:nth-child(odd) {
-    background: #fdfdfd;
-}
-
-#word-alerts li.alert-word-item:nth-child(even) {
-    background: #f9f9f9;
-}
-
-#word-alerts li.alert-word-item:first-child {
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-}
-
-#word-alerts li.alert-word-item:nth-last-child(2) {
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-#word-alerts li.alert-word-item:last-child {
+#alert_words_list li.alert-word-item:last-child {
     background: none;
     margin-top: 8px;
-}
-
-.remove-alert-word,
-.add-alert-word {
-    float: right;
-}
-
-input.edit-alert-word {
-    height: 12px;
-    line-height: 12px;
-    font-size: 1em;
-}
-
-input.edit-alert-word::-webkit-input-placeholder {
-    padding-top: 4px;
 }
 
 #bots_list {
@@ -3232,6 +3193,11 @@ input.edit-alert-word::-webkit-input-placeholder {
     right: 20px;
     top: 20px;
 }
+#alert_words_list .edit-alert-word-buttons {
+    position: absolute;
+    right: 20px;
+    top: 5px;
+}
 
 .bot_info .field {
     width: 6em;
@@ -3257,6 +3223,7 @@ div.edit_bot {
 
 .edit_bot_form .control-label,
 #create_bot_form .control-label,
+#create_alert_word_form .control-label,
 .admin-emoji-form .control-label,
 .default-stream-form .control-label {
     width: 10em;
@@ -3296,6 +3263,17 @@ div.edit_bot {
 #bots_list .api_key .api-key-value-and-button {
     display: block;
     margin-left: 6em;
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+}
+
+#alert_words_list .alert_word_listing .value {
+    display: block;
     white-space: -moz-pre-wrap !important;
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
@@ -3418,12 +3396,14 @@ div.edit_bot {
 
 #administration .settings-section .admin-realm-form,
 #settings .settings-section .new-bot-form,
+#settings .settings-section .new-alert-word-form,
 #emoji-settings .new-emoji-form,
 #settings .settings-section .edit-bot-form-box {
     margin-top: 35px;
 }
 
 #settings .settings-section .new-bot-section-title,
+#settings .settings-section .new-alert-word-section-title,
 #emoji-settings .new-emoji-section-title {
     top: 20px;
     left: 20px;
@@ -3437,6 +3417,7 @@ div.edit_bot {
 
 #settings .settings-section .account-settings-form .control-label,
 #settings .settings-section .new-bot-form .control-label,
+#settings .settings-section .new-alert-word-form .control-label,
 #emoji-settings .new-emoji-form .control-label,
 #settings .settings-section .edit-bot-form-box .control-label {
     width: 120px;
@@ -3444,6 +3425,7 @@ div.edit_bot {
 
 #settings .settings-section .account-settings-form .controls,
 #settings .settings-section .new-bot-form .controls,
+#settings .settings-section .new-alert-word-form button,
 #emoji-settings .new-emoji-form .controls,
 #settings .settings-section .edit-bot-form-box .controls  {
     margin-left: 140px;
@@ -3506,13 +3488,16 @@ div.edit_bot {
 }
 
 #administration .admin-streams-note,
-#settings .bot-settings-note {
+#settings .bot-settings-note,
+#settings .alert-word-settings-note {
     margin-left: 38px;
     font-size: 13px;
 }
 
 #settings .bot-information-box,
 #settings .add-new-bot-box,
+#alert_words_list .add-new-alert-word-box,
+#alert_words_list .alert-word-information-box,
 #emoji-settings .add-new-emoji-box,
 #admin-default-streams-list .add-new-default-stream-box{
     background: #e3e3e3;
@@ -3526,6 +3511,7 @@ div.edit_bot {
 }
 
 #settings .add-new-bot-box,
+#settings .add-new-alert-word-box,
 #emoji-settings .add-new-emoji-box,
 #admin-default-streams-list .add-new-default-stream-box {
     background: #cbe3cb;
@@ -3567,6 +3553,7 @@ div.edit_bot {
 }
 
 #settings .bot-information-box .email,
+#alert_words_list .alert-word-information-box .alert_word_listing,
 #settings .bot-information-box .api_key {
     position: relative;
 }
@@ -3575,7 +3562,8 @@ div.edit_bot {
     overflow: hidden;
 }
 
-#settings .settings-section .api-key-note {
+#settings .settings-section .api-key-note,
+#settings .settings-section .alert-word-note{
     padding: 0px 20px 20px 20px;
 }
 
@@ -3583,6 +3571,7 @@ div.edit_bot {
 
 
 #settings .settings-section .new-bot-form .control-label,
+#settings .settings-section .new-alert-word-form .control-label,
 #emoji-settings .new-emoji-form .control-label,
 #settings .settings-section .edit-bot-form-box .control-label {
     float: left;
@@ -3592,6 +3581,7 @@ div.edit_bot {
 }
 
 #settings .settings-section .new-bot-form .controls,
+#settings .settings-section .new-alert-word-form button,
 #emoji-settings .new-emoji-form .controls {
     margin-left: 110px;
 }
@@ -3607,6 +3597,7 @@ div.edit_bot {
 #administration .settings-section .organization-settings .admin-realm-form,
 #settings .settings-section .account-settings-form,
 #settings .settings-section .new-bot-form,
+#settings .settings-section .new-alert-word-form,
 #emoji-settings .new-emoji-form,
 #settings .settings-section .notification-settings-form,
 #settings .settings-section .display-settings-form,
@@ -3617,6 +3608,7 @@ div.edit_bot {
 #administration .settings-section .admin-realm-form .control-label,
 #settings .settings-section .account-settings-form .control-label,
 #settings .settings-section .new-bot-form .control-label,
+#settings .settings-section .new-alert-word-form .control-label,
 #emoji-settings .new-emoji-form .control-label,
 #settings .settings-section .edit-bot-form-box .control-label {
     display: block;
@@ -3631,6 +3623,7 @@ div.edit_bot {
 #administration .settings-section .admin-realm-form .controls,
 #settings .settings-section .account-settings-form .controls,
 #settings .settings-section .new-bot-form .controls,
+#settings .settings-section .new-alert-word-form button,
 #emoji-settings .new-emoji-form .controls,
 #settings .settings-section .edit-bot-form-box .controls {
     margin: auto;
@@ -3642,15 +3635,18 @@ div.edit_bot {
 #settings .settings-section .account-settings-form .controls button,
 #settings .settings-section .account-settings-form .controls input,
 #settings .settings-section .new-bot-form .controls button,
+#settings .settings-section .new-alert-word-form button,
 #emoji-settings .new-emoji-form .controls button,
 #settings .settings-section .edit-bot-form-box .controls button,
 #settings .settings-section .new-bot-form .controls input,
+#settings .settings-section .new-alert-word-form input,
 #emoji-settings .new-emoji-form .controls input,
 #settings .settings-section .edit-bot-form-box .controls input {
     margin: auto;
 }
 
 #settings .settings-section .new-bot-form,
+#settings .settings-section .new-alert-word-form,
 #emoji-settings .new-emoji-form {
     padding: 0px;
     width: 100%;
