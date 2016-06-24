@@ -104,7 +104,7 @@ i18n_urls = [
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
-urlpatterns = patterns('', *i18n_urls)
+urls = list(i18n_urls)
 
 # These endpoints constitute the redesigned API (V1), which uses:
 # * REST verbs
@@ -219,7 +219,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
 )
 
 # Include the dual-use patterns twice
-urlpatterns += [
+urls += [
     url(r'^api/v1/', include(v1_api_and_json_patterns)),
     url(r'^json/', include(v1_api_and_json_patterns)),
 ]
@@ -229,12 +229,11 @@ urlpatterns += [
 for app_name in settings.EXTRA_INSTALLED_APPS:
     app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
     if os.path.exists(os.path.join(app_dir, 'urls.py')):
-        urlpatterns += patterns('', url(r'^', include('%s.urls' % (app_name,))),
-        )
+        urls += [url(r'^', include('%s.urls' % (app_name,)))]
         i18n_urls += import_string("{}.urls.i18n_urlpatterns".format(app_name))
 
-urlpatterns += [
-    # Tornado views
+# Tornado views
+urls += [
     url(r'^json/get_events$',               'zerver.tornadoviews.json_get_events'),
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'zerver.tornadoviews.notify'),
@@ -245,18 +244,18 @@ if settings.DEVELOPMENT:
     static_root = os.path.join(settings.DEPLOY_ROOT,
         'prod-static/serve' if use_prod_static else 'static')
 
-    urlpatterns += [url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
-                        {'document_root': static_root})]
+    urls += [url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
+                 {'document_root': static_root})]
 
 # These are used for voyager development. On a real voyager instance,
 # these files would be served by nginx.
 if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
-    urlpatterns += patterns('',
+    urls += [
         url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
             {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
-    )
+    ]
 
 # The sequence is important; if i18n urls don't come first then
 # reverse url mapping points to i18n urls which causes the frontend
 # tests to fail
-urlpatterns = i18n_patterns(*i18n_urls) + legacy_urls + urlpatterns
+urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
