@@ -3,12 +3,10 @@ from typing import Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ, \
     to_non_negative_int
 from zerver.lib.response import json_success
-from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
@@ -19,8 +17,6 @@ from six import text_type
 
 import subprocess
 import os
-
-rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 # Read the source map information for decoding JavaScript backtraces
 js_source_map = None

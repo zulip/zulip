@@ -20,8 +20,8 @@ class URLResolutionTest(TestCase):
             if not (hasattr(pattern, "_callback_str") and hasattr(pattern, "default_args")):
                 continue
 
-            for view in pattern.default_args.values():
-                module_name = pattern._callback_str.replace(".rest_dispatch", "")
+            for func_string in pattern.default_args.values():
+                module_name, view = func_string.rsplit('.', 1)
                 self.check_function_exists(module_name, view)
 
     # Tests function-based views declared in urls.urlpatterns for

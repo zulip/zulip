@@ -70,8 +70,6 @@ import hashlib
 import hmac
 
 from zproject.jinja2 import render_to_response
-from zerver.lib.rest import rest_dispatch as _rest_dispatch
-rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def name_changes_disabled(realm):
     # type: (Optional[Realm]) -> bool

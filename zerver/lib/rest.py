@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from typing import Any, Dict
 
+from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
@@ -14,8 +15,8 @@ from django.conf import settings
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 
 @csrf_exempt
-def rest_dispatch(request, globals_list, **kwargs):
-    # type: (HttpRequest, Dict[str, Any], **Any) -> HttpResponse
+def rest_dispatch(request, **kwargs):
+    # type: (HttpRequest, **Any) -> HttpResponse
     """Dispatch to a REST API endpoint.
 
     Unauthenticated endpoints should not use this, as authentication is verified
@@ -35,9 +36,8 @@ def rest_dispatch(request, globals_list, **kwargs):
     Any keyword args that are *not* HTTP methods are passed through to the
     target function.
 
-    Note that we search views.py globals for the function to call, so never
-    make a urls.py pattern put user input into a variable called GET, POST,
-    etc.
+    Never make a urls.py pattern put user input into a variable called GET, POST,
+    etc, as that is where we route HTTP verbs to target functions.
     """
     supported_methods = {} # type: Dict[str, Any]
     # duplicate kwargs so we can mutate the original as we go
@@ -60,7 +60,7 @@ def rest_dispatch(request, globals_list, **kwargs):
         method_to_use = request.META["zulip.emulated_method"]
 
     if method_to_use in supported_methods:
-        target_function = globals_list[supported_methods[method_to_use]]
+        target_function = import_string(supported_methods[method_to_use])
 
         # Set request._query for update_activity_user(), which is called
         # by some of the later wrappers.
