@@ -468,6 +468,7 @@ var inline = {
   br: /^ {2,}\n(?!\s*$)/,
   del: noop,
   emoji: noop,
+  unicodeemoji: noop,
   usermention: noop,
   realm_filters: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`]| {2,}\n|$)/
@@ -525,9 +526,11 @@ inline.breaks = merge({}, inline.gfm, {
 
 inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
+  unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])/,
   usermention: /^(@\*\*([^\*]+)?\*\*)/m,
   realm_filters: [],
   text: replace(inline.breaks.text)
+    ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])|')
     (']|', '@:]|')
     ()
 });
@@ -742,6 +745,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // unicode emoji
+    if (cap = this.rules.unicodeemoji.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.unicodeEmoji(cap[1]);
+      continue;
+    }
+
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
@@ -778,6 +788,12 @@ InlineLexer.prototype.emoji = function (name) {
     return ':' + name + ':';
 
   return this.options.emojiHandler(name);
+};
+
+InlineLexer.prototype.unicodeEmoji = function (name) {
+  if (typeof this.options.unicodeEmojiHandler !== 'function')
+    return name;
+  return this.options.unicodeEmojiHandler(name);
 };
 
 InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
@@ -1352,6 +1368,7 @@ marked.setOptions = function(opt) {
 marked.defaults = {
   gfm: true,
   emoji: false,
+  unicodeemoji: false,
   tables: true,
   breaks: false,
   pedantic: false,
