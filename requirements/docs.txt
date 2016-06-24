@@ -10,7 +10,7 @@ docutils==0.12
 imagesize==0.7.1
 snowballstemmer==1.2.1
 
-# Needed to build docs
+# Needed to build markdown docs
 recommonmark==0.4.0
 
 # Needed to build RTD docs
