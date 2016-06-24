@@ -120,13 +120,13 @@ v1_api_and_json_patterns = patterns('zerver.views',
     # zerver.views
     url(r'^export$', 'rest_dispatch',
         {'GET':  'export'}),
+    url(r'^realm$', 'rest_dispatch',
+        {'PATCH': 'update_realm'}),
     url(r'^users/me$', 'rest_dispatch',
         {'GET': 'get_profile_backend'}),
     url(r'^users/me/pointer$', 'rest_dispatch',
         {'GET': 'get_pointer_backend',
          'PUT': 'update_pointer_backend'}),
-    url(r'^realm$', 'rest_dispatch',
-        {'PATCH': 'update_realm'}),
     url(r'^users/me/presence$', 'rest_dispatch',
         {'POST': 'update_active_status_backend'}),
     # Endpoint used by iOS devices to register their
@@ -137,10 +137,6 @@ v1_api_and_json_patterns = patterns('zerver.views',
     url(r'^users/me/android_gcm_reg_id$', 'rest_dispatch',
         {'POST': 'add_android_reg_id',
          'DELETE': 'remove_android_reg_id'}),
-
-    # Used to register for an event queue in tornado
-    url(r'^register$', 'rest_dispatch',
-        {'POST': 'api_events_register'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'generate_204'),
@@ -179,18 +175,18 @@ v1_api_and_json_patterns = patterns('zerver.views',
     url(r'^messages/flags$', 'rest_dispatch',
         {'POST':  'update_message_flags'}),
 
+) + patterns('zerver.views.user_settings',
+    url(r'^users/me/api_key/regenerate$', 'rest_dispatch',
+        {'POST': 'regenerate_api_key'}),
+    url(r'^users/me/enter-sends$', 'rest_dispatch',
+        {'POST': 'change_enter_sends'}),
+
 ) + patterns('zerver.views.alert_words',
     url(r'^users/me/alert_words$', 'rest_dispatch',
         {'GET': 'list_alert_words',
          'POST': 'set_alert_words',
          'PUT': 'add_alert_words',
          'DELETE': 'remove_alert_words'}),
-
-) + patterns('zerver.views.user_settings',
-    url(r'^users/me/api_key/regenerate$', 'rest_dispatch',
-        {'POST': 'regenerate_api_key'}),
-    url(r'^users/me/enter-sends$', 'rest_dispatch',
-        {'POST': 'change_enter_sends'}),
 
 ) + patterns('zerver.views.streams',
     url(r'^streams$', 'rest_dispatch',
@@ -211,6 +207,11 @@ v1_api_and_json_patterns = patterns('zerver.views',
         {'GET': 'list_subscriptions_backend',
          'POST': 'add_subscriptions_backend',
          'PATCH': 'update_subscriptions_backend'}),
+
+) + patterns('zerver.views',
+    # Used to register for an event queue in tornado
+    url(r'^register$', 'rest_dispatch',
+        {'POST': 'api_events_register'}),
 
 ) + patterns('zerver.tornadoviews',
     url(r'^events$', 'rest_dispatch',
