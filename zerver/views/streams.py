@@ -5,7 +5,6 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 
 from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
@@ -29,11 +28,8 @@ from collections import defaultdict
 import ujson
 from six.moves import urllib
 
-from zerver.lib.rest import rest_dispatch as _rest_dispatch
 import six
 from six import text_type
-
-rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
     # type: (Iterable[text_type], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]

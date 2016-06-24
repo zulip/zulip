@@ -4,7 +4,6 @@ from six import text_type
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
 from django.http import HttpRequest, HttpResponse
 
@@ -22,9 +21,6 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, Realm
-
-from zerver.lib.rest import rest_dispatch as _rest_dispatch
-rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 def name_changes_disabled(realm):
     # type: (Realm) -> bool

@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
-from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
@@ -9,9 +8,6 @@ from zerver.lib.actions import internal_send_message
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string
 from zerver.models import UserProfile
-
-from zerver.lib.rest import rest_dispatch as _rest_dispatch
-rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 @authenticated_json_post_view
 @has_request_variables
