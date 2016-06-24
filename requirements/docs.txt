@@ -1,13 +1,18 @@
 # This is used by ReadTheDocs to install dependencies, so it's
-# valuable to keep thisfile as just the dependencies for our
+# valuable to keep this file as just the dependencies for our
 # documentation.
 
-alabaster==0.7.8 # Dependency of Sphinx
-babel==2.3.4  # Dependency of Sphinx
-CommonMark==0.5.4 # Dependency of Sphinx
-docutils==0.12 # Dependency of Sphinx
-imagesize==0.7.1 # Dependency of Sphinx
-recommonmark==0.4.0 # Needed to build docs
-snowballstemmer==1.2.1 # Dependency of Sphinx
-sphinx==1.4.1 # Needed to build RTD docs
-sphinx-rtd-theme==0.1.9 # Needed to build RTD docs
+# Needed to build RTD docs
+sphinx==1.4.1
+sphinx-rtd-theme==0.1.9
+
+# Needed to build markdown docs
+recommonmark==0.4.0
+
+# Dependencies of Sphinx
+alabaster==0.7.8
+babel==2.3.4
+CommonMark==0.5.4
+docutils==0.12
+imagesize==0.7.1
+snowballstemmer==1.2.1
