@@ -2,7 +2,7 @@ var common = require('../casper_lib/common.js').common;
 
 common.start_and_log_in();
 
-// We could use the messages sent by 01-site.js, but we want to
+// We could use the messages sent by 02-site.js, but we want to
 // make sure each test file can be run individually (which the
 // 'run' script provides for).
 
