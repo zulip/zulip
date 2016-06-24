@@ -16,7 +16,7 @@ METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 
 @csrf_exempt
 def rest_dispatch(request, **kwargs):
-    # type: (HttpRequest, Dict[str, Any], **Any) -> HttpResponse
+    # type: (HttpRequest, **Any) -> HttpResponse
     """Dispatch to a REST API endpoint.
 
     Unauthenticated endpoints should not use this, as authentication is verified
