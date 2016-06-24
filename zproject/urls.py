@@ -119,16 +119,16 @@ urls = list(i18n_urls)
 v1_api_and_json_patterns = patterns('zerver.views',
     # zerver.views
     url(r'^export$', 'rest_dispatch',
-            {'GET':  'export'}),
+        {'GET':  'export'}),
     url(r'^users/me$', 'rest_dispatch',
-            {'GET': 'get_profile_backend'}),
+        {'GET': 'get_profile_backend'}),
     url(r'^users/me/pointer$', 'rest_dispatch',
-            {'GET': 'get_pointer_backend',
-             'PUT': 'update_pointer_backend'}),
+        {'GET': 'get_pointer_backend',
+         'PUT': 'update_pointer_backend'}),
     url(r'^realm$', 'rest_dispatch',
-            {'PATCH': 'update_realm'}),
+        {'PATCH': 'update_realm'}),
     url(r'^users/me/presence$', 'rest_dispatch',
-            {'POST': 'update_active_status_backend'}),
+        {'POST': 'update_active_status_backend'}),
     # Endpoint used by iOS devices to register their
     # unique APNS device token
     url(r'^users/me/apns_device_token$', 'rest_dispatch',
@@ -140,7 +140,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
 
     # Used to register for an event queue in tornado
     url(r'^register$', 'rest_dispatch',
-            {'POST': 'api_events_register'}),
+        {'POST': 'api_events_register'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'generate_204'),
@@ -171,13 +171,13 @@ v1_api_and_json_patterns = patterns('zerver.views',
 ) + patterns('zerver.views.messages',
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', 'rest_dispatch',
-            {'GET':  'get_old_messages_backend',
-             'PATCH': 'update_message_backend',
-             'POST': 'send_message_backend'}),
+        {'GET':  'get_old_messages_backend',
+         'PATCH': 'update_message_backend',
+         'POST': 'send_message_backend'}),
     url(r'^messages/render$', 'rest_dispatch',
-            {'GET':  'render_message_backend'}),
+        {'GET':  'render_message_backend'}),
     url(r'^messages/flags$', 'rest_dispatch',
-            {'POST':  'update_message_flags'}),
+        {'POST':  'update_message_flags'}),
 
 ) + patterns('zerver.views.alert_words',
     url(r'^users/me/alert_words$', 'rest_dispatch',
