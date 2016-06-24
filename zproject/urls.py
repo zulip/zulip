@@ -214,6 +214,12 @@ v1_api_and_json_patterns = patterns('zerver.views',
          'DELETE': 'cleanup_event_queue'}),
 )
 
+# Include the dual-use patterns twice
+urlpatterns += [
+    url(r'^api/v1/', include(v1_api_and_json_patterns)),
+    url(r'^json/', include(v1_api_and_json_patterns)),
+]
+
 # Include URL configuration files for site-specified extra installed
 # Django apps
 for app_name in settings.EXTRA_INSTALLED_APPS:
@@ -229,13 +235,6 @@ urlpatterns += [
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'zerver.tornadoviews.notify'),
 ]
-
-# Include the dual-use patterns twice
-urlpatterns += [
-    url(r'^api/v1/', include(v1_api_and_json_patterns)),
-    url(r'^json/', include(v1_api_and_json_patterns)),
-]
-
 
 if settings.DEVELOPMENT:
     use_prod_static = getattr(settings, 'PIPELINE', False)
