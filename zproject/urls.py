@@ -104,14 +104,6 @@ i18n_urls = [
 # Make a copy of i18n_urls so that they appear without prefix for english
 urlpatterns = patterns('', *i18n_urls)
 
-# These are used for voyager development. On a real voyager instance,
-# these files would be served by nginx.
-if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
-    urlpatterns += patterns('',
-        url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
-            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
-    )
-
 # JSON format views used by the redesigned API, accept basic auth username:password.
 # These endpoints constitute the redesigned API (V1), which uses REST verbs.
 #
@@ -252,6 +244,14 @@ if settings.DEVELOPMENT:
 
     urlpatterns += [url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
                         {'document_root': static_root})]
+
+# These are used for voyager development. On a real voyager instance,
+# these files would be served by nginx.
+if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
+    urlpatterns += patterns('',
+        url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
+            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
+    )
 
 # The sequence is important; if i18n urls don't come first then
 # reverse url mapping points to i18n urls which causes the frontend
