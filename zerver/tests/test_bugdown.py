@@ -331,6 +331,15 @@ class BugdownTest(TestCase):
         converted = bugdown.convert(":test:", "zulip.com", msg)
         self.assertEqual(converted, '<p>:test:</p>')
 
+    def test_unicode_emoji(self):
+        msg = u'\u2615'  # ☕
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
+
+        msg = u'\u2615\u2615'  # ☕☕
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
+
     def test_realm_patterns(self):
         realm = get_realm('zulip.com')
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
