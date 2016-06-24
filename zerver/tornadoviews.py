@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
-from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpRequest, HttpResponse
 
 from six import text_type
@@ -20,9 +19,6 @@ from zerver.lib.event_queue import get_client_descriptor, \
 from typing import Union, Optional, Iterable, Sequence, List, Any
 import time
 import ujson
-
-from zerver.lib.rest import rest_dispatch as _rest_dispatch
-rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 @internal_notify_view
 def notify(request):

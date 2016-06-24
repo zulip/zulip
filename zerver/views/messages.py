@@ -14,7 +14,6 @@ from zerver.decorator import authenticated_api_view, authenticated_json_post_vie
     has_request_variables, REQ, JsonableError, \
     to_non_negative_int, to_non_negative_float
 from django.utils.html import escape as escape_html
-from django.views.decorators.csrf import csrf_exempt
 from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
@@ -42,10 +41,9 @@ from sqlalchemy.sql import select, join, column, literal_column, literal, and_, 
 import re
 import ujson
 
-from zerver.lib.rest import rest_dispatch as _rest_dispatch
+
 from six.moves import map
 import six
-rest_dispatch = csrf_exempt((lambda request, *args, **kwargs: _rest_dispatch(request, globals(), *args, **kwargs)))
 
 # This is a Pool that doesn't close connections.  Therefore it can be used with
 # existing Django database connections.
