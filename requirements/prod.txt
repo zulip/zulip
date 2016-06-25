@@ -1,1 +1,4 @@
 -r common.txt
+netifaces==0.10.4
+flup==1.0.2
+python-dateutil==2.5.3
