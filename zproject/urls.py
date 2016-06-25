@@ -165,6 +165,10 @@ v1_api_and_json_patterns = [
     url(r'^messages/flags$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.messages.update_message_flags'}),
 
+    # user_uploads -> zerver.views.upload
+    url(r'^user_uploads$', 'zerver.lib.rest.rest_dispatch',
+        {'POST': 'zerver.views.upload.upload_file_backend'}),
+
     # users/me -> zerver.views
     url(r'^users/me$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.get_profile_backend'}),
