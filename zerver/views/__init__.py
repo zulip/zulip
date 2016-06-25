@@ -201,7 +201,7 @@ def accounts_register(request):
 
         if realm_creation:
             domain = split_email_to_domain(email)
-            (realm, _) = do_create_realm(domain, form.cleaned_data['realm_name'])
+            realm = do_create_realm(domain, form.cleaned_data['realm_name'])[0]
             set_default_streams(realm, settings.DEFAULT_NEW_REALM_STREAMS)
 
         full_name = form.cleaned_data['full_name']
