@@ -8,6 +8,7 @@ use_prod_static = getattr(settings, 'PIPELINE', False)
 static_root = os.path.join(settings.DEPLOY_ROOT, 'prod-static/serve' if use_prod_static else 'static')
 
 urls = [url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': static_root})]
+i18n_urls = [url(r'^confirmation_key/$', 'zerver.views.confirmation_key')]
 
 # These are used for voyager development. On a real voyager instance,
 # these files would be served by nginx.

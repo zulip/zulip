@@ -710,7 +710,7 @@ def accounts_home_with_domain(request, domain):
         return HttpResponseRedirect(reverse('zerver.views.accounts_home'))
 
 def send_registration_completion_email(email, request, realm_creation=False):
-    # type: (str, HttpRequest, bool) -> HttpResponse
+    # type: (str, HttpRequest, bool) -> Confirmation
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
@@ -735,7 +735,9 @@ def create_realm(request):
         form = RealmCreationForm(request.POST, domain=request.session.get("domain"))
         if form.is_valid():
             email = form.cleaned_data['email']
-            send_registration_completion_email(email, request, realm_creation=True)
+            confirmation_key = send_registration_completion_email(email, request, realm_creation=True).confirmation_key
+            if settings.DEVELOPMENT:
+                 request.session['confirmation_key'] = {'confirmation_key': confirmation_key}
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
             email = request.POST['email']
@@ -750,6 +752,8 @@ def create_realm(request):
                               {'form': form, 'current_url': request.get_full_path},
                               request=request)
 
+def confirmation_key(request):
+    return json_success(request.session.get('confirmation_key'))
 
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse
