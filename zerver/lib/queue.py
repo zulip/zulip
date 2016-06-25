@@ -24,7 +24,7 @@ class SimpleQueueClient(object):
         # type: () -> None
         self.log = logging.getLogger('zulip.queue')
         self.queues = set() # type: Set[str]
-        self.channel = None # type: Any
+        self.channel = None # type: Optional[BlockingChannel]
         self.consumers = defaultdict(set) # type: Dict[str, Set[Any]]
         # Disable RabbitMQ heartbeats since BlockingConnection can't process them
         self.rabbitmq_heartbeat = 0
@@ -275,7 +275,7 @@ class TornadoQueueClient(SimpleQueueClient):
             lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
                 consumer_tag=self._generate_ctag(queue_name)))
 
-queue_client = None # type: SimpleQueueClient
+queue_client = None # type: Optional[SimpleQueueClient]
 def get_queue_client():
     # type: () -> SimpleQueueClient
     global queue_client
