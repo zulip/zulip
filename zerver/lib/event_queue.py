@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Optional, Iterable, Sequence, Callable, Union
+from typing import Any, Optional, Iterable, Sequence, Mapping, MutableMapping, Callable, Union
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -103,7 +103,7 @@ class ClientDescriptor(object):
 
     @classmethod
     def from_dict(cls, d):
-        # type: (Dict[str, Any]) -> ClientDescriptor
+        # type: (MutableMapping[str, Any]) -> ClientDescriptor
         if 'user_profile_email' not in d:
             # Temporary migration for the addition of the new user_profile_email field
             from zerver.models import get_user_profile_by_id
@@ -222,11 +222,11 @@ def set_descriptor_by_handler_id(handler_id, client_descriptor):
     descriptors_by_handler_id[handler_id] = client_descriptor
 
 def clear_descriptor_by_handler_id(handler_id, client_descriptor):
-    # type: (int, ClientDescriptor) -> None
+    # type: (int, Optional[ClientDescriptor]) -> None
     del descriptors_by_handler_id[handler_id]
 
 def compute_full_event_type(event):
-    # type: (Dict[str, Any]) -> str
+    # type: (Mapping[str, Any]) -> str
     if event["type"] == "update_message_flags":
         if event["all"]:
             # Put the "all" case in its own category
@@ -493,7 +493,7 @@ def setup_event_queue():
     send_restart_events(immediate=settings.DEVELOPMENT)
 
 def fetch_events(query):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
+    # type: (Mapping[str, Any]) -> Dict[str, Any]
     queue_id = query["queue_id"]
     dont_block = query["dont_block"]
     last_event_id = query["last_event_id"]
@@ -675,7 +675,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
     return off_zulip or idle
 
 def process_message_event(event_template, users):
-    # type: (Dict[str, Any], List[Dict]) -> None
+    # type: (Dict[str, Any], Iterable[Mapping[text_type, Any]]) -> None
     realm_presences = {int(k): v for k, v in event_template['presences'].items()}
     sender_queue_id = event_template.get('sender_queue_id', None)
     message_dict_markdown = event_template['message_dict_markdown']
