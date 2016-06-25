@@ -7,6 +7,7 @@ import os.path
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
+from zproject.webhook_urls import webhook_urls
 
 # NB: There are several other pieces of code which route requests by URL:
 #
