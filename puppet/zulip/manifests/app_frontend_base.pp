@@ -4,65 +4,9 @@ class zulip::app_frontend_base {
   include zulip::nginx
   include zulip::supervisor
 
-  $web_packages = [ # Needed for memcached usage
-                    "python-pylibmc",
-                    # Fast JSON parser
-                    "python-ujson",
-                    # Django dependencies
-                    "python-django",
-                    "python-django-guardian",
-                    "python-django-pipeline",
-                    "python-django-bitfield",
-                    "python-jinja2",
-                    # Needed for mock objects in decorators
-                    "python-mock",
-                    # Tornado dependencies
-                    "python-tornado",
-                    "python-sockjs-tornado",
-                    # Needed for our fastcgi setup
-                    "python-flup",
-                    # Needed for markdown processing
-                    "python-markdown",
-                    "python-pygments",
-                    # Used for Hesiod lookups, etc.
-                    "python-dns",
+  $web_packages = [
                     # Needed to access our database
                     "postgresql-client-${zulip::base::postgres_version}",
-                    "python-psycopg2",
-                    # Needed for building complex DB queries
-                    "python-sqlalchemy",
-                    # Needed for integrations
-                    "python-twitter",
-                    "python-defusedxml",
-                    # Needed for the email mirror
-                    "python-twisted",
-                    "python-html2text",
-                    # Needed to access rabbitmq
-                    "python-pika",
-                    # Needed for timezone work
-                    "python-tz",
-                    # Needed to parse source maps for error reporting
-                    "python-sourcemap",
-                    # Needed for redis
-                    "python-redis",
-                    # Needed for S3 file uploads
-                    "python-boto",
-                    # Needed to send email
-                    "python-mandrill",
-                    # Needed to generate diffs for edits
-                    "python-diff-match-patch",
-                    # Needed for iOS
-                    "python-apns-client",
-                    # Needed for Android push
-                    "python-gcm-client",
-                    # Needed for avatar image resizing
-                    "python-imaging",
-                    # Needed for LDAP support
-                    "python-django-auth-ldap",
-                    # Needed for Google Apps mobile auth
-                    "python-googleapi",
-                    # Needed for JWT-based auth
-                    "python-pyjwt",
                     ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
