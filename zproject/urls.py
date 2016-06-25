@@ -5,6 +5,7 @@ from django.views.generic import TemplateView, RedirectView
 from django.utils.module_loading import import_string
 import os.path
 import zerver.forms
+from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 
 # NB: There are several other pieces of code which route requests by URL:
@@ -289,20 +290,7 @@ urls += [
 ]
 
 if settings.DEVELOPMENT:
-    use_prod_static = getattr(settings, 'PIPELINE', False)
-    static_root = os.path.join(settings.DEPLOY_ROOT,
-        'prod-static/serve' if use_prod_static else 'static')
-
-    urls += [url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
-                 {'document_root': static_root})]
-
-# These are used for voyager development. On a real voyager instance,
-# these files would be served by nginx.
-if settings.DEVELOPMENT and settings.LOCAL_UPLOADS_DIR is not None:
-    urls += [
-        url(r'^user_avatars/(?P<path>.*)$', 'django.views.static.serve',
-            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
-    ]
+    urls += dev_urls.urls
 
 # The sequence is important; if i18n urls don't come first then
 # reverse url mapping points to i18n urls which causes the frontend
