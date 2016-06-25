@@ -65,7 +65,7 @@ class ClientDescriptor(object):
         self.user_profile_email = user_profile_email
         self.realm_id = realm_id
         self.current_handler_id = None # type: int
-        self.current_client_name = None # type: str
+        self.current_client_name = None # type: text_type
         self.event_queue = event_queue
         self.queue_timeout = lifespan_secs
         self.event_types = event_types
@@ -168,7 +168,7 @@ class ClientDescriptor(object):
                 and now - self.last_connection_time >= self.queue_timeout)
 
     def connect_handler(self, handler_id, client_name):
-        # type: (int, str) -> None
+        # type: (int, text_type) -> None
         self.current_handler_id = handler_id
         self.current_client_name = client_name
         set_descriptor_by_handler_id(handler_id, self)
