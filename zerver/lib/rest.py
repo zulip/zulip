@@ -13,6 +13,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.conf import settings
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
+FLAGS = ('override_api_url_scheme')
 
 @csrf_exempt
 def rest_dispatch(request, **kwargs):
@@ -40,6 +41,7 @@ def rest_dispatch(request, **kwargs):
     etc, as that is where we route HTTP verbs to target functions.
     """
     supported_methods = {} # type: Dict[str, Any]
+
     # duplicate kwargs so we can mutate the original as we go
     for arg in list(kwargs):
         if arg in METHODS:
@@ -60,7 +62,13 @@ def rest_dispatch(request, **kwargs):
         method_to_use = request.META["zulip.emulated_method"]
 
     if method_to_use in supported_methods:
-        target_function = import_string(supported_methods[method_to_use])
+        entry = supported_methods[method_to_use]
+        if isinstance(entry, tuple):
+            target_function, view_flags = entry
+            target_function = import_string(target_function)
+        else:
+            target_function = import_string(supported_methods[method_to_use])
+            view_flags = set()
 
         # Set request._query for update_activity_user(), which is called
         # by some of the later wrappers.
@@ -74,10 +82,17 @@ def rest_dispatch(request, **kwargs):
         # Security implications of this portion of the code are minimal,
         # as we should worst-case fail closed if we miscategorise a request.
 
+        # for some special views (e.g. serving a file that has been
+        # uploaded), we support using the same url for web and API clients.
+        if ('override_api_url_scheme' in view_flags
+            and request.META.get('HTTP_AUTHORIZATION', None) is not None):
+            # This request  API based authentication.
+            target_function = authenticated_rest_api_view()(target_function)
         # /json views (web client) validate with a session token (cookie)
-        if not request.path.startswith("/api") and request.user.is_authenticated():
+        elif not request.path.startswith("/api") and request.user.is_authenticated():
             # Authenticated via sessions framework, only CSRF check needed
             target_function = csrf_protect(authenticated_json_view(target_function))
+
         # most clients (mobile, bots, etc) use HTTP Basic Auth and REST calls, where instead of
         # username:password, we use email:apiKey
         elif request.META.get('HTTP_AUTHORIZATION', None):
