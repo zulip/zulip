@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
+import sys
+sys.path.append('/home/zulip/deployments/current')
+import scripts.lib.setup_path_on_import
+
 import subprocess
 import sys
 import logging

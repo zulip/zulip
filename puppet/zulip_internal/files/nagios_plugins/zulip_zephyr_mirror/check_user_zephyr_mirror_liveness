@@ -13,6 +13,10 @@ import datetime
 import os
 import sys
 
+import sys
+sys.path.append('/home/zulip/deployments/current')
+import scripts.lib.setup_path_on_import
+
 import django
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"

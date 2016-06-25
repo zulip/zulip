@@ -49,6 +49,10 @@ import logging.handlers
 import subprocess
 import re
 
+import sys
+sys.path.append('/home/zulip/deployments/current')
+import scripts.lib.setup_path_on_import
+
 import boto.utils
 import netifaces
 from six.moves import range
