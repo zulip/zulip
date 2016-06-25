@@ -1,0 +1,87 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+from __future__ import absolute_import
+
+import os
+import sys
+import time
+import signal
+import subprocess
+import re
+
+from six.moves import range
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+succesful_worker_launches = [
+    'launching queue worker thread error_reports',
+    'launching queue worker thread user_presence',
+    'launching queue worker thread digest_emails',
+    'launching queue worker thread slow_queries',
+    'launching queue worker thread missedmessage_mobile_notifications',
+    'launching queue worker thread feedback_messages',
+    'launching queue worker thread signups',
+    'launching queue worker thread test',
+    'launching queue worker thread message_sender',
+    'launching queue worker thread missedmessage_emails',
+    'launching queue worker thread email_mirror',
+    'launching queue worker thread user_activity_interval',
+    'launching queue worker thread invites',
+    'launching queue worker thread user_activity'
+]
+
+def check_worker_launch(logfile):
+    def check(content):
+        flag = True
+        for entry in succesful_worker_launches:
+            flag = flag and entry in content
+        return flag
+
+    failed = True
+    log_output = u''
+    print("Polling logfile", end='')
+    # Attempt to poll the log file for 10 sec. to see if all worker threads are launched.
+    for i in range(10):
+        time.sleep(1)
+        sys.stdout.write('.')
+        sys.stdout.flush()
+        logfile.seek(0)
+        content = logfile.read()
+        log_output = content
+        if check(content):
+            failed = False
+            break
+    sys.stdout.write('\n')
+
+    if not failed:
+        print('Worker threads launched succesfully')
+        return log_output
+    else:
+        print('Error in server startup. Dumping logs')
+        print(log_output)
+        sys.exit(1)
+
+if __name__ == '__main__':
+    print('\nStarting Development Server')
+    logfile = open('/tmp/run-dev-output', 'w+')
+    args = ["{}/run-dev.py".format(TOOLS_DIR)]
+    run_dev = subprocess.Popen(args, stdout=logfile, stderr=logfile)
+
+    check_worker_launch(logfile)
+    logfile.truncate(0)
+
+    print("Attempting to modify a file")
+    subprocess.call(['touch', 'zerver/lib/actions.py'])
+    log_output = check_worker_launch(logfile)
+
+    run_dev.send_signal(signal.SIGINT)
+    run_dev.wait()
+    logfile.close()
+
+    if 'zerver/lib/actions.py modified; restarting server' in log_output:
+        print('Worker threads succesfully autoreloaded')
+        sys.exit(0)
+    else:
+        print("Error autoreloading queue workers. Dumping logs")
+        print(log_output)
+        sys.exit(1)
