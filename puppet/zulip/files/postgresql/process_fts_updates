@@ -8,6 +8,20 @@
 # search column search_tsvector in the main zerver_message.
 from __future__ import print_function
 
+import sys
+
+# We want to use a virtualenv in production, which will be in /home/zulip/deployments/current.
+# So we should add that path to sys.path and then import scripts.lib.setup_path_on_import.
+# But this file is also used in development, where the above path will not exist.
+# So `import scripts.lib.setup_path_on_import` will raise an ImportError.
+# In development, we just want to skip this step since we know that virtualenv will already be in use.
+# So catch the ImportError and do nothing.
+sys.path.append('/home/zulip/deployments/current')
+try:
+    import scripts.lib.setup_path_on_import
+except ImportError:
+    pass
+
 import psycopg2
 import psycopg2.extensions
 import select

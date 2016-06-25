@@ -2,7 +2,12 @@
 import sys
 import logging
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+from os.path import dirname, abspath
+
+BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
+sys.path.append(BASE_DIR)
+import scripts.lib.setup_path_on_import
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
 from django.conf import settings
 

@@ -18,6 +18,9 @@ import random
 import traceback
 import os
 
+sys.path.append('/home/zulip/deployments/current')
+import scripts.lib.setup_path_on_import
+
 import django
 
 def total_seconds(timedelta):
