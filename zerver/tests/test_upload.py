@@ -24,6 +24,8 @@ import os
 import shutil
 import re
 import datetime
+import requests
+import base64
 from datetime import timedelta
 from django.utils import timezone
 
@@ -37,6 +39,31 @@ def destroy_uploads():
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
 class FileUploadTest(AuthedTestCase):
+
+    def test_rest_endpoint(self):
+        # type: () -> None
+        """
+        Tests the /api/v1/user_uploads api endpoint. Here a single file is uploaded
+        and downloaded using a username and api_key
+        """
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        # Upload file via API
+        auth_headers = self.api_auth('hamlet@zulip.com')
+        result = self.client.post('/api/v1/user_uploads', {'file': fp}, **auth_headers)
+        json = ujson.loads(result.content)
+        self.assertIn("uri", json)
+        uri = json["uri"]
+        base = '/user_uploads/'
+        self.assertEquals(base, uri[:len(base)])
+
+        # Files uploaded through the API should be accesible via the web client
+        self.login("hamlet@zulip.com")
+        response = self.client.get(uri)
+        data = "".join(response.streaming_content)
+        self.assertEquals("zulip!", data)
+
     def test_multiple_upload_failure(self):
         # type: () -> None
         """
