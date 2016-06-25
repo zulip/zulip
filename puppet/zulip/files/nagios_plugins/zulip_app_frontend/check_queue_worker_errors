@@ -7,6 +7,8 @@ from __future__ import print_function
 
 import sys
 sys.path.append('/home/zulip/deployments/current')
+import scripts.lib.setup_path_on_import
+
 from zproject import settings
 
 import glob

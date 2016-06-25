@@ -3,8 +3,12 @@
 
 from __future__ import print_function
 import sys, os, os.path
+from os.path import dirname, abspath
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
+sys.path.append(BASE_DIR)
+import scripts.lib.setup_path_on_import
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 
 from django.utils.crypto import get_random_string
