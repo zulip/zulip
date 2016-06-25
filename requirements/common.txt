@@ -33,9 +33,6 @@ certifi==2015.4.28
 cffi==1.5.2
 chardet==2.3.0
 
-# Needed to compute test coverage
-coverage==4.0.3
-
 cryptography==1.2.3
 
 # Needed for integrations
