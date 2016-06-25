@@ -291,6 +291,7 @@ urls += [
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls
+    i18n_urls += dev_urls.i18n_urls
 
 # The sequence is important; if i18n urls don't come first then
 # reverse url mapping points to i18n urls which causes the frontend
