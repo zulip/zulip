@@ -12,7 +12,6 @@ AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
 #                            'zproject.backends.GoogleMobileOauth2Backend',)
 EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST
-ADMIN_DOMAIN = "zulip.com"
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 NEW_USER_BOT = "new-user-bot@zulip.com"

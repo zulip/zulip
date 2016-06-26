@@ -88,9 +88,6 @@ DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dist.pem"
 
 GOOGLE_OAUTH2_CLIENT_ID = '835904834568-ag4p18v0sd9a0tero14r3gekn6shoen3.apps.googleusercontent.com'
 
-# Administrator domain for this install
-ADMIN_DOMAIN = "zulip.com"
-
 # The email address pattern to use for auto-generated stream emails
 # The %s will be replaced with a unique token.
 if ZULIP_COM_STAGING:
