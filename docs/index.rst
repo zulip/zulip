@@ -55,6 +55,7 @@ Contents:
    :maxdepth: 2
    :caption: Code contribution guide
 
+   version-control
    code-style
    testing
    mypy
