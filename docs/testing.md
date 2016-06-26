@@ -4,11 +4,31 @@ Testing and writing tests
 Running tests
 -------------
 
-To run everything, just use `./tools/test-all`. This runs lint checks,
-web frontend / whole-system blackbox tests, and backend Django tests.
+To run the full Zulip test suite, do this:
+```
+./tools/test-all
+```
 
-If you want to run individual parts, see the various commands inside
-that script.
+Zulip tests must be run inside a Zulip development environment; if
+you're using Vagrant, you will need to enter the Vagrant environment
+before running the tests:
+
+```
+vagrant ssh
+cd /srv/zulip
+```
+
+This runs the linter (`tools/lint-all`) plus all of our test suites;
+they can all be run separately (just read `tools/test-all` to see
+them).  You can also run individual tests which can save you a lot of
+time debugging a test failure, e.g.:
+
+```
+./tools/lint-all # Runs all the linters in parallel
+./tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube
+./tools/test-js-with-casper 09-navigation.js
+./tools/test-js-with-node # Runs all node tests but is very fast
+```
 
 ### Schema and initial data changes
 
