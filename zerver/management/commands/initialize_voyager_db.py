@@ -63,12 +63,8 @@ class Command(BaseCommand):
         email_gateway_bot.is_api_super_user = True
         email_gateway_bot.save()
 
-        (admin_realm, _) = do_create_realm(settings.ADMIN_DOMAIN,
-                                           settings.ADMIN_DOMAIN, True)
-
-        set_default_streams(admin_realm, settings.DEFAULT_NEW_REALM_STREAMS)
-
         self.stdout.write("Successfully populated database with initial data.\n")
+        self.stdout.write("Please run ./manage.py generate_realm_creation_link to generate link for creating organization")
 
     site = Site.objects.get_current()
     site.domain = settings.EXTERNAL_HOST
