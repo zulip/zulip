@@ -74,6 +74,7 @@ Contents:
    full-text-search
    translating
    logging
+   README
 
 Indices and tables
 ==================
