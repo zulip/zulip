@@ -2,12 +2,6 @@ class zulip::base {
   include apt
   $base_packages = [ # Accurate time is essential
                      "ntp",
-                     # Dependencies of our API
-                     "python-requests",
-                     "python-simplejson",
-                     "python-typing",
-                     # For development/debugging convenience
-                     "ipython",
                      # Used in scripts
                      "netcat",
                      # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists

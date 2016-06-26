@@ -7,8 +7,8 @@ class zulip::postgres_common {
                         "ptop",
                         # Python modules used in our monitoring/worker threads
                         "python-gevent",
-                        "python-tz",
-                        "python-dateutil",
+                        "python-tz", # TODO: use a virtualenv instead
+                        "python-dateutil", # TODO: use a virtualenv instead
                         # our dictionary
                         "hunspell-en-us",
                         ]
