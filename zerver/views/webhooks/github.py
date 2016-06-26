@@ -22,20 +22,20 @@ class UnknownEventType(Exception):
 
 def github_generic_subject(noun, topic_focus, blob):
     # issue and pull_request objects have the same fields we're interested in
-    return '%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
+    return u'%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
 
 def github_generic_content(noun, payload, blob):
     action = 'synchronized' if payload['action'] == 'synchronize' else payload['action']
 
     # issue and pull_request objects have the same fields we're interested in
-    content = ('%s %s [%s %s](%s)'
+    content = (u'%s %s [%s %s](%s)'
                % (payload['sender']['login'],
                   action,
                   noun,
                   blob['number'],
                   blob['html_url']))
     if payload['action'] in ('opened', 'reopened'):
-        content += '\n\n~~~ quote\n%s\n~~~' % (blob['body'],)
+        content += u'\n\n~~~ quote\n%s\n~~~' % (blob['body'],)
     return content
 
 
@@ -89,7 +89,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
 
         subject = github_generic_subject(noun, topic_focus, issue)
         comment = payload['comment']
-        content = ('%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~'
+        content = (u'%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~'
                    % (comment['user']['login'],
                       comment['html_url'],
                       noun,
@@ -106,16 +106,16 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
                                                      created=payload['created'])
     elif event == 'commit_comment':
         comment = payload['comment']
-        subject = '%s: commit %s' % (topic_focus, comment['commit_id'])
+        subject = u'%s: commit %s' % (topic_focus, comment['commit_id'])
 
-        content = ('%s [commented](%s)'
+        content = (u'%s [commented](%s)'
                    % (comment['user']['login'],
                       comment['html_url']))
 
         if comment['line'] is not None:
-            content += ' on `%s`, line %d' % (comment['path'], comment['line'])
+            content += u' on `%s`, line %d' % (comment['path'], comment['line'])
 
-        content += '\n\n~~~ quote\n%s\n~~~' % (comment['body'],)
+        content += u'\n\n~~~ quote\n%s\n~~~' % (comment['body'],)
 
     else:
         raise UnknownEventType(u'Event %s is unknown and cannot be handled' % (event,))
@@ -208,10 +208,10 @@ def api_github_landing(request, user_profile, event=REQ(),
 
 def build_commit_list_content(commits, branch, compare_url, pusher):
     if compare_url is not None:
-        push_text = '[pushed](%s)' % (compare_url,)
+        push_text = u'[pushed](%s)' % (compare_url,)
     else:
-        push_text = 'pushed'
-    content = ('%s %s to branch %s\n\n'
+        push_text = u'pushed'
+    content = (u'%s %s to branch %s\n\n'
                % (pusher,
                   push_text,
                   branch))
@@ -220,10 +220,10 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
     for commit in truncated_commits:
         short_id = commit['id'][:7]
         (short_commit_msg, _, _) = commit['message'].partition('\n')
-        content += '* [%s](%s): %s\n' % (short_id, commit['url'],
+        content += u'* [%s](%s): %s\n' % (short_id, commit['url'],
                                          short_commit_msg)
     if num_commits > COMMITS_IN_LIST_LIMIT:
-        content += ('\n[and %d more commits]'
+        content += (u'\n[and %d more commits]'
                     % (num_commits - COMMITS_IN_LIST_LIMIT,))
 
     return content
@@ -233,11 +233,11 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
     subject = name
 
     if re.match(r'^0+$', after):
-        content = '%s deleted branch %s' % (pusher,
+        content = u'%s deleted branch %s' % (pusher,
                                             short_ref)
     # 'created' and 'forced' are github flags; the second check is for beanstalk
     elif (forced and not created) or (forced is None and len(commits) == 0):
-        content = ('%s [force pushed](%s) to branch %s.  Head is now %s'
+        content = (u'%s [force pushed](%s) to branch %s.  Head is now %s'
                    % (pusher,
                       url,
                       short_ref,
