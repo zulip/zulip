@@ -14,6 +14,10 @@ cd docs/
 make html
 ```
 
+and then opening `file:///path/to/zulip/_build/html/index.html` in
+your browser (you can also use e.g. `firefox
+docs/_build/html/index.html` from the root of your Zulip checkout).
+
 You can also usually test your changes by pushing a branch to GitHub
 and looking at the content on the GitHub web UI, since GitHub renders
 Markdown.
