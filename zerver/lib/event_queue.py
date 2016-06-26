@@ -56,7 +56,7 @@ class ClientDescriptor(object):
     def __init__(self, user_profile_id, user_profile_email, realm_id, event_queue,
                  event_types, client_type_name, apply_markdown=True,
                  all_public_streams=False, lifespan_secs=0, narrow=[]):
-        # type: (int, text_type, int, EventQueue, List[text_type], text_type, bool, bool, int, Iterable[Sequence[text_type]]) -> None
+        # type: (int, text_type, int, EventQueue, List[str], text_type, bool, bool, int, Iterable[Sequence[text_type]]) -> None
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
