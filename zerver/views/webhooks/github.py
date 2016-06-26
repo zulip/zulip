@@ -9,6 +9,8 @@ import logging
 import re
 import ujson
 
+from zerver.lib.str_utils import force_str
+
 COMMITS_IN_LIST_LIMIT = 10
 ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
@@ -118,7 +120,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream, commit
         content += u'\n\n~~~ quote\n%s\n~~~' % (comment['body'],)
 
     else:
-        raise UnknownEventType(u'Event %s is unknown and cannot be handled' % (event,))
+        raise UnknownEventType(force_str(u'Event %s is unknown and cannot be handled' % (event,)))
 
     return target_stream, subject, content
 
