@@ -1,5 +1,4 @@
-How to write a new application feature
-======================================
+# Writing a new application feature
 
 The changes needed to add a new feature will vary, of course, but this
 document provides a general outline of what you may need to do, as well
@@ -7,8 +6,7 @@ as an example of the specific steps needed to add a new feature: adding
 a new option to the application that is dynamically synced through the
 data system in real-time to all browsers the user may have open.
 
-General Process
----------------
+## General Process
 
 ### Adding a field to the database
 
@@ -63,8 +61,7 @@ headless browser using Casper.js and are located in
 module are located in `frontend_tests/node_tests/`. For more information
 on writing and running tests see the testing documentation \<testing\>.
 
-Example Feature
----------------
+## Example Feature
 
 This example describes the process of adding a new setting to Zulip: a
 flag that restricts inviting new users to admins only (the default
