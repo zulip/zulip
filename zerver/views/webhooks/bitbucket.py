@@ -19,8 +19,8 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dic
                           stream=REQ(default='commits')):
     # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
     repository = payload['repository']
-    commits = [{'id': commit['raw_node'], 'message': commit['message'],
-                'url': '%s%scommits/%s' % (payload['canon_url'],
+    commits = [{u'id': commit['raw_node'], u'message': commit['message'],
+                u'url': u'%s%scommits/%s' % (payload['canon_url'],
                                            repository['absolute_url'],
                                            commit['raw_node'])}
                for commit in payload['commits']]
@@ -29,13 +29,13 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dic
     if len(commits) == 0:
         # Bitbucket doesn't give us enough information to really give
         # a useful message :/
-        content = ("%s [force pushed](%s)"
+        content = (u"%s [force pushed](%s)"
                    % (payload['user'],
                       payload['canon_url'] + repository['absolute_url']))
     else:
         branch = payload['commits'][-1]['branch']
         content = build_commit_list_content(commits, branch, None, payload['user'])
-        subject += '/%s' % (branch,)
+        subject += u'/%s' % (branch,)
 
     check_send_message(user_profile, get_client("ZulipBitBucketWebhook"), "stream",
                        [stream], subject, content)
