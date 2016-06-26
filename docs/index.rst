@@ -71,6 +71,7 @@ Contents:
    markdown
    front-end-build-process
    schema-migrations
+   html_css
    full-text-search
    translating
    logging
