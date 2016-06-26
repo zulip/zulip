@@ -4,7 +4,7 @@ class zulip::postgres_appdb_base {
   include zulip::supervisor
 
   $appdb_packages = [# Needed to run process_fts_updates
-                     "python-psycopg2",
+                     "python-psycopg2", # TODO: use a virtualenv instead
                      # Needed for our full text search system
                      "postgresql-${zulip::base::postgres_version}-tsearch-extras",
                      ]
