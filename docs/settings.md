@@ -1,4 +1,4 @@
-# Zulip settings
+# Settings system
 
 The page documents the Zulip settings system, and hopefully should
 help you decide how to correctly implement new settings you're adding

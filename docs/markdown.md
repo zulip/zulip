@@ -1,4 +1,4 @@
-# Zulip's Markdown implementation
+# Markdown implementation
 
 Zulip has a special flavor of Markdown, currently called 'bugdown'
 after Zulip's original name of "humbug". End users are using Bugdown

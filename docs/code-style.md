@@ -1,8 +1,6 @@
-Code style and conventions
-==========================
+# Code style and conventions
 
-Be consistent!
---------------
+## Be consistent!
 
 Look at the surrounding code, or a similar part of the project, and try
 to do the same thing. If you think the other code has actively bad
@@ -11,8 +9,7 @@ style, fix it (in a separate commit).
 When in doubt, send an email to <zulip-devel@googlegroups.com> with your
 question.
 
-Lint tools
-----------
+## Lint tools
 
 You can run them all at once with
 
@@ -37,15 +34,13 @@ The Vagrant setup process runs this for you.
 -   Puppet configuration
 -   custom checks (e.g. trailing whitespace and spaces-not-tabs)
 
-Secrets
--------
+## Secrets
 
 Please don't put any passwords, secret access keys, etc. inline in the
 code. Instead, use the `get_secret` function in `zproject/settings.py`
 to read secrets from `/etc/zulip/secrets.conf`.
 
-Dangerous constructs
---------------------
+## Dangerous constructs
 
 ### Misuse of database queries
 
@@ -170,8 +165,7 @@ current working directory for the app changes every time we do a deploy.
 Instead, hardcode a path in settings.py -- see SERVER\_LOG\_PATH in
 settings.py for an example.
 
-JS array/object manipulation
-----------------------------
+## JS array/object manipulation
 
 For generic functions that operate on arrays or JavaScript objects, you
 should generally use [Underscore](http://underscorejs.org/). We used to
@@ -201,8 +195,7 @@ canonical name (given in large print in the Underscore documentation),
 with the exception of `_.any`, which we prefer over the less clear
 'some'.
 
-More arbitrary style things
----------------------------
+## More arbitrary style things
 
 ### General
 

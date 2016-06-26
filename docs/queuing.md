@@ -1,4 +1,4 @@
-# RabbitMQ queues
+# Queue processors
 
 Zulip uses RabbitMQ to manage a system of internal queues.  These are
 used for a variety of purposes:
