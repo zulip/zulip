@@ -65,7 +65,7 @@ class ClientDescriptor(object):
         self.user_profile_email = user_profile_email
         self.realm_id = realm_id
         self.current_handler_id = None # type: int
-        self.current_client_name = None # type: text_type
+        self.current_client_name = None # type: Optional[text_type]
         self.event_queue = event_queue
         self.queue_timeout = lifespan_secs
         self.event_types = event_types
