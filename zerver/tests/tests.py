@@ -695,6 +695,52 @@ class BotTest(AuthedTestCase):
         profile = get_user_profile_by_email('hambot-bot@zulip.com')
         self.assertEqual(profile.default_sending_stream.name, 'Rome')
 
+    def test_bot_add_subscription(self):
+        # type: () -> None
+        """
+        Calling POST /json/users/me/subscriptions should successfully add
+        streams, and a stream to the
+        list of subscriptions and confirm the right number of events
+        are generated.
+        When 'principals' has a bot, no notification message event or invitation email
+        is sent when add_subscriptions_backend is called in the above api call.
+        """
+        self.login("hamlet@zulip.com")
+
+        # Normal user i.e. not a bot.
+        request_data = {
+            'principals': '["iago@zulip.com"]'
+        }
+        events = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.common_subscribe_to_streams("hamlet@zulip.com", ['Rome'], request_data)
+            self.assert_json_success(result)
+
+        msg_event = [e for e in events if e['event']['type'] == 'message']
+        self.assert_length(msg_event, 1, exact=True) # Notification message event is sent.
+
+        # Create a bot.
+        self.assert_num_bots_equal(0)
+        result = self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        # A bot
+        bot_request_data = {
+            'principals': '["hambot-bot@zulip.com"]'
+        }
+        events_bot = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events_bot):
+            result = self.common_subscribe_to_streams("hamlet@zulip.com", ['Rome'], bot_request_data)
+            self.assert_json_success(result)
+
+        # No notification message event or invitation email is sent because of bot.
+        msg_event = [e for e in events_bot if e['event']['type'] == 'message']
+        self.assert_length(msg_event, 0, exact=True)
+        self.assertEqual(len(events_bot), len(events) - 1)
+
+        # Test runner automatically redirects all sent email to a dummy 'outbox'.
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_add_bot_with_default_sending_stream_private_allowed(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
