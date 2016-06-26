@@ -15,7 +15,7 @@
 import sys
 import os
 import shlex
-from typing import Dict, List, Optional
+if False: from typing import Dict, List, Optional
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
