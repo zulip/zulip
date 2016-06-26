@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from django.conf import settings
-from zerver.models import get_client
+from zerver.models import get_client, UserProfile
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.decorator import authenticated_api_view, REQ, has_request_variables, to_non_negative_int, flexible_boolean
@@ -14,6 +14,7 @@ ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
 def is_test_repository(repository):
+    # type: (Dict[str, Any]) -> bool
     return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
 
 class UnknownEventType(Exception):
@@ -21,10 +22,12 @@ class UnknownEventType(Exception):
 
 
 def github_generic_subject(noun, topic_focus, blob):
+    # type: (text_type, text_type, Dict[text_type, Any]) -> bool
     # issue and pull_request objects have the same fields we're interested in
     return '%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
 
 def github_generic_content(noun, payload, blob):
+    # type: (text_type, Dict[text_type, Any], Dict[text_type, Any]) -> Sequence[text_type]
     action = 'synchronized' if payload['action'] == 'synchronize' else payload['action']
 
     # issue and pull_request objects have the same fields we're interested in
@@ -40,6 +43,7 @@ def github_generic_content(noun, payload, blob):
 
 
 def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
+    # type: (UserProfile, text_type, Dict[text_type, Any], text_type, text_type,  **Any) -> Sequence(text_type, text_type, text_type)
     """
     processes github payload with version 1 field specification
     `payload` comes in unmodified from github
@@ -51,6 +55,7 @@ def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
 
 
 def api_github_v2(user_profile, event, payload, branches, default_stream, commit_stream, issue_stream, topic_focus = None):
+    # type: (UserProfile, text_type, Dict[text_type, Any], text_type, text_type, text_type, text_type, Optional[text_type]) -> Sequence(text_type, text_type, text_type)
     """
     processes github payload with version 2 field specification
     `payload` comes in unmodified from github
@@ -136,7 +141,7 @@ def api_github_landing(request, user_profile, event=REQ(),
                        exclude_commits=REQ(converter=flexible_boolean, default=False),
                        emphasize_branch_in_topic=REQ(converter=flexible_boolean, default=False),
                        ):
-
+    # type: (HttpRequest, UserProfile, text_type, Disct[text_type, Any], text_type, text_type, int, text_type, text_type, bool, bool, bool, bool) -> HttpResponse
     repository = payload['repository']
 
     # Special hook for capturing event data. If we see our special test repo, log the payload from github.
@@ -207,6 +212,7 @@ def api_github_landing(request, user_profile, event=REQ(),
                                 message_content=content)
 
 def build_commit_list_content(commits, branch, compare_url, pusher):
+    # type: (List[text_type], text_type, text_type, text_type) -> Sequence[text_type]
     if compare_url is not None:
         push_text = '[pushed](%s)' % (compare_url,)
     else:
@@ -229,6 +235,7 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
     return content
 
 def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None):
+    # type: (UserProfile, text_type, text_type, List[text_type], text_type, text_type, text_type, text_type, Optional(text_type), Optional(text_type))
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = name
 
