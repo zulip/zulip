@@ -32,6 +32,7 @@ Contents:
    new-feature-tutorial
    code-contribution-checklist
    directory-structure
+   full-text-search
    translating
    changelog
    roadmap
