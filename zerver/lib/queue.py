@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
-from pika.spec import Basic, BasicProperties
+from pika.spec import Basic
 import logging
 import ujson
 import random
