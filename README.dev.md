@@ -1273,23 +1273,27 @@ migrations and then cleanly restaring the server for you).
 Running the test suite
 ======================
 
-For more details, especially on how to write tests, check out the
-[detailed testing docs][tdocs].
+Zulip tests must be run inside a Zulip development environment; if
+you're using Vagrant, you will need to enter the Vagrant environment
+before running the tests:
 
-[tdocs]: http://zulip.readthedocs.io/en/latest/testing.html
+```
+vagrant ssh
+cd /srv/zulip
+```
 
 To run all the tests, do this:
 ```
 ./tools/test-all
 ```
 
-For the Vagrant environment, you'll want to first enter the
-environment:
-```
-vagrant ssh
-source /srv/zulip-venv/bin/activate
-cd /srv/zulip
-```
+For more details on how to run a single test, efficiently debug test
+failures, or write tests, check out the [detailed testing
+docs][tdocs].
+
+[tdocs]: http://zulip.readthedocs.io/en/latest/testing.html
+
+
 
 This runs the linter (`tools/lint-all`) plus all of our test suites;
 they can all be run separately (just read `tools/test-all` to see
@@ -1308,7 +1312,6 @@ databases, but you may need to rebuild the test database occasionally
 if you're working on new database migrations.  To do this, run:
 
 ```
-./tools/setup/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
 ```
 
