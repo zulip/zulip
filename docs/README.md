@@ -1,3 +1,5 @@
+# Documentation
+
 These docs are written in [Commonmark
 Markdown](http://commonmark.org/) with a small bit of rST.  We've
 chosen Markdown because it is [easy to
