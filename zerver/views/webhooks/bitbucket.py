@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
-from typing import Any
+from six import text_type
+from typing import Any, Mapping
 
 from django.http import HttpRequest, HttpResponse
 
@@ -17,7 +18,7 @@ from .github import build_commit_list_content
 @has_request_variables
 def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dict([])),
                           stream=REQ(default='commits')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Mapping[text_type, Any], text_type) -> HttpResponse
     repository = payload['repository']
     commits = [{u'id': commit['raw_node'], u'message': commit['message'],
                 u'url': u'%s%scommits/%s' % (payload['canon_url'],
