@@ -588,14 +588,14 @@ class MessagePOSTTest(AuthedTestCase):
                "sender": "sipbtest@mit.edu",
                "content": "Test message",
                "client": "zephyr_mirror",
-               "to": ujson.dumps(["sipbexch@mit.edu",
+               "to": ujson.dumps(["espuser@mit.edu",
                                   "starnine@mit.edu"])}
 
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
             self.login("starnine@mit.edu")
             result1 = self.client.post("/json/messages", msg)
-        with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
-            self.login("sipbexch@mit.edu")
+        with mock.patch('DNS.dnslookup', return_value=[['espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash']]):
+            self.login("espuser@mit.edu")
             result2 = self.client.post("/json/messages", msg)
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
