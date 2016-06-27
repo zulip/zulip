@@ -491,6 +491,7 @@ class EventsRegisterTest(AuthedTestCase):
             self.assert_on_error(error)
 
     def test_change_pin_stream(self):
+        # type: () -> None
         schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('update')),
