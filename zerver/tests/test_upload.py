@@ -58,6 +58,12 @@ class FileUploadTest(AuthedTestCase):
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
 
+        # Download file via API
+        self.client.post('/accounts/logout/')
+        response = self.client.get(uri, **auth_headers)
+        data = "".join(response.streaming_content)
+        self.assertEquals("zulip!", data)
+
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
         response = self.client.get(uri)

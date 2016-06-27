@@ -62,8 +62,6 @@ i18n_urls = [
 
     # Avatar
     url(r'^avatar/(?P<email>[\S]+)?', 'zerver.views.users.avatar'),
-    # Uploaded files
-    url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)', 'zerver.views.upload.get_uploaded_file'),
 
     # Registration views, require a confirmation ID.
     url(r'^accounts/home/', 'zerver.views.accounts_home'),
@@ -234,6 +232,19 @@ urls += [
     url(r'^api/v1/', include(v1_api_and_json_patterns)),
     url(r'^json/', include(v1_api_and_json_patterns)),
 ]
+
+# user_uploads -> zerver.views.upload.serve_file_backend
+#
+# This url is an exception to the url naming schemes for endpoints. It
+# supports both API and session cookie authentication, using a single
+# URL for both (not 'api/v1/' or 'json/' prefix). This is required to
+# easily support the mobile apps fetching uploaded files without
+# having to rewrite URLs, and is implemented using the
+# 'override_api_url_scheme' flag passed to rest_dispatch
+urls += url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)',
+            'zerver.lib.rest.rest_dispatch',
+            {'GET': ('zerver.views.upload.serve_file_backend',
+                     {'override_api_url_scheme'})}),
 
 # Incoming webhook URLs
 urls += [
