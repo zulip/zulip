@@ -242,7 +242,7 @@ def remove_subscriptions_backend(request, user_profile,
 
 def filter_stream_authorization(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]
-    streams_subscribed = set()
+    streams_subscribed = set() # type: Set[int]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
     subs = Subscription.objects.filter(user_profile=user_profile,
                                        recipient__in=list(recipients_map.values()),
@@ -251,7 +251,7 @@ def filter_stream_authorization(user_profile, streams):
     for sub in subs:
         streams_subscribed.add(sub.recipient.type_id)
 
-    unauthorized_streams = []
+    unauthorized_streams = [] # type: List[Stream]
     for stream in streams:
         # The user is authorized for his own streams
         if stream.id in streams_subscribed:
