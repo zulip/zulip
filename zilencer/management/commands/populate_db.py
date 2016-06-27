@@ -148,7 +148,7 @@ class Command(BaseCommand):
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list
             # of users).
-            subscriptions_to_add = []
+            subscriptions_to_add = [] # type: List[Subscription]
             profiles = UserProfile.objects.select_related().all().order_by("email")
             for i, profile in enumerate(profiles):
                 # Subscribe to some streams.
@@ -462,7 +462,7 @@ def restore_saved_messages():
     if Message.objects.exists():
         first_message_id = Message.objects.all().order_by("-id")[0].id + 1
 
-    messages_to_create = []
+    messages_to_create = [] # type: List[Message]
     for idx, old_message in enumerate(old_messages):
         message_type = old_message["type"]
         if message_type not in ["stream", "huddle", "personal"]:
@@ -520,9 +520,9 @@ def restore_saved_messages():
         personal_recipients[r.id] = True
 
     all_messages = Message.objects.all()
-    user_messages_to_create = []
+    user_messages_to_create = [] # type: List[UserMessage]
 
-    messages_by_id = {}
+    messages_by_id = {} # type: Dict[int, Message]
     for message in all_messages:
         messages_by_id[message.id] = message
 
