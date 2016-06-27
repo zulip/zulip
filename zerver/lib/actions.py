@@ -590,8 +590,8 @@ def do_send_messages(messages):
     messages = [message for message in messages if message is not None]
 
     # Filter out zephyr mirror anomalies where the message was already sent
-    already_sent_ids = []
-    new_messages = []
+    already_sent_ids = [] # type: List[int]
+    new_messages = [] # type: List[MutableMapping[str, Any]]
     for message in messages:
         if isinstance(message['message'], int):
             already_sent_ids.append(message['message'])
@@ -648,7 +648,7 @@ def do_send_messages(messages):
     user_message_flags = defaultdict(dict) # type: Dict[int, Dict[int, List[str]]]
     with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
-        ums = []
+        ums = [] # type: List[UserMessage]
         for message in messages:
             ums_to_create = [UserMessage(user_profile=user_profile, message=message['message'])
                              for user_profile in message['active_recipients']]
@@ -2312,7 +2312,7 @@ def update_user_message_flags(message, ums):
     wildcard = message.mentions_wildcard
     mentioned_ids = message.mentions_user_ids
     ids_with_alert_words = message.user_ids_with_alert_words
-    changed_ums = set()
+    changed_ums = set() # type: Set[UserMessage]
 
     def update_flag(um, should_set, flag):
         # type: (UserMessage, bool, int) -> None
