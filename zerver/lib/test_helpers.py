@@ -256,10 +256,13 @@ class AuthedTestCase(TestCase):
         return self.client.post('/accounts/login/',
                                 {'username': email, 'password': password})
 
-    def login(self, email, password=None):
+    def login(self, email, password=None, fails=False):
         if password is None:
             password = initial_password(email)
-        self.client.login(username=email, password=password)
+        if not fails:
+            self.assertTrue(self.client.login(username=email, password=password))
+        else:
+            self.assertFalse(self.client.login(username=email, password=password))
 
     def register(self, username, password, domain="zulip.com"):
         # type: (text_type, text_type, text_type) -> HttpResponse
