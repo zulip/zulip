@@ -249,12 +249,17 @@ class AuthedTestCase(TestCase):
         encoded = urllib.parse.urlencode(info)
         return self.client.delete(url, encoded, **kwargs)
 
-    def login(self, email, password=None):
+    def login_with_return(self, email, password=None):
         # type: (text_type, Optional[text_type]) -> HttpResponse
         if password is None:
             password = initial_password(email)
         return self.client.post('/accounts/login/',
                                 {'username': email, 'password': password})
+
+    def login(self, email, password=None):
+        if password is None:
+            password = initial_password(email)
+        self.client.login(username=email, password=password)
 
     def register(self, username, password, domain="zulip.com"):
         # type: (text_type, text_type, text_type) -> HttpResponse
