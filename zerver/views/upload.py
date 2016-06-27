@@ -14,6 +14,8 @@ from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
 from django.conf import settings
 
+from sendfile import sendfile
+
 def serve_s3(request, user_profile, realm_id_str, filename, redir):
     # type: (HttpRequest, UserProfile, str, str, bool) -> HttpResponse
     url_path = "%s/%s" % (realm_id_str, filename)
@@ -36,18 +38,13 @@ def serve_s3(request, user_profile, realm_id_str, filename, redir):
     else:
         return HttpResponseForbidden()
 
-# TODO: Rewrite this once we have django-sendfile
 def serve_local(request, path_id):
     # type: (HttpRequest, str) -> HttpResponse
-    import os
-    import mimetypes
     local_path = get_local_file_path(path_id)
     if local_path is None:
         return HttpResponseNotFound('<p>File not found</p>')
-    filename = os.path.basename(local_path)
-    response = FileResponse(open(local_path, 'rb'), content_type = mimetypes.guess_type(filename))
-    return response
-    response['Content-Disposition'] = 'attachment; filename=%s' % (filename)
+    else:
+        return sendfile(request, local_path)
 
 @has_request_variables
 def serve_file_backend(request, user_profile, realm_id_str, filename,
