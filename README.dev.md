@@ -1185,7 +1185,7 @@ Finally you can run the docker server with:
 
 ```
 docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev:v2 \
-    /srv/zulip/scripts/start-dockers
+    /srv/zulip/tools/start-dockers
 ```
 
 If you want to connect to the Docker instance to build a release
@@ -1210,7 +1210,7 @@ you can do it with:
 
 ```
 docker run -itv $(pwd):/srv/zulip user/zulipdev:v2 /bin/bash
-$ scripts/test-all-docker
+$ tools/test-all-docker
 ```
 
 You can modify the source code in your development machine and review
