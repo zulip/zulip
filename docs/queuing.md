@@ -41,10 +41,11 @@ To add a new queue processor:
 * Define the processor in `zerver/worker/queue_processors.py` using
   the `@assign_queue` decorator; it's pretty easy to get the template
   for an existing similar queue processor.  This suffices to test your
-  queue worker in the Zulip development environment, though you'll
-  need to restart `tools/run-dev.py` in order to run your new queue
-  processor.  You can also run a single queue processor manually using
-  e.g. `./manage.py process_queue --queue=user_activity`.
+  queue worker in the Zulip development environment
+  (`tools/run-dev.py` will automatically restart the queue processors
+  and start running your new queue processor code).  You can also run
+  a single queue processor manually using e.g. `./manage.py
+  process_queue --queue=user_activity`.
 
 * So that supervisord will known to run the queue processor in
   production, you will need to define a program entry for it in

@@ -399,10 +399,10 @@ etc.).
 When you save changes they will be synced automatically to the Zulip dev environment
 on the virtual machine/container.
 
-The Zulip server will automatically restart itself when you make changes to
-everything except [queue
-workers](https://zulip.readthedocs.io/en/latest/queuing.html). So, to see your
-changes, all you usually have to do is reload your browser.
+Each component of the Zulip development server will automatically
+restart itself or reload data appropriately when you make changes. So,
+to see your changes, all you usually have to do is reload your
+browser.  More details on how this works are available below.
 
 Don't forget to read through the [code style
 guidelines](https://zulip.readthedocs.io/en/latest/code-style.html#general) for
@@ -1237,8 +1237,12 @@ encounters.
 When you make a change, here's a guide for what you need to do in
 order to see your change take effect in Development:
 
-* If you change Javascript or CSS, you'll just need to reload the
-browser window to see changes take effect.
+* If you change Javascript, CSS, or Jinja2 backend templates (under
+`templates/`), you'll just need to reload the browser window to see
+changes take effect.  The Handlebars frontend HTML templates
+(`static/templates`) are automatically recompiled by the
+`tools/compile-handlebars-templates` job, which runs as part of
+`tools/run-dev.py`.
 
 * If you change Python code used by the the main Django/Tornado server
 processes, these services are run on top of Django's [manage.py
@@ -1247,10 +1251,9 @@ Zulip Django and Tornado servers whenever you save changes to Python
 code.  You can watch this happen in the `run-dev.py` console to make
 sure the backend has reloaded.
 
-* The Python queue workers don't automatically restart when you save
-changes (or when they stop running), so you will want to ctrl-C and
-then restart `run-dev.py` manually if you are testing changes to the
-queue workers or if a queue worker has crashed.
+* The Python queue workers will also automatically restart when you
+save changes.  However, you may need to ctrl-C and then restart
+`run-dev.py` manually if a queue worker has crashed.
 
 * If you change the database schema, you'll need to use the standard
 Django migrations process to create and then run your migrations; see
