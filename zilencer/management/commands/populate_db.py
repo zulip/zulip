@@ -32,7 +32,7 @@ import os
 from optparse import make_option
 from six import text_type
 from six.moves import range
-from typing import Any, Dict, List, IO, Iterable, Mapping, Set, Tuple
+from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple
 
 settings.TORNADO_SERVER = None
 
@@ -722,7 +722,7 @@ def restore_saved_messages():
 # - multiple messages per subject
 # - both single and multi-line content
 def send_messages(data):
-    # type: (Tuple[int, List[List[UserProfile]], Dict[str, Any], Any]) -> int
+    # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any]]) -> int
     (tot_messages, personals_pairs, options, output) = data
     random.seed(os.getpid())
     texts = open("zilencer/management/commands/test_messages.txt", "r").readlines()
