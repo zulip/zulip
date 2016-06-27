@@ -59,7 +59,7 @@ You set `True` to `USING_PGROONGA` in `/etc/zulip/settings.py`:
 
 Before:
 
-    # USING_PGROONGA = True
+    USING_PGROONGA = False
 
 After:
 
@@ -76,9 +76,7 @@ Now, you can use full-text search against all languages.
 This section describes how to disable full-text search feature based
 on PGroonga.
 
-You set `False` to `USING_PGROONGA` in
-`local_settings.py`. `USING_PGROONGA` is `False` by default. So you
-just comment it out:
+You set `False` to `USING_PGROONGA` in `local_settings.py`:
 
 Before:
 
@@ -86,7 +84,7 @@ Before:
 
 After:
 
-    # USING_PGROONGA = True
+    USING_PGROONGA = False
 
 You restart Zulip:
 

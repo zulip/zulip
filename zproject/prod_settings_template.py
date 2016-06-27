@@ -375,4 +375,4 @@ CAMO_URI = '/external_content/'
 # feature. See
 # https://zulip.readthedocs.org/en/latest/full-text-search.html how to
 # enable PGroonga based full-text search feature.
-# USING_PGROONGA = True
+USING_PGROONGA = False
