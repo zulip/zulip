@@ -145,34 +145,5 @@
             "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">get_events<span class=\"p\">()</span>\n</span></pre></div> or if you want the event queues managed for you, <div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">call_on_each_event<span class=\"p\">()</span>\n</span></pre></div>",
             "curl": "<div class=\"codehilite\"><pre>curl -G https://api.zulip.com/v1/events <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"queue_id=1375801870:2942\"</span> <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"last_event_id=-1\"</span>\n</pre></div>"
         }
-    },
-    {
-        "method": "GET",
-        "endpoint": "export",
-        "example_response":
-"
-{
-    'msg': '',
-    'result': 'success',
-    'zerver_message': [
-        {
-            'id': 'test'
-        },
-        {
-            'id': 'hello'
-        }
-    ]
-}
-",
-        "returns": [
-            [
-                "export",
-                "a dict database tables"
-            ]
-        ],
-        "call": "Get an export of your database",
-        "example_request": {
-            "curl": "<div class=\"codehilite\"><pre>curl -G https://api.zulip.com/v1/export <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 </pre></div>"
-        }
     }
 ]
