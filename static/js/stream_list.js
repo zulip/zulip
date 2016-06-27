@@ -22,11 +22,6 @@ function active_stream_name() {
 
 function filter_streams_by_search(streams) {
     var search_box = $(".stream-list-filter");
-    if (search_box.length === 0) {
-        // If no stream filter box is there,
-        // return all streams.
-        return streams;
-    }
 
     var search_term = search_box.expectOne().val().trim();
 

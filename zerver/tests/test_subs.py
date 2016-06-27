@@ -26,7 +26,7 @@ from zerver.lib.actions import (
     create_stream_if_needed, do_add_default_stream, do_add_subscription, do_change_is_admin,
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user_profile_by_email, set_default_streams,
+    get_user_profile_by_email, set_default_streams, get_subscription
 )
 
 from django.http import HttpResponse
@@ -590,6 +590,33 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         self.assert_json_error(
             result, "value key is missing from subscription_data[0]")
+
+    def test_set_pin_to_top(self):
+        # type: () -> None
+        """
+        A POST request to /json/subscriptions/property with stream_name and
+        pin_to_top data pins the stream.
+        """
+        test_email = "hamlet@zulip.com"
+        self.login(test_email)
+
+        user_profile = get_user_profile_by_email(test_email)
+        old_subs, _ = gather_subscriptions(user_profile)
+        sub = old_subs[0]
+        stream_name = sub['name']
+        new_pin_to_top = not sub['pin_to_top']
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "pin_to_top",
+                                                "stream": stream_name,
+                                                "value": new_pin_to_top}])})
+
+        self.assert_json_success(result)
+
+        updated_sub = get_subscription(stream_name, user_profile)
+
+        self.assertIsNotNone(updated_sub)
+        self.assertEqual(updated_sub.pin_to_top, new_pin_to_top)
 
     def test_set_invalid_property(self):
         # type: () -> None

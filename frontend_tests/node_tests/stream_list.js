@@ -124,8 +124,10 @@ global.use_template('stream_privacy');
 
 (function test_sort_pin_to_top_streams() {
 
+    var stream_search_box = $('<input class="stream-list-filter" type="text" placeholder="Search streams">');
     var stream_filters = $('<ul id="stream_filters">');
     $("body").empty();
+    $("body").append(stream_search_box);
     $("body").append(stream_filters);
 
     var develSub = {
