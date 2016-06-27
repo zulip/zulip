@@ -66,7 +66,6 @@ def get_uploaded_file(request, realm_id_str, filename,
     return serve_file_backend(request, user_profile, realm_id_str, filename, redir)
 
 @authenticated_json_post_view
-@has_request_variables
 def json_upload_file(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     return upload_file_backend(request, user_profile)
