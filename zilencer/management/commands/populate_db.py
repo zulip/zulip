@@ -277,7 +277,7 @@ def restore_saved_messages():
     old_messages = []
     duplicate_suppression_hash = {} # type: Dict[str, bool]
 
-    stream_dict = {} # type: Dict[Tuple[str, str], Tuple[str, str]]
+    stream_dict = {} # type: Dict[Tuple[text_type, text_type], Tuple[text_type, text_type]]
     user_set = set()
     email_set = set([u.email for u in UserProfile.objects.all()])
     realm_set = set()
@@ -315,7 +315,7 @@ def restore_saved_messages():
         # Lower case emails and domains; it will screw up
         # deduplication if we don't
         def fix_email(email):
-            # type: (str) -> str
+            # type: (text_type) -> text_type
             return email.strip().lower()
 
         if message_type in ["stream", "huddle", "personal"]:
@@ -345,7 +345,7 @@ def restore_saved_messages():
         old_messages.append(old_message)
 
         if message_type in ["subscription_added", "subscription_removed"]:
-            stream_name = old_message["name"].strip()
+            stream_name = old_message["name"].strip() # type: text_type
             canon_stream_name = stream_name.lower()
             if canon_stream_name not in stream_dict:
                 stream_dict[(old_message["domain"], canon_stream_name)] = \
@@ -360,7 +360,7 @@ def restore_saved_messages():
 
         sender_email = old_message["sender_email"]
 
-        domain = str(split_email_to_domain(sender_email))
+        domain = text_type(split_email_to_domain(sender_email))
         realm_set.add(domain)
 
         if old_message["sender_email"] not in email_set:
@@ -787,7 +787,7 @@ def send_messages(data):
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                     recipient=message.recipient)).user_profile
-            message.subject = stream.name + str(random.randint(1, 3))
+            message.subject = stream.name + text_type(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
         message.pub_date = now()
