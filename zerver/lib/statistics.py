@@ -5,7 +5,7 @@ from __future__ import division
 from zerver.models import UserProfile, UserActivity, UserActivityInterval, Message
 
 from django.utils.timezone import utc
-from typing import Any
+from typing import Any, Dict, List, Sequence, Set
 
 from datetime import datetime, timedelta
 
@@ -14,7 +14,7 @@ from six.moves import range
 import six
 
 def median(data):
-    # type: (List[float]) -> float
+    # type: (Sequence[float]) -> float
     data = sorted(data)
 
     size = len(data)
@@ -30,7 +30,7 @@ users_who_sent_query = Message.objects.select_related("sender") \
         .exclude(sending_client__name__contains="API")
 
 def active_users():
-    # type: () -> List[UserProfile]
+    # type: () -> Sequence[UserProfile]
     # Return a list of active users we want to count towards various
     # statistics.
     return UserProfile.objects.filter(is_bot=False, is_active=True).select_related()
@@ -83,7 +83,7 @@ def users_active_nosend_during_day(day):
     active_users = active_users_to_measure()
     today_senders = users_who_sent_between(begin_day, end_day)
 
-    today_users = []
+    today_users = [] # type: List[UserProfile]
     for user_profile in active_users:
         intervals = UserActivityInterval.objects.filter(user_profile=user_profile,
                                                         end__gte=begin_day,
@@ -93,7 +93,7 @@ def users_active_nosend_during_day(day):
     return [u for u in today_users if u.id not in today_senders]
 
 def calculate_stats(data, all_users):
-    # type: (List[float], List[UserProfile]) -> Dict[str, Any]
+    # type: (Sequence[float], Sequence[UserProfile]) -> Dict[str, Any]
     if len(data) == 0:
         return {"# data points": 0}
 
