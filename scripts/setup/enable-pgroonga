@@ -21,7 +21,7 @@ ALTER TABLE zerver_message ADD COLUMN search_pgroonga text;
 
 UPDATE zerver_message SET search_pgroonga = subject || ' ' || rendered_content;
 
-CREATE INDEX zerver_message_search_pgroonga ON zerver_message
+CREATE INDEX CONCURRENTLY zerver_message_search_pgroonga ON zerver_message
   USING pgroonga(search_pgroonga pgroonga.text_full_text_search_ops);
 EOF
 )
