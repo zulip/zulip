@@ -204,8 +204,8 @@ def cache_delete_many(items, cache_name=None):
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
 ObjKT = TypeVar('ObjKT', int, text_type)
-CompressedItemT = TypeVar('CompressedItemT')
-ItemT = TypeVar('ItemT')
+ItemT = Any # https://github.com/python/mypy/issues/1721
+CompressedItemT = Any # https://github.com/python/mypy/issues/1721
 def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                               extractor=lambda obj: obj,
                               setter=lambda obj: obj,
