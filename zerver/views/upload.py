@@ -49,21 +49,15 @@ def serve_local(request, path_id):
     return response
     response['Content-Disposition'] = 'attachment; filename=%s' % (filename)
 
-def serve_file_backend(request, user_profile, realm_id_str, filename, redir):
+@has_request_variables
+def serve_file_backend(request, user_profile, realm_id_str, filename,
+                       redir=REQ(validator=check_bool, default=True)):
     # type: (HttpRequest, UserProfile, str, str, bool) -> HttpResponse
     path_id = "%s/%s" % (realm_id_str, filename)
     if settings.LOCAL_UPLOADS_DIR is not None:
         return serve_local(request, path_id)
 
     return serve_s3(request, user_profile, realm_id_str, filename, redir)
-
-@zulip_login_required
-@has_request_variables
-def get_uploaded_file(request, realm_id_str, filename,
-                      redir=REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, str, str, bool) -> HttpResponse
-    user_profile = request.user
-    return serve_file_backend(request, user_profile, realm_id_str, filename, redir)
 
 @authenticated_json_post_view
 def json_upload_file(request, user_profile):
