@@ -275,7 +275,9 @@ class StreamMessagesTest(AuthedTestCase):
         for non_subscriber in non_subscribers:
             old_non_subscriber_messages.append(message_stream_count(non_subscriber))
 
-        a_subscriber_email = subscribers[0].email
+        non_bot_subscribers = [user_profile for user_profile in subscribers
+                               if not user_profile.is_bot]
+        a_subscriber_email = non_bot_subscribers[0].email
         self.login(a_subscriber_email)
         self.send_message(a_subscriber_email, stream_name, Recipient.STREAM,
                           subject, content)
