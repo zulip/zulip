@@ -128,7 +128,7 @@ class LoginTest(AuthedTestCase):
 
     def test_login_nonexist_user(self):
         # type: () -> None
-        result = self.login("xxx@zulip.com", "xxx")
+        result = self.login_with_return("xxx@zulip.com", "xxx")
         self.assertIn("Please enter a correct email and password", result.content)
 
     def test_register(self):
@@ -171,7 +171,7 @@ class LoginTest(AuthedTestCase):
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
-        result = self.login("hamlet@zulip.com")
+        result = self.login_with_return("hamlet@zulip.com")
         self.assertIn("has been deactivated", result.content.replace("\n", " "))
 
     def test_logout(self):
