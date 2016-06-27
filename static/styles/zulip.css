@@ -321,16 +321,6 @@ a:hover code {
     display: inline;
 }
 
-#streams_list:hover #streams_inline_cog {
-   visibility: visible;
-   opacity: 0.5;
-}
-
-#streams_list #streams_inline_cog:hover {
-   opacity: 1.0;
-   text-decoration: none;
-}
-
 #streams_inline_cog,
 #streams_filter_icon {
     float: right;
@@ -383,16 +373,6 @@ a:hover code {
 .narrow-filter {
     display: block;
     position: relative;
-}
-
-.stream-filters-label {
-    font-size: 12px;
-    padding-left: 10px;
-    padding-top: 10px;
-}
-
-#stream_filters li.stream-filters-label:hover {
-    background-color: transparent;
 }
 
 #stream_filters li:hover {
@@ -528,6 +508,11 @@ ul.filters {
     width: 18px;
     text-align: center;
     margin-right: 5px;
+}
+
+.stream-pin-icon {
+    margin-right: 4px !important;
+    margin-left: 3px;
 }
 
 #global_filters .global-filter {
