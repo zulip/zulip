@@ -27,9 +27,11 @@ except ImportError as e:
 
 os.environ["TORNADO_SERVER"] = "http://localhost:9983"
 
-parser = optparse.OptionParser(r"""
-
-%prog --remote-debug file1 file2 file3""")
+usage = """%prog [options]
+    test-js-with-casper # Run all test files
+    test-js-with-casper 09-navigation.js # Run a single test file
+    test-js-with-casper 01-login.js 03-narrow.js # Run a few test files"""
+parser = optparse.OptionParser(usage)
 
 parser.add_option('--remote-debug',
                   help='Whether or not to enable remote debugging on port 7777',
