@@ -247,10 +247,10 @@ class Client(object):
         request = {}
 
         for (key, val) in six.iteritems(orig_request):
-            if not (isinstance(val, str) or isinstance(val, six.text_type)):
-                request[key] = simplejson.dumps(val)
-            else:
+            if isinstance(val, str) or isinstance(val, six.text_type):
                 request[key] = val
+            else:
+                request[key] = simplejson.dumps(val)
 
         query_state = {
             'had_error_retry': False,
