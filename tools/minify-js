@@ -84,7 +84,7 @@ CLOSURE_BINARY = '/usr/bin/closure-compiler'
 if not os.path.exists(CLOSURE_BINARY):
     CLOSURE_BINARY = 'tools/closure-compiler/run'
     if not os.path.exists(CLOSURE_BINARY):
-        print("closure-compiler not installed; the Vagrant provision.py installs it via apt "\
+        print("closure-compiler not installed; the Vagrant tools/provision.py installs it via apt "\
             "or you can manually unpack http://dl.google.com/closure-compiler/compiler-latest.zip to tools/closure-compiler")
         sys.exit(1)
 

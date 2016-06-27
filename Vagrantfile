@@ -71,7 +71,7 @@ $provision_script = <<SCRIPT
 set -x
 set -e
 ln -nsf /srv/zulip ~/zulip
-/usr/bin/python /srv/zulip/provision.py
+/usr/bin/python /srv/zulip/tools/provision.py
 SCRIPT
 
   config.vm.provision "shell",
