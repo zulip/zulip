@@ -123,7 +123,7 @@ class LoginTest(AuthedTestCase):
 
     def test_login_bad_password(self):
         # type: () -> None
-        self.login("hamlet@zulip.com", "wrongpassword")
+        self.login("hamlet@zulip.com", password="wrongpassword", fails=True)
         self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_login_nonexist_user(self):
