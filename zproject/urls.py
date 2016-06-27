@@ -119,8 +119,6 @@ urls = list(i18n_urls)
 # All of these paths are accessed by either a /json or /api prefix
 v1_api_and_json_patterns = [
     # realm-level calls
-    url(r'^export$', 'zerver.lib.rest.rest_dispatch',
-        {'GET':  'zerver.views.export'}),
     url(r'^realm$', 'zerver.lib.rest.rest_dispatch',
         {'PATCH': 'zerver.views.update_realm'}),
 
