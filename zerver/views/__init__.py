@@ -355,7 +355,7 @@ def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_ema
     if notifications_stream and not notifications_stream.invite_only:
         stream_names.append(notifications_stream.name)
 
-    streams = []
+    streams = [] # type: List[Stream]
     for stream_name in stream_names:
         stream = get_stream(stream_name, user_profile.realm)
         if stream is None:
