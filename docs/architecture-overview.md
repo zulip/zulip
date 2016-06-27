@@ -211,12 +211,13 @@ directory that would contain configuration files
 (`puppet/zulip/files/postgresql`) has only a utility script and a custom
 list of stopwords used by a Postgresql extension.
 
-In a development environment, configuration of that postgresql extension
-is handled by `tools/postgres-init-dev-db` (invoked by `provision.py`).
-That file also manages setting up the development postgresql user.
+In a development environment, configuration of that postgresql
+extension is handled by `tools/postgres-init-dev-db` (invoked by
+`tools/provision.py`).  That file also manages setting up the
+development postgresql user.
 
-`provision.py` also invokes `tools/do-destroy-rebuild-database` to
-create the actual database with its schema.
+`tools/provision.py` also invokes `tools/do-destroy-rebuild-database`
+to create the actual database with its schema.
 
 ### Nagios
 

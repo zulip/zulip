@@ -277,7 +277,7 @@ does the following:
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the
   virtual machine/container at `/srv/zulip`
-- runs the `provision.py` script inside the virtual machine/container, which
+- runs the `tools/provision.py` script inside the virtual machine/container, which
   downloads all required dependencies, sets up the python environment for
   the Zulip dev environment, and initializes a default test database.
 
@@ -436,7 +436,7 @@ is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environmnet.  To update your environment, you'll need to
 re-provision your vagrant machine using `vagrant reload --provision`
-(or just `python provision.py` from `/srv/zulip` inside the Vagrant
+(or just `python tools/provision.py` from `/srv/zulip` inside the Vagrant
 guest); this should be pretty fast and we're working to make it faster.
 
 See also the documentation on the [testing
@@ -634,16 +634,16 @@ this post](http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-
 
 #### npm install error
 
-The `provision.py` script may encounter an error related to `npm install`
+The `tools/provision.py` script may encounter an error related to `npm install`
 that looks something like:
 
 ```
 ==> default: + npm install
 ==> default: Traceback (most recent call last):
-==> default:   File "/srv/zulip/provision.py", line 195, in <module>
+==> default:   File "/srv/zulip/tools/provision.py", line 195, in <module>
 ==> default:
 ==> default: sys.exit(main())
-==> default:   File "/srv/zulip/provision.py", line 191, in main
+==> default:   File "/srv/zulip/tools/provision.py", line 191, in main
 ==> default:
 ==> default: run(["npm", "install"])
 ==> default:   File "/srv/zulip/zulip_tools.py", line 78, in run
@@ -848,7 +848,7 @@ running:
 
 ```
 sudo apt-get update
-python /srv/zulip/provision.py
+python /srv/zulip/tools/provision.py
 
 cd /srv/zulip
 source /srv/zulip-venv/bin/activate
@@ -1176,7 +1176,7 @@ Now you're going to install Zulip dependencies in the image:
 
 ```
 docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev /bin/bash
-$ /usr/bin/python /srv/zulip/provision.py --docker
+$ /usr/bin/python /srv/zulip/tools/provision.py --docker
 docker ps -af ancestor=user/zulipdev
 docker commit -m "Zulip installed" <container id> user/zulipdev:v2
 ```

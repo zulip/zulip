@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 set -x
-python provision.py --travis
+python tools/provision.py --travis

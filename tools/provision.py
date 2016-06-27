@@ -7,7 +7,9 @@ import subprocess
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+sys.path.append(ZULIP_PATH)
 from zulip_tools import run
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 
@@ -21,7 +23,6 @@ SUPPORTED_PLATFORMS = {
 NPM_VERSION = '3.9.3'
 VENV_PATH = "/srv/zulip-venv"
 PY3_VENV_PATH = "/srv/zulip-py3-venv"
-ZULIP_PATH = os.path.dirname(os.path.abspath(__file__))
 TRAVIS_NODE_PATH = os.path.join(os.environ['HOME'], 'node')
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
