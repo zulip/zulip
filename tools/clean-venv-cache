@@ -13,6 +13,10 @@ if "--travis" in sys.argv:
 used_caches = set()
 for d in glob.glob('/srv/zulip-*venv'):
     used_caches.add(os.path.dirname(os.readlink(d)))
+for d in ['/root/zulip/zulip-venv']:
+    if not os.path.exists(d):
+        continue
+    used_caches.add(os.path.dirname(os.readlink(d)))
 
 for cache_dir_base in os.listdir(VENV_CACHE_DIR):
     cache_dir = os.path.join(VENV_CACHE_DIR, cache_dir_base)
