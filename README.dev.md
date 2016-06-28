@@ -337,6 +337,13 @@ Next, start the Zulip server:
 /srv/zulip/tools/run-dev.py --interface=''
 ```
 
+As you can see above the application's root directory, where you can
+execute Django's command line utilities is:
+
+```
+/srv/zulip/
+```
+
 You will see several lines of output starting with something like:
 
 ```
