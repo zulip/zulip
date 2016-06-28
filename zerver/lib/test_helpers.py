@@ -44,7 +44,8 @@ import re
 import time
 import ujson
 from six.moves import urllib
-from six import text_type
+from six import text_type, binary_type
+from zerver.lib.str_utils import NonBinaryStr
 
 from contextlib import contextmanager
 import six
@@ -99,16 +100,16 @@ def simulated_empty_cache():
 
 @contextmanager
 def queries_captured():
-    # type: () -> Generator[List[Dict[str, str]], None, None]
+    # type: () -> Generator[List[Dict[str, Union[str, binary_type]]], None, None]
     '''
     Allow a user to capture just the queries executed during
     the with statement.
     '''
 
-    queries = []
+    queries = [] # type: List[Dict[str, Union[str, binary_type]]]
 
     def wrapper_execute(self, action, sql, params=()):
-        # type: (TimeTrackingCursor, Callable, str, Iterable[Any]) -> None
+        # type: (TimeTrackingCursor, Callable, NonBinaryStr, Iterable[Any]) -> None
         start = time.time()
         try:
             return action(sql, params)
@@ -124,12 +125,12 @@ def queries_captured():
     old_executemany = TimeTrackingCursor.executemany
 
     def cursor_execute(self, sql, params=()):
-        # type: (TimeTrackingCursor, str, Iterable[Any]) -> None
+        # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
         return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.execute = cursor_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self, sql, params=()):
-        # type: (TimeTrackingCursor, str, Iterable[Any]) -> None
+        # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
         return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.executemany = cursor_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
