@@ -2,11 +2,14 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.migrations.state import StateApps
 from django.conf import settings
 
 from zerver.models import Recipient
 
 def migrate_existing_data(apps, schema_editor):
+    # type: (StateApps, DatabaseSchemaEditor) -> None
     Attachment = apps.get_model('zerver', 'Attachment')
     Stream = apps.get_model('zerver', 'Stream')
 
