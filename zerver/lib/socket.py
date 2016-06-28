@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+from six import text_type
 from typing import Any, Union, Optional
 
 from django.conf import settings
@@ -28,7 +30,7 @@ logger = logging.getLogger('zulip.socket')
 
 djsession_engine = import_module(settings.SESSION_ENGINE)
 def get_user_profile(session_id):
-    # type: (str) -> Optional[UserProfile]
+    # type: (Optional[text_type]) -> Optional[UserProfile]
     if session_id is None:
         return None
 
@@ -65,8 +67,8 @@ def deregister_connection(conn):
 redis_client = get_redis_client()
 
 def req_redis_key(req_id):
-    # type: (str) -> str
-    return 'socket_req_status:%s' % (req_id,)
+    # type: (text_type) -> text_type
+    return u'socket_req_status:%s' % (req_id,)
 
 class SocketAuthError(Exception):
     def __init__(self, msg):
@@ -80,7 +82,7 @@ class CloseErrorInfo(object):
         self.err_msg = err_msg
 
 class SocketConnection(sockjs.tornado.SockJSConnection):
-    client_id = None # type: Union[int, str]
+    client_id = None # type: Optional[Union[int, str]]
 
     def on_open(self, info):
         # type: (ConnectionInfo) -> None
