@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from contextlib import contextmanager
-from typing import cast, Any, Callable, Generator, Iterable, Tuple, Sized, Union, Optional
+from typing import cast, Any, Callable, Dict, Generator, Iterable, List, Optional, Sized, Tuple, Union
 
 from django.test import TestCase
 from django.template import loader
@@ -62,7 +62,7 @@ def stub(obj, name, f):
 
 @contextmanager
 def simulated_queue_client(client):
-    # type: (Any) -> Generator[None, None, None]
+    # type: (type) -> Generator[None, None, None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
@@ -70,7 +70,7 @@ def simulated_queue_client(client):
 
 @contextmanager
 def tornado_redirected_to_list(lst):
-    # type: (List) -> Generator[None, None, None]
+    # type: (List[Dict[str, Any]]) -> Generator[None, None, None]
     real_event_queue_process_notification = event_queue.process_notification
     event_queue.process_notification = lst.append
     yield
@@ -191,7 +191,7 @@ class DummyTornadoRequest(object):
 
 class DummyHandler(object):
     def __init__(self, assert_callback):
-        # type: (Any) -> None
+        # type: (Callable) -> None
         self.assert_callback = assert_callback
         self.request = DummyTornadoRequest()
         allocate_handler_id(self)
