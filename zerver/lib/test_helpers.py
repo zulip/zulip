@@ -236,17 +236,17 @@ class AuthedTestCase(TestCase):
     # Helper because self.client.patch annoying requires you to urlencode
 
     def client_patch(self, url, info={}, **kwargs):
-        # type: (str, Dict[str, Any], **Any) -> HttpResponse
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
         return self.client.patch(url, encoded, **kwargs)
 
     def client_put(self, url, info={}, **kwargs):
-        # type: (str, Dict[str, Any], **Any) -> HttpResponse
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
         return self.client.put(url, encoded, **kwargs)
 
     def client_delete(self, url, info={}, **kwargs):
-        # type: (str, Dict[str, Any], **Any) -> HttpResponse
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
         return self.client.delete(url, encoded, **kwargs)
 
@@ -311,7 +311,7 @@ class AuthedTestCase(TestCase):
 
     def send_message(self, sender_name, raw_recipients, message_type,
                      content=u"test content", subject=u"test", **kwargs):
-        # type: (str, Union[text_type, List[text_type]], int, text_type, text_type, **Any) -> int
+        # type: (text_type, Union[text_type, List[text_type]], int, text_type, text_type, **Any) -> int
         sender = get_user_profile_by_email(sender_name)
         if message_type == Recipient.PERSONAL:
             message_type_name = "private"
@@ -367,7 +367,7 @@ class AuthedTestCase(TestCase):
         return json['msg']
 
     def assert_json_error(self, result, msg, status_code=400):
-        # type: (HttpResponse, str, int) -> None
+        # type: (HttpResponse, text_type, int) -> None
         """
         Invalid POSTs return an error status code and JSON of the form
         {"result": "error", "msg": "reason"}.
@@ -384,7 +384,7 @@ class AuthedTestCase(TestCase):
                                "len(%s) == %s, > %s" % (queries, actual_count, count))
 
     def assert_json_error_contains(self, result, msg_substring, status_code=400):
-        # type: (HttpResponse, str, int) -> None
+        # type: (HttpResponse, text_type, int) -> None
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
 
     def fixture_data(self, type, action, file_type='json'):
@@ -405,7 +405,7 @@ class AuthedTestCase(TestCase):
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False):
-        # type: (str, Iterable[text_type], Dict[str, Any], bool) -> HttpResponse
+        # type: (text_type, Iterable[text_type], Dict[str, Any], bool) -> HttpResponse
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
