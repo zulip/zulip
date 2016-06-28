@@ -17,7 +17,7 @@ hash_reqs = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
 for filename in os.listdir(os.path.join(ZULIP_PATH, "requirements")):
     requirements_file = os.path.join(ZULIP_PATH, "requirements", filename)
     hash_val = subprocess.check_output([hash_reqs, requirements_file]).strip()
-    used_caches.add(os.path.join(VENV_CACHE_DIR, hash_val))
+    used_caches.add(os.path.join(VENV_CACHE_DIR, hash_val.decode('utf-8')))
 
 for cache_dir_base in os.listdir(VENV_CACHE_DIR):
     cache_dir = os.path.join(VENV_CACHE_DIR, cache_dir_base)
