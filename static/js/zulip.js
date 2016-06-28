@@ -10,51 +10,6 @@ var current_msg_list = home_msg_list;
 var queued_mark_as_read = [];
 var queued_flag_timer;
 
-
-function respond_to_message(opts) {
-    var message, msg_type;
-    // Before initiating a reply to a message, if there's an
-    // in-progress composition, snapshot it.
-    compose.snapshot_message();
-
-    message = current_msg_list.selected_message();
-
-    if (message === undefined) {
-        return;
-    }
-
-    unread.mark_message_as_read(message);
-
-    var stream = '';
-    var subject = '';
-    if (message.type === "stream") {
-        stream = message.stream;
-        subject = message.subject;
-    }
-
-    var pm_recipient = message.reply_to;
-    if (opts.reply_type === "personal" && message.type === "private") {
-        // reply_to for private messages is everyone involved, so for
-        // personals replies we need to set the the private message
-        // recipient to just the sender
-        pm_recipient = message.sender_email;
-    }
-    if (opts.reply_type === 'personal' || message.type === 'private') {
-        msg_type = 'private';
-    } else {
-        msg_type = message.type;
-    }
-    compose.start(msg_type, {'stream': stream, 'subject': subject,
-                             'private_message_recipient': pm_recipient,
-                             'replying_to_message': message,
-                             'trigger': opts.trigger});
-
-}
-
-
-
-
-
 function consider_bankruptcy() {
     // Until we've handled possibly declaring bankruptcy, don't show
     // unread counts since they only consider messages that are loaded
