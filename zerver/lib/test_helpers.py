@@ -50,7 +50,7 @@ from zerver.lib.str_utils import NonBinaryStr
 from contextlib import contextmanager
 import six
 
-API_KEYS = {} # type: Dict[str, str]
+API_KEYS = {} # type: Dict[text_type, text_type]
 
 @contextmanager
 def stub(obj, name, f):
@@ -285,16 +285,16 @@ class AuthedTestCase(TestCase):
                                  'terms': True})
 
     def get_api_key(self, email):
-        # type: (str) -> str
+        # type: (text_type) -> text_type
         if email not in API_KEYS:
             API_KEYS[email] = get_user_profile_by_email(email).api_key
         return API_KEYS[email]
 
     def api_auth(self, email):
-        # type: (str) -> Dict[str, str]
-        credentials = "%s:%s" % (email, self.get_api_key(email))
+        # type: (text_type) -> Dict[str, text_type]
+        credentials = u"%s:%s" % (email, self.get_api_key(email))
         return {
-            'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode(credentials)
+            'HTTP_AUTHORIZATION': u'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }
 
     def get_streams(self, email):

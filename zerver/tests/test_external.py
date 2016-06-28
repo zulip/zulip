@@ -22,9 +22,10 @@ import DNS
 import mock
 import time
 import ujson
-from six.moves import urllib
 
+from six.moves import urllib
 from six.moves import range
+from six import text_type
 
 class MITNameTest(TestCase):
     def test_valid_hesiod(self):
@@ -66,7 +67,7 @@ class RateLimitTests(AuthedTestCase):
         remove_ratelimit_rule(1, 5)
 
     def send_api_message(self, email, api_key, content):
-        # type: (str, str, str) -> HttpResponse
+        # type: (text_type, text_type, text_type) -> HttpResponse
         return self.client.post("/api/v1/send_message", {"type": "stream",
                                                                    "to": "Verona",
                                                                    "client": "test suite",
