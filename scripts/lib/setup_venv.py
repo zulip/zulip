@@ -68,3 +68,4 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
 
     run(["pip", "install", "--upgrade", "pip"])
     run(["pip", "install", "--no-deps", "--requirement", requirements_file])
+    run(["sudo", "chmod", "-R", "a+rX", venv_path])
