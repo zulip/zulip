@@ -2,6 +2,10 @@
 set -e
 set -x
 
+# Make /home/travis world-readable so the `zulip` user will be able to
+# read it.
+sudo chmod a+rX /home/travis
+
 # Uninstall the unnecessary extra versions of postgres that Travis CI
 # installs since if we don't do this, doing apt upgrades can fail due
 # to conflicts over which version of postgres should be running.
