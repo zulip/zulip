@@ -10,8 +10,7 @@ is a web application written in Python 2.7 (soon to also support
 Python 3) and using the Django framework. That codebase includes
 server-side code and the web client, as well as Python API bindings
 and most of our integrations with other services and applications (see
-[the directory structure
-guide](https://zulip.readthedocs.io/en/latest/directory-structure.html)).
+[the directory structure guide](directory-structure.html)).
 
 We maintain several separate repositories for integrations and other
 glue code: a [Hubot adapter](https://github.com/zulip/hubot-zulip);
@@ -148,7 +147,7 @@ processes that process event queues. We use event queues for the kinds
 of tasks that are best run in the background because they are
 expensive (in terms of performance) and don't have to be synchronous
 -- e.g., sending emails or updating analytics. Also see [the queuing
-guide](https://zulip.readthedocs.io/en/latest/queuing.html).
+guide](queuing.html).
 
 ### memcached
 
@@ -197,8 +196,7 @@ one queue or another. Most of the processes started by Supervisor are
 queue processors that continually pull things out of a RabbitMQ queue
 and handle them.
 
-Also see [the queuing
-guide](https://zulip.readthedocs.io/en/latest/queuing.html).
+Also see [the queuing guide](queuing.html).
 
 ### PostgreSQL
 
