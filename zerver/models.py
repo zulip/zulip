@@ -144,6 +144,10 @@ class Realm(ModelReprMixin, models.Model):
     show_digest_email = models.BooleanField(default=True) # type: bool
     name_changes_disabled = models.BooleanField(default=False) # type: bool
 
+    allow_message_editing = models.BooleanField(default=True) # type: bool
+    DEFAULT_MESSAGE_EDIT_DURATION_SECONDS = 600 # if changed, also change in admin.js
+    message_edit_duration_seconds = models.IntegerField(default=DEFAULT_MESSAGE_EDIT_DURATION_SECONDS) # type: int
+
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]
     deactivated = models.BooleanField(default=False) # type: bool

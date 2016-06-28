@@ -142,7 +142,9 @@ function _setup_page() {
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required:      page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
-        realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only
+        realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
+        realm_allow_message_editing: page_params.realm_allow_message_editing,
+        realm_message_edit_duration_seconds: page_params.realm_message_edit_duration_seconds
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
@@ -152,6 +154,7 @@ function _setup_page() {
     $("#admin-realm-invite-required-status").expectOne().hide();
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
     $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
+    $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
     $("#admin-emoji-name-status").expectOne().hide();
     $("#admin-emoji-url-status").expectOne().hide();
@@ -338,17 +341,29 @@ function _setup_page() {
         }
     });
 
+    $("#id_realm_allow_message_editing").change(function () {
+        if (this.checked) {
+            $("#id_realm_message_edit_duration_seconds").removeAttr("disabled");
+            $("#id_realm_message_edit_duration_seconds_label").removeClass("control-label-disabled");
+        } else {
+            $("#id_realm_message_edit_duration_seconds").attr("disabled", true);
+            $("#id_realm_message_edit_duration_seconds_label").addClass("control-label-disabled");
+        }
+    });
+
     $(".administration").on("submit", "form.admin-realm-form", function (e) {
         var name_status = $("#admin-realm-name-status").expectOne();
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
+        var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
         create_stream_by_admins_only_status.hide();
+        message_editing_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
@@ -358,6 +373,20 @@ function _setup_page() {
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
         var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
+        var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
+        var new_message_edit_duration_seconds = $("#id_realm_message_edit_duration_seconds").val();
+
+        // If allow_message_editing is unchecked, message_edit_duration_seconds
+        // is irrelevant.  Hence if allow_message_editing is unchecked, and
+        // message_edit_duration_seconds is poorly formed, we set the latter to
+        // a default value to prevent the server from returning an error.
+        if (!new_allow_message_editing) {
+            if ((parseInt(new_message_edit_duration_seconds, 10).toString() !==
+                 new_message_edit_duration_seconds) ||
+                new_message_edit_duration_seconds < 0) {
+            new_message_edit_duration_seconds = 600; // Realm.DEFAULT_MESSAGE_EDIT_DURATION_SECONDS
+            }
+        }
 
         var url = "/json/realm";
         var data = {
@@ -365,7 +394,9 @@ function _setup_page() {
             restricted_to_domain: JSON.stringify(new_restricted),
             invite_required: JSON.stringify(new_invite),
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
-            create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only)
+            create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
+            allow_message_editing: JSON.stringify(new_allow_message_editing),
+            message_edit_duration_seconds: JSON.stringify(parseInt(new_message_edit_duration_seconds, 10))
         };
 
         channel.patch({
@@ -402,6 +433,22 @@ function _setup_page() {
                     } else {
                         ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
                     }
+                }
+                if (data.allow_message_editing !== undefined) {
+                    // We expect message_edit_duration_seconds was sent in the
+                    // response as well
+                    if (data.allow_message_editing) {
+                        if (data.message_edit_duration_seconds > 0) {
+                            ui.report_success(i18n.t("Users can now edit messages less than __message_edit_duration_seconds__ seconds old!", data), message_editing_status);
+                        } else {
+                            ui.report_success(i18n.t("Users can now edit all their past messages!"), message_editing_status);
+                        }
+                    } else {
+                        ui.report_success(i18n.t("Users can no longer edit old messages!"), message_editing_status);
+                    }
+                    // message_edit_duration_seconds could have been changed at the
+                    // beginning of this function, so update the field just in case
+                    $("#id_realm_message_edit_duration_seconds").val(data.message_edit_duration_seconds);
                 }
             },
             error: function (xhr, error) {

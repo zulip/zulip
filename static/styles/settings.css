@@ -341,6 +341,11 @@ form.admin-realm .control-label {
     color: #d3d3d3;
 }
 
+.admin-realm-message-edit-duration-seconds {
+    width: 6ch;
+    text-align: right;
+}
+
 #settings-status {
     text-align: center;
     width: 50%;

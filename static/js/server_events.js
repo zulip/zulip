@@ -95,6 +95,10 @@ function get_events_success(events) {
                 }
             } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
                 page_params.realm_restricted_to_domain = event.value;
+            } else if (event.op === 'update_dict' && event.property === 'default') {
+                $.each(event.data, function (key, value) {
+                    page_params.setAttribute(key, value);
+                });
             }
             break;
         case 'realm_user':
