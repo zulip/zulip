@@ -11,10 +11,22 @@ import subprocess
 import six
 
 exclude = """
-api/integrations/
+api/integrations/asana/zulip_asana_config.py
+api/integrations/basecamp/zulip_basecamp_config.py
+api/integrations/codebase/zulip_codebase_config.py
+api/integrations/git/zulip_git_config.py
+api/integrations/hg/zulip-changegroup.py
+api/integrations/perforce/git_p4.py
+api/integrations/perforce/zulip_change-commit.py
+api/integrations/perforce/zulip_perforce_config.py
+api/integrations/svn/zulip_svn_config.py
+api/integrations/trac/zulip_trac_config.py
+api/integrations/trac/zulip_trac.py
 bots/jabber_mirror_backend.py
 bots/zephyr_mirror_backend.py
-tools/deprecated/
+tools/deprecated/finbot/monthdelta.py
+tools/deprecated/finbot/money.py
+tools/deprecated/generate-activity-metrics.py
 zproject/settings.py
 zproject/test_settings.py
 zerver/tests/test_bugdown.py
