@@ -360,7 +360,7 @@ def restore_saved_messages():
 
         sender_email = old_message["sender_email"]
 
-        domain = text_type(split_email_to_domain(sender_email))
+        domain = split_email_to_domain(sender_email)
         realm_set.add(domain)
 
         if old_message["sender_email"] not in email_set:
