@@ -3,7 +3,7 @@
 Zulip uses the [standard Django system for doing schema
 migrations](https://docs.djangoproject.com/en/1.8/topics/migrations/).
 There is some example usage in the [new feature
-tutorial](http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html).
+tutorial](new-feature-tutorial.html).
 
 This page documents some important issues related to writing schema
 migrations.

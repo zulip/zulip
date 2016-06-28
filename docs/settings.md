@@ -124,4 +124,4 @@ replaced with realm settings:
   server, and in the realm settings indicating which methods the realm
   administrator wants to allow users to login with.
 
-[doc-newfeat]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
+[doc-newfeat]: new-feature-tutorial.html

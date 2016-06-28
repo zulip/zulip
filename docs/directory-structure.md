@@ -4,8 +4,8 @@ This page documents the Zulip directory structure, where to find
 things, and how to decide where to put a file.
 
 You may also find the [new application feature
-tutorial](https://zulip.readthedocs.io/en/latest/new-feature-tutorial.html)
-helpful for understanding the flow through these files.
+tutorial](new-feature-tutorial.html) helpful for understanding the
+flow through these files.
 
 ### Core Python files
 
@@ -21,15 +21,15 @@ paths will be familiar to Django developers.
 
 * `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/1.8/topics/http/views/).
 
-* `zerver/views/webhooks/` Webhook views for [Zulip integrations](https://zulip.readthedocs.io/en/latest/integration-guide.html).
+* `zerver/views/webhooks/` Webhook views for [Zulip integrations](integration-guide.html).
 
 * `zerver/tornadoviews.py` Tornado views.
 
-* `zerver/worker/queue_processors.py` [Queue workers](https://zulip.readthedocs.io/en/latest/queuing.html).
+* `zerver/worker/queue_processors.py` [Queue workers](queuing.html).
 
 * `zerver/lib/*.py` Most library code.
 
-* `zerver/lib/bugdown/` [Backend Markdown processor](https://zulip.readthedocs.io/en/latest/markdown.html).
+* `zerver/lib/bugdown/` [Backend Markdown processor](markdown.html).
 
 * `zproject/backends.py` [Authenticate backends](https://docs.djangoproject.com/en/1.8/topics/auth/customizing/).
 
@@ -37,9 +37,8 @@ paths will be familiar to Django developers.
 
 ### HTML Templates
 
-See [our translating
-docs](http://zulip.readthedocs.io/en/latest/translating.html) for
-details on Zulip's templating systems.
+See [our translating docs](translating.html) for details on Zulip's
+templating systems.
 
 * `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates for the backend (for zerver app).
 
