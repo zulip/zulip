@@ -232,7 +232,7 @@ instructions](https://help.github.com/articles/generating-an-ssh-key/).
 2. Open Terminal (OS X/Ubuntu) or Cygwin (Windows; must run as an Administrator)
 3. In Terminal/Cygwin, clone your fork:
 ```
-git clone git@github.com:YOURUSERNAME/zulip.git
+git clone https://github.com/YOURUSERNAME/zulip
 ```
 
 This will create a 'zulip' directory and download the Zulip code into it.
@@ -242,7 +242,7 @@ something like:
 
 ```
 christie@win10 ~
-$ git clone git@github.com:YOURUSERNAME/zulip.git
+$ git clone https://github.com/YOURUSERNAME/zulip
 Cloning into 'zulip'...
 remote: Counting objects: 73571, done.
 remote: Compressing objects: 100% (2/2), done.
