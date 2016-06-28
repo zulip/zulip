@@ -9,9 +9,9 @@ from zulip_tools import run
 ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
 
-if 'TEST_SUITE' in os.environ:
+if 'TRAVIS' in os.environ:
     # In Travis CI, we don't have root access
-    VENV_CACHE_PATH = os.path.join(os.environ['HOME'], "zulip-venv-cache")
+    VENV_CACHE_PATH = "/home/travis/zulip-venv-cache"
 
 if False:
     # Don't add a runtime dependency on typing
