@@ -6,17 +6,18 @@ import os
 import subprocess
 import sys
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VENV_CACHE_DIR = "/srv/zulip-venv-cache"
 if "--travis" in sys.argv:
     VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
 
 used_caches = set()
-for d in glob.glob('/srv/zulip-*venv'):
-    used_caches.add(os.path.dirname(os.readlink(d)))
-for d in ['/root/zulip/zulip-venv']:
-    if not os.path.exists(d):
-        continue
-    used_caches.add(os.path.dirname(os.readlink(d)))
+hash_reqs = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
+
+for filename in os.listdir(os.path.join(ZULIP_PATH, "requirements")):
+    requirements_file = os.path.join(ZULIP_PATH, "requirements", filename)
+    hash_val = subprocess.check_output([hash_reqs, requirements_file]).strip()
+    used_caches.add(os.path.join(VENV_CACHE_DIR, hash_val))
 
 for cache_dir_base in os.listdir(VENV_CACHE_DIR):
     cache_dir = os.path.join(VENV_CACHE_DIR, cache_dir_base)
