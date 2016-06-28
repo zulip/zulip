@@ -30,7 +30,7 @@ if __name__ == "__main__":
     test-backend # Runs all backend tests
     test-backend zerver.tests.test_bugdown # run all tests in a test module
     test-backend zerver.tests.test_bugdown.BugdownTest # run all tests in a test class
-    test-backend zerver.tests.test_bugdown.BugDownTest.test_inline_youtube # run a single test"""
+    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test"""
 
     parser = optparse.OptionParser(usage)
     parser.add_option('--nonfatal-errors', action="store_false", default=True,
