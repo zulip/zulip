@@ -1,5 +1,6 @@
 from __future__ import absolute_import
-from typing import Any, Tuple
+from types import TracebackType
+from typing import Any, Callable, Optional, Tuple, TypeVar
 
 import sys
 import time
@@ -13,9 +14,13 @@ from six.moves import range
 class TimeoutExpired(Exception):
     '''Exception raised when a function times out.'''
     def __str__(self):
+        # type: () -> str
         return 'Function call timed out.'
 
+ResultT = TypeVar('ResultT')
+
 def timeout(timeout, func, *args, **kwargs):
+    # type: (float, Callable[..., ResultT], *Any, **Any) -> ResultT
     '''Call the function in a separate thread.
        Return its return value, or raise an exception,
        within approximately 'timeout' seconds.
@@ -33,21 +38,24 @@ def timeout(timeout, func, *args, **kwargs):
 
     class TimeoutThread(threading.Thread):
         def __init__(self):
+            # type: () -> None
             threading.Thread.__init__(self)
-            self.result = None # type: Any
-            self.exc_info = None # type: Tuple[type, BaseException, Any]
+            self.result = None # type: Optional[ResultT]
+            self.exc_info = None # type: Optional[Tuple[type, BaseException, TracebackType]]
 
             # Don't block the whole program from exiting
             # if this is the only thread left.
             self.daemon = True
 
         def run(self):
+            # type: () -> None
             try:
                 self.result = func(*args, **kwargs)
             except BaseException:
                 self.exc_info = sys.exc_info()
 
         def raise_async_timeout(self):
+            # type: () -> None
             # Called from another thread.
             # Attempt to raise a TimeoutExpired in the thread represented by 'self'.
             tid = ctypes.c_long(self.ident)
