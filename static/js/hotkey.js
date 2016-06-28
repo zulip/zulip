@@ -306,13 +306,13 @@ function process_hotkey(e) {
         case 'narrow_by_subject':
             return do_narrow_action(narrow.by_subject);
         case  'enter': // Enter: respond to message (unless we need to do something else)
-            respond_to_message({trigger: 'hotkey enter'});
+            compose.respond_to_message({trigger: 'hotkey enter'});
             return true;
         case 'reply_message': // 'r': respond to message
-            respond_to_message({trigger: 'hotkey'});
+            compose.respond_to_message({trigger: 'hotkey'});
             return true;
         case 'respond_to_author': // 'R': respond to author
-            respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
+            compose.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
             return true;
     }
 

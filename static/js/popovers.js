@@ -459,13 +459,13 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.respond_button', function (e) {
-        respond_to_message({trigger: 'popover respond'});
+        compose.respond_to_message({trigger: 'popover respond'});
         popovers.hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();
     });
     $('body').on('click', '.respond_personal_button', function (e) {
-        respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
+        compose.respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
         popovers.hide_all();
         e.stopPropagation();
         e.preventDefault();
