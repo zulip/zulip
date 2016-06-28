@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.migrations.state import StateApps
 from django.db import models, migrations, connection
 from django.conf import settings
 
 # Translate the UserProfile fields back to the old Guardian model
 def unmigrate_guardian_data(apps, schema_editor):
+    # type: (StateApps, DatabaseSchemaEditor) -> None
     Permission = apps.get_model('auth', 'Permission')
     ContentType = apps.get_model('contenttypes', 'ContentType')
     UserProfile = apps.get_model('zerver', 'UserProfile')
@@ -38,6 +41,7 @@ def unmigrate_guardian_data(apps, schema_editor):
 # Migrate all the guardian data for which users are realm admins or
 # API super users to the new fields on the UserProfile model
 def migrate_guardian_data(apps, schema_editor):
+    # type: (StateApps, DatabaseSchemaEditor) -> None
     Permission = apps.get_model('auth', 'Permission')
     ContentType = apps.get_model('contenttypes', 'ContentType')
     UserProfile = apps.get_model('zerver', 'UserProfile')

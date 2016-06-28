@@ -17,7 +17,6 @@ bots/zephyr_mirror_backend.py
 tools/deprecated/
 zproject/settings.py
 zproject/test_settings.py
-zerver/migrations/
 zerver/tests/test_bugdown.py
 zerver/tests/test_email_mirror.py
 zerver/tests/test_decorators.py
