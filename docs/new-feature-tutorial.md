@@ -58,8 +58,9 @@ precompiled as part of the build/deploy process.
 tests and blackbox end-to-end tests. The blackbox tests are run in a
 headless browser using Casper.js and are located in
 `frontend_tests/casper_tests/`. The unit tests use Node's `assert`
-module are located in `frontend_tests/node_tests/`. For more information
-on writing and running tests see the testing documentation \<testing\>.
+module are located in `frontend_tests/node_tests/`. For more
+information on writing and running tests see the [testing
+documentation](testing.html).
 
 ## Example Feature
 
