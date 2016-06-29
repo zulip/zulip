@@ -33,5 +33,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name='attachment',
+            name='owner',
+            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True),
+        ),
         migrations.RunPython(migrate_existing_data)
     ]
