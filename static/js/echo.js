@@ -302,8 +302,8 @@ function escape(html, encode) {
 
 function handleUnicodeEmoji(unicode_emoji) {
     var hex_value = unicode_emoji.codePointAt(0).toString(16);
-    if (emoji.emojis_by_name.hasOwnProperty(hex_value)) {
-        var emoji_url = emoji.emojis_by_name[hex_value];
+    if (emoji.emojis_by_unicode.hasOwnProperty(hex_value)) {
+        var emoji_url = emoji.emojis_by_unicode[hex_value];
         return '<img alt="' + unicode_emoji + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + unicode_emoji + '">';
