@@ -831,9 +831,26 @@ to install our SSO integration.
 (3) To configure our SSO integration, edit
 `/etc/apache2/sites-available/zulip-sso.example` and fill in the
 configuration required for your SSO service to set `REMOTE_USER` and
-place your completed configuration file at `/etc/apache2/sites-available/zulip-sso`
+place your completed configuration file at `/etc/apache2/sites-available/zulip-sso.conf`
+
+`zulip-sso.example` is correct configuration for using an `htpasswd`
+file for `REMOTE_USER` authentication, which is useful for testing
+quickly.  You can set it up by doing the following:
+
+```
+/home/zulip/deployments/current/scripts/restart-server
+cd /etc/apache2/sites-available/
+cp zulip-sso.example zulip-sso.conf
+htpasswd -c /home/zulip/zpasswd username@example.com # prompts for a password
+```
+
+and then continuing with the steps below.
 
 (4) Run `a2ensite zulip-sso` to enable the Apache integration site.
+
+(5) Run `service apache2 reload` to use your new configuration.  If
+Apache isn't already running, you may need to run `service apache2
+start` instead.
 
 Now you should be able to visit `https://zulip.example.com/` and
 login via the SSO solution.
