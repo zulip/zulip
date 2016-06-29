@@ -182,6 +182,10 @@ Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
+Files: static/third/string-prototype-codepointat/*
+Copyright: 2014 Mathias Bynens
+License: Expat
+
 Files: static/third/sockjs/sockjs-0.3.4.js
 Copyright: 2011-2012 VMware, Inc.
  2012 Douglas Crockford
