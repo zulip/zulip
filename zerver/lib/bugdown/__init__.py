@@ -557,19 +557,9 @@ class Avatar(markdown.inlinepatterns.Pattern):
         img.set('alt', email_address)
         return img
 
-if settings.VOYAGER:
-    path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                                 'prod-static', 'serve', 'third', 'gemoji', 'images', 'emoji', '*.png')
-    path_to_unicode_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                                         'prod-static', 'serve', 'third', 'gemoji', 'images',
-                                         'emoji', 'unicode', '*.png')
-else:
-    path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                                 # This should be the root
-                                 'static', 'third', 'gemoji', 'images', 'emoji', '*.png')
-    path_to_unicode_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                                         # This should be the root
-                                         'static', 'third', 'gemoji', 'images', 'emoji', 'unicode', '*.png')
+emoji_tree = os.path.join(settings.STATIC_ROOT, "third", "gemoji", "images", "emoji")
+path_to_emoji = os.path.join(emoji_tree, '*.png')
+path_to_unicode_emoji = os.path.join(emoji_tree, 'unicode', '*.png')
 
 emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_emoji)]
 unicode_emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_unicode_emoji)]
