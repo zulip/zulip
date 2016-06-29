@@ -1,6 +1,7 @@
 global.assert = require('assert');
 var fs = require('fs');
 var Handlebars = require('handlebars');
+require('third/string-prototype-codepointat/codepointat.js');
 
 global.Dict = require('js/dict');
 global._ = require('third/underscore/underscore.js');
