@@ -21,8 +21,11 @@ class zulip::supervisor {
     # the changed configuration until you do an "update" (I assume
     # this is so you can check if your config file parses without
     # doing anything, but it's really confusing)
+    #
+    # Also, to handle the case that supervisord wasn't running at all,
+    # we check if it is not running and if so, start it.
     hasrestart => true,
-    restart => "bash -c 'supervisorctl reread && supervisorctl update'"
+    restart => "bash -c 'if pgrep -f supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi'"
   }
 
   file { "/etc/supervisor/supervisord.conf":
