@@ -271,7 +271,7 @@ class LocalStorageTest(AuthedTestCase):
         # type: () -> None
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image('dummy.txt', 'text/plain', 'zulip!', user_profile)
+        uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
@@ -316,7 +316,7 @@ class S3Test(AuthedTestCase):
 
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image('dummy.txt', 'text/plain', 'zulip!', user_profile)
+        uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
@@ -336,7 +336,7 @@ class S3Test(AuthedTestCase):
 
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image('dummy.txt', 'text/plain', 'zulip!', user_profile)
+        uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
