@@ -47,7 +47,7 @@ exports.changehash = function (newhash) {
     if (changing_hash) {
         return;
     }
-    $(document).trigger($.Event('hashchange.zulip'));
+    $(document).trigger($.Event('zuliphashchange.zulip'));
     set_hash(newhash);
     favicon.reset();
 };
@@ -125,7 +125,7 @@ function do_hashchange(from_reload) {
         return false;
     }
 
-    $(document).trigger($.Event('hashchange.zulip'));
+    $(document).trigger($.Event('zuliphashchange.zulip'));
 
     // NB: In Firefox, window.location.hash is URI-decoded.
     // Even if the URL bar says #%41%42%43%44, the value here will
