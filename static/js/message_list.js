@@ -631,7 +631,7 @@ exports.all = new exports.MessageList(
 // doing something.  Be careful, though, if you try to capture
 // mousemove, then you will have to contend with the autoscroll
 // itself generating mousemove events.
-$(document).on('message_selected.zulip hashchange.zulip mousewheel', function (event) {
+$(document).on('message_selected.zulip zuliphashchange.zulip mousewheel', function (event) {
     viewport.stop_auto_scrolling();
 });
 
