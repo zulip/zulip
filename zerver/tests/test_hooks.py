@@ -45,11 +45,11 @@ class WebhookTestCase(AuthedTestCase):
         if content_type is not None:
             kwargs['content_type'] = content_type
 
-        result = self.client.post(self.url, payload, content_type=content_type)
-        self.assert_json_success(result)
-
-        msg = self.get_last_message()
+        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
+                                     stream_name=None, **kwargs)
         self.do_test_message(msg, expected_message)
+
+        return msg
 
     def build_webhook_url(self):
         # type: () -> text_type
