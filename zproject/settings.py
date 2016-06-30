@@ -664,6 +664,7 @@ JS_SPECS = {
             'third/jquery-perfect-scrollbar/js/perfect-scrollbar.js',
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
+            'third/string-prototype-codepointat/codepointat.js',
             'third/winchan/winchan.js',
             'third/sockjs/sockjs-0.3.4.js',
             'third/handlebars/handlebars.runtime.js',

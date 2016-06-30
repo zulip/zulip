@@ -557,15 +557,13 @@ class Avatar(markdown.inlinepatterns.Pattern):
         img.set('alt', email_address)
         return img
 
-if settings.VOYAGER:
-    path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                                 'prod-static', 'serve', 'third', 'gemoji', 'images', 'emoji', '*.png')
-else:
-    path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                                 # This should be the root
-                                 'static', 'third', 'gemoji', 'images', 'emoji', '*.png')
+emoji_tree = os.path.join(settings.DEPLOY_ROOT, settings.STATIC_ROOT,
+                          "third", "gemoji", "images", "emoji")
+path_to_emoji = os.path.join(emoji_tree, '*.png')
+path_to_unicode_emoji = os.path.join(emoji_tree, 'unicode', '*.png')
 
 emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_emoji)]
+unicode_emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_unicode_emoji)]
 
 
 def make_emoji(emoji_name, src, display_string):
@@ -576,6 +574,17 @@ def make_emoji(emoji_name, src, display_string):
     elt.set("alt", display_string)
     elt.set("title", display_string)
     return elt
+
+class UnicodeEmoji(markdown.inlinepatterns.Pattern):
+    def handleMatch(self, match):
+        # type: (Match[text_type]) -> Optional[Element]
+        orig_syntax = match.group('syntax')
+        name = hex(ord(orig_syntax))[2:]
+        if name in unicode_emoji_list:
+            src = '/static/third/gemoji/images/emoji/unicode/%s.png' % (name)
+            return make_emoji(name, src, orig_syntax)
+        else:
+            return None
 
 class Emoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
@@ -940,6 +949,8 @@ class Bugdown(markdown.Extension):
             '_begin')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
+        md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(ur'(?<!\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\w)'), '_end')
+
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
         for (pattern, format_string) in self.getConfig("realm_filters"):
