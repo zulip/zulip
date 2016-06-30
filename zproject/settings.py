@@ -754,6 +754,7 @@ JS_SPECS = {
 }
 
 if PIPELINE:
+    # This is also done in test_settings.py, see comment there..
     JS_SPECS['app']['source_filenames'].append('js/bundle.js')
 
 app_srcs = JS_SPECS['app']['source_filenames']

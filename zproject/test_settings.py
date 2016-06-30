@@ -11,6 +11,10 @@ DATABASES["default"] = {"NAME": "zulip_test",
                         "TEST_NAME": "django_zulip_tests",
                         "OPTIONS": {"connection_factory": TimeTrackingConnection },}
 
+# In theory this should just go in zproject/settings.py inside the `if
+# PIPELINE` statement, but because zproject/settings.py is processed
+# first, we have to add it here as a hack.
+JS_SPECS['app']['source_filenames'].append('js/bundle.js')
 
 if "TORNADO_SERVER" in os.environ:
     # This covers the Casper test suite case
