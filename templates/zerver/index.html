@@ -38,7 +38,7 @@ var page_params = {{ page_params }};
 {{ minified_js('app')|safe }}
 
 {% if not pipeline %}
-<script type="text/javascript" src="/static/webpack/bundle.js"></script>
+<script type="text/javascript" src="/webpack/bundle.js"></script>
 {% endif %}
 
 {% if debug %}
