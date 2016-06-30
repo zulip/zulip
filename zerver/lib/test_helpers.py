@@ -423,7 +423,9 @@ class AuthedTestCase(TestCase):
         # Check the correct message was sent
         msg = self.get_last_message()
         self.assertEqual(msg.sender.email, email)
-        self.assertEqual(get_display_recipient(msg.recipient), stream_name)
+        if stream_name is not None:
+            self.assertEqual(get_display_recipient(msg.recipient), stream_name)
+        # TODO: should also validate recipient for private messages
 
         return msg
 
