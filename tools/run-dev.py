@@ -74,7 +74,6 @@ os.setpgrp()
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
-        ['./tools/webpack', '--watch', '--port', str(webpack_port)],
         ['python', 'manage.py', 'rundjango'] +
           manage_args + ['localhost:%d' % (django_port,)],
         ['python', 'manage.py', 'runtornado'] +
@@ -82,7 +81,14 @@ cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=localhost', # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates']]
-
+if options.test:
+    # Webpack doesn't support 2 copies running on the same system, so
+    # in order to support running the Casper tests while a Zulip
+    # development server is running, we use webpack in production mode
+    # for the Casper tests.
+    subprocess.check_call('./tools/webpack')
+else:
+    cmds += [['./tools/webpack', '--watch', '--port', str(webpack_port)]]
 for cmd in cmds:
     subprocess.Popen(cmd)
 
