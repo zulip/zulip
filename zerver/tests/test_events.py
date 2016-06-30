@@ -258,6 +258,8 @@ class EventsRegisterTest(AuthedTestCase):
         def normalize(state):
             # type: (Dict[str, Any]) -> None
             state['realm_users'] = {u['email']: u for u in state['realm_users']}
+            for u in state['subscriptions']:
+                u['subscribers'].sort()
             state['subscriptions'] = {u['name']: u for u in state['subscriptions']}
             state['unsubscribed'] = {u['name']: u for u in state['unsubscribed']}
             if 'realm_bots' in state:
