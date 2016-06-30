@@ -18,6 +18,17 @@
     </a>
   </li>
   <li>
+    <a class="pin_to_top">
+      <i class="icon-vector-pushpin stream-pin-icon"></i>
+      {{#if stream.pin_to_top}}
+      {{t Unpin from top }}
+      {{else}}
+      {{t Pin to top }}
+      {{/if}}
+      stream <b>{{stream.name}}</b>
+    </a>
+  </li>
+  <li>
     <a class="compose_to_stream">
       <i class="icon-vector-edit"></i>
       {{#tr this}}Compose a message to stream <b>__stream.name__</b>{{/tr}}
