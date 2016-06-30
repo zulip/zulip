@@ -538,9 +538,9 @@ if DEBUG:
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     )
     if PIPELINE:
-        STATIC_ROOT = 'prod-static/serve'
+        STATIC_ROOT = os.path.abspath('prod-static/serve')
     else:
-        STATIC_ROOT = 'static/'
+        STATIC_ROOT = os.path.abspath('static/')
 else:
     STATICFILES_STORAGE = 'zerver.storage.ZulipStorage'
     STATICFILES_FINDERS = (
@@ -549,7 +549,7 @@ else:
     if PRODUCTION:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
-        STATIC_ROOT = 'prod-static/serve'
+        STATIC_ROOT = os.path.abspath('prod-static/serve')
 
 # We want all temporary uploaded files to be stored on disk.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
