@@ -98,7 +98,7 @@ contributing!
 [redmine]: https://github.com/zulip/zulip-redmine-plugin
 [trello]: https://github.com/zulip/trello-to-zulip
 [tsearch]: https://github.com/zulip/tsearch_extras
-[transifex]: https://www.transifex.com/zulip/zulip/
+[transifex]: https://zulip.readthedocs.io/en/latest/translating.html#testing-translations
 [z-org]: https://github.com/zulip/zulip.github.io
 
 ## How to get involved with contributing to Zulip
