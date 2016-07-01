@@ -10,7 +10,7 @@ import argparse
 import subprocess
 import six
 
-exclude = """
+exclude_common = """
 api/integrations/asana/zulip_asana_config.py
 api/integrations/basecamp/zulip_basecamp_config.py
 api/integrations/codebase/zulip_codebase_config.py
@@ -37,6 +37,11 @@ zerver/tests/test_messages.py
 zerver/tests/test_narrow.py
 """.split()
 
+exclude_py2 = []
+
+exclude_py3 = """
+""".split()
+
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
 parser.add_argument('targets', nargs='*', default=[],
                     help="""files and directories to include in the result.
@@ -49,9 +54,25 @@ parser.add_argument('--linecoverage-report', dest='linecoverage_report', action=
                     help="""run the linecoverage report to see annotation coverage""")
 parser.add_argument('--disallow-untyped-defs', dest='disallow_untyped_defs', action='store_true', default=False,
                     help="""throw errors when functions are not annotated""")
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--py2', default=False, action='store_true', help="Use Python 2 mode")
+group.add_argument('--py3', default=False, action='store_true', help="Use Python 3 mode")
 args = parser.parse_args()
+
+if args.py2:
+    py_version = 2
+elif args.py3:
+    py_version = 3
+else:
+    py_version = 2
+
 if args.all:
     exclude = []
+elif py_version == 2:
+    exclude = exclude_common + exclude_py2
+else:
+    exclude = exclude_common + exclude_py3
 
 # find all non-excluded files in current directory
 files_dict = lister.list_files(targets=args.targets, ftypes=['py', 'pyi'], use_shebang=False,
@@ -70,7 +91,9 @@ if six.PY2 and os.path.exists(MYPY_VENV_PATH):
 else:
     mypy_command = "mypy"
 
-extra_args = ["--fast-parser", "--silent-imports", "--py2", "--check-untyped-defs"]
+extra_args = ["--fast-parser", "--silent-imports", "--check-untyped-defs"]
+if py_version == 2:
+    extra_args.append("--py2")
 if args.linecoverage_report:
     extra_args.append("--linecoverage-report")
     extra_args.append("linecoverage-report")
