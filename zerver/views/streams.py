@@ -488,7 +488,8 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
 
     property_converters = {"color": check_string, "in_home_view": check_bool,
                            "desktop_notifications": check_bool,
-                           "audible_notifications": check_bool}
+                           "audible_notifications": check_bool,
+                           "pin_to_top": check_bool}
     response_data = []
 
     for change in subscription_data:

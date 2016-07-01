@@ -138,6 +138,9 @@ function get_events_success(events) {
                 });
             } else if (event.op === 'update') {
                 subs.update_subscription_properties(event.name, event.property, event.value);
+                if (event.property === 'pin_to_top') {
+                    subs.pin_or_unpin_stream(event.name);
+                }
             } else if (event.op === 'peer_add' || event.op === 'peer_remove') {
                 _.each(event.subscriptions, function (sub) {
                     var js_event_type;

@@ -23,6 +23,7 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_is_admin,
     do_change_stream_description,
+    do_change_subscription_property,
     do_create_user,
     do_deactivate_user,
     do_regenerate_api_key,
@@ -43,6 +44,7 @@ from zerver.lib.actions import (
     do_change_twenty_four_hour_time,
     do_change_left_side_userlist,
     fetch_initial_state_data,
+    get_subscription
 )
 
 from zerver.lib.event_queue import allocate_client_descriptor
@@ -485,6 +487,22 @@ class EventsRegisterTest(AuthedTestCase):
         for create_stream_by_admins_only in (False, True, False):
             events = self.do_test(lambda: do_set_realm_create_stream_by_admins_only(self.user_profile.realm,
                                                                                 create_stream_by_admins_only))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_pin_stream(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('subscription')),
+            ('op', equals('update')),
+            ('property', equals('pin_to_top')),
+            ('value', check_bool),
+        ])
+        stream = "Denmark"
+        sub = get_subscription(stream, self.user_profile)
+        # The first False is probably a noop, then we get transitions in both directions.
+        for pinned in (False, True, False):
+            events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", pinned))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

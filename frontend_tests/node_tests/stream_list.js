@@ -120,3 +120,37 @@ global.use_template('stream_privacy');
 
     assert(li.find('.stream-privacy').find("i").hasClass("icon-vector-lock"));
 }());
+
+
+(function test_sort_pin_to_top_streams() {
+
+    var stream_search_box = $('<input class="stream-list-filter" type="text" placeholder="Search streams">');
+    var stream_filters = $('<ul id="stream_filters">');
+    $("body").empty();
+    $("body").append(stream_search_box);
+    $("body").append(stream_filters);
+
+    var develSub = {
+        name: 'devel',
+        stream_id: 1000,
+        color: 'blue',
+        id: 5,
+        pin_to_top: false,
+        subscribed: true,
+        sidebar_li: stream_list.add_stream_to_sidebar('devel')
+    };
+    global.stream_data.add_sub('devel', develSub);
+
+    var socialSub = {
+        name: 'social',
+        stream_id: 2000,
+        color: 'green',
+        id: 6,
+        pin_to_top: true,
+        subscribed: true,
+        sidebar_li: stream_list.add_stream_to_sidebar('social')
+    };
+    global.stream_data.add_sub('social', socialSub);
+    stream_list.build_stream_list();
+    assert.equal(socialSub.sidebar_li.nextAll().find('[ data-name="devel"]').length, 1);
+}());
