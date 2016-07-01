@@ -375,16 +375,22 @@ function _setup_page() {
         var left_side_userlist = this.checked;
         var data = {};
         data.left_side_userlist = JSON.stringify(left_side_userlist);
+        var context = {};
+        if (data.left_side_userlist === "true") {
+            context.side = 'left';
+        } else {
+            context.side = 'right';
+        }
 
         channel.patch({
             url: '/json/left_side_userlist',
             data: data,
             success: function (resp, statusText, xhr, form) {
-                ui.report_success(i18n.t("Updated display settings!  You will need to reload the window for your changes to take effect."),
+                ui.report_success(i18n.t("User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr, error_type, xhn) {
-                ui.report_error(i18n.t("Error updating display settings"), xhr, $('#display-settings-status').expectOne());
+                ui.report_error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
     });
@@ -393,16 +399,22 @@ function _setup_page() {
         var data = {};
         var setting_value = $("#twenty_four_hour_time").is(":checked");
         data.twenty_four_hour_time = JSON.stringify(setting_value);
+        var context = {};
+        if (data.twenty_four_hour_time === "true") {
+            context.format = '24';
+        } else {
+            context.format = '12';
+        }
 
         channel.patch({
             url: '/json/time_setting',
             data: data,
             success: function (resp, statusText, xhr, form) {
-                ui.report_success(i18n.t("Updated display settings!  You will need to reload the window for your changes to take effect"),
+                ui.report_success(i18n.t("Time will be displayed in the __format__-hour format!  You will need to reload the window for your changes to take effect", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr, error_type, xhn) {
-                ui.report_error(i18n.t("Error updating display settings"), xhr, $('#display-settings-status').expectOne());
+                ui.report_error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
     });
@@ -411,16 +423,18 @@ function _setup_page() {
         var data = {};
         var setting_value = $("#default_language").val();
         data.default_language = JSON.stringify(setting_value);
+        var context = {};
+        context.lang = $("#default_language option:selected").text();
 
         channel.patch({
             url: '/json/language_setting',
             data: data,
             success: function (resp, statusText, xhr, form) {
-                ui.report_success(i18n.t("Updated display settings!  You will need to reload the window for your changes to take effect"),
+                ui.report_success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr, error_type, xhn) {
-                ui.report_error(i18n.t("Error updating display settings"), xhr, $('#display-settings-status').expectOne());
+                ui.report_error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
     });
