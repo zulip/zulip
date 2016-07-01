@@ -144,6 +144,11 @@ exports.toggle_home = function (stream_name) {
     set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
 };
 
+exports.toggle_pin_to_top_stream = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+    set_stream_property(stream_name, 'pin_to_top', !sub.pin_to_top);
+};
+
 function update_stream_desktop_notifications(sub, value) {
     var desktop_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.attr('checked', value);
@@ -154,6 +159,12 @@ function update_stream_audible_notifications(sub, value) {
     var audible_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_audible_notifications_setting .sub_setting_control");
     audible_notifications_checkbox.attr('checked', value);
     sub.audible_notifications = value;
+}
+
+function update_stream_pin(sub, value) {
+    var pin_checkbox = $('#pinstream-' + sub.stream_id);
+    pin_checkbox.attr('checked', value);
+    sub.pin_to_top = value;
 }
 
 function update_stream_name(sub, new_name) {
@@ -196,6 +207,14 @@ function stream_audible_notifications_clicked(e) {
     var sub = stream_data.get_sub(stream);
     sub.audible_notifications = ! sub.audible_notifications;
     set_stream_property(stream, 'audible_notifications', sub.audible_notifications);
+}
+
+function stream_pin_clicked(e) {
+    var sub_row = $(e.target).closest('.subscription_row');
+    var stream = sub_row.find('.subscription_name').text();
+
+    var sub = stream_data.get_sub(stream);
+    exports.toggle_pin_to_top_stream(stream);
 }
 
 exports.set_color = function (stream_name, color) {
@@ -387,6 +406,23 @@ exports.mark_sub_unsubscribed = function (sub) {
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 };
 
+exports.pin_or_unpin_stream = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+    if (stream_name === undefined) {
+        return;
+    } else {
+        stream_list.refresh_stream_in_sidebar(sub);
+    }
+};
+
+exports.sub_pinned_or_unpinned = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+    if (stream_name === undefined) {
+        return;
+    }
+    return sub.pin_to_top;
+};
+
 exports.receives_desktop_notifications = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
     if (sub === undefined) {
@@ -414,6 +450,7 @@ function populate_subscriptions(subs, subscribed) {
                                            invite_only: elem.invite_only,
                                            desktop_notifications: elem.desktop_notifications,
                                            audible_notifications: elem.audible_notifications,
+                                           pin_to_top: elem.pin_to_top,
                                            subscribed: subscribed,
                                            email_address: elem.email_address,
                                            stream_id: elem.stream_id,
@@ -543,6 +580,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'email_address':
         sub.email_address = value;
+        break;
+    case 'pin_to_top':
+        update_stream_pin(sub, value);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
@@ -874,6 +914,8 @@ $(function () {
                                  stream_desktop_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",
                                  stream_audible_notifications_clicked);
+    $("#subscriptions_table").on("click", "#sub_pin_setting",
+                                 stream_pin_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();

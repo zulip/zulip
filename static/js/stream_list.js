@@ -8,6 +8,7 @@ var private_messages_open = false;
 var last_private_message_count = 0;
 var last_mention_count = 0;
 var previous_sort_order;
+var previous_unpinned_order;
 
 function active_stream_name() {
     if (narrow.active()) {
@@ -54,8 +55,33 @@ exports.build_stream_list = function () {
     streams = filter_streams_by_search(streams);
 
     var sort_recent = (streams.length > 40);
+    var pinned_streams = [];
+    var unpinned_streams = [];
+    var parent = $('#stream_filters');
+    var elems = [];
 
-    streams.sort(function (a, b) {
+    function add_sidebar_li(stream) {
+        var li = $(stream_data.get_sub(stream).sidebar_li);
+        if (sort_recent) {
+            if (! stream_data.recent_subjects.has(stream)) {
+                li.addClass('inactive_stream');
+            } else {
+                li.removeClass('inactive_stream');
+            }
+        }
+        elems.push(li.get(0));
+    }
+
+    _.each(streams, function (stream) {
+        var pinned = stream_data.get_sub(stream).pin_to_top;
+        if (pinned) {
+            pinned_streams.push(stream);
+        } else {
+            unpinned_streams.push(stream);
+        }
+    });
+
+    unpinned_streams.sort(function (a, b) {
         if (sort_recent) {
             if (stream_data.recent_subjects.has(b) && ! stream_data.recent_subjects.has(a)) {
                 return 1;
@@ -66,18 +92,17 @@ exports.build_stream_list = function () {
         return util.strcmp(a, b);
     });
 
-    if (previous_sort_order !== undefined
-        && util.array_compare(previous_sort_order, streams)) {
+    streams = pinned_streams.concat(unpinned_streams);
+
+    if (previous_sort_order !== undefined && util.array_compare(previous_sort_order, streams)
+                                          && util.array_compare(previous_unpinned_order, unpinned_streams)) {
         return;
     }
-
     previous_sort_order = streams;
-
-    var parent = $('#stream_filters');
+    previous_unpinned_order = unpinned_streams;
     parent.empty();
 
-    var elems = [];
-    _.each(streams, function (stream) {
+    _.each(pinned_streams, function (stream) {
         var li = $(stream_data.get_sub(stream).sidebar_li);
         if (sort_recent) {
             if (! stream_data.recent_subjects.has(stream)) {
@@ -88,6 +113,15 @@ exports.build_stream_list = function () {
         }
         elems.push(li.get(0));
     });
+
+    if (pinned_streams.length > 0) {
+        _.each(pinned_streams, add_sidebar_li);
+        elems.push($('<hr class="pinned-stream-split">').get(0));
+    }
+    if (unpinned_streams.length > 0) {
+        _.each(unpinned_streams, add_sidebar_li);
+    }
+
     $(elems).appendTo(parent);
 };
 
@@ -121,6 +155,14 @@ function zoom_in() {
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
     zoomed_stream = active_stream_name();
 
+    // Hide stream list titles and pinned stream splitter
+    $(".stream-filters-label").each(function () {
+        $(this).hide();
+    });
+    $(".pinned-stream-split").each(function () {
+        $(this).hide();
+    });
+
     $("#stream_filters li.narrow-filter").each(function () {
         var elt = $(this);
 
@@ -135,6 +177,14 @@ function zoom_in() {
 function zoom_out() {
     popovers.hide_all();
     zoomed_to_topics = false;
+    // Show stream list titles and pinned stream splitter
+    $(".stream-filters-label").each(function () {
+        $(this).show();
+    });
+    $(".pinned-stream-split").each(function () {
+        $(this).show();
+    });
+
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
 }
@@ -188,7 +238,8 @@ function build_stream_sidebar_row(name) {
                 uri: narrow.by_stream_uri(name),
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: sub.invite_only,
-                color: stream_data.get_color(name)
+                color: stream_data.get_color(name),
+                pin_to_top: sub.pin_to_top
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
@@ -531,6 +582,14 @@ exports.rename_stream = function (sub) {
     exports.build_stream_list(); // big hammer
 };
 
+exports.refresh_stream_in_sidebar = function (sub) {
+    // used by subs.pin_or_unpin_stream,
+    // since pinning/unpinning requires reordering of streams in the sidebar
+    sub.sidebar_li = build_stream_sidebar_row(sub.name);
+    exports.build_stream_list();
+    exports.update_streams_sidebar();
+};
+
 $(function () {
     $(document).on('narrow_activated.zulip', function (event) {
         reset_to_unnarrowed(active_stream_name() === zoomed_stream);
@@ -608,6 +667,7 @@ $(function () {
         exports.remove_narrow_filter(stream_name, 'stream');
         // We need to make sure we resort if the removed sub gets added again
         previous_sort_order = undefined;
+        previous_unpinned_order = undefined;
     });
 
     $('.show-all-streams').on('click', function (e) {

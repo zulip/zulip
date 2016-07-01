@@ -1232,6 +1232,7 @@ class Subscription(ModelReprMixin, models.Model):
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR) # type: text_type
+    pin_to_top = models.BooleanField(default=False) # type: bool
 
     desktop_notifications = models.BooleanField(default=True) # type: bool
     audible_notifications = models.BooleanField(default=True) # type: bool
