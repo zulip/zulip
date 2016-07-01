@@ -590,6 +590,11 @@ class Stream(ModelReprMixin, models.Model):
         max_length=32, default=generate_email_token_for_stream) # type: text_type
     description = models.CharField(max_length=1024, default=u'') # type: text_type
 
+    # Specify default permissions assigned when user subscribes to a stream.
+    PERMISSION_FLAGS = ['can_read', 'can_write', 'can_moderate',
+                        'can_add_remove_users']
+    default_permissions = BitField(flags=PERMISSION_FLAGS, default=[b'can_read']) # type: BitHandler
+
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     deactivated = models.BooleanField(default=False) # type: bool
 
@@ -1297,6 +1302,8 @@ class Subscription(ModelReprMixin, models.Model):
     recipient = models.ForeignKey(Recipient) # type: Recipient
     active = models.BooleanField(default=True) # type: bool
     in_home_view = models.NullBooleanField(default=True) # type: Optional[bool]
+
+    permissions = BitField(flags=Stream.PERMISSION_FLAGS) # type: BitHandler
 
     DEFAULT_STREAM_COLOR = u"#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR) # type: text_type
