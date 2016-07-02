@@ -1,0 +1,4 @@
+-r common.txt
+
+# Used for Hesiod lookups, etc.
+py3dns==3.1.0
