@@ -66,6 +66,6 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
 
-    run(["pip", "install", "--upgrade", "pip"])
+    run(["pip", "install", "--upgrade", "pip", "wheel"])
     run(["pip", "install", "--no-deps", "--requirement", requirements_file])
     run(["sudo", "chmod", "-R", "a+rX", venv_path])
