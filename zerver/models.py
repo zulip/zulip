@@ -797,7 +797,8 @@ class Message(ModelReprMixin, models.Model):
         """
         global bugdown
         if bugdown is None:
-            from zerver.lib import bugdown
+            import zerver.lib.bugdown as bugdown
+            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
 
         self.mentions_wildcard = False
         self.is_me_message = False
@@ -826,7 +827,8 @@ class Message(ModelReprMixin, models.Model):
         """
         global bugdown
         if bugdown is None:
-            from zerver.lib import bugdown
+            import zerver.lib.bugdown as bugdown
+            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
 
         self.rendered_content = rendered_content
         self.rendered_content_version = bugdown.version
@@ -847,7 +849,8 @@ class Message(ModelReprMixin, models.Model):
         """Render the markdown if there is no existing rendered_content"""
         global bugdown
         if bugdown is None:
-            from zerver.lib import bugdown
+            import zerver.lib.bugdown as bugdown
+            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
 
         if Message.need_to_render_content(self.rendered_content, self.rendered_content_version):
             return self.set_rendered_content(self.render_markdown(self.content, domain), save)
@@ -952,7 +955,8 @@ class Message(ModelReprMixin, models.Model):
         # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
         global bugdown
         if bugdown is None:
-            from zerver.lib import bugdown
+            import zerver.lib.bugdown as bugdown
+            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
