@@ -45,11 +45,12 @@ parser = optparse.OptionParser(r"""
 
     Slurp tweets on your timeline into a specific zulip stream.
 
-    Run this on your personal machine.  Your API key and twitter id are revealed to local
-    users through the command line or config file.
+    Run this on your personal machine.  Your API key and twitter id
+    are revealed to local users through the command line or config
+    file.
 
-    This bot uses OAuth to authenticate with twitter. Please create a ~/.zulip_twitterrc with
-    the following contents:
+    This bot uses OAuth to authenticate with twitter. Please create a
+    ~/.zulip_twitterrc with the following contents:
 
     [twitter]
     consumer_key =
@@ -57,14 +58,16 @@ parser = optparse.OptionParser(r"""
     access_token_key =
     access_token_secret =
 
-    In order to obtain a consumer key & secret, you must register a new application under your twitter account:
+    In order to obtain a consumer key & secret, you must register a
+    new application under your twitter account:
 
     1. Go to http://dev.twitter.com
     2. Log in
     3. In the menu under your username, click My Applications
     4. Create a new application
 
-    Make sure to go the application you created and click "create my access token" as well. Fill in the values displayed.
+    Make sure to go the application you created and click "create my
+    access token" as well.  Fill in the values displayed.
 
     Depends on: twitter-python
 """)

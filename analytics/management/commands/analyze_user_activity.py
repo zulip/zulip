@@ -55,7 +55,8 @@ is shown for all realms"""
     option_list = BaseCommand.option_list + (
         make_option('--realm', action='store'),
         make_option('--date', action='store', default="2013-09-06"),
-        make_option('--duration', action='store', default=1, type=int, help="How many days to show usage information for"),
+        make_option('--duration', action='store', default=1, type=int,
+                    help="How many days to show usage information for"),
         )
 
     def handle(self, *args, **options):

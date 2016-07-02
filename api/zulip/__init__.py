@@ -150,7 +150,8 @@ def get_default_config_filename():
     config_file = os.path.join(os.environ["HOME"], ".zuliprc")
     if (not os.path.exists(config_file) and
         os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
-        raise RuntimeError("The Zulip API configuration file is now ~/.zuliprc; please run:\n\n  mv ~/.humbugrc ~/.zuliprc\n")
+        raise RuntimeError("The Zulip API configuration file is now ~/.zuliprc; please run:\n\n"
+                           "  mv ~/.humbugrc ~/.zuliprc\n")
     return config_file
 
 class Client(object):
