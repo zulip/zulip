@@ -1,1 +1,15 @@
 -r common.txt
+
+enum34==1.0.4
+
+# Django extension for static asset pipeline
+django-pipeline==1.2.2
+
+# Used for Hesiod lookups, etc.
+pydns==2.3.6
+
+# Needed for LDAP integration
+python-ldap==2.4.19
+
+# Needed for Twitter card integration
+python-twitter==1.1
