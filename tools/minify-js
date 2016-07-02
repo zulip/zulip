@@ -85,7 +85,8 @@ if not os.path.exists(CLOSURE_BINARY):
     CLOSURE_BINARY = 'tools/closure-compiler/run'
     if not os.path.exists(CLOSURE_BINARY):
         print("closure-compiler not installed; the Vagrant tools/provision.py installs it via apt "\
-            "or you can manually unpack http://dl.google.com/closure-compiler/compiler-latest.zip to tools/closure-compiler")
+              "or you can manually unpack http://dl.google.com/closure-compiler/compiler-latest.zip to "\
+              "tools/closure-compiler")
         sys.exit(1)
 
 # Where to put minified JS and source maps

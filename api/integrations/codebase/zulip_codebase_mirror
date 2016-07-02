@@ -208,7 +208,8 @@ def handle_event(event):
             subject = "Discussion: %s" % (subj,)
 
             if category:
-                content = "%s started a new discussion in %s:\n\n~~~ quote\n%s\n~~~" % (actor_name, category, comment_content)
+                format_str = "%s started a new discussion in %s:\n\n~~~ quote\n%s\n~~~"
+                content = format_str % (actor_name, category, comment_content)
             else:
                 content = "%s posted:\n\n~~~ quote\n%s\n~~~" % (actor_name, comment_content)
 
@@ -223,7 +224,8 @@ def handle_event(event):
 
         start_ref_url = make_url("projects/%s/repositories/%s/commit/%s" % (project_link, repo_link, start_ref))
         end_ref_url = make_url("projects/%s/repositories/%s/commit/%s" % (project_link, repo_link, end_ref))
-        between_url = make_url("projects/%s/repositories/%s/compare/%s...%s" % (project_link, repo_link, start_ref, end_ref))
+        between_url = make_url("projects/%s/repositories/%s/compare/%s...%s" % (
+            project_link, repo_link, start_ref, end_ref))
 
         subject = "Deployment to %s" % (environment,)
 
