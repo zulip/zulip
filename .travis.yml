@@ -1,3 +1,4 @@
+dist: trusty
 before_install:
    - nvm install 0.10
 install:
@@ -29,6 +30,9 @@ matrix:
   include:
     - python: "3.4"
       env: TEST_SUITE=mypy
+    - python: "3.4"
+      env: TEST_SUITE=lint-all
+      sudo: required
 # command to run tests
 script:
   - ./tools/travis/$TEST_SUITE
