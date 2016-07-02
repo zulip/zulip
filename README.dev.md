@@ -1105,7 +1105,7 @@ Once you have created and activated a virtualenv, do the following:
 
 ```
 pip install --upgrade pip # upgrade pip itself because older versions have known issues.
-pip install --no-deps -r requirements/dev.txt # install python packages required for development
+pip install --no-deps -r requirements/py2_dev.txt # install python packages required for development
 ./tools/setup/install-phantomjs
 ./tools/install-mypy
 ./tools/setup/download-zxcvbn
