@@ -19,5 +19,5 @@ args = parser.parse_args()
 # install dependencies for setting up the virtualenv
 run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
 
-cached_venv_path = setup_virtualenv(args.target, os.path.join(ZULIP_PATH, "requirements", "prod.txt"))
+cached_venv_path = setup_virtualenv(args.target, os.path.join(ZULIP_PATH, "requirements", "py2_prod.txt"))
 # Now the virtualenv has been activated
