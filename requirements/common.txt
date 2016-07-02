@@ -51,11 +51,7 @@ django-bitfield==1.8.0
 # migration that removes it.
 git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69
 
-# Django extension for static asset pipeline
-django-pipeline==1.2.2
-
 docopt==0.4.0
-enum34==1.0.4
 fonttools==3.0
 
 # Needed for Android push notifications
@@ -102,14 +98,8 @@ pyasn1-modules==0.0.5
 pycparser==2.14
 pycrypto==2.6.1
 
-# Used for Hesiod lookups, etc.
-pydns==2.3.6
-
 # Needed for memcached usage
 pylibmc==1.4.3
-
-# Needed for LDAP integration
-python-ldap==2.4.19
 
 # Needed for timezone work
 pytz==2015.4
@@ -141,9 +131,6 @@ tornado==2.4.1
 
 # Needed for Python static typing
 typing==3.5.0.1
-
-# Needed for Twitter card integration
-python-twitter==1.1
 
 # Fast JSON parser
 ujson==1.33
