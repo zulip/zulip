@@ -127,7 +127,7 @@ rsa==3.1.4
 simplejson==3.7.3
 
 # Needed for Python 2+3 compatibility
-six==1.9.0
+six==1.10.0
 smmap==0.9.0
 
 # Needed for Tornado websockets support
