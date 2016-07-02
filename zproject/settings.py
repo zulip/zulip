@@ -333,7 +333,10 @@ INSTALLED_APPS = [
     'guardian',
     'pipeline',
     'zerver',
-] + EXTRA_INSTALLED_APPS
+]
+if USING_PGROONGA:
+    INSTALLED_APPS += ['pgroonga']
+INSTALLED_APPS += EXTRA_INSTALLED_APPS
 
 ZILENCER_ENABLED = 'zilencer' in INSTALLED_APPS
 

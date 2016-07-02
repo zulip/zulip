@@ -51,10 +51,6 @@ PGroonga.
 
 You [install PGroonga](http://pgroonga.github.io/install/).
 
-You enable PGroonga by `scripts/setup/enable-pgroonga`:
-
-    /home/zulip/deployments/current/scripts/setup/enable-pgroonga
-
 You set `True` to `USING_PGROONGA` in `/etc/zulip/settings.py`:
 
 Before:
@@ -64,6 +60,22 @@ Before:
 After:
 
     USING_PGROONGA = True
+
+You add `SUPERUSER` permission to the `zulip` user in PostgreSQL
+temporary:
+
+    su postgres -c 'psql zulip --command "ALTER ROLE zulip SUPERUSER"'
+
+You enable PGroonga:
+
+    cd /srv/zulip
+    ./manage.py migrate pgroonga
+
+Note that you can't send new messages until the migration is finished.
+
+You remove `SUPERUSER` permission from the `zulip` user in PostgreSQL:
+
+    su postgres -c 'psql zulip --command "ALTER ROLE zulip NOSUPERUSER"'
 
 You restart Zulip:
 
@@ -90,8 +102,38 @@ You restart Zulip:
 
     su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
-You disable PGroonga by `scripts/setup/disable-pgroonga`:
+You set `True` to `USING_PGROONGA` in `local_settings.py` temporary:
 
-    /home/zulip/deployments/current/scripts/setup/disable-pgroonga
+Before:
+
+    USING_PGROONGA = False
+
+After:
+
+    USING_PGROONGA = True
+
+You add `SUPERUSER` permission to the `zulip` user in PostgreSQL
+temporary:
+
+    su postgres -c 'psql zulip --command "ALTER ROLE zulip SUPERUSER"'
+
+You disable PGroonga:
+
+    cd /srv/zulip
+    ./manage.py migrate pgroonga zero
+
+You remove `SUPERUSER` permission from the `zulip` user in PostgreSQL:
+
+    su postgres -c 'psql zulip --command "ALTER ROLE zulip NOSUPERUSER"'
+
+You set `False` to `USING_PGROONGA` in `local_settings.py` again:
+
+Before:
+
+    USING_PGROONGA = True
+
+After:
+
+    USING_PGROONGA = False
 
 Now, full-text search feature based on PGroonga is disabled.
