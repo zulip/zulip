@@ -40,6 +40,28 @@ zerver/tests/test_narrow.py
 exclude_py2 = []
 
 exclude_py3 = """
+zerver/decorator.py
+zerver/lib/actions.py
+zerver/lib/bugdown/__init__.py
+zerver/lib/bugdown/codehilite.py
+zerver/lib/camo.py
+zerver/lib/ccache.py
+zerver/lib/debug.py
+zerver/lib/email_mirror.py
+zerver/lib/notifications.py
+zerver/lib/parallel.py
+zerver/lib/test_helpers.py
+zerver/lib/timeout.py
+zerver/lib/tornado_ioloop_logging.py
+zerver/management/commands/create_stream.py
+zerver/management/commands/email-mirror.py
+zerver/management/commands/enqueue_file.py
+zerver/management/commands/rename_stream.py
+zerver/management/commands/runtornado.py
+zerver/tests/test_i18n.py
+zerver/views/__init__.py
+zerver/views/messages.py
+zerver/views/webhooks/beanstalk.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
