@@ -75,5 +75,5 @@ def run(args):
     process = subprocess.Popen(args)
     rc = process.wait()
     if rc:
-        raise subprocess.CalledProcessError(rc, args)
+        raise subprocess.CalledProcessError(rc, args) # type: ignore # https://github.com/python/typeshed/pull/329
     return 0
