@@ -64,7 +64,8 @@ parser = optparse.OptionParser(r"""
     3. In the menu under your username, click My Applications
     4. Create a new application
 
-    Make sure to go the application you created and click "create my access token" as well. Fill in the values displayed.
+    Make sure to go the application you created and click "create my access token" as well. Fill in the values
+    displayed.
 
     Depends on: twitter-python
 """)

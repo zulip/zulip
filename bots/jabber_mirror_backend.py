@@ -381,7 +381,8 @@ option does not affect login credentials.'''.replace("\n", " "))
             config.readfp(f, config_file)
     except IOError:
         pass
-    for option in ("jid", "jabber_password", "conference_domain", "mode", "zulip_email_suffix", "jabber_server_address", "jabber_server_port"):
+    for option in ("jid", "jabber_password", "conference_domain", "mode", "zulip_email_suffix",
+                   "jabber_server_address", "jabber_server_port"):
         if (getattr(options, option) is None
             and config.has_option("jabber_mirror", option)):
             setattr(options, option, config.get("jabber_mirror", option))

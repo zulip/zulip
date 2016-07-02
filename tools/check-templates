@@ -171,7 +171,8 @@ def get_html_tag(text, i):
     return s
 
 def check_our_files():
-    git_files = [line.strip() for line in subprocess.check_output(['git', 'ls-files'], universal_newlines=True).split('\n')]
+    git_files = [line.strip() for line in subprocess.check_output(['git', 'ls-files'],
+        universal_newlines=True).split('\n')]
 
     # Check all our handlebars templates.
     templates = [fn for fn in git_files if fn.endswith('.handlebars')]
