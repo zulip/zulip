@@ -7,7 +7,7 @@
 coverage==4.0.3
 
 # Needed to run pyflakes linter
-pyflakes==0.9.1
+pyflakes==1.2.3
 
 # Needed to sync translations from transifex
 transifex-client==0.11
