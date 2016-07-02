@@ -8,6 +8,8 @@ import subprocess
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
+PY2 = sys.version_info[0] == 2
+
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ZULIP_PATH)
@@ -22,9 +24,14 @@ SUPPORTED_PLATFORMS = {
 }
 
 NPM_VERSION = '3.9.3'
-VENV_PATH = "/srv/zulip-venv"
+PY2_VENV_PATH = "/srv/zulip-venv"
 PY3_VENV_PATH = "/srv/zulip-py3-venv"
 TRAVIS_NODE_PATH = os.path.join(os.environ['HOME'], 'node')
+
+if PY2:
+    VENV_PATH = PY2_VENV_PATH
+else:
+    VENV_PATH = PY3_VENV_PATH
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("Error: No Zulip git repository present!")
@@ -150,10 +157,14 @@ def main():
         run(["wget", "-O", temp_deb_path, TSEARCH_URL])
         run(["sudo", "dpkg", "--install", temp_deb_path])
 
-    setup_virtualenv(PY3_VENV_PATH,
-                     os.path.join(ZULIP_PATH, "requirements", "mypy.txt"),
-                     virtualenv_args=['-p', 'python3'])
-    setup_virtualenv(VENV_PATH, os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt"))
+    if PY2:
+        MYPY_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "mypy.txt")
+        setup_virtualenv(PY3_VENV_PATH, MYPY_REQS_FILE, virtualenv_args=['-p', 'python3'])
+        DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
+        setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE)
+    else:
+        DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
+        setup_virtualenv(VENV_PATH, DEV_REQS_FILE, virtualenv_args=['-p', 'python3'])
 
     # Put Python2 virtualenv activation in our .bash_profile.
     with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
