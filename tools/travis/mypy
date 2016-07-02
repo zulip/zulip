@@ -1,8 +1,10 @@
 #!/bin/bash
 
-echo '+ ./tools/run-mypy --linecoverage-report'
-./tools/run-mypy --linecoverage-report
-retcode="$?"
+retcode=0
+set -x
+./tools/run-mypy --py2 --linecoverage-report || retcode=1
+./tools/run-mypy --py3 || retcode=1
+set +x
 
 if [ "$retcode" == "0" ]; then
     echo "The mypy static type checker for python detected no errors!"
