@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterModelManagers(
             name='userprofile',
             managers=[
-                (b'objects', django.contrib.auth.models.UserManager()),
+                ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
         migrations.AlterField(
