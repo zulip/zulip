@@ -1,5 +1,7 @@
 from __future__ import absolute_import
-from typing import Any, Callable, Iterable, Optional
+
+from six import text_type
+from typing import Any, Callable, Iterable, MutableMapping, Optional
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
@@ -27,7 +29,7 @@ import traceback
 logger = logging.getLogger('zulip.requests')
 
 def record_request_stop_data(log_data):
-    # type: (Dict[str, Any]) -> None
+    # type: (MutableMapping[str, Any]) -> None
     log_data['time_stopped'] = time.time()
     log_data['remote_cache_time_stopped'] = get_remote_cache_time()
     log_data['remote_cache_requests_stopped'] = get_remote_cache_requests()
@@ -41,7 +43,7 @@ def async_request_stop(request):
     record_request_stop_data(request._log_data)
 
 def record_request_restart_data(log_data):
-    # type: (Dict[str, Any]) -> None
+    # type: (MutableMapping[str, Any]) -> None
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].enable()
     log_data['time_restarted'] = time.time()
@@ -59,7 +61,7 @@ def async_request_restart(request):
     record_request_restart_data(request._log_data)
 
 def record_request_start_data(log_data):
-    # type: (Dict[str, Any]) -> None
+    # type: (MutableMapping[str, Any]) -> None
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"] = cProfile.Profile()
         log_data["prof"].enable()
@@ -81,7 +83,7 @@ def format_timedelta(timedelta):
     return "%.0fms" % (timedelta_ms(timedelta),)
 
 def is_slow_query(time_delta, path):
-    # type: (float, str) -> bool
+    # type: (float, text_type) -> bool
     if time_delta < 1.2:
         return False
     is_exempt = \
@@ -97,7 +99,7 @@ def is_slow_query(time_delta, path):
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=None, error_content_iter=None):
-    # type: (Dict[str, Any], str, str, str, str, str, int, Optional[str], Optional[Iterable[str]]) -> None
+    # type: (MutableMapping[str, Any], text_type, str, str, text_type, text_type, int, Optional[str], Optional[Iterable[str]]) -> None
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
@@ -229,7 +231,7 @@ class LogRequests(object):
             connection.connection.queries = []
 
     def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
+        # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -287,7 +289,7 @@ class JsonErrorHandler(object):
 
 class TagRequests(object):
     def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
+        # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
         self.process_request(request)
     def process_request(self, request):
         # type: (HttpRequest) -> None
@@ -297,7 +299,7 @@ class TagRequests(object):
             request.error_format = "HTML"
 
 def csrf_failure(request, reason=""):
-    # type: (HttpRequest, Optional[str]) -> HttpResponse
+    # type: (HttpRequest, Optional[text_type]) -> HttpResponse
     if request.error_format == "JSON":
         return json_error(_("CSRF Error: %s") % (reason,), status=403)
     else:
