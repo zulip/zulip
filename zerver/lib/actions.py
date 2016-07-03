@@ -863,7 +863,7 @@ def check_send_message(sender, client, message_type_name, message_to,
                        subject_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
-    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[text_type]) -> int
+    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[str]) -> int
     message = check_message(sender, client, message_type_name, message_to,
                             subject_name, message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
@@ -926,7 +926,7 @@ def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
-    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[text_type]) -> Dict[str, Any]
+    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[str]) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
@@ -2638,7 +2638,7 @@ def get_realm_user_dicts(user_profile):
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
 def fetch_initial_state_data(user_profile, event_types, queue_id):
-    # type: (UserProfile, Optional[Iterable[str]], text_type) -> Dict[str, Any]
+    # type: (UserProfile, Optional[Iterable[str]], str) -> Dict[str, Any]
     state = {'queue_id': queue_id} # type: Dict[str, Any]
 
     if event_types is None:
