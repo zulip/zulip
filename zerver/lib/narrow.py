@@ -1,7 +1,7 @@
 from zerver.lib.request import JsonableError
 from django.utils.translation import ugettext as _
 
-from typing import Iterable, Sequence, Callable, Dict
+from typing import Any, Callable, Iterable, Mapping, Sequence
 from six import text_type
 
 
@@ -13,9 +13,10 @@ def check_supported_events_narrow_filter(narrow):
             raise JsonableError(_("Operator %s not supported.") % (operator,))
 
 def build_narrow_filter(narrow):
-    # type: (Iterable[Sequence[text_type]]) -> Callable[[Dict[text_type, text_type]], bool]
+    # type: (Iterable[Sequence[text_type]]) -> Callable[[Mapping[str, Any]], bool]
     check_supported_events_narrow_filter(narrow)
     def narrow_filter(event):
+        # type: (Mapping[str, Any]) -> bool
         message = event["message"]
         flags = event["flags"]
         for element in narrow:
