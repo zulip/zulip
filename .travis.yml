@@ -16,6 +16,7 @@ env:
     - COVERALLS_PARALLEL=true
     - COVERALLS_SERVICE_NAME=travis-pro
     - COVERALLS_REPO_TOKEN=hnXUEBKsORKHc8xIENGs9JjktlTb2HKlG
+    - BOTO_CONFIG=/tmp/nowhere
   matrix:
     - TEST_SUITE=frontend
     - TEST_SUITE=backend
