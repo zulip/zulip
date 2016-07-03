@@ -458,6 +458,7 @@ def get_all_templates():
         template_dirs = [d for d in engine.template_dirs if path_exists(d)]
         for template_dir in template_dirs:
             template_dir = os.path.normpath(template_dir)
-            os.path.walk(template_dir, process, template_dir)
+            for dirpath, dirnames, fnames in os.walk(template_dir):
+                process(template_dir, dirpath, fnames)
 
     return templates
