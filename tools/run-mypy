@@ -49,7 +49,6 @@ zerver/lib/ccache.py
 zerver/lib/debug.py
 zerver/lib/email_mirror.py
 zerver/lib/notifications.py
-zerver/lib/parallel.py
 zerver/lib/tornado_ioloop_logging.py
 zerver/management/commands/create_stream.py
 zerver/management/commands/email-mirror.py
