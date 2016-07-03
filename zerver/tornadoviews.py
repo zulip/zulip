@@ -30,7 +30,7 @@ def notify(request):
 @has_request_variables
 def cleanup_event_queue(request, user_profile, queue_id=REQ()):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
-    client = get_client_descriptor(queue_id)
+    client = get_client_descriptor(str(queue_id))
     if client is None:
         return json_error(_("Bad event queue id: %s") % (queue_id,))
     if user_profile.id != client.user_profile_id:
