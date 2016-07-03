@@ -3084,8 +3084,9 @@ def send_referral_event(user_profile):
 def do_refer_friend(user_profile, email):
     # type: (UserProfile, text_type) -> None
     content = """Referrer: "%s" <%s>
-Realm: %s
-Referred: %s""" % (user_profile.full_name, user_profile.email, user_profile.realm.domain, email)
+                 Realm: %s
+                 Referred: %s""" % (user_profile.full_name, user_profile.email, 
+                     user_profile.realm.domain, email)
     subject = "Zulip referral: %s" % (email,)
     from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
     to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
