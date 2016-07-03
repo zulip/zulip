@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='realmemoji',
             name='name',
-            field=models.TextField(validators=[django.core.validators.MinLengthValidator(1), django.core.validators.RegexValidator(regex=b'^[0-9a-zA-Z.\\-_]+(?<![.\\-_])$', message='Invalid characters in Emoji name')]),
+            field=models.TextField(validators=[django.core.validators.MinLengthValidator(1), django.core.validators.RegexValidator(regex='^[0-9a-zA-Z.\\-_]+(?<![.\\-_])$', message='Invalid characters in Emoji name')]),
         ),
     ]
