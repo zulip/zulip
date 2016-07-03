@@ -74,7 +74,7 @@ def timeout(timeout, func, *args, **kwargs):
     thread.start()
     thread.join(timeout)
 
-    if thread.isAlive():
+    if thread.is_alive():
         # Gamely try to kill the thread, following the dodgy approach from
         # http://stackoverflow.com/a/325528/90777
         #
@@ -83,7 +83,7 @@ def timeout(timeout, func, *args, **kwargs):
         for i in range(10):
             thread.raise_async_timeout()
             time.sleep(0.1)
-            if not thread.isAlive():
+            if not thread.is_alive():
                 break
         raise TimeoutExpired
 
