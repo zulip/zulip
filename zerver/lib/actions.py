@@ -3101,7 +3101,6 @@ def do_refer_friend(user_profile, email):
 
     send_referral_event(user_profile)
 
-
 def notify_realm_emoji(realm):
     # type: (Realm) -> None
     event = dict(type="realm_emoji", op="update",
